@@ -1,0 +1,128 @@
+{
+  "env": {
+    "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "true",
+    "DISABLE_AUTOUPDATER": "true",
+    "ENABLE_BACKGROUND_TASKS": "true",
+    "CLAUDE_CODE_ENABLE_UNIFIED_READ_TOOL": "true"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/ensure-session-id.py"
+          }
+        ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/task-protocol-reminder.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/todo-context-reminder.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/hybrid-token-tracker.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/block-data-loss.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/metrics-capture.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/load-todo.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/block-data-loss.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/ensure-session-id.py"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/verify-destructive-operations.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/critical-thinking.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/metrics-capture.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/user-prompt-wrapper.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "tool:Write && path:docs/",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/verify-doc-sync.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:Edit && path:docs/",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/verify-doc-sync.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:MultiEdit && path:docs/",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/verify-doc-sync.sh"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/metrics-capture.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "model": "sonnet",
+  "statusLine": {
+    "type": "command",
+    "command": "/workspace/.claude/statusline-command.sh"
+  },
+  "cleanupPeriodDays": 7
+}

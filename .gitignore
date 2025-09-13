@@ -1,0 +1,73 @@
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/workspace.xml
+.idea/shelf/
+.idea/libraries/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+### Generated files ###
+target/
+logs/
+*.class
+client/node/
+client/node_modules/
+client/dist/
+client/docs/
+client/coverage/
+client/package-lock.json
+*.jar
+
+# Development Analysis Files  
+dependency-tree-baseline.txt
+effective-pom-baseline.xml
+client/junit.xml
+
+# Temporary Files
+*.log
+*.tmp
+*.temp
+.temp_dir
+*~
+.#*
+#*#
+*.bak
+*.swp
+*.swo
+Thumbs.db
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+/.claude/metrics/
+
+### User-specific files ###
+/.claude/settings.local.json
