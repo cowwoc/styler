@@ -103,6 +103,11 @@ public final class NodeType {
     // JDK 25 specific features
     public static final byte UNNAMED_CLASS = 110; // JDK 21 preview, 22+ permanent
     public static final byte UNNAMED_VARIABLE = 111; // JDK 22+
+    public static final byte MODULE_IMPORT_DECLARATION = 112; // JDK 25 module imports (JEP 511)
+    public static final byte FLEXIBLE_CONSTRUCTOR_BODY = 113; // JDK 25 flexible constructors (JEP 513)
+    public static final byte PRIMITIVE_PATTERN = 114; // JDK 25 primitive patterns (JEP 507)
+    public static final byte COMPACT_MAIN_METHOD = 115; // JDK 25 compact source files (JEP 512)
+    public static final byte INSTANCE_MAIN_METHOD = 116; // JDK 25 instance main methods (JEP 512)
 
     /**
      * Returns a human-readable name for the given node type.
@@ -177,6 +182,11 @@ public final class NodeType {
             case EOF_NODE -> "EofNode";
             case UNNAMED_CLASS -> "UnnamedClass";
             case UNNAMED_VARIABLE -> "UnnamedVariable";
+            case MODULE_IMPORT_DECLARATION -> "ModuleImportDeclaration";
+            case FLEXIBLE_CONSTRUCTOR_BODY -> "FlexibleConstructorBody";
+            case PRIMITIVE_PATTERN -> "PrimitivePattern";
+            case COMPACT_MAIN_METHOD -> "CompactMainMethod";
+            case INSTANCE_MAIN_METHOD -> "InstanceMainMethod";
             default -> "Unknown(" + nodeType + ")";
         };
     }

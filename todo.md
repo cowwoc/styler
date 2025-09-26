@@ -12,7 +12,7 @@
 
 ### Parser Engine Module
 - [x] **MODULE:** `create-parser-module` - Create styler-parser Maven module with custom parser dependencies
-- [ ] **TASK:** `complete-custom-recursive-descent-parser` - Complete handwritten recursive descent parser for JDK 25 features
+- [x] **TASK:** `complete-custom-recursive-descent-parser` - Complete handwritten recursive descent parser for JDK 25 features (COMPLETED: Added JDK 25 features including module imports, flexible constructors, primitive patterns, compact source files, and instance main methods)
 - [ ] **TASK:** `implement-error-recovery` - Error recovery for partial formatting of malformed files
 - [ ] **TASK:** `implement-incremental-parsing` - Support for parsing only changed sections (Tree-sitter inspired)
 - [x] **TASK:** `implement-source-position-tracking` - Precise source location tracking for all tokens (JavaLexer implemented)
