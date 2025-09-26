@@ -85,6 +85,7 @@
 - [ ] **TASK:** `create-maven-plugin` - Maven plugin for build system integration
 - [ ] **TASK:** `create-gradle-plugin` - Gradle plugin for build system integration
 - [ ] **TASK:** `implement-git-hooks` - Pre-commit hook scripts for CI/CD integration
+- [ ] **TASK:** `benchmark-concurrency-architectures` - Benchmark file-based vs block-based concurrency architectures
 - [ ] **TASK:** `add-performance-benchmarks` - Performance tests against large codebases
 - [ ] **TASK:** `add-regression-test-suite` - Regression tests with real-world Java projects
 
@@ -101,3 +102,76 @@
 - [ ] **TASK:** `create-docker-image` - Containerized Tidy for deployment environments
 - [ ] **TASK:** `setup-maven-central-publishing` - Publish artifacts to Maven Central Repository
 - [ ] **TASK:** `create-release-artifacts` - JAR distributions and installation scripts
+
+## Detailed Task Specifications
+
+### `benchmark-concurrency-architectures` Task Details
+
+**Objective:** Compare file-based concurrency vs block-based concurrency to determine optimal parallelization strategy.
+
+**Background:**
+Current evidence shows file-level parallelism (like Checkstyle/PMD) eliminates 16-99x synchronization overhead. However, post-parse AST becomes read-only and immutable, potentially enabling method-level parallelism within files after parsing completes.
+
+**Architectures to Compare:**
+
+1. **File-Based Concurrency (Baseline)**
+   - One thread per file (current industry standard)
+   - Single-threaded parsing and formatting per file
+   - Multiple files processed concurrently
+   - AST instance reused per worker thread via reset()
+
+2. **Hybrid Block-Based Concurrency (Innovation)**
+   - Phase 1: Single-threaded parsing per file (creates read-only AST)
+   - Phase 2: Multi-threaded method-level formatting from read-only AST
+   - File-level parallelism + method-level parallelism
+   - Requires thread-safe read operations from Index-Overlay AST
+
+**Benchmarking Requirements:**
+
+1. **File Size Variations:**
+   - Small files: 1-5 methods, <200 LOC
+   - Medium files: 10-50 methods, 200-1000 LOC
+   - Large files: 100+ methods, 1000+ LOC
+   - Very large files: 500+ methods, 5000+ LOC
+
+2. **Thread Pool Configurations:**
+   - File workers: 1, 2, 4, 8, 16 threads
+   - Method workers (hybrid): 2, 4, 8, 16 threads per file
+   - Measure optimal ratios for different file sizes
+
+3. **Metrics to Measure:**
+   - Total processing time (end-to-end)
+   - CPU utilization and core efficiency
+   - Memory usage and GC pressure
+   - Thread coordination overhead
+   - Context switching costs
+
+4. **Test Scenarios:**
+   - Homogeneous workloads (all small, all medium, all large files)
+   - Mixed workloads (realistic distribution of file sizes)
+   - Memory-constrained environments
+   - CPU-bound vs I/O-bound scenarios
+
+5. **Complexity Analysis:**
+   - Implementation complexity comparison
+   - Maintenance overhead assessment
+   - Bug surface area evaluation
+   - Thread-safety validation requirements
+
+**Success Criteria:**
+- Hybrid approach shows >15% improvement for files with 20+ methods
+- Overhead complexity justified by performance gains
+- Thread-safety validated through concurrent stress testing
+- Memory usage remains acceptable (no more than 2x increase)
+
+**Evidence Base:**
+- Current benchmarks show Index-Overlay read operations: 87.9 ns/op (thread-safe when read-only)
+- AST visitor pattern supports independent method processing
+- Post-parse AST immutability enables safe concurrent reads
+- JavaParser research confirms "method independence" for formatting rules
+
+**Implementation Notes:**
+- Use JMH for precise microbenchmarks
+- Test with real Java codebases (Spring, Apache Commons, etc.)
+- Validate thread-safety through race condition detection
+- Measure at different JVM heap sizes and GC algorithms

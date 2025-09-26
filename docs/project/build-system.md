@@ -75,7 +75,7 @@ This resolves TestNG module export warnings with `-Werror` enabled.
 		<dependency>
 			<groupId>io.github.cowwoc</groupId>
 			<artifactId>requirements-java</artifactId>
-			<version>12.0.1</version>
+			<version>12.1</version>
 		</dependency>
 	</dependencies>
 </dependencyManagement>
@@ -86,12 +86,16 @@ This resolves TestNG module export warnings with `-Werror` enabled.
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.11.0</version>
+        <version>3.14.1</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>9.8</version>
+          </dependency>
+        </dependencies>
 				<configuration>
 					<release>25</release>
-					<compilerArgs>
-						<arg>--enable-preview</arg>
-					</compilerArgs>
 				</configuration>
 			</plugin>
 		</plugins>

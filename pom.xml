@@ -20,6 +20,7 @@
 
 	<modules>
 		<module>core</module>
+		<module>parser</module>
 	</modules>
 
 	<dependencyManagement>
@@ -27,6 +28,11 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>styler-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>styler-parser</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
@@ -45,11 +51,24 @@
 				<artifactId>logback-classic</artifactId>
 				<version>1.5.18</version>
 			</dependency>
+			<dependency>
+				<groupId>org.openjdk.jmh</groupId>
+				<artifactId>jmh-core</artifactId>
+				<version>1.37</version>
+				<scope>test</scope>
+			</dependency>
 
 			<dependency>
 				<groupId>org.testng</groupId>
 				<artifactId>testng</artifactId>
 				<version>7.11.0</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.openjdk.jmh</groupId>
+				<artifactId>jmh-generator-annprocess</artifactId>
+				<version>1.37</version>
 				<scope>test</scope>
 			</dependency>
 		</dependencies>
@@ -90,13 +109,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.14.1</version>
-					<dependencies>
-						<dependency>
-							<groupId>org.ow2.asm</groupId>
-							<artifactId>asm</artifactId>
-							<version>9.8</version>
-						</dependency>
-					</dependencies>
 					<configuration>
 						<compilerArgs>
 							<arg>
@@ -142,6 +154,11 @@
 							</configuration>
 						</execution>
 					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>3.6.1</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>

@@ -29,7 +29,54 @@ Based on empirical analysis of 15+ leading parsers and formatters across Python,
 
 **Evidence**: Python's Ruff formatter achieves >30x speedup over Black by rewriting in Rust, while maintaining >99.9% compatibility. JavaScript's SWC (Rust) and esbuild (Go) achieve 10-100x improvements over Babel.
 
-**Critical Insight**: The performance ceiling for Java formatters is likely limited by the Java runtime itself, suggesting that a JNI-based approach or native compilation (GraalVM) could provide significant advantages.
+## Index-Overlay vs Object-Reference Architecture Analysis
+
+**Date**: 2025-09-25
+**Status**: **BENCHMARK PENDING - JMH EXECUTION REQUIRED**
+
+### JMH Benchmark Implementation Status
+
+**✅ Completed**:
+- Created comprehensive JMH benchmark (`IndexOverlayBenchmark.java`) comparing Index-Overlay vs Object-Reference architectures
+- Implemented fair symmetric data structures for accurate comparison
+- Covered sequential access, random access, type filtering, parallel processing, and memory usage patterns
+- Fixed critical methodology flaws identified in initial benchmark attempts
+
+**❌ Execution Blocked**:
+- JMH annotation processing not properly configured in Maven build
+- Missing `/META-INF/BenchmarkList` resource prevents JMH harness execution
+- Test compilation issues with Requirements API dependencies block Maven test-compile phase
+
+### Benchmark Scope
+
+The implemented benchmark tests the following hypotheses:
+1. **Memory efficiency**: Index-overlay should use ~3x less memory than object references
+2. **Cache locality**: Parallel arrays should provide better performance at scale
+3. **Parallel processing**: Index-based access should enable better parallelization
+4. **Scale-dependent performance**: Performance characteristics should vary by dataset size
+
+**Available Test Scenarios**:
+- Sequential node traversal performance
+- Random access patterns
+- Type-based filtering operations
+- Parallel stream processing
+- Memory usage comparison
+- Tree traversal patterns
+
+### Scientific Integrity Note
+
+**No performance claims are made** until proper JMH execution provides statistically valid results. Manual timing benchmarks were created but are **not scientifically valid** due to:
+- Insufficient warm-up methodology
+- Lack of statistical analysis
+- Susceptibility to JVM optimizations that JMH properly handles
+- No confidence interval calculations
+
+### Next Steps for Valid Results
+
+1. **Fix Maven Configuration**: Resolve JMH annotation processing and test compilation issues
+2. **Execute JMH Benchmark**: Run proper statistical benchmarking with confidence intervals
+3. **Validate Architecture Claims**: Test the study's "3-5x memory reduction" and "cache locality" hypotheses
+4. **Update Study**: Replace this section with evidence-based conclusions from JMH results
 
 ---
 
