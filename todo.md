@@ -3,12 +3,12 @@
 ## Phase 1: Core AST Parser Foundation
 
 ### AST Core Module
-- [ ] **MODULE:** `create-ast-core-module` - Create styler-ast-core Maven module with AST node hierarchy
-- [ ] **TASK:** `implement-ast-node-base` - Base AST node with visitor pattern and metadata preservation
-- [ ] **TASK:** `implement-java-ast-nodes` - Complete AST node hierarchy for all Java constructs
-- [ ] **TASK:** `implement-comment-preservation` - Maintain comments, whitespace, and formatting hints
-- [ ] **TASK:** `implement-immutable-ast` - Immutable AST with builder pattern for modifications
-- [ ] **TASK:** `add-ast-core-unit-tests` - Comprehensive unit tests for AST node operations
+- [x] **MODULE:** `create-ast-core-module` - Create styler-ast-core Maven module with AST node hierarchy (restructured under ast parent module, duplicate ast-core/ directory removed)
+- [ ] **TASK:** `implement-ast-node-base` - Base AST node with visitor pattern and metadata preservation (CRITICAL: missing ASTNode, ASTVisitor, ASTNodeBuilder classes)
+- [ ] **TASK:** `implement-java-ast-nodes` - Complete AST node hierarchy for all Java constructs (PARTIAL: has 3 node classes, needs 70+ more)
+- [ ] **TASK:** `implement-comment-preservation` - Maintain comments, whitespace, and formatting hints (CRITICAL: missing Comment, SourceRange, FormattingHints classes)
+- [ ] **TASK:** `implement-immutable-ast` - Immutable AST with builder pattern for modifications (PARTIAL: builder interface exists, implementation incomplete)
+- [ ] **TASK:** `add-ast-core-unit-tests` - Comprehensive unit tests for AST node operations (PARTIAL: basic test structure exists)
 
 ### Parser Engine Module
 - [x] **MODULE:** `create-parser-module` - Create styler-parser Maven module with custom parser dependencies
