@@ -11,12 +11,12 @@
 - [ ] **TASK:** `add-ast-core-unit-tests` - Comprehensive unit tests for AST node operations
 
 ### Parser Engine Module
-- [ ] **MODULE:** `create-parser-module` - Create styler-parser Maven module with custom parser dependencies
-- [ ] **TASK:** `create-java-grammar` - ANTLR4 grammar for JDK 25 feature support
-- [ ] **TASK:** `implement-lexer-parser` - Lexer and parser implementation from ANTLR4 grammar
+- [x] **MODULE:** `create-parser-module` - Create styler-parser Maven module with custom parser dependencies
+- [ ] **TASK:** `complete-custom-recursive-descent-parser` - Complete handwritten recursive descent parser for JDK 25 features
 - [ ] **TASK:** `implement-error-recovery` - Error recovery for partial formatting of malformed files
-- [ ] **TASK:** `implement-incremental-parsing` - Support for parsing only changed sections
-- [ ] **TASK:** `implement-source-position-tracking` - Precise source location tracking for all tokens
+- [ ] **TASK:** `implement-incremental-parsing` - Support for parsing only changed sections (Tree-sitter inspired)
+- [x] **TASK:** `implement-source-position-tracking` - Precise source location tracking for all tokens (JavaLexer implemented)
+- [ ] **TASK:** `arena-vs-gc-memory-architecture-decision` - Benchmark and decide between Arena API vs GC for memory allocation
 - [ ] **TASK:** `add-parser-unit-tests` - Unit tests covering all JDK 25 language features
 
 ## Phase 2: Formatter Plugin Framework

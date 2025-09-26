@@ -8,9 +8,33 @@ Styler is an unopinionated Java code formatter that supports 100% of JDK 25's fe
 
 ## Core Use Cases
 
-Styler supports these primary use cases:
+Styler supports these primary use cases across two integration modes:
 
-### 1. Java Code Formatting
+### 1. AI Agent Integration (Output-Driven Learning with Automatic Context Detection)
+**Objective**: Drive AI agent behavior through structured violation feedback that provides immediate actionable guidance for code improvement.
+
+**Evidence-Based Approach**: Analysis shows output-driven integration enables AI agents to learn and adapt without requiring comprehensive upfront documentation:
+- **Feedback-Driven Learning**: AI agents learn style patterns from structured violation output with specific fix strategies
+- **Immediate Actionability**: Each violation includes context-specific suggestions and rule explanations
+- **Priority-Guided Attention**: Violations sorted by severity × frequency to focus AI agent corrections on high-impact issues
+- **Automatic Context Detection**: System detects AI vs human usage without manual flags
+
+**Flow**:
+- AI agent generates code using current understanding
+- Code validation via CLI tool provides structured violation feedback
+- AI agent processes violation output with rule IDs, fix strategies, and priority scores
+- Agent applies corrections based on specific suggestions and learns patterns
+- Iterative feedback loop improves AI agent code generation over time
+
+**Technical Requirements**:
+- **Structured Output Generation**: Machine-readable violation reports with rule IDs, fix strategies, and priority scores
+- **Context-Specific Suggestions**: Each violation includes tailored remediation guidance based on surrounding code
+- **Priority-Based Ordering**: Violations sorted by impact (severity × frequency) to guide AI agent focus
+- **Iterative Learning Support**: Output format designed for AI pattern recognition and adaptation
+- **Context Detection**: Automatic AI vs human detection via environment analysis
+- **Violation Tracking**: Integrated during parsing for immediate feedback
+
+### 2. Traditional Build Integration (Batch Processing)
 **Objective**: Format Java source files according to configurable style rules while preserving developer intent.
 
 **Flow**:
@@ -20,7 +44,7 @@ Styler supports these primary use cases:
 - Output formatted code while preserving comments and structure
 - Support for incremental formatting of only changed sections
 
-### 2. Multi-threaded Project Processing
+### 3. Multi-threaded Project Processing
 **Objective**: Process large codebases efficiently using parallel file processing.
 
 **Flow**:
@@ -30,14 +54,25 @@ Styler supports these primary use cases:
 - Aggregate results and report progress
 - Handle error recovery and partial failures gracefully
 
-### 3. Auto-fixing and Violation Correction
-**Objective**: Automatically fix common code style violations and formatting issues.
+### 4. Integrated Violation Detection and Context-Aware Reporting
+**Objective**: Track style violations during parsing with automatic output adaptation for different audiences.
 
-**Requirements**:
-- **Comprehensive**: Support for all major Java style guide violations
-- **Safe**: Never change code semantics, only formatting and style
-- **Configurable**: Users can enable/disable specific auto-fixes
-- **Extensible**: Plugin architecture for custom auto-fixers
+**Evidence-Based Implementation**:
+- **Parser Integration**: Violations detected during AST construction for immediate feedback
+- **Automatic Context Detection**: Heuristic detection of AI agent vs human developer usage
+- **Progressive Disclosure**: Information architecture adapted to audience needs
+- **Prioritization**: Frequency-based scoring system for violation priority
+
+**Dual-Audience Output Architecture**:
+- **AI Agent Format**: Structured output with rule IDs, violation counts, fix strategies
+- **Human Format**: Narrative explanations with grouped violations by severity
+- **Automatic Detection**: No manual --ai-mode flags required
+
+**Technical Features**:
+- **Real-time Tracking**: Violations captured during parsing, not post-processing
+- **Multi-factor Prioritization**: Severity weight × frequency count for priority scoring
+- **Context Preservation**: Source location, surrounding code context for each violation
+- **Fix Guidance**: Specific remediation strategies integrated with violation reports
 
 ## Sample Configuration
 
@@ -170,6 +205,14 @@ The formatter uses a sophisticated threading model for optimal performance:
 - **Progress Reporting**: Real-time progress updates for large codebase processing
 
 ### Performance Targets
+
+**AI Agent Mode**:
+- **Validation Latency**: <50ms for real-time format validation
+- **Rule API**: <10ms for format rule specification queries
+- **Memory Footprint**: Lightweight parsing for validation-only operations
+- **CLI Overhead**: Minimal JVM startup time for fast responses
+
+**Traditional Mode**:
 - **Throughput**: 100-150 files/second on modern systems
 - **Memory Efficiency**: Bounded heap usage with automatic garbage collection optimization
 - **Scalability**: Near-linear scaling up to 16 CPU cores
@@ -221,7 +264,8 @@ The formatter is designed as a **standalone command-line tool** with the followi
 - **Override Capabilities**: Command-line overrides for configuration settings
 
 ### Integration Support
-- **Build Tool Integration**: Maven and Gradle plugin support
+- **AI Agent Integration**: Output-driven learning through structured violation feedback with context-specific fix strategies
+- **Build Tool Integration**: Maven and Gradle plugin support for traditional workflows
 - **IDE Integration**: Language Server Protocol for editor integration
 - **CI/CD Integration**: Exit codes and reporting for continuous integration systems
 - **Git Integration**: Pre-commit hooks and diff-aware formatting
@@ -230,8 +274,19 @@ The formatter is designed as a **standalone command-line tool** with the followi
 
 ### Command-Line Tool Architecture
 
-**Important**: This system is primarily a **command-line formatting tool**. Integration points include:
+**Important**: This system serves **dual integration modes** with automatic context detection:
+
+**AI Agent Mode** (Output-Driven Learning Integration):
+- Structured violation feedback for iterative learning
+- Priority-ordered violation reports with actionable fix strategies
+- Context-specific suggestions tailored to actual code violations
+- Machine-readable output format optimized for pattern recognition
+- Automatic context detection via environment analysis
+- Compatible with agent tool capabilities (CLI validation)
+
+**Traditional Mode** (Interactive/Build Processing):
 - Command-line interface for direct user interaction
+- Human-friendly narrative violation reporting
 - Maven/Gradle plugins for build system integration
 - Language Server Protocol for IDE integration
 - Library API for programmatic usage
