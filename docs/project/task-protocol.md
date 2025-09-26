@@ -23,6 +23,10 @@
 
 **ABSOLUTE RULE**: If ANY file will be created/modified/deleted, full protocol is required
 
+## 🧠 PROTOCOL INTERPRETATION MODE
+
+**THINK HARDER MODE**: Parent agent must apply enhanced analytical rigor when interpreting and following the task protocol workflow. Rather than following obvious or surface-level interpretations, carefully analyze what the protocol truly requires for the specific task context.
+
 ## BATCH PROCESSING RESTRICTIONS
 
 **PROHIBITED PATTERNS:**
