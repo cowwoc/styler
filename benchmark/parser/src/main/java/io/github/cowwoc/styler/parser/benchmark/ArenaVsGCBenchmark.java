@@ -1,4 +1,5 @@
-package io.github.styler.parser;
+package io.github.cowwoc.styler.parser.benchmark;
+import io.github.cowwoc.styler.parser.*;
 
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;

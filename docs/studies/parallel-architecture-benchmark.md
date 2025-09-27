@@ -219,4 +219,4 @@ Hybrid method-level parallelization shows feasibility:
 
 **Study Status:** Complete
 **Data Integrity:** All measurements from JMH 1.37 with statistical validation
-**Reproducibility:** Full benchmark code available in `src/jmh/java/io/github/styler/parser/IndexOverlayBenchmark.java`
+**Reproducibility:** Full benchmark code available in `src/benchmark/java/io/github/styler/parser/IndexOverlayBenchmark.java`
