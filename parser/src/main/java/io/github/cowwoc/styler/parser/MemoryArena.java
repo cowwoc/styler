@@ -23,6 +23,11 @@ public class MemoryArena {
     private final AtomicInteger nodeCount = new AtomicInteger(0);
     private final int maxNodes;
 
+    // Security: Memory monitoring to prevent exhaustion attacks
+    private static final long MAX_MEMORY_USAGE_BYTES = 256 * 1024 * 1024; // 256MB limit
+    private static final int MEMORY_CHECK_INTERVAL = 1000; // Check every 1000 allocations
+    private int allocationsSinceLastCheck = 0;
+
     public MemoryArena() {
         this(DEFAULT_CAPACITY);
     }
@@ -49,6 +54,13 @@ public class MemoryArena {
 
         if (nodeId >= maxNodes) {
             throw new IllegalStateException("Arena is full. Consider increasing capacity or using multiple arenas.");
+        }
+
+        // Security: Check memory usage periodically to prevent exhaustion attacks
+        allocationsSinceLastCheck++;
+        if (allocationsSinceLastCheck >= MEMORY_CHECK_INTERVAL) {
+            checkMemoryUsage();
+            allocationsSinceLastCheck = 0;
         }
 
         // Store node metadata in index buffer (4 ints per node)
@@ -86,6 +98,7 @@ public class MemoryArena {
         nodeCount.set(0);
         nodeBuffer.clear();
         indexBuffer.clear();
+        allocationsSinceLastCheck = 0; // Reset memory monitoring counter
     }
 
     /**
@@ -99,7 +112,41 @@ public class MemoryArena {
      * Returns the current memory usage in bytes.
      */
     public long getMemoryUsage() {
-        return nodeBuffer.position() + (indexBuffer.position() * 4L);
+        // Calculate memory usage based on allocated nodes
+        // Each node uses 4 integers (16 bytes) in the index buffer
+        return nodeCount.get() * 16L;
+    }
+
+    /**
+     * Checks current memory usage and throws exception if limits are exceeded.
+     * This prevents memory exhaustion attacks during parsing.
+     */
+    private void checkMemoryUsage() {
+        // Get current heap memory usage
+        Runtime runtime = Runtime.getRuntime();
+        long totalMemory = runtime.totalMemory();
+        long freeMemory = runtime.freeMemory();
+        long usedMemory = totalMemory - freeMemory;
+
+        // Check if we're approaching memory limits
+        if (usedMemory > MAX_MEMORY_USAGE_BYTES) {
+            throw new IllegalStateException(
+                "Memory usage exceeded limit: " + usedMemory + " bytes. " +
+                "Maximum allowed: " + MAX_MEMORY_USAGE_BYTES + " bytes. " +
+                "Input may be designed to cause memory exhaustion."
+            );
+        }
+
+        // Also check arena-specific memory
+        long arenaMemory = getMemoryUsage();
+        long maxArenaMemory = nodeBuffer.capacity() + (indexBuffer.capacity() * 4L);
+
+        if (arenaMemory > maxArenaMemory * 0.9) { // 90% threshold
+            throw new IllegalStateException(
+                "Arena memory usage approaching limit: " + arenaMemory + " bytes. " +
+                "Arena capacity: " + maxArenaMemory + " bytes."
+            );
+        }
     }
 
     /**

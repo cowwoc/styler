@@ -95,6 +95,54 @@ Styler Java Code Formatter project configuration and workflow guidance.
 ❌ "This edge case is too hard to handle properly" (without stakeholder consultation)
 ❌ "The existing pattern is suboptimal but I'll follow it" (without improvement attempt)
 
+### 🚨 GIVING UP DETECTION PATTERNS
+
+**CRITICAL FORBIDDEN PHRASES** - AUTOMATIC TASK CONTINUATION REQUIRED:
+❌ "Given the complexity of properly implementing..."
+❌ "Given the evidence that this requires significant changes..."
+❌ "Let me focus on completing the task protocol instead..."
+❌ "Let me focus on features that provide more immediate value..."
+❌ "This would require significant architectural changes..."
+❌ "Rather than diving deeper into this complex issue..."
+❌ "Instead of implementing the full solution, let me..."
+❌ "Due to the complexity, I'll defer this to..."
+❌ "This appears to be beyond the current scope..."
+❌ "Let me move on to easier tasks..."
+
+**MANDATORY RESPONSE TO GIVING UP PATTERNS**:
+✅ IMMEDIATELY return to the original technical problem
+✅ Apply systematic debugging and decomposition approach
+✅ Continue working on the exact issue that triggered the giving up pattern
+✅ Use incremental progress rather than abandoning the work
+✅ Exhaust all reasonable technical approaches before any scope modification
+✅ Document specific technical blockers if genuine limitations exist
+
+### 🧪 UNIT TEST DRIVEN BUG FIXING
+
+**MANDATORY PROCESS**: When encountering any bug during development:
+
+**BUG DISCOVERY PROTOCOL**:
+1. **IMMEDIATE UNIT TEST**: Create a minimal unit test that reproduces the exact bug
+2. **ISOLATION**: Extract the failing behavior into the smallest possible test case
+3. **DOCUMENTATION**: Add the test to appropriate test suite with descriptive name
+4. **FIX VALIDATION**: Ensure the unit test passes after implementing the fix
+5. **REGRESSION PREVENTION**: Keep the test in the permanent test suite
+
+**UNIT TEST REQUIREMENTS**:
+- **Specific**: Target the exact failing behavior, not general functionality
+- **Minimal**: Use the smallest possible input that triggers the bug
+- **Descriptive**: Test method name clearly describes the bug scenario
+- **Isolated**: Independent of other tests and external dependencies
+- **Fast**: Execute quickly to enable frequent testing
+
+**EXAMPLES**:
+✅ `testScientificNotationLexing()` - for floating-point literal bugs
+✅ `testMethodReferenceInAssignment()` - for parser syntax bugs
+✅ `testEnumConstantWithArguments()` - for enum parsing bugs
+✅ `testGenericTypeVariableDeclaration()` - for generics bugs
+
+**INTEGRATION**: Unit tests become part of the development workflow, not separate documentation
+
 **REQUIRED JUSTIFICATION PROCESS** (when considering downgrade):
 1. **DOCUMENT EFFORT**: "Attempted optimal solution for X hours/attempts"
 2. **IDENTIFY BLOCKERS**: "Specific technical obstacles: [list]"

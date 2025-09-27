@@ -119,10 +119,29 @@ Styler supports these primary use cases across two integration modes:
 
 **🚨 CRITICAL: Complete What You Start**
 
-- **No Stub Implementations:** When implementing a feature, implement the chosen scenarios completely end-to-end
-- **No Placeholder Code:** Avoid TODO comments, fake return values, or "implement later" patterns
-- **Complete Scenario Coverage:** Each supported scenario must be fully functional, not partially working
-- **Honest Error Handling:** Return genuine errors for unsupported scenarios rather than fake success codes
+- **ABSOLUTELY FORBIDDEN**: Creation, usage, or retention of stub implementations, TODO comments, placeholder methods, fake return values
+- **NO PARTIAL IMPLEMENTATIONS**: Every method must be either complete and functional OR throw clear UnsupportedOperationException
+- **NO "IMPLEMENT LATER" PATTERNS**: Return -1, empty implementations, or "// TODO: implement" comments
+- **HONEST ERROR HANDLING**: Unsupported features must fail fast with descriptive error messages
+- **COMPLETE SCENARIO COVERAGE**: Each supported scenario must be fully functional end-to-end
+- **MANDATORY REMOVAL**: Any existing stubs discovered during development MUST be immediately replaced with proper implementations or UnsupportedOperationException
+
+**MANDATORY STUB DETECTION AND PREVENTION**:
+- Code quality auditors MUST reject ANY implementation containing TODO comments
+- Security auditors MUST reject placeholder implementations that could hide vulnerabilities
+- Build validators MUST fail if stub patterns are detected in production code
+
+**PROHIBITED PATTERNS**:
+❌ `return -1; // TODO: implement later`
+❌ `// Placeholder implementation`
+❌ Methods that do nothing but advance tokens without logic
+❌ Empty catch blocks or generic exception swallowing
+❌ Fake success return values for unimplemented features
+
+**REQUIRED PATTERNS**:
+✅ `throw new UnsupportedOperationException("Feature X requires implementation of Y")`
+✅ Complete implementations that handle all edge cases
+✅ Clear error boundaries with helpful messages
 
 **No-Stubbing Implementation Strategy:**
 1. Choose minimal viable scenarios for each feature (YAGNI principle)
@@ -165,6 +184,14 @@ Styler supports these primary use cases across two integration modes:
 - Strict path validation and sandboxing for file operations
 - File size limits (10MB maximum per file)
 - Resource monitoring and automatic termination of excessive operations
+
+**Security Model for Parser Operations:**
+- **Single-User Scenario**: Users have access to source code being parsed
+- **Resource Protection**: Prevent accidental resource exhaustion (stack overflow, memory)
+- **System Stability**: Prevent parser crashes from affecting system stability
+- **Usability Priority**: Error messages prioritize helpful debugging information
+- **Attack Scope**: Focus on resource exhaustion, not data exfiltration or information disclosure
+- **Reasonable Limits**: Protection limits appropriate for legitimate code formatting use cases
 
 **Quality Requirements:**
 - Zero compilation errors after formatting

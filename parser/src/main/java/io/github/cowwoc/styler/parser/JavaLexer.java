@@ -53,7 +53,7 @@ public class JavaLexer {
             case ',' -> singleCharToken(TokenType.COMMA);
             case '@' -> singleCharToken(TokenType.AT);
             case '?' -> singleCharToken(TokenType.QUESTION);
-            case ':' -> singleCharToken(TokenType.COLON);
+            case ':' -> scanColon();
             case '~' -> singleCharToken(TokenType.BITWISE_NOT);
 
             // Multi-character operators and punctuation
@@ -71,8 +71,8 @@ public class JavaLexer {
             case '|' -> scanPipe();
             case '^' -> scanCaret();
 
-            // String literals
-            case '"' -> scanStringLiteral();
+            // String literals and text blocks
+            case '"' -> scanStringOrTextBlock();
             case '\'' -> scanCharacterLiteral();
 
             // Numbers
@@ -414,6 +414,90 @@ public class JavaLexer {
         return createToken(TokenType.BITWISE_XOR, start, 1, "^");
     }
 
+    private TokenInfo scanColon() {
+        int start = position;
+        position++; // consume first ':'
+        column++;
+
+        if (position < length && source.charAt(position) == ':') {
+            position++; // consume second ':'
+            column++;
+            return createToken(TokenType.DOUBLE_COLON, start, 2, "::");
+        }
+
+        return createToken(TokenType.COLON, start, 1, ":");
+    }
+
+    /**
+     * Scan either a regular string literal or a text block.
+     * Text blocks start with """ and are a JDK 15+ feature.
+     */
+    private TokenInfo scanStringOrTextBlock() {
+        // Check if this is a text block (""")
+        if (position + 2 < length &&
+            source.charAt(position) == '"' &&
+            source.charAt(position + 1) == '"' &&
+            source.charAt(position + 2) == '"') {
+            return scanTextBlock();
+        } else {
+            return scanStringLiteral();
+        }
+    }
+
+    /**
+     * Scan a text block literal (JDK 15+).
+     */
+    private TokenInfo scanTextBlock() {
+        int start = position;
+        position += 3; // consume opening """
+        column += 3;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("\"\"\"");
+
+        // Text blocks must have a line terminator after the opening """
+        boolean hasLineTerminator = false;
+
+        while (position < length) {
+            char ch = source.charAt(position);
+
+            if (ch == '\n' || ch == '\r') {
+                hasLineTerminator = true;
+            }
+
+            // Check for closing """
+            if (ch == '"' && position + 2 < length &&
+                source.charAt(position + 1) == '"' &&
+                source.charAt(position + 2) == '"') {
+
+                // Consume closing """
+                sb.append("\"\"\"");
+                position += 3;
+                column += 3;
+                break;
+            }
+
+            sb.append(ch);
+            if (ch == '\n') {
+                line++;
+                column = 1;
+            } else if (ch == '\r') {
+                line++;
+                column = 1;
+                // Handle \r\n
+                if (position + 1 < length && source.charAt(position + 1) == '\n') {
+                    position++;
+                    sb.append('\n');
+                }
+            } else {
+                column++;
+            }
+            position++;
+        }
+
+        return createToken(TokenType.TEXT_BLOCK_LITERAL, start, sb.length(), sb.toString());
+    }
+
     private TokenInfo scanStringLiteral() {
         int start = position;
         position++; // consume opening quote
@@ -488,23 +572,83 @@ public class JavaLexer {
 
     private TokenInfo scanNumber() {
         int start = position;
+        boolean isFloatingPoint = false;
 
-        // Simple number scanning (full implementation would handle all Java number formats)
+        // Scan integer part
         while (position < length && Character.isDigit(source.charAt(position))) {
             position++;
             column++;
         }
 
-        // Check for long suffix
-        if (position < length && (source.charAt(position) == 'L' || source.charAt(position) == 'l')) {
-            position++;
+        // Check for decimal point
+        if (position < length && source.charAt(position) == '.' &&
+            position + 1 < length && Character.isDigit(source.charAt(position + 1))) {
+            isFloatingPoint = true;
+            position++; // consume '.'
             column++;
-            String text = source.substring(start, position);
-            return createToken(TokenType.LONG_LITERAL, start, text.length(), text);
+
+            // Scan fractional part
+            while (position < length && Character.isDigit(source.charAt(position))) {
+                position++;
+                column++;
+            }
+        }
+
+        // Check for scientific notation (e or E)
+        if (position < length && (source.charAt(position) == 'e' || source.charAt(position) == 'E')) {
+            isFloatingPoint = true;
+            position++; // consume 'e' or 'E'
+            column++;
+
+            // Check for optional + or -
+            if (position < length && (source.charAt(position) == '+' || source.charAt(position) == '-')) {
+                position++;
+                column++;
+            }
+
+            // Scan exponent digits
+            while (position < length && Character.isDigit(source.charAt(position))) {
+                position++;
+                column++;
+            }
+        }
+
+        // Check for suffixes
+        if (position < length) {
+            char ch = source.charAt(position);
+            if (ch == 'L' || ch == 'l') {
+                if (isFloatingPoint) {
+                    // Invalid: floating-point with long suffix
+                    String text = source.substring(start, position);
+                    return createToken(TokenType.DOUBLE_LITERAL, start, text.length(), text);
+                } else {
+                    position++;
+                    column++;
+                    String text = source.substring(start, position);
+                    return createToken(TokenType.LONG_LITERAL, start, text.length(), text);
+                }
+            } else if (ch == 'f' || ch == 'F') {
+                isFloatingPoint = true;
+                position++;
+                column++;
+            } else if (ch == 'd' || ch == 'D') {
+                isFloatingPoint = true;
+                position++;
+                column++;
+            }
         }
 
         String text = source.substring(start, position);
-        return createToken(TokenType.INTEGER_LITERAL, start, text.length(), text);
+        if (isFloatingPoint) {
+            // Determine if it's float or double based on suffix
+            if (text.endsWith("f") || text.endsWith("F")) {
+                return createToken(TokenType.FLOAT_LITERAL, start, text.length(), text);
+            } else {
+                return createToken(TokenType.DOUBLE_LITERAL, start, text.length(), text);
+            }
+        } else {
+            return createToken(TokenType.INTEGER_LITERAL, start, text.length(), text);
+        }
     }
 
     private TokenInfo scanIdentifierOrKeyword() {
@@ -517,6 +661,18 @@ public class JavaLexer {
         }
 
         String text = source.substring(start, position);
+
+        // Check for compound keywords like "non-sealed"
+        if ("non".equals(text) && position < length - 6) { // "-sealed" is 7 chars
+            // Check if this is followed by "-sealed"
+            if (source.substring(position, position + 7).equals("-sealed")) {
+                // Consume the "-sealed" part
+                position += 7;
+                column += 7;
+                text = "non-sealed";
+            }
+        }
+
         TokenType type = getKeywordType(text);
 
         return createToken(type, start, text.length(), text);

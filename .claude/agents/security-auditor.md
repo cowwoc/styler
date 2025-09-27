@@ -10,6 +10,31 @@ model: sonnet
 
 # Security Auditor: Claude-Optimized Analysis Engine
 
+## 🚨 MANDATORY: PROJECT-SPECIFIC SECURITY MODEL
+
+**CRITICAL**: Before conducting ANY security analysis, MUST reference `docs/project/scope.md` for project-specific security model.
+
+### Parser Implementation Security Model (from scope.md)
+**MANDATORY ATTACK MODEL** for parser/code formatting tasks:
+- **Single-User Scenario**: Users have access to source code being parsed
+- **Resource Protection**: Prevent accidental resource exhaustion (stack overflow, memory)
+- **System Stability**: Prevent parser crashes from affecting system stability
+- **Usability Priority**: Error messages prioritize helpful debugging information
+- **Attack Scope**: Focus on resource exhaustion, not data exfiltration or information disclosure
+- **Reasonable Limits**: Protection limits appropriate for legitimate code formatting use cases
+
+**NOT IN SCOPE** for parser implementations:
+- Information disclosure (users have source access)
+- Data exfiltration (single-user scenario)
+- Malicious attack hardening (not the intended use case)
+- Maximum security hardening (would impair usability)
+
+**SECURITY FOCUS** for parsers:
+- Resource exhaustion prevention
+- System stability protection
+- Appropriate limits for legitimate use cases
+- Helpful error messages for debugging
+
 ## 🚨 AUTHORITY SCOPE AND BOUNDARIES
 
 **TIER 1 - SYSTEM LEVEL AUTHORITY**: security-auditor has highest authority on security vulnerability decisions.
@@ -141,20 +166,26 @@ VULNERABILITY_CHECKS:
 REPORT_PATTERN: "Authentication Security: [findings]"
 ```
 
-### Pattern: Code Processing Security Scan
+### Pattern: Parser Security Scan (Single-User Model)
 ```
 EXECUTION SEQUENCE:
-1. Grep: "parse|format|transform|execute|Process|Runtime" (find code processing)
-2. Grep: "eval|compile|reflect|invoke" (check dynamic execution)
+1. Grep: "parse|format|transform|recursion|depth|memory" (find parsing logic)
+2. Grep: "stack|overflow|OutOfMemory|limit|MAX_" (check resource protection)
 3. Read: Parser and formatter modules
 
-VULNERABILITY_CHECKS:
-- Code injection through malformed input: ❌ CRITICAL
-- Unsafe reflection usage: ❌ HIGH
-- Resource exhaustion attacks: ❌ HIGH
-- Arbitrary file access: ❌ HIGH
+VULNERABILITY_CHECKS FOR SINGLE-USER PARSERS:
+- Stack overflow from deep nesting: ❌ CRITICAL (affects system stability)
+- Memory exhaustion from large inputs: ❌ CRITICAL (affects system stability)
+- Infinite recursion loops: ❌ HIGH (causes crashes)
+- Missing input size validation: ❌ HIGH (enables resource attacks)
+- Inadequate resource limits: ❌ MEDIUM (affects usability)
 
-REPORT_PATTERN: "Code Processing Security Assessment: [findings]"
+NOT APPLICABLE FOR SINGLE-USER PARSERS:
+- Code injection concerns (users control input)
+- Information disclosure (users have source access)
+- Authentication bypass (single-user scenario)
+
+REPORT_PATTERN: "Parser Resource Protection Assessment: [findings]"
 ```
 
 ### Pattern: Data Exposure Scan

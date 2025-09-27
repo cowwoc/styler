@@ -172,12 +172,12 @@ public class JavaLexerTest {
 
         List<TokenInfo> tokens = collectTokens(lexer);
 
-        requireThat(tokens.get(0).type(), "class keyword").isEqualTo(TokenType.CLASS);
-        requireThat(tokens.get(1).type(), "className identifier").isEqualTo(TokenType.IDENTIFIER);
-        requireThat(tokens.get(2).type(), "interface keyword").isEqualTo(TokenType.INTERFACE);
-        requireThat(tokens.get(3).type(), "interfaceName identifier").isEqualTo(TokenType.IDENTIFIER);
-        requireThat(tokens.get(4).type(), "var keyword").isEqualTo(TokenType.VAR);
-        requireThat(tokens.get(5).type(), "varName identifier").isEqualTo(TokenType.IDENTIFIER);
+        requireThat(tokens.get(0).type(), "class_keyword").isEqualTo(TokenType.CLASS);
+        requireThat(tokens.get(1).type(), "className_identifier").isEqualTo(TokenType.IDENTIFIER);
+        requireThat(tokens.get(2).type(), "interface_keyword").isEqualTo(TokenType.INTERFACE);
+        requireThat(tokens.get(3).type(), "interfaceName_identifier").isEqualTo(TokenType.IDENTIFIER);
+        requireThat(tokens.get(4).type(), "var_keyword").isEqualTo(TokenType.VAR);
+        requireThat(tokens.get(5).type(), "varName_identifier").isEqualTo(TokenType.IDENTIFIER);
     }
 
     private List<TokenInfo> collectTokens(JavaLexer lexer) {

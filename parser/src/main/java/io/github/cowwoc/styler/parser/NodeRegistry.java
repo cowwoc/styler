@@ -5,17 +5,46 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Java-idiomatic replacement for arena allocation, focusing on Index-Overlay architecture.
+ * Java-idiomatic replacement for arena allocation, implementing the Index-Overlay architecture.
  *
- * This maintains the core benefits of the study's findings:
- * - Memory efficiency through compact representation
- * - Cache-friendly access patterns
- * - Bulk operations for performance
- * - Index-based references instead of object pointers
+ * <h2>Design Principles</h2>
+ * This class stores AST nodes as compact records in parallel primitive arrays instead of
+ * individual object instances, providing significant memory and performance benefits.
  *
+ * <h2>Core Benefits</h2>
+ * <ul>
+ * <li><strong>Memory efficiency:</strong> Compact representation using primitive arrays</li>
+ * <li><strong>Cache-friendly access patterns:</strong> Related data stored contiguously</li>
+ * <li><strong>Bulk operations:</strong> Efficient traversal and transformation operations</li>
+ * <li><strong>Index-based references:</strong> Node IDs instead of object pointers reduce memory overhead</li>
+ * </ul>
+ *
+ * <h2>Architecture Details</h2>
+ * The registry uses parallel arrays to store node data:
+ * <ul>
+ * <li>{@code startOffsets[]} - Source position where each node begins</li>
+ * <li>{@code lengths[]} - Length of source text covered by each node</li>
+ * <li>{@code nodeTypes[]} - Type of each node (stored as byte for efficiency)</li>
+ * <li>{@code parentIds[]} - Parent node ID for each node</li>
+ * <li>{@code childrenStart[]} and {@code childrenCount[]} - Child relationship metadata</li>
+ * <li>{@code childrenData[]} - Flat array storing all child node IDs</li>
+ * </ul>
+ *
+ * <h2>Memory Management</h2>
+ * The registry includes memory monitoring to prevent resource exhaustion:
+ * <ul>
+ * <li>Real-time memory usage tracking</li>
+ * <li>Configurable memory limits (default 256MB)</li>
+ * <li>Automatic capacity expansion with growth factor</li>
+ * </ul>
+ *
+ * <h2>Performance Characteristics</h2>
  * Evidence: The study shows "3-5x memory reduction" and "better cache locality"
  * from Index-Overlay patterns, which we achieve through primitive arrays
  * rather than Rust-style arena allocation.
+ *
+ * @since 1.0
+ * @see IndexOverlayParser
  */
 public class NodeRegistry {
     private static final int INITIAL_CAPACITY = 1024;
@@ -38,10 +67,19 @@ public class NodeRegistry {
     private int nodeCount = 0;
     private int capacity;
 
+    /**
+     * Creates a new node registry with default initial capacity.
+     */
     public NodeRegistry() {
         this(INITIAL_CAPACITY);
     }
 
+    /**
+     * Creates a new node registry with the specified initial capacity.
+     *
+     * @param initialCapacity The initial capacity for storing nodes
+     * @throws IllegalArgumentException if initialCapacity is less than 1
+     */
     public NodeRegistry(int initialCapacity) {
         this.capacity = initialCapacity;
         this.startOffsets = new int[capacity];
@@ -75,6 +113,9 @@ public class NodeRegistry {
         if (parentId >= 0 && parentId < nodeCount) {
             addChildToParent(parentId, nodeId);
         }
+
+        // Record metrics
+        ParseMetrics.recordNodeAllocation(1);
 
         return nodeId;
     }

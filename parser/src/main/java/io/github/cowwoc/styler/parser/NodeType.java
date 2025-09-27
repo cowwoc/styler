@@ -29,6 +29,7 @@ public final class NodeType {
     public static final byte FIELD_DECLARATION = 22;
     public static final byte PARAMETER_DECLARATION = 23;
     public static final byte LOCAL_VARIABLE_DECLARATION = 24;
+    public static final byte ENUM_CONSTANT = 25;
 
     // Statements
     public static final byte BLOCK_STATEMENT = 30;
@@ -50,6 +51,7 @@ public final class NodeType {
     public static final byte YIELD_STATEMENT = 44;
 
     // Expressions
+    public static final byte EXPRESSION = 49;
     public static final byte LITERAL_EXPRESSION = 50;
     public static final byte IDENTIFIER_EXPRESSION = 51;
     public static final byte METHOD_CALL_EXPRESSION = 52;
@@ -128,6 +130,7 @@ public final class NodeType {
             case FIELD_DECLARATION -> "FieldDeclaration";
             case PARAMETER_DECLARATION -> "ParameterDeclaration";
             case LOCAL_VARIABLE_DECLARATION -> "LocalVariableDeclaration";
+            case ENUM_CONSTANT -> "EnumConstant";
             case BLOCK_STATEMENT -> "BlockStatement";
             case EXPRESSION_STATEMENT -> "ExpressionStatement";
             case IF_STATEMENT -> "IfStatement";
@@ -143,6 +146,7 @@ public final class NodeType {
             case CONTINUE_STATEMENT -> "ContinueStatement";
             case SYNCHRONIZED_STATEMENT -> "SynchronizedStatement";
             case YIELD_STATEMENT -> "YieldStatement";
+            case EXPRESSION -> "Expression";
             case LITERAL_EXPRESSION -> "LiteralExpression";
             case IDENTIFIER_EXPRESSION -> "IdentifierExpression";
             case METHOD_CALL_EXPRESSION -> "MethodCallExpression";
@@ -196,7 +200,7 @@ public final class NodeType {
      */
     public static boolean isDeclaration(byte nodeType) {
         return (nodeType >= CLASS_DECLARATION && nodeType <= RECORD_DECLARATION) ||
-               (nodeType >= METHOD_DECLARATION && nodeType <= LOCAL_VARIABLE_DECLARATION);
+               (nodeType >= METHOD_DECLARATION && nodeType <= ENUM_CONSTANT);
     }
 
     /**

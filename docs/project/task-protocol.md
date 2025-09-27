@@ -192,6 +192,57 @@ CRITICAL NOTE: Worktrees MUST be created as siblings to main branch, NOT nested 
 This ensures proper isolation and prevents embedded repository issues during multi-instance coordination.
 ```
 
+### Pattern: Mandatory Context.md Creation
+```
+REQUIRED BEFORE ANY STAKEHOLDER CONSULTATION:
+
+BASH COMMAND: Create context.md in task root directory
+Write: ../context.md with following mandatory content:
+
+---
+# Task Context: {task-name}
+
+## Task Objective
+{task-description}
+
+## Scope Definition
+**FILES IN SCOPE:**
+- [List exact files/directories that stakeholder agents are authorized to analyze]
+- [Example: parser/src/main/java/io/github/cowwoc/styler/parser/]
+- [Example: parser/src/test/java/io/github/cowwoc/styler/parser/test/]
+
+**FILES OUT OF SCOPE:**
+- [List directories/files that are explicitly excluded from analysis]
+- [Example: All files outside the parser/ directory]
+- [Example: Broader project infrastructure, lexer modules, etc.]
+
+## Stakeholder Agent Reports
+**Phase 1 Requirements:**
+- technical-architect-requirements.md (when completed)
+- [other-agent]-requirements.md (when completed)
+
+**Implementation Reviews:**
+- technical-architect-review1.md (when completed)
+- [other-agent]-review1.md (when completed)
+
+## Implementation Status
+- [ ] Phase 1: Requirements Analysis
+- [ ] Phase 2: Requirements Synthesis
+- [ ] Phase 3: Implementation
+- [ ] Phase 4: Testing
+- [ ] Phase 5: Issue Resolution (if needed)
+- [ ] Phase 6: Final Review
+- [ ] Phase 7: Cleanup
+
+## Current Focus
+[Current phase and specific work being performed]
+---
+
+VIOLATION CHECK: context.md must exist before invoking any stakeholder agents
+IF context.md missing: HALT workflow, create context.md first
+PURPOSE: Ensures all agents operate within consistent, documented scope boundaries
+```
+
 ### Pattern: Phase 1 Parallel Agent Execution
 ```
 TOOL CALL STRUCTURE (single message, multiple invocations):
@@ -199,6 +250,8 @@ TOOL CALL STRUCTURE (single message, multiple invocations):
 <parameter name="subagent_type">technical-architect</parameter>
 <parameter name="description">Requirements analysis for {task}</parameter>
 <parameter name="prompt">Task: {task-description}\nMode: REQUIREMENTS_ANALYSIS\nPrimary Focus: architectural decisions\nSuccess Criteria: design approach validation\nToken Budget: 800 tokens\nScope Limitation: architecture only, not implementation
+
+CRITICAL SCOPE ENFORCEMENT: ONLY analyze files explicitly listed in ../context.md scope section. ABSOLUTELY FORBIDDEN to scan files outside context.md scope. STOP IMMEDIATELY if attempting to access unauthorized files.
 
 CRITICAL PERSISTENCE REQUIREMENT: Follow CLAUDE.md "Long-term Solution Persistence" principles. Prioritize optimal solutions over expedient alternatives. Apply "Solution Quality Hierarchy" and reject incomplete implementations.
 
@@ -284,6 +337,8 @@ TRACK A - Implementation Review:
 <parameter name="description">Review implementation against Phase 1 requirements</parameter>
 <parameter name="prompt">Task: {task-description}\nMode: IMPLEMENTATION_REVIEW\nYour Phase 1 Requirements: {link-to-phase1-report}\nImplementation Files: {modified-files}\nInstructions: Review implementation against YOUR Phase 1 requirements.
 
+CRITICAL SCOPE ENFORCEMENT: ONLY analyze files explicitly listed in ../context.md scope section. ABSOLUTELY FORBIDDEN to scan files outside context.md scope. STOP IMMEDIATELY if attempting to access unauthorized files.
+
 CRITICAL PERSISTENCE ENFORCEMENT: Apply CLAUDE.md "Stakeholder Agent Persistence Enforcement" standards. Validate architectural COMPLETENESS, not just basic functionality. Use "Mandatory Rejection Criteria" - reject incomplete implementations, suboptimal algorithms when better solutions are feasible, and partial compliance when full compliance is achievable.
 
 MANDATORY OUTPUT REQUIREMENT: Provide your complete review report in your response. The parent agent will write this report to ../{agent-name}-review{round}.md file.
@@ -318,6 +373,8 @@ PARALLEL EXECUTION - All Phase 1 agents review TEST CODE only:
 <parameter name="subagent_type">technical-architect</parameter>
 <parameter name="description">Review test quality and coverage</parameter>
 <parameter name="prompt">Task: {task-description}\nMode: TEST_REVIEW\nTest Files: {test-files}\nInstructions: Review ONLY test code quality and domain coverage. Verify tests validate your Phase 1 requirements.
+
+CRITICAL SCOPE ENFORCEMENT: ONLY analyze files explicitly listed in ../context.md scope section. ABSOLUTELY FORBIDDEN to scan files outside context.md scope. STOP IMMEDIATELY if attempting to access unauthorized files.
 
 MANDATORY OUTPUT REQUIREMENT: Provide your complete test review report in your response. The parent agent will write this report to ../{agent-name}-review{round}.md file.
 
@@ -407,7 +464,19 @@ When resolution appears to require extensive work beyond core task scope:
    - code-tester: Final authority on test coverage adequacy for business logic validation
    - usability-reviewer: Can defer UX improvements to todo.md if core functionality accessible
 
-3. AUTHORITY HIERARCHY FOR DOMAIN CONFLICTS:
+3. SECURITY AUDITOR CONFIGURATION:
+   **CRITICAL: Use Project-Specific Security Model from scope.md**
+
+   For Parser Implementation Tasks:
+   - **Attack Model**: Single-user code formatting scenarios (see docs/project/scope.md)
+   - **Security Focus**: Resource exhaustion prevention, system stability
+   - **NOT in Scope**: Information disclosure, data exfiltration, multi-user attacks
+   - **Usability Priority**: Error messages should prioritize debugging assistance
+   - **Appropriate Limits**: Reasonable protection for legitimate code formatting use cases
+
+   **MANDATORY**: security-auditor MUST reference docs/project/scope.md "Security Model for Parser Operations" before conducting any parser security review.
+
+4. AUTHORITY HIERARCHY FOR DOMAIN CONFLICTS:
    When agent authorities overlap or conflict:
    - Security/Privacy conflicts: Joint veto power (both security-auditor AND security-auditor must approve)
    - Architecture/Performance conflicts: technical-architect decides with performance-analyzer input
