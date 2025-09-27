@@ -1,12 +1,5 @@
 #!/bin/bash
 # Hook to remind Claude about todo list synchronization
-# Only runs for agents that work with todo lists
-
-# Check if this hook should run for the current agent
-SCRIPT_DIR="$(dirname "$0")"
-if ! "$SCRIPT_DIR/agent-context-filter.sh" "todo-context-reminder"; then
-	exit 0  # Skip hook for this agent type
-fi
 
 # Determine the root directory of the current git repository/branch
 if git rev-parse --git-dir > /dev/null 2>&1; then

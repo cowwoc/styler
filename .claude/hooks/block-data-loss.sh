@@ -3,13 +3,6 @@
 # Git Init Blocker Hook - Fixed version for both PreToolUse and UserPromptSubmit
 # Prevents git repository creation per task-protocol.md
 # Handles both actual command execution blocking and user prompt warnings
-# Only runs for agents that can modify files
-
-# Check if this hook should run for the current agent
-SCRIPT_DIR="$(dirname "$0")"
-if ! "$SCRIPT_DIR/agent-context-filter.sh" "block-data-loss"; then
-	exit 0  # Skip hook for this agent type
-fi
 
 # Read JSON data from stdin with timeout to prevent hanging
 JSON_INPUT=""

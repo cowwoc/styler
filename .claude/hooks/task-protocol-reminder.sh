@@ -2,13 +2,6 @@
 
 # Task Protocol enforcement reminder for session start
 # Ensures Claude follows the mandatory TASK PROTOCOL for ALL tasks
-# Only runs for agents that need full workflow compliance
-
-# Check if this hook should run for the current agent
-SCRIPT_DIR="$(dirname "$0")"
-if ! "$SCRIPT_DIR/agent-context-filter.sh" "task-protocol-reminder"; then
-	exit 0  # Skip hook for this agent type
-fi
 
 TASK_PROTOCOL_FILE="$(dirname "$0")/../../docs/project/task-protocol.md"
 

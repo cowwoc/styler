@@ -1,9 +1,7 @@
 {
   "env": {
     "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "true",
-    "DISABLE_AUTOUPDATER": "true",
-    "ENABLE_BACKGROUND_TASKS": "true",
-    "CLAUDE_CODE_ENABLE_UNIFIED_READ_TOOL": "true"
+    "DISABLE_AUTOUPDATER": "true"
   },
   "hooks": {
     "SessionStart": [
@@ -12,12 +10,7 @@
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/ensure-session-id.py"
-          }
-        ]
-      },
-      {
-        "matcher": "startup",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/task-protocol-reminder.sh"
@@ -25,28 +18,6 @@
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/todo-context-reminder.sh"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/hybrid-token-tracker.sh"
-          },
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/block-data-loss.sh"
-          },
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/metrics-capture.sh"
-          },
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/load-todo.sh"
           }
         ]
       }
@@ -72,11 +43,25 @@
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/metrics-capture.sh"
+            "command": "/workspace/.claude/hooks/smart-doc-prompter.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/hybrid-token-tracker.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/user-prompt-wrapper.sh"
+            "command": "/workspace/.claude/hooks/block-data-loss.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/load-todo.sh"
           }
         ]
       }
@@ -110,10 +95,11 @@
         ]
       },
       {
+        "matcher": "tool:Write && path:docs/ || tool:Edit && path:docs/ || tool:MultiEdit && path:docs/",
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/metrics-capture.sh"
+            "command": "/workspace/.claude/hooks/detect-meta-commentary.sh"
           }
         ]
       }

@@ -2,13 +2,6 @@
 
 # Load todo.md tasks into TodoWrite list before first TodoWrite tool usage
 # This script provides context to automatically initialize the TodoWrite tool
-# Only runs for agents that work with todo lists
-
-# Check if this hook should run for the current agent
-SCRIPT_DIR="$(dirname "$0")"
-if ! "$SCRIPT_DIR/agent-context-filter.sh" "load-todo"; then
-	exit 0  # Skip hook for this agent type
-fi
 
 # Get session ID from environment or generate one
 if [[ -z "$CLAUDE_SESSION_ID" ]]; then

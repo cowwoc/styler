@@ -2,12 +2,6 @@
 set -euo pipefail
 trap 'echo "at line $LINENO, exit code $? from $BASH_COMMAND" >&2; exit 1' ERR
 
-# Check if this hook should run for the current agent
-SCRIPT_DIR="$(dirname "$0")"
-if ! "$SCRIPT_DIR/agent-context-filter.sh" "critical-thinking"; then
-	exit 0  # Skip hook for this agent type
-fi
-
 # Critical Thinking Hook
 # This hook ensures Claude applies critical thinking to all user prompts
 # by challenging assumptions and providing substantive technical analysis
