@@ -1,4 +1,4 @@
-package io.github.styler.parser;
+package io.github.cowwoc.styler.parser;
 
 /**
  * High-performance Java lexer implementing tokenization for JDK 25 features.

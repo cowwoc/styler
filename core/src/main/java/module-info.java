@@ -1,4 +1,4 @@
-module io.github.styler.core
+module io.github.cowwoc.styler.core
 {
 	requires io.github.cowwoc.requirements12.java;
 

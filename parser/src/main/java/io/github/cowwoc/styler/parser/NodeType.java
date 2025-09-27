@@ -1,4 +1,4 @@
-package io.github.styler.parser;
+package io.github.cowwoc.styler.parser;
 
 /**
  * Node type constants for the Index-Overlay parser architecture.

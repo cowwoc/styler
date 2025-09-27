@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>io.github.styler</groupId>
+		<groupId>io.github.cowwoc.styler</groupId>
 		<artifactId>styler</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
@@ -18,32 +18,20 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>io.github.styler</groupId>
+			<groupId>io.github.cowwoc.styler</groupId>
 			<artifactId>styler-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- Requirements API for validation -->
 		<dependency>
 			<groupId>io.github.cowwoc.requirements</groupId>
 			<artifactId>requirements-java</artifactId>
 		</dependency>
 
-		<!-- TestNG for testing -->
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<scope>test</scope>
-		</dependency>
-
-		<!-- Performance benchmarking -->
-		<dependency>
-			<groupId>org.openjdk.jmh</groupId>
-			<artifactId>jmh-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.openjdk.jmh</groupId>
-			<artifactId>jmh-generator-annprocess</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -68,7 +56,7 @@
 							<classpathScope>test</classpathScope>
 							<executable>java</executable>
 							<arguments>
-								<argument>-modulepath</argument>
+								<argument>--modulepath</argument>
 								<modulepath/>
 								<argument>org.openjdk.jmh.Main</argument>
 							</arguments>

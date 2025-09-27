@@ -53,10 +53,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/hybrid-token-tracker.sh"
-          },
-          {
-            "type": "command",
             "command": "/workspace/.claude/hooks/block-data-loss.sh"
           },
           {

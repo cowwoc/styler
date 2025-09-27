@@ -1,4 +1,4 @@
-package io.github.styler.core.util;
+package io.github.cowwoc.styler.core.util;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

@@ -1,4 +1,4 @@
-package io.github.styler.parser;
+package io.github.cowwoc.styler.parser;
 
 /**
  * Token types for Java lexical analysis.

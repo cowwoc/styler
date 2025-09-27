@@ -24,12 +24,10 @@
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-core</artifactId>
-			<version>1.37</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openjdk.jmh</groupId>
 			<artifactId>jmh-generator-annprocess</artifactId>
-			<version>1.37</version>
 		</dependency>
 	</dependencies>
 
@@ -54,7 +52,7 @@
 							<classpathScope>compile</classpathScope>
 							<executable>java</executable>
 							<arguments>
-								<argument>-modulepath</argument>
+								<argument>--modulepath</argument>
 								<modulepath/>
 								<argument>org.openjdk.jmh.Main</argument>
 							</arguments>

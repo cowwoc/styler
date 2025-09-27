@@ -1,6 +1,6 @@
-module io.github.styler.parser
+module io.github.cowwoc.styler.parser
 {
 	requires io.github.cowwoc.requirements12.java;
 
-	exports io.github.styler.parser;
+	exports io.github.cowwoc.styler.parser;
 }

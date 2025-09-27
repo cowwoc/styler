@@ -1,12 +1,13 @@
-package io.github.styler.parser.test;
+package io.github.cowwoc.styler.parser.test;
 
-import io.github.styler.parser.IndexOverlayParser;
-import io.github.styler.parser.NodeRegistry;
-import io.github.styler.parser.NodeType;
-import io.github.styler.parser.ParseMetrics;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+
+import io.github.cowwoc.styler.parser.IndexOverlayParser;
+import io.github.cowwoc.styler.parser.NodeRegistry;
+import io.github.cowwoc.styler.parser.NodeType;
+import io.github.cowwoc.styler.parser.ParseMetrics;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 import static org.testng.Assert.*;
