@@ -1,5 +1,9 @@
-package io.github.styler.parser;
+package io.github.styler.parser.test;
 
+import io.github.styler.parser.IndexOverlayParser;
+import io.github.styler.parser.NodeRegistry;
+import io.github.styler.parser.NodeType;
+import io.github.styler.parser.ParseMetrics;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;

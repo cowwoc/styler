@@ -1,5 +1,9 @@
-package io.github.cowwoc.styler.ast;
+package io.github.cowwoc.styler.ast.test;
 
+import io.github.cowwoc.styler.ast.FormattingHints;
+import io.github.cowwoc.styler.ast.SourcePosition;
+import io.github.cowwoc.styler.ast.SourceRange;
+import io.github.cowwoc.styler.ast.WhitespaceInfo;
 import io.github.cowwoc.styler.ast.node.StringLiteralNode;
 import io.github.cowwoc.styler.ast.visitor.ASTVisitor;
 import org.testng.annotations.Test;

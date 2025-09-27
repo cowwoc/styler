@@ -1,5 +1,8 @@
-package io.github.styler.parser;
+package io.github.styler.parser.test;
 
+import io.github.styler.parser.JavaLexer;
+import io.github.styler.parser.TokenInfo;
+import io.github.styler.parser.TokenType;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
