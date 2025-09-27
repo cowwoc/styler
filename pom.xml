@@ -23,6 +23,7 @@
 		<module>ast</module>
 		<module>core</module>
 		<module>parser</module>
+		<module>benchmark</module>
 	</modules>
 
 	<dependencyManagement>
