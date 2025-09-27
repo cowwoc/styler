@@ -18,7 +18,7 @@ import static org.testng.Assert.*;
  * Evidence: User specifically requested "many test cases to ensure that the parser
  * is able to handle every single aspect of Java 25 code."
  */
-public class IndexOverlayParserTestNG {
+public class IndexOverlayParserTest {
 
     private IndexOverlayParser parser;
 

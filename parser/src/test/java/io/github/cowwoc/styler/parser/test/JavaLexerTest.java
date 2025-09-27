@@ -15,7 +15,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 /**
  * TestNG-based tests for the Java lexer covering tokenization of Java 25 features.
  */
-public class JavaLexerTestNG {
+public class JavaLexerTest {
 
     @Test(description = "Basic tokens")
     public void tokenizeBasicTokens() {
