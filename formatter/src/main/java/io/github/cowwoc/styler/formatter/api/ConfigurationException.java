@@ -9,6 +9,8 @@ package io.github.cowwoc.styler.formatter.api;
  */
 public class ConfigurationException extends Exception
 {
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * Creates a new configuration exception with the specified message.
 	 *

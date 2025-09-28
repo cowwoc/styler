@@ -2,8 +2,8 @@ package io.github.cowwoc.styler.formatter.api;
 
 import io.github.cowwoc.styler.ast.SourceRange;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
+
 import java.util.Objects;
 
 /**
@@ -30,11 +30,11 @@ public final class FormattingViolation
 	 * @param severity     the severity level of the violation, never null
 	 * @param suggestedFix an optional suggested fix for the violation, may be null
 	 */
-	public FormattingViolation(@Nonnull String ruleId,
-	                           @Nonnull SourceRange location,
-	                           @Nonnull String message,
-	                           @Nonnull ViolationSeverity severity,
-	                           @Nullable String suggestedFix)
+	public FormattingViolation( String ruleId,
+	                            SourceRange location,
+	                            String message,
+	                            ViolationSeverity severity,
+	                            String suggestedFix)
 	{
 		this.ruleId = Objects.requireNonNull(ruleId, "Rule ID cannot be null");
 		this.location = Objects.requireNonNull(location, "Location cannot be null");
@@ -52,11 +52,11 @@ public final class FormattingViolation
 	 * @param severity the severity level of the violation, never null
 	 * @return a new formatting violation, never null
 	 */
-	@Nonnull
-	public static FormattingViolation create(@Nonnull String ruleId,
-	                                          @Nonnull SourceRange location,
-	                                          @Nonnull String message,
-	                                          @Nonnull ViolationSeverity severity)
+	
+	public static FormattingViolation create( String ruleId,
+	                                           SourceRange location,
+	                                           String message,
+	                                           ViolationSeverity severity)
 	{
 		return new FormattingViolation(ruleId, location, message, severity, null);
 	}
@@ -69,10 +69,10 @@ public final class FormattingViolation
 	 * @param message  a human-readable description of the violation, never null
 	 * @return a new warning violation, never null
 	 */
-	@Nonnull
-	public static FormattingViolation warning(@Nonnull String ruleId,
-	                                           @Nonnull SourceRange location,
-	                                           @Nonnull String message)
+	
+	public static FormattingViolation warning( String ruleId,
+	                                            SourceRange location,
+	                                            String message)
 	{
 		return create(ruleId, location, message, ViolationSeverity.WARNING);
 	}
@@ -85,10 +85,10 @@ public final class FormattingViolation
 	 * @param message  a human-readable description of the violation, never null
 	 * @return a new error violation, never null
 	 */
-	@Nonnull
-	public static FormattingViolation error(@Nonnull String ruleId,
-	                                         @Nonnull SourceRange location,
-	                                         @Nonnull String message)
+	
+	public static FormattingViolation error( String ruleId,
+	                                          SourceRange location,
+	                                          String message)
 	{
 		return create(ruleId, location, message, ViolationSeverity.ERROR);
 	}
@@ -98,7 +98,7 @@ public final class FormattingViolation
 	 *
 	 * @return the rule ID, never null
 	 */
-	@Nonnull
+	
 	public String getRuleId()
 	{
 		return ruleId;
@@ -109,7 +109,7 @@ public final class FormattingViolation
 	 *
 	 * @return the source location, never null
 	 */
-	@Nonnull
+	
 	public SourceRange getLocation()
 	{
 		return location;
@@ -120,7 +120,7 @@ public final class FormattingViolation
 	 *
 	 * @return the violation message, never null
 	 */
-	@Nonnull
+	
 	public String getMessage()
 	{
 		return message;
@@ -131,7 +131,7 @@ public final class FormattingViolation
 	 *
 	 * @return the violation severity, never null
 	 */
-	@Nonnull
+	
 	public ViolationSeverity getSeverity()
 	{
 		return severity;
@@ -142,7 +142,7 @@ public final class FormattingViolation
 	 *
 	 * @return the suggested fix, or null if no fix is suggested
 	 */
-	@Nullable
+	
 	public String getSuggestedFix()
 	{
 		return suggestedFix;

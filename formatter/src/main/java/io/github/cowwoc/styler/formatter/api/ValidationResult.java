@@ -1,7 +1,7 @@
 package io.github.cowwoc.styler.formatter.api;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+
+
 import java.util.List;
 import java.util.Objects;
 
@@ -24,7 +24,7 @@ public final class ValidationResult
 	 * @param valid         whether the validation succeeded
 	 * @param errorMessages list of error messages for failed validation, never null
 	 */
-	private ValidationResult(boolean valid, @Nonnull List<String> errorMessages)
+	private ValidationResult(boolean valid,  List<String> errorMessages)
 	{
 		this.valid = valid;
 		this.errorMessages = List.copyOf(errorMessages);
@@ -35,7 +35,7 @@ public final class ValidationResult
 	 *
 	 * @return a validation result indicating success, never null
 	 */
-	@Nonnull
+	
 	public static ValidationResult success()
 	{
 		return SUCCESS;
@@ -47,8 +47,8 @@ public final class ValidationResult
 	 * @param errorMessage the error message describing why validation failed, never null
 	 * @return a validation result indicating failure, never null
 	 */
-	@Nonnull
-	public static ValidationResult failure(@Nonnull String errorMessage)
+	
+	public static ValidationResult failure( String errorMessage)
 	{
 		Objects.requireNonNull(errorMessage, "Error message cannot be null");
 		return new ValidationResult(false, List.of(errorMessage));
@@ -60,8 +60,8 @@ public final class ValidationResult
 	 * @param errorMessages the list of error messages, never null or empty
 	 * @return a validation result indicating failure, never null
 	 */
-	@Nonnull
-	public static ValidationResult failure(@Nonnull List<String> errorMessages)
+	
+	public static ValidationResult failure( List<String> errorMessages)
 	{
 		Objects.requireNonNull(errorMessages, "Error messages cannot be null");
 		if (errorMessages.isEmpty())
@@ -98,7 +98,7 @@ public final class ValidationResult
 	 *
 	 * @return the list of error messages, never null but may be empty
 	 */
-	@Nonnull
+	
 	public List<String> getErrorMessages()
 	{
 		return errorMessages;
@@ -109,7 +109,7 @@ public final class ValidationResult
 	 *
 	 * @return the first error message, or null if validation succeeded
 	 */
-	@Nullable
+	
 	public String getFirstErrorMessage()
 	{
 		return errorMessages.isEmpty() ? null : errorMessages.get(0);
@@ -120,7 +120,7 @@ public final class ValidationResult
 	 *
 	 * @return a combined error message, or null if validation succeeded
 	 */
-	@Nullable
+	
 	public String getCombinedErrorMessage()
 	{
 		if (errorMessages.isEmpty())

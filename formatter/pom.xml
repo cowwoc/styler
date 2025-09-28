@@ -30,12 +30,6 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-        <!-- JSR-305 annotations for nullability -->
-        <dependency>
-            <groupId>com.google.code.findbugs</groupId>
-            <artifactId>jsr305</artifactId>
-        </dependency>
-
         <!-- Jackson for configuration serialization -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

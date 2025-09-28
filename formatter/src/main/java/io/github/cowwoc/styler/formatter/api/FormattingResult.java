@@ -1,6 +1,5 @@
 package io.github.cowwoc.styler.formatter.api;
 
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,9 +25,9 @@ public final class FormattingResult
 	 * @param violations the list of formatting violations found, never null
 	 * @param metrics    performance and diagnostic metrics, never null
 	 */
-	public FormattingResult(@Nonnull List<TextEdit> edits,
-	                        @Nonnull List<FormattingViolation> violations,
-	                        @Nonnull Map<String, Object> metrics)
+	public FormattingResult(List<TextEdit> edits,
+	                        List<FormattingViolation> violations,
+	                        Map<String, Object> metrics)
 	{
 		this.edits = List.copyOf(Objects.requireNonNull(edits, "Edits cannot be null"));
 		this.violations = List.copyOf(Objects.requireNonNull(violations, "Violations cannot be null"));
@@ -40,8 +39,7 @@ public final class FormattingResult
 	 *
 	 * @return an empty formatting result, never null
 	 */
-	@Nonnull
-	public static FormattingResult empty()
+		public static FormattingResult empty()
 	{
 		return EMPTY;
 	}
@@ -52,8 +50,7 @@ public final class FormattingResult
 	 * @param edits the list of text edits, never null
 	 * @return a formatting result with the specified edits, never null
 	 */
-	@Nonnull
-	public static FormattingResult withEdits(@Nonnull List<TextEdit> edits)
+		public static FormattingResult withEdits(List<TextEdit> edits)
 	{
 		return new FormattingResult(edits, List.of(), Map.of());
 	}
@@ -64,8 +61,7 @@ public final class FormattingResult
 	 * @param violations the list of formatting violations, never null
 	 * @return a formatting result with the specified violations, never null
 	 */
-	@Nonnull
-	public static FormattingResult withViolations(@Nonnull List<FormattingViolation> violations)
+		public static FormattingResult withViolations(List<FormattingViolation> violations)
 	{
 		return new FormattingResult(List.of(), violations, Map.of());
 	}
@@ -79,8 +75,7 @@ public final class FormattingResult
 	 *
 	 * @return the list of text edits, never null but may be empty
 	 */
-	@Nonnull
-	public List<TextEdit> getEdits()
+		public List<TextEdit> getEdits()
 	{
 		return edits;
 	}
@@ -93,8 +88,7 @@ public final class FormattingResult
 	 *
 	 * @return the list of violations, never null but may be empty
 	 */
-	@Nonnull
-	public List<FormattingViolation> getViolations()
+		public List<FormattingViolation> getViolations()
 	{
 		return violations;
 	}
@@ -108,8 +102,7 @@ public final class FormattingResult
 	 *
 	 * @return the metrics map, never null but may be empty
 	 */
-	@Nonnull
-	public Map<String, Object> getMetrics()
+		public Map<String, Object> getMetrics()
 	{
 		return metrics;
 	}
@@ -153,7 +146,7 @@ public final class FormattingResult
 	 * @return the metric value cast to the specified type, or null if not present
 	 * @throws ClassCastException if the value cannot be cast to the specified type
 	 */
-	public <T> T getMetric(@Nonnull String key, @Nonnull Class<T> type)
+	public <T> T getMetric(String key, Class<T> type)
 	{
 		Object value = metrics.get(key);
 		return value != null ? type.cast(value) : null;

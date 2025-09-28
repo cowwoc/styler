@@ -11,7 +11,7 @@
 - [ ] **TASK:** `add-ast-core-unit-tests` - Comprehensive unit tests for AST node operations (SUBSTANTIAL: 7 test classes with comprehensive coverage)
 
 ### Build System Integration
-- [ ] **TASK:** `fix-module-dependency-resolution` - CRITICAL: Fix Maven module dependency failures preventing compilation of existing AST implementation (compilation blocks access to 59 implemented AST nodes)
+- [x] **TASK:** `fix-module-dependency-resolution` - CRITICAL: Fix Maven module dependency failures preventing compilation of existing AST implementation (COMPLETED: Fixed module dependencies, requires transitive declarations, and FormattingContext API - 59 AST nodes now accessible)
 
 ### Parser Engine Module
 - [x] **MODULE:** `create-parser-module` - Create styler-parser Maven module with custom parser dependencies

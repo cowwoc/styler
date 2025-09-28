@@ -2,7 +2,7 @@ package io.github.cowwoc.styler.formatter.api;
 
 import io.github.cowwoc.styler.ast.SourceRange;
 
-import javax.annotation.Nonnull;
+
 import java.util.Objects;
 
 /**
@@ -27,10 +27,10 @@ public final class TextEdit implements Comparable<TextEdit>
 	 * @param ruleId      the ID of the rule that generated this edit, never null
 	 * @param priority    the priority for conflict resolution, never null
 	 */
-	public TextEdit(@Nonnull SourceRange range,
-	                @Nonnull String replacement,
-	                @Nonnull String ruleId,
-	                @Nonnull EditPriority priority)
+	public TextEdit( SourceRange range,
+	                 String replacement,
+	                 String ruleId,
+	                 EditPriority priority)
 	{
 		this.range = Objects.requireNonNull(range, "Range cannot be null");
 		this.replacement = Objects.requireNonNull(replacement, "Replacement cannot be null");
@@ -46,10 +46,10 @@ public final class TextEdit implements Comparable<TextEdit>
 	 * @param ruleId      the ID of the rule that generated this edit, never null
 	 * @return a new text edit with normal priority, never null
 	 */
-	@Nonnull
-	public static TextEdit create(@Nonnull SourceRange range,
-	                              @Nonnull String replacement,
-	                              @Nonnull String ruleId)
+	
+	public static TextEdit create( SourceRange range,
+	                               String replacement,
+	                               String ruleId)
 	{
 		return new TextEdit(range, replacement, ruleId, EditPriority.NORMAL);
 	}
@@ -62,7 +62,7 @@ public final class TextEdit implements Comparable<TextEdit>
 	 *
 	 * @return the source range, never null
 	 */
-	@Nonnull
+	
 	public SourceRange getRange()
 	{
 		return range;
@@ -76,7 +76,7 @@ public final class TextEdit implements Comparable<TextEdit>
 	 *
 	 * @return the replacement text, never null
 	 */
-	@Nonnull
+	
 	public String getReplacement()
 	{
 		return replacement;
@@ -89,7 +89,7 @@ public final class TextEdit implements Comparable<TextEdit>
 	 *
 	 * @return the rule ID, never null
 	 */
-	@Nonnull
+	
 	public String getRuleId()
 	{
 		return ruleId;
@@ -103,7 +103,7 @@ public final class TextEdit implements Comparable<TextEdit>
 	 *
 	 * @return the edit priority, never null
 	 */
-	@Nonnull
+	
 	public EditPriority getPriority()
 	{
 		return priority;
@@ -126,7 +126,7 @@ public final class TextEdit implements Comparable<TextEdit>
 	 */
 	public boolean isInsertion()
 	{
-		return range.getStart().equals(range.getEnd());
+		return range.start().equals(range.end());
 	}
 
 	/**
@@ -135,9 +135,11 @@ public final class TextEdit implements Comparable<TextEdit>
 	 * @param other the other text edit to check, never null
 	 * @return true if the edits overlap, false otherwise
 	 */
-	public boolean overlapsWith(@Nonnull TextEdit other)
+	public boolean overlapsWith( TextEdit other)
 	{
-		return range.overlaps(other.range);
+		// Check if ranges overlap: this.start <= other.end && other.start <= this.end
+		return range.start().compareTo(other.range.end()) <= 0 &&
+		       other.range.start().compareTo(range.end()) <= 0;
 	}
 
 	/**
@@ -150,14 +152,14 @@ public final class TextEdit implements Comparable<TextEdit>
 	 * @return comparison result for sorting
 	 */
 	@Override
-	public int compareTo(@Nonnull TextEdit other)
+	public int compareTo( TextEdit other)
 	{
-		int startComparison = range.getStart().compareTo(other.range.getStart());
+		int startComparison = range.start().compareTo(other.range.start());
 		if (startComparison != 0)
 		{
 			return startComparison;
 		}
-		return range.getEnd().compareTo(other.range.getEnd());
+		return range.end().compareTo(other.range.end());
 	}
 
 	@Override

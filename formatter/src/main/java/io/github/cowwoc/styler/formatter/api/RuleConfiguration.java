@@ -1,6 +1,5 @@
 package io.github.cowwoc.styler.formatter.api;
 
-import javax.annotation.Nonnull;
 
 /**
  * Base class for all formatting rule configurations.
@@ -38,8 +37,8 @@ public abstract class RuleConfiguration
 	 * @throws ConfigurationException if the merged configuration would be invalid
 	 * @throws IllegalArgumentException if the override is not compatible with this configuration
 	 */
-	@Nonnull
-	public abstract RuleConfiguration merge(@Nonnull RuleConfiguration override);
+	
+	public abstract RuleConfiguration merge( RuleConfiguration override);
 
 	/**
 	 * Returns a human-readable description of this configuration.
@@ -49,7 +48,7 @@ public abstract class RuleConfiguration
 	 *
 	 * @return a description of the configuration, never null
 	 */
-	@Nonnull
+	
 	public abstract String getDescription();
 
 	/**
@@ -89,10 +88,11 @@ public abstract class RuleConfiguration
 	 * @throws ConfigurationException if the value is invalid
 	 * @throws SecurityException      if the value poses security risks
 	 */
-	@Nonnull
-	protected static <T> T validateParameter(@Nonnull String parameterName,
+	
+	protected static <T> T validateParameter( String parameterName,
 	                                         Object value,
-	                                         @Nonnull Class<T> expectedType)
+	                                          Class<T> expectedType)
+		throws ConfigurationException
 	{
 		if (value == null)
 		{
@@ -121,7 +121,7 @@ public abstract class RuleConfiguration
 	 * @param value        the string value to validate
 	 * @throws SecurityException if the string contains potentially dangerous content
 	 */
-	private static void validateStringParameter(@Nonnull String parameterName, @Nonnull String value)
+	private static void validateStringParameter( String parameterName,  String value)
 	{
 		// Check for potential injection attempts
 		if (value.contains("${") || value.contains("#{") || value.contains("<%") || value.contains("<script"))
@@ -145,10 +145,11 @@ public abstract class RuleConfiguration
 	 * @param maxValue     the maximum allowed value (inclusive)
 	 * @throws ConfigurationException if the value is outside the allowed range
 	 */
-	protected static void validateNumericRange(@Nonnull String parameterName,
+	protected static void validateNumericRange( String parameterName,
 	                                         int value,
 	                                         int minValue,
 	                                         int maxValue)
+		throws ConfigurationException
 	{
 		if (value < minValue || value > maxValue)
 		{

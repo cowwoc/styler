@@ -2,7 +2,6 @@ package io.github.cowwoc.styler.formatter.api;
 
 import io.github.cowwoc.styler.ast.ASTNode;
 
-import javax.annotation.Nonnull;
 import java.time.Duration;
 
 /**
@@ -26,7 +25,6 @@ public interface FormattingRule
 	 *
 	 * @return the rule identifier, never null or empty
 	 */
-	@Nonnull
 	String getRuleId();
 
 	/**
@@ -49,7 +47,6 @@ public interface FormattingRule
 	 *
 	 * @return the maximum execution duration, never null
 	 */
-	@Nonnull
 	default Duration getMaxExecutionTime()
 	{
 		return Duration.ofSeconds(5);
@@ -76,7 +73,6 @@ public interface FormattingRule
 	 *
 	 * @return the default rule configuration, never null
 	 */
-	@Nonnull
 	RuleConfiguration getDefaultConfiguration();
 
 	/**
@@ -90,8 +86,7 @@ public interface FormattingRule
 	 * @return the validation result indicating success or failure reasons
 	 * @throws SecurityException if the rule attempts unauthorized operations
 	 */
-	@Nonnull
-	ValidationResult validate(@Nonnull FormattingContext context);
+	ValidationResult validate(FormattingContext context);
 
 	/**
 	 * Applies this formatting rule to the given context.
@@ -112,6 +107,5 @@ public interface FormattingRule
 	 * @return the formatting result with text edits and diagnostics, never null
 	 * @throws SecurityException if the rule attempts unauthorized operations
 	 */
-	@Nonnull
-	FormattingResult apply(@Nonnull FormattingContext context);
+	FormattingResult apply(FormattingContext context);
 }

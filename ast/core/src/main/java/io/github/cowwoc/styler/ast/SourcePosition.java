@@ -9,7 +9,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * @param line the line number (1-based)
  * @param column the column number (1-based)
  */
-public record SourcePosition(int line, int column) {
+public record SourcePosition(int line, int column) implements Comparable<SourcePosition> {
 	public SourcePosition {
 		requireThat(line, "line").isPositive();
 		requireThat(column, "column").isPositive();
@@ -39,5 +39,19 @@ public record SourcePosition(int line, int column) {
 	 */
 	public SourcePosition nextLine() {
 		return new SourcePosition(line + 1, 1);
+	}
+
+	/**
+	 * Compares this source position with another based on line and column.
+	 * @param other the other source position to compare with
+	 * @return negative if this position comes before other, positive if after, zero if equal
+	 */
+	@Override
+	public int compareTo(SourcePosition other) {
+		int lineComparison = Integer.compare(this.line, other.line);
+		if (lineComparison != 0) {
+			return lineComparison;
+		}
+		return Integer.compare(this.column, other.column);
 	}
 }

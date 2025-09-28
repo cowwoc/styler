@@ -1,8 +1,15 @@
 package io.github.cowwoc.styler.formatter.api;
 
-import io.github.cowwoc.styler.ast.CompilationUnit;
+import io.github.cowwoc.styler.ast.node.CompilationUnitNode;
 import io.github.cowwoc.styler.ast.SourcePosition;
 import io.github.cowwoc.styler.ast.SourceRange;
+import io.github.cowwoc.styler.ast.Comment;
+import io.github.cowwoc.styler.ast.WhitespaceInfo;
+import io.github.cowwoc.styler.ast.FormattingHints;
+import io.github.cowwoc.styler.ast.ASTNode;
+
+import java.util.List;
+import java.util.Optional;
 import org.testng.annotations.Test;
 
 import java.nio.file.Path;
@@ -23,7 +30,7 @@ public class FormattingContextTest
 	{
 		// Create a minimal test configuration
 		RuleConfiguration config = new TestRuleConfiguration();
-		CompilationUnit ast = createTestAST();
+		CompilationUnitNode ast = createTestAST();
 		Path filePath = Paths.get("/project/src/Example.java");
 		Set<String> enabledRules = Set.of("rule1", "rule2");
 		Map<String, Object> metadata = Map.of("key1", "value1");
@@ -44,7 +51,7 @@ public class FormattingContextTest
 	public void testDirectoryTraversalPrevention()
 	{
 		RuleConfiguration config = new TestRuleConfiguration();
-		CompilationUnit ast = createTestAST();
+		CompilationUnitNode ast = createTestAST();
 		Path maliciousPath = Paths.get("/project/../../../etc/passwd");
 		Set<String> enabledRules = Set.of();
 		Map<String, Object> metadata = Map.of();
@@ -60,7 +67,7 @@ public class FormattingContextTest
 	public void testPathNormalization()
 	{
 		RuleConfiguration config = new TestRuleConfiguration();
-		CompilationUnit ast = createTestAST();
+		CompilationUnitNode ast = createTestAST();
 		Path unnormalizedPath = Paths.get("/project/src/./sub/../Example.java");
 		Set<String> enabledRules = Set.of();
 		Map<String, Object> metadata = Map.of();
@@ -79,7 +86,7 @@ public class FormattingContextTest
 	public void testImmutableCollections()
 	{
 		RuleConfiguration config = new TestRuleConfiguration();
-		CompilationUnit ast = createTestAST();
+		CompilationUnitNode ast = createTestAST();
 		Path filePath = Paths.get("/project/src/Example.java");
 		Set<String> enabledRules = Set.of("rule1");
 		Map<String, Object> metadata = Map.of("key1", "value1");
@@ -100,7 +107,7 @@ public class FormattingContextTest
 	public void testRuleEnabledCheck()
 	{
 		RuleConfiguration config = new TestRuleConfiguration();
-		CompilationUnit ast = createTestAST();
+		CompilationUnitNode ast = createTestAST();
 		Path filePath = Paths.get("/project/src/Example.java");
 		Set<String> enabledRules = Set.of("rule1", "rule2");
 		Map<String, Object> metadata = Map.of();
@@ -118,7 +125,7 @@ public class FormattingContextTest
 	public void testTypedMetadataAccess()
 	{
 		RuleConfiguration config = new TestRuleConfiguration();
-		CompilationUnit ast = createTestAST();
+		CompilationUnitNode ast = createTestAST();
 		Path filePath = Paths.get("/project/src/Example.java");
 		Set<String> enabledRules = Set.of();
 		Map<String, Object> metadata = Map.of(
@@ -144,15 +151,25 @@ public class FormattingContextTest
 	/**
 	 * Creates a minimal CompilationUnit for testing.
 	 */
-	private CompilationUnit createTestAST()
+	private CompilationUnitNode createTestAST()
 	{
 		SourceRange range = new SourceRange(
 			new SourcePosition(1, 1),
 			new SourcePosition(1, 10)
 		);
-		return new CompilationUnit.Builder()
-			.range(range)
-			.build();
+
+		// Create minimal CompilationUnitNode for testing
+		return new CompilationUnitNode(
+			range,
+			List.of(), // leadingComments
+			List.of(), // trailingComments
+			new WhitespaceInfo(0, 0, 0, 0, false), // whitespace
+			new FormattingHints(false, Optional.empty(), Optional.empty(), Map.of()), // hints
+			Optional.empty(), // parent
+			Optional.empty(), // packageDeclaration
+			List.of(), // imports
+			List.of()  // typeDeclarations
+		);
 	}
 
 	/**

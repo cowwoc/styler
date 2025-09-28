@@ -1,8 +1,8 @@
 package io.github.cowwoc.styler.formatter.api;
 
 import io.github.cowwoc.styler.ast.ASTNode;
+import io.github.cowwoc.styler.ast.node.CompilationUnitNode;
 
-import javax.annotation.Nonnull;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public final class FormattingContext
 {
-	private final ASTNode rootNode;
+	private final CompilationUnitNode rootNode;
 	private final String sourceText;
 	private final Path filePath;
 	private final RuleConfiguration configuration;
@@ -41,12 +41,12 @@ public final class FormattingContext
 	 * @param metadata      additional metadata for rule processing, never null
 	 * @throws SecurityException if the file path is outside allowed directories
 	 */
-	public FormattingContext(@Nonnull ASTNode rootNode,
-	                         @Nonnull String sourceText,
-	                         @Nonnull Path filePath,
-	                         @Nonnull RuleConfiguration configuration,
-	                         @Nonnull Set<String> enabledRules,
-	                         @Nonnull Map<String, Object> metadata)
+	public FormattingContext(CompilationUnitNode rootNode,
+	                         String sourceText,
+	                         Path filePath,
+	                         RuleConfiguration configuration,
+	                         Set<String> enabledRules,
+	                         Map<String, Object> metadata)
 	{
 		this.rootNode = rootNode;
 		this.sourceText = sourceText;
@@ -63,8 +63,7 @@ public final class FormattingContext
 	 * @return the validated path
 	 * @throws SecurityException if the path is invalid or outside allowed directories
 	 */
-	@Nonnull
-	private static Path validateFilePath(@Nonnull Path path)
+		private static Path validateFilePath(Path path)
 	{
 		// Normalize path to prevent directory traversal
 		Path normalized = path.normalize().toAbsolutePath();
@@ -88,8 +87,7 @@ public final class FormattingContext
 	 *
 	 * @return the root AST node, never null
 	 */
-	@Nonnull
-	public ASTNode getRootNode()
+		public CompilationUnitNode getRootNode()
 	{
 		return rootNode;
 	}
@@ -103,8 +101,7 @@ public final class FormattingContext
 	 *
 	 * @return the source text, never null
 	 */
-	@Nonnull
-	public String getSourceText()
+		public String getSourceText()
 	{
 		return sourceText;
 	}
@@ -117,8 +114,7 @@ public final class FormattingContext
 	 *
 	 * @return the validated file path, never null
 	 */
-	@Nonnull
-	public Path getFilePath()
+		public Path getFilePath()
 	{
 		return filePath;
 	}
@@ -131,8 +127,7 @@ public final class FormattingContext
 	 *
 	 * @return the rule configuration, never null
 	 */
-	@Nonnull
-	public RuleConfiguration getConfiguration()
+		public RuleConfiguration getConfiguration()
 	{
 		return configuration;
 	}
@@ -145,8 +140,7 @@ public final class FormattingContext
 	 *
 	 * @return the set of enabled rule IDs, never null or modified after creation
 	 */
-	@Nonnull
-	public Set<String> getEnabledRules()
+		public Set<String> getEnabledRules()
 	{
 		return enabledRules;
 	}
@@ -159,8 +153,7 @@ public final class FormattingContext
 	 *
 	 * @return the metadata map, never null or modified after creation
 	 */
-	@Nonnull
-	public Map<String, Object> getMetadata()
+		public Map<String, Object> getMetadata()
 	{
 		return metadata;
 	}
@@ -171,7 +164,7 @@ public final class FormattingContext
 	 * @param ruleId the ID of the rule to check, never null
 	 * @return true if the rule is enabled, false otherwise
 	 */
-	public boolean isRuleEnabled(@Nonnull String ruleId)
+	public boolean isRuleEnabled(String ruleId)
 	{
 		return enabledRules.contains(ruleId);
 	}
@@ -185,7 +178,7 @@ public final class FormattingContext
 	 * @return the metadata value cast to the specified type, or null if not present
 	 * @throws ClassCastException if the value cannot be cast to the specified type
 	 */
-	public <T> T getMetadata(@Nonnull String key, @Nonnull Class<T> type)
+	public <T> T getMetadata(String key, Class<T> type)
 	{
 		Object value = metadata.get(key);
 		return value != null ? type.cast(value) : null;

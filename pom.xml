@@ -39,6 +39,11 @@
 				<artifactId>styler-parser</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>styler-ast-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<dependency>
 				<groupId>io.github.cowwoc.requirements</groupId>
