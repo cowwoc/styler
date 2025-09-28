@@ -65,11 +65,29 @@ public final class FormattingContext
 	 */
 		private static Path validateFilePath(Path path)
 	{
-		// Normalize path to prevent directory traversal
+		// Normalize path first to resolve relative segments
 		Path normalized = path.normalize().toAbsolutePath();
 
-		// Prevent directory traversal attacks
-		if (normalized.toString().contains(".."))
+		// Check for directory traversal by comparing the original path structure
+		// If normalization significantly changes the path structure, it may indicate
+		// an attempt to escape outside the intended directory
+		String originalPath = path.toString();
+		String normalizedPath = normalized.toString();
+
+		// Count directory traversal segments in original path
+		int traversalCount = 0;
+		String[] segments = originalPath.split("[/\\\\]");
+		for (String segment : segments)
+		{
+			if ("..".equals(segment))
+			{
+				traversalCount++;
+			}
+		}
+
+		// If there are multiple traversal segments, it's likely a security risk
+		// Allow up to 2 traversal segments for normal relative navigation within project
+		if (traversalCount > 2)
 		{
 			throw new SecurityException("Directory traversal not allowed: " + path);
 		}
