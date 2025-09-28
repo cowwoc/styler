@@ -36,6 +36,12 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <!-- Jackson TOML support for configuration files -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-toml</artifactId>
+        </dependency>
+
         <!-- Testing dependencies -->
         <dependency>
             <groupId>org.testng</groupId>

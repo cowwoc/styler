@@ -26,8 +26,8 @@
 
 ### Formatter API Module
 - [x] **MODULE:** `create-formatter-api-module` - Create styler-formatter-api Maven module (COMPLETED: comprehensive API with security controls, plugin architecture, configuration framework, and conflict resolution)
-- [ ] **TASK:** `define-formatter-plugin-interface` - Plugin interface for formatting rules
-- [ ] **TASK:** `implement-rule-configuration-schema` - YAML-based configuration schema
+- [x] **TASK:** `define-formatter-plugin-interface` - Plugin interface for formatting rules (COMPLETED: Comprehensive plugin framework with PluginContext, PluginDescriptor, FormatterPlugin, ResourceManager, RuntimeInfo, FileAccessPolicy, ResourceUsageStats, security controls, and slf4j logging integration)
+- [x] **TASK:** `implement-rule-configuration-schema` - TOML-based configuration schema (COMPLETED: Comprehensive TOML configuration framework with Jackson, ConfigurationSchema, GlobalConfiguration, LineLengthRuleConfiguration, security validation, file loading, resource loading, merging, and complete test suite - converted from YAML to TOML format)
 - [ ] **TASK:** `implement-transformation-context-api` - Context API for rule application
 - [ ] **TASK:** `implement-conflict-resolution` - Handle conflicts between competing rules
 - [ ] **TASK:** `add-formatter-api-unit-tests` - Unit tests for plugin interfaces

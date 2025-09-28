@@ -1,0 +1,49 @@
+# Styler Java Code Formatter Configuration Example
+# This demonstrates the TOML-based configuration schema
+
+version = "1.0"
+profile = "corporate-java"
+extends = ["google-java-style", "checkstyle-recommended"]
+
+[global]
+indentationType = "SPACES"
+indentationSize = 4
+maxLineLength = 120
+lineEnding = "LF"
+charset = "UTF-8"
+insertFinalNewline = true
+trimTrailingWhitespace = true
+tabWidth = 4
+
+# Line length formatting rule
+[rules.LineLength]
+maxLineLength = 120
+wrapStrategy = "SMART"
+indentContinuations = 4
+breakBeforeOperators = true
+exceptionsIgnore = ["import", "package", "very-long-string-literals"]
+preferBreakingBeforeParameters = false
+alignParameters = false
+allowLongImports = true
+allowLongPackageNames = true
+
+# Import organization rule (example)
+[rules.ImportOrder]
+groups = ["java", "javax", "org", "com", ""]  # blank line before project imports
+removeUnused = true
+organizeStaticImports = true
+
+# Indentation rule (example)
+[rules.Indentation]
+size = 4
+type = "spaces"
+continuationIndent = 4
+arrayInitIndent = 4
+
+# Whitespace rule (example)
+[rules.Whitespace]
+aroundOperators = true
+afterCommas = true
+beforeMethodCallParens = false
+insideMethodCallParens = false
+insideArrayBrackets = false
