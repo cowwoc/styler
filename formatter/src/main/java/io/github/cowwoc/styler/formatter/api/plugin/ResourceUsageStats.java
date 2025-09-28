@@ -49,18 +49,10 @@ public final class ResourceUsageStats
 	 * @param memoryAllocations     the total number of memory allocations
 	 * @param memoryDeallocations   the total number of memory deallocations
 	 */
-	public ResourceUsageStats(long peakMemoryUsage,
-	                          long averageMemoryUsage,
-	                          long currentMemoryUsage,
-	                          int peakThreadCount,
-	                          double averageThreadCount,
-	                          int currentThreadCount,
-	                          Duration totalExecutionTime,
-	                          Duration longestOperationTime,
-	                          Instant lastResetTime,
-	                          long totalOperations,
-	                          long memoryAllocations,
-	                          long memoryDeallocations)
+	public ResourceUsageStats(long peakMemoryUsage, long averageMemoryUsage, long currentMemoryUsage,
+	                          int peakThreadCount, double averageThreadCount, int currentThreadCount,
+	                          Duration totalExecutionTime, Duration longestOperationTime, Instant lastResetTime,
+	                          long totalOperations, long memoryAllocations, long memoryDeallocations)
 	{
 		this.peakMemoryUsage = peakMemoryUsage;
 		this.averageMemoryUsage = averageMemoryUsage;

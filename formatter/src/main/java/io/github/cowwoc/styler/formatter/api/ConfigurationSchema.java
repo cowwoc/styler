@@ -287,7 +287,6 @@ public final class ConfigurationSchema
 		}
 	}
 
-	// Getters
 	public String getVersion() { return version; }
 	public String getProfile() { return profile; }
 	public List<String> getExtendsProfiles() { return extendsProfiles; }

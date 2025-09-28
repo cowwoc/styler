@@ -152,7 +152,6 @@ public final class GlobalConfiguration
 		);
 	}
 
-	// Getters
 	public IndentationType getIndentationType() { return indentationType; }
 	public int getIndentationSize() { return indentationSize; }
 	public int getMaxLineLength() { return maxLineLength; }

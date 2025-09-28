@@ -112,6 +112,11 @@ public final class LineLengthRuleConfiguration extends RuleConfiguration
 		this(null, null, null, null, null, null, null, null, null);
 	}
 
+	/**
+	 * Validates this configuration.
+	 *
+	 * @throws ConfigurationException if the configuration is invalid
+	 */
 	@Override
 	public void validate() throws ConfigurationException
 	{
@@ -187,7 +192,6 @@ public final class LineLengthRuleConfiguration extends RuleConfiguration
 		return maxLineLength;
 	}
 
-	// Getters
 	public int getMaxLineLength() { return maxLineLength; }
 	public WrapStrategy getWrapStrategy() { return wrapStrategy; }
 	public int getIndentContinuations() { return indentContinuations; }
