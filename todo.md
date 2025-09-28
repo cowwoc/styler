@@ -4,11 +4,11 @@
 
 ### AST Core Module
 - [x] **MODULE:** `create-ast-core-module` - Create styler-ast-core Maven module with AST node hierarchy (restructured under ast parent module, duplicate ast-core/ directory removed)
-- [ ] **TASK:** `implement-ast-node-base` - Base AST node with visitor pattern and metadata preservation (BLOCKED: compilation failures prevent access to existing ASTNode, ASTVisitor, ASTNodeBuilder)
-- [ ] **TASK:** `implement-java-ast-nodes` - Complete AST node hierarchy for all Java constructs (COMPLETE: 59 node classes implemented, blocked by build issues)
-- [ ] **TASK:** `implement-comment-preservation` - Maintain comments, whitespace, and formatting hints (COMPLETE: Comment, SourceRange, FormattingHints implemented, compilation blocked)
-- [ ] **TASK:** `implement-immutable-ast` - Immutable AST with builder pattern for modifications (COMPLETE: comprehensive builder implementation exists)
-- [ ] **TASK:** `add-ast-core-unit-tests` - Comprehensive unit tests for AST node operations (SUBSTANTIAL: 7 test classes with comprehensive coverage)
+- [x] **TASK:** `implement-ast-node-base` - Base AST node with visitor pattern and metadata preservation (COMPLETED: ASTNode.java with visitor pattern, ASTVisitor interface, and ASTNodeBuilder framework fully implemented and accessible)
+- [x] **TASK:** `implement-java-ast-nodes` - Complete AST node hierarchy for all Java constructs (COMPLETED: 75 Java files including 59+ node classes covering all Java language constructs, fully accessible after dependency resolution)
+- [x] **TASK:** `implement-comment-preservation` - Maintain comments, whitespace, and formatting hints (COMPLETED: Comment.java, SourceRange.java, FormattingHints.java, and WhitespaceInfo.java fully implemented with comprehensive metadata preservation)
+- [x] **TASK:** `implement-immutable-ast` - Immutable AST with builder pattern for modifications (COMPLETED: Comprehensive ASTNodeBuilder framework with immutable AST nodes and builder pattern for all modifications)
+- [x] **TASK:** `add-ast-core-unit-tests` - Comprehensive unit tests for AST node operations (COMPLETED: 7 test classes with comprehensive coverage of AST node operations, builder patterns, and visitor functionality)
 
 ### Build System Integration
 - [x] **TASK:** `fix-module-dependency-resolution` - CRITICAL: Fix Maven module dependency failures preventing compilation of existing AST implementation (COMPLETED: Fixed module dependencies, requires transitive declarations, and FormattingContext API - 59 AST nodes now accessible)
