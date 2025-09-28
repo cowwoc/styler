@@ -51,7 +51,7 @@
 - [x] **MODULE:** `create-parser-module` - Create styler-parser Maven module with custom parser dependencies
 - [x] **TASK:** `complete-custom-recursive-descent-parser` - Complete handwritten recursive descent parser for JDK 25 features
 - [x] **TASK:** `implement-source-position-tracking` - Precise source location tracking for all tokens (JavaLexer implemented)
-- [ ] **TASK:** `add-parser-unit-tests` - Unit tests covering all JDK 25 language features
+- [x] **TASK:** `add-parser-unit-tests` - Unit tests covering all JDK 25 language features
 - [ ] **TASK:** `arena-vs-gc-memory-architecture-decision` - Benchmark and decide between Arena API vs GC for memory allocation (RETAINED: Critical for 512MB per 1000 files performance target)
 
 ### Basic Configuration Schema (No File Discovery)
