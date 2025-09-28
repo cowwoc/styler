@@ -24,6 +24,7 @@
 		<module>core</module>
 		<module>parser</module>
 		<module>formatter</module>
+		<module>cli</module>
 		<module>benchmark</module>
 	</modules>
 
