@@ -1,5 +1,31 @@
 # TODO List - Styler Java Code Formatter
 
+## 🎯 SCOPE-ALIGNED IMPLEMENTATION PRIORITY
+
+**Based on evidence from scope.md analysis - Focus on immediate needs for AI agent integration and build tool usage:**
+
+### IMMEDIATE (Blocks core use cases):
+1. **Error Recovery** (Line 19) - Required for malformed files in both AI agent and build scenarios
+2. **Basic CLI Interface** (Lines 78-84) - Essential for both AI agent validation and build integration
+3. **Formatter Implementation** (Lines 56-60) - Core functionality for code formatting
+4. **Basic Security Controls** (Line 86) - Essential CLI security without enterprise complexity
+
+### HIGH PRIORITY (Performance & usability for target scenarios):
+1. **CLI Startup Optimization** - Critical for <50ms AI agent validation latency
+2. **Parallel File Processing** (Lines 67-73) - Required for 100-150 files/second targets
+3. **Block-Based Concurrency Benchmarking** (Line 92) - Evidence shows 15%+ potential gains
+4. **Structured Violation Output** - Required for AI agent feedback-driven learning
+
+### MEDIUM PRIORITY (Build ecosystem integration):
+1. **Maven/Gradle Plugins** (Lines 90-91) - Build tool integration
+2. **Configuration System** (Lines 37-42) - Flexible rule management
+
+### DEFERRED (YAGNI violations - implement when demand proven):
+1. **Enterprise Security** (Lines 110-113) - JAR signing, certificates not needed for CLI tool
+2. **Plugin Development Ecosystem** - No evidence of third-party plugin demand
+3. **Container Deployment** - No evidence AI agents need Docker
+4. **Maven Central Publishing** - Not required for initial AI agent integration
+
 ## Phase 1: Core AST Parser Foundation
 
 ### AST Core Module
@@ -17,9 +43,10 @@
 - [x] **MODULE:** `create-parser-module` - Create styler-parser Maven module with custom parser dependencies
 - [x] **TASK:** `complete-custom-recursive-descent-parser` - Complete handwritten recursive descent parser for JDK 25 features (COMPLETED: Added JDK 25 features including module imports, flexible constructors, primitive patterns, compact source files, and instance main methods)
 - [ ] **TASK:** `implement-error-recovery` - Error recovery for partial formatting of malformed files
-- [ ] **TASK:** `implement-incremental-parsing` - Support for parsing only changed sections (Tree-sitter inspired)
+- [ ] **TASK:** `implement-incremental-parsing` - Support for parsing only changed sections (Tree-sitter inspired) (SCOPE QUESTION: May be unnecessary for CLI tool use case - incremental parsing primarily benefits interactive editors, not batch file processing)
 - [x] **TASK:** `implement-source-position-tracking` - Precise source location tracking for all tokens (JavaLexer implemented)
-- [ ] **TASK:** `arena-vs-gc-memory-architecture-decision` - Benchmark and decide between Arena API vs GC for memory allocation
+- [ ] **TASK:** `arena-vs-gc-memory-architecture-decision` - Benchmark and decide between Arena API vs GC for memory allocation (RETAINED: Critical for 512MB per 1000 files performance target)
+- [ ] **TASK:** `complete-incremental-parsing-tree-reconciliation` - Complete tree reconciliation logic for incremental parsing (node extraction, insertion, parent-child relationship repair) (DEPENDS ON: implement-incremental-parsing scope decision)
 - [ ] **TASK:** `add-parser-unit-tests` - Unit tests covering all JDK 25 language features
 
 ## Phase 2: Formatter Plugin Framework
@@ -43,11 +70,8 @@
 ## Phase 3: Auto-fixer Migration
 
 ### Formatter Security Infrastructure
-- [ ] **TASK:** `implement-security-framework` - Implement trusted plugin model with JAR signature verification and publisher trust registry
+- [ ] **TASK:** `implement-basic-security-controls` - Basic input validation, resource limits, and path sanitization for CLI tool security
 - [ ] **TASK:** `implement-resource-monitoring` - Create lightweight resource monitoring service for memory, CPU, and thread tracking without enforcement isolation
-- [ ] **TASK:** `implement-plugin-isolation` - Implement plugin lifecycle manager with standard ClassLoader hierarchy for trusted plugins
-- [ ] **TASK:** `implement-security-validation` - Build plugin trust validation pipeline with certificate verification and publisher whitelisting
-- [ ] **TASK:** `create-security-test-suite` - Create security test suite for JAR signing, trust validation, and resource monitoring scenarios
 
 ### Formatter Implementation Module
 - [ ] **MODULE:** `create-formatter-impl-module` - Create styler-formatter-impl Maven module
@@ -80,38 +104,41 @@
 - [ ] **TASK:** `implement-file-processing-pipeline` - Coordinate parsing, formatting, and output
 - [ ] **TASK:** `implement-security-controls` - Path validation, sandboxing, and resource limits
 - [ ] **TASK:** `implement-error-reporting` - User-friendly error messages with file locations
+- [ ] **TASK:** `implement-cli-startup-optimization` - Optimize JVM startup time for <50ms AI agent validation latency
+- [ ] **TASK:** `implement-structured-violation-output` - Machine-readable violation reports with rule IDs, fix strategies, and priority scores for AI agent feedback-driven learning
 - [ ] **TASK:** `add-cli-integration-tests` - End-to-end tests with real Java files
 
 ## Security and Quality Assurance
 
 ### Security Implementation
-- [ ] **TASK:** `implement-input-validation` - Comprehensive input validation framework
-- [ ] **TASK:** `implement-path-sanitization` - Path traversal prevention and validation
-- [ ] **TASK:** `implement-resource-limits` - File size limits, memory bounds, and timeouts
-- [ ] **TASK:** `implement-sandboxing` - AST-only parsing without code execution
+- [ ] **TASK:** `implement-cli-security-basics` - Essential CLI security: input validation, file size limits, memory bounds, and timeouts (consolidated from multiple security tasks)
 - [ ] **TASK:** `add-security-unit-tests` - Unit tests for all security controls
 
 ### Integration and Build
 - [ ] **TASK:** `create-maven-plugin` - Maven plugin for build system integration
 - [ ] **TASK:** `create-gradle-plugin` - Gradle plugin for build system integration
-- [ ] **TASK:** `implement-git-hooks` - Pre-commit hook scripts for CI/CD integration
-- [ ] **TASK:** `benchmark-concurrency-architectures` - Benchmark file-based vs block-based concurrency architectures
+- [ ] **TASK:** `benchmark-concurrency-architectures` - Benchmark file-based vs block-based concurrency architectures (RETAINED: Evidence shows potential for 15%+ performance gains in large files)
 - [ ] **TASK:** `add-performance-benchmarks` - Performance tests against large codebases
 - [ ] **TASK:** `add-regression-test-suite` - Regression tests with real-world Java projects
+
+### Deferred Infrastructure Tasks (YAGNI - Implement When Needed)
+- [ ] **TASK:** `implement-git-hooks` - Pre-commit hook scripts for CI/CD integration (DEFERRED: No immediate evidence of need)
 
 ## Documentation and Release
 
 ### Documentation
 - [ ] **TASK:** `create-user-documentation` - User guide and configuration reference
-- [ ] **TASK:** `create-plugin-development-guide` - Guide for custom plugin development
 - [ ] **TASK:** `create-api-documentation` - Javadoc for public APIs and plugin interfaces
-- [ ] **TASK:** `create-performance-guide` - Performance tuning and optimization guide
 
 ### Release Preparation
 - [ ] **TASK:** `setup-ci-cd-pipeline` - GitHub Actions for automated testing and releases
-- [ ] **TASK:** `create-docker-image` - Containerized Tidy for deployment environments
-- [ ] **TASK:** `setup-maven-central-publishing` - Publish artifacts to Maven Central Repository
 - [ ] **TASK:** `create-release-artifacts` - JAR distributions and installation scripts
+
+### Deferred Documentation & Infrastructure (YAGNI - Create When Ecosystem Demand Exists)
+- [ ] **TASK:** `create-plugin-development-guide` - Guide for custom plugin development (DEFERRED: No evidence of third-party plugin demand)
+- [ ] **TASK:** `create-performance-guide` - Performance tuning and optimization guide (DEFERRED: Create after performance characteristics are established)
+- [ ] **TASK:** `create-docker-image` - Containerized deployment (DEFERRED: No evidence AI agents or build tools need containerization)
+- [ ] **TASK:** `setup-maven-central-publishing` - Publish artifacts to Maven Central (DEFERRED: Not needed for initial AI agent integration)
 
 ## Detailed Task Specifications
 
