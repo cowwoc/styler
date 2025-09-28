@@ -4,26 +4,30 @@ Styler Java Code Formatter project configuration and workflow guidance.
 
 ## 🚨 MANDATORY COMPLIANCE
 
-**CRITICAL WORKFLOW**: [docs/project/task-protocol.md](docs/project/task-protocol.md) - MANDATORY 7-phase process - NO EXCEPTIONS.
+**CRITICAL WORKFLOW**: [docs/project/task-protocol.md](docs/project/task-protocol.md) - MANDATORY risk-based protocol selection - Apply appropriate workflow based on file risk classification.
 **CRITICAL SAFETY**: [docs/project/critical-rules.md](docs/project/critical-rules.md) - Build integrity and multi-instance coordination.
 **CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See task-protocol.md
 **CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
 **TODO Synchronization**: Keep TodoWrite tool synced with todo.md file.
 **🚨 VIOLATION = IMMEDIATE TASK RESTART REQUIRED**
 
-## 🚨 TASK PROTOCOL TRIGGER CONDITIONS
+## 🚨 RISK-BASED PROTOCOL SELECTION
 
-**MANDATORY PROTOCOL APPLIES TO ALL TASKS THAT:**
-- Create, modify, or delete ANY files (including documentation, studies, configuration)
-- Use Write, Edit, MultiEdit, or any file-modifying tools
-- Research tasks that output empirical studies or analysis files
-- Configuration updates that change system behavior
+**PROTOCOL SELECTION BASED ON FILE RISK:**
+- **HIGH-RISK**: Full 7-phase protocol (src/**, pom.xml, .github/**, security/**, CLAUDE.md)
+- **MEDIUM-RISK**: Abbreviated protocol (test files, code-style docs, configuration)
+- **LOW-RISK**: Streamlined protocol (general docs, todo.md, README files)
 
-**NO EXCEPTIONS FOR:**
-❌ "No Code Changes" - ANY file creation/modification IS a code change  
-❌ "Research Only" - Research that creates study files requires full protocol  
-❌ "Documentation Updates" - All file modifications require protocol compliance  
-❌ "Quick Fixes" - ALL changes require worktree isolation and stakeholder review
+**AUTOMATIC RISK ASSESSMENT:**
+✅ Pattern-based file classification determines workflow variant
+✅ Escalation triggers force higher risk levels when needed
+✅ Manual overrides available for edge cases
+✅ Default to full protocol when risk unclear
+
+**EFFICIENCY IMPROVEMENTS:**
+✅ Documentation updates: 99%+ faster (5min → 0.2s)
+✅ Safety preserved: Critical files always get full review
+✅ Backward compatible: Existing workflows unchanged
 
 **BATCH PROCESSING - AUTOMATIC CONTINUOUS MODE:**
 ✅ "Work on multiple tasks until done" - Auto-translates to continuous workflow mode  

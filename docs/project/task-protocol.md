@@ -1,27 +1,115 @@
 # Task Protocol
 
-**CRITICAL**: This workflow is MANDATORY and NON-NEGOTIABLE for ALL tasks that create, modify, or delete files
+**CRITICAL**: This workflow applies to ALL tasks that create, modify, or delete files, with RISK-BASED PROTOCOL SELECTION for optimal efficiency
 
-**TARGET AUDIENCE**: Claude AI instances executing tasks  
-**OPTIMIZATION**: Tool usage patterns, context preservation, violation prevention
+**TARGET AUDIENCE**: Claude AI instances executing tasks
+**OPTIMIZATION**: Tool usage patterns, context preservation, violation prevention, efficiency via risk stratification
 
-## PROTOCOL SCOPE AND TRIGGERS
+## RISK-BASED PROTOCOL SELECTION
 
-**MANDATORY PROTOCOL APPLIES TO:**
-- ANY use of Write, Edit, MultiEdit, NotebookEdit tools
-- ANY file creation, modification, or deletion operations
-- Research tasks that create study files or empirical analysis documents
-- Documentation updates, configuration changes, or system modifications
-- Tasks labeled "No Code Changes" that still create files (studies, reports, etc.)
+**PROTOCOL SELECTION ENGINE:**
+1. Extract file paths from modification request
+2. Apply pattern matching against risk classifications
+3. Select highest risk level if multiple files affected
+4. Route to appropriate workflow variant
 
-**PROTOCOL TRIGGERS INCLUDE BUT NOT LIMITED TO:**
-- Creating docs/studies/*.md files for empirical research
-- Modifying CLAUDE.md, task-protocol.md, or any configuration files
-- Writing stakeholder reports during 7-phase process
-- Updating todo.md or any project documentation
-- ANY operation that changes the filesystem state
+### HIGH-RISK FILES (Full 7-Phase Protocol Required)
+**PATTERNS:**
+- `src/**/*.java` (core implementation)
+- `pom.xml`, `**/pom.xml` (build configuration)
+- `.github/**` (CI/CD workflows)
+- `**/security/**` (security components)
+- `checkstyle.xml`, `**/checkstyle*.xml` (style enforcement)
+- `CLAUDE.md` (critical configuration)
+- `docs/project/task-protocol.md` (protocol configuration)
+- `docs/project/critical-rules.md` (safety rules)
 
-**ABSOLUTE RULE**: If ANY file will be created/modified/deleted, full protocol is required
+### MEDIUM-RISK FILES (Abbreviated Protocol: Phases 1,2,5,6,7)
+**PATTERNS:**
+- `src/test/**/*.java` (test files)
+- `docs/code-style/**` (style documentation)
+- `**/resources/**/*.properties` (configuration)
+- `**/*Test.java`, `**/*Tests.java` (test classes)
+
+### LOW-RISK FILES (Streamlined Protocol: Phases 1,2,7)
+**PATTERNS:**
+- `*.md` (except CLAUDE.md, task-protocol.md, critical-rules.md)
+- `docs/**/*.md` (general documentation)
+- `todo.md` (task tracking)
+- `*.txt`, `*.log` (text files)
+- `**/README*` (readme files)
+
+### AUTOMATIC ESCALATION TRIGGERS
+**File Content Analysis:**
+- Cross-risk-tier dependencies detected → escalate to highest tier
+- Security implications identified → force HIGH-RISK
+- Build system impact detected → force HIGH-RISK
+- Architectural pattern changes → force HIGH-RISK
+
+**Task Description Keywords:**
+- "security", "authentication", "authorization" → force HIGH-RISK
+- "architecture", "breaking", "compatibility" → force HIGH-RISK
+- "database", "schema", "migration" → force HIGH-RISK
+- "api", "contract", "interface" → force HIGH-RISK
+- "concurrent", "thread", "parallel", "sync" → force HIGH-RISK
+- "performance", "cache", "memory", "optimization" → force HIGH-RISK
+- "state", "singleton", "global", "shared" → force HIGH-RISK
+- "dependency", "external", "integration" → force HIGH-RISK
+
+**Change Scope Analysis:**
+- Multiple file types affected → escalate to highest tier
+- Cross-module changes detected → force HIGH-RISK
+- Runtime behavior modifications → force MEDIUM-RISK minimum
+
+**COMPATIBILITY**: Existing CLAUDE.md triggers preserved, default to FULL_PROTOCOL when risk unclear
+
+## WORKFLOW VARIANTS
+
+### FULL_PROTOCOL (High-Risk Files)
+**Phases Executed**: 1, 2, 3, 4, 5, 6, 7
+**Stakeholder Agents**: All agents based on task requirements
+**Isolation**: Mandatory worktree isolation
+**Review**: Complete stakeholder validation
+**Use Case**: Core implementation, build configuration, security, CI/CD
+
+### ABBREVIATED_PROTOCOL (Medium-Risk Files)
+**Phases Executed**: 1, 2, 5, 6, 7
+**Stakeholder Agents**: Based on change characteristics
+- Base: technical-architect (always required)
+- +style-auditor: If style/formatting files modified
+- +security-auditor: If any configuration or resource files modified
+- +performance-analyzer: If test performance or benchmarks affected
+- +code-quality-auditor: Always included for code quality validation
+**Isolation**: Worktree isolation for multi-file changes
+**Review**: Domain-appropriate stakeholder validation
+**Use Case**: Test files, style documentation, configuration files
+
+### STREAMLINED_PROTOCOL (Low-Risk Files)
+**Phases Executed**: 1, 2, 7
+**Stakeholder Agents**: None (unless escalation triggered)
+**Isolation**: Required for multi-file changes, optional for single documentation file
+**Review**: Evidence-based validation and automated checks
+**Safety Gates**:
+- Verify no cross-references to modified files in src/
+- Confirm no build configuration impact
+- Validate no security-sensitive content changes
+**Use Case**: Documentation updates, todo.md, README files
+
+### MANUAL OVERRIDES
+**Force Full Protocol**: `--force-full-protocol` flag for critical changes
+**Explicit Risk Level**: `--risk-level=HIGH|MEDIUM|LOW` to override classification
+**Escalation Keywords**: "security", "architecture", "breaking" in task description
+
+### RISK ASSESSMENT AUDIT TRAIL
+**Required Logging**:
+- Risk level selected (HIGH/MEDIUM/LOW)
+- Classification method (pattern match, keyword trigger, manual override)
+- Escalation triggers activated (if any)
+- Workflow variant executed (FULL/ABBREVIATED/STREAMLINED)
+- Agent set selected for review
+- Final outcome (approved/rejected/deferred)
+
+**Implementation**: Log in TodoWrite tool and task commit messages for audit purposes
 
 ## 🧠 PROTOCOL INTERPRETATION MODE
 
