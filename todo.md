@@ -22,7 +22,7 @@
 ## Phase 2: Formatter Plugin Framework
 
 ### Formatter API Module
-- [ ] **MODULE:** `create-formatter-api-module` - Create styler-formatter-api Maven module
+- [x] **MODULE:** `create-formatter-api-module` - Create styler-formatter-api Maven module (COMPLETED: comprehensive API with security controls, plugin architecture, configuration framework, and conflict resolution)
 - [ ] **TASK:** `define-formatter-plugin-interface` - Plugin interface for formatting rules
 - [ ] **TASK:** `implement-rule-configuration-schema` - YAML-based configuration schema
 - [ ] **TASK:** `implement-transformation-context-api` - Context API for rule application
@@ -38,6 +38,13 @@
 - [ ] **TASK:** `add-config-unit-tests` - Unit tests for configuration parsing and validation
 
 ## Phase 3: Auto-fixer Migration
+
+### Formatter Security Infrastructure
+- [ ] **TASK:** `implement-security-framework` - Implement SecurityManager-based plugin sandboxing for formatter API
+- [ ] **TASK:** `implement-resource-monitoring` - Create resource monitoring and automatic termination system
+- [ ] **TASK:** `implement-plugin-isolation` - Implement ClassLoader isolation per plugin
+- [ ] **TASK:** `implement-security-validation` - Build security validation pipeline for bytecode verification
+- [ ] **TASK:** `create-security-test-suite` - Create comprehensive security test suite for plugin execution
 
 ### Formatter Implementation Module
 - [ ] **MODULE:** `create-formatter-impl-module` - Create styler-formatter-impl Maven module
