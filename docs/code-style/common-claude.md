@@ -34,7 +34,7 @@
 
 ### Comments - Historical References
 **Detection Pattern**: `//.*\b(removed|added|changed|was|previously|used to)\b`
-**Violation**: `// Note: DividendCalculator removed - will be added when feature is implemented`
+**Violation**: `// Note: ExpressionParser removed - will be added when feature is implemented`
 **Correct**: Remove historical comments - use git history instead
 **Rationale**: Code should document current state, not past actions
 

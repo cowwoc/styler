@@ -265,7 +265,7 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 ✅ Current functionality: "Skip constructors and overridden methods"
 ✅ Business logic: "Javadoc is complete when all parameters and return values are documented"
 ✅ Technical rationale: "Expression context prevents statement-level transformation"
-✅ Domain constraints: "Financial calculations require precise decimal handling"
+✅ Domain constraints: "Source position tracking requires precise integer arithmetic"
 
 **PRINCIPLE**: Comments should describe WHAT the code does and WHY it works that way, never WHAT it used to do or HOW it changed. When comments become outdated, update them to accurately reflect current behavior.
 

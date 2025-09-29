@@ -10,12 +10,11 @@ This directory contains all project documentation organized hierarchically for e
 ├── README.md                              # This file
 ├── project/                               # Core project documentation
 │   ├── scope.md                           # Project scope & constraints
-│   ├── task-protocol.md                   # 10-stage development process
+│   ├── task-protocol.md                   # State machine protocol (9 states)
 │   ├── build-system.md                    # Build configuration
 │   ├── architecture.md                    # Application architecture
 │   ├── critical-rules.md                  # Build integrity rules
 │   └── scope/out-of-scope.md              # Prohibited technologies
-├── strategy-reference-guide.md            # Strategy patterns
 └── code-style/                            # Code style documentation (flatter structure)
     ├── common-claude.md                   # Universal rules - Claude detection patterns
     ├── common-human.md                    # Universal explanations - Human context

@@ -137,17 +137,17 @@ public class BadTestConstants
 ```java
 // ✅ Descriptive test method names using pattern: method_condition_expectedResult
 @Test
-public void calculateFederalTax_withNegativeIncome_throwsIllegalArgumentException()
-{
-}
-
-@Test  
-public void calculateFederalTax_withValidIncome_returnsCorrectAmount()
+public void parseExpression_withInvalidToken_throwsParseException()
 {
 }
 
 @Test
-public void calculateOAS_atAge65WithFullResidency_returnsMaximumAmount()
+public void parseExpression_withValidSyntax_returnsCorrectAST()
+{
+}
+
+@Test
+public void formatCode_withMaxLineLength_breaksAtCorrectPosition()
 {
 }
 ```
@@ -156,29 +156,29 @@ public void calculateOAS_atAge65WithFullResidency_returnsMaximumAmount()
 
 ```java
 // ✅ Use TestNG groups for test categorization - each test remains isolated
-public class TaxCalculationTest
+public class JavaParserTest
 {
 	@Test(groups = {"unit", "fast"})
-	public void calculateBasicTax_withValidInput_returnsCorrectAmount() 
+	public void parseBasicExpression_withValidInput_returnsCorrectAST()
 	{
 		// ✅ Instance created per test
-		TaxCalculator calculator = new TaxCalculator();
+		JavaParser parser = new JavaParser();
 		// Test implementation...
 	}
-	
-	@Test(groups = {"integration", "slow"}) 
-	public void calculateTaxWithDatabase_withRealData_matchesExpectedResults() 
+
+	@Test(groups = {"integration", "slow"})
+	public void parseComplexFile_withRealCode_matchesExpectedStructure()
 	{
 		// ✅ Isolated instance
-		TaxCalculator calculator = new TaxCalculator();
+		JavaParser parser = new JavaParser();
 		// Test implementation...
 	}
-	
+
 	@Test(groups = {"performance"})
-	public void calculateTax_withLargeDataset_completesWithinTimeLimit() 
+	public void parseFile_withLargeCodebase_completesWithinTimeLimit()
 	{
 		// ✅ Isolated instance
-		TaxCalculator calculator = new TaxCalculator();
+		JavaParser parser = new JavaParser();
 		// Test implementation...
 	}
 }
@@ -219,33 +219,33 @@ public class PersonTestBuilder
 
 // ✅ Parallel-safe usage: Each test creates its own instances
 @Test
-public void calculateTax_withHighIncome_appliesCorrectBracket()
+public void parseClass_withComplexStructure_buildsCorrectAST()
 {
-	// ✅ Each test method creates its own calculator and data
-	TaxCalculator calculator = new TaxCalculator();
-	Person person = new PersonTestBuilder().
-		withAge(45).
-		withSalary(150_000.0).
+	// ✅ Each test method creates its own parser and data
+	JavaParser parser = new JavaParser();
+	SourceCode source = new SourceCodeTestBuilder().
+		withClassName("ComplexClass").
+		withMethodCount(10).
 		build();
-		
-	double tax = calculator.calculateTax(person);
-	
-	requireThat(tax, "tax").isGreaterThan(30_000.0);
+
+	ASTNode ast = parser.parse(source);
+
+	requireThat(ast.getChildCount(), "childCount").isGreaterThan(5);
 }
 
-@Test 
-public void calculateTax_withRetirementAge_appliesAgeCredit()
+@Test
+public void formatCode_withLongLines_breaksAtSemanticBoundaries()
 {
 	// ✅ Completely isolated from other tests
-	TaxCalculator calculator = new TaxCalculator();
-	Person person = new PersonTestBuilder().
-		withAge(TestConstants.RETIREMENT_AGE).
-		withSalary(TestConstants.TYPICAL_SALARY).
+	CodeFormatter formatter = new CodeFormatter();
+	SourceCode source = new SourceCodeTestBuilder().
+		withLineLength(TestConstants.MAX_LINE_LENGTH).
+		withContent(TestConstants.LONG_METHOD).
 		build();
-		
-	double tax = calculator.calculateTax(person);
-	
-	requireThat(tax, "tax").isLessThan(15_000.0);
+
+	String formatted = formatter.format(source);
+
+	requireThat(formatted.lines().count(), "lineCount").isGreaterThan(1);
 }
 ```
 

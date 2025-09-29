@@ -26,7 +26,7 @@ This document contains testing patterns and detection rules optimized for Claude
 
 ### Test Naming and Structure
 - `@Test\s*public\s+void\s+\w+_\w+_\w+\(\)`
-- `calculateFederalTax_withNegativeIncome_throwsIllegalArgumentException`
+- `parseExpression_withInvalidToken_throwsParseException`
 - `method_condition_expectedResult` pattern
 
 ### Test Categories and Organization

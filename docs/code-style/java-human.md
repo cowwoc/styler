@@ -58,14 +58,14 @@ This codebase implements Styler, a Java code formatter that processes and transf
 
 ```java
 // ✅ PREFERRED - Efficient horizontal space usage
-return new TaxResult(contextId, timestamp, federalTax, provincialTax, credits, deductions);
+return new ParseResult(astRoot, tokens, comments, errors, metadata, sourcePositions);
 
-// ❌ AVOID - Premature line breaking when space is available  
-return new TaxResult(
-    contextId,
-    timestamp,
-    federalTax,
-    provincialTax);
+// ❌ AVOID - Premature line breaking when space is available
+return new ParseResult(
+    astRoot,
+    tokens,
+    comments,
+    errors);
 ```
 
 ### Class Organization - User-Facing Members First
@@ -103,27 +103,27 @@ return new TaxResult(
 **Fail-fast approach**: Let parse exceptions propagate to calling systems where appropriate error handling, logging, and user notification can occur. This ensures errors are handled at the right abstraction level.
 
 ### Concurrency - Virtual Thread Preference
-**Java 24 optimization**: Betty targets Java 24 and should leverage virtual threads for I/O-bound operations instead of CompletableFuture for simple cases.
+**Java 25 optimization**: Styler targets Java 25 and should leverage virtual threads for I/O-bound operations instead of CompletableFuture for simple cases.
 
-**Why virtual threads for Betty**: Claude API integration involves extensive HTTP communication and file I/O operations. Virtual threads provide better resource utilization and simpler code patterns for these blocking operations.
+**Why virtual threads for Styler**: File processing involves extensive file I/O operations. Virtual threads provide better resource utilization and simpler code patterns for these blocking operations.
 
 **Implementation guidance**:
 ```java
 // ✅ PREFERRED - Virtual threads for I/O operations
-public ClaudeResponse sendMessage(ClaudeRequest request) {
+public FormattingResult formatFile(Path filePath) {
     try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-        var future = executor.submit(() -> httpClient.send(request));
+        var future = executor.submit(() -> processFile(filePath));
         return future.get();
     }
 }
 
-// ❌ AVOID - CompletableFuture for simple I/O  
-public CompletableFuture<ClaudeResponse> sendMessage(ClaudeRequest request) {
-    return CompletableFuture.supplyAsync(() -> httpClient.send(request));
+// ❌ AVOID - CompletableFuture for simple I/O
+public CompletableFuture<FormattingResult> formatFile(Path filePath) {
+    return CompletableFuture.supplyAsync(() -> processFile(filePath));
 }
 ```
 
-**When CompletableFuture is still appropriate**: Complex async coordination (combining multiple API calls, timeout handling with sophisticated retry logic), CPU-bound operations, or when integrating with existing async APIs.
+**When CompletableFuture is still appropriate**: Complex async coordination (combining multiple file operations, timeout handling with sophisticated retry logic), CPU-bound parsing operations, or when integrating with existing async APIs.
 
 ## 📚 Navigation
 

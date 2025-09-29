@@ -104,19 +104,19 @@ This codebase implements Styler, a Java code formatter that processes source cod
 5. **Documentation Review**: Ensure external sources are properly referenced
 6. **TIER 2/3 Assessment**: Evaluate maintainability and best practices
 
-## 🚫 Common Anti-Patterns in Financial Code
+## 🚫 Common Anti-Patterns in Parser/Formatter Code
 
 ### Precision Anti-Patterns
-❌ **Using `double` for money**: `double balance = 150.75;`
-✅ **Using `BigDecimal`**: `BigDecimal balance = new BigDecimal("150.75");`
+❌ **Using floats for source positions**: `float linePosition = 15.5f;`
+✅ **Using exact integers**: `int lineNumber = 15; int columnNumber = 5;`
 
-### Validation Anti-Patterns  
+### Validation Anti-Patterns
 ❌ **No validation**: `public void setSourceCode(String source) { this.source = source; }`
 ✅ **Fail-fast validation**: `requireThat(source, "source").isNotNull().isNotBlank();`
 
 ### Documentation Anti-Patterns
 ❌ **Magic parsing**: `depth = maxDepth * 2;`
-✅ **Documented constants**: `@JavaLanguageSpec("JLS §14.4") depth = calculateNestingDepth(MAX_BLOCK_DEPTH);`
+✅ **Documented constants**: `// JLS §14.4 defines maximum nesting depth for block statements\ndepth = calculateNestingDepth(MAX_BLOCK_DEPTH);`
 
 ### Error Handling Anti-Patterns
 ❌ **Generic exceptions**: `throw new Exception("Invalid input");`
@@ -131,10 +131,10 @@ This codebase implements Styler, a Java code formatter that processes source cod
 - **Integration Tests**: Verifies end-to-end calculation workflows
 
 ### Manual Review Focus
-- **Business Logic Correctness**: Verify calculation algorithms match requirements
-- **Regulatory Compliance**: Check external source documentation
-- **Edge Case Handling**: Review boundary condition processing
-- **Performance Considerations**: Assess scalability for large datasets
+- **Parser Accuracy**: Verify AST construction matches Java language specification
+- **Formatting Fidelity**: Check comment and whitespace preservation
+- **Edge Case Handling**: Review boundary conditions for malformed source code
+- **Performance Considerations**: Assess scalability for large codebases
 
 ### Automated Style Fixing Tools
 
@@ -153,14 +153,14 @@ This codebase implements Styler, a Java code formatter that processes source cod
 
 ## 📈 Continuous Improvement
 
-### Annual Updates
-- **Tax Rule Changes**: Update calculation logic for new tax years
-- **Regulatory Updates**: Modify validation and documentation as requirements evolve
+### Regular Updates
+- **Java Language Evolution**: Update parser for new JDK features
+- **Formatting Standards**: Evolve rules based on community feedback and usage patterns
 - **Pattern Evolution**: Refine patterns based on team experience and new requirements
 
 ### Code Quality Metrics
 - **Violation Trend Analysis**: Track style violation rates over time
-- **Financial Accuracy Testing**: Monitor calculation precision in automated tests
+- **Parser Accuracy Testing**: Monitor AST fidelity in automated tests
 - **Code Review Effectiveness**: Measure defect catch rate in reviews
 - **Team Productivity**: Assess impact of style consistency on development speed
 

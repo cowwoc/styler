@@ -1,6 +1,6 @@
 # Git Workflow Guidelines
 
-This document outlines git workflows and best practices for the Betty project.
+This document outlines git workflows and best practices for the Styler project.
 
 ## Commit Squashing Procedures
 

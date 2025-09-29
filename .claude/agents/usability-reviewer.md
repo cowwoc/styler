@@ -15,7 +15,7 @@ tests.' assistant: 'Excellent! Now let me review this from a product usability p
 usability-reviewer agent.' <commentary>The user has completed a significant feature,
 	                                                      so use the usability-reviewer agent to evaluate user experience and suggest related
 	                                                      improvements.</commentary></example>
-model: sonnet
+model: sonnet-4-5
 color: green
 tools: [Read, LS, WebSearch, WebFetch]
 ---

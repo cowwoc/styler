@@ -1,7 +1,7 @@
 ---
 name: code-quality-auditor
 description: Use this agent when a class or method has been created or modified and needs refactoring to reduce duplication, implement best coding practices, simplify code complexity, and improve readability and maintainability. This agent should be invoked after the code-tester agent has completed its validation.
-model: sonnet
+model: sonnet-4-5
 color: cyan
 tools: [Read, Grep, Glob, LS]
 ---

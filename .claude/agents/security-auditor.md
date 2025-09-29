@@ -2,7 +2,7 @@
 name: security-auditor
 description: Use this agent when you need to review new or modified code functionality for security vulnerabilities, especially after implementing new features, API endpoints, data handling logic, authentication mechanisms, or parser/formatter modules. This agent should be invoked proactively during development to identify potential security risks before they reach production.
 tools: [Read, Grep, Glob, LS, WebSearch, WebFetch]
-model: sonnet
+model: sonnet-4-5
 ---
 
 **TARGET AUDIENCE**: Claude AI for systematic vulnerability processing and security fix implementation

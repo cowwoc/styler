@@ -24,7 +24,7 @@
 ### Interface Naming - Generic Names
 **Detection Pattern**: `interface\s+(Data|State|Props|Config)\s*{`
 **Violation**: `interface Data { }`
-**Correct**: `interface TaxCalculationData { }`
+**Correct**: `interface ParseResultData { }`
 
 ### JSDoc - Missing @throws Documentation
 **Detection Pattern**: Functions with `throw` statements missing `@throws` JSDoc
@@ -60,12 +60,12 @@
 
 ### Interface Design - Missing Readonly Properties
 **Detection Pattern**: Interface properties without `readonly` modifier where immutability expected
-**Violation**: `interface TaxBracket { minIncome: number; rate: number; }`
-**Correct**: `interface TaxBracket { readonly minIncome: number; readonly rate: number; }`
+**Violation**: `interface TokenRange { startPos: number; endPos: number; }`
+**Correct**: `interface TokenRange { readonly startPos: number; readonly endPos: number; }`
 
 ### Type Guards - Missing User-Defined Type Guards
 **Detection Pattern**: `typeof` checks that could be user-defined type guards
-**Violation**: `if (typeof data.income === 'number')`
+**Violation**: `if (typeof node.position === 'number')`
 **Correct**: Custom type guard function for complex type validation
 
 ### Null Assertions - Unsafe Usage

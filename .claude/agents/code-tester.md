@@ -24,7 +24,7 @@ assistant: "Perfect! I'll use the code-tester agent to write tests that thorough
 	         After architectural review of a parser feature, use the code-tester agent to ensure all parsing rules and edge cases are properly tested.
 	         </commentary>
 	         </example>
-model: sonnet
+model: sonnet-4-5
 color: purple
 tools: [Read, Grep, Glob, LS]
 ---

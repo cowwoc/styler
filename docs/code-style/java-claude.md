@@ -5,10 +5,10 @@
 
 ## TIER 1 CRITICAL - Build Blockers
 
-### External Source Documentation - Missing URLs
-**Detection Pattern**: Tax calculations without source comments
-**Violation**: `BigDecimal federalRate = new BigDecimal("0.15"); // No source`
-**Correct**: `// Based on 2024 CRA tax brackets: https://canada.ca/tax-2024\nBigDecimal federalRate = new BigDecimal("0.15");`
+### External Source Documentation - Missing References
+**Detection Pattern**: Language specification references without source comments
+**Violation**: `int maxDepth = 100; // No source reference`
+**Correct**: `// Based on JLS §14.4 block statement nesting limits\nint maxDepth = 100;`
 
 ### JavaDoc Exception Documentation - Missing @throws
 **Detection Pattern**: `public.*throws.*Exception.*\{` without corresponding `@throws`
@@ -18,8 +18,8 @@
 
 ### JavaDoc Parameter References - Missing {@code} Markup
 **Detection Pattern**: `@throws.*if [a-zA-Z_][a-zA-Z0-9_]*( or [a-zA-Z_][a-zA-Z0-9_]*)* (is|are) null` without {@code}
-**Violation**: `@throws IllegalArgumentException if taxPayer or taxYear are null`
-**Correct**: `@throws IllegalArgumentException if {@code taxPayer} or {@code taxYear} are null`
+**Violation**: `@throws IllegalArgumentException if sourceCode or parseOptions are null`
+**Correct**: `@throws IllegalArgumentException if {@code sourceCode} or {@code parseOptions} are null`
 **Rationale**: {@code} markup provides semantic distinction and better documentation generation
 
 ### Parameter Formatting - Multi-line Declarations and Calls
@@ -39,14 +39,14 @@
 **Principle**: Maximize parameters per line while respecting 120-character limit. Break to next line only when adding the next parameter would exceed the limit.
 
 **Violation Examples**:
-- `record Person(\n    String name,\n    int age\n)` (unnecessary wrapping - fits on one line: ~35 chars)
-- `new CorporateTaxResult(\n    federalTax, quebecTax, erdtohBalance, nerdtohBalance, gripBalance, lripBalance);` (underutilized first line - wasted ~25 chars)
-- `method(param1,\n    param2, param3, param4, param5);` (poor distribution - could fit more on first line)
+- `record Token(\n    TokenType type,\n    int position\n)` (unnecessary wrapping - fits on one line: ~40 chars)
+- `new ParseResult(\n    astRoot, errors, comments, sourcePositions, metadata);` (underutilized first line - wasted ~25 chars)
+- `format(source,\n    config, rules, options, context);` (poor distribution - could fit more on first line)
 
 **Correct Examples**:
-- `record Person(String name, int age)` (single line when under 120 chars)
-- `new CorporateTaxResult(federalTax, quebecTax, erdtohBalance, nerdtohBalance, gripBalance,\n    lripBalance);` (line-filling: max params per line within limit)
-- `calculateComplexTax(taxpayerId, corporationId, taxYear, federalRate,\n    quebecRate, exemptions, credits);` (wrap only when next param would exceed 120)
+- `record Token(TokenType type, int position)` (single line when under 120 chars)
+- `new ParseResult(astRoot, errors, comments, sourcePositions,\n    metadata);` (line-filling: max params per line within limit)
+- `format(source, config, rules, options,\n    context, preserveComments);` (wrap only when next param would exceed 120)
 
 **Detection Commands**:
 ```bash
@@ -92,43 +92,43 @@ grep -rn -E "\w+\([^,)]+,[^,)]+,[^,)]+,[^,)]+,\s*\n\s+[^,)]+\);" --include="*.ja
 **Example**:
 ```java
 // VIOLATION - Silent failure with default return
-public TaxAmount calculateTax(TaxContext context) {
+public ASTNode parseExpression(TokenStream tokens) {
     try {
-        return performComplexCalculation(context);
-    } catch (Exception e) {
-        log.error("Calculation failed", e);
-        return TaxAmount.ZERO_CAD; // Hides the failure
+        return parseComplexExpression(tokens);
+    } catch (ParseException e) {
+        log.error("Parsing failed", e);
+        return ASTNode.EMPTY; // Hides the failure
     }
 }
 
 // CORRECT - Fail fast with meaningful error
-public TaxAmount calculateTax(TaxContext context) {
+public ASTNode parseExpression(TokenStream tokens) {
     try {
-        return performComplexCalculation(context);
+        return parseComplexExpression(tokens);
     } catch (ValidationException e) {
-        throw new TaxCalculationException("Invalid context: " + e.getMessage(), e);
-    } catch (ArithmeticException e) {
-        throw new TaxCalculationException("Mathematical error in calculation", e);
+        throw new ParseException("Invalid token stream: " + e.getMessage(), e);
+    } catch (IndexOutOfBoundsException e) {
+        throw new ParseException("Unexpected end of token stream", e);
     }
     // Other exceptions propagate naturally
 }
 ```
-**Rationale**: Financial calculations must fail visibly when errors occur. Returning default values (zero tax, empty results) can hide serious calculation errors and lead to incorrect financial decisions.
+**Rationale**: Parser operations must fail visibly when errors occur. Returning default values (empty nodes, null results) can hide serious parsing errors and lead to incorrect AST construction.
 
 **Manual Analysis Required**: For Pattern 2 matches, examine the called method to verify if it returns default/ZERO values. Methods named `handle.*Error`, `.*ErrorHandler`, `default.*` are particularly suspect.
 
 ### Concurrency - Virtual Thread Preference
-**Detection Pattern**: `CompletableFuture\.supplyAsync\(\s*\(\)\s*->\s*.*\.send\(`
-**Violation**: Using CompletableFuture for simple I/O operations like HTTP requests
+**Detection Pattern**: `CompletableFuture\.supplyAsync\(\s*\(\)\s*->\s*.*\.(read|write|process)\(`
+**Violation**: Using CompletableFuture for simple I/O operations like file reading
 **Correct**: Use virtual thread executor for I/O-bound operations
 **Example**:
 ```java
-// VIOLATION - CompletableFuture for simple HTTP call
-CompletableFuture<Response> future = CompletableFuture.supplyAsync(() -> client.send(request));
+// VIOLATION - CompletableFuture for simple file read
+CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> Files.readString(path));
 
 // CORRECT - Virtual thread executor
 try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-    var future = executor.submit(() -> client.send(request));
+    var future = executor.submit(() -> Files.readString(path));
     return future.get();
 }
 ```

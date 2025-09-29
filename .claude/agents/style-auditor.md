@@ -1,7 +1,7 @@
 ---
 name: style-auditor
 description: Use this agent to systematically review code against MANUAL-ONLY detection patterns from docs/code-style/. Focuses exclusively on violations that cannot be detected by automated linters (checkstyle, PMD, ESLint). Verifies build-validator has run automated checks before proceeding. Should be used during implementation review phases (3, 4, 6) for style/formatting tasks.
-model: sonnet
+model: sonnet-4-5
 color: blue
 tools: [Read, Grep, Glob, LS]
 ---
