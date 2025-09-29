@@ -23,5 +23,6 @@
 		<module>parser</module>
 		<module>system</module>
 		<module>cli</module>
+		<module>formatter</module>
 	</modules>
 </project>

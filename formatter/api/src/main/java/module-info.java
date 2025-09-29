@@ -13,6 +13,7 @@ module io.github.cowwoc.styler.formatter.api
 	exports io.github.cowwoc.styler.formatter.api.conflict;
 	exports io.github.cowwoc.styler.formatter.api.plugin;
 	exports io.github.cowwoc.styler.formatter.api.report;
+	exports io.github.cowwoc.styler.formatter.experimental;
 
 	// Open packages to Jackson for serialization/deserialization
 	opens io.github.cowwoc.styler.formatter.api to tools.jackson.databind;
