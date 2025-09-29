@@ -51,6 +51,12 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-toml</artifactId>
+        </dependency>
+
+
         <!-- Logging implementation -->
         <dependency>
             <groupId>ch.qos.logback</groupId>

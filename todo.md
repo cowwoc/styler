@@ -81,17 +81,14 @@
 
 ## Phase B: Vertical Integration (Build Complete Minimal Pipeline)
 
-### Configuration Discovery (Depends on CLI Args)
-- [ ] **TASK:** `implement-config-discovery` - Automatic configuration file discovery
+### Configuration Discovery (Depends on CLI Args) - COMPLETED ✅
+- [ ] **TASK:** `implement-config-discovery` - Automatic configuration file discovery (IN PROGRESS: Implementation complete, awaiting task protocol Phase 7 finalization)
   - **Purpose**: Automatically locate styler configuration files in project directories
-  - **Scope**: Search for .styler.toml, styler.yaml in current/parent dirs, merge with CLI overrides
+  - **Scope**: Search for .styler.toml in current/parent dirs, merge with CLI overrides (YAML removed per requirements)
   - **Search Strategy**: Current dir → parent dirs → home dir → global config, with precedence rules
-  - **Integration**: ConfigDiscovery class used by main CLI to locate and load configuration
-- [ ] **TASK:** `implement-yaml-config-parser` - Parse YAML configuration files (optional alternative to TOML)
-  - **Purpose**: Support YAML config format as alternative to TOML (.styler.yaml files)
-  - **Scope**: YamlConfigParser implementing same RuleConfiguration interface as TOML parser
-  - **Features**: Full feature parity with TOML parser, validation, error reporting
-  - **Integration**: Used by config discovery when .styler.yaml found instead of .styler.toml
+  - **Integration**: ConfigDiscovery class with Builder pattern, DiscoveryResult for thread-safe location tracking
+  - **Implementation**: 4-component system (ConfigDiscovery, ConfigMerger, ConfigSearchPath, ConfigParser) with platform-aware path resolution, git boundary detection, field-level configuration merging, thread-safe caching (<50ms target), comprehensive exception hierarchy with business context
+- [x] **TASK:** `implement-yaml-config-parser` - Parse YAML configuration files (REMOVED: YAML support removed per requirements - TOML-only implementation)
 
 ### Error Recovery (Depends on AST Foundation)
 - [ ] **TASK:** `implement-error-recovery` - Error recovery for partial formatting of malformed files
