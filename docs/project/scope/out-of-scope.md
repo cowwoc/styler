@@ -1,19 +1,12 @@
-# 🚫 OUT OF SCOPE TASKS
+# 🚫 OUT OF SCOPE - Java Code Formatter
 
-**The following types of tasks are explicitly out of scope and should not be implemented:**
+**The following features are explicitly out of scope for the Styler Java code formatter:**
 
 ## Architecture & Communication Patterns
-- **WebSocket implementations** - Use HTTP-only communication for progressive updates
-- **React architecture** - Keep frontend simple, avoid complex state management frameworks
-- **Real-time communication** - No persistent connections, use request/response only
-- **Server-side state management** - Server must remain stateless (progressive data managed client-side)
-- **Session storage** - No server-side session management or user data persistence
-- **Multi-client support** - Only browser client needs to be supported
-- **REST API design** - No need for generic REST patterns for third-party clients
-- **API versioning** - No backward compatibility requirements for external consumers
-- **Push notifications** - No server-initiated updates, client polls as needed for progressive updates
+- **Complex state management frameworks** - Keep architecture simple, avoid over-engineering
+- **Multi-user coordination** - Single-user CLI tool, no multi-user features needed
 
-## External Dependencies & Infrastructure  
+## External Dependencies & Infrastructure
 - **Redis integration** - No external caching systems
 - **Database systems** - No external databases (PostgreSQL, MySQL, etc.)
 - **Message queues** - No RabbitMQ, Kafka, or similar systems
@@ -28,80 +21,99 @@
 - **Email services** - No SendGrid, Mailgun integrations
 - **Analytics platforms** - No Google Analytics, Mixpanel integrations
 - **Social media APIs** - No Facebook, Twitter integrations
-- **External tax services** - Tax engine must be self-contained, no external tax APIs
-- **Financial data providers** - No integration with banks, investment platforms, or financial APIs
-- **Government tax APIs** - No direct integration with CRA or Revenu Québec systems
+- **Authentication providers** - No OAuth, SAML, or external auth systems
+- **File storage services** - No S3, Google Drive, Dropbox integrations
+- **External API dependencies** - Minimize external service dependencies
 
-## Advanced Infrastructure
-- **Service mesh** - No Istio, Linkerd implementations
-- **API gateways** - No Kong, Ambassador setups
-- **Distributed tracing** - No Jaeger, Zipkin integrations
-- **External monitoring** - No Prometheus, Grafana unless lightweight
-- **Load balancers** - No HAProxy, nginx configurations
-- **Cloud deployment** - No cloud-specific deployment configurations
-- **Rate limiting** - No external rate limiting systems or frameworks
-- **Correlation IDs** - No distributed correlation ID tracking systems
-- **Structured logging frameworks** - No structured logging implementations beyond basic SLF4J
-- **Domain events architecture** - No event-driven architecture or event sourcing patterns
-- **Health check endpoints** - No HTTP health check or containerized deployment endpoints
-- **YAML configuration files** - No YAML configuration (except JSON files for tax constants are in scope)
+## Code Analysis Beyond Formatting
+- **Static code analysis** - No bug detection, security vulnerability scanning, or code quality metrics
+- **Semantic analysis** - No type checking, unused variable detection, or dead code removal
+- **Performance analysis** - No algorithmic complexity analysis or performance bottleneck detection
+- **Code coverage analysis** - No test coverage measurement or gap identification
+- **Dependency analysis** - No circular dependency detection or architecture compliance checking
 
-## Code Compatibility & Legacy Support
-- **Backward compatibility methods** - No deprecated method retention for internal code
-- **Compatibility layers** - No compatibility interfaces for internal refactoring
-- **Legacy API support** - No support for outdated internal interfaces
-- **Method deprecation** - Remove old methods directly rather than deprecating them
-- **Third-party client compatibility** - Only browser client needs support
+## Language Support Beyond Java
+- **Multi-language support** - Java only, no Kotlin, Scala, Groovy, or other JVM languages
+- **Mixed-language projects** - No JavaScript, TypeScript, Python, or other language formatting
+- **Configuration languages** - No XML, YAML, JSON, TOML formatting (except for styler config files)
+- **Template languages** - No JSP, Thymeleaf, or other template formatting
+- **Documentation formats** - No Markdown, AsciiDoc, or other documentation formatting
 
-## Test Development Approach
-- **Anticipatory test creation** - Do not write tests for functionality that doesn't exist yet
-- **Test-first development** - Tests must be written AFTER implementation, not before
-- **Future functionality tests** - No placeholder or skeleton tests for planned features
-- **Broken build tolerance** - Build and tests must remain passing at all times
-- **Speculative testing** - No tests based on anticipated API changes or future requirements
+## Advanced IDE Features
+- **Code completion** - No IntelliSense or autocomplete functionality
+- **Refactoring tools** - No extract method, rename variable, or structural refactoring
+- **Navigation features** - No go-to-definition, find usages, or symbol navigation
+- **Debugging support** - No breakpoint integration or debug assistance
+- **Code folding** - No collapsible regions or outline views
+- **Syntax highlighting** - Output formatted text only, no color/syntax markup
+
+## Version Control Integration
+- **Git blame/history** - No integration with version control for blame or history views
+- **Diff generation** - No visual diff tools or merge conflict resolution
+- **Patch application** - No automatic patch generation or application
+- **Branch-aware formatting** - No different formatting rules per git branch
+- **Commit hook integration** - Basic CLI only, no sophisticated git hook management
+
+## Enterprise/Team Features
+- **User authentication** - No user accounts, permissions, or access control
+- **Team collaboration** - No shared configurations, comments, or collaborative editing
+- **Code review integration** - No integration with Gerrit, GitHub PR, or other review tools
+- **Approval workflows** - No formatting rule approval or governance processes
+- **Audit trails** - No detailed user activity logging or compliance reporting
+- **Role-based permissions** - All users have same formatting capabilities
+
+## Web/Cloud Services
+- **Web-based interface** - Command-line tool only, no web UI
+- **Cloud storage** - Local file-based configuration only
+- **SaaS deployment** - Standalone CLI tool, not a hosted service
+
+## Real-time/Interactive Features
+- **Live formatting** - No real-time formatting during typing (format-on-save only)
+- **Interactive configuration** - No GUI for configuration management
+- **Preview modes** - No before/after previews or interactive formatting options
+- **Undo/redo** - No formatting history or rollback capabilities beyond file backup
+- **Incremental formatting** - Full file processing only, no partial/incremental updates
+
+## Complex Build Integration
+- **Maven/Gradle plugin complexity** - Basic plugin only, no complex lifecycle integration
+- **Build caching** - No sophisticated build cache integration or dependency tracking
+- **Incremental builds** - No build system incremental compilation integration
+- **Multi-module coordination** - Process files independently, no cross-module formatting rules
+- **Custom build phases** - Standard formatting only, no custom build phase integration
+
+## Transformation Context API Simplifications
+- **Complex authorization frameworks** - Rules run sequentially and should transform freely
+- **Transaction management** - No need for transactions since rules execute sequentially per region
+- **Conflict resolution systems** - No parallel rule conflicts in sequential execution model
+- **Security audit trails** - No security event logging needed for code formatting operations
+- **Resource limit enforcement** - Trust formatting rules to behave appropriately
+- **Async execution support** - Sequential rule execution model doesn't require async operations
+- **Complex validation frameworks** - Basic structural integrity validation sufficient
+
+## Performance/Scalability Extremes
+- **Massive file support** - Reasonable limits on file size (e.g., 10MB max per file)
+- **Extreme concurrency** - Reasonable thread limits based on available CPU cores
+- **Memory optimization** - Good performance but not extreme memory constraints
+- **Distributed processing** - Single-machine processing only, no distributed computing
+- **Real-time constraints** - Batch processing acceptable, no hard real-time requirements
+
+## Legacy Java Support
+- **Java 8 and below** - Java 17+ only for runtime, can format older source syntax
+- **Legacy build tools** - Maven 3.6+ and Gradle 6+ only
+- **Deprecated APIs** - No support for deprecated Java features in generated code
+- **Binary compatibility** - Source code formatting only, no bytecode manipulation
+- **Class file analysis** - Source code only, no .class file inspection or modification
 
 ## Enforcement
 
-**CRITICAL**: OUT OF SCOPE TASKS MUST NEVER BE ADDED TO TODO.MD OR WORKED ON. If a task involves any of the above technologies, **REJECT** it completely.
+**CRITICAL**: OUT OF SCOPE FEATURES MUST NEVER BE ADDED TO TODO.MD OR IMPLEMENTED. If a requested feature involves any of the above areas, **REJECT** it completely and suggest alternatives within scope.
 
-**Alternative Approaches**: If functionality is needed, use:
-- Pure Java libraries
-- Lightweight embedded solutions
-- In-memory implementations
-- File-based storage where needed
-- Simple HTTP endpoints for browser communication
-- Client-side state management in browser for progressive input
-- Self-contained tax calculation implementations
-- JSON configuration files for tax constants and temporal rules
-- Direct method replacement instead of deprecation for internal code
-- **Implementation-first testing**: Write functionality first, then add corresponding tests to maintain build integrity
+**Alternative Approaches**: When functionality is needed, prefer:
+- **Simple file-based solutions** over complex database or cloud storage
+- **Command-line interfaces** over web UIs or complex interactive features
+- **Direct AST manipulation** over complex transformation frameworks
+- **Sequential processing** over complex parallel or async architectures
+- **Configuration files** over user management or authentication systems
+- **Standard libraries** over external services or complex dependencies
 
-## Tax Engine Configuration Guidelines
-
-**IN SCOPE**: Tax rule configuration using:
-- JSON configuration files for tax constants and rules
-- Date-based rule application for temporal tax changes
-- Jurisdiction-specific configuration file organization
-- Runtime loading of tax configuration data
-- File-based storage for tax rule versioning
-
-**OUT OF SCOPE**: Complex tax rule management:
-- **External tax service integration** - Tax calculations must be self-contained
-- **Database-driven tax rules** - Use JSON file configuration only
-- **Real-time tax rule updates** - Configuration loaded at startup/runtime as needed
-- **Distributed tax rule synchronization** - Single application instance tax rule management
-
-## Progressive Input Implementation Guidelines
-
-**IN SCOPE**: Simple progressive input using:
-- Client-side state management for incremental data
-- HTTP requests triggered by client-side data changes
-- Browser local storage for data persistence
-- Simple form validation and user feedback
-
-**OUT OF SCOPE**: Complex progressive input patterns:
-- **Server-side session tracking** - All progressive state managed client-side
-- **Real-time synchronization** - Use simple request/response for updates
-- **Complex state management frameworks** - Keep progressive updates simple
-- **Database persistence** - Progressive data stored client-side only
-- **Multi-user collaborative input** - Single user progressive input only
+**Focus**: Keep Styler as a focused, efficient Java code formatter that does one thing exceptionally well: formatting Java source code according to configurable style rules.

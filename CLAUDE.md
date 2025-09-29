@@ -9,6 +9,7 @@ Styler Java Code Formatter project configuration and workflow guidance.
 **CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See task-protocol.md
 **CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
 **TODO Synchronization**: Keep TodoWrite tool synced with todo.md file.
+**TODO Clarity**: Each todo.md entry must contain sufficient detail to understand the task without external context. One-line descriptions require nested sub-items explaining Purpose, Scope, Components/Features, and Integration points.
 **🚨 VIOLATION = IMMEDIATE TASK RESTART REQUIRED**
 
 ## 🚨 RISK-BASED PROTOCOL SELECTION

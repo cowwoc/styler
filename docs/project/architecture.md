@@ -280,6 +280,20 @@ profiles:
 
 **Purpose**: Multi-threaded file processing and coordination
 
+#### Multi-threaded Processing Design
+The formatter uses a sophisticated threading model for optimal performance:
+
+- **Work-Stealing Thread Pool**: Dynamic load balancing across available CPU cores
+- **File-Level Parallelism**: Individual files processed concurrently
+- **Memory-Bounded Processing**: Automatic memory management with configurable limits
+- **Progress Reporting**: Real-time progress updates for large codebase processing
+
+#### Security and Resource Management
+- **Sandboxed Execution**: No dynamic code compilation or execution
+- **Path Validation**: Comprehensive input validation for all file operations
+- **Resource Limits**: Automatic termination of excessive processing operations
+- **Error Isolation**: Failures in one file don't affect processing of other files
+
 **Core Engine Classes**:
 ```java
 public class ParallelFormattingEngine {
@@ -313,10 +327,79 @@ public class FormattingPipeline {
 - Performance metrics and profiling
 
 **Threading Model**:
-- File-level parallelism (individual files processed concurrently)
-- Lock-free AST operations (immutable nodes)
+
+Styler uses a sophisticated multi-level threading model designed for optimal performance across different scales:
+
+*Current Implementation: Sequential Per File*
+- **File-Level Parallelism**: Multiple files processed concurrently across CPU cores
+- **Sequential Rule Execution**: Within each file, formatting rules execute sequentially
+- **Lock-Free AST Operations**: Immutable AST nodes enable safe concurrent processing
+- **Thread Ownership**: Each thread owns complete lifecycle of its assigned files
+
+*Future Enhancement: Block-Level Parallelism*
+For very large files, planned enhancement to support intra-file parallelism:
+
+**Thread Ownership with Context Sharing Model**:
+- Parent thread parses entire file into immutable AST for shared context
+- Child threads receive immutable parent context + mutable working copy of their block
+- Each thread has exclusive ownership of its mutable working block
+- Parent context (class info, field types, method signatures) shared read-only across threads
+- No synchronization needed: immutable context + thread-owned mutable blocks
+
+**Fully Parallel Processing with Gather-Reduce Pattern**:
+```java
+// All rules run in parallel - even "global" ones use gather-reduce
+blocks = parseIntoBlocks(file)
+ConcurrentMap<String, UsageData> globalData = new ConcurrentHashMap<>();
+
+List<Future<BlockResult>> futures = blocks.parallelStream().map(block ->
+    CompletableFuture.supplyAsync(() -> {
+        context = new MutableFormattingContext(block.ast)
+
+        // Apply ALL formatting rules in parallel
+        applyAllFormattingRules(context)
+
+        // Contribute to global analysis (thread-safe)
+        return new BlockResult(
+            formattedBlock: context.getFormattedAST(),
+            importUsage: analyzeTypeReferences(block.ast),      // For import optimization
+            methodCalls: findMethodReferences(block.ast),       // For method ordering
+            memberUsage: findMemberReferences(block.ast)        // For unused detection
+        );
+    })
+).collect(toList());
+
+// Consolidate global data (very fast - just aggregation)
+Set<String> allUsedImports = consolidateImportUsage(futures);
+Map<String, List<String>> callGraph = buildCallGraph(futures);
+Set<String> unusedMembers = findUnusedMembers(futures);
+
+// Apply global optimizations to final AST (minimal work)
+optimizeImportsAndMemberOrdering(allUsedImports, callGraph, unusedMembers);
+```
+
+**Rule Classification (Fully Parallel)**:
+- **PARALLEL_FORMATTING**: All formatting rules (100% of rules can run in parallel!)
+  - Examples: Indentation, line wrapping, whitespace, braces, comments
+- **PARALLEL_ANALYSIS**: Global analysis via gather-reduce pattern
+  - Examples: Import usage analysis, method call analysis, member usage analysis
+- **CONSOLIDATION**: Fast data aggregation (typically <1ms)
+  - Examples: Import optimization, method ordering, unused member removal
+- **CROSS_FILE**: Still needs file-level coordination (very rare)
+  - Examples: Package-level dependency refactoring
+
+**Benefits**:
+- Zero synchronization overhead (thread ownership)
+- Natural work-stealing load balancing
+- Thread-local memory allocation (efficient GC)
+- Scales to very large files (1000+ methods)
+
+**Current Status**: Sequential approach is optimal for typical file sizes. Block-level parallelism will be implemented when performance analysis shows benefit for target codebases.
+
+*Memory Management and Threading*:
 - Thread-local caching for performance
 - Automatic thread pool sizing based on CPU cores
+- Per-thread resource management and cleanup
 
 ### 7. styler-security
 

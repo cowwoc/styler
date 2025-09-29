@@ -199,37 +199,22 @@ Styler supports these primary use cases across two integration modes:
 - <1% false positive rate in formatting decisions
 - Support for incremental formatting of changed sections only
 
-## AST Parser Architecture
+## Technical Capabilities
 
-### Multi-threaded AST Processing System
-- **Independent Operation**: AST parsing runs without external dependencies
-- **Comprehensive Coverage**: Handle all Java language constructs from Java 8 to JDK 25
-- **Parallel Processing**: Efficient multi-threaded file processing with work-stealing
-- **Extensible Design**: Architecture supports additional formatting rules and language features
-
-### AST Processing Capabilities
+### AST Processing Features
 - **Full Language Support**: Complete JDK 25 feature coverage (pattern matching, string templates, etc.)
 - **Comment Preservation**: Maintain all comments, whitespace, and formatting hints
 - **Incremental Parsing**: Support for parsing only changed sections of files
 - **Error Recovery**: Graceful handling of malformed or partial Java files
 - **Multi-version Support**: Parse files written for different Java versions
 
-### Plugin System Architecture
+### Plugin System Capabilities
 - **Modular Design**: Formatting rules implemented as independent plugins
 - **Configurable Rules**: Users can enable/disable specific formatting plugins
 - **Custom Extensions**: Support for user-defined formatting rules and auto-fixers
 - **Conflict Resolution**: Handle conflicts between competing formatting rules
-- **Performance Optimization**: Efficient plugin loading and execution
 
-## Performance and Threading Model
-
-### Multi-threaded Processing Design
-The formatter uses a sophisticated threading model for optimal performance:
-
-- **Work-Stealing Thread Pool**: Dynamic load balancing across available CPU cores
-- **File-Level Parallelism**: Individual files processed concurrently
-- **Memory-Bounded Processing**: Automatic memory management with configurable limits
-- **Progress Reporting**: Real-time progress updates for large codebase processing
+## Performance Requirements
 
 ### Performance Targets
 
@@ -245,36 +230,21 @@ The formatter uses a sophisticated threading model for optimal performance:
 - **Scalability**: Near-linear scaling up to 16 CPU cores
 - **Latency**: <100ms response time for single file formatting
 
-### Security and Resource Management
-- **Sandboxed Execution**: No dynamic code compilation or execution
-- **Path Validation**: Comprehensive input validation for all file operations
-- **Resource Limits**: Automatic termination of excessive processing operations
-- **Error Isolation**: Failures in one file don't affect processing of other files
+### Architecture Guidelines
 
-## Architecture Guidelines
-
-### Command-Line Tool Architecture
-
-The formatter is designed as a **standalone command-line tool** with the following principles:
-
+**Command-Line Tool Architecture**:
 - **Self-Contained Operations**: Tool operates independently without external services
 - **File-Based Processing**: Direct file system interaction for reading and writing Java files
 - **Configuration-Driven**: All formatting behavior controlled through configuration files
 - **Stateless Execution**: Each run processes files independently without persistent state
 
-### Plugin Architecture
-
+**Plugin Architecture**:
 - **Rule-Based Formatting**: All formatting logic implemented as pluggable rules
 - **Configuration Integration**: Plugins configured through YAML configuration files
 - **Extension Points**: Clear interfaces for adding custom formatting rules
 - **Performance Optimization**: Efficient plugin loading and rule application
 
-### Threading and Concurrency
-
-- **Parallel File Processing**: Multiple files processed simultaneously using thread pools
-- **Lock-Free AST Operations**: Immutable AST nodes enable safe concurrent processing
-- **Memory Management**: Automatic resource cleanup and bounded memory usage
-- **Error Recovery**: Individual file failures don't affect overall processing
+**📋 For detailed technical architecture, threading models, and implementation details, see [architecture.md](architecture.md)**
 
 ## User Experience Requirements
 

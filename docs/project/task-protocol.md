@@ -174,7 +174,10 @@ Batch requests are seamlessly translated to continuous workflow mode, maintainin
 ### Pattern: Pre-Task Validation Block
 ```
 BEFORE ANY TASK: Execute this exact tool sequence:
-1. Bash: export SESSION_ID="${CLAUDE_SESSION_ID:-$(whoami)-$$}"  
+1. Bash: export SESSION_ID="${CLAUDE_SESSION_ID}"
+   # NOTE: If CLAUDE_SESSION_ID is not set, use your actual session ID from system note
+   # Example: export SESSION_ID="c4732621-cd9f-4240-9f04-e65aedc25a6d"
+   # CRITICAL: If you do not know your session ID, ABORT task protocol and notify user  
 2. Bash: pwd (verify location)
 3. Read: todo.md (extract exact task name)
 4. Grep: task name in todo.md (verify existence)
