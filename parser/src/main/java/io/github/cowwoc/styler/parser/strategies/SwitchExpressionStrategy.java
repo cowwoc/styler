@@ -39,9 +39,9 @@ public class SwitchExpressionStrategy implements ParseStrategy {
 
         int endPos = context.getCurrentPosition();
 
-        // Use NodeRegistry to create the node (assuming access to registry)
-        // In a full implementation, this would be properly integrated
-        return context.getNodeRegistry().allocateNode(NodeType.SWITCH_EXPRESSION, startPos, endPos - startPos, -1);
+        // Use ArenaNodeStorage to create the node with proper parent tracking
+        // This integrates with the Arena API memory allocation system
+        return context.getNodeStorage().allocateNode(startPos, endPos - startPos, NodeType.SWITCH_EXPRESSION, -1);
     }
 
     @Override

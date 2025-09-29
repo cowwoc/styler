@@ -40,9 +40,10 @@ import java.util.List;
  * <h2>Usage Example</h2>
  * <pre>{@code
  * String javaCode = "public class Example { ... }";
- * IndexOverlayParser parser = new IndexOverlayParser(javaCode, JavaVersion.JAVA_21);
- * int rootNodeId = parser.parse();
- * NodeRegistry nodes = parser.getNodeRegistry();
+ * try (IndexOverlayParser parser = new IndexOverlayParser(javaCode, JavaVersion.JAVA_21)) {
+ *     int rootNodeId = parser.parse();
+ *     ArenaNodeStorage nodes = parser.getNodeStorage();
+ * }
  * }</pre>
  *
  * <h2>Error Handling</h2>
@@ -219,22 +220,30 @@ public class IndexOverlayParser implements AutoCloseable {
         int startPos = context.getCurrentPosition();
         int compilationUnitId = nodeStorage.allocateNode(startPos, 0, NodeType.COMPILATION_UNIT, -1);
 
-        // Check for JDK 25 compact source file - methods directly in compilation unit
-        if (isCompactSourceFile(context)) {
-            return parseCompactSourceFile(context, compilationUnitId);
+        // Establish compilation unit as root parent for all child nodes
+        context.pushParent(compilationUnitId);
+
+        try {
+            // Check for JDK 25 compact source file - methods directly in compilation unit
+            if (isCompactSourceFile(context)) {
+                return parseCompactSourceFile(context, compilationUnitId);
+            }
+
+            // Parse standard compilation unit structure
+            parseOptionalPackageDeclaration(context);
+            parseImportDeclarations(context);
+            parseTypeDeclarations(context);
+
+            // Update the compilation unit's length
+            int endPos = context.getCurrentPosition();
+            int calculatedLength = endPos - startPos;
+            context.updateNodeLength(compilationUnitId, calculatedLength);
+
+            return compilationUnitId;
+        } finally {
+            // Pop the compilation unit parent
+            context.popParent();
         }
-
-        // Parse standard compilation unit structure
-        parseOptionalPackageDeclaration(context);
-        parseImportDeclarations(context);
-        parseTypeDeclarations(context);
-
-        // Update the compilation unit's length
-        int endPos = context.getCurrentPosition();
-        int calculatedLength = endPos - startPos;
-        context.updateNodeLength(compilationUnitId, calculatedLength);
-
-        return compilationUnitId;
     }
 
     /**
@@ -471,7 +480,7 @@ public class IndexOverlayParser implements AutoCloseable {
         context.expect(TokenType.SEMICOLON);
 
         int endPos = context.getCurrentPosition();
-        return nodeStorage.allocateNode(startPos, endPos - startPos, NodeType.PACKAGE_DECLARATION, -1);
+        return allocateNodeWithParent(context, startPos, endPos - startPos, NodeType.PACKAGE_DECLARATION);
     }
 
     private int parseImportDeclaration(ParseContext context) {
@@ -498,7 +507,7 @@ public class IndexOverlayParser implements AutoCloseable {
         context.expect(TokenType.SEMICOLON);
 
         int endPos = context.getCurrentPosition();
-        return nodeStorage.allocateNode(startPos, endPos - startPos, NodeType.IMPORT_DECLARATION, -1);
+        return allocateNodeWithParent(context, startPos, endPos - startPos, NodeType.IMPORT_DECLARATION);
     }
 
     /**
@@ -565,7 +574,7 @@ public class IndexOverlayParser implements AutoCloseable {
         }
 
         int endPos = context.getCurrentPosition();
-        return nodeStorage.allocateNode(nodeType, startPos, endPos - startPos, -1);
+        return nodeStorage.allocateNode(startPos, endPos - startPos, nodeType, -1);
     }
 
     /**
@@ -2044,12 +2053,12 @@ public class IndexOverlayParser implements AutoCloseable {
             case INTEGER_LITERAL, LONG_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL,
                  BOOLEAN_LITERAL, CHARACTER_LITERAL, STRING_LITERAL, NULL_LITERAL -> {
                 context.advance();
-                nodeStorage.allocateNode(NodeType.LITERAL_EXPRESSION, startPos, context.getCurrentPosition() - startPos, -1);
+                nodeStorage.allocateNode(startPos, context.getCurrentPosition() - startPos, NodeType.LITERAL_EXPRESSION, -1);
             }
             case TEXT_BLOCK_LITERAL -> {
                 // JDK 15+ text blocks
                 context.advance();
-                nodeStorage.allocateNode(NodeType.LITERAL_EXPRESSION, startPos, context.getCurrentPosition() - startPos, -1);
+                nodeStorage.allocateNode(startPos, context.getCurrentPosition() - startPos, NodeType.LITERAL_EXPRESSION, -1);
             }
             case IDENTIFIER -> {
                 // Check for method references after identifier
@@ -2057,7 +2066,7 @@ public class IndexOverlayParser implements AutoCloseable {
                     parseMethodReference(context);
                 } else {
                     context.advance();
-                    nodeStorage.allocateNode(NodeType.IDENTIFIER_EXPRESSION, startPos, context.getCurrentPosition() - startPos, -1);
+                    nodeStorage.allocateNode(startPos, context.getCurrentPosition() - startPos, NodeType.IDENTIFIER_EXPRESSION, -1);
                 }
             }
             case THIS, SUPER -> {
@@ -2066,7 +2075,7 @@ public class IndexOverlayParser implements AutoCloseable {
                     parseMethodReference(context);
                 } else {
                     context.advance();
-                    nodeStorage.allocateNode(NodeType.IDENTIFIER_EXPRESSION, startPos, context.getCurrentPosition() - startPos, -1);
+                    nodeStorage.allocateNode(startPos, context.getCurrentPosition() - startPos, NodeType.IDENTIFIER_EXPRESSION, -1);
                 }
             }
             case LPAREN -> {
@@ -2167,22 +2176,50 @@ public class IndexOverlayParser implements AutoCloseable {
      * Gets the textual content of a node.
      */
     public String getNodeText(int nodeId) {
-        var node = nodeRegistry.getNode(nodeId);
+        var node = nodeStorage.getNode(nodeId);
         return sourceText.substring(node.startOffset(), node.endOffset());
     }
 
     /**
      * Gets node metadata.
      */
-    public NodeRegistry.NodeInfo getNode(int nodeId) {
-        return nodeRegistry.getNode(nodeId);
+    public ArenaNodeStorage.NodeInfo getNode(int nodeId) {
+        return nodeStorage.getNode(nodeId);
     }
 
     /**
-     * Gets the node registry for advanced operations.
+     * Gets the node storage for advanced operations.
      */
-    public NodeRegistry getNodeRegistry() {
-        return nodeRegistry;
+    public ArenaNodeStorage getNodeStorage() {
+        return nodeStorage;
+    }
+
+    /**
+     * Closes the parser and releases Arena memory.
+     */
+    @Override
+    public void close() {
+        nodeStorage.close();
+    }
+
+    /**
+     * Helper method to allocate a node with proper parent tracking.
+     * This creates a child node of the current parent and pushes it as the new parent.
+     */
+    private int allocateNodeWithParent(ParseContext context, int start, int length, byte nodeType) {
+        int parent = context.getCurrentParent();
+        int nodeId = nodeStorage.allocateNode(start, length, nodeType, parent);
+        return nodeId;
+    }
+
+    /**
+     * Helper method to allocate a node and push it as the new parent for child nodes.
+     * Use this when starting to parse a construct that contains other nodes.
+     */
+    private int allocateParentNode(ParseContext context, int start, int length, byte nodeType) {
+        int nodeId = allocateNodeWithParent(context, start, length, nodeType);
+        context.pushParent(nodeId);
+        return nodeId;
     }
 
     /**

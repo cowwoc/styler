@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class ParseContext {
     private final List<TokenInfo> tokens;
-    private final NodeRegistry nodeRegistry;
+    private final ArenaNodeStorage nodeStorage;
     private final String sourceText;
     private int currentTokenIndex = 0;
     private TokenInfo pendingToken = null; // For injected tokens (e.g., splitting >> into > >)
@@ -17,9 +17,13 @@ public class ParseContext {
     private static final int MAX_RECURSION_DEPTH = 1000;
     private int currentRecursionDepth = 0;
 
-    public ParseContext(List<TokenInfo> tokens, NodeRegistry nodeRegistry, String sourceText) {
+    // Parent tracking for proper AST structure
+    private int[] parentStack = new int[MAX_RECURSION_DEPTH];
+    private int parentStackTop = -1;
+
+    public ParseContext(List<TokenInfo> tokens, ArenaNodeStorage nodeStorage, String sourceText) {
         this.tokens = tokens;
-        this.nodeRegistry = nodeRegistry;
+        this.nodeStorage = nodeStorage;
         this.sourceText = sourceText;
     }
 
@@ -116,7 +120,7 @@ public class ParseContext {
      * Updates a node's length (used when end position is determined later).
      */
     public void updateNodeLength(int nodeId, int newLength) {
-        nodeRegistry.updateNodeLength(nodeId, newLength);
+        nodeStorage.updateNodeLength(nodeId, newLength);
     }
 
     /**
@@ -184,9 +188,39 @@ public class ParseContext {
     }
 
     /**
-     * Gets the node registry for creating AST nodes.
+     * Gets the node storage for creating AST nodes.
      */
-    public NodeRegistry getNodeRegistry() {
-        return nodeRegistry;
+    public ArenaNodeStorage getNodeStorage() {
+        return nodeStorage;
+    }
+
+    /**
+     * Gets the current parent node ID for creating child nodes.
+     * Returns -1 if no parent (root level).
+     */
+    public int getCurrentParent() {
+        return parentStackTop >= 0 ? parentStack[parentStackTop] : -1;
+    }
+
+    /**
+     * Pushes a parent node ID onto the parent stack.
+     * This should be called when entering a new AST scope.
+     */
+    public void pushParent(int parentId) {
+        if (parentStackTop + 1 >= MAX_RECURSION_DEPTH) {
+            throw new RuntimeException("Parent stack overflow: too many nested nodes");
+        }
+        parentStack[++parentStackTop] = parentId;
+    }
+
+    /**
+     * Pops the current parent from the parent stack.
+     * This should be called when exiting an AST scope.
+     */
+    public void popParent() {
+        if (parentStackTop < 0) {
+            throw new RuntimeException("Parent stack underflow: no parent to pop");
+        }
+        parentStackTop--;
     }
 }
