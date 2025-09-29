@@ -690,15 +690,24 @@ If RESOLVE_NOW: Confirm all issues must be resolved in current task
 ### COMPLETE → CLEANUP
 **Mandatory Conditions:**
 - [ ] All work committed to task branch with descriptive commit message
-- [ ] Task branch merged to main branch via fast-forward merge
+- [ ] Task branch merged to main branch with **LINEAR COMMIT HISTORY** (fast-forward only, NO merge commits)
 - [ ] todo.md updated to mark task complete (in same commit as deliverables)
 - [ ] Build verification passes on main branch after merge
 
 **Evidence Required:**
-- Git log showing clean merge to main
+- Git log showing clean linear history (no merge commits)
 - todo.md modification included in final commit
 - Main branch build success after integration
 - All deliverables preserved in main branch
+
+**CRITICAL: Linear Commit History Requirement**
+
+**Why Linear History?**
+- Preserves clean, readable commit history for code archaeology
+- Enables precise git bisect for regression identification
+- Simplifies revert operations and cherry-picking
+- Avoids visual clutter from merge commits in git log
+- Maintains chronological order of changes
 
 **Git Safety Sequence:**
 ```bash
@@ -706,14 +715,38 @@ If RESOLVE_NOW: Confirm all issues must be resolved in current task
 rm -f .temp_dir
 git status --porcelain | grep -E "(dist/|target/|\.temp_dir$)" | wc -l  # Must be 0
 
-# Linear merge requirement
+# REQUIRED: Rebase onto main to create linear history
+cd /workspace/branches/task-name/code
 git rebase main
+
+# REQUIRED: Fast-forward merge only (creates linear history)
 cd /workspace/branches/main/code
 git merge --ff-only task-name
 
+# ❌ PROHIBITED: Never use --no-ff (creates merge commits)
+# git merge --no-ff task-name  # WRONG - violates linear history
+
 # Verification
-git log --oneline -3  # Verify linear history
+git log --oneline -5  # Must show linear history, no merge commits
+git log --graph --oneline -10  # Should show straight line, not branches
 ./mvnw clean verify -q  # Verify build integrity
+```
+
+**Fast-Forward Merge Validation:**
+After merge, `git log --graph --oneline` should show:
+```
+* 7f8deba (HEAD -> main) Implement CLI security basics (SEC-001 through SEC-007)
+* 6a2b1c3 Previous commit on main
+* 5d9e4f2 Earlier commit
+```
+
+NOT this (merge commit creates non-linear history):
+```
+*   8g9h5i6 (HEAD -> main) Merge branch 'implement-cli-security-basics'  ← ❌ WRONG
+|\
+| * 7f8deba Implement CLI security basics
+|/
+* 6a2b1c3 Previous commit on main
 ```
 
 ### CLEANUP (Final State)
