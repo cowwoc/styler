@@ -3,6 +3,9 @@ package io.github.cowwoc.styler.cli;
 import io.github.cowwoc.styler.cli.commands.CheckCommand;
 import io.github.cowwoc.styler.cli.commands.ConfigCommand;
 import io.github.cowwoc.styler.cli.commands.FormatCommand;
+import io.github.cowwoc.styler.cli.security.SecurityConfig;
+import io.github.cowwoc.styler.cli.security.SecurityManager;
+import io.github.cowwoc.styler.cli.security.exceptions.SecurityException;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
@@ -10,6 +13,7 @@ import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.List;
@@ -30,6 +34,25 @@ import java.util.concurrent.Callable;
 public class CommandLineParser
 {
 	private static final String VERSION = "1.0-SNAPSHOT";
+	private final SecurityManager securityManager;
+
+	/**
+	 * Constructs a new command-line parser with default security configuration.
+	 */
+	public CommandLineParser()
+	{
+		this(SecurityConfig.defaults());
+	}
+
+	/**
+	 * Constructs a new command-line parser with custom security configuration.
+	 *
+	 * @param securityConfig the security configuration to use
+	 */
+	public CommandLineParser(SecurityConfig securityConfig)
+	{
+		this.securityManager = new SecurityManager(securityConfig);
+	}
 
 	/**
 	 * Parses command-line arguments and returns validated configuration.
@@ -133,6 +156,23 @@ public class CommandLineParser
 
 			// Validate argument combinations
 			validateArguments(command, inputFiles, verbose, quiet);
+
+			// Security validation: Validate all input files
+			if (!inputFiles.isEmpty())
+			{
+				try
+				{
+					inputFiles = securityManager.validateFiles(inputFiles);
+				}
+				catch (SecurityException | IOException e)
+				{
+					throw new ArgumentParsingException(
+						"Security validation failed: " + e.getMessage(),
+						getUsageText(),
+						e
+					);
+				}
+			}
 
 			return ParsedArguments.of(
 				inputFiles,

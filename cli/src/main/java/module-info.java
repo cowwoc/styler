@@ -21,6 +21,10 @@ module io.github.cowwoc.styler.cli
 	// Export CLI package for picocli access
 	exports io.github.cowwoc.styler.cli to info.picocli;
 
+	// Export security packages
+	exports io.github.cowwoc.styler.cli.security;
+	exports io.github.cowwoc.styler.cli.security.exceptions;
+
 	// Open packages for picocli reflection access
 	opens io.github.cowwoc.styler.cli to info.picocli;
 	opens io.github.cowwoc.styler.cli.commands to info.picocli;
