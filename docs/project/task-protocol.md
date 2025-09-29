@@ -174,14 +174,13 @@ Batch requests are seamlessly translated to continuous workflow mode, maintainin
 ### Pattern: Pre-Task Validation Block
 ```
 BEFORE ANY TASK: Execute this exact tool sequence:
-1. Bash: export SESSION_ID="${CLAUDE_SESSION_ID}"
-   # NOTE: If CLAUDE_SESSION_ID is not set, use your actual session ID from system note
-   # Example: export SESSION_ID="c4732621-cd9f-4240-9f04-e65aedc25a6d"
-   # CRITICAL: If you do not know your session ID, ABORT task protocol and notify user  
+1. Bash: export SESSION_ID="${CLAUDE_SESSION_ID:-REPLACE_WITH_ACTUAL_SESSION_ID}" && [ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "REPLACE_WITH_ACTUAL_SESSION_ID" ] && echo "SESSION_ID_VALID: $SESSION_ID" || (echo "SESSION_ID_INVALID: Must replace REPLACE_WITH_ACTUAL_SESSION_ID with actual session ID from system notes" && exit 1)
+   # CRITICAL: Replace "REPLACE_WITH_ACTUAL_SESSION_ID" with your actual session ID from system notes
+   # Example: export SESSION_ID="${CLAUDE_SESSION_ID:-6ac1b665-b5a3-4d4b-a91f-42a81001df3a}" && [ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "REPLACE_WITH_ACTUAL_SESSION_ID" ] && echo "SESSION_ID_VALID: $SESSION_ID" || (echo "SESSION_ID_INVALID" && exit 1)
 2. Bash: pwd (verify location)
 3. Read: todo.md (extract exact task name)
 4. Grep: task name in todo.md (verify existence)
-VIOLATION CHECK: All commands must succeed
+VIOLATION CHECK: All commands must succeed AND SESSION_ID validation must show "SESSION_ID_VALID"
 ```
 
 ### Pattern: Comprehensive Agent Selection Decision Tree
@@ -264,7 +263,7 @@ AGENT SELECTION VERIFICATION CHECKLIST:
 BASH COMMAND SEQUENCE (must execute as single command):
 mkdir -p ../../../locks; (set -C; echo '{"session_id": "'${SESSION_ID}'", "start_time": "'$(date '+%Y-%m-%d %H:%M:%S %Z')'"}' > ../../../locks/{task-name}.json) 2>/dev/null && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
 
-VIOLATION CHECK: Output must contain "LOCK_SUCCESS"
+VIOLATION CHECK: Output must contain "LOCK_SUCCESS" AND previous SESSION_ID validation must show "SESSION_ID_VALID"
 IF "LOCK_FAILED": Determine failure cause and respond appropriately:
   - IF another instance holds lock (check ../../../locks/{task-name}.json exists): Select different available task
   - IF permission/I/O error (mkdir or echo command fails): ABORT task execution - system-level issue requires manual intervention
