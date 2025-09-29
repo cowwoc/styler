@@ -2,15 +2,16 @@ package io.github.cowwoc.styler.parser.test;
 
 import io.github.cowwoc.styler.parser.ArenaNodeStorage;
 import io.github.cowwoc.styler.parser.NodeType;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
+import org.testng.annotations.Test;
+// DisplayName converted to Test description
+// Nested classes kept as inner classes
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterMethod;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.testng.Assert.*;
+import static org.testng.Assert.fail;
 
 /**
  * Comprehensive unit tests for ArenaNodeStorage - validating the Arena API implementation
@@ -28,13 +29,10 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ArenaNodeStorageTest {
 
-	@Nested
-	@DisplayName("Arena Creation and Lifecycle")
+	
 	class ArenaCreationTests {
 
-		@Test
-		@DisplayName("Should create arena with specified capacity and validate initial state")
-		void shouldCreateArenaWithSpecifiedCapacity() {
+		@Test void shouldCreateArenaWithSpecifiedCapacity() {
 			int estimatedNodesCapacity = 500;
 
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(estimatedNodesCapacity)) {
@@ -57,9 +55,7 @@ class ArenaNodeStorageTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should create arena with default capacity of 1024")
-		void shouldCreateArenaWithDefaultCapacity() {
+		@Test void shouldCreateArenaWithDefaultCapacity() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create()) {
 				assertEquals(0, storage.getNodeCount(),
 					"Default arena should start with zero nodes");
@@ -77,25 +73,25 @@ class ArenaNodeStorageTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should reject invalid capacity parameters")
-		void shouldRejectInvalidCapacityParameters() {
-			IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> ArenaNodeStorage.create(0),
-				"Should reject zero capacity");
-			assertTrue(exception.getMessage().contains("at least 1"),
-				"Error message should explain minimum capacity requirement");
+		@Test void shouldRejectInvalidCapacityParameters() {
+			try {
+				ArenaNodeStorage.create(0);
+				fail("Expected IllegalArgumentException");
+			} catch (IllegalArgumentException exception) {
+				assertTrue(exception.getMessage().contains("at least 1"),
+					"Error message should explain minimum capacity requirement");
+			}
 
-			exception = assertThrows(IllegalArgumentException.class,
-				() -> ArenaNodeStorage.create(-10),
-				"Should reject negative capacity");
-			assertTrue(exception.getMessage().contains("at least 1"),
-				"Error message should explain minimum capacity requirement");
+			try {
+				ArenaNodeStorage.create(-10);
+				fail("Expected IllegalArgumentException");
+			} catch (IllegalArgumentException exception) {
+				assertTrue(exception.getMessage().contains("at least 1"),
+					"Error message should explain minimum capacity requirement");
+			}
 		}
 
-		@Test
-		@DisplayName("Should properly close arena and release memory")
-		void shouldProperlyCloseArenaAndReleaseMemory() {
+		@Test void shouldProperlyCloseArenaAndReleaseMemory() {
 			ArenaNodeStorage storage = ArenaNodeStorage.create(100);
 
 			// Allocate some nodes
@@ -109,30 +105,26 @@ class ArenaNodeStorageTest {
 
 			// Attempting operations after close should fail
 			assertThrows(Exception.class,
-				() -> storage.allocateNode(25, 5, NodeType.FIELD_DECLARATION, 0),
-				"Should fail to allocate nodes after arena is closed");
+				() -> storage.allocateNode(25, 5, NodeType.FIELD_DECLARATION, 0));
 		}
 	}
 
-	@Nested
-	@DisplayName("Node Allocation and Retrieval")
+	
 	class NodeAllocationTests {
 
 		private ArenaNodeStorage storage;
 
-		@BeforeEach
+		@BeforeMethod
 		void setUp() {
 			storage = ArenaNodeStorage.create(1000);
 		}
 
-		@AfterEach
+		@AfterMethod
 		void tearDown() {
 			storage.close();
 		}
 
-		@Test
-		@DisplayName("Should allocate node with correct memory layout")
-		void shouldAllocateNodeWithCorrectMemoryLayout() {
+		@Test void shouldAllocateNodeWithCorrectMemoryLayout() {
 			int startOffset = 42;
 			int length = 18;
 			byte nodeType = NodeType.CLASS_DECLARATION;
@@ -155,9 +147,7 @@ class ArenaNodeStorageTest {
 			assertEquals("ClassDeclaration", node.getTypeName(), "Type name should be correct");
 		}
 
-		@Test
-		@DisplayName("Should allocate multiple nodes with sequential IDs")
-		void shouldAllocateMultipleNodesWithSequentialIds() {
+		@Test void shouldAllocateMultipleNodesWithSequentialIds() {
 			int numNodes = 50;
 
 			for (int i = 0; i < numNodes; i++) {
@@ -176,9 +166,7 @@ class ArenaNodeStorageTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should reject allocation when arena is full")
-		void shouldRejectAllocationWhenArenaIsFull() {
+		@Test void shouldRejectAllocationWhenArenaIsFull() {
 			int capacity = 10;
 			try (ArenaNodeStorage smallStorage = ArenaNodeStorage.create(capacity)) {
 				// Fill the arena to capacity
@@ -188,22 +176,21 @@ class ArenaNodeStorageTest {
 				assertEquals(capacity, smallStorage.getNodeCount(), "Arena should be at capacity");
 
 				// Next allocation should fail
-				IllegalStateException exception = assertThrows(IllegalStateException.class,
-					() -> smallStorage.allocateNode(100, 5, NodeType.FIELD_DECLARATION, -1),
-					"Should reject allocation when arena is full");
-
-				assertTrue(exception.getMessage().contains("Arena is full"),
-					"Error message should indicate arena is full");
-				assertTrue(exception.getMessage().contains("Allocated: " + capacity),
-					"Error message should show allocated count");
-				assertTrue(exception.getMessage().contains("Capacity: " + capacity),
-					"Error message should show capacity limit");
+				try {
+					smallStorage.allocateNode(100, 5, NodeType.FIELD_DECLARATION, -1);
+					fail("Expected IllegalStateException");
+				} catch (IllegalStateException exception) {
+					assertTrue(exception.getMessage().contains("Arena is full"),
+						"Error message should indicate arena is full");
+					assertTrue(exception.getMessage().contains("Allocated: " + capacity),
+						"Error message should show allocated count");
+					assertTrue(exception.getMessage().contains("Capacity: " + capacity),
+						"Error message should show capacity limit");
+				}
 			}
 		}
 
-		@Test
-		@DisplayName("Should update node length correctly")
-		void shouldUpdateNodeLengthCorrectly() {
+		@Test void shouldUpdateNodeLengthCorrectly() {
 			int nodeId = storage.allocateNode(10, 20, NodeType.CLASS_DECLARATION, -1);
 			ArenaNodeStorage.NodeInfo originalNode = storage.getNode(nodeId);
 			assertEquals(20, originalNode.length(), "Original length should be 20");
@@ -221,51 +208,49 @@ class ArenaNodeStorageTest {
 			assertEquals(originalNode.nodeType(), updatedNode.nodeType(), "Node type should remain unchanged");
 		}
 
-		@Test
-		@DisplayName("Should reject invalid node IDs for operations")
-		void shouldRejectInvalidNodeIdsForOperations() {
+		@Test void shouldRejectInvalidNodeIdsForOperations() {
 			storage.allocateNode(0, 10, NodeType.CLASS_DECLARATION, -1);
 
 			// Test negative node ID
-			IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> storage.getNode(-1),
-				"Should reject negative node ID");
-			assertTrue(exception.getMessage().contains("Invalid node ID: -1"),
-				"Error message should show invalid node ID");
+			try {
+				storage.getNode(-1);
+				fail("Expected IllegalArgumentException");
+			} catch (IllegalArgumentException exception) {
+				assertTrue(exception.getMessage().contains("Invalid node ID: -1"),
+					"Error message should show invalid node ID");
+			}
 
 			// Test node ID beyond allocated range
-			exception = assertThrows(IllegalArgumentException.class,
-				() -> storage.getNode(5),
-				"Should reject node ID beyond allocated range");
-			assertTrue(exception.getMessage().contains("Invalid node ID: 5"),
-				"Error message should show invalid node ID");
+			try {
+				storage.getNode(5);
+				fail("Expected IllegalArgumentException");
+			} catch (IllegalArgumentException exception) {
+				assertTrue(exception.getMessage().contains("Invalid node ID: 5"),
+					"Error message should show invalid node ID");
+			}
 
 			// Test update with invalid node ID
-			exception = assertThrows(IllegalArgumentException.class,
-				() -> storage.updateNodeLength(10, 20),
-				"Should reject update for invalid node ID");
+			assertThrows(IllegalArgumentException.class,
+				() -> storage.updateNodeLength(10, 20));
 		}
 	}
 
-	@Nested
-	@DisplayName("Parent-Child Relationship Management")
+	
 	class ParentChildRelationshipTests {
 
 		private ArenaNodeStorage storage;
 
-		@BeforeEach
+		@BeforeMethod
 		void setUp() {
 			storage = ArenaNodeStorage.create(1000);
 		}
 
-		@AfterEach
+		@AfterMethod
 		void tearDown() {
 			storage.close();
 		}
 
-		@Test
-		@DisplayName("Should establish parent-child relationships correctly")
-		void shouldEstablishParentChildRelationshipsCorrectly() {
+		@Test void shouldEstablishParentChildRelationshipsCorrectly() {
 			// Create root node
 			int rootId = storage.allocateNode(0, 100, NodeType.CLASS_DECLARATION, -1);
 
@@ -295,9 +280,7 @@ class ArenaNodeStorageTest {
 			assertEquals(fieldId, rootChildren.get(2), "Third child should be field");
 		}
 
-		@Test
-		@DisplayName("Should handle nested parent-child relationships")
-		void shouldHandleNestedParentChildRelationships() {
+		@Test void shouldHandleNestedParentChildRelationships() {
 			// Create class -> method -> block -> statement hierarchy
 			int classId = storage.allocateNode(0, 100, NodeType.CLASS_DECLARATION, -1);
 			int methodId = storage.allocateNode(10, 50, NodeType.METHOD_DECLARATION, classId);
@@ -324,9 +307,7 @@ class ArenaNodeStorageTest {
 			assertTrue(stmt1Children.isEmpty(), "Statement should have no children");
 		}
 
-		@Test
-		@DisplayName("Should handle parent-child relationships with array growth")
-		void shouldHandleParentChildRelationshipsWithArrayGrowth() {
+		@Test void shouldHandleParentChildRelationshipsWithArrayGrowth() {
 			int parentId = storage.allocateNode(0, 200, NodeType.CLASS_DECLARATION, -1);
 
 			// Add many children to trigger array growth
@@ -345,9 +326,7 @@ class ArenaNodeStorageTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should handle non-contiguous child allocation correctly")
-		void shouldHandleNonContiguousChildAllocationCorrectly() {
+		@Test void shouldHandleNonContiguousChildAllocationCorrectly() {
 			// Create multiple parents
 			int parent1Id = storage.allocateNode(0, 50, NodeType.CLASS_DECLARATION, -1);
 			int parent2Id = storage.allocateNode(60, 40, NodeType.INTERFACE_DECLARATION, -1);
@@ -372,9 +351,7 @@ class ArenaNodeStorageTest {
 			assertEquals(child2P2, parent2Children.get(1), "Parent2 second child");
 		}
 
-		@Test
-		@DisplayName("Should return empty list for nodes with no children")
-		void shouldReturnEmptyListForNodesWithNoChildren() {
+		@Test void shouldReturnEmptyListForNodesWithNoChildren() {
 			int leafNodeId = storage.allocateNode(0, 10, NodeType.LITERAL_EXPRESSION, -1);
 
 			List<Integer> children = storage.getChildren(leafNodeId);
@@ -384,13 +361,10 @@ class ArenaNodeStorageTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Memory Management and Performance")
+	
 	class MemoryManagementTests {
 
-		@Test
-		@DisplayName("Should calculate estimated memory usage accurately")
-		void shouldCalculateEstimatedMemoryUsageAccurately() {
+		@Test void shouldCalculateEstimatedMemoryUsageAccurately() {
 			int capacity = 1000;
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(capacity)) {
 				long initialMemory = storage.getEstimatedMemoryUsage();
@@ -421,9 +395,7 @@ class ArenaNodeStorageTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should reset storage correctly for reuse")
-		void shouldResetStorageCorrectlyForReuse() {
+		@Test void shouldResetStorageCorrectlyForReuse() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(500)) {
 				// Allocate nodes with parent-child relationships
 				int parent = storage.allocateNode(0, 50, NodeType.CLASS_DECLARATION, -1);
@@ -450,9 +422,7 @@ class ArenaNodeStorageTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should demonstrate memory efficiency compared to object allocation")
-		void shouldDemonstrateMemoryEfficiencyComparedToObjectAllocation() {
+		@Test void shouldDemonstrateMemoryEfficiencyComparedToObjectAllocation() {
 			int numNodes = 10000;
 
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(numNodes)) {
@@ -488,25 +458,22 @@ class ArenaNodeStorageTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Edge Cases and Error Conditions")
+	
 	class EdgeCaseTests {
 
 		private ArenaNodeStorage storage;
 
-		@BeforeEach
+		@BeforeMethod
 		void setUp() {
 			storage = ArenaNodeStorage.create(100);
 		}
 
-		@AfterEach
+		@AfterMethod
 		void tearDown() {
 			storage.close();
 		}
 
-		@Test
-		@DisplayName("Should handle boundary values for node data")
-		void shouldHandleBoundaryValuesForNodeData() {
+		@Test void shouldHandleBoundaryValuesForNodeData() {
 			// Test minimum values
 			int nodeId1 = storage.allocateNode(0, 0, (byte) 0, -1);
 			ArenaNodeStorage.NodeInfo node1 = storage.getNode(nodeId1);
@@ -522,9 +489,7 @@ class ArenaNodeStorageTest {
 			assertEquals(Integer.MAX_VALUE, node2.endOffset(), "Should handle large end offset calculation");
 		}
 
-		@Test
-		@DisplayName("Should handle invalid parent references gracefully")
-		void shouldHandleInvalidParentReferencesGracefully() {
+		@Test void shouldHandleInvalidParentReferencesGracefully() {
 			// Create a node with invalid parent reference (beyond allocated range)
 			// This should not establish parent-child relationship but should not crash
 			int nodeId = storage.allocateNode(10, 20, NodeType.METHOD_DECLARATION, 999);
@@ -538,9 +503,7 @@ class ArenaNodeStorageTest {
 			assertEquals(1, storage.getNodeCount(), "Should still have the allocated node");
 		}
 
-		@Test
-		@DisplayName("Should handle allocation with parent created after child attempt")
-		void shouldHandleAllocationWithParentCreatedAfterChildAttempt() {
+		@Test void shouldHandleAllocationWithParentCreatedAfterChildAttempt() {
 			// Allocate child first (which should work but not establish relationship)
 			int childId = storage.allocateNode(10, 15, NodeType.METHOD_DECLARATION, 5);
 			assertEquals(0, childId, "Child should be allocated with ID 0");
@@ -558,9 +521,7 @@ class ArenaNodeStorageTest {
 			assertTrue(parentChildren.isEmpty(), "Parent should have no children");
 		}
 
-		@Test
-		@DisplayName("Should handle all node types correctly")
-		void shouldHandleAllNodeTypesCorrectly() {
+		@Test void shouldHandleAllNodeTypesCorrectly() {
 			// Test with various node types to ensure type storage works correctly
 			byte[] nodeTypes = {
 				NodeType.COMPILATION_UNIT,
@@ -584,9 +545,7 @@ class ArenaNodeStorageTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should maintain data integrity after multiple operations")
-		void shouldMaintainDataIntegrityAfterMultipleOperations() {
+		@Test void shouldMaintainDataIntegrityAfterMultipleOperations() {
 			// Perform a complex sequence of operations
 			int rootId = storage.allocateNode(0, 100, NodeType.CLASS_DECLARATION, -1);
 

@@ -5,15 +5,16 @@ import io.github.cowwoc.styler.parser.IndexOverlayParser;
 import io.github.cowwoc.styler.parser.JavaVersion;
 import io.github.cowwoc.styler.parser.NodeType;
 import io.github.cowwoc.styler.parser.ParseMetrics;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
+import org.testng.annotations.Test;
+// DisplayName converted to Test description
+// Nested classes kept as inner classes
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterMethod;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.testng.Assert.*;
+import static org.testng.Assert.fail;
 
 /**
  * Integration tests for ArenaNodeStorage with IndexOverlayParser - validating end-to-end
@@ -31,25 +32,22 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ArenaIntegrationTest {
 
-	@BeforeEach
+	@BeforeMethod
 	void setUp() {
 		// Enable metrics for integration tests
 		System.setProperty("styler.metrics.enabled", "true");
 		ParseMetrics.reset();
 	}
 
-	@AfterEach
+	@AfterMethod
 	void tearDown() {
 		System.clearProperty("styler.metrics.enabled");
 	}
 
-	@Nested
-	@DisplayName("End-to-End Parser Integration")
+	
 	class EndToEndParsingTests {
 
-		@Test
-		@DisplayName("Should parse simple class with Arena storage")
-		void shouldParseSimpleClassWithArenaStorage() {
+		@Test void shouldParseSimpleClassWithArenaStorage() {
 			String javaCode = """
 				package com.example;
 
@@ -93,9 +91,7 @@ class ArenaIntegrationTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should parse complex Java 25 features with Arena storage")
-		void shouldParseComplexJava25FeaturesWithArenaStorage() {
+		@Test void shouldParseComplexJava25FeaturesWithArenaStorage() {
 			String javaCode = """
 				package com.example.modern;
 
@@ -157,9 +153,7 @@ class ArenaIntegrationTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should handle parsing errors gracefully with Arena cleanup")
-		void shouldHandleParsingErrorsGracefullyWithArenaCleanup() {
+		@Test void shouldHandleParsingErrorsGracefullyWithArenaCleanup() {
 			String malformedJavaCode = """
 				package com.example;
 
@@ -175,16 +169,14 @@ class ArenaIntegrationTest {
 				try (IndexOverlayParser parser = new IndexOverlayParser(malformedJavaCode, JavaVersion.JAVA_21)) {
 					parser.parse();
 				}
-			}, "Should throw parse exception for malformed code");
+			});
 
 			// Verify metrics were recorded even for failed parse
 			ParseMetrics.MetricsSnapshot metrics = ParseMetrics.getSnapshot();
 			assertTrue(metrics.parseErrors() > 0, "Should record parse errors");
 		}
 
-		@Test
-		@DisplayName("Should parse multiple files efficiently with Arena reuse")
-		void shouldParseMultipleFilesEfficientlyWithArenaReuse() {
+		@Test void shouldParseMultipleFilesEfficientlyWithArenaReuse() {
 			String[] javaFiles = {
 				"""
 				package com.example;
@@ -241,13 +233,10 @@ class ArenaIntegrationTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Resource Management Integration")
+	
 	class ResourceManagementTests {
 
-		@Test
-		@DisplayName("Should properly integrate with try-with-resources")
-		void shouldProperlyIntegrateWithTryWithResources() {
+		@Test void shouldProperlyIntegrateWithTryWithResources() {
 			String javaCode = "public class Test { public void method() {} }";
 			ArenaNodeStorage capturedStorage;
 
@@ -264,9 +253,7 @@ class ArenaIntegrationTest {
 			assertFalse(capturedStorage.isAlive(), "Arena should be closed after try block");
 		}
 
-		@Test
-		@DisplayName("Should handle exceptions during parsing with proper cleanup")
-		void shouldHandleExceptionsDuringParsingWithProperCleanup() {
+		@Test void shouldHandleExceptionsDuringParsingWithProperCleanup() {
 			String problematicCode = ""; // Empty code should trigger validation exception
 
 			ArenaNodeStorage capturedStorage = null;
@@ -290,9 +277,7 @@ class ArenaIntegrationTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should allow nested Arena usage correctly")
-		void shouldAllowNestedArenaUsageCorrectly() {
+		@Test void shouldAllowNestedArenaUsageCorrectly() {
 			String outerCode = "public class Outer { public void method() {} }";
 			String innerCode = "public class Inner { private int field; }";
 
@@ -322,13 +307,10 @@ class ArenaIntegrationTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("AST Structure Validation")
+	
 	class ASTStructureValidationTests {
 
-		@Test
-		@DisplayName("Should create correct AST structure for class hierarchy")
-		void shouldCreateCorrectASTStructureForClassHierarchy() {
+		@Test void shouldCreateCorrectASTStructureForClassHierarchy() {
 			String javaCode = """
 				package com.example;
 
@@ -394,9 +376,7 @@ class ArenaIntegrationTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should maintain accurate source position information")
-		void shouldMaintainAccurateSourcePositionInformation() {
+		@Test void shouldMaintainAccurateSourcePositionInformation() {
 			String javaCode = """
 				public class PositionTest {
 					public void method() {
@@ -445,9 +425,7 @@ class ArenaIntegrationTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should handle complex nested structures correctly")
-		void shouldHandleComplexNestedStructuresCorrectly() {
+		@Test void shouldHandleComplexNestedStructuresCorrectly() {
 			String javaCode = """
 				public class NestedTest {
 					public void outerMethod() {
@@ -515,13 +493,10 @@ class ArenaIntegrationTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Performance Integration Validation")
+	
 	class PerformanceIntegrationTests {
 
-		@Test
-		@DisplayName("Should demonstrate performance characteristics with realistic code")
-		void shouldDemonstratePerformanceCharacteristicsWithRealisticCode() {
+		@Test void shouldDemonstratePerformanceCharacteristicsWithRealisticCode() {
 			// Generate realistic Java code for performance testing
 			StringBuilder codeBuilder = new StringBuilder();
 			codeBuilder.append("package com.example.performance;\n\n");
@@ -569,9 +544,7 @@ class ArenaIntegrationTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should collect and validate parse metrics")
-		void shouldCollectAndValidateParseMetrics() {
+		@Test void shouldCollectAndValidateParseMetrics() {
 			String javaCode = """
 				public class MetricsTest {
 					private int field;

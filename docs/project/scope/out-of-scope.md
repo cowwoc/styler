@@ -14,6 +14,7 @@
 - **Cloud services** - No AWS, Azure, GCP specific integrations
 - **Microservices architecture** - Keep as monolithic application
 - **Dependency injection frameworks** - No Guice, Spring DI, or external DI containers
+- **JUnit testing framework** - Use TestNG exclusively for consistency and JPMS compatibility
 
 ## Third-Party Integrations & External Services
 - **CRM integrations** - No Salesforce, HubSpot, etc.

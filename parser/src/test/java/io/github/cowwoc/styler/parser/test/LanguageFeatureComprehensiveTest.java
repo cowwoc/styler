@@ -1,8 +1,8 @@
 package io.github.cowwoc.styler.parser.test;
 
+import io.github.cowwoc.styler.parser.ArenaNodeStorage;
 import io.github.cowwoc.styler.parser.IndexOverlayParser;
 import io.github.cowwoc.styler.parser.JavaVersion;
-import io.github.cowwoc.styler.parser.NodeRegistry;
 import io.github.cowwoc.styler.parser.NodeType;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
@@ -360,7 +360,7 @@ public class LanguageFeatureComprehensiveTest {
             validateParseResult(parser, rootId, sourceCode, featureDescription);
 
             // Verify JDK 8 specific AST nodes are created correctly
-            NodeRegistry.NodeInfo root = parser.getNode(rootId);
+            ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
             requireThat(root.nodeType(), "root node type").isEqualTo(NodeType.COMPILATION_UNIT);
 
         } catch (IndexOverlayParser.ParseException e) {
@@ -535,7 +535,7 @@ public class LanguageFeatureComprehensiveTest {
         // Structural validation
         requireThat(rootId, description + " rootId").isNotEqualTo(-1);
 
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
         requireThat(root, description + " root node").isNotNull();
 
         // Source reconstruction validation
@@ -550,7 +550,7 @@ public class LanguageFeatureComprehensiveTest {
      * Validates AST integrity including node relationships and metadata.
      */
     private void validateASTIntegrity(IndexOverlayParser parser, int rootId, String description) {
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
 
         // Validate node type is appropriate
         requireThat(root.nodeType(), description + " root type").isEqualTo(NodeType.COMPILATION_UNIT);
@@ -561,7 +561,7 @@ public class LanguageFeatureComprehensiveTest {
                 int childId = root.childIds().get(i);
                 requireThat(childId, description + " child " + i).isNotEqualTo(-1);
 
-                NodeRegistry.NodeInfo child = parser.getNode(childId);
+                ArenaNodeStorage.NodeInfo child = parser.getNode(childId);
                 requireThat(child, description + " child node " + i).isNotNull();
             }
         }
@@ -573,7 +573,7 @@ public class LanguageFeatureComprehensiveTest {
     private void validateSealedClassAST(IndexOverlayParser parser, int rootId) {
         // Implementation would validate sealed class specific AST nodes
         // For now, just verify basic structure
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
         requireThat(root.childIds().size(), "sealed_class_children").isGreaterThan(0);
     }
 
@@ -582,7 +582,7 @@ public class LanguageFeatureComprehensiveTest {
      */
     private void validateRecordAST(IndexOverlayParser parser, int rootId) {
         // Implementation would validate record specific AST nodes
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
         requireThat(root.childIds().size(), "record_children").isGreaterThan(0);
     }
 
@@ -591,7 +591,7 @@ public class LanguageFeatureComprehensiveTest {
      */
     private void validatePatternMatchingAST(IndexOverlayParser parser, int rootId) {
         // Implementation would validate pattern matching specific AST nodes
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
         requireThat(root.childIds().size(), "pattern_matching_children").isGreaterThan(0);
     }
 
@@ -600,7 +600,7 @@ public class LanguageFeatureComprehensiveTest {
      */
     private void validateStringTemplateAST(IndexOverlayParser parser, int rootId) {
         // Implementation would validate string template specific AST nodes
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
         requireThat(root.childIds().size(), "string_template_children").isGreaterThan(0);
     }
 
@@ -609,7 +609,7 @@ public class LanguageFeatureComprehensiveTest {
      */
     private void validateUnnamedPatternAST(IndexOverlayParser parser, int rootId) {
         // Implementation would validate unnamed pattern specific AST nodes
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
         requireThat(root.childIds().size(), "unnamed_pattern_children").isGreaterThan(0);
     }
 }

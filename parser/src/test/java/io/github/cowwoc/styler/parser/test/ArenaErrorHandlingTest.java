@@ -4,12 +4,13 @@ import io.github.cowwoc.styler.parser.ArenaNodeStorage;
 import io.github.cowwoc.styler.parser.IndexOverlayParser;
 import io.github.cowwoc.styler.parser.JavaVersion;
 import io.github.cowwoc.styler.parser.NodeType;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.BeforeEach;
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.List;
+
+import static org.testng.Assert.*;
+import static org.testng.Assert.fail;
 
 /**
  * Error handling and edge case tests for Arena API implementation - ensuring
@@ -27,79 +28,85 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ArenaErrorHandlingTest {
 
-	@Nested
-	@DisplayName("Input Validation Error Handling")
+	
 	class InputValidationErrorHandlingTests {
 
-		@Test
-		@DisplayName("Should validate arena creation parameters")
-		void shouldValidateArenaCreationParameters() {
+		@Test void shouldValidateArenaCreationParameters() {
 			// Test zero capacity
-			IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-				() -> ArenaNodeStorage.create(0),
-				"Should reject zero capacity");
-			assertTrue(exception.getMessage().contains("at least 1"),
-				"Error message should explain minimum capacity requirement");
-			assertTrue(exception.getMessage().contains("got: 0"),
-				"Error message should show actual invalid value");
+			try {
+				ArenaNodeStorage.create(0);
+				fail("Expected IllegalArgumentException");
+			} catch (IllegalArgumentException exception) {
+				assertTrue(exception.getMessage().contains("at least 1"),
+					"Error message should explain minimum capacity requirement");
+				assertTrue(exception.getMessage().contains("got: 0"),
+					"Error message should show actual invalid value");
+			}
 
 			// Test negative capacity
-			exception = assertThrows(IllegalArgumentException.class,
-				() -> ArenaNodeStorage.create(-5),
-				"Should reject negative capacity");
-			assertTrue(exception.getMessage().contains("at least 1"),
-				"Error message should explain minimum capacity requirement");
-			assertTrue(exception.getMessage().contains("got: -5"),
-				"Error message should show actual invalid value");
+			try {
+				ArenaNodeStorage.create(-5);
+				fail("Expected IllegalArgumentException");
+			} catch (IllegalArgumentException exception) {
+				assertTrue(exception.getMessage().contains("at least 1"),
+					"Error message should explain minimum capacity requirement");
+				assertTrue(exception.getMessage().contains("got: -5"),
+					"Error message should show actual invalid value");
+			}
 
 			// Test extremely large capacity (should still work but not overflow)
-			assertDoesNotThrow(() -> {
-				try (ArenaNodeStorage storage = ArenaNodeStorage.create(Integer.MAX_VALUE / 100)) {
-					// Should succeed
-					assertEquals(0, storage.getNodeCount(), "Large capacity should be valid");
-				}
-			}, "Reasonable large capacity should be accepted");
+			// Reasonable large capacity should be accepted
+			try (ArenaNodeStorage storage = ArenaNodeStorage.create(Integer.MAX_VALUE / 100)) {
+				// Should succeed
+				assertEquals(0, storage.getNodeCount(), "Large capacity should be valid");
+			}
 		}
 
-		@Test
-		@DisplayName("Should validate node operation parameters")
-		void shouldValidateNodeOperationParameters() {
+		@Test void shouldValidateNodeOperationParameters() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(100)) {
 				// Allocate a valid node first
 				int validNodeId = storage.allocateNode(0, 10, NodeType.CLASS_DECLARATION, -1);
 
 				// Test invalid node ID for getNode
-				IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-					() -> storage.getNode(-1),
-					"Should reject negative node ID");
-				assertTrue(exception.getMessage().contains("Invalid node ID: -1"),
-					"Error message should show invalid node ID");
-				assertTrue(exception.getMessage().contains("valid range: 0-0"),
-					"Error message should show valid range");
+				try {
+					storage.getNode(-1);
+					fail("Expected IllegalArgumentException");
+				} catch (IllegalArgumentException exception) {
+					assertTrue(exception.getMessage().contains("Invalid node ID: -1"),
+						"Error message should show invalid node ID");
+					assertTrue(exception.getMessage().contains("valid range: 0-0"),
+						"Error message should show valid range");
+				}
 
-				exception = assertThrows(IllegalArgumentException.class,
-					() -> storage.getNode(999),
-					"Should reject out-of-range node ID");
-				assertTrue(exception.getMessage().contains("Invalid node ID: 999"),
-					"Error message should show invalid node ID");
+				try {
+					storage.getNode(999);
+					fail("Expected IllegalArgumentException");
+				} catch (IllegalArgumentException exception) {
+					assertTrue(exception.getMessage().contains("Invalid node ID: 999"),
+						"Error message should show invalid node ID");
+				}
 
 				// Test invalid node ID for getChildren
-				exception = assertThrows(IllegalArgumentException.class,
-					() -> storage.getChildren(-1),
-					"Should reject negative node ID for getChildren");
+				assertThrows(IllegalArgumentException.class,
+				() -> storage.getChildren(-1));
 
-				exception = assertThrows(IllegalArgumentException.class,
-					() -> storage.getChildren(999),
-					"Should reject out-of-range node ID for getChildren");
+				assertThrows(IllegalArgumentException.class,
+				() -> storage.getChildren(999));
 
 				// Test invalid node ID for updateNodeLength
-				exception = assertThrows(IllegalArgumentException.class,
-					() -> storage.updateNodeLength(-1, 20),
-					"Should reject negative node ID for updateNodeLength");
+				try {
+					storage.updateNodeLength(-1, 20);
+					fail("Expected IllegalArgumentException");
+				} catch (IllegalArgumentException exception) {
+					// Exception captured
+				}
 
-				exception = assertThrows(IllegalArgumentException.class,
-					() -> storage.updateNodeLength(999, 20),
-					"Should reject out-of-range node ID for updateNodeLength");
+				try {
+					storage.updateNodeLength(999, 20);
+					fail("Expected IllegalArgumentException");
+				} catch (IllegalArgumentException exception) {
+					// Exception captured
+				}
 
 				// Valid operations should still work after invalid attempts
 				ArenaNodeStorage.NodeInfo node = storage.getNode(validNodeId);
@@ -107,9 +114,7 @@ class ArenaErrorHandlingTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should handle boundary value inputs correctly")
-		void shouldHandleBoundaryValueInputsCorrectly() {
+		@Test void shouldHandleBoundaryValueInputsCorrectly() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(10)) {
 				// Test minimum values
 				int nodeId1 = storage.allocateNode(0, 0, (byte) 0, -1);
@@ -134,13 +139,10 @@ class ArenaErrorHandlingTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Capacity and Resource Exhaustion Handling")
+	
 	class CapacityExhaustionHandlingTests {
 
-		@Test
-		@DisplayName("Should handle arena capacity exhaustion gracefully")
-		void shouldHandleArenaCapacityExhaustionGracefully() {
+		@Test void shouldHandleArenaCapacityExhaustionGracefully() {
 			int capacity = 5;
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(capacity)) {
 				// Fill arena to capacity
@@ -152,16 +154,17 @@ class ArenaErrorHandlingTest {
 				assertEquals(capacity, storage.getNodeCount(), "Should have reached capacity");
 
 				// Next allocation should fail with clear error
-				IllegalStateException exception = assertThrows(IllegalStateException.class,
-					() -> storage.allocateNode(100, 5, NodeType.FIELD_DECLARATION, -1),
-					"Should reject allocation when at capacity");
-
-				assertTrue(exception.getMessage().contains("Arena is full"),
-					"Error message should indicate arena is full");
-				assertTrue(exception.getMessage().contains("Allocated: " + capacity),
-					"Error message should show current allocation count");
-				assertTrue(exception.getMessage().contains("Capacity: " + capacity),
-					"Error message should show total capacity");
+				try {
+					storage.allocateNode(100, 5, NodeType.FIELD_DECLARATION, -1);
+					fail("Expected IllegalStateException");
+				} catch (IllegalStateException exception) {
+					assertTrue(exception.getMessage().contains("Arena is full"),
+						"Error message should indicate arena is full");
+					assertTrue(exception.getMessage().contains("Allocated: " + capacity),
+						"Error message should show current allocation count");
+					assertTrue(exception.getMessage().contains("Capacity: " + capacity),
+						"Error message should show total capacity");
+				}
 
 				// Arena should remain in consistent state
 				assertEquals(capacity, storage.getNodeCount(), "Node count should not change after failed allocation");
@@ -180,9 +183,7 @@ class ArenaErrorHandlingTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should handle child array growth failures gracefully")
-		void shouldHandleChildArrayGrowthFailuresGracefully() {
+		@Test void shouldHandleChildArrayGrowthFailuresGracefully() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(1000)) {
 				// Create parent
 				int parentId = storage.allocateNode(0, 100, NodeType.CLASS_DECLARATION, -1);
@@ -211,9 +212,7 @@ class ArenaErrorHandlingTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should recover gracefully after reset operations")
-		void shouldRecoverGracefullyAfterResetOperations() {
+		@Test void shouldRecoverGracefullyAfterResetOperations() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(100)) {
 				// Allocate nodes and create complex relationships
 				int parent1 = storage.allocateNode(0, 50, NodeType.CLASS_DECLARATION, -1);
@@ -249,13 +248,10 @@ class ArenaErrorHandlingTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Lifecycle Error Handling")
+	
 	class LifecycleErrorHandlingTests {
 
-		@Test
-		@DisplayName("Should handle operations on closed arena appropriately")
-		void shouldHandleOperationsOnClosedArenaAppropriately() {
+		@Test void shouldHandleOperationsOnClosedArenaAppropriately() {
 			ArenaNodeStorage storage = ArenaNodeStorage.create(100);
 
 			// Allocate some nodes before closing
@@ -268,16 +264,13 @@ class ArenaErrorHandlingTest {
 
 			// Operations on closed arena should fail appropriately
 			assertThrows(Exception.class,
-				() -> storage.allocateNode(20, 5, NodeType.METHOD_DECLARATION, -1),
-				"Should not allow allocation on closed arena");
+				() -> storage.allocateNode(20, 5, NodeType.METHOD_DECLARATION, -1));
 
 			// Some operations might still work on existing data (implementation dependent)
 			// but attempting to modify arena memory should fail
 		}
 
-		@Test
-		@DisplayName("Should handle multiple close calls safely")
-		void shouldHandleMultipleCloseCallsSafely() {
+		@Test void shouldHandleMultipleCloseCallsSafely() {
 			ArenaNodeStorage storage = ArenaNodeStorage.create(50);
 			storage.allocateNode(0, 10, NodeType.CLASS_DECLARATION, -1);
 
@@ -288,14 +281,14 @@ class ArenaErrorHandlingTest {
 			assertFalse(storage.isAlive(), "Arena should be closed after first close");
 
 			// Multiple closes should not cause errors
-			assertDoesNotThrow(() -> storage.close(), "Multiple close calls should be safe");
-			assertDoesNotThrow(() -> storage.close(), "Multiple close calls should be safe");
+			// Multiple close calls should be safe
+			storage.close();
+			// Multiple close calls should be safe
+			storage.close();
 			assertFalse(storage.isAlive(), "Arena should remain closed");
 		}
 
-		@Test
-		@DisplayName("Should handle exceptions during parser integration gracefully")
-		void shouldHandleExceptionsDuringParserIntegrationGracefully() {
+		@Test void shouldHandleExceptionsDuringParserIntegrationGracefully() {
 			// Test with malformed Java code that should cause parse errors
 			String malformedCode = """
 				package com.example.malformed;
@@ -330,13 +323,10 @@ class ArenaErrorHandlingTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Concurrent Access Error Handling")
+	
 	class ConcurrentAccessErrorHandlingTests {
 
-		@Test
-		@DisplayName("Should handle invalid concurrent access patterns")
-		void shouldHandleInvalidConcurrentAccessPatterns() {
+		@Test void shouldHandleInvalidConcurrentAccessPatterns() {
 			// Arena API uses confined arenas, so concurrent access should be prevented
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(100)) {
 				storage.allocateNode(0, 10, NodeType.CLASS_DECLARATION, -1);
@@ -356,9 +346,7 @@ class ArenaErrorHandlingTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should maintain consistency under rapid operations")
-		void shouldMaintainConsistencyUnderRapidOperations() {
+		@Test void shouldMaintainConsistencyUnderRapidOperations() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(1000)) {
 				// Rapidly allocate nodes
 				for (int i = 0; i < 500; i++) {
@@ -386,13 +374,10 @@ class ArenaErrorHandlingTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Edge Case Scenario Handling")
+	
 	class EdgeCaseScenarioHandlingTests {
 
-		@Test
-		@DisplayName("Should handle complex parent-child relationship edge cases")
-		void shouldHandleComplexParentChildRelationshipEdgeCases() {
+		@Test void shouldHandleComplexParentChildRelationshipEdgeCases() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(100)) {
 				// Test circular reference attempt (should not crash)
 				int node1 = storage.allocateNode(0, 10, NodeType.CLASS_DECLARATION, -1);
@@ -416,9 +401,7 @@ class ArenaErrorHandlingTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should handle extreme memory layout scenarios")
-		void shouldHandleExtremeMemoryLayoutScenarios() {
+		@Test void shouldHandleExtremeMemoryLayoutScenarios() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(100)) {
 				// Test nodes with extreme position values
 				int maxIntNode = storage.allocateNode(Integer.MAX_VALUE - 1000, 1000, NodeType.CLASS_DECLARATION, -1);
@@ -443,23 +426,18 @@ class ArenaErrorHandlingTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should handle parser input validation edge cases")
-		void shouldHandleParserInputValidationEdgeCases() {
+		@Test void shouldHandleParserInputValidationEdgeCases() {
 			// Test with null input
 			assertThrows(IllegalArgumentException.class,
-				() -> new IndexOverlayParser(null),
-				"Should reject null source text");
+				() -> new IndexOverlayParser(null));
 
 			// Test with empty input
 			assertThrows(IllegalArgumentException.class,
-				() -> new IndexOverlayParser(""),
-				"Should reject empty source text");
+				() -> new IndexOverlayParser(""));
 
 			// Test with whitespace-only input
 			assertThrows(IllegalArgumentException.class,
-				() -> new IndexOverlayParser("   \n\t  "),
-				"Should reject whitespace-only source text");
+				() -> new IndexOverlayParser("   \n\t  "));
 
 			// Test with extremely large input (should be rejected)
 			StringBuilder largeInput = new StringBuilder();
@@ -468,13 +446,10 @@ class ArenaErrorHandlingTest {
 			}
 
 			assertThrows(IllegalArgumentException.class,
-				() -> new IndexOverlayParser(largeInput.toString()),
-				"Should reject excessively large input");
+				() -> new IndexOverlayParser(largeInput.toString()));
 		}
 
-		@Test
-		@DisplayName("Should maintain data integrity after error recovery")
-		void shouldMaintainDataIntegrityAfterErrorRecovery() {
+		@Test void shouldMaintainDataIntegrityAfterErrorRecovery() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(50)) {
 				// Allocate some nodes successfully
 				int node1 = storage.allocateNode(0, 10, NodeType.CLASS_DECLARATION, -1);
@@ -482,12 +457,10 @@ class ArenaErrorHandlingTest {
 
 				// Attempt invalid operations that should fail
 				assertThrows(IllegalArgumentException.class,
-					() -> storage.getNode(-1),
-					"Invalid access should fail");
+				() -> storage.getNode(-1));
 
 				assertThrows(IllegalArgumentException.class,
-					() -> storage.updateNodeLength(999, 5),
-					"Invalid update should fail");
+				() -> storage.updateNodeLength(999, 5));
 
 				// Verify that valid data remains intact after failed operations
 				ArenaNodeStorage.NodeInfo node1Info = storage.getNode(node1);

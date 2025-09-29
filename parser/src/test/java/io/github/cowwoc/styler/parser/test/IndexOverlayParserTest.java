@@ -4,8 +4,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import io.github.cowwoc.styler.parser.ArenaNodeStorage;
 import io.github.cowwoc.styler.parser.IndexOverlayParser;
-import io.github.cowwoc.styler.parser.NodeRegistry;
 import io.github.cowwoc.styler.parser.NodeType;
 import io.github.cowwoc.styler.parser.ParseMetrics;
 
@@ -48,7 +48,7 @@ public class IndexOverlayParserTest {
         // Use Requirements API for validation
         requireThat(rootId, "rootId").isNotEqualTo(-1);
 
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
         requireThat(root.nodeType(), "root.nodeType")
             .isEqualTo(NodeType.COMPILATION_UNIT);
 

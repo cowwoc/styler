@@ -4,11 +4,11 @@ import io.github.cowwoc.styler.parser.ArenaNodeStorage;
 import io.github.cowwoc.styler.parser.IndexOverlayParser;
 import io.github.cowwoc.styler.parser.JavaVersion;
 import io.github.cowwoc.styler.parser.NodeType;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
+import org.testng.annotations.Test;
+// DisplayName converted to Test description
+// Nested classes kept as inner classes
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.AfterMethod;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -16,7 +16,7 @@ import java.lang.management.MemoryUsage;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.testng.Assert.*;
 
 /**
  * Memory usage validation tests for Arena API implementation - ensuring the
@@ -36,7 +36,7 @@ class ArenaMemoryUsageTest {
 
 	private MemoryMXBean memoryBean;
 
-	@BeforeEach
+	@BeforeMethod
 	void setUp() {
 		memoryBean = ManagementFactory.getMemoryMXBean();
 		// Force garbage collection to get baseline measurement
@@ -45,19 +45,16 @@ class ArenaMemoryUsageTest {
 		System.gc();
 	}
 
-	@AfterEach
+	@AfterMethod
 	void tearDown() {
 		// Clean up after tests
 		System.gc();
 	}
 
-	@Nested
-	@DisplayName("Memory Target Validation Tests")
+	
 	class MemoryTargetValidationTests {
 
-		@Test
-		@DisplayName("Should achieve ≤16MB memory usage for 1000 files")
-		void shouldAchieve16MBMemoryUsageFor1000Files() {
+		@Test void shouldAchieve16MBMemoryUsageFor1000Files() {
 			// Realistic Java class for testing
 			String javaFileTemplate = """
 				package com.example.file%d;
@@ -130,9 +127,7 @@ class ArenaMemoryUsageTest {
 			System.out.println("✅ ACHIEVED: 16MB/1000 files memory target met");
 		}
 
-		@Test
-		@DisplayName("Should demonstrate 96.9% memory reduction vs 512MB baseline")
-		void shouldDemonstrate969PercentMemoryReductionVs512MBBaseline() {
+		@Test void shouldDemonstrate969PercentMemoryReductionVs512MBBaseline() {
 			// The baseline is 512MB for 1000 files with traditional NodeRegistry approach
 			long baselineMemoryBytes = 512L * 1024 * 1024; // 512MB in bytes
 
@@ -187,9 +182,7 @@ class ArenaMemoryUsageTest {
 			System.out.println("✅ ACHIEVED: 96.9%+ memory reduction target exceeded");
 		}
 
-		@Test
-		@DisplayName("Should maintain linear memory growth with file count")
-		void shouldMaintainLinearMemoryGrowthWithFileCount() {
+		@Test void shouldMaintainLinearMemoryGrowthWithFileCount() {
 			String testCode = """
 				public class LinearGrowthTest {
 					private int field;
@@ -233,13 +226,10 @@ class ArenaMemoryUsageTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Memory Layout Validation Tests")
+	
 	class MemoryLayoutValidationTests {
 
-		@Test
-		@DisplayName("Should use exactly 16 bytes per node in Arena")
-		void shouldUseExactly16BytesPerNodeInArena() {
+		@Test void shouldUseExactly16BytesPerNodeInArena() {
 			int nodeCount = 1000;
 
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(nodeCount)) {
@@ -272,9 +262,7 @@ class ArenaMemoryUsageTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should demonstrate memory layout efficiency over objects")
-		void shouldDemonstrateMemoryLayoutEfficiencyOverObjects() {
+		@Test void shouldDemonstrateMemoryLayoutEfficiencyOverObjects() {
 			int nodeCount = 10000;
 
 			// Measure Arena memory usage
@@ -311,13 +299,10 @@ class ArenaMemoryUsageTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Memory Leak Prevention Tests")
+	
 	class MemoryLeakPreventionTests {
 
-		@Test
-		@DisplayName("Should prevent memory leaks through Arena cleanup")
-		void shouldPreventMemoryLeaksThroughArenaCleanup() {
+		@Test void shouldPreventMemoryLeaksThroughArenaCleanup() {
 			// Get baseline memory usage
 			System.gc();
 			MemoryUsage beforeUsage = memoryBean.getHeapMemoryUsage();
@@ -357,9 +342,7 @@ class ArenaMemoryUsageTest {
 			System.out.println("✅ ACHIEVED: No significant memory leaks detected");
 		}
 
-		@Test
-		@DisplayName("Should cleanup resources completely via reset")
-		void shouldCleanupResourcesCompletelyViaReset() {
+		@Test void shouldCleanupResourcesCompletelyViaReset() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(10000)) {
 				// Allocate many nodes with complex relationships
 				int parentId = storage.allocateNode(0, 100, NodeType.CLASS_DECLARATION, -1);
@@ -393,9 +376,7 @@ class ArenaMemoryUsageTest {
 			System.out.println("✅ ACHIEVED: Complete resource cleanup via reset");
 		}
 
-		@Test
-		@DisplayName("Should handle large allocations without memory exhaustion")
-		void shouldHandleLargeAllocationsWithoutMemoryExhaustion() {
+		@Test void shouldHandleLargeAllocationsWithoutMemoryExhaustion() {
 			// Test with a very large number of nodes
 			int largeNodeCount = 100_000;
 
@@ -433,13 +414,10 @@ class ArenaMemoryUsageTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("GC Pressure Tests")
+	
 	class GCPressureTests {
 
-		@Test
-		@DisplayName("Should minimize garbage collection pressure")
-		void shouldMinimizeGarbageCollectionPressure() {
+		@Test void shouldMinimizeGarbageCollectionPressure() {
 			// Get baseline GC stats
 			long gcCountBefore = getGCCollectionCount();
 			long gcTimeBefore = getGCCollectionTime();

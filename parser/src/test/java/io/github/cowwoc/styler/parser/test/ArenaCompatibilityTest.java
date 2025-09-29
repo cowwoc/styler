@@ -4,15 +4,15 @@ import io.github.cowwoc.styler.parser.ArenaNodeStorage;
 import io.github.cowwoc.styler.parser.IndexOverlayParser;
 import io.github.cowwoc.styler.parser.JavaVersion;
 import io.github.cowwoc.styler.parser.NodeType;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.BeforeEach;
+import org.testng.annotations.Test;
+// DisplayName converted to Test description
+// Nested classes kept as inner classes
+import org.testng.annotations.BeforeMethod;
 
 import java.lang.reflect.Method;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.testng.Assert.*;
 
 /**
  * API compatibility tests for Arena implementation - ensuring it serves as a
@@ -30,13 +30,10 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ArenaCompatibilityTest {
 
-	@Nested
-	@DisplayName("NodeInfo API Compatibility")
+	
 	class NodeInfoAPICompatibilityTests {
 
-		@Test
-		@DisplayName("Should provide identical NodeInfo interface to NodeRegistry")
-		void shouldProvideIdenticalNodeInfoInterfaceToNodeRegistry() {
+		@Test void shouldProvideIdenticalNodeInfoInterfaceToNodeRegistry() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(100)) {
 				// Allocate a node
 				int nodeId = storage.allocateNode(10, 20, NodeType.CLASS_DECLARATION, -1);
@@ -61,9 +58,7 @@ class ArenaCompatibilityTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should handle parent-child relationships like NodeRegistry")
-		void shouldHandleParentChildRelationshipsLikeNodeRegistry() {
+		@Test void shouldHandleParentChildRelationshipsLikeNodeRegistry() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(100)) {
 				// Create parent-child hierarchy
 				int parentId = storage.allocateNode(0, 50, NodeType.CLASS_DECLARATION, -1);
@@ -91,9 +86,7 @@ class ArenaCompatibilityTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should provide consistent getChildren() behavior")
-		void shouldProvideConsistentGetChildrenBehavior() {
+		@Test void shouldProvideConsistentGetChildrenBehavior() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(100)) {
 				// Test node with no children
 				int leafNodeId = storage.allocateNode(0, 10, NodeType.LITERAL_EXPRESSION, -1);
@@ -120,13 +113,10 @@ class ArenaCompatibilityTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Parser Integration Compatibility")
+	
 	class ParserIntegrationCompatibilityTests {
 
-		@Test
-		@DisplayName("Should integrate seamlessly with IndexOverlayParser")
-		void shouldIntegrateSeamlesslyWithIndexOverlayParser() {
+		@Test void shouldIntegrateSeamlesslyWithIndexOverlayParser() {
 			String javaCode = """
 				package com.example;
 
@@ -166,9 +156,7 @@ class ArenaCompatibilityTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should support all Java language features with Arena storage")
-		void shouldSupportAllJavaLanguageFeaturesWithArenaStorage() {
+		@Test void shouldSupportAllJavaLanguageFeaturesWithArenaStorage() {
 			String modernJavaCode = """
 				package com.example.modern;
 
@@ -237,9 +225,7 @@ class ArenaCompatibilityTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should maintain AutoCloseable behavior consistently")
-		void shouldMaintainAutoCloseableBehaviorConsistently() {
+		@Test void shouldMaintainAutoCloseableBehaviorConsistently() {
 			ArenaNodeStorage capturedStorage = null;
 
 			// Test that Arena is properly closed after try-with-resources
@@ -260,13 +246,10 @@ class ArenaCompatibilityTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Migration Path Compatibility")
+	
 	class MigrationPathCompatibilityTests {
 
-		@Test
-		@DisplayName("Should require no code changes for existing parser usage")
-		void shouldRequireNoCodeChangesForExistingParserUsage() {
+		@Test void shouldRequireNoCodeChangesForExistingParserUsage() {
 			// This test simulates typical existing usage patterns
 			String javaCode = "public class Migration { public void test() {} }";
 
@@ -309,22 +292,17 @@ class ArenaCompatibilityTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should provide backward-compatible error handling")
-		void shouldProvideBackwardCompatibleErrorHandling() {
+		@Test void shouldProvideBackwardCompatibleErrorHandling() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(10)) {
 				// Invalid node ID access should throw same exception type
 				assertThrows(IllegalArgumentException.class,
-					() -> storage.getNode(-1),
-					"Should throw IllegalArgumentException for invalid node ID");
+					() -> storage.getNode(-1));
 
 				assertThrows(IllegalArgumentException.class,
-					() -> storage.getChildren(999),
-					"Should throw IllegalArgumentException for non-existent node");
+					() -> storage.getChildren(999));
 
 				assertThrows(IllegalArgumentException.class,
-					() -> storage.updateNodeLength(-1, 10),
-					"Should throw IllegalArgumentException for invalid update");
+					() -> storage.updateNodeLength(-1, 10));
 
 				// Capacity exceeded should throw appropriate exception
 				for (int i = 0; i < 10; i++) {
@@ -332,14 +310,11 @@ class ArenaCompatibilityTest {
 				}
 
 				assertThrows(IllegalStateException.class,
-					() -> storage.allocateNode(100, 1, NodeType.LITERAL_EXPRESSION, -1),
-					"Should throw IllegalStateException when capacity exceeded");
+					() -> storage.allocateNode(100, 1, NodeType.LITERAL_EXPRESSION, -1));
 			}
 		}
 
-		@Test
-		@DisplayName("Should maintain consistent performance characteristics")
-		void shouldMaintainConsistentPerformanceCharacteristics() {
+		@Test void shouldMaintainConsistentPerformanceCharacteristics() {
 			// Basic operations should be faster than before, but with same time complexity
 			int nodeCount = 1000;
 
@@ -366,13 +341,10 @@ class ArenaCompatibilityTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("API Surface Compatibility")
+	
 	class APISurfaceCompatibilityTests {
 
-		@Test
-		@DisplayName("Should expose all expected public methods")
-		void shouldExposeAllExpectedPublicMethods() {
+		@Test void shouldExposeAllExpectedPublicMethods() {
 			// Verify ArenaNodeStorage has all required public methods
 			Class<ArenaNodeStorage> storageClass = ArenaNodeStorage.class;
 
@@ -406,9 +378,7 @@ class ArenaCompatibilityTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should maintain consistent return types")
-		void shouldMaintainConsistentReturnTypes() {
+		@Test void shouldMaintainConsistentReturnTypes() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(100)) {
 				// Factory methods return correct types
 				assertTrue(storage instanceof ArenaNodeStorage, "create() should return ArenaNodeStorage");
@@ -440,9 +410,7 @@ class ArenaCompatibilityTest {
 			}
 		}
 
-		@Test
-		@DisplayName("Should provide identical NodeInfo record structure")
-		void shouldProvideIdenticalNodeInfoRecordStructure() {
+		@Test void shouldProvideIdenticalNodeInfoRecordStructure() {
 			try (ArenaNodeStorage storage = ArenaNodeStorage.create(100)) {
 				int nodeId = storage.allocateNode(10, 20, NodeType.CLASS_DECLARATION, -1);
 				ArenaNodeStorage.NodeInfo nodeInfo = storage.getNode(nodeId);

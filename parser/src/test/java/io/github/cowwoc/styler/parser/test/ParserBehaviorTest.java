@@ -1,8 +1,8 @@
 package io.github.cowwoc.styler.parser.test;
 
+import io.github.cowwoc.styler.parser.ArenaNodeStorage;
 import io.github.cowwoc.styler.parser.IndexOverlayParser;
 import io.github.cowwoc.styler.parser.JavaVersion;
-import io.github.cowwoc.styler.parser.NodeRegistry;
 import io.github.cowwoc.styler.parser.NodeType;
 import org.testng.annotations.Test;
 
@@ -42,7 +42,7 @@ public class ParserBehaviorTest {
         // Validate parser behavior: correct AST structure
         requireThat(rootId, "rootId").isNotEqualTo(-1);
 
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
         requireThat(root.nodeType(), "root_type").isEqualTo(NodeType.COMPILATION_UNIT);
 
         // Validate parser behavior: accurate source reconstruction
@@ -91,7 +91,7 @@ public class ParserBehaviorTest {
         requireThat(reconstructed, "complex_method reconstruction").isEqualTo(complexMethod);
 
         // Validate parser behavior: AST contains expected structure
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
         requireThat(root.childIds().size(), "complex_method children").isGreaterThan(0);
     }
 
@@ -197,7 +197,7 @@ public class ParserBehaviorTest {
         requireThat(reconstructed, "annotation_heavy reconstruction").isEqualTo(annotationHeavy);
 
         // Validate parser behavior: AST structure includes annotations
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
         requireThat(root.nodeType(), "annotation_heavy root type").isEqualTo(NodeType.COMPILATION_UNIT);
     }
 
@@ -263,7 +263,7 @@ public class ParserBehaviorTest {
         requireThat(reconstructed, "lambda_streams reconstruction").isEqualTo(lambdaStreams);
 
         // Validate parser behavior: maintains proper AST structure
-        NodeRegistry.NodeInfo root = parser.getNode(rootId);
+        ArenaNodeStorage.NodeInfo root = parser.getNode(rootId);
         requireThat(root.childIds().size(), "lambda_streams children").isGreaterThan(0);
     }
 

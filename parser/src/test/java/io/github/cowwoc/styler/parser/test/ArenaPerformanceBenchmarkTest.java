@@ -5,18 +5,15 @@ import io.github.cowwoc.styler.parser.IndexOverlayParser;
 import io.github.cowwoc.styler.parser.JavaVersion;
 import io.github.cowwoc.styler.parser.NodeType;
 import io.github.cowwoc.styler.parser.ParseMetrics;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.testng.annotations.Test;
+import org.testng.annotations.BeforeMethod;
+// Note: JUnit's @EnabledIfSystemProperty removed - use TestNG groups for conditional execution
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.testng.Assert.*;
 
 /**
  * Performance benchmark tests for Arena API implementation - validating the 3-12x
@@ -35,12 +32,12 @@ import static org.junit.jupiter.api.Assertions.*;
  * <p><strong>CRITICAL</strong>: These tests validate actual performance characteristics.
  * They are enabled via system property to prevent slowing down regular test runs.</p>
  *
- * <p>Run with: {@code -Dstyler.performance.tests=true}</p>
+ * <p>Run with: {@code mvn test -Dgroups=performance}</p>
  */
-@EnabledIfSystemProperty(named = "styler.performance.tests", matches = "true")
+@Test(groups = "performance")
 class ArenaPerformanceBenchmarkTest {
 
-	@BeforeEach
+	@BeforeMethod
 	void setUp() {
 		System.setProperty("styler.metrics.enabled", "true");
 		ParseMetrics.reset();
@@ -62,12 +59,10 @@ class ArenaPerformanceBenchmarkTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Allocation Performance Benchmarks")
+
 	class AllocationPerformanceTests {
 
 		@Test
-		@DisplayName("Should achieve 3x faster allocation than object creation")
 		void shouldAchieve3xFasterAllocationThanObjectCreation() {
 			int nodeCount = 100_000;
 
@@ -104,7 +99,6 @@ class ArenaPerformanceBenchmarkTest {
 		}
 
 		@Test
-		@DisplayName("Should demonstrate memory allocation efficiency")
 		void shouldDemonstrateMemoryAllocationEfficiency() {
 			int nodeCount = 50_000;
 
@@ -157,12 +151,10 @@ class ArenaPerformanceBenchmarkTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Parse Time Performance Benchmarks")
+
 	class ParseTimePerformanceTests {
 
 		@Test
-		@DisplayName("Should meet parse time target of ≤10 seconds per 10,000 lines")
 		void shouldMeetParseTimeTargetPer10kLines() {
 			// Generate large Java source (approximately 10,000 lines)
 			String largeJavaCode = generateLargeJavaSource(10_000);
@@ -188,7 +180,6 @@ class ArenaPerformanceBenchmarkTest {
 		}
 
 		@Test
-		@DisplayName("Should achieve linear scalability up to 1000 files")
 		void shouldAchieveLinearScalabilityUpTo1000Files() {
 			String baseCode = """
 				package com.example.test;
@@ -286,12 +277,10 @@ class ArenaPerformanceBenchmarkTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Memory Usage Performance Benchmarks")
+
 	class MemoryUsagePerformanceTests {
 
 		@Test
-		@DisplayName("Should achieve ≤16MB memory footprint per 1000 files")
 		void shouldAchieve16MBMemoryFootprintPer1000Files() {
 			String sampleCode = """
 				package com.example.memory;
@@ -343,7 +332,6 @@ class ArenaPerformanceBenchmarkTest {
 		}
 
 		@Test
-		@DisplayName("Should demonstrate 96.9% memory reduction vs 512MB baseline")
 		void shouldDemonstrate969PercentMemoryReductionVs512MBBaseline() {
 			// Simulate parsing 1000 files to reach the 512MB baseline scenario
 			int fileCount = 1000;
@@ -382,7 +370,6 @@ class ArenaPerformanceBenchmarkTest {
 		}
 
 		@Test
-		@DisplayName("Should demonstrate efficient memory growth patterns")
 		void shouldDemonstrateEfficientMemoryGrowthPatterns() {
 			// Test memory growth as we add more nodes
 			int[] nodeCounts = {100, 500, 1000, 5000, 10000, 50000};
@@ -420,12 +407,10 @@ class ArenaPerformanceBenchmarkTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Concurrent Performance Tests")
+
 	class ConcurrentPerformanceTests {
 
 		@Test
-		@DisplayName("Should handle concurrent parsing efficiently")
 		void shouldHandleConcurrentParsingEfficiently() {
 			String[] testCodes = {
 				"public class Concurrent1 { public void method() {} }",
@@ -439,10 +424,11 @@ class ArenaPerformanceBenchmarkTest {
 
 			long startTime = System.nanoTime();
 
-			List<CompletableFuture<Void>> futures = new ArrayList<>();
+			// Use Java 21 virtual threads for lightweight concurrency
+			List<Thread> threads = new ArrayList<>();
 			for (int t = 0; t < threadsCount; t++) {
 				final int threadId = t;
-				CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+				Thread thread = Thread.startVirtualThread(() -> {
 					for (int i = 0; i < iterationsPerThread; i++) {
 						String code = testCodes[threadId % testCodes.length];
 						try (IndexOverlayParser parser = new IndexOverlayParser(code)) {
@@ -450,11 +436,18 @@ class ArenaPerformanceBenchmarkTest {
 						}
 					}
 				});
-				futures.add(future);
+				threads.add(thread);
 			}
 
 			// Wait for all threads to complete
-			CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
+			try {
+				for (Thread thread : threads) {
+					thread.join();
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				fail("Thread interrupted: " + e.getMessage());
+			}
 
 			long totalTime = System.nanoTime() - startTime;
 			double timeSeconds = totalTime / 1_000_000_000.0;
@@ -474,12 +467,10 @@ class ArenaPerformanceBenchmarkTest {
 		}
 	}
 
-	@Nested
-	@DisplayName("Real-World Performance Scenarios")
+
 	class RealWorldPerformanceTests {
 
 		@Test
-		@DisplayName("Should handle typical enterprise Java class efficiently")
 		void shouldHandleTypicalEnterpriseJavaClassEfficiently() {
 			String enterpriseCode = """
 				package com.enterprise.service;

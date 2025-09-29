@@ -13,6 +13,10 @@
 	<name>Styler Core</name>
 	<description>Core utilities and classes for Styler modules</description>
 
+	<properties>
+		<project.root.basedir>${project.parent.basedir}</project.root.basedir>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>io.github.cowwoc.requirements</groupId>
