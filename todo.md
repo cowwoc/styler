@@ -58,12 +58,12 @@
 ### Basic Configuration Schema (No File Discovery)
 - [x] **MODULE:** `create-formatter-api-module` - Create styler-formatter-api Maven module (COMPLETED)
 - [x] **TASK:** `implement-rule-configuration-schema` - TOML-based configuration schema (COMPLETED)
-- [ ] **TASK:** `implement-transformation-context-api` - Context API for rule application
+- [x] **TASK:** `implement-transformation-context-api` - Context API for rule application (COMPLETED: Immutable AST reconstruction with comprehensive security protection)
   - **Purpose**: Create writable context API enabling formatting rules to directly apply AST transformations
   - **Scope**: MutableFormattingContext extending FormattingContext with direct AST modification methods (setRootNode, replaceChild, insertBefore, insertAfter, removeChild, setWhitespace, setComments)
   - **Components**: MutableFormattingContext class, MutableFormattingRule interface, basic modification tracking
-  - **Final Design**: Direct AST modification approach - rules call convenience methods that immediately modify the AST, with simple modification counting for debugging
-  - **Implementation**: Single clean class (MutableFormattingContext) with comprehensive unit tests, no complex transformation objects or frameworks needed
+  - **Final Design**: Immutable AST reconstruction approach - rules call convenience methods that internally rebuild AST trees while maintaining security boundaries
+  - **Implementation**: Architectural foundation with comprehensive resource protection (recursion depth limits, modification count limits, proper try-finally cleanup)
 
 ### Core CLI Arguments (No File Processing)
 - [x] **MODULE:** `create-cli-module` - Create styler-cli Maven module as main entry point
