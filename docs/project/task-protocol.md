@@ -379,9 +379,7 @@ Every task MUST maintain a `state.json` file in the task directory containing:
 
 **Implementation:**
 ```bash
-export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec"
-mkdir -p ../../../locks
-(set -C; echo '{"session_id": "'${SESSION_ID}'", "start_time": "'$(date '+%Y-%m-%d %H:%M:%S %Z')'"}' > ../../../locks/task-name.json) && echo "LOCK_SUCCESS" || exit 1
+export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && mkdir -p ../../../locks && (set -C; echo '{"session_id": "'${SESSION_ID}'", "start_time": "'$(date '+%Y-%m-%d %H:%M:%S %Z')'"}' > ../../../locks/task-name.json) && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
 ```
 
 ### CLASSIFIED → REQUIREMENTS
@@ -1077,8 +1075,7 @@ final_compliance_audit() {
 **MANDATORY before ANY task execution:**
 ```bash
 # Session ID validation
-export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec"
-[ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "REPLACE_WITH_ACTUAL_SESSION_ID" ] && echo "SESSION_ID_VALID: $SESSION_ID" || (echo "SESSION_ID_INVALID" && exit 1)
+export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && [ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "REPLACE_WITH_ACTUAL_SESSION_ID" ] && echo "SESSION_ID_VALID: $SESSION_ID" || (echo "SESSION_ID_INVALID" && exit 1)
 
 # Working directory verification
 [ "$(pwd)" = "/workspace/branches/main/code" ] || (echo "ERROR: Wrong directory" && exit 1)
@@ -1126,8 +1123,7 @@ export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec"
 ### Atomic Lock Acquisition Pattern
 ```bash
 # MANDATORY atomic lock acquisition
-mkdir -p ../../../locks
-(set -C; echo '{"session_id": "'${SESSION_ID}'", "start_time": "'$(date '+%Y-%m-%d %H:%M:%S %Z')'"}' > ../../../locks/{task-name}.json) 2>/dev/null && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
+export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && mkdir -p ../../../locks && (set -C; echo '{"session_id": "'${SESSION_ID}'", "start_time": "'$(date '+%Y-%m-%d %H:%M:%S %Z')'"}' > ../../../locks/{task-name}.json) 2>/dev/null && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
 
 # Violation check
 if [[ "$lock_result" != *"LOCK_SUCCESS"* ]]; then
