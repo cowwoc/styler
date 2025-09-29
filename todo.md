@@ -67,11 +67,12 @@
 
 ### Core CLI Arguments (No File Processing)
 - [x] **MODULE:** `create-cli-module` - Create styler-cli Maven module as main entry point
-- [ ] **TASK:** `implement-command-line-parsing` - Parse command-line arguments and options
+- [x] **TASK:** `implement-command-line-parsing` - Parse command-line arguments and options (COMPLETED: Facade pattern with immutable ParsedArguments record)
   - **Purpose**: Parse CLI arguments like file paths, config options, verbosity levels, help/version flags
   - **Scope**: CommandLineParser class with argument validation, error handling, usage documentation
   - **Arguments**: Input files, --config path, --rules filter, --verbose, --dry-run, --help, --version
   - **Integration**: Provides parsed arguments to main application pipeline
+  - **Implementation**: CommandLineParser facade over Picocli, ParsedArguments immutable record, ArgumentParsingException for errors, comprehensive unit tests
 - [ ] **TASK:** `implement-error-reporting` - User-friendly error messages with file locations
   - **Purpose**: Generate clear, actionable error messages for parse failures, config errors, rule violations
   - **Scope**: ErrorReporter class with formatted output, source location context, fix suggestions
