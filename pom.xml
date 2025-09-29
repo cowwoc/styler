@@ -17,6 +17,9 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.release>25</maven.compiler.release>
 		<jmh.version>1.37</jmh.version>
+		<project.root.basedir>${project.basedir}</project.root.basedir>
+		<checkstyle.version>11.0.1</checkstyle.version>
+		<pmd.version>7.17.0</pmd.version>
 	</properties>
 
 	<modules>
@@ -81,6 +84,16 @@
 				<groupId>ch.qos.logback</groupId>
 				<artifactId>logback-classic</artifactId>
 				<version>1.5.18</version>
+			</dependency>
+			<dependency>
+				<groupId>com.puppycrawl.tools</groupId>
+				<artifactId>checkstyle</artifactId>
+				<version>${checkstyle.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.sourceforge.pmd</groupId>
+				<artifactId>pmd-java</artifactId>
+				<version>${pmd.version}</version>
 			</dependency>
 
 			<dependency>
@@ -255,6 +268,80 @@
 						</rules>
 					</ruleSet>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<version>3.6.0</version>
+				<dependencies>
+					<dependency>
+						<groupId>com.puppycrawl.tools</groupId>
+						<artifactId>checkstyle</artifactId>
+						<version>${checkstyle.version}</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<configLocation>${project.root.basedir}/config/checkstyle.xml</configLocation>
+					<consoleOutput>true</consoleOutput>
+					<failOnViolation>true</failOnViolation>
+					<linkXRef>false</linkXRef>
+					<includeTestSourceDirectory>true</includeTestSourceDirectory>
+					<excludeGeneratedSources>true</excludeGeneratedSources>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-pmd-plugin</artifactId>
+				<version>3.26.0</version>
+				<dependencies>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-core</artifactId>
+						<version>${pmd.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-java</artifactId>
+						<version>${pmd.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-javascript</artifactId>
+						<version>${pmd.version}</version>
+					</dependency>
+					<dependency>
+						<groupId>net.sourceforge.pmd</groupId>
+						<artifactId>pmd-jsp</artifactId>
+						<version>${pmd.version}</version>
+					</dependency>
+				</dependencies>
+				<configuration>
+					<includeTests>true</includeTests>
+					<rulesets>
+						<ruleset>${project.root.basedir}/config/pmd.xml</ruleset>
+						<ruleset>${project.root.basedir}/config/pmd-main.xml</ruleset>
+					</rulesets>
+					<printFailingErrors>true</printFailingErrors>
+					<analysisCache>true</analysisCache>
+					<linkXRef>false</linkXRef>
+					<targetJdk>${maven.compiler.release}</targetJdk>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

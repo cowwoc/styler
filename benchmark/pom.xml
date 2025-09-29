@@ -15,6 +15,10 @@
 	<name>Styler Benchmarks</name>
 	<description>Performance benchmarks for Styler components</description>
 
+	<properties>
+		<project.root.basedir>${project.parent.basedir}</project.root.basedir>
+	</properties>
+
 	<modules>
 		<module>parser</module>
 	</modules>
