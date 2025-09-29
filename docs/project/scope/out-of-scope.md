@@ -98,7 +98,7 @@
 - **Real-time constraints** - Batch processing acceptable, no hard real-time requirements
 
 ## Legacy Java Support
-- **Java 8 and below** - Java 17+ only for runtime, can format older source syntax
+- **Java 8 and below** - Java 25+ only for runtime, can format older source syntax
 - **Legacy build tools** - Maven 3.6+ and Gradle 6+ only
 - **Deprecated APIs** - No support for deprecated Java features in generated code
 - **Binary compatibility** - Source code formatting only, no bytecode manipulation

@@ -43,15 +43,15 @@ This document contains testing conventions, test structure requirements, and tes
 #### ❌ **PROHIBITED Patterns - Do NOT Use:**
 ```java
 // ❌ NEVER use @BeforeTest, @BeforeMethod, @BeforeClass for shared state
-public class BadTaxCalculatorTest
+public class BadJavaParserTest
 {
 	// ❌ Shared instance causes race conditions
-	private TaxCalculator calculator;
-	
+	private JavaParser parser;
+
 	@BeforeMethod  // ❌ Creates shared state between parallel tests
 	public void setUp()
 	{
-		calculator = new TaxCalculator();
+		parser = new JavaParser();
 	}
 }
 
@@ -65,35 +65,35 @@ public class BadTest
 
 #### ✅ **REQUIRED Pattern - Isolated Test Setup:**
 ```java
-public class TaxCalculatorTest
+public class JavaParserTest
 {
 	@Test
-	public void calculateTax_withValidInput_returnsExpectedResult()
+	public void parseClass_withValidInput_returnsExpectedAST()
 	{
 		// ✅ Create all required objects inside each test method
-		TaxCalculator calculator = new TaxCalculator();
-		double income = 50_000.0;
-		Province province = Province.ONTARIO;
-		
+		JavaParser parser = new JavaParser();
+		String sourceCode = "public class Test {}";
+		ParseOptions options = ParseOptions.standard();
+
 		// Act
-		double result = calculator.calculateTax(income, province);
-		
+		ParseResult result = parser.parseClass(sourceCode, options);
+
 		// Assert
-		requireThat(result, "result").isGreaterThan(0.0);
-		requireThat(result, "result").isLessThan(income);
+		requireThat(result, "result").isNotNull();
+		requireThat(result.hasErrors(), "hasErrors").isFalse();
 	}
-	
+
 	@Test
-	public void calculateTax_withHighIncome_appliesCorrectBracket()
+	public void parseMethod_withComplexSyntax_handlesCorrectly()
 	{
 		// ✅ Each test creates its own isolated instances
-		TaxCalculator calculator = new TaxCalculator();
-		double highIncome = 200_000.0;
-		Province province = Province.ONTARIO;
-		
-		double result = calculator.calculateTax(highIncome, province);
-		
-		requireThat(result, "result").isGreaterThan(50_000.0);
+		JavaParser parser = new JavaParser();
+		String complexSource = "public <T> Optional<T> getValue() { return Optional.empty(); }";
+		ParseOptions options = ParseOptions.standard();
+
+		ParseResult result = parser.parseMethod(complexSource, options);
+
+		requireThat(result.getAst(), "ast").isNotNull();
 	}
 }
 ```
@@ -256,19 +256,19 @@ public void calculateTax_withRetirementAge_appliesAgeCredit()
 public class TestUtils
 {
 	// ✅ Stateless factory methods are parallel-safe
-	public static Person createTypicalPerson()
+	public static SourceCode createTypicalClass()
 	{
 		// ✅ Creates new instance each time
-		return new PersonTestBuilder().build();
+		return new SourceCodeTestBuilder().build();
 	}
 	
 	// ✅ Pure functions with no shared state are parallel-safe
-	public static void assertTaxCalculationValid(double income, double tax)
+	public static void assertParseResultValid(String sourceCode, ParseResult result)
 	{
-		requireThat(tax, "tax").isNotNegative();
-		requireThat(tax, "tax").isLessThan(income);
-		// Reasonable max rate
-		requireThat(tax / income, "tax rate").isLessThan(0.5);
+		requireThat(result, "result").isNotNull();
+		requireThat(result.hasErrors(), "hasErrors").isFalse();
+		// Reasonable token count
+		requireThat(result.getTokenCount(), "tokenCount").isGreaterThan(0);
 	}
 	
 	// ✅ Pure mathematical functions are parallel-safe
@@ -285,46 +285,46 @@ public class TestUtils
 ```java
 // ✅ Resource files are parallel-safe (read-only operations)
 @Test
-public void calculateTax_withTestDataFromFile_matchesExpectedResults() throws IOException
+public void parseClass_withTestDataFromFile_matchesExpectedResults() throws IOException
 {
-	// ✅ Each test creates its own calculator instance
-	TaxCalculator calculator = new TaxCalculator();
-	
+	// ✅ Each test creates its own parser instance
+	JavaParser parser = new JavaParser();
+
 	// ✅ Loading read-only resources is parallel-safe
-	List<TaxTestCase> testCases = loadTestCasesFromResource("/tax-test-cases.json");
-	
-	for (TaxTestCase testCase : testCases)
+	List<ParseTestCase> testCases = loadTestCasesFromResource("/parse-test-cases.json");
+
+	for (ParseTestCase testCase : testCases)
 	{
-		double actualTax = calculator.calculateTax(testCase.getIncome(), testCase.getProvince());
-		double expectedTax = testCase.getExpectedTax();
-		
+		ParseResult actualResult = parser.parseClass(testCase.getSourceCode(), testCase.getOptions());
+		ParseResult expectedResult = testCase.getExpectedResult();
+
 		// ✅ Stateless utility methods are parallel-safe
-		TestUtils.assertWithinTolerance(expectedTax, actualTax, 0.01);
+		TestUtils.assertParseResultValid(testCase.getSourceCode(), actualResult);
 	}
 }
 
 // ✅ Example of parallel-safe parameterized-style testing
 @Test
-public void calculateTax_withVariousIncomes_appliesCorrectBrackets()
+public void parseExpression_withVariousSyntax_parsesCorrectly()
 {
 	// ✅ Create test data as local variables (no shared state)
-	TaxCalculator calculator = new TaxCalculator();
-	
-	Map<Double, Double> incomeToExpectedTax = Map.of(
-		30_000.0, 4_500.0,
-		75_000.0, 15_000.0,
-		150_000.0, 35_000.0
+	JavaParser parser = new JavaParser();
+
+	Map<String, Integer> sourceToExpectedTokens = Map.of(
+		"a + b", 3,
+		"method(arg1, arg2)", 6,
+		"obj.field.getValue()", 7
 	);
-	
+
 	// ✅ Each iteration uses isolated data
-	for (Map.Entry<Double, Double> testCase : incomeToExpectedTax.entrySet())
+	for (Map.Entry<String, Integer> testCase : sourceToExpectedTokens.entrySet())
 	{
-		double income = testCase.getKey();
-		double expectedTax = testCase.getValue();
-		
-		double actualTax = calculator.calculateTax(income, Province.ONTARIO);
-		
-		TestUtils.assertWithinTolerance(expectedTax, actualTax, 1_000.0);
+		String sourceCode = testCase.getKey();
+		int expectedTokens = testCase.getValue();
+
+		ParseResult actualResult = parser.parseExpression(sourceCode, ParseOptions.standard());
+
+		TestUtils.assertWithinTolerance(expectedTokens, actualResult.getTokenCount(), 1);
 	}
 }
 ```

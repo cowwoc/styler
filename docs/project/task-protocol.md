@@ -1,20 +1,44 @@
-# Task Protocol
+# Task State Machine Protocol
 
-**CRITICAL**: This workflow applies to ALL tasks that create, modify, or delete files, with RISK-BASED PROTOCOL SELECTION for optimal efficiency
+**CRITICAL**: This protocol applies to ALL tasks that create, modify, or delete files, using MANDATORY STATE TRANSITIONS with zero-tolerance enforcement
 
 **TARGET AUDIENCE**: Claude AI instances executing tasks
-**OPTIMIZATION**: Tool usage patterns, context preservation, violation prevention, efficiency via risk stratification
+**ARCHITECTURE**: State machine with atomic transitions and verifiable conditions
+**ENFORCEMENT**: No manual overrides - all transitions require documented evidence
 
-## RISK-BASED PROTOCOL SELECTION
+## STATE MACHINE ARCHITECTURE
 
-**PROTOCOL SELECTION ENGINE:**
-1. Extract file paths from modification request
-2. Apply pattern matching against risk classifications
-3. Select highest risk level if multiple files affected
-4. Route to appropriate workflow variant
+### Core States
+```
+INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
+                                      ↑                                      ↓
+                                      └─────── SCOPE_NEGOTIATION ←──────────┘
+```
 
-### HIGH-RISK FILES (Full 7-Phase Protocol Required)
-**PATTERNS:**
+### State Definitions
+- **INIT**: Task selected, locks acquired, session validated
+- **CLASSIFIED**: Risk level determined, agents selected, isolation established
+- **REQUIREMENTS**: All stakeholder requirements collected and validated
+- **SYNTHESIS**: Requirements consolidated into unified architecture plan
+- **IMPLEMENTATION**: Code and tests created according to synthesis plan
+- **VALIDATION**: Build verification and automated quality gates passed
+- **REVIEW**: All stakeholder agents provide unanimous approval
+- **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns
+- **COMPLETE**: Work preserved to main branch, todo.md updated
+- **CLEANUP**: Worktrees removed, locks released, temporary files cleaned
+
+### State Transitions
+Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS.**
+
+## RISK-BASED AGENT SELECTION ENGINE
+
+### Automatic Risk Classification
+**Input**: File paths from modification request
+**Process**: Pattern matching → Escalation trigger analysis → Agent set determination
+**Output**: Risk level (HIGH/MEDIUM/LOW) + Required agent set
+
+### HIGH-RISK FILES (Complete Validation Required)
+**Patterns:**
 - `src/**/*.java` (core implementation)
 - `pom.xml`, `**/pom.xml` (build configuration)
 - `.github/**` (CI/CD workflows)
@@ -24,56 +48,62 @@
 - `docs/project/task-protocol.md` (protocol configuration)
 - `docs/project/critical-rules.md` (safety rules)
 
-### MEDIUM-RISK FILES (Abbreviated Protocol: Phases 1,2,5,6,7)
-**PATTERNS:**
+**Required Agents**: technical-architect, style-auditor, code-quality-auditor, build-validator
+**Additional Agents**: security-auditor (if security-related), performance-analyzer (if performance-critical), code-tester (if new functionality), usability-reviewer (if user-facing)
+
+### MEDIUM-RISK FILES (Domain Validation Required)
+**Patterns:**
 - `src/test/**/*.java` (test files)
 - `docs/code-style/**` (style documentation)
 - `**/resources/**/*.properties` (configuration)
 - `**/*Test.java`, `**/*Tests.java` (test classes)
 
-### LOW-RISK FILES (Streamlined Protocol: Phases 1,2,7)
-**PATTERNS:**
+**Required Agents**: technical-architect, code-quality-auditor
+**Additional Agents**: style-auditor (if style files), security-auditor (if config files), performance-analyzer (if benchmarks)
+
+### LOW-RISK FILES (Minimal Validation Required)
+**Patterns:**
 - `*.md` (except CLAUDE.md, task-protocol.md, critical-rules.md)
 - `docs/**/*.md` (general documentation)
 - `todo.md` (task tracking)
 - `*.txt`, `*.log` (text files)
 - `**/README*` (readme files)
 
-### AUTOMATIC ESCALATION TRIGGERS
-**File Content Analysis:**
-- Cross-risk-tier dependencies detected → escalate to highest tier
-- Security implications identified → force HIGH-RISK
-- Build system impact detected → force HIGH-RISK
-- Architectural pattern changes → force HIGH-RISK
+**Required Agents**: None (unless escalation triggered)
 
-**Task Description Keywords:**
-- "security", "authentication", "authorization" → force HIGH-RISK
-- "architecture", "breaking", "compatibility" → force HIGH-RISK
-- "database", "schema", "migration" → force HIGH-RISK
-- "api", "contract", "interface" → force HIGH-RISK
-- "concurrent", "thread", "parallel", "sync" → force HIGH-RISK
-- "performance", "cache", "memory", "optimization" → force HIGH-RISK
-- "state", "singleton", "global", "shared" → force HIGH-RISK
-- "dependency", "external", "integration" → force HIGH-RISK
+### Escalation Triggers
+**Keywords**: "security", "architecture", "breaking", "performance", "concurrent", "database", "api", "state", "dependency"
+**Content Analysis**: Cross-module dependencies, security implications, architectural changes
+**Action**: Force escalation to next higher risk level
 
-**Change Scope Analysis:**
-- Multiple file types affected → escalate to highest tier
-- Cross-module changes detected → force HIGH-RISK
-- Runtime behavior modifications → force MEDIUM-RISK minimum
+### Manual Overrides
+**Force Full Protocol**: `--force-full-protocol` flag for critical changes
+**Explicit Risk Level**: `--risk-level=HIGH|MEDIUM|LOW` to override classification
+**Escalation Keywords**: "security", "architecture", "breaking" in task description
 
-**COMPATIBILITY**: Existing CLAUDE.md triggers preserved, default to FULL_PROTOCOL when risk unclear
+### Risk Assessment Audit Trail
+**Required Logging:**
+- Risk level selected (HIGH/MEDIUM/LOW)
+- Classification method (pattern match, keyword trigger, manual override)
+- Escalation triggers activated (if any)
+- Workflow variant executed (FULL/ABBREVIATED/STREAMLINED)
+- Agent set selected for review
+- Final outcome (approved/rejected/deferred)
 
-## WORKFLOW VARIANTS
+**Implementation**: Log in state.json file and commit messages for audit purposes
 
-### FULL_PROTOCOL (High-Risk Files)
-**Phases Executed**: 1, 2, 3, 4, 5, 6, 7
+## WORKFLOW VARIANTS BY RISK LEVEL
+
+### HIGH_RISK_WORKFLOW (Complete Validation)
+**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
 **Stakeholder Agents**: All agents based on task requirements
 **Isolation**: Mandatory worktree isolation
 **Review**: Complete stakeholder validation
 **Use Case**: Core implementation, build configuration, security, CI/CD
+**Conditional Skips**: None - all validation required
 
-### ABBREVIATED_PROTOCOL (Medium-Risk Files)
-**Phases Executed**: 1, 2, 5, 6, 7
+### MEDIUM_RISK_WORKFLOW (Domain Validation)
+**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
 **Stakeholder Agents**: Based on change characteristics
 - Base: technical-architect (always required)
 - +style-auditor: If style/formatting files modified
@@ -83,9 +113,10 @@
 **Isolation**: Worktree isolation for multi-file changes
 **Review**: Domain-appropriate stakeholder validation
 **Use Case**: Test files, style documentation, configuration files
+**Conditional Skips**: May skip IMPLEMENTATION/VALIDATION states if only documentation changes
 
-### STREAMLINED_PROTOCOL (Low-Risk Files)
-**Phases Executed**: 1, 2, 7
+### LOW_RISK_WORKFLOW (Streamlined Validation)
+**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → COMPLETE → CLEANUP
 **Stakeholder Agents**: None (unless escalation triggered)
 **Isolation**: Required for multi-file changes, optional for single documentation file
 **Review**: Evidence-based validation and automated checks
@@ -94,161 +125,96 @@
 - Confirm no build configuration impact
 - Validate no security-sensitive content changes
 **Use Case**: Documentation updates, todo.md, README files
+**Conditional Skips**: Skip IMPLEMENTATION, VALIDATION, REVIEW states entirely
 
-### MANUAL OVERRIDES
-**Force Full Protocol**: `--force-full-protocol` flag for critical changes
-**Explicit Risk Level**: `--risk-level=HIGH|MEDIUM|LOW` to override classification
-**Escalation Keywords**: "security", "architecture", "breaking" in task description
+### Conditional State Transition Logic
+```python
+def determine_state_path(risk_level, change_type):
+    """Determine which states to execute based on risk and change type"""
 
-### RISK ASSESSMENT AUDIT TRAIL
-**Required Logging**:
-- Risk level selected (HIGH/MEDIUM/LOW)
-- Classification method (pattern match, keyword trigger, manual override)
-- Escalation triggers activated (if any)
-- Workflow variant executed (FULL/ABBREVIATED/STREAMLINED)
-- Agent set selected for review
-- Final outcome (approved/rejected/deferred)
+    base_states = ["INIT", "CLASSIFIED", "REQUIREMENTS", "SYNTHESIS"]
 
-**Implementation**: Log in TodoWrite tool and task commit messages for audit purposes
+    if risk_level == "HIGH":
+        return base_states + ["IMPLEMENTATION", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
 
-## 🧠 PROTOCOL INTERPRETATION MODE
+    elif risk_level == "MEDIUM":
+        if change_type in ["documentation_only", "config_only"]:
+            return base_states + ["COMPLETE", "CLEANUP"]
+        else:
+            return base_states + ["IMPLEMENTATION", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
 
-**THINK HARDER MODE**: Parent agent must apply enhanced analytical rigor when interpreting and following the task protocol workflow. Rather than following obvious or surface-level interpretations, carefully analyze what the protocol truly requires for the specific task context.
+    elif risk_level == "LOW":
+        return base_states + ["COMPLETE", "CLEANUP"]
 
-## BATCH PROCESSING RESTRICTIONS
-
-**PROHIBITED PATTERNS:**
-- Processing multiple tasks sequentially without individual protocol execution
-- "Work on all Phase 1 tasks until done" - Must select ONE specific task
-- "Complete these 5 tasks" - Each requires separate lock acquisition and worktree
-- Assuming research tasks can bypass protocol because they create "only" study files
-
-**MANDATORY SINGLE-TASK PROCESSING:**
-1. Select ONE specific task from todo.md (e.g., "study-claude-cli-interface")
-2. Acquire atomic lock for THAT specific task only
-3. Create isolated worktree for THAT task only
-4. Execute full 7-phase protocol for THAT task only
-5. Complete Phase 7 cleanup before starting any other task
-
-**CORRECT TASK SELECTION EXAMPLES:**
-✅ "Work on study-claude-cli-interface task"
-✅ "Execute implement-read-tool task"
-❌ "Work on all Phase 1 analysis tasks"
-❌ "Complete the research tasks until done"
-
-### HANDLING BATCH REQUESTS - AUTOMATIC CONTINUOUS MODE TRANSLATION
-
-**When users request batch operations (e.g., "Work on all Phase 1 tasks until done"):**
-
-**AUTOMATIC TRANSLATION PROTOCOL:**
-1. **ACKNOWLEDGE**: "I understand you want to work on multiple tasks efficiently..."
-2. **AUTO-TRANSLATE**: "I'll interpret this as a request to work on the todo list in continuous mode, processing each task with full protocol isolation..."
-3. **EXECUTE**: Automatically trigger continuous workflow mode without requiring user to rephrase their request
-
-**BATCH REQUEST PATTERNS TO AUTO-TRANSLATE:**
-- "Work on all [phase/type] tasks"
-- "Complete these tasks until done"  
-- "Process the todo list"
-- "Work on multiple tasks"
-- Any request mentioning multiple specific tasks
-
-**TRANSLATION IMPLEMENTATION:**
-```
-USER REQUEST: "Work on all Phase 1 analysis tasks until done"
-AUTO-TRANSLATION: Interpret as "Work on the todo list in continuous mode"
-EXECUTION: Begin continuous workflow mode with appropriate task filtering
+    else:
+        # Default to HIGH risk if uncertain
+        return base_states + ["IMPLEMENTATION", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
 ```
 
-**TASK FILTERING FOR CONTINUOUS MODE:**
-When batch requests specify subsets (e.g., "Phase 1 tasks"), apply filtering in continuous mode:
-1. **Phase-based filtering**: Process only tasks in specified phases
-2. **Type-based filtering**: Process only tasks matching specified types (ANALYZE, IMPLEMENT, etc.)
-3. **Name-based filtering**: Process only specifically mentioned task names
-4. **Default behavior**: Process all available tasks if no specific filter mentioned
+### Skip Condition Examples
+**IMPLEMENTATION/VALIDATION State Skip Conditions:**
+- Maven dependency additions (configuration only)
+- Build plugin configuration changes
+- Documentation updates without code references
+- Property file modifications
+- Version bumps without code changes
+- README and markdown file updates
+- Todo.md task tracking updates
 
-**CONTINUOUS WORKFLOW MODE REFERENCE:**
-Batch requests are seamlessly translated to continuous workflow mode, maintaining protocol safety while providing the multi-task processing experience users expect.
+**Full Validation Required Conditions:**
+- Any source code modifications (*.java, *.js, *.py, etc.)
+- Runtime behavior changes expected
+- Security-sensitive configuration changes
+- Build system modifications affecting compilation
+- API contract modifications
 
-## VIOLATION PREVENTION PATTERNS
+## AGENT SELECTION DECISION TREE
 
-### Pattern: Pre-Task Validation Block
-```
-BEFORE ANY TASK: Execute this exact tool sequence:
-1. Bash: export SESSION_ID="${CLAUDE_SESSION_ID:-REPLACE_WITH_ACTUAL_SESSION_ID}" && [ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "REPLACE_WITH_ACTUAL_SESSION_ID" ] && echo "SESSION_ID_VALID: $SESSION_ID" || (echo "SESSION_ID_INVALID: Must replace REPLACE_WITH_ACTUAL_SESSION_ID with actual session ID from system notes" && exit 1)
-   # CRITICAL: Replace "REPLACE_WITH_ACTUAL_SESSION_ID" with your actual session ID from system notes
-   # Example: export SESSION_ID="${CLAUDE_SESSION_ID:-6ac1b665-b5a3-4d4b-a91f-42a81001df3a}" && [ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "REPLACE_WITH_ACTUAL_SESSION_ID" ] && echo "SESSION_ID_VALID: $SESSION_ID" || (echo "SESSION_ID_INVALID" && exit 1)
-2. Bash: pwd (verify location)
-3. Read: todo.md (extract exact task name)
-4. Grep: task name in todo.md (verify existence)
-VIOLATION CHECK: All commands must succeed AND SESSION_ID validation must show "SESSION_ID_VALID"
-```
+### Comprehensive Agent Selection Framework
+**Input**: Task description and file modification patterns
+**Available Agents**: technical-architect, usability-reviewer, performance-analyzer, security-auditor, style-auditor, code-quality-auditor, code-tester, build-validator
 
-### Pattern: Comprehensive Agent Selection Decision Tree
-```
-INPUT: Task description
-AVAILABLE AGENTS: technical-architect, usability-reviewer, performance-analyzer, security-auditor, style-auditor, code-quality-auditor, code-tester, build-validator
+**Processing Logic:**
 
-PROCESSING:
-🚨 CORE AGENTS (Always Required):
-  technical-architect: MANDATORY for ALL file modification tasks (provides implementation requirements)
+**🚨 CORE AGENTS (Always Required):**
+- **technical-architect**: MANDATORY for ALL file modification tasks (provides implementation requirements)
 
-🔍 FUNCTIONAL AGENTS (Code Implementation):
-  IF NEW CODE created: add style-auditor, code-quality-auditor, build-validator
-  IF IMPLEMENTATION (not just config): add code-tester
-  IF MAJOR FEATURES completed: add usability-reviewer (MANDATORY after completion)
+**🔍 FUNCTIONAL AGENTS (Code Implementation):**
+- IF NEW CODE created: add style-auditor, code-quality-auditor, build-validator
+- IF IMPLEMENTATION (not just config): add code-tester
+- IF MAJOR FEATURES completed: add usability-reviewer (MANDATORY after completion)
 
-🛡️ SECURITY AGENTS (Actual Security Concerns):
-  IF AUTHENTICATION/AUTHORIZATION changes: add security-auditor
-  IF EXTERNAL API/DATA integration: add security-auditor
-  IF ENCRYPTION/CRYPTOGRAPHIC operations: add security-auditor
-  IF INPUT VALIDATION/SANITIZATION: add security-auditor
+**🛡️ SECURITY AGENTS (Actual Security Concerns):**
+- IF AUTHENTICATION/AUTHORIZATION changes: add security-auditor
+- IF EXTERNAL API/DATA integration: add security-auditor
+- IF ENCRYPTION/CRYPTOGRAPHIC operations: add security-auditor
+- IF INPUT VALIDATION/SANITIZATION: add security-auditor
 
-⚡ PERFORMANCE AGENTS (Performance Critical):
-  IF ALGORITHM optimization tasks: add performance-analyzer
-  IF DATABASE/QUERY optimization: add performance-analyzer
-  IF MEMORY/CPU intensive operations: add performance-analyzer
+**⚡ PERFORMANCE AGENTS (Performance Critical):**
+- IF ALGORITHM optimization tasks: add performance-analyzer
+- IF DATABASE/QUERY optimization: add performance-analyzer
+- IF MEMORY/CPU intensive operations: add performance-analyzer
 
-🔧 FORMATTING AGENTS (Code Quality):
-  IF PARSER LOGIC modified: add performance-analyzer, security-auditor
-  IF AST TRANSFORMATION changed: add code-quality-auditor, code-tester
-  IF FORMATTING RULES affected: add style-auditor
+**🔧 FORMATTING AGENTS (Code Quality):**
+- IF PARSER LOGIC modified: add performance-analyzer, security-auditor
+- IF AST TRANSFORMATION changed: add code-quality-auditor, code-tester
+- IF FORMATTING RULES affected: add style-auditor
 
-❌ AGENTS NOT NEEDED FOR SIMPLE OPERATIONS:
-  - Maven module renames: NO performance-analyzer
-  - Configuration file updates: NO security-auditor unless changing auth
-  - Directory/file renames: NO performance-analyzer
-  - Documentation updates: Usually only technical-architect
-  
-📊 ANALYSIS AGENTS (Research/Study Tasks):
-  IF task involves ARCHITECTURAL ANALYSIS: add technical-architect
-  IF task involves PERFORMANCE ANALYSIS: add performance-analyzer  
-  IF task involves UX/INTERFACE ANALYSIS: add usability-reviewer
-  IF task involves SECURITY ANALYSIS: add security-auditor
-  IF task involves CODE QUALITY REVIEW: add code-quality-auditor
-  IF task involves PARSER/FORMATTER PERFORMANCE ANALYSIS: add performance-analyzer
-OUTPUT: Exact agent list for Task tool calls
+**❌ AGENTS NOT NEEDED FOR SIMPLE OPERATIONS:**
+- Maven module renames: NO performance-analyzer
+- Configuration file updates: NO security-auditor unless changing auth
+- Directory/file renames: NO performance-analyzer
+- Documentation updates: Usually only technical-architect
 
-🚨 CRITICAL RULES:
-- style-auditor is MANDATORY for any task creating or modifying source code files
-- performance-analyzer is MANDATORY for any task involving parser/formatter optimization
-- ALL EIGHT AGENTS available for selection based on task requirements
-- NO agent should be excluded from consideration without task-specific justification
+**📊 ANALYSIS AGENTS (Research/Study Tasks):**
+- IF ARCHITECTURAL ANALYSIS: add technical-architect
+- IF PERFORMANCE ANALYSIS: add performance-analyzer
+- IF UX/INTERFACE ANALYSIS: add usability-reviewer
+- IF SECURITY ANALYSIS: add security-auditor
+- IF CODE QUALITY REVIEW: add code-quality-auditor
+- IF PARSER/FORMATTER PERFORMANCE ANALYSIS: add performance-analyzer
 
-SPECIAL AGENT USAGE PATTERNS:
-- style-auditor: ALWAYS include for NEW CODE tasks (style requirements inform architecture)
-- style-auditor: Execute in Phases 1 (requirements), 3, 4, 6 (implementation/test review)  
-- style-auditor: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and any language-specific patterns)
-- build-validator: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through build system
-- build-validator: Use alongside style-auditor to ensure comprehensive validation (automated + manual rules)
-- code-quality-auditor: Post-implementation refactoring and best practices enforcement
-- code-tester: Business logic validation and comprehensive test creation
-- security-auditor: Data handling and storage compliance review
-- performance-analyzer: Algorithmic efficiency and resource optimization
-- security-auditor: Vulnerability assessment and security boundary verification
-- usability-reviewer: User experience design and interface evaluation  
-- technical-architect: System architecture and implementation guidance
-
-AGENT SELECTION VERIFICATION CHECKLIST:
+**Agent Selection Verification Checklist:**
 - [ ] NEW CODE task → style-auditor included?
 - [ ] Source files created/modified → build-validator included?
 - [ ] Performance-critical code → performance-analyzer included?
@@ -256,40 +222,874 @@ AGENT SELECTION VERIFICATION CHECKLIST:
 - [ ] User-facing interfaces → usability-reviewer included?
 - [ ] Post-implementation refactoring → code-quality-auditor included?
 - [ ] AST parsing/code formatting → performance-analyzer included?
+
+**Special Agent Usage Patterns:**
+- **style-auditor**: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and language-specific patterns)
+- **build-validator**: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through build system
+- **build-validator**: Use alongside style-auditor to ensure comprehensive validation (automated + manual rules)
+- **code-quality-auditor**: Post-implementation refactoring and best practices enforcement
+- **code-tester**: Business logic validation and comprehensive test creation
+- **security-auditor**: Data handling and storage compliance review
+- **performance-analyzer**: Algorithmic efficiency and resource optimization
+- **usability-reviewer**: User experience design and interface evaluation
+- **technical-architect**: System architecture and implementation guidance
+
+## COMPLETE STYLE VALIDATION FRAMEWORK
+
+### Three-Component Style Validation
+**MANDATORY PROCESS**: When style validation is required, ALL THREE components must pass:
+
+1. **Automated Linters** (via build-validator):
+   - `checkstyle`: Java coding conventions and formatting
+   - `PMD`: Code quality and best practices
+   - `ESLint`: JavaScript/TypeScript style (if applicable)
+
+2. **Manual Style Rules** (via style-auditor):
+   - Apply ALL detection patterns from `docs/code-style/*-claude.md`
+   - Java-specific patterns (naming, structure, comments)
+   - Common patterns (cross-language consistency)
+   - Language-specific patterns as applicable
+
+3. **Build Integration** (via build-validator):
+   - Automated fixing when conflicts detected (LineLength vs UnderutilizedLines)
+   - Use `checkstyle/fixers` module for AST-based consolidate-then-split strategy
+   - Comprehensive testing validates fixing logic before application
+
+### Complete Style Validation Gate Pattern
+```bash
+# MANDATORY: Never assume checkstyle-only validation
+# CRITICAL ERROR PATTERN: Checking only checkstyle and declaring "no violations found" when PMD/manual violations exist
+
+validate_complete_style_compliance() {
+    echo "=== COMPLETE STYLE VALIDATION GATE ==="
+
+    # Component 1: Automated linters via build system
+    echo "Validating automated linters..."
+    ./mvnw checkstyle:check || return 1
+    ./mvnw pmd:check || return 1
+
+    # Component 2: Manual style rules via style-auditor agent
+    echo "Validating manual style rules..."
+    invoke_style_auditor_with_manual_detection_patterns || return 1
+
+    # Component 3: Automated fixing integration if conflicts
+    echo "Checking for LineLength vs UnderutilizedLines conflicts..."
+    if detect_style_conflicts; then
+        echo "Applying automated AST-based fixes..."
+        apply_automated_style_fixes || return 1
+        # Re-validate after automated fixes
+        validate_complete_style_compliance
+    fi
+
+    echo "✅ Complete style validation passed: checkstyle + PMD + manual rules"
+    return 0
+}
 ```
 
-### Pattern: Atomic Lock Acquisition
-```
-BASH COMMAND SEQUENCE (must execute as single command):
-mkdir -p ../../../locks; (set -C; echo '{"session_id": "'${SESSION_ID}'", "start_time": "'$(date '+%Y-%m-%d %H:%M:%S %Z')'"}' > ../../../locks/{task-name}.json) 2>/dev/null && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
+### Style Validation Integration Points
+- **VALIDATION State**: Complete style validation before transitioning to REVIEW
+- **build-validator Agent**: Triggers automated linters and reports results
+- **style-auditor Agent**: Validates manual detection patterns from docs/code-style/
+- **Conflict Resolution**: Automatic AST-based fixes when linter rules conflict
+- **Evidence Requirement**: All three validation components must pass for ✅ APPROVED
 
-VIOLATION CHECK: Output must contain "LOCK_SUCCESS" AND previous SESSION_ID validation must show "SESSION_ID_VALID"
-IF "LOCK_FAILED": Determine failure cause and respond appropriately:
-  - IF another instance holds lock (check ../../../locks/{task-name}.json exists): Select different available task
-  - IF permission/I/O error (mkdir or echo command fails): ABORT task execution - system-level issue requires manual intervention
+## BATCH PROCESSING AND CONTINUOUS MODE
+
+### Batch Processing Restrictions
+**PROHIBITED PATTERNS:**
+- Processing multiple tasks sequentially without individual protocol execution
+- "Work on all Phase 1 tasks until done" - Must select ONE specific task
+- "Complete these 5 tasks" - Each requires separate lock acquisition and worktree
+- Assuming research tasks can bypass protocol because they create "only" study files
+
+**MANDATORY SINGLE-TASK PROCESSING:**
+1. Select ONE specific task from todo.md
+2. Acquire atomic lock for THAT specific task only
+3. Create isolated worktree for THAT task only
+4. Execute full state machine protocol for THAT task only
+5. Complete CLEANUP state before starting any other task
+
+### Automatic Continuous Mode Translation
+**When users request batch operations:**
+
+**AUTOMATIC TRANSLATION PROTOCOL:**
+1. **ACKNOWLEDGE**: "I understand you want to work on multiple tasks efficiently..."
+2. **AUTO-TRANSLATE**: "I'll interpret this as a request to work on the todo list in continuous mode, processing each task with full protocol isolation..."
+3. **EXECUTE**: Automatically trigger continuous workflow mode without requiring user to rephrase
+
+**Batch Request Patterns to Auto-Translate:**
+- "Work on all [phase/type] tasks"
+- "Complete these tasks until done"
+- "Process the todo list"
+- "Work on multiple tasks"
+- Any request mentioning multiple specific tasks
+
+**Task Filtering for Continuous Mode:**
+When batch requests specify subsets:
+1. **Phase-based filtering**: Process only tasks in specified phases
+2. **Type-based filtering**: Process only tasks matching specified types
+3. **Name-based filtering**: Process only specifically mentioned task names
+4. **Default behavior**: Process all available tasks if no filter mentioned
+
+## 🧠 PROTOCOL INTERPRETATION MODE
+
+**ENHANCED ANALYTICAL RIGOR**: Parent agent must apply deeper analysis when interpreting and following the task protocol workflow. Rather than surface-level interpretations, carefully analyze what the protocol truly requires for the specific task context.
+
+**Critical Thinking Requirements:**
+- Question assumptions about task scope and complexity
+- Verify all transition conditions are genuinely met
+- Apply evidence-based validation rather than procedural compliance
+- Consider edge cases and alternative approaches
+- Maintain skeptical evaluation of "good enough" solutions
+
+## MANDATORY STATE TRANSITIONS
+
+### state.json File Management
+Every task MUST maintain a `state.json` file in the task directory containing:
+```json
+{
+  "current_state": "STATE_NAME",
+  "session_id": "session_uuid",
+  "task_name": "task-name",
+  "risk_level": "HIGH|MEDIUM|LOW",
+  "required_agents": ["agent1", "agent2"],
+  "evidence": {
+    "REQUIREMENTS": ["file1.md", "file2.md"],
+    "IMPLEMENTATION": ["sha256hash"],
+    "VALIDATION": ["build_success_timestamp"],
+    "REVIEW": {"agent1": "APPROVED", "agent2": "APPROVED"}
+  },
+  "transition_log": [
+    {"from": "INIT", "to": "CLASSIFIED", "timestamp": "ISO8601", "evidence": "classification_reasoning"}
+  ]
+}
 ```
 
-### Pattern: Worktree Isolation Setup  
+### INIT → CLASSIFIED
+**Mandatory Conditions:**
+- [ ] Session ID validated and unique
+- [ ] Atomic lock acquired for task
+- [ ] Task exists in todo.md
+- [ ] Working directory confirmed as main branch
+
+**Evidence Required:**
+- Lock file creation timestamp
+- Session ID validation output
+- pwd verification showing `/workspace/branches/main/code`
+
+**Implementation:**
+```bash
+export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec"
+mkdir -p ../../../locks
+(set -C; echo '{"session_id": "'${SESSION_ID}'", "start_time": "'$(date '+%Y-%m-%d %H:%M:%S %Z')'"}' > ../../../locks/task-name.json) && echo "LOCK_SUCCESS" || exit 1
 ```
-BASH COMMAND SEQUENCE:
+
+### CLASSIFIED → REQUIREMENTS
+**Mandatory Conditions:**
+- [ ] Risk level determined (HIGH/MEDIUM/LOW)
+- [ ] Agent set selected based on risk classification
+- [ ] Worktree isolation established (for HIGH/MEDIUM risk)
+- [ ] Context.md created with explicit scope boundaries
+
+**Evidence Required:**
+- Risk classification reasoning documented
+- Worktree creation verification (`pwd` shows task directory)
+- Agent selection justification based on file patterns
+- Context.md exists with mandatory sections
+
+**Implementation:**
+```bash
 cd /workspace/branches/main/code
-git worktree add -b {task-name} /workspace/branches/{task-name}/code 2>/dev/null && cd /workspace/branches/{task-name}/code && pwd
-
-VIOLATION CHECK: pwd output must match /workspace/branches/{task-name}/code
-IF mismatch: TERMINATE task
-
-CRITICAL NOTE: Worktrees MUST be created as siblings to main branch, NOT nested within main/code/
-This ensures proper isolation and prevents embedded repository issues during multi-instance coordination.
+git worktree add -b task-name /workspace/branches/task-name/code
+cd /workspace/branches/task-name/code
 ```
 
-### Pattern: Mandatory Context.md Creation
+### REQUIREMENTS → SYNTHESIS
+**Mandatory Conditions:**
+- [ ] ALL required agents invoked in parallel
+- [ ] ALL agents provided complete requirement reports
+- [ ] ALL agent reports written to `../{agent-name}-requirements.md`
+- [ ] NO agent failures or incomplete responses
+- [ ] Requirements synthesis document created
+- [ ] Architecture plan addresses all stakeholder requirements
+- [ ] Conflict resolution documented for competing requirements
+- [ ] Implementation strategy defined with clear success criteria
+
+**Evidence Required:**
+- Agent report files exist and contain complete analysis
+- Each agent response includes domain-specific requirements
+- All conflicts between agent requirements identified
+- Synthesis document exists with all sections completed
+- Each agent requirement mapped to implementation approach
+- Trade-off decisions documented with rationale
+- Success criteria defined for each domain (architecture, security, performance, etc.)
+
+**Detailed Synthesis Process Pattern:**
 ```
-REQUIRED BEFORE ANY STAKEHOLDER CONSULTATION:
+MANDATORY AFTER REQUIREMENTS completion:
+1. CONFLICT RESOLUTION: Identify competing requirements between domains
+   - Compare technical-architect vs performance-analyzer requirements
+   - Resolve style-auditor vs code-quality-auditor conflicts
+   - Balance security-auditor vs usability-reviewer trade-offs
 
-BASH COMMAND: Create context.md in task root directory
-Write: ../context.md with following mandatory content:
+2. ARCHITECTURE PLANNING: Design approach satisfying all constraints
+   - Document chosen architectural patterns
+   - Specify integration points between components
+   - Define interface contracts and data flows
 
----
+3. REQUIREMENT MAPPING: Document how each stakeholder requirement is addressed
+   - Map each technical-architect requirement to implementation component
+   - Map each security-auditor requirement to security control
+   - Map each performance-analyzer requirement to optimization strategy
+
+4. TRADE-OFF ANALYSIS: Record decisions and compromises
+   - Document rejected alternatives and reasons
+   - Record acceptable compromises with risk assessment
+   - Define success criteria for each domain
+
+5. IMPLEMENTATION EXECUTION PLANNING:
+   - Write complete, functional code addressing all requirements
+   - Document design decisions and rationale
+   - Follow established project patterns
+   - Edit: todo.md (mark task complete) - MUST be included in same commit as task deliverables
+
+VIOLATION CHECK: All REQUIREMENTS state agent feedback addressed or exceptions documented
+
+⚠️ CRITICAL COMMIT PATTERN VIOLATION: Never create separate commits for todo.md updates
+MANDATORY: todo.md task completion update MUST be committed with task deliverables in single atomic commit
+ANTI-PATTERN: git commit deliverables → git commit todo.md (VIOLATES PROTOCOL)
+CORRECT PATTERN: git add deliverables todo.md → git commit (single atomic commit)
+```
+
+**Validation Function:**
+```python
+def validate_requirements_complete(required_agents, task_dir):
+    for agent in required_agents:
+        report_file = f"{task_dir}/../{agent}-requirements.md"
+        if not os.path.exists(report_file):
+            return False, f"Missing report: {report_file}"
+        # Additional validation: file is non-empty, contains analysis
+    return True, "All requirements complete"
+```
+
+### SYNTHESIS → IMPLEMENTATION
+**Mandatory Conditions:**
+- [ ] Requirements synthesis document created
+- [ ] Architecture plan addresses all stakeholder requirements
+- [ ] Conflict resolution documented for competing requirements
+- [ ] Implementation strategy defined with clear success criteria
+
+**Evidence Required:**
+- Synthesis document exists with all sections completed
+- Each agent requirement mapped to implementation approach
+- Trade-off decisions documented with rationale
+- Success criteria defined for each domain (architecture, security, performance, etc.)
+
+### IMPLEMENTATION → VALIDATION
+**Mandatory Conditions:**
+- [ ] All planned deliverables created
+- [ ] Implementation follows synthesis architecture plan
+- [ ] Code adheres to project conventions and patterns
+- [ ] All requirements from synthesis addressed or deferred with justification
+
+**Evidence Required:**
+- Git diff showing all implemented changes
+- File creation/modification timestamps
+- Implementation matches synthesis plan
+- Any requirement deferrals properly documented in todo.md
+
+### VALIDATION → REVIEW (Conditional Path)
+**Path Selection Logic:**
+```
+IF (source_code_modified OR runtime_behavior_changed):
+    EXECUTE full validation sequence
+    REQUIRED CONDITIONS:
+    - [ ] Build validation passes (./mvnw clean compile test)
+    - [ ] All automated quality gates pass
+    - [ ] Performance benchmarks within acceptable ranges (if applicable)
+    - [ ] Security scanning clean (if applicable)
+ELSE:
+    SKIP to REVIEW with documentation-only validation
+```
+
+**Evidence Required (Full Path):**
+- Build success output with zero exit code
+- Quality gate results (checkstyle, PMD, etc.)
+- Test execution results showing all tests pass
+- Performance baseline comparison (if performance-critical changes)
+
+**Evidence Required (Skip Path):**
+- Documentation that no runtime behavior changes
+- Verification that only configuration/documentation modified
+- Build system confirms no code compilation required
+
+### REVIEW → COMPLETE (Unanimous Approval Gate)
+**Mandatory Conditions:**
+- [ ] ALL required agents invoked for final system review
+- [ ] ALL agents return exactly: "FINAL DECISION: ✅ APPROVED - [reason]"
+- [ ] NO agent returns: "FINAL DECISION: ❌ REJECTED - [issues]"
+- [ ] Review evidence documented in `state.json` file
+
+**Enforcement Logic:**
+```python
+def validate_unanimous_approval(agent_responses):
+    for agent, response in agent_responses.items():
+        if "FINAL DECISION: ✅ APPROVED" not in response:
+            if "FINAL DECISION: ❌ REJECTED" in response:
+                return False, f"Agent {agent} rejected with specific issues"
+            else:
+                return False, f"Agent {agent} provided malformed decision format"
+    return True, "Unanimous approval achieved"
+```
+
+**CRITICAL ENFORCEMENT RULES:**
+- **NO HUMAN OVERRIDE**: Agent decisions are atomic and binding
+- **MANDATORY RESOLUTION**: ANY ❌ REJECTED triggers either resolution cycle OR scope negotiation
+
+**Scope Assessment Decision Logic:**
+```python
+def handle_agent_rejections(rejecting_agents, rejection_feedback):
+    # Estimate resolution effort complexity
+    if estimated_resolution_effort > (2 * original_task_scope):
+        # Trigger scope negotiation
+        return transition_to_scope_negotiation(rejecting_agents, rejection_feedback)
+    else:
+        # Standard resolution cycle
+        return transition_to_synthesis_cycle()
+```
+
+**Prohibited Bypass Patterns:**
+❌ "Proceeding despite minor rejections"
+❌ "Issues are enhancement-level, not blocking"
+❌ "Critical functionality complete, finalizing"
+
+**Required Response to ❌ REJECTED:**
+✅ "Agent [name] returned ❌ REJECTED, analyzing resolution scope..."
+✅ IF (resolution effort ≤ 2x task scope): "Returning to SYNTHESIS state to address: [specific issues]"
+✅ IF (resolution effort > 2x task scope): "Transitioning to SCOPE_NEGOTIATION state for scope assessment"
+✅ "Cannot advance to COMPLETE until ALL agents return ✅ APPROVED"
+
+### REVIEW → SCOPE_NEGOTIATION (Conditional Transition)
+**Trigger Conditions:**
+- [ ] Multiple agents returned ❌ REJECTED with extensive scope concerns
+- [ ] Estimated resolution effort exceeds 2x original task scope
+- [ ] Issues span multiple domains requiring significant rework
+
+**Mandatory Conditions:**
+- [ ] All rejecting agents re-invoked with SCOPE_NEGOTIATION mode
+- [ ] Each agent classifies rejected items as BLOCKING vs DEFERRABLE
+- [ ] Domain authority assignments respected for final decisions
+- [ ] Scope negotiation results documented in `state.json` file
+
+**Evidence Required:**
+- Scope assessment from each rejecting agent
+- Classification of issues (BLOCKING/DEFERRABLE) with justification
+- Domain authority decisions documented
+- Follow-up tasks created in todo.md for deferred work
+
+### SCOPE_NEGOTIATION → SYNTHESIS (Return Path) or SCOPE_NEGOTIATION → COMPLETE (Deferral Path)
+**Decision Logic:**
+```python
+def process_scope_negotiation_results(agent_responses):
+    blocking_issues = []
+    deferrable_issues = []
+
+    for agent, response in agent_responses.items():
+        if "SCOPE_DECISION: RESOLVE_NOW" in response:
+            blocking_issues.extend(extract_blocking_issues(response))
+        elif "SCOPE_DECISION: DEFER" in response:
+            deferrable_issues.extend(extract_deferrable_issues(response))
+
+    if blocking_issues:
+        return "TRANSITION_TO_SYNTHESIS", blocking_issues
+    else:
+        return "TRANSITION_TO_COMPLETE", deferrable_issues
+```
+
+**Transition to SYNTHESIS (Full Resolution Path):**
+- ANY agent determines issues are BLOCKING and must be resolved
+- Return to SYNTHESIS state with reduced scope focusing on blocking issues
+- Deferred issues added to todo.md as follow-up tasks
+
+**Transition to COMPLETE (Deferral Path):**
+- ALL agents agree issues are DEFERRABLE beyond current task scope
+- Core functionality preserved, enhancements deferred
+- All deferred work properly documented in todo.md with specific task entries
+
+**Domain Authority Framework:**
+- **security-auditor**: Absolute veto on security vulnerabilities and privacy violations
+- **build-validator**: Final authority on deployment safety and build integrity
+- **technical-architect**: Final authority on architectural completeness requirements
+- **performance-analyzer**: Authority on performance requirements and scalability
+- **code-quality-auditor**: Can defer documentation/testing if basic quality maintained
+- **style-auditor**: Can defer style issues if core functionality preserved
+- **code-tester**: Authority on test coverage adequacy for business logic
+- **usability-reviewer**: Can defer UX improvements if core functionality accessible
+
+**Security Auditor Configuration:**
+**CRITICAL: Use Project-Specific Security Model from scope.md**
+
+For Parser Implementation Tasks:
+- **Attack Model**: Single-user code formatting scenarios (see docs/project/scope.md)
+- **Security Focus**: Resource exhaustion prevention, system stability
+- **NOT in Scope**: Information disclosure, data exfiltration, multi-user attacks
+- **Usability Priority**: Error messages should prioritize debugging assistance
+- **Appropriate Limits**: Reasonable protection for legitimate code formatting use cases
+
+**MANDATORY**: security-auditor MUST reference docs/project/scope.md "Security Model for Parser Operations" before conducting any parser security review.
+
+**Authority Hierarchy for Domain Conflicts:**
+When agent authorities overlap or conflict:
+- Security/Privacy conflicts: Joint veto power (both security-auditor AND security-auditor must approve)
+- Architecture/Performance conflicts: technical-architect decides with performance-analyzer input
+- Build/Architecture conflicts: build-validator has final authority (deployment safety priority)
+- Testing/Quality conflicts: code-tester decides coverage adequacy, code-quality-auditor decides standards
+- Style/Quality conflicts: code-quality-auditor decides (quality encompasses style)
+
+**Scope Negotiation Agent Prompt Template:**
+```python
+scope_negotiation_prompt = """
+Task: {task_description}
+Mode: SCOPE_NEGOTIATION
+Current State: SCOPE_NEGOTIATION → SYNTHESIS or COMPLETE pending
+Your Previous Rejection: {rejection_feedback}
+Core Task Scope: {original_task_definition}
+
+CRITICAL PERSISTENCE REQUIREMENTS:
+Apply CLAUDE.md "Deferral Justification Requirements" and "Prohibited Deferral Reasons".
+Only defer if work genuinely extends beyond task boundaries, requires unavailable expertise,
+is blocked by external factors, or genuinely exceeds reasonable allocation.
+
+NEVER defer because:
+❌ "This is harder than expected"
+❌ "The easy solution works fine"
+❌ "Perfect is the enemy of good"
+
+SCOPE DECISION REQUEST:
+Classify your rejected items based on original task scope:
+
+BLOCKING ISSUES (must resolve now):
+- Issues that prevent core functionality
+- Issues that compromise long-term solution quality within achievable scope
+- Issues within your domain authority that cannot be safely deferred
+
+DEFERRABLE ISSUES (can add to todo.md):
+- Issues that enhance but don't block core task
+- Issues that genuinely exceed reasonable task boundaries
+- Issues that can become standalone follow-up tasks
+
+MANDATORY RESPONSE FORMAT:
+BLOCKING ISSUES: [list specific items that absolutely must be resolved]
+DEFERRABLE ISSUES: [list items that can become follow-up tasks]
+PERSISTENCE JUSTIFICATION: [explain why deferrable items genuinely exceed scope vs. requiring more effort]
+SCOPE_DECISION: DEFER or RESOLVE_NOW
+
+If DEFER: Provide exact todo.md task entries for deferred work
+If RESOLVE_NOW: Confirm all issues must be resolved in current task
+"""
+```
+
+### COMPLETE → CLEANUP
+**Mandatory Conditions:**
+- [ ] All work committed to task branch with descriptive commit message
+- [ ] Task branch merged to main branch via fast-forward merge
+- [ ] todo.md updated to mark task complete (in same commit as deliverables)
+- [ ] Build verification passes on main branch after merge
+
+**Evidence Required:**
+- Git log showing clean merge to main
+- todo.md modification included in final commit
+- Main branch build success after integration
+- All deliverables preserved in main branch
+
+**Git Safety Sequence:**
+```bash
+# Ensure clean working state
+rm -f .temp_dir
+git status --porcelain | grep -E "(dist/|target/|\.temp_dir$)" | wc -l  # Must be 0
+
+# Linear merge requirement
+git rebase main
+cd /workspace/branches/main/code
+git merge --ff-only task-name
+
+# Verification
+git log --oneline -3  # Verify linear history
+./mvnw clean verify -q  # Verify build integrity
+```
+
+### CLEANUP (Final State)
+**Mandatory Conditions:**
+- [ ] Task lock released
+- [ ] Worktree removed safely
+- [ ] Task branch deleted
+- [ ] Temporary files cleaned
+- [ ] `state.json` file archived
+
+**Implementation:**
+```bash
+# Verify work preserved before cleanup
+cd /workspace/branches/main/code
+git log --oneline -5 | grep "task-name" || exit 1
+
+# Safe cleanup sequence
+rm -f ../../../locks/task-name.json
+cd /workspace/branches/main/code
+git worktree remove /workspace/branches/task-name/code
+git branch -d task-name
+rm -rf /workspace/branches/task-name
+
+# Temporary file cleanup
+TEMP_DIR=$(cat .temp_dir 2>/dev/null) && [ -n "$TEMP_DIR" ] && rm -rf "$TEMP_DIR"
+```
+
+## TRANSITION VALIDATION FUNCTIONS
+
+### Universal Validation Requirements
+Every transition MUST execute these checks:
+
+```python
+def validate_transition_conditions(from_state, to_state, evidence, task_context):
+    """Validate that all mandatory conditions for transition are met"""
+
+    # Load transition requirements
+    required_conditions = TRANSITION_MAP[from_state][to_state]['conditions']
+    required_evidence = TRANSITION_MAP[from_state][to_state]['evidence']
+
+    # Validate each condition
+    for condition in required_conditions:
+        if not validate_condition(condition, evidence, task_context):
+            return False, f"Condition failed: {condition}"
+
+    # Validate required evidence exists
+    for evidence_type in required_evidence:
+        if not validate_evidence(evidence_type, evidence):
+            return False, f"Missing evidence: {evidence_type}"
+
+    return True, "All transition conditions satisfied"
+
+def validate_condition(condition, evidence, context):
+    """Validate specific transition condition"""
+    # Implementation specific to each condition type
+    pass
+
+def validate_evidence(evidence_type, evidence_data):
+    """Validate required evidence exists and is complete"""
+    # Implementation specific to each evidence type
+    pass
+```
+
+### State Enforcement Functions
+
+```bash
+# Function: Update task state
+update_task_state() {
+    local new_state=$1
+    local evidence_json=$2
+
+    # Validate transition is legal
+    current_state=$(jq -r '.current_state' state.json 2>/dev/null || echo "INIT")
+    if ! validate_state_transition "$current_state" "$new_state"; then
+        echo "ERROR: Invalid transition from $current_state to $new_state"
+        exit 1
+    fi
+
+    # Update state file
+    jq --arg state "$new_state" \
+       --argjson evidence "$evidence_json" \
+       --arg timestamp "$(date -Iseconds)" \
+       '.current_state = $state |
+        .evidence += $evidence |
+        .transition_log += [{"from": .current_state, "to": $state, "timestamp": $timestamp}]' \
+       state.json > state.json.tmp && mv state.json.tmp state.json
+}
+
+# Function: Validate state transition
+validate_state_transition() {
+    local from_state=$1
+    local to_state=$2
+
+    case "$from_state:$to_state" in
+        # Standard transitions
+        "INIT:CLASSIFIED"|"CLASSIFIED:REQUIREMENTS"|"REQUIREMENTS:SYNTHESIS"|"SYNTHESIS:IMPLEMENTATION"|"IMPLEMENTATION:VALIDATION"|"VALIDATION:REVIEW"|"REVIEW:COMPLETE"|"COMPLETE:CLEANUP")
+            return 0 ;;
+        # Scope negotiation transitions
+        "REVIEW:SCOPE_NEGOTIATION"|"SCOPE_NEGOTIATION:SYNTHESIS"|"SCOPE_NEGOTIATION:COMPLETE")
+            return 0 ;;
+        # Conditional skip transitions for low/medium risk
+        "SYNTHESIS:COMPLETE"|"CLASSIFIED:COMPLETE"|"REQUIREMENTS:COMPLETE")
+            return 0 ;;
+        # Resolution cycle transitions
+        "SYNTHESIS:IMPLEMENTATION"|"IMPLEMENTATION:SYNTHESIS"|"VALIDATION:SYNTHESIS")
+            return 0 ;;
+        *)
+            return 1 ;;
+    esac
+}
+```
+
+## AGENT INTERACTION PROTOCOLS
+
+### Parallel Agent Invocation Pattern
+```python
+# Template for requirements gathering
+agent_prompt_template = """
+Task: {task_description}
+Mode: REQUIREMENTS_ANALYSIS
+Current State: REQUIREMENTS → SYNTHESIS transition pending
+Your Domain: {agent_domain}
+Risk Level: {risk_level}
+
+CRITICAL SCOPE ENFORCEMENT:
+Only analyze files in ../context.md scope section.
+STOP IMMEDIATELY if attempting unauthorized file access.
+
+MANDATORY PERSISTENCE REQUIREMENTS:
+Apply CLAUDE.md "Long-term Solution Persistence" principles.
+Reject incomplete solutions when optimal solutions are achievable.
+Use "Solution Quality Hierarchy" - prioritize OPTIMAL over EXPEDIENT.
+
+MANDATORY OUTPUT REQUIREMENT:
+Provide complete {agent_domain} requirements analysis.
+End with: "REQUIREMENTS COMPLETE: {agent_domain} analysis provided"
+
+MANDATORY EVIDENCE REQUIREMENT:
+Document specific {agent_domain} requirements that implementation must satisfy.
+Include success criteria, constraints, and quality thresholds.
+"""
+
+# Implementation
+def invoke_requirements_agents(required_agents, task_context):
+    agent_calls = []
+    for agent in required_agents:
+        agent_calls.append({
+            'subagent_type': agent,
+            'description': f'{agent} requirements analysis',
+            'prompt': agent_prompt_template.format(
+                agent_domain=agent.replace('-', ' '),
+                **task_context
+            )
+        })
+
+    # Execute all agents in parallel (single message, multiple tool calls)
+    return execute_parallel_agents(agent_calls)
+```
+
+### Review Agent Invocation Pattern
+```python
+review_prompt_template = """
+Task: {task_description}
+Mode: FINAL_SYSTEM_REVIEW
+Current State: REVIEW → COMPLETE transition pending
+Your Phase 1 Requirements: {requirements_file}
+Implementation Files: {modified_files}
+
+CRITICAL PERSISTENCE VALIDATION:
+Apply CLAUDE.md "Solution Quality Indicators" checklist.
+Verify solution addresses root cause, follows best practices.
+Reject if merely functional when optimal was achievable within scope.
+
+MANDATORY FINAL DECISION FORMAT:
+Must end response with exactly one of:
+- "FINAL DECISION: ✅ APPROVED - All {domain} requirements satisfied"
+- "FINAL DECISION: ❌ REJECTED - [specific issues requiring resolution]"
+
+NO OTHER CONCLUSION FORMAT ACCEPTED.
+This decision determines workflow continuation.
+"""
+```
+
+## ERROR HANDLING & RECOVERY
+
+### Transition Failure Recovery
+```python
+def handle_transition_failure(current_state, attempted_state, failure_reason):
+    """Handle failed state transitions with appropriate recovery"""
+
+    recovery_actions = {
+        'REQUIREMENTS': {
+            'missing_agent_reports': 're_invoke_missing_agents',
+            'incomplete_analysis': 'request_complete_analysis',
+            'scope_violations': 'enforce_scope_boundaries'
+        },
+        'REVIEW': {
+            'agent_rejection': 'return_to_synthesis_cycle',
+            'malformed_decision': 'request_proper_format',
+            'missing_decisions': 're_invoke_agents'
+        },
+        'VALIDATION': {
+            'build_failure': 'return_to_implementation',
+            'test_failure': 'fix_tests_and_retry',
+            'quality_gate_failure': 'address_quality_issues'
+        }
+    }
+
+    action = recovery_actions.get(current_state, {}).get(failure_reason, 'restart_from_synthesis')
+    execute_recovery_action(action, current_state, attempted_state, failure_reason)
+```
+
+### Multi-Instance Coordination
+```bash
+# Lock conflict resolution
+handle_lock_conflict() {
+    local task_name=$1
+
+    echo "Lock conflict detected for task: $task_name"
+    echo "Checking for available alternative tasks..."
+
+    # Find next available task
+    available_tasks=$(grep -E "^[[:digit:]]+\." /workspace/branches/main/code/todo.md |
+                     head -10 |
+                     while read line; do
+                         task=$(echo "$line" | sed 's/^[[:digit:]]*\. *//')
+                         task_slug=$(echo "$task" | tr ' ' '-' | tr '[:upper:]' '[:lower:]')
+                         if [ ! -f "../../../locks/${task_slug}.json" ]; then
+                             echo "$task_slug"
+                             break
+                         fi
+                     done)
+
+    if [ -n "$available_tasks" ]; then
+        echo "Selected alternative task: $available_tasks"
+        execute_task_protocol "$available_tasks"
+    else
+        echo "No available tasks found. Exiting."
+        exit 1
+    fi
+}
+```
+
+## COMPLIANCE VERIFICATION
+
+### Pre-Task Validation Checklist
+```bash
+# MANDATORY before ANY task execution
+pre_task_validation() {
+    echo "=== PRE-TASK VALIDATION ==="
+
+    # 1. Session ID validation
+    [ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "REPLACE_WITH_ACTUAL_SESSION_ID" ] || {
+        echo "ERROR: Invalid session ID configuration"
+        exit 1
+    }
+
+    # 2. Working directory verification
+    [ "$(pwd)" = "/workspace/branches/main/code" ] || {
+        echo "ERROR: Must execute from main branch directory"
+        exit 1
+    }
+
+    # 3. Todo.md accessibility
+    [ -f "todo.md" ] || {
+        echo "ERROR: todo.md not accessible"
+        exit 1
+    }
+
+    echo "✅ Pre-task validation complete"
+}
+```
+
+### Continuous Compliance Monitoring
+```bash
+# Execute after each state transition
+post_transition_validation() {
+    local new_state=$1
+
+    echo "=== POST-TRANSITION VALIDATION: $new_state ==="
+
+    # Verify state file updated correctly
+    current_state=$(jq -r '.current_state' state.json 2>/dev/null || echo "ERROR")
+    [ "$current_state" = "$new_state" ] || {
+        echo "ERROR: State file not updated correctly"
+        exit 1
+    }
+
+    # Verify required evidence present
+    validate_state_evidence "$new_state" || {
+        echo "ERROR: Required evidence missing for state $new_state"
+        exit 1
+    }
+
+    echo "✅ Post-transition validation complete"
+}
+```
+
+### Final Compliance Audit
+```bash
+# MANDATORY before CLEANUP state
+final_compliance_audit() {
+    echo "=== FINAL COMPLIANCE AUDIT ==="
+
+    # Verify all states traversed correctly
+    state_sequence=$(jq -r '.transition_log[] | .to' state.json | tr '\n' ' ')
+
+    # Valid sequences: support multiple workflow variants
+    high_risk_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS IMPLEMENTATION VALIDATION REVIEW COMPLETE"
+    medium_risk_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS IMPLEMENTATION VALIDATION REVIEW COMPLETE"
+    low_risk_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS COMPLETE"
+    scope_negotiation_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS IMPLEMENTATION VALIDATION REVIEW SCOPE_NEGOTIATION COMPLETE"
+    alternate_scope_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS IMPLEMENTATION VALIDATION REVIEW SCOPE_NEGOTIATION SYNTHESIS.*COMPLETE"
+    config_only_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS COMPLETE"
+
+    # Check against all valid sequences
+    valid_sequence=false
+    for sequence in "$high_risk_sequence" "$medium_risk_sequence" "$low_risk_sequence" "$scope_negotiation_sequence" "$config_only_sequence"; do
+        if [[ "$state_sequence" =~ $sequence ]]; then
+            valid_sequence=true
+            echo "✅ Valid state sequence detected: matches $sequence pattern"
+            break
+        fi
+    done
+
+    # Also check alternate scope negotiation pattern
+    if [[ "$valid_sequence" == "false" ]] && [[ "$state_sequence" =~ $alternate_scope_sequence ]]; then
+        valid_sequence=true
+        echo "✅ Valid state sequence detected: matches scope negotiation with resolution cycle"
+    fi
+
+    if [[ "$valid_sequence" == "false" ]]; then
+        echo "ERROR: Invalid state sequence: $state_sequence"
+        exit 1
+    fi
+
+    # Verify unanimous approval achieved
+    approval_count=$(jq -r '.evidence.REVIEW | to_entries[] | select(.value == "APPROVED") | .key' state.json | wc -l)
+    required_count=$(jq -r '.required_agents | length' state.json)
+
+    [ "$approval_count" -eq "$required_count" ] || {
+        echo "ERROR: Missing agent approvals: $approval_count/$required_count"
+        exit 1
+    }
+
+    # Verify work preserved
+    git log --oneline -5 | grep -i "$(jq -r '.task_name' state.json)" || {
+        echo "ERROR: Task work not preserved in git history"
+        exit 1
+    }
+
+    echo "✅ Final compliance audit passed"
+}
+```
+
+## VIOLATION PREVENTION PATTERNS
+
+### Pre-Task Validation Block
+**MANDATORY before ANY task execution:**
+```bash
+# Session ID validation
+export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec"
+[ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "REPLACE_WITH_ACTUAL_SESSION_ID" ] && echo "SESSION_ID_VALID: $SESSION_ID" || (echo "SESSION_ID_INVALID" && exit 1)
+
+# Working directory verification
+[ "$(pwd)" = "/workspace/branches/main/code" ] || (echo "ERROR: Wrong directory" && exit 1)
+
+# Todo.md accessibility
+[ -f "todo.md" ] || (echo "ERROR: todo.md not accessible" && exit 1)
+```
+
+### Mandatory Context.md Creation
+**Required BEFORE any stakeholder consultation:**
+```markdown
 # Task Context: {task-name}
 
 ## Task Objective
@@ -298,16 +1098,12 @@ Write: ../context.md with following mandatory content:
 ## Scope Definition
 **FILES IN SCOPE:**
 - [List exact files/directories that stakeholder agents are authorized to analyze]
-- [Example: parser/src/main/java/io/github/cowwoc/styler/parser/]
-- [Example: parser/src/test/java/io/github/cowwoc/styler/parser/test/]
 
 **FILES OUT OF SCOPE:**
-- [List directories/files that are explicitly excluded from analysis]
-- [Example: All files outside the parser/ directory]
-- [Example: Broader project infrastructure, lexer modules, etc.]
+- [List directories/files explicitly excluded from analysis]
 
 ## Stakeholder Agent Reports
-**Phase 1 Requirements:**
+**Requirements Phase:**
 - technical-architect-requirements.md (when completed)
 - [other-agent]-requirements.md (when completed)
 
@@ -316,638 +1112,391 @@ Write: ../context.md with following mandatory content:
 - [other-agent]-review1.md (when completed)
 
 ## Implementation Status
-- [ ] Phase 1: Requirements Analysis
-- [ ] Phase 2: Requirements Synthesis
-- [ ] Phase 3: Implementation
-- [ ] Phase 4: Testing
-- [ ] Phase 5: Issue Resolution (if needed)
-- [ ] Phase 6: Final Review
-- [ ] Phase 7: Cleanup
-
-## Current Focus
-[Current phase and specific work being performed]
----
-
-VIOLATION CHECK: context.md must exist before invoking any stakeholder agents
-IF context.md missing: HALT workflow, create context.md first
-PURPOSE: Ensures all agents operate within consistent, documented scope boundaries
+- [ ] INIT: Task initialization
+- [ ] CLASSIFIED: Risk assessment
+- [ ] REQUIREMENTS: Stakeholder analysis
+- [ ] SYNTHESIS: Architecture planning
+- [ ] IMPLEMENTATION: Code creation
+- [ ] VALIDATION: Build verification
+- [ ] REVIEW: Final approval
+- [ ] COMPLETE: Work preservation
+- [ ] CLEANUP: Resource cleanup
 ```
 
-### Pattern: Phase 1 Parallel Agent Execution
-```
-TOOL CALL STRUCTURE (single message, multiple invocations):
-<invoke name="Task">
-<parameter name="subagent_type">technical-architect</parameter>
-<parameter name="description">Requirements analysis for {task}</parameter>
-<parameter name="prompt">Task: {task-description}\nMode: REQUIREMENTS_ANALYSIS\nPrimary Focus: architectural decisions\nSuccess Criteria: design approach validation\nToken Budget: 800 tokens\nScope Limitation: architecture only, not implementation
+### Atomic Lock Acquisition Pattern
+```bash
+# MANDATORY atomic lock acquisition
+mkdir -p ../../../locks
+(set -C; echo '{"session_id": "'${SESSION_ID}'", "start_time": "'$(date '+%Y-%m-%d %H:%M:%S %Z')'"}' > ../../../locks/{task-name}.json) 2>/dev/null && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
 
-CRITICAL SCOPE ENFORCEMENT: ONLY analyze files explicitly listed in ../context.md scope section. ABSOLUTELY FORBIDDEN to scan files outside context.md scope. STOP IMMEDIATELY if attempting to access unauthorized files.
-
-CRITICAL PERSISTENCE REQUIREMENT: Follow CLAUDE.md "Long-term Solution Persistence" principles. Prioritize optimal solutions over expedient alternatives. Apply "Solution Quality Hierarchy" and reject incomplete implementations.
-
-MANDATORY OUTPUT REQUIREMENT: Provide your complete analysis report in your response. The parent agent will write this report to ../{agent-name}-requirements.md file.</parameter>
-</invoke>
-<invoke name="Task">
-<parameter name="subagent_type">performance-analyzer</parameter>
-<parameter name="description">Performance requirements analysis</parameter>
-<parameter name="prompt">Task: {task-description}\nMode: REQUIREMENTS_ANALYSIS\nPrimary Focus: performance characteristics\nSuccess Criteria: performance requirements\nToken Budget: 600 tokens\nScope Limitation: performance only, not implementation
-
-MANDATORY OUTPUT REQUIREMENT: Provide your complete analysis report in your response. The parent agent will write this report to ../{agent-name}-requirements.md file.</parameter>
-</invoke>
-
-VIOLATION CHECK: All agents must return completion status AND provide complete reports
-IF any agent fails: HALT workflow
-IF any agent doesn't provide complete report: Re-invoke with report requirement
-PARENT AGENT RESPONSIBILITY: Write all agent reports to designated files after collection
-
-AGENT REPORT NAMING CONVENTION:
-- Phase 1 (Requirements): ../{agent-name}-requirements.md
-- Phase 3 (Implementation Review): ../{agent-name}-review1.md  
-- Phase 4 (Test Review): ../{agent-name}-review2.md
-- Phase 6 (Final System Review): ../{agent-name}-review3.md
-- Additional rounds increment the number (review4.md, review5.md, etc.)
-
-EXAMPLES:
-- technical-architect requirements: ../technical-architect-requirements.md
-- style-auditor first review: ../style-auditor-review1.md
-- security-auditor final review: ../security-auditor-review3.md
+# Violation check
+if [[ "$lock_result" != *"LOCK_SUCCESS"* ]]; then
+    echo "Lock acquisition failed - selecting alternative task"
+    select_alternative_task
+fi
 ```
 
-### Pattern: Phase 2 Requirements Synthesis
-```
-MANDATORY AFTER Phase 1 completion:
-1. Read: All Phase 1 agent reports (stakeholder-requirements.md, performance-requirements.md, etc.)
-2. CONFLICT RESOLUTION: Identify competing requirements between domains
-3. ARCHITECTURE PLANNING: Design approach satisfying all constraints
-4. REQUIREMENT MAPPING: Document how each stakeholder requirement is addressed
-5. TRADE-OFF ANALYSIS: Record decisions and compromises
+### Temporary File Management Setup
+**BEFORE IMPLEMENTATION BEGINS (Mandatory for all tasks):**
+```bash
+# TEMP_DIRECTORY_CREATION: Set up isolated temporary file space
+TASK_NAME=$(basename $(dirname $(pwd)))
+TEMP_DIR="/tmp/task-${TASK_NAME}-$(date +%s)-$$" && mkdir -p "$TEMP_DIR"
+echo "$TEMP_DIR" > .temp_dir && echo "TEMP_SETUP_SUCCESS: $TEMP_DIR"
 
-IMPLEMENTATION EXECUTION:
-- Write complete, functional code addressing all requirements
-- Document design decisions and rationale
-- Follow established project patterns
-- Edit: todo.md (mark task complete) - MUST be included in same commit as task deliverables
+# PURPOSE: All agents use consistent temporary file location outside git repository
+# USAGE: Agents read temp directory with: TEMP_DIR=$(cat .temp_dir 2>/dev/null || echo "/tmp/fallback-$$")
 
-VIOLATION CHECK: All Phase 1 requirements addressed or exceptions documented
-
-⚠️ CRITICAL COMMIT PATTERN VIOLATION: Never create separate commits for todo.md updates
-MANDATORY: todo.md task completion update MUST be committed with task deliverables in single atomic commit
-ANTI-PATTERN: git commit deliverables → git commit todo.md (VIOLATES PROTOCOL)
-CORRECT PATTERN: git add deliverables todo.md → git commit (single atomic commit)
+# VIOLATION CHECK: Output must contain "TEMP_SETUP_SUCCESS"
+if [[ "$temp_result" != *"TEMP_SETUP_SUCCESS"* ]]; then
+    echo "WARNING: Temp directory creation failed - using task directory as fallback"
+    TEMP_DIR=$(pwd)/.temp_fallback && mkdir -p "$TEMP_DIR"
+fi
 ```
 
-### Pattern: Temporary File Management Setup
-```
-BEFORE IMPLEMENTATION BEGINS (Mandatory for all tasks):
-1. TEMP_DIRECTORY_CREATION: Set up isolated temporary file space
-   - Bash: TASK_NAME=$(basename $(dirname $(pwd)))
-   - Bash: TEMP_DIR="/tmp/task-${TASK_NAME}-$(date +%s)-$$" && mkdir -p "$TEMP_DIR"
-   - Bash: echo "$TEMP_DIR" > .temp_dir && echo "TEMP_SETUP_SUCCESS: $TEMP_DIR"
-   - PURPOSE: All agents use consistent temporary file location outside git repository
-   - USAGE: Agents read temp directory with: TEMP_DIR=$(cat .temp_dir 2>/dev/null || echo "/tmp/fallback-$$")
-
-VIOLATION CHECK: Output must contain "TEMP_SETUP_SUCCESS"
-IF temp directory creation fails: Use task directory as fallback, document limitation
-
-AGENT INTEGRATION: All agents should use temporary directory for:
+**AGENT INTEGRATION**: All agents should use temporary directory for:
 - Analysis scripts and automation tools
-- Performance benchmarking artifacts  
+- Performance benchmarking artifacts
 - Security testing payloads and samples
 - Debug logs and intermediate processing files
 - Generated test data and mock objects
+
+### Implementation Safety Guards
+**Before ANY Write/Edit/MultiEdit operation:**
+```bash
+# Working directory validation
+pwd | grep -q "/workspace/branches/.*/code$" || (echo "ERROR: Invalid working directory" && exit 1)
+
+# Clean repository state
+git status --porcelain | grep -E "(dist/|node_modules/|target/|\.jar$)" && (echo "ERROR: Prohibited files detected" && exit 1)
 ```
 
-### Pattern: Phase 3 Dual Track Validation
-```
-PARALLEL EXECUTION (two simultaneous tracks):
+### Build Validation Gates
+**Mandatory after implementation:**
+```bash
+# Compile and test validation
+./mvnw clean compile test -q || (echo "ERROR: Build/test failure" && exit 1)
 
-TRACK A - Implementation Review:
-<invoke name="Task">
-<parameter name="subagent_type">technical-architect</parameter>
-<parameter name="description">Review implementation against Phase 1 requirements</parameter>
-<parameter name="prompt">Task: {task-description}\nMode: IMPLEMENTATION_REVIEW\nYour Phase 1 Requirements: {link-to-phase1-report}\nImplementation Files: {modified-files}\nInstructions: Review implementation against YOUR Phase 1 requirements.
-
-CRITICAL SCOPE ENFORCEMENT: ONLY analyze files explicitly listed in ../context.md scope section. ABSOLUTELY FORBIDDEN to scan files outside context.md scope. STOP IMMEDIATELY if attempting to access unauthorized files.
-
-CRITICAL PERSISTENCE ENFORCEMENT: Apply CLAUDE.md "Stakeholder Agent Persistence Enforcement" standards. Validate architectural COMPLETENESS, not just basic functionality. Use "Mandatory Rejection Criteria" - reject incomplete implementations, suboptimal algorithms when better solutions are feasible, and partial compliance when full compliance is achievable.
-
-MANDATORY OUTPUT REQUIREMENT: Provide your complete review report in your response. The parent agent will write this report to ../{agent-name}-review{round}.md file.
-
-MANDATORY FINAL DECISION: Must end response with exactly one of:
-- "FINAL DECISION: ✅ APPROVED - Implementation meets all requirements"
-- "FINAL DECISION: ❌ REJECTED - [specific issues] require resolution"</parameter>
-</invoke>
-<invoke name="Task">
-<parameter name="subagent_type">style-auditor</parameter>
-<parameter name="description">Review code style compliance</parameter>
-<parameter name="prompt">Task: {task-description}\nMode: STYLE_COMPLIANCE_REVIEW\nImplementation Files: {modified-files}\nInstructions: Apply ALL manual style guide rules from docs/code-style/. Check Java, common, and language-specific patterns.\n\nMANDATORY OUTPUT REQUIREMENT: Provide your complete style review report in your response. The parent agent will write this report to ../{agent-name}-review{round}.md file.\n\nMANDATORY FINAL DECISION: Must end response with exactly one of:\n- "FINAL DECISION: ✅ APPROVED - All style requirements satisfied"\n- "FINAL DECISION: ❌ REJECTED - [violation count] violations require fixes"</parameter>
-</invoke>
-[Repeat for all selected agents in parallel]
-
-TRACK B - Test Creation:
-<invoke name="Task">
-<parameter name="subagent_type">code-tester</parameter>
-<parameter name="description">Create comprehensive test suite</parameter>
-<parameter name="prompt">Task: {task-description}\nMode: TEST_CREATION\nImplementation Files: {modified-files}\nInstructions: Create comprehensive test suite covering all business logic, edge cases, and stakeholder requirements.
-
-MANDATORY OUTPUT REQUIREMENT: Provide your complete test creation report in your response. The parent agent will write this report to ../{agent-name}-review{round}.md file.</parameter>
-</invoke>
-
-VIOLATION CHECK: All agents must end with "FINAL DECISION: ✅ APPROVED" or "FINAL DECISION: ❌ REJECTED"\nIF any agent response lacks mandatory format: TERMINATE task, restart from Phase 1
+# Full verification before completion
+./mvnw clean verify -q || (echo "ERROR: Full build failure - task cannot be completed" && exit 1)
 ```
 
-### Pattern: Phase 4 Test-Only Review
-```
-PARALLEL EXECUTION - All Phase 1 agents review TEST CODE only:
-<invoke name="Task">
-<parameter name="subagent_type">technical-architect</parameter>
-<parameter name="description">Review test quality and coverage</parameter>
-<parameter name="prompt">Task: {task-description}\nMode: TEST_REVIEW\nTest Files: {test-files}\nInstructions: Review ONLY test code quality and domain coverage. Verify tests validate your Phase 1 requirements.
+### Decision Parsing Enforcement
+**After ANY agent invocation:**
+```bash
+# Extract agent decision
+decision=$(echo "$agent_response" | grep "FINAL DECISION:")
 
-CRITICAL SCOPE ENFORCEMENT: ONLY analyze files explicitly listed in ../context.md scope section. ABSOLUTELY FORBIDDEN to scan files outside context.md scope. STOP IMMEDIATELY if attempting to access unauthorized files.
-
-MANDATORY OUTPUT REQUIREMENT: Provide your complete test review report in your response. The parent agent will write this report to ../{agent-name}-review{round}.md file.
-
-MANDATORY FINAL DECISION: Must end response with exactly one of:\n- "FINAL DECISION: ✅ APPROVED - Tests adequately cover all requirements"\n- "FINAL DECISION: ❌ REJECTED - [specific gaps] in test coverage"</parameter>
-</invoke>
-[Repeat for all Phase 1 agents in parallel]
-
-VIOLATION CHECK: All agents must end with "FINAL DECISION: ✅ APPROVED"\nIF any agent lacks mandatory format or shows REJECTED: Execute Phase 5
-```
-
-### Pattern: Phase 3-5 Execution Condition (Conditional)
-```
-TRIGGER CONDITION:
-IF (source code files modified) OR (runtime behavior changes expected):
-  Execute Phase 3: Dual Track Validation
-  Execute Phase 4: Test-Only Review
-  IF (Any Phase 3 agent == "REJECTED") OR (Any Phase 4 agent == "REJECTED"):
-    Execute Phase 5: Issue Resolution
-    Return to Phase 6 after resolution
-  ELSE:
-    Skip to Phase 6
-ELSE:
-  Skip directly to Phase 6 with build validation confirmation
-  
-EXAMPLES OF PHASE 3-5 SKIP CONDITIONS:
-- Maven dependency additions (configuration only)
-- Build plugin configuration changes
-- Documentation updates
-- Property file modifications
-- Version bumps without code changes
-
-EXAMPLES REQUIRING PHASE 3-5 EXECUTION:
-- New Java classes or methods
-- Modified algorithms or business logic  
-- Database schema changes
-- API endpoint modifications
-- Configuration affecting runtime behavior
-```
-
-### Pattern: Phase 5 Issue Resolution (Conditional - Only if Phase 3-4 Executed)
-```
-TRIGGER CONDITION:
-IF (Any Phase 3 agent == "REJECTED") OR (Any Phase 4 agent == "REJECTED"):
-  Execute Phase 5
-ELSE:
-  Skip to Phase 6
-  
-NOTE: Phase 5 only applies when Phases 3-4 were executed. Configuration-only tasks skip directly from Phase 2 to Phase 6.
-
-MANDATORY SCOPE ASSESSMENT:
-1. Analyze rejection feedback complexity and effort estimation
-2. APPLY PERSISTENCE EVALUATION: Use CLAUDE.md "Enhanced Scope Assessment" - evaluate if complexity is genuine or just requiring more effort, assess learning curve value, technical debt cost, and stakeholder value of optimal solution
-3. IF estimated resolution effort > 2x original task scope AND persistence evaluation shows genuine scope mismatch:
-   Execute Scope Negotiation Protocol
-4. ELSE:
-   Execute Standard Issue Resolution with persistence focus
-
-SCOPE NEGOTIATION PROTOCOL:
-When resolution appears to require extensive work beyond core task scope:
-
-1. CATEGORIZE ISSUES by domain authority:
-   - BLOCKING ISSUES (must resolve):
-     * Compilation/build failures (build-validator authority)
-     * Security vulnerabilities (security-auditor absolute veto)
-     * Privacy violations (security-auditor absolute veto)
-     * Architectural incompleteness (technical-architect authority)
-     * Critical performance issues (performance-analyzer authority)
-   - DEFERRABLE ISSUES (can todo.md):
-     * Style violations (style-auditor can defer if functionality preserved)
-     * Documentation gaps (code-quality-auditor can defer if basic quality maintained)
-     * Test coverage improvements (code-tester decides adequacy)
-     * UX enhancements (usability-reviewer can defer if core functionality accessible)
-   - NEGOTIABLE ISSUES (requires domain authority consultation):
-     * Performance optimization requirements
-     * Implementation completeness scope
-     * Testing strategy adequacy
-     * Code quality standards application
-
-2. DOMAIN AUTHORITY ASSIGNMENTS:
-   - build-validator: Final authority on "can this be built/deployed safely?"
-   - security-auditor: Absolute veto on security vulnerabilities and attack vectors
-   - technical-architect: Final authority on "does this meet architectural requirements?"
-   - style-auditor: Can defer style issues to todo.md if core functionality preserved
-   - code-quality-auditor: Can defer documentation/testing to todo.md if basic quality maintained
-   - security-auditor: Absolute veto on data privacy and personal information handling violations
-   - performance-analyzer: Final authority on performance requirements and scalability concerns
-   - code-tester: Final authority on test coverage adequacy for business logic validation
-   - usability-reviewer: Can defer UX improvements to todo.md if core functionality accessible
-
-3. SECURITY AUDITOR CONFIGURATION:
-   **CRITICAL: Use Project-Specific Security Model from scope.md**
-
-   For Parser Implementation Tasks:
-   - **Attack Model**: Single-user code formatting scenarios (see docs/project/scope.md)
-   - **Security Focus**: Resource exhaustion prevention, system stability
-   - **NOT in Scope**: Information disclosure, data exfiltration, multi-user attacks
-   - **Usability Priority**: Error messages should prioritize debugging assistance
-   - **Appropriate Limits**: Reasonable protection for legitimate code formatting use cases
-
-   **MANDATORY**: security-auditor MUST reference docs/project/scope.md "Security Model for Parser Operations" before conducting any parser security review.
-
-4. AUTHORITY HIERARCHY FOR DOMAIN CONFLICTS:
-   When agent authorities overlap or conflict:
-   - Security/Privacy conflicts: Joint veto power (both security-auditor AND security-auditor must approve)
-   - Architecture/Performance conflicts: technical-architect decides with performance-analyzer input
-   - Tax/Security conflicts: Both have absolute veto (highest safety standard applies)
-   - Tax/Privacy conflicts: Both have absolute veto (highest compliance standard applies)
-   - Testing/Quality conflicts: code-tester decides coverage adequacy, code-quality-auditor decides standards
-   - Build/Architecture conflicts: build-validator has final authority (deployment safety priority)
-   - Usability/Architecture conflicts: technical-architect decides with usability-reviewer input
-   - Style/Quality conflicts: code-quality-auditor decides (quality encompasses style)
-
-4. SCOPE NEGOTIATION EXECUTION:
-   Invoke scope assessment with rejecting agents:
-   <invoke name="Task">
-   <parameter name="subagent_type">{rejecting-agent}</parameter>
-   <parameter name="description">Scope negotiation for {task}</parameter>
-   <parameter name="prompt">Task: {task-description}
-   Mode: SCOPE_NEGOTIATION
-   Rejection Feedback: {your-previous-rejection-feedback}
-   Core Task Scope: {original-task-definition}
-
-   CRITICAL PERSISTENCE REQUIREMENTS: Apply CLAUDE.md "Deferral Justification Requirements" and "Prohibited Deferral Reasons". Only defer if work genuinely extends beyond task boundaries, requires unavailable expertise, blocked by external factors, or genuinely exceeds reasonable allocation. NEVER defer because "this is harder than expected" or "the easy solution works fine".
-
-   SCOPE DECISION REQUEST: Given the original task scope, classify your rejected items:
-   - BLOCKING (must resolve now): Issues that prevent core functionality OR compromise long-term solution quality within achievable scope
-   - DEFERRABLE (can add to todo.md): Issues that enhance but don't block core task AND genuinely exceed reasonable task boundaries
-
-   MANDATORY RESPONSE FORMAT:
-   BLOCKING ISSUES: [list specific items that absolutely must be resolved]
-   DEFERRABLE ISSUES: [list items that can become follow-up tasks]
-   PERSISTENCE JUSTIFICATION: [explain why deferrable items genuinely exceed scope vs. requiring more effort]
-   SCOPE DECISION: DEFER or RESOLVE_NOW
-
-   If DEFER: Provide exact todo.md task entries for deferred work
-   If RESOLVE_NOW: Confirm all issues must be resolved in current task</parameter>
-   </invoke>
-
-5. SCOPE DECISION CONSOLIDATION:
-   - IF ALL rejecting agents choose DEFER: Add deferred tasks to todo.md, proceed to modified Phase 6
-   - IF ANY agent chooses RESOLVE_NOW for BLOCKING issues: Execute full resolution
-   - IF mixed decisions: Domain authority agents make final call per their expertise area
-
-STANDARD ISSUE RESOLUTION:
-TRACK A - Implementation Updates:
-1. Collect all ❌ REJECTED feedback from Phase 3
-2. Priority analysis by severity and domain
-3. Apply fixes addressing all stakeholder concerns
-4. Verify fixes don't introduce new issues
-
-TRACK B - Test Updates:
-1. Collect all ❌ REJECTED feedback from Phase 4
-2. Add missing test scenarios per domain feedback
-3. Improve test quality per stakeholder recommendations
-4. Ensure enhanced tests maintain passing status
-
-VIOLATION CHECK: All identified issues from Phase 3 and 4 resolved OR properly deferred to todo.md
-```
-
-### Pattern: Phase 6 Complete System Review
-```
-FINAL PARALLEL VALIDATION - All Phase 1 agents review integrated system:
-<invoke name="Task">
-<parameter name="subagent_type">technical-architect</parameter>
-<parameter name="description">Final system validation</parameter>
-<parameter name="prompt">Task: {task-description}\nMode: COMPLETE_SYSTEM_REVIEW\nAll Files: {implementation-and-test-files}\nPhase 5 Updates: {summary-of-changes}\nInstructions: Review implementation + tests as integrated system.
-
-CRITICAL PERSISTENCE VALIDATION: Apply CLAUDE.md "Solution Quality Indicators" and "Persistence Validation Checklist". Verify solution addresses root cause, follows best practices, includes comprehensive error handling, and provides long-term value. Reject solutions that are merely functional if optimal solutions were achievable within scope.
-
-MANDATORY OUTPUT REQUIREMENT: Provide your complete final system review report in your response. The parent agent will write this report to ../{agent-name}-review{round}.md file.
-
-MANDATORY FINAL DECISION: Must end response with exactly one of:
-- "FINAL DECISION: ✅ APPROVED - All requirements satisfied"
-- "FINAL DECISION: ❌ REJECTED - [specific issues] require resolution"
-
-CRITICAL: No other conclusion format accepted. This decision determines workflow continuation.</parameter>
-</invoke>
-[Repeat for all Phase 1 agents in parallel]
-
-DECISION LOGIC:
-IF all agents end with "FINAL DECISION: ✅ APPROVED": Task Complete
-ELSE: Return to Phase 5 with new issue list, then re-execute Phase 6
-
-VIOLATION CHECK: Agent response must contain "FINAL DECISION: ✅ APPROVED"
-IF missing or contains "❌ REJECTED": MANDATORY Phase 5 execution
-IF ambiguous response format: TERMINATE task, restart from Phase 1
-
-🚨 CRITICAL ENFORCEMENT: NO HUMAN OVERRIDE PERMITTED
-PROHIBITED BYPASS PATTERNS:
-❌ "Considering MVP scope, proceeding despite rejections"
-❌ "Issues are enhancement-level, not blocking"  
-❌ "Critical security fixed, finalizing task"
-❌ "Privacy concerns addressed sufficiently"
-
-MANDATORY RESPONSE TO ANY ❌ REJECTED:
-✅ "Agent X returned ❌ REJECTED, executing mandatory Phase 5 resolution"
-✅ "Cannot proceed to Phase 7 until ALL agents return ✅ APPROVED"
-✅ "Re-executing Phase 6 after addressing stakeholder concerns"
-
-⚠️ SCOPE NEGOTIATION TRIGGER:
-IF resolution effort appears > 2x original task scope:
-✅ "Multiple agents rejected with extensive scope - executing scope negotiation protocol"
-✅ "Estimated resolution effort exceeds core task boundary - consulting domain authorities"
-✅ "Invoking scope assessment to determine BLOCKING vs DEFERRABLE issues"
-```
-
-### Pattern: Implementation Safety Guards
-```
-BEFORE ANY Write/Edit/MultiEdit OPERATION:
-1. Bash: pwd (must output /workspace/branches/{task-name}/code)
-2. Bash: git status --porcelain | grep -E "(dist/|node_modules/|target/|\.jar$|\.temp_dir$)" (must be empty or only .temp_dir)
-3. IF checks fail: ABORT file operations
-
-AFTER ANY file creation:
-4. Bash: git status (verify expected files only, .temp_dir acceptable)
-5. IF unexpected files: INVESTIGATE before proceeding
-```
-
-### Pattern: Build Validation Gate
-```
-MANDATORY AFTER IMPLEMENTATION:
-Bash: ./mvnw clean compile test -q
-VIOLATION CHECK: Exit code must be 0
-IF non-zero exit: Implementation FAILED, return to Phase 2
-CONTINUE only after BUILD SUCCESS
-
-MANDATORY FOR TASK COMPLETION:
-Bash: ./mvnw clean verify -q
-VIOLATION CHECK: Exit code must be 0 (full build success including style, tests, packaging)
-IF non-zero exit: Task CANNOT be marked complete - must resolve ALL build issues
-TASK COMPLETION BLOCKED until "mvnw verify" returns success
-
-🚨 CRITICAL BUILD INTEGRITY RULE:
-NO task can be marked as completed if "mvnw verify" fails
-NO commits to main branch if build verification fails
-NO Phase 7 cleanup until build passes completely
-```
-
-### Pattern: Git Safety Sequence
-```
-MANDATORY LINEAR HISTORY REQUIREMENT:
-All task completion must result in linear commit history on main branch.
-
-BEFORE ANY GIT COMMIT:
-1. Bash: rm -f .temp_dir (remove temporary directory reference before commit)
-2. Bash: git status --porcelain | grep -E "(dist/|node_modules/|target/|\.jar$|\.temp_dir$)" (must be empty)
-3. Bash: git rebase main
-4. Bash: cd /workspace/branches/main/code && git merge --ff-only {task-name}
-
-ALTERNATIVE LINEAR MERGE PATTERN (if rebase not feasible):
-1. cd /workspace/branches/main/code
-2. git cherry-pick {task-commit-sha}  # Direct linear application
-3. git branch -D {task-name}         # Clean up task branch
-
-VIOLATION CHECK: Each command must succeed
-IF any command fails: Git workflow VIOLATED, investigate before proceeding
-
-⚠️ CRITICAL: Final history must be linear - no merge commits allowed on main branch
-ANTI-PATTERN: git merge --no-ff (creates merge commits)
-CORRECT PATTERN: --ff-only or cherry-pick for linear history
-```
-
-### Pattern: Phase 7 - Lock Release and Cleanup
-```
-MANDATORY WORK PRESERVATION REQUIREMENT:
-Phase 7 can ONLY execute after successful work preservation. ALL changes must be committed and merged to main branch before cleanup.
-
-PREREQUISITE VERIFICATION:
-1. Verify Phase 6 reached ✅ APPROVED consensus OR scope negotiation completed with work properly deferred to todo.md
-2. Confirm all deliverables committed to task branch
-3. Confirm task branch merged to main branch via Git Safety Sequence
-
-🚨 CRITICAL WORK PRESERVATION CHECK:
-BEFORE any cleanup operations, execute verification:
-- Bash: cd /workspace/branches/main/code && git log --oneline -5
-- Bash: git diff main {task-name} --stat
-- IF any differences exist: ABORT cleanup, execute Git Safety Sequence first
-
-FINAL CLEANUP SEQUENCE (Only after work preservation verified):
-1. Bash: rm -f ../../../locks/{task-name}.json
-2. TEMPORARY_DIRECTORY_CLEANUP: Remove isolated temporary files
-   - Bash: TEMP_DIR=$(cat .temp_dir 2>/dev/null) && [ -n "$TEMP_DIR" ] && [ -d "$TEMP_DIR" ] && rm -rf "$TEMP_DIR" && echo "TEMP_CLEANUP_SUCCESS" || echo "TEMP_CLEANUP_SKIPPED"
-   - Rationale: Safe cleanup of task-specific temporary files without repository interaction
-3. Bash: cd /workspace/branches/main/code
-4. Bash: git worktree remove /workspace/branches/{task-name}/code
-5. Bash: git branch -d {task-name}
-6. Bash: rm -rf /workspace/branches/{task-name}
-
-NOTE: todo.md update should have been committed with task deliverables in Phase 2, not here
-
-VIOLATION CHECK: All commands succeed, locks removed, worktree cleaned up, directory deleted
-
-⚠️ ANTI-PATTERN PREVENTION:
-PROHIBITED: Executing Phase 7 cleanup without first preserving work via git merge/cherry-pick
-PROHIBITED: Deleting worktrees containing uncommitted or unmerged changes
-PROHIBITED: "Abandoning work due to extensive scope" - must use scope negotiation protocol instead
-
-CRITICAL SAFETY NOTE: Directory deletion (step 5) is IRREVERSIBLE. Only execute after:
-- Confirming git merge --ff-only succeeded (step 4)
-- Verifying all task changes are in main branch
-- Ensuring no important files remain in task directory
-```
-
-## STAGE TRANSITION ENFORCEMENT
-
-### Transition Guard Pattern
-```
-BETWEEN EACH STAGE: Execute verification block
-TodoWrite: Update current stage to "completed"
-EXPLICIT VERIFICATION: State what was completed and verified
-PROCEED only after explicit verification statement
-```
-
-### Decision Parsing Enforcement Pattern
-```
-MANDATORY AFTER ANY AGENT INVOCATION:
-1. Grep: "FINAL DECISION:" in agent response
-2. IF not found: Re-invoke same agent with clarification prompt:
-   "Your previous response was missing the required decision format. Please provide a clear final decision using exactly one of:
-   - 'FINAL DECISION: ✅ APPROVED - [brief reason]'
-   - 'FINAL DECISION: ❌ REJECTED - [specific issues]'"
-3. IF second attempt also lacks format: Assume ❌ REJECTED status + add to violation report for human review
-4. IF found "✅ APPROVED": Continue workflow
-5. IF found "❌ REJECTED": Execute appropriate Phase 5 resolution
-
-GRACEFUL ERROR HANDLING:
-- Retry mechanism preserves context and prior work
-- Format violations don't destroy substantive progress
-- Human reports focus on actual decision content, not formatting glitches
-- System continues functioning while ensuring compliance
-- Violation tracking enables protocol improvement over time
+if [[ -z "$decision" ]]; then
+    # Retry with format clarification
+    retry_agent_with_format_requirement
+elif [[ "$decision" == *"❌ REJECTED"* ]]; then
+    # Handle rejection appropriately
+    handle_agent_rejection
+elif [[ "$decision" == *"✅ APPROVED"* ]]; then
+    # Continue workflow
+    continue_to_next_transition
+fi
 ```
 
 ### Protocol Violation Reporting Pattern
 ```
 MAINTAIN THROUGHOUT TASK EXECUTION:
 1. Track all format violations in TodoWrite tool as separate item
-2. Record: Agent type, phase, violation type, retry outcome
+2. Record: Agent type, state, violation type, retry outcome
 3. Include in final task summary for human review
 
 VIOLATION REPORT FORMAT:
 "Protocol Violations Detected:
-- [Agent]: [Phase] - Missing decision format (resolved via retry)
-- [Agent]: [Phase] - Malformed decision (assumed REJECTED)
+- [Agent]: [State] - Missing decision format (resolved via retry)
+- [Agent]: [State] - Malformed decision (assumed REJECTED)
 - Total violations: X, Auto-resolved: Y, Manual review needed: Z"
 
 PURPOSE:
 - Identify agent prompt issues needing refinement
-- Track protocol compliance trends over time  
+- Track protocol compliance trends over time
 - Enable proactive protocol improvements
 - Maintain audit trail for debugging
-```
 
-### Phase Sequence Enforcement
-```
-MANDATORY ORDER: Agent Selection → Worktree Setup → Phase 1 → Phase 2 → [Phase 3-5 Conditional] → Phase 6 → Phase 7
-VIOLATION CHECK: TodoWrite tool shows phases completed in order
-IF out of order: RESTART from Phase 1
+IMPLEMENTATION:
+violation_tracking = {
+    "agent_name": {
+        "state": "REVIEW",
+        "violation_type": "missing_decision_format",
+        "retry_outcome": "resolved",
+        "timestamp": "2024-01-01T12:00:00Z"
+    }
+}
+
+# Add to TodoWrite tracking
+update_todo_with_violation_report()
 ```
 
 ## CONTEXT PRESERVATION RULES
 
 ### Single Session Continuity
-```
-MAINTAIN CONTEXT: All task execution in single Claude session
-NO HANDOFFS: Complete task without waiting for user input
-IF session interrupted: Restart task from beginning with new session
-```
+**Requirements:**
+- All task execution in single Claude session
+- NO HANDOFFS: Complete task without waiting for user input
+- IF session interrupted: Restart task from beginning with new session
 
-### Tool Call Batching  
-```
-BATCH RELATED OPERATIONS: Use multiple tool calls in single message
-EXAMPLE: All Phase 1 agents in one message
-EXAMPLE: All safety checks in one message
-REDUCES CONTEXT FRAGMENTATION
+### Tool Call Batching
+**Optimization patterns:**
+```python
+# Batch related operations in single message
+parallel_tool_calls = [
+    {"tool": "Task", "agent": "technical-architect", "mode": "requirements"},
+    {"tool": "Task", "agent": "style-auditor", "mode": "requirements"},
+    {"tool": "Task", "agent": "code-quality-auditor", "mode": "requirements"}
+]
+
+# Execute all in single message to reduce context fragmentation
+execute_parallel_tools(parallel_tool_calls)
 ```
 
 ### State Persistence Patterns
-```
-CRITICAL STATE TRACKING:
-- Current stage in TodoWrite tool
-- Session ID in environment  
+**Critical state tracking:**
+- Current state in state.json file
+- Session ID in environment variables
 - Working directory verification
 - Lock status confirmation
-VERIFY STATE before each major operation
-```
 
-## ERROR RECOVERY PROTOCOLS
-
-### Violation Detection Triggers
-```
-AUTOMATIC VIOLATION DETECTION:
-- Wrong directory (pwd check fails)
-- Missing locks (lock file check fails)  
-- Build failures (non-zero exit codes)
-- Git operation failures (rebase/merge fails)
-- Prohibited files detected (status check fails)
-
-RECOVERY ACTION: TERMINATE current task, restart from Stage 1
-```
-
-### Multi-Instance Conflict Resolution
-```
-LOCK CONFLICT DETECTED:
-1. Log conflict: "Task {name} owned by another instance"  
-2. Read: todo.md (find different available task)
-3. NEVER wait or retry lock acquisition
-4. Select alternative task immediately
-```
-
-### Partial Completion Recovery
-```
-IF TASK INTERRUPTED:
-1. Check existing locks for session ID
-2. IF own session: Resume from last completed stage
-3. IF foreign session: Select different task  
-4. NEVER force-remove foreign locks
-```
-
-## COMPLIANCE VERIFICATION PATTERNS
-
-### Pre-Execution Compliance Check
-```
-BEFORE STARTING ANY TASK:
-Read: docs/project/critical-rules.md
-Grep: "VIOLATION\|MANDATORY\|CRITICAL" in critical-rules.md  
-VERIFY: Understanding of violation consequences
-PROCEED only after compliance review
-```
-
-### Continuous Compliance Monitoring
-```
-AFTER EACH STAGE:
-TodoWrite: Document stage completion with verification
-VERIFY: All mandatory procedures completed
-CHECK: No prohibited operations performed
-CONFIRM: All safety guards passed
-```
-
-### Final Compliance Audit
-```
-BEFORE TASK COMPLETION:
-AUDIT CHECKLIST:
-- All stages completed sequentially ✓
-- All locks properly managed ✓  
-- No prohibited files committed ✓
-- Build validation passed ✓
-- Git workflow followed ✓
-- TodoWrite tracking complete ✓
-COMPLETE only after full audit passes
+**Verify state before each major operation:**
+```bash
+# State consistency check
+current_state=$(jq -r '.current_state' state.json)
+expected_state="$1"
+[ "$current_state" = "$expected_state" ] || (echo "ERROR: State inconsistency" && exit 1)
 ```
 
 ## TOOL-SPECIFIC OPTIMIZATION PATTERNS
 
 ### Bash Tool Usage
-```
-COMBINE RELATED OPERATIONS: Use && and || for safety
-EXAMPLE: command1 && echo "SUCCESS" || echo "FAILED" 
-VERIFY OUTPUTS: Check command success before proceeding
-AVOID INTERACTIVE COMMANDS: No -i flags, no prompts
+```bash
+# Combine related operations with safety checks
+command1 && echo "SUCCESS" || (echo "FAILED" && exit 1)
+
+# Verify outputs before proceeding
+result=$(command_with_output)
+[ -n "$result" ] || (echo "ERROR: Command produced no output" && exit 1)
+
+# Avoid interactive commands
+# ❌ git rebase -i
+# ✅ git rebase main
 ```
 
-### Read Tool Usage  
-```
-BATCH READS: Read multiple related sections in sequence
-TARGET SPECIFIC LINES: Use offset/limit for large files
-VERIFY EXISTENCE: Check file exists before reading
+### Read Tool Usage
+```python
+# Batch reads for related content
+related_files = [
+    "/path/to/config.md",
+    "/path/to/implementation.java",
+    "/path/to/test.java"
+]
+
+# Read multiple files in sequence within single operation
+for file_path in related_files:
+    content = read_tool(file_path)
+    analyze_content(content)
 ```
 
 ### Task Tool Usage
-```
-PARALLEL AGENT CALLS: Multiple agents in single message
-STRUCTURED PROMPTS: Consistent template format for agents
-CLEAR SCOPE LIMITS: Explicit boundaries for each agent
+```python
+# Parallel agent calls in single message
+agent_calls = [
+    {
+        'subagent_type': 'technical-architect',
+        'description': 'Architecture requirements',
+        'prompt': structured_prompt_template.format(domain='architecture')
+    },
+    {
+        'subagent_type': 'style-auditor',
+        'description': 'Style requirements',
+        'prompt': structured_prompt_template.format(domain='style')
+    }
+]
+
+# Execute all agents simultaneously
+execute_parallel_agents(agent_calls)
 ```
 
 ### TodoWrite Tool Usage
-```
-FREQUENT UPDATES: Track progress after each major stage
-CONSISTENT FORMAT: Use same content/activeForm patterns
-STATE VERIFICATION: Use tool to verify workflow position
+```python
+# Frequent progress updates
+update_todo_progress("requirements", "in_progress", "Gathering stakeholder requirements")
+
+# Consistent format patterns
+todo_item = {
+    "content": "Implement feature X with requirements Y",
+    "status": "in_progress",
+    "activeForm": "Implementing feature X according to stakeholder specifications"
+}
+
+# State verification through TodoWrite
+verify_workflow_position_via_todo_state()
 ```
 
-**END OF CLAUDE EXECUTION FRAMEWORK**
+## ERROR RECOVERY PROTOCOLS
 
-This version optimizes for Claude's actual processing patterns: tool sequencing, context preservation, and violation prevention through structured decision trees rather than human-readable checklists.
+### Violation Detection Triggers
+**Automatic violation detection:**
+- Wrong directory (pwd check fails)
+- Missing locks (lock file check fails)
+- Build failures (non-zero exit codes)
+- Git operation failures (rebase/merge fails)
+- Prohibited files detected (status check fails)
+
+**Recovery Action**: TERMINATE current task, restart from INIT state
+
+### Multi-Instance Conflict Resolution
+**Lock conflict handling:**
+```bash
+handle_lock_conflict() {
+    local task_name=$1
+    echo "Lock conflict detected for task: $task_name"
+
+    # Find alternative available task
+    available_task=$(find_next_available_task)
+
+    if [ -n "$available_task" ]; then
+        echo "Selected alternative task: $available_task"
+        execute_task_protocol "$available_task"
+    else
+        echo "No available tasks found. Exiting."
+        exit 1
+    fi
+}
+```
+
+### Partial Completion Recovery
+**Task interruption handling:**
+```bash
+if [ -f "state.json" ]; then
+    session_id=$(jq -r '.session_id' state.json)
+    current_session="$SESSION_ID"
+
+    if [ "$session_id" = "$current_session" ]; then
+        # Resume from last completed state
+        resume_from_last_state
+    else
+        # Foreign session - select different task
+        select_alternative_task
+    fi
+fi
+```
+
+## WORKFLOW EXECUTION ENGINE
+
+### Main Task Execution Function
+```bash
+execute_task_protocol() {
+    local task_name=$1
+
+    # Initialize state machine
+    initialize_task_state "$task_name"
+
+    # Execute state machine with risk-based path selection
+    while [ "$(get_current_state)" != "CLEANUP" ]; do
+        current_state=$(get_current_state)
+        risk_level=$(jq -r '.risk_level' state.json 2>/dev/null || echo "HIGH")
+        change_type=$(determine_change_type)
+
+        echo "=== STATE: $current_state (Risk: $risk_level, Type: $change_type) ==="
+
+        case "$current_state" in
+            "INIT")
+                execute_init_to_classified_transition
+                ;;
+            "CLASSIFIED")
+                execute_classified_to_requirements_transition
+                ;;
+            "REQUIREMENTS")
+                execute_requirements_to_synthesis_transition
+                ;;
+            "SYNTHESIS")
+                # Conditional path selection based on risk level and change type
+                if should_skip_implementation "$risk_level" "$change_type"; then
+                    execute_synthesis_to_complete_transition
+                else
+                    execute_synthesis_to_implementation_transition
+                fi
+                ;;
+            "IMPLEMENTATION")
+                execute_implementation_to_validation_transition
+                ;;
+            "VALIDATION")
+                execute_validation_to_review_transition
+                ;;
+            "REVIEW")
+                execute_review_to_complete_or_scope_negotiation_transition
+                ;;
+            "SCOPE_NEGOTIATION")
+                execute_scope_negotiation_to_synthesis_or_complete_transition
+                ;;
+            "COMPLETE")
+                execute_complete_to_cleanup_transition
+                ;;
+            *)
+                echo "ERROR: Unknown state: $current_state"
+                exit 1
+                ;;
+        esac
+
+        # Post-transition validation
+        post_transition_validation "$(get_current_state)"
+    done
+
+# Helper function to determine if implementation should be skipped
+should_skip_implementation() {
+    local risk_level=$1
+    local change_type=$2
+
+    case "$risk_level" in
+        "HIGH")
+            return 1  # Never skip for high risk
+            ;;
+        "MEDIUM")
+            if [[ "$change_type" == "documentation_only" || "$change_type" == "config_only" ]]; then
+                return 0  # Skip for medium risk documentation/config changes
+            else
+                return 1  # Don't skip for other medium risk changes
+            fi
+            ;;
+        "LOW")
+            return 0  # Always skip for low risk
+            ;;
+        *)
+            return 1  # Default to not skip if uncertain
+            ;;
+    esac
+}
+
+    # Final audit
+    final_compliance_audit
+    echo "=== TASK PROTOCOL COMPLETED SUCCESSFULLY ==="
+}
+```
+
+## MIGRATION FROM PHASE-BASED PROTOCOL
+
+### Compatibility Layer
+All existing CLAUDE.md references to "phases" map to states as follows:
+- Phase 1 = REQUIREMENTS state
+- Phase 2 = SYNTHESIS state
+- Phase 3 = IMPLEMENTATION state
+- Phase 4 = Part of VALIDATION state
+- Phase 5 = Resolution cycle (SYNTHESIS ↔ IMPLEMENTATION ↔ VALIDATION)
+- Phase 6 = REVIEW state
+- Phase 7 = CLEANUP state
+
+### Transition Period Support
+During migration, both terminologies are recognized:
+- "Execute Phase 1" → "Transition to REQUIREMENTS state"
+- "Phase 6 rejection" → "REVIEW state rejection, return to SYNTHESIS"
+- "Phase guards" → "Transition conditions"
+
+### Zero Tolerance Enforcement
+Unlike the previous phase-based system with optional "phase guards," this state machine implements **mandatory transition conditions**. There are no manual overrides, no "reasonable approximation" exceptions, and no human discretion in bypassing required validations.
+
+**END OF STATE MACHINE PROTOCOL**
+

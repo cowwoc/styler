@@ -1,6 +1,6 @@
 ---
 name: code-quality-auditor
-description: Use this agent when a class or method has been created or modified and needs refactoring to reduce duplication, implement best coding practices, simplify code complexity, and improve readability and maintainability. This agent should be invoked after the business-logic-tester agent has completed its validation.
+description: Use this agent when a class or method has been created or modified and needs refactoring to reduce duplication, implement best coding practices, simplify code complexity, and improve readability and maintainability. This agent should be invoked after the code-tester agent has completed its validation.
 model: sonnet
 color: cyan
 tools: [Read, Grep, Glob, LS]
@@ -97,32 +97,25 @@ Before approving ANY code implementation, you MUST verify compliance with [Code 
 
 🚨 **MANDATORY PATTERN DETECTION** 🚨
 
-**IMMEDIATELY FLAG THESE DOMAIN-SPECIFIC ANTI-PATTERNS:**
+**IMMEDIATELY FLAG THESE ANTI-PATTERNS:**
 ```java
-// ❌ FORBIDDEN - Dangerous: Hardcoded base income > 40K
-String sourceCode = ""; // REJECT - Empty source code is unrealistic for parser testing
-double baseIncome = 95_000; // REJECT - Would inflate withdrawal calculations  
-double baseIncome = 60_000; // REJECT - Above conservative threshold
+// ❌ FORBIDDEN - Empty source code is unrealistic for parser testing
+String sourceCode = ""; // REJECT - Use realistic Java code samples
 
-// ✅ CORRECT - Age-appropriate conservative estimates per project requirements
-double baseIncome;
-if (ownerAge >= 65)
-{
-	baseIncome = 25_000; // APPROVE - Conservative senior income
-}
-else
-{
-	baseIncome = 35_000; // APPROVE - Conservative working income
-}
+// ❌ FORBIDDEN - Magic numbers without constants
+int maxDepth = 100; // REJECT - Should be MAX_PARSE_DEPTH constant
+double multiplier = 1.5; // REJECT - Should be named constant with documentation
+
+// ✅ CORRECT - Named constants with clear purpose
+private static final int MAX_PARSE_DEPTH = 100; // Prevent stack overflow in deep AST structures
+private static final double INDENT_MULTIPLIER = 1.5; // Scaling factor for nested indentation
 ```
 
 **REQUIRE THESE SAFETY PATTERNS:**
-- All RRSP withdrawal calculations MUST use conservative base income (≤ 35K)
-- All premium/contribution calculations MUST be capped
-- All iterative algorithms MUST have bounded loops with safety exits
-- All parser operations MUST use realistic code input assumptions
-
-**REFERENCE:** WITHDRAWAL_STRATEGY_GUIDELINES.md for approved patterns.
+- All recursive algorithms MUST have bounded depth limits with safety exits
+- All parser operations MUST use realistic Java code input assumptions
+- All magic numbers MUST be replaced with named constants
+- All iterative algorithms MUST have termination conditions to prevent infinite loops
 
 ## CRITICAL: Test Anti-Pattern Detection
 
@@ -130,27 +123,27 @@ else
 
 **IMMEDIATE REJECTION CRITERIA:**
 - Methods that validate test input data before system calls
-- Helper methods like `validateTestInputs()`, `validateFinancialAmounts()`, `checkTestData()`
+- Helper methods like `validateTestInputs()`, `validateSourceCode()`, `checkTestData()`
 - Duplication of test constants in validation logic
 - Testing test data instead of system behavior
 
 **EXAMPLES TO REJECT:**
 ```java
 // ❌ FORBIDDEN - Meaningless validation of test's own data
-private void validateFinancialAmounts(double... amounts)
+private void validateSourceCodeInputs(String... sourceCodes)
 {
-	for (double amount : amounts)
+	for (String code : sourceCodes)
 	{
-		if (amount < 0.0)
+		if (code == null || code.trim().isEmpty())
 			throw new IllegalArgumentException("Invalid test data");
 	}
 }
 
-// ❌ FORBIDDEN - Testing test data instead of business logic  
+// ❌ FORBIDDEN - Testing test data instead of parsing logic
 @BeforeMethod
 public void setUp()
 {
-	validateFinancialAmounts(100_000.0, 50_000.0); // Tests nothing!
+	validateSourceCodeInputs("class Test {}", "public void method() {}"); // Tests nothing!
 }
 ```
 
@@ -158,21 +151,22 @@ public void setUp()
 1. **REMOVE**: All test input validation methods
 2. **FOCUS**: Tests must validate system outputs and behavior only
 3. **ELIMINATE**: Duplication of test constants in helper methods
-4. **ENSURE**: Tests validate business logic results, not test setup data
+4. **ENSURE**: Tests validate parsing/formatting results, not test setup data
 
 **APPROVED TEST PATTERNS:**
 ```java
 // ✅ CORRECT - Testing system behavior and outputs
 @Test
-public void shouldCalculateValidWithdrawals()
+public void shouldFormatClassDeclaration()
 {
-	Account account = new Account(RRSP, person, 100_000.0, 50_000.0);
-	
-	double result = calculator.calculateWithdrawal(account);
-	
+	String input = "class Test{public void method(){}}";
+
+	String result = formatter.format(input);
+
 	// Test system outputs, not inputs
-	assertTrue(result >= 0, "System should calculate non-negative withdrawal");
-	assertTrue(account.getBalance() >= 0, "System should maintain valid account state");
+	assertNotNull(result, "Formatter should return formatted output");
+	assertTrue(result.contains("class Test"), "Formatted code should preserve class name");
+	assertTrue(result.length() > input.length(), "Formatted code should add proper spacing");
 }
 ```
 
@@ -325,10 +319,7 @@ REFACTORING_ACTIONS: [
 APPROVAL_STATUS: ✅ APPROVED / ❌ REJECTED
 FOLLOW_UP_REQUIRED: true|false
 
-# Call metrics tracking at completion:
-/workspace/.claude/hooks/metrics-capture.sh track_agent_performance "code-quality-auditor" "$COMPLEXITY" "standard" "$TOKEN_COUNT" "$PROCESSING_TIME" "$CONFIDENCE" "$QUALITY_ISSUES_COUNT" "$REFACTORING_ACTIONS_COUNT"
-
-/workspace/.claude/hooks/metrics-capture.sh track_claude_consumption "code-quality-auditor" "structured" "$STRUCTURED_TOKENS" "$NARRATIVE_TOKENS" "$ACTIONABLE_ITEMS" "$FOLLOW_UP_REQUIRED"
+# Metrics tracking disabled - agent execution focused on code quality analysis results only
 ```
 
 You will be thorough but practical, focusing on changes that provide meaningful improvements to code maintainability and quality. Always consider the broader codebase context and avoid over-engineering solutions.

@@ -160,9 +160,9 @@ Styler supports these primary use cases across two integration modes:
 4. **Honest Boundaries**: Clearly communicate what is/isn't supported
 
 **Example Implementation Approach:**
-- ✅ **AST Parser V1**: Support JDK 17 features completely (working end-to-end)
-- ✅ **Clear Boundaries**: Return "JDK 25 features not yet supported" error for newer syntax
-- ✅ **Future Growth**: V2 adds JDK 25 support when needed
+- ✅ **AST Parser V1**: Support JDK 25 features completely (working end-to-end)
+- ✅ **Clear Boundaries**: Return "JDK 26+ features not yet supported" error for newer syntax
+- ✅ **Future Growth**: V2 adds newer JDK support when needed
 - ❌ **Stub Approach**: Return "TODO: implement parsing" for all files
 
 **Practical Guidelines:**

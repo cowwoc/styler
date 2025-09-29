@@ -20,7 +20,7 @@ This directory contains all project documentation organized hierarchically for e
     ├── common-claude.md                   # Universal rules - Claude detection patterns
     ├── common-human.md                    # Universal explanations - Human context
     ├── java-claude.md                     # Java-specific rules - Claude detection patterns
-    ├── java-human.md                      # Java explanations & financial context
+    ├── java-human.md                      # Java explanations & parser context
     ├── typescript-claude.md               # TypeScript-specific rules - Claude detection
     └── typescript-human.md                # TypeScript explanations & type safety
 ```

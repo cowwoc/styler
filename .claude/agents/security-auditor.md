@@ -237,20 +237,20 @@ FOR EACH check:
 COMPLIANCE_REPORT: "OWASP Coverage: [X/10] categories analyzed"
 ```
 
-### Pattern: Canadian Financial Compliance Check
+### Pattern: Code Formatter Security Check
 ```
 EXECUTION SEQUENCE:
-1. Grep: "encrypt|hash|crypto" (find data protection mechanisms)
-2. Grep: "audit|log|trail" (find audit trail implementation)
-3. Read: Data handling and retention policies
+1. Grep: "encrypt|hash|crypto" (find unnecessary cryptographic dependencies)
+2. Grep: "audit|log|trail" (find excessive logging in parsing operations)
+3. Read: Data handling for source code processing
 
-COMPLIANCE_CHECKS:
-- PII encryption at rest: REQUIRED
-- Audit trail completeness: REQUIRED  
-- Data retention compliance: REQUIRED
-- Access logging: REQUIRED
+SECURITY_CHECKS:
+- No unnecessary encryption dependencies: Source code formatting shouldn't require cryptography
+- Minimal logging of source code: Avoid logging user source code for privacy
+- Temporary file cleanup: Ensure parser temporary files are properly cleaned up
+- Resource limits: Verify parsing operations have reasonable resource bounds
 
-REPORT_PATTERN: "Canadian Financial Compliance: [compliant/non-compliant items]"
+REPORT_PATTERN: "Code Formatter Security: [secure/concerning items]"
 ```
 
 ## EXECUTION WORKFLOW PATTERNS
@@ -369,10 +369,7 @@ ACTION_ITEMS: [
 FOLLOW_UP_REQUIRED: true|false
 STAKEHOLDER_REVIEW: [list of required reviewers]
 
-# Call metrics tracking at completion:
-/workspace/.claude/hooks/metrics-capture.sh track_agent_performance "security-auditor" "$COMPLEXITY" "standard" "$TOKEN_COUNT" "$PROCESSING_TIME" "$CONFIDENCE" "$FINDINGS_COUNT" "$RECOMMENDATIONS_COUNT"
-
-/workspace/.claude/hooks/metrics-capture.sh track_claude_consumption "security-auditor" "hybrid" "$STRUCTURED_TOKENS" "$NARRATIVE_TOKENS" "$ACTION_ITEMS_COUNT" "$FOLLOW_UP_REQUIRED"
+# Metrics tracking disabled - agent execution focused on security analysis results only
 ```
 
 ### Pattern: Context Update Protocol

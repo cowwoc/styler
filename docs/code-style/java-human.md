@@ -48,7 +48,7 @@ This codebase implements Styler, a Java code formatter that processes and transf
 ### Parameter Formatting - Multi-line Declarations and Calls
 **Line-filling principle**: Multi-parameter constructs (records, constructor calls, method calls) should maximize horizontal space usage within the 120-character limit. Each line should be filled to capacity before wrapping to the next line, avoiding unnecessary vertical bloat.
 
-**Financial context**: Tax calculation methods like `calculateTax(TaxPayer taxpayer, TaxYear year, BigDecimal income)` and records like `TaxBracket(BigDecimal min, BigDecimal max, BigDecimal rate)` are commonly used. Compact formatting helps when reviewing multiple similar declarations.
+**Parsing context**: AST parsing methods like `parseExpression(TokenStream tokens, ParseContext context)` and records like `SourceRange(int start, int end, int line)` are commonly used. Compact formatting helps when reviewing multiple similar declarations.
 
 **Guideline**: Keep parameter lists on same line unless they exceed reasonable line length (120+ characters). This applies to records, constructors, and method declarations equally.
 
@@ -69,38 +69,38 @@ return new TaxResult(
 ```
 
 ### Class Organization - User-Facing Members First
-**Why API-first organization matters**: When reviewing financial calculation classes, developers first want to understand the public interface - what methods are available and what they return. Presenting the API surface before implementation details improves code comprehension.
+**Why API-first organization matters**: When reviewing parser classes, developers first want to understand the public interface - what methods are available and what they return. Presenting the API surface before implementation details improves code comprehension.
 
 **Reading pattern optimization**: Code is read more often than written. Placing public methods before their supporting nested types follows the natural reading pattern of understanding "what does this class do" before "how does it work internally."
 
 **Forward reference support**: Java allows methods to reference nested classes declared later in the same compilation unit, making this organization technically feasible.
 
-**Financial API context**: Tax calculation classes often have complex result types. Seeing `calculateTax()` method first, then `TaxResult` record below, creates a logical flow from usage to implementation.
+**Parser API context**: AST parsing classes often have complex result types. Seeing `parseStatement()` method first, then `ParseResult` record below, creates a logical flow from usage to implementation.
 
 ## ⚠️ TIER 2 IMPORTANT - Code Review
 
 ### Stream vs For-Loop - Inappropriate Stream Usage
-**When to use streams**: Complex transformations, filtering, or reductions of financial data collections.
+**When to use streams**: Complex transformations, filtering, or reductions of AST node collections.
 **When to use loops**: Simple iteration, I/O operations, or when performance is critical.
 
-**Financial context**: Processing large collections of transactions or tax brackets benefits from streams, but simple operations should use clear loops.
+**Parser context**: Processing large collections of tokens or AST nodes benefits from streams, but simple operations should use clear loops.
 
 ### Exception Messages - Missing Business Context
-**Why business context matters**: Financial exceptions need enough context for business analysts to understand failures, not just developers.
+**Why parsing context matters**: Parse exceptions need enough context for developers to understand syntax errors, not just generic failures.
 
-**Good financial exception**: "Withdrawal amount $5,000 exceeds available balance $3,000 for RRSP account 123456"
+**Good parsing exception**: "Unexpected token 'void' at position 45, expected identifier in method declaration"
 
 ## 💡 TIER 3 QUALITY - Best Practices
 
 ### Error Handling - Default Return Values
-**Financial system reliability**: Returning default values when calculations fail can mask serious errors in financial systems. Tax calculations must fail visibly so operators can identify and resolve issues before they affect financial accuracy.
+**Parser system reliability**: Returning default values when parsing fails can mask serious errors in code formatters. Parse operations must fail visibly so developers can identify and resolve syntax issues before they affect code transformation.
 
 **Silent failure risks**: 
-- Returning `TaxAmount.ZERO_CAD` on calculation errors could result in incorrect tax filings
+- Returning `ASTNode.EMPTY` on parse errors could result in incorrect code transformations
 - Returning empty collections hides data retrieval failures 
 - Null returns without clear error indication leave callers uncertain about system state
 
-**Fail-fast approach**: Let calculation exceptions propagate to calling systems where appropriate error handling, logging, and user notification can occur. This ensures errors are handled at the right abstraction level.
+**Fail-fast approach**: Let parse exceptions propagate to calling systems where appropriate error handling, logging, and user notification can occur. This ensures errors are handled at the right abstraction level.
 
 ### Concurrency - Virtual Thread Preference
 **Java 24 optimization**: Betty targets Java 24 and should leverage virtual threads for I/O-bound operations instead of CompletableFuture for simple cases.
@@ -136,4 +136,4 @@ public CompletableFuture<ClaudeResponse> sendMessage(ClaudeRequest request) {
 ### Claude Detection Patterns
 - **[Java Detection Patterns](java-claude.md)**: Automated rule detection patterns
 
-This human guide provides the conceptual foundation. For specific violation patterns and systematic checking, Claude uses the companion detection file. Together, they ensure both understanding and consistent enforcement of financial code quality standards.
+This human guide provides the conceptual foundation. For specific violation patterns and systematic checking, Claude uses the companion detection file. Together, they ensure both understanding and consistent enforcement of parser code quality standards.

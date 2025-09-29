@@ -9,7 +9,7 @@
 - [📚 Understanding the Documentation Structure](#understanding-the-documentation-structure)  
 - [🛠 Working with Different Codebase Types](#working-with-different-codebase-types)
 - [⚙️ Development Workflow Integration](#development-workflow-integration)
-- [🚫 Common Anti-Patterns](#common-anti-patterns-in-financial-code)
+- [🚫 Common Anti-Patterns](#common-anti-patterns-in-parser-code)
 - [🔧 Build Process Integration](#integration-with-build-process)
 - [📈 Continuous Improvement](#continuous-improvement)
 
@@ -41,16 +41,16 @@ This codebase implements Styler, a Java code formatter that processes source cod
 
 ### Language-Specific Guides
 - **[Common Practices](code-style/common-human.md)**: Universal principles applying to all code
-- **[Java Patterns](code-style/java-human.md)**: JVM-specific patterns for financial calculations  
+- **[Java Patterns](code-style/java-human.md)**: JVM-specific patterns for AST parsing and code formatting  
 - **[TypeScript Practices](code-style/typescript-human.md)**: Type-safe frontend development
 - **[Testing Conventions](code-style/testing-human.md)**: Testing patterns, parallel execution, and JPMS structure
 
 ### Rule Priority Levels
 
-**TIER 1 CRITICAL**: Build blockers and financial accuracy issues
-- These rules prevent compilation failures or calculation errors
+**TIER 1 CRITICAL**: Build blockers and parsing accuracy issues
+- These rules prevent compilation failures or parsing errors
 - Violations must be fixed before code review approval
-- Examples: Currency precision, parameter validation, external source documentation
+- Examples: AST fidelity, input validation, source position tracking
 
 **TIER 2 IMPORTANT**: Maintainability and business logic patterns
 - These rules affect code quality and team productivity
@@ -65,8 +65,8 @@ This codebase implements Styler, a Java code formatter that processes source cod
 ## 🛠 Working with Different Codebase Types
 
 ### Pure Java Projects
-**Focus Areas**: Financial calculation accuracy, JVM optimization, enterprise patterns
-**Key Concerns**: BigDecimal usage, validation frameworks, external API integration
+**Focus Areas**: AST parsing accuracy, JVM optimization, compiler patterns
+**Key Concerns**: Parser performance, validation frameworks, language feature support
 **Reference**: [Java Style Guide](code-style/java-human.md) for detailed Java-specific guidance
 
 ### Pure TypeScript Projects  
@@ -84,21 +84,21 @@ This codebase implements Styler, a Java code formatter that processes source cod
 ## ⚙️ Development Workflow Integration
 
 ### Before Writing Code
-1. **Understand Domain Context**: Review financial calculation requirements
+1. **Understand Domain Context**: Review Java parsing and formatting requirements
 2. **Choose Appropriate Patterns**: Select patterns based on business logic complexity
 3. **Plan Validation Strategy**: Determine fail-fast validation points
-4. **Consider Test Strategy**: Plan how to verify financial calculation accuracy
+4. **Consider Test Strategy**: Plan how to verify parsing and formatting accuracy
 
 ### During Development
 1. **Apply TIER 1 Rules**: Ensure build won't fail and calculations are accurate
 2. **Follow Language Patterns**: Use established patterns from language-specific guides
 3. **Write Parallel-Safe Tests**: Follow [Testing Conventions](code-style/testing-human.md) for thread-safe test design
-4. **Document Business Logic**: Add context for complex financial calculations
-5. **Validate Edge Cases**: Consider boundary conditions for financial data
+4. **Document Business Logic**: Add context for complex parsing transformations
+5. **Validate Edge Cases**: Consider boundary conditions for malformed source code
 
 ### Code Review Process
 1. **Automated Checks**: Run linting and build validation first
-2. **TIER 1 Verification**: Verify critical financial accuracy rules
+2. **TIER 1 Verification**: Verify critical parsing accuracy rules
 3. **Test Quality Review**: Ensure tests follow [parallel execution safety rules](code-style/testing-human.md#parallel-test-execution-requirements)
 4. **Business Logic Review**: Check calculation logic against requirements
 5. **Documentation Review**: Ensure external sources are properly referenced
@@ -111,23 +111,23 @@ This codebase implements Styler, a Java code formatter that processes source cod
 ✅ **Using `BigDecimal`**: `BigDecimal balance = new BigDecimal("150.75");`
 
 ### Validation Anti-Patterns  
-❌ **No validation**: `public void setIncome(BigDecimal income) { this.income = income; }`
-✅ **Fail-fast validation**: `requireThat(income, "income").isNotNull().isNotNegative();`
+❌ **No validation**: `public void setSourceCode(String source) { this.source = source; }`
+✅ **Fail-fast validation**: `requireThat(source, "source").isNotNull().isNotBlank();`
 
 ### Documentation Anti-Patterns
-❌ **Magic calculations**: `tax = income.multiply(new BigDecimal("0.15"));`
-✅ **Documented sources**: `@ExternalSource("https://canada.ca/tax-rates-2024") tax = income.multiply(FEDERAL_TAX_RATE);`
+❌ **Magic parsing**: `depth = maxDepth * 2;`
+✅ **Documented constants**: `@JavaLanguageSpec("JLS §14.4") depth = calculateNestingDepth(MAX_BLOCK_DEPTH);`
 
 ### Error Handling Anti-Patterns
 ❌ **Generic exceptions**: `throw new Exception("Invalid input");`
-✅ **Business context**: `throw new IllegalArgumentException("RRSP contribution $" + amount + " exceeds annual limit $" + limit + " for tax year " + year);`
+✅ **Parser context**: `throw new ParseException("Nesting depth " + depth + " exceeds maximum " + MAX_DEPTH + " at line " + line);`
 
 ## 🔧 Integration with Build Process
 
 ### Automated Enforcement
 - **Linting**: Catches formatting and basic style violations
 - **Type Checking**: Ensures type safety in TypeScript code
-- **Unit Tests**: Validates financial calculation accuracy
+- **Unit Tests**: Validates parsing and formatting accuracy
 - **Integration Tests**: Verifies end-to-end calculation workflows
 
 ### Manual Review Focus
@@ -166,4 +166,4 @@ This codebase implements Styler, a Java code formatter that processes source cod
 
 ---
 
-**Remember**: Code style in financial systems isn't just about aesthetics—it's about correctness, maintainability, and regulatory compliance. Every style rule exists to support the ultimate goal of delivering accurate, reliable financial calculations.
+**Remember**: Code style in code formatters isn't just about aesthetics—it's about correctness, maintainability, and language compliance. Every style rule exists to support the ultimate goal of delivering accurate, reliable source code parsing and formatting.

@@ -35,7 +35,7 @@
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/phase-guard-enforcement.sh"
+            "command": "/workspace/.claude/hooks/state-machine-enforcement.sh"
           },
           {
             "type": "command",

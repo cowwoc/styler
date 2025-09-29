@@ -36,24 +36,24 @@ Code is written once but read many times. In a code formatter handling AST trans
 ## 💡 TIER 3 QUALITY - Best Practices
 
 ### Code Duplication - Repeated Logic Blocks
-**Why extract common functionality**: Financial calculations often involve similar patterns (rate applications, threshold checks, scaling operations). Shared utilities ensure consistent behavior and easier maintenance.
+**Why extract common functionality**: Parser operations often involve similar patterns (token validation, AST construction, error handling). Shared utilities ensure consistent behavior and easier maintenance.
 
-**Testing benefits**: Shared functions can be unit tested once and reused confidently throughout the financial calculation system.
+**Testing benefits**: Shared functions can be unit tested once and reused confidently throughout the code formatting system.
 
-**Regulatory updates**: When tax rates or calculation methods change, having logic in one place makes updates safer and more reliable.
+**Language updates**: When Java language features or grammar rules change, having logic in one place makes updates safer and more reliable.
 
 ### Comments - Obvious Statements
-**When to comment financial code**: 
-- **Business rules**: "Apply additional 2% surtax for Ontario residents with income > $220,000"
-- **Regulatory references**: "Based on CRA T1 General form, line 15000"
-- **Complex calculations**: "Graduated rate benefits calculation per Income Tax Act 117.91"
+**When to comment parser code**:
+- **Grammar rules**: "Apply precedence rules for binary operators per JLS §15.7"
+- **Language references**: "Based on Java Language Specification §14.9"
+- **Complex transformations**: "AST restructuring for method reference expressions per JLS §15.13"
 
 **When not to comment**: Basic programming operations that are self-evident from well-named variables and methods.
 
 ### Comments - Inline Placement
 **Why comments should precede code**: Inline comments interrupt the flow of reading code and make lines longer, reducing readability especially on smaller screens.
 
-**Financial code readability**: Tax calculation logic is already complex. Comments should enhance understanding, not clutter the logical flow.
+**Parser code readability**: AST transformation logic is already complex. Comments should enhance understanding, not clutter the logical flow.
 
 **Best practice**: Place explanatory comments on the line above the code they describe, allowing the eye to read explanation first, then implementation.
 
@@ -62,20 +62,20 @@ Code is written once but read many times. In a code formatter handling AST trans
 
 **Maintenance burden**: Historical comments become stale and misleading as code evolves. They add cognitive overhead without functional value.
 
-**Financial code focus**: Tax calculation code should focus on current regulatory requirements, not previous implementations or future possibilities.
+**Parser code focus**: Code formatting logic should focus on current language specifications, not previous implementations or future possibilities.
 
-**Financial code clarity**: Well-written financial code should read like a description of the tax calculation process, with comments reserved for business context rather than programming mechanics.
+**Parser code clarity**: Well-written parser code should read like a description of the transformation process, with comments reserved for language specification context rather than programming mechanics.
 
 ## 📚 Navigation
 
 ### Language-Specific Implementation
 
 These common principles apply universally, but specific implementation details vary by language:
-- **[Java Style Guide](java-human.md)**: Additional validation and exception handling patterns
+- **[Java Style Guide](java-human.md)**: AST validation and parsing exception handling patterns
 - **[TypeScript Style Guide](typescript-human.md)**: Type safety and interface design considerations
 - **[Testing Conventions](testing-human.md)**: Testing patterns, parallel execution, and JPMS structure
 
-Both language-specific guides build upon these foundational principles while addressing language-specific concerns for financial software development.
+Both language-specific guides build upon these foundational principles while addressing language-specific concerns for code formatter development.
 
 ### Related Documentation
 - **[Master Style Guide](../code-style-human.md)**: Complete overview and philosophy

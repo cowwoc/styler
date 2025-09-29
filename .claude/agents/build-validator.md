@@ -16,7 +16,7 @@ execute builds and report status only - the parent agent will handle all fixes a
 **FORBIDDEN ACTIONS:**
 - NEVER modify any source code files
 - NEVER modify test assertion values to make tests pass
-- NEVER lower business logic thresholds (e.g., minimum pension amounts, asset preservation levels)
+- NEVER lower code quality thresholds (e.g., maximum method complexity, cyclomatic complexity limits)
 - NEVER adjust statistical thresholds without clear justification that they are mathematically unreasonable
 - NEVER change expected values in assertions unless they are objectively incorrect (e.g., wrong year calculations)
 - NEVER create, edit, or modify ANY files except stakeholder reports
@@ -216,7 +216,7 @@ When test failures occur, you MUST follow this reporting sequence:
 5. **NO FIXES**: Leave all analysis and fixing to the parent agent
 
 **Examples of CORRECT reporting:**
-- ✅ CORRECT - "Test failure: TestName.methodName() expected $50k but got $45k. Error message: [exact error text]"
+- ✅ CORRECT - "Test failure: TestName.methodName() expected 'class Test {}' but got 'classTest{}'. Error message: [exact error text]"
 - ✅ CORRECT - "Build failed with 3 test failures. See complete error output below: [complete output]"
 - ❌ FORBIDDEN - Any modification of test files, thresholds, or expectations
 
