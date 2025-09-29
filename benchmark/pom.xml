@@ -21,5 +21,6 @@
 
 	<modules>
 		<module>parser</module>
+		<module>formatter</module>
 	</modules>
 </project>

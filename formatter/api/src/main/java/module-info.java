@@ -9,6 +9,7 @@ module io.github.cowwoc.styler.formatter.api
 	exports io.github.cowwoc.styler.formatter.api;
 	exports io.github.cowwoc.styler.formatter.api.conflict;
 	exports io.github.cowwoc.styler.formatter.api.plugin;
+	exports io.github.cowwoc.styler.formatter.experimental;
 
 	// Open packages to Jackson for YAML serialization/deserialization
 	opens io.github.cowwoc.styler.formatter.api to com.fasterxml.jackson.databind;
