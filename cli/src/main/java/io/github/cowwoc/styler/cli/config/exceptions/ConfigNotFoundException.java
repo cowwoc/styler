@@ -1,15 +1,16 @@
 package io.github.cowwoc.styler.cli.config.exceptions;
 
+import java.io.Serial;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
-
 /**
  * Exception thrown when no configuration files can be found in any of the search locations.
  * Provides context about which locations were searched.
  */
 public class ConfigNotFoundException extends ConfigDiscoveryException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private final transient List<Path> searchedPaths;
 

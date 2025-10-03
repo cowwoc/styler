@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.cli.security.exceptions;
 
+
+import java.io.Serial;
 /**
  * Thrown when an operation exceeds the configured execution timeout.
  *
@@ -20,6 +22,7 @@ package io.github.cowwoc.styler.cli.security.exceptions;
  */
 public final class ExecutionTimeoutException extends SecurityException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private final String operationName;
 	private final long elapsedMillis;

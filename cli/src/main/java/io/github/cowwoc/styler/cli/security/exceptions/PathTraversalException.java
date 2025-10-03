@@ -1,7 +1,7 @@
 package io.github.cowwoc.styler.cli.security.exceptions;
 
+import java.io.Serial;
 import java.nio.file.Path;
-
 /**
  * Thrown when a file path contains suspicious traversal patterns that could
  * access files outside the intended project directory.
@@ -23,6 +23,7 @@ import java.nio.file.Path;
  */
 public final class PathTraversalException extends SecurityException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private final transient Path attemptedPath;
 	private final transient Path normalizedPath;

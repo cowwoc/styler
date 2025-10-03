@@ -1,7 +1,7 @@
 package io.github.cowwoc.styler.cli.security.exceptions;
 
+import java.io.Serial;
 import java.nio.file.Path;
-
 /**
  * Exception thrown when temporary file creation exceeds configured limits.
  *
@@ -13,6 +13,7 @@ import java.nio.file.Path;
  */
 public final class TempFileLimitExceededException extends SecurityException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private final int currentFiles;
 	private final int maxFiles;

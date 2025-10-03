@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.formatter.api.plugin;
 
+
+import java.io.Serial;
 /**
  * Exception thrown when plugin security validation fails.
  * <p>
@@ -17,6 +19,7 @@ package io.github.cowwoc.styler.formatter.api.plugin;
  */
 public class PluginSecurityException extends SecurityException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**

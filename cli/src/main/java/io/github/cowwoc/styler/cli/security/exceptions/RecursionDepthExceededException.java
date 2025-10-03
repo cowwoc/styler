@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.cli.security.exceptions;
 
+
+import java.io.Serial;
 /**
  * Exception thrown when recursion depth exceeds configured limits during AST traversal.
  *
@@ -11,6 +13,7 @@ package io.github.cowwoc.styler.cli.security.exceptions;
  */
 public final class RecursionDepthExceededException extends SecurityException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private final int currentDepth;
 	private final int maxDepth;

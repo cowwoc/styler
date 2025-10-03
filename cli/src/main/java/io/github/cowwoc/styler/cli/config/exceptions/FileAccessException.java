@@ -1,14 +1,15 @@
 package io.github.cowwoc.styler.cli.config.exceptions;
 
+import java.io.Serial;
 import java.nio.file.Path;
 import java.util.Objects;
-
 /**
  * Exception thrown when a configuration file exists but cannot be accessed due to permission issues.
  * Provides context about which file cannot be accessed and the access issue.
  */
 public class FileAccessException extends ConfigDiscoveryException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private final transient Path configFile;
 

@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.cli.security.exceptions;
 
+
+import java.io.Serial;
 /**
  * Thrown when memory usage exceeds the configured limit during processing.
  *
@@ -20,6 +22,7 @@ package io.github.cowwoc.styler.cli.security.exceptions;
  */
 public final class MemoryLimitExceededException extends SecurityException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private final long currentMemory;
 	private final long maxMemory;

@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.cli.security.exceptions;
 
+
+import java.io.Serial;
 /**
  * Base exception for all security-related violations in the CLI.
  *
@@ -13,6 +15,7 @@ package io.github.cowwoc.styler.cli.security.exceptions;
  */
 public class SecurityException extends RuntimeException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	/**
 	 * Constructs a new security exception with the specified detail message.

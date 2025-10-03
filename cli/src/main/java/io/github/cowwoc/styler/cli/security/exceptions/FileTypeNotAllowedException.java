@@ -1,8 +1,8 @@
 package io.github.cowwoc.styler.cli.security.exceptions;
 
+import java.io.Serial;
 import java.nio.file.Path;
 import java.util.Set;
-
 /**
  * Thrown when a file has an extension that is not in the allowed list.
  *
@@ -21,6 +21,7 @@ import java.util.Set;
  */
 public final class FileTypeNotAllowedException extends SecurityException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private final transient Path filePath;
 	private final String extension;

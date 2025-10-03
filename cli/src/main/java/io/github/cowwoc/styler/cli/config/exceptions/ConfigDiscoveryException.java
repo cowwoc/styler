@@ -1,13 +1,14 @@
 package io.github.cowwoc.styler.cli.config.exceptions;
 
+import java.io.Serial;
 import java.util.Objects;
-
 /**
  * Base exception for all configuration discovery related errors.
  * Provides context about the configuration discovery operation that failed.
  */
 public class ConfigDiscoveryException extends RuntimeException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	/**
 	 * Creates a new configuration discovery exception.

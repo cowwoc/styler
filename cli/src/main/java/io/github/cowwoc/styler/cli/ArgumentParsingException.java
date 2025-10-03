@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.cli;
 
+
+import java.io.Serial;
 /**
  * Exception thrown when command-line argument parsing fails.
  * <p>
@@ -9,6 +11,7 @@ package io.github.cowwoc.styler.cli;
  */
 public class ArgumentParsingException extends Exception
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private final String usageText;
 

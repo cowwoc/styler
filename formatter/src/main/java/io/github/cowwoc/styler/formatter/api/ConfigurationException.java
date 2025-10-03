@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.formatter.api;
 
+
+import java.io.Serial;
 /**
  * Exception thrown when a rule configuration is invalid or inconsistent.
  * <p>
@@ -9,6 +11,7 @@ package io.github.cowwoc.styler.formatter.api;
  */
 public class ConfigurationException extends Exception
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**

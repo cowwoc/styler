@@ -1,7 +1,7 @@
 package io.github.cowwoc.styler.cli.security.exceptions;
 
+import java.io.Serial;
 import java.nio.file.Path;
-
 /**
  * Thrown when a file exceeds the configured maximum size limit.
  *
@@ -23,6 +23,7 @@ import java.nio.file.Path;
  */
 public final class FileSizeExceededException extends SecurityException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private final transient Path filePath;
 	private final long actualSize;

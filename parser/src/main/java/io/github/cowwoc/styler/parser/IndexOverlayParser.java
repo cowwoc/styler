@@ -1,8 +1,8 @@
 package io.github.cowwoc.styler.parser;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
-
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
@@ -2837,6 +2837,7 @@ public class IndexOverlayParser implements AutoCloseable
      */
 	public static class ParseException extends RuntimeException
 {
+		@Serial
 		private static final long serialVersionUID = 1L;
 
 		/**

@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.formatter.api.plugin;
 
+
+import java.io.Serial;
 /**
  * Base exception for all plugin-related operations.
  * <p>
@@ -15,6 +17,7 @@ package io.github.cowwoc.styler.formatter.api.plugin;
  */
 public class PluginException extends Exception
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**

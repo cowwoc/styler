@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.cli.security.exceptions;
 
+
+import java.io.Serial;
 /**
  * Exception thrown when an operation is interrupted before completion.
  * <p>
@@ -9,6 +11,7 @@ package io.github.cowwoc.styler.cli.security.exceptions;
  */
 public final class OperationInterruptedException extends RuntimeException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**
