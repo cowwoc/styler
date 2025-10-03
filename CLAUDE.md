@@ -6,6 +6,7 @@ Styler Java Code Formatter project configuration and workflow guidance.
 
 **CRITICAL WORKFLOW**: [docs/project/task-protocol.md](docs/project/task-protocol.md) - MANDATORY risk-based protocol selection - Apply appropriate workflow based on file risk classification.
 **CRITICAL SAFETY**: [docs/project/critical-rules.md](docs/project/critical-rules.md) - Build integrity and multi-instance coordination.
+**CRITICAL LOCK OWNERSHIP**: NEVER remove lock files unless you own them (session_id matches). If lock acquisition fails, select alternative task - do NOT delete the lock unless explicitly instructed by user.
 **CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See task-protocol.md
 **CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
 **CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL 7 phases of task protocol are finished. Implementation completion does NOT equal task completion. Only mark tasks as complete after Phase 7 cleanup and finalization.

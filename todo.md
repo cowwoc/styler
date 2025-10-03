@@ -38,15 +38,6 @@
 
 ## Phase A: Foundation (Zero External Dependencies)
 
-### AST Core Module - COMPLETED ✅
-- [x] **MODULE:** `create-ast-core-module` - Create styler-ast-core Maven module with AST node hierarchy
-- [x] **TASK:** `implement-ast-node-base` - Base AST node with visitor pattern and metadata preservation
-- [x] **TASK:** `implement-java-ast-nodes` - Complete AST node hierarchy for all Java constructs
-- [x] **TASK:** `implement-comment-preservation` - Maintain comments, whitespace, and formatting hints
-- [x] **TASK:** `implement-immutable-ast` - Immutable AST with builder pattern for modifications
-- [x] **TASK:** `add-ast-core-unit-tests` - Comprehensive unit tests for AST node operations
-- [x] **TASK:** `fix-module-dependency-resolution` - CRITICAL: Fix Maven module dependency failures
-
 ### Parser Engine Module - MOSTLY COMPLETED ✅
 - [x] **MODULE:** `create-parser-module` - Create styler-parser Maven module with custom parser dependencies
 - [x] **TASK:** `complete-custom-recursive-descent-parser` - Complete handwritten recursive descent parser for JDK 25 features
@@ -127,40 +118,6 @@
   - **Technical Debt**: 1,636 checkstyle violations in CLI module deferred to separate task (see fix-cli-checkstyle-violations below)
 
 ## Phase B: Vertical Integration (Build Complete Minimal Pipeline)
-
-### Configuration Discovery (Depends on CLI Args) - COMPLETED ✅
-- [x] **TASK:** `implement-config-discovery` - Automatic configuration file discovery (COMPLETED: Full implementation with thread-safe immutable result objects)
-  - **Purpose**: Automatically locate styler configuration files in project directories
-  - **Scope**: Search for .styler.toml in current/parent dirs, merge with CLI overrides (YAML removed per requirements)
-  - **Search Strategy**: Current dir → parent dirs → home dir → global config, with precedence rules
-  - **Integration**: ConfigDiscovery class with Builder pattern, DiscoveryResult for thread-safe location tracking
-  - **Implementation**: 4-component system (ConfigDiscovery, ConfigMerger, ConfigSearchPath, ConfigParser) with platform-aware path resolution, git boundary detection, field-level configuration merging, thread-safe caching (<50ms target), comprehensive exception hierarchy with business context
-- [x] **TASK:** `implement-yaml-config-parser` - Parse YAML configuration files (REMOVED: YAML support removed per requirements - TOML-only implementation)
-
-### Error Recovery (Depends on AST Foundation)
-- [ ] **TASK:** `implement-error-recovery` - Error recovery for partial formatting of malformed files
-  - **Purpose**: Enable partial formatting of files with syntax errors (incomplete code, missing braces)
-  - **Scope**: ErrorRecoveryParser that builds partial AST, formats valid sections, preserves invalid sections
-  - **Strategy**: Skip malformed constructs, insert placeholder nodes, continue parsing after errors
-  - **Integration**: Used by parser when strict mode disabled, produces warnings for unfixable sections
-
-### Basic Security Controls (Depends on CLI Args) - COMPLETED ✅
-- [x] **TASK:** `implement-cli-security-basics` - Essential CLI security: input validation, file size limits, memory bounds, and timeouts (COMPLETED)
-  - **Purpose**: Protect against malicious inputs, resource exhaustion, path traversal attacks
-  - **Scope**: SecurityManager with file validation, memory limits, execution timeouts, path sanitization
-  - **Controls**: Max file size (50MB), max memory (512MB), timeout (30s), allowed file extensions (.java)
-  - **Integration**: Used by CLI argument parser and file processor before any file operations
-  - **Implementation**: Complete 7-requirement security system (SEC-001 through SEC-007):
-    - SecurityConfig: Immutable record with builder (8 configuration fields)
-    - SecurityManager: Facade integrating all security controls (19 public methods)
-    - FileValidator: File size, type, existence validation
-    - PathSanitizer: Path normalization and traversal protection
-    - MemoryMonitor: JVM heap usage tracking (512MB limit)
-    - ExecutionTimeoutManager: Thread-based timeout enforcement (30s)
-    - RecursionDepthTracker: ThreadLocal depth tracking (1000 max, 500 warn)
-    - TempFileManager: Lifecycle management with shutdown hooks (1000 files, 1GB disk)
-    - 8 custom security exceptions with actionable error messages
-  - **Quality**: Unanimous stakeholder approval (Technical-Architect, Security-Auditor, Code-Quality-Auditor 9.5/10)
 
 ### Single File Formatter (Depends on Config System)
 - [x] **TASK:** `define-formatter-plugin-interface` - Plugin interface for formatting rules (COMPLETED)
@@ -352,36 +309,6 @@
   - **Priority**: MEDIUM (improves test quality and maintainability)
   - **Dependencies**: None (can be done incrementally)
 
-### Code Quality and Style Compliance
-- [x] **TASK:** `fix-checkstyle-pmd-violations` - Fix PMD violations across parser and formatter modules - COMPLETED ✅
-  - **Purpose**: Eliminate PMD violations and improve test quality through proper assertion patterns
-  - **Scope**: Parser module (141 violations), Formatter module (61 violations)
-  - **Implementation**: Fixed 202 total violations (100% reduction)
-  - **Achievements**:
-    - Eliminated 6 PMD suppressions via test refactoring (main()→@Test, try-catch→assertThatThrownBy)
-    - Removed dead code: ParseMetrics.reset() (unused, inconsistent with Arena GC design)
-    - Fixed @FunctionalInterface bug in MutableFormattingRule.java
-    - Added comprehensive Javadoc documentation to test methods
-    - Updated CLAUDE.md with IMPLEMENTATION COMPLETION TRIGGER guidance
-  - **Quality**: Unanimous stakeholder approval (Style-Auditor ✅, Code-Quality-Auditor ✅)
-  - **Verification**: All tests pass, PMD check: 0 violations, Build: SUCCESS
-  - **Completed**: 2025-10-01
-
-- [x] **TASK:** `fix-cli-checkstyle-violations` - Fix CLI module checkstyle violations - COMPLETED ✅
-  - **Purpose**: Address pre-existing checkstyle violations to improve code consistency and maintainability
-  - **Scope**: Entire styler-cli module (11 files, 318 violations)
-  - **Implementation**: Fixed 318 total violations (100% reduction)
-  - **Achievements**:
-    - Fixed 303 SeparatorWrapCheck violations (method chaining dots moved to end of line)
-    - Fixed 13 AvoidInlineConditionalsCheck violations (ternary operators converted to if-else)
-    - Fixed 2 LineLengthCheck violations (split long lines)
-    - Completed programmatic Picocli API conversion (eliminated reflection)
-    - Enforced no-stub policy (removed unused fields from RecursionDepthTracker)
-  - **Files Modified**: ConfigCommand, CheckCommand, FormatCommand, CommandLineParser, MachineErrorFormatter, HumanErrorFormatter, HumanOutputFormatter, SourceSnippetExtractor, ConfigNotFoundException, ConfigMerger, MemoryMonitor, RecursionDepthTracker
-  - **Quality**: All code compiles successfully, checkstyle: 0 violations, PMD: 150 violations (130 CommentRequired documentation)
-  - **Verification**: Build SUCCESS, all tests passing
-  - **Completed**: 2025-10-03
-
 ### Incremental Parsing (SCOPE QUESTION - May Be Unnecessary)
 - [ ] **TASK:** `implement-incremental-parsing` - Support for parsing only changed sections (Tree-sitter inspired) (SCOPE QUESTION: May be unnecessary for CLI tool use case - incremental parsing primarily benefits interactive editors, not batch file processing)
 - [ ] **TASK:** `complete-incremental-parsing-tree-reconciliation` - Complete tree reconciliation logic for incremental parsing (DEPENDS ON: implement-incremental-parsing scope decision)
@@ -415,6 +342,74 @@
 - [ ] **TASK:** `create-performance-guide` - Performance tuning and optimization guide (DEFERRED: Create after performance characteristics are established)
 - [ ] **TASK:** `create-docker-image` - Containerized deployment (DEFERRED: No evidence AI agents or build tools need containerization)
 - [ ] **TASK:** `setup-maven-central-publishing` - Publish artifacts to Maven Central (DEFERRED: Not needed for initial AI agent integration)
+
+## Completed Tasks ✅
+
+### AST Core Module - COMPLETED ✅
+- [x] **MODULE:** `create-ast-core-module` - Create styler-ast-core Maven module with AST node hierarchy
+- [x] **TASK:** `implement-ast-node-base` - Base AST node with visitor pattern and metadata preservation
+- [x] **TASK:** `implement-java-ast-nodes` - Complete AST node hierarchy for all Java constructs
+- [x] **TASK:** `implement-comment-preservation` - Maintain comments, whitespace, and formatting hints
+- [x] **TASK:** `implement-immutable-ast` - Immutable AST with builder pattern for modifications
+- [x] **TASK:** `add-ast-core-unit-tests` - Comprehensive unit tests for AST node operations
+- [x] **TASK:** `fix-module-dependency-resolution` - CRITICAL: Fix Maven module dependency failures
+
+### Configuration Discovery (Depends on CLI Args) - COMPLETED ✅
+- [x] **TASK:** `implement-config-discovery` - Automatic configuration file discovery (COMPLETED: Full implementation with thread-safe immutable result objects)
+  - **Purpose**: Automatically locate styler configuration files in project directories
+  - **Scope**: Search for .styler.toml in current/parent dirs, merge with CLI overrides (YAML removed per requirements)
+  - **Search Strategy**: Current dir → parent dirs → home dir → global config, with precedence rules
+  - **Integration**: ConfigDiscovery class with Builder pattern, DiscoveryResult for thread-safe location tracking
+  - **Implementation**: 4-component system (ConfigDiscovery, ConfigMerger, ConfigSearchPath, ConfigParser) with platform-aware path resolution, git boundary detection, field-level configuration merging, thread-safe caching (<50ms target), comprehensive exception hierarchy with business context
+- [x] **TASK:** `implement-yaml-config-parser` - Parse YAML configuration files (REMOVED: YAML support removed per requirements - TOML-only implementation)
+
+### Basic Security Controls (Depends on CLI Args) - COMPLETED ✅
+- [x] **TASK:** `implement-cli-security-basics` - Essential CLI security: input validation, file size limits, memory bounds, and timeouts (COMPLETED)
+  - **Purpose**: Protect against malicious inputs, resource exhaustion, path traversal attacks
+  - **Scope**: SecurityManager with file validation, memory limits, execution timeouts, path sanitization
+  - **Controls**: Max file size (50MB), max memory (512MB), timeout (30s), allowed file extensions (.java)
+  - **Integration**: Used by CLI argument parser and file processor before any file operations
+  - **Implementation**: Complete 7-requirement security system (SEC-001 through SEC-007):
+    - SecurityConfig: Immutable record with builder (8 configuration fields)
+    - SecurityManager: Facade integrating all security controls (19 public methods)
+    - FileValidator: File size, type, existence validation
+    - PathSanitizer: Path normalization and traversal protection
+    - MemoryMonitor: JVM heap usage tracking (512MB limit)
+    - ExecutionTimeoutManager: Thread-based timeout enforcement (30s)
+    - RecursionDepthTracker: ThreadLocal depth tracking (1000 max, 500 warn)
+    - TempFileManager: Lifecycle management with shutdown hooks (1000 files, 1GB disk)
+    - 8 custom security exceptions with actionable error messages
+  - **Quality**: Unanimous stakeholder approval (Technical-Architect, Security-Auditor, Code-Quality-Auditor 9.5/10)
+
+### Code Quality and Style Compliance - COMPLETED ✅
+- [x] **TASK:** `fix-checkstyle-pmd-violations` - Fix PMD violations across parser and formatter modules - COMPLETED ✅
+  - **Purpose**: Eliminate PMD violations and improve test quality through proper assertion patterns
+  - **Scope**: Parser module (141 violations), Formatter module (61 violations)
+  - **Implementation**: Fixed 202 total violations (100% reduction)
+  - **Achievements**:
+    - Eliminated 6 PMD suppressions via test refactoring (main()→@Test, try-catch→assertThatThrownBy)
+    - Removed dead code: ParseMetrics.reset() (unused, inconsistent with Arena GC design)
+    - Fixed @FunctionalInterface bug in MutableFormattingRule.java
+    - Added comprehensive Javadoc documentation to test methods
+    - Updated CLAUDE.md with IMPLEMENTATION COMPLETION TRIGGER guidance
+  - **Quality**: Unanimous stakeholder approval (Style-Auditor ✅, Code-Quality-Auditor ✅)
+  - **Verification**: All tests pass, PMD check: 0 violations, Build: SUCCESS
+  - **Completed**: 2025-10-01
+
+- [x] **TASK:** `fix-cli-checkstyle-violations` - Fix CLI module checkstyle violations - COMPLETED ✅
+  - **Purpose**: Address pre-existing checkstyle violations to improve code consistency and maintainability
+  - **Scope**: Entire styler-cli module (11 files, 318 violations)
+  - **Implementation**: Fixed 318 total violations (100% reduction)
+  - **Achievements**:
+    - Fixed 303 SeparatorWrapCheck violations (method chaining dots moved to end of line)
+    - Fixed 13 AvoidInlineConditionalsCheck violations (ternary operators converted to if-else)
+    - Fixed 2 LineLengthCheck violations (split long lines)
+    - Completed programmatic Picocli API conversion (eliminated reflection)
+    - Enforced no-stub policy (removed unused fields from RecursionDepthTracker)
+  - **Files Modified**: ConfigCommand, CheckCommand, FormatCommand, CommandLineParser, MachineErrorFormatter, HumanErrorFormatter, HumanOutputFormatter, SourceSnippetExtractor, ConfigNotFoundException, ConfigMerger, MemoryMonitor, RecursionDepthTracker
+  - **Quality**: All code compiles successfully, checkstyle: 0 violations, PMD: 150 violations (130 CommentRequired documentation)
+  - **Verification**: Build SUCCESS, all tests passing
+  - **Completed**: 2025-10-03
 
 ## Detailed Task Specifications
 
