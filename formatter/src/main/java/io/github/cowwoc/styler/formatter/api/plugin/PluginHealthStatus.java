@@ -10,7 +10,7 @@ package io.github.cowwoc.styler.formatter.api.plugin;
  * <p>
  * <b>Thread Safety:</b> This enum is immutable and thread-safe.
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
  */
 public enum PluginHealthStatus

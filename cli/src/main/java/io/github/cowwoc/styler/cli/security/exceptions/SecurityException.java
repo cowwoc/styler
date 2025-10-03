@@ -13,10 +13,11 @@ package io.github.cowwoc.styler.cli.security.exceptions;
  */
 public class SecurityException extends RuntimeException
 {
+	private static final long serialVersionUID = 1L;
 	/**
 	 * Constructs a new security exception with the specified detail message.
 	 *
-	 * @param message the detail message with actionable debugging information
+	 * @param message the detail {@code message} with actionable debugging information
 	 */
 	public SecurityException(String message)
 	{
@@ -26,8 +27,8 @@ public class SecurityException extends RuntimeException
 	/**
 	 * Constructs a new security exception with the specified detail message and cause.
 	 *
-	 * @param message the detail message with actionable debugging information
-	 * @param cause the cause of this exception
+	 * @param message the detail {@code message} with actionable debugging information
+	 * @param cause the {@code cause} of this exception
 	 */
 	public SecurityException(String message, Throwable cause)
 	{

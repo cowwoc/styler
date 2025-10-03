@@ -20,6 +20,7 @@ package io.github.cowwoc.styler.cli.security.exceptions;
  */
 public final class MemoryLimitExceededException extends SecurityException
 {
+	private static final long serialVersionUID = 1L;
 	private final long currentMemory;
 	private final long maxMemory;
 
@@ -49,8 +50,8 @@ public final class MemoryLimitExceededException extends SecurityException
 			"  - Exclude large files from processing",
 			currentMemory / 1024 / 1024,
 			maxMemory / 1024 / 1024,
-			(maxMemory / 1024 / 1024) * 2  // Suggest 2x current limit
-		);
+			// Suggest 2x current limit
+			(maxMemory / 1024 / 1024) * 2);
 	}
 
 	/**

@@ -9,21 +9,18 @@ import java.nio.file.Path;
 import java.util.Objects;
 
 /**
- * Sanitizes and validates file paths to prevent traversal attacks and ensure
- * files are within the expected project scope.
+ * Sanitizes and validates file paths to prevent traversal attacks.
  *
- * <p>This sanitizer follows the single-user tool security model: path traversal
- * patterns are detected and warned about, but not necessarily blocked, since users
- * have filesystem permissions already. However, suspicious patterns indicate
- * potential user mistakes.
+ * <p>This sanitizer detects suspicious path traversal patterns and normalizes
+ * paths for safe processing.
  *
  * <h2>Example Usage:</h2>
  * <pre>{@code
  * PathSanitizer sanitizer = new PathSanitizer();
  *
  * try {
- *     Path safe = sanitizer.sanitize(Paths.get("../../../etc/passwd"));
- *     // Warning logged but path returned (single-user tool)
+ *     Path safe = sanitizer.sanitize(Paths.get("src/main/java/Example.java"));
+ *     // Returns normalized absolute path
  * } catch (PathTraversalException e) {
  *     System.err.println("Suspicious path: " + e.getMessage());
  * }
@@ -33,28 +30,13 @@ import java.util.Objects;
  */
 public final class PathSanitizer
 {
-	private static final Logger logger = LoggerFactory.getLogger(PathSanitizer.class);
-	private final Path projectRoot;
+	private final Logger log = LoggerFactory.getLogger(PathSanitizer.class);
 
 	/**
-	 * Constructs a new path sanitizer using the current working directory
-	 * as the project root.
+	 * Constructs a new path sanitizer.
 	 */
 	public PathSanitizer()
 	{
-		this(Path.of("").toAbsolutePath());
-	}
-
-	/**
-	 * Constructs a new path sanitizer with the specified project root.
-	 *
-	 * @param projectRoot the project root directory for boundary validation
-	 * @throws NullPointerException if projectRoot is null
-	 */
-	public PathSanitizer(Path projectRoot)
-	{
-		Objects.requireNonNull(projectRoot, "projectRoot must not be null");
-		this.projectRoot = projectRoot.toAbsolutePath().normalize();
 	}
 
 	/**
@@ -65,13 +47,12 @@ public final class PathSanitizer
 	 *   <li>Path normalization (resolves {@code .} and {@code ..})</li>
 	 *   <li>Symbolic link resolution</li>
 	 *   <li>Traversal pattern detection</li>
-	 *   <li>Project boundary validation (warns if outside project)</li>
 	 * </ol>
 	 *
-	 * @param inputPath the path to sanitize, must not be null
+	 * @param inputPath the path to sanitize, must not be {@code null}
 	 * @return the sanitized absolute path
 	 * @throws PathTraversalException if path contains suspicious traversal patterns
-	 * @throws NullPointerException if inputPath is null
+	 * @throws NullPointerException if inputPath is {@code null}
 	 */
 	public Path sanitize(Path inputPath) throws PathTraversalException
 	{
@@ -95,9 +76,6 @@ public final class PathSanitizer
 
 		// Step 3: Detect suspicious traversal patterns in original input
 		detectTraversalPatterns(inputPath);
-
-		// Step 4: Validate against project boundary (warn but allow)
-		validateProjectBoundary(real);
 
 		return real;
 	}
@@ -127,45 +105,23 @@ public final class PathSanitizer
 
 		// Detect attempts to access common system directories
 		Path normalized = inputPath.normalize().toAbsolutePath();
-		String normalizedString = normalized.toString().toLowerCase();
+		String normalizedString = normalized.toString().toLowerCase(java.util.Locale.ROOT);
 
 		if (normalizedString.startsWith("/etc/") ||
 			normalizedString.startsWith("/sys/") ||
 			normalizedString.startsWith("/proc/") ||
 			normalizedString.contains("/windows/system32"))
 		{
-			logger.warn("WARNING: Attempting to access system directory: {}", normalized);
+			log.warn("WARNING: Attempting to access system directory: {}", normalized);
 		}
 	}
 
 	/**
-	 * Validates that the path is within the project boundary.
+	 * Checks if the specified path can be sanitized without throwing exceptions.
 	 *
-	 * <p>In the single-user tool security model, this logs a warning but does
-	 * not block processing, as users have filesystem permissions already.
-	 *
-	 * @param realPath the resolved real path
-	 */
-	private void validateProjectBoundary(Path realPath)
-	{
-		if (!realPath.startsWith(projectRoot))
-		{
-			logger.warn(
-				"WARNING: Processing file outside project directory\n" +
-				"  File: {}\n" +
-				"  Project Root: {}\n" +
-				"  This may indicate a path specification mistake.",
-				realPath, projectRoot
-			);
-		}
-	}
-
-	/**
-	 * Checks if the specified path is considered safe (within project boundaries).
-	 *
-	 * @param path the path to check, must not be null
-	 * @return true if path is within project root, false otherwise
-	 * @throws NullPointerException if path is null
+	 * @param path the path to check, must not be {@code null}
+	 * @return {@code true} if path can be sanitized, {@code false} if it contains suspicious patterns
+	 * @throws NullPointerException if path is {@code null}
 	 */
 	public boolean isPathSafe(Path path)
 	{
@@ -173,8 +129,8 @@ public final class PathSanitizer
 
 		try
 		{
-			Path sanitized = sanitize(path);
-			return sanitized.startsWith(projectRoot);
+			sanitize(path);
+			return true;
 		}
 		catch (PathTraversalException e)
 		{

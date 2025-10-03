@@ -1,6 +1,9 @@
 package io.github.cowwoc.styler.cli.error;
 
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -20,30 +23,34 @@ public final class MachineErrorFormatter implements ErrorFormatter
 	{
 		Objects.requireNonNull(errorContext, "Error context cannot be null");
 
-		StringBuilder json = new StringBuilder();
-		json.append("{\n");
-		json.append(JSON_INDENT).append("\"type\": \"error\",\n");
-		json.append(JSON_INDENT).append("\"file\": \"").append(escapeJson(errorContext.filePath().toString())).append("\",\n");
-		json.append(JSON_INDENT).append("\"line\": ").append(errorContext.getLineNumber()).append(",\n");
-		json.append(JSON_INDENT).append("\"column\": ").append(errorContext.getColumnNumber()).append(",\n");
-		json.append(JSON_INDENT).append("\"category\": \"").append(errorContext.category().name().toLowerCase()).append("\",\n");
-		json.append(JSON_INDENT).append("\"severity\": \"").append(errorContext.severity().name().toLowerCase()).append("\",\n");
-		json.append(JSON_INDENT).append("\"code\": \"").append(escapeJson(errorContext.errorCode())).append("\",\n");
-		json.append(JSON_INDENT).append("\"message\": \"").append(escapeJson(errorContext.message())).append("\"");
+		StringBuilder json = new StringBuilder(512);
+		json.append("{\n").
+			append(JSON_INDENT).append("\"type\": \"error\",\n");
+		String filePath = escapeJson(errorContext.filePath().toString());
+	json.append(JSON_INDENT).append("\"file\": \"").append(filePath).append("\",\n").
+			append(JSON_INDENT).append("\"line\": ").append(errorContext.getLineNumber()).append(",\n").
+			append(JSON_INDENT).append("\"column\": ").append(errorContext.getColumnNumber()).append(",\n");
+		String category = errorContext.category().name().toLowerCase(Locale.ROOT);
+	json.append(JSON_INDENT).append("\"category\": \"").append(category).append("\",\n");
+		String severity = errorContext.severity().name().toLowerCase(Locale.ROOT);
+	json.append(JSON_INDENT).append("\"severity\": \"").append(severity).append("\",\n").
+			append(JSON_INDENT).append("\"code\": \"").append(escapeJson(errorContext.errorCode())).append("\",\n").
+			append(JSON_INDENT).append("\"message\": \"").append(escapeJson(errorContext.message())).append('\"');
 
 		if (errorContext.hasSuggestedFix())
 		{
 			json.append(",\n");
-			json.append(JSON_INDENT).append("\"suggestedFix\": \"").append(escapeJson(errorContext.suggestedFix())).append("\"");
+			String suggestedFix = escapeJson(errorContext.suggestedFix());
+		json.append(JSON_INDENT).append("\"suggestedFix\": \"").append(suggestedFix).append('\"');
 		}
 
 		// Add source context for debugging
 		String snippet = SourceSnippetExtractor.extractInlineSnippet(
 			errorContext.sourceText(), errorContext.location());
-		if (!snippet.trim().isEmpty())
+		if (!snippet.isBlank())
 		{
-			json.append(",\n");
-			json.append(JSON_INDENT).append("\"sourceSnippet\": \"").append(escapeJson(snippet)).append("\"");
+			json.append(",\n").
+				append(JSON_INDENT).append("\"sourceSnippet\": \"").append(escapeJson(snippet)).append('\"');
 		}
 
 		json.append("\n}");
@@ -55,34 +62,35 @@ public final class MachineErrorFormatter implements ErrorFormatter
 	{
 		Objects.requireNonNull(errors, "Errors list cannot be null");
 
-		StringBuilder json = new StringBuilder();
-		json.append("{\n");
-		json.append(JSON_INDENT).append("\"type\": \"error-report\",\n");
-		json.append(JSON_INDENT).append("\"timestamp\": \"").append(java.time.Instant.now().toString()).append("\",\n");
-		json.append(JSON_INDENT).append("\"errorCount\": ").append(errors.size()).append(",\n");
-		json.append(JSON_INDENT).append("\"errors\": [\n");
+		StringBuilder json = new StringBuilder(512);
+		json.append("{\n").
+			append(JSON_INDENT).append("\"type\": \"error-report\",\n");
+		String timestamp = java.time.Instant.now().toString();
+	json.append(JSON_INDENT).append("\"timestamp\": \"").append(timestamp).append("\",\n").
+			append(JSON_INDENT).append("\"errorCount\": ").append(errors.size()).append(",\n").
+			append(JSON_INDENT).append("\"errors\": [\n");
 
-		for (int i = 0; i < errors.size(); i++)
+		for (int i = 0; i < errors.size(); ++i)
 		{
 			ErrorContext error = errors.get(i);
 			String errorJson = formatError(error);
 
 			// Indent each line of the error JSON
-			String indentedError = errorJson.lines()
-				.map(line -> JSON_INDENT + JSON_INDENT + line)
-				.collect(Collectors.joining("\n"));
+			String indentedError = errorJson.lines().
+				map(line -> JSON_INDENT + JSON_INDENT + line).
+				collect(Collectors.joining("\n"));
 
 			json.append(indentedError);
 
 			if (i < errors.size() - 1)
 			{
-				json.append(",");
+				json.append(',');
 			}
-			json.append("\n");
+			json.append('\n');
 		}
 
-		json.append(JSON_INDENT).append("]\n");
-		json.append("}");
+		json.append(JSON_INDENT).append("]\n").
+			append('}');
 		return json.toString();
 	}
 
@@ -91,24 +99,32 @@ public final class MachineErrorFormatter implements ErrorFormatter
 	{
 		Objects.requireNonNull(summary, "Summary cannot be null");
 
-		StringBuilder json = new StringBuilder();
-		json.append("{\n");
-		json.append(JSON_INDENT).append("\"type\": \"error-summary\",\n");
-		json.append(JSON_INDENT).append("\"timestamp\": \"").append(java.time.Instant.now().toString()).append("\",\n");
-		json.append(JSON_INDENT).append("\"operation\": \"").append(escapeJson(summary.operationType())).append("\",\n");
-		json.append(JSON_INDENT).append("\"processingTimeMs\": ").append(summary.processingTimeMs()).append(",\n");
-		json.append(JSON_INDENT).append("\"success\": ").append(summary.isSuccess()).append(",\n");
-		json.append(JSON_INDENT).append("\"shouldHalt\": ").append(summary.shouldHaltProcessing()).append(",\n");
-		json.append(JSON_INDENT).append("\"totalErrors\": ").append(summary.totalErrors()).append(",\n");
-		json.append(JSON_INDENT).append("\"criticalErrors\": ").append(summary.criticalErrors()).append(",\n");
-		json.append(JSON_INDENT).append("\"errorBreakdown\": {\n");
-		json.append(JSON_INDENT).append(JSON_INDENT).append("\"parse\": ").append(summary.parseErrors()).append(",\n");
-		json.append(JSON_INDENT).append(JSON_INDENT).append("\"config\": ").append(summary.configErrors()).append(",\n");
-		json.append(JSON_INDENT).append(JSON_INDENT).append("\"format\": ").append(summary.formatViolations()).append(",\n");
-		json.append(JSON_INDENT).append(JSON_INDENT).append("\"validation\": ").append(summary.validationErrors()).append(",\n");
-		json.append(JSON_INDENT).append(JSON_INDENT).append("\"system\": ").append(summary.systemErrors()).append("\n");
-		json.append(JSON_INDENT).append("}\n");
-		json.append("}");
+		StringBuilder json = new StringBuilder(512);
+		json.append("{\n").
+			append(JSON_INDENT).append("\"type\": \"error-summary\",\n");
+		String timestamp = java.time.Instant.now().toString();
+	json.append(JSON_INDENT).append("\"timestamp\": \"").append(timestamp).append("\",\n");
+		String operation = escapeJson(summary.operationType());
+	json.append(JSON_INDENT).append("\"operation\": \"").append(operation).append("\",\n").
+			append(JSON_INDENT).append("\"processingTimeMs\": ").append(summary.processingTimeMs()).append(",\n").
+			append(JSON_INDENT).append("\"success\": ").append(summary.isSuccess()).append(",\n").
+			append(JSON_INDENT).append("\"shouldHalt\": ");
+	json.append(summary.shouldHaltProcessing()).append(",\n").
+			append(JSON_INDENT).append("\"totalErrors\": ").append(summary.totalErrors()).append(",\n").
+			append(JSON_INDENT).append("\"criticalErrors\": ");
+	json.append(summary.criticalErrors()).append(",\n").
+			append(JSON_INDENT).append("\"errorBreakdown\": {\n").
+			append(JSON_INDENT).append(JSON_INDENT).append("\"parse\": ");
+	json.append(summary.parseErrors()).append(",\n").
+			append(JSON_INDENT).append(JSON_INDENT).append("\"config\": ");
+	json.append(summary.configErrors()).append(",\n").
+			append(JSON_INDENT).append(JSON_INDENT).append("\"format\": ");
+	json.append(summary.formatViolations()).append(",\n").
+			append(JSON_INDENT).append(JSON_INDENT).append("\"validation\": ");
+	json.append(summary.validationErrors()).append(",\n").
+			append(JSON_INDENT).append(JSON_INDENT).append("\"system\": ").append(summary.systemErrors()).append('\n').
+			append(JSON_INDENT).append("}\n").
+			append('}');
 		return json.toString();
 	}
 
@@ -127,8 +143,8 @@ public final class MachineErrorFormatter implements ErrorFormatter
 	/**
 	 * Escapes special characters in JSON strings.
 	 *
-	 * @param input the string to escape, may be null
-	 * @return the escaped string, or "null" if input is null
+	 * @param input the string to escape, may be {@code null}
+	 * @return the escaped string, or "{@code null}" if input is {@code null}
 	 */
 	private String escapeJson(String input)
 	{
@@ -138,7 +154,7 @@ public final class MachineErrorFormatter implements ErrorFormatter
 		}
 
 		StringBuilder escaped = new StringBuilder();
-		for (int i = 0; i < input.length(); i++)
+		for (int i = 0; i < input.length(); ++i)
 		{
 			char c = input.charAt(i);
 			switch (c)
@@ -150,7 +166,8 @@ public final class MachineErrorFormatter implements ErrorFormatter
 				case '\n' -> escaped.append("\\n");
 				case '\r' -> escaped.append("\\r");
 				case '\t' -> escaped.append("\\t");
-				default -> {
+				default ->
+				{
 					if (c < 0x20 || c > 0x7E)
 					{
 						escaped.append(String.format("\\u%04x", (int) c));
@@ -168,83 +185,88 @@ public final class MachineErrorFormatter implements ErrorFormatter
 	/**
 	 * Creates a compact single-line JSON error format for inline use.
 	 *
-	 * @param errorContext the error to format, never null
-	 * @throws IllegalArgumentException if {@code errorContext} is null
-	 * @return a compact JSON representation of the error, never null
+	 * @param errorContext the error to format, never {@code null}
+	 * @throws IllegalArgumentException if {@code errorContext} is {@code null}
+	 * @return a compact JSON representation of the error, never {@code null}
 	 */
 	public String formatCompactError(ErrorContext errorContext)
 	{
 		Objects.requireNonNull(errorContext, "Error context cannot be null");
 
-		StringBuilder json = new StringBuilder();
-		json.append("{");
-		json.append("\"file\":\"").append(escapeJson(errorContext.filePath().toString())).append("\",");
-		json.append("\"line\":").append(errorContext.getLineNumber()).append(",");
-		json.append("\"column\":").append(errorContext.getColumnNumber()).append(",");
-		json.append("\"category\":\"").append(errorContext.category().name().toLowerCase()).append("\",");
-		json.append("\"severity\":\"").append(errorContext.severity().name().toLowerCase()).append("\",");
-		json.append("\"code\":\"").append(escapeJson(errorContext.errorCode())).append("\",");
-		json.append("\"message\":\"").append(escapeJson(errorContext.message())).append("\"");
+		StringBuilder json = new StringBuilder(512);
+		json.append('{').
+			append("\"file\":\"").append(escapeJson(errorContext.filePath().toString())).append("\",").
+			append("\"line\":").append(errorContext.getLineNumber()).append(',').
+			append("\"column\":").append(errorContext.getColumnNumber()).append(',').
+			append("\"category\":\"").append(errorContext.category().name().toLowerCase(Locale.ROOT)).append("\",").
+			append("\"severity\":\"").append(errorContext.severity().name().toLowerCase(Locale.ROOT)).append("\",").
+			append("\"code\":\"").append(escapeJson(errorContext.errorCode())).append("\",").
+			append("\"message\":\"").append(escapeJson(errorContext.message())).append('\"');
 
 		if (errorContext.hasSuggestedFix())
 		{
-			json.append(",\"fix\":\"").append(escapeJson(errorContext.suggestedFix())).append("\"");
+			json.append(",\"fix\":\"").append(escapeJson(errorContext.suggestedFix())).append('\"');
 		}
 
-		json.append("}");
+		json.append('}');
 		return json.toString();
 	}
 
 	/**
 	 * Creates structured error data for integration with external systems.
 	 *
-	 * @param errors the errors to format, never null
-	 * @throws IllegalArgumentException if {@code errors} is null
-	 * @return a structured JSON object with metadata for external consumption, never null
+	 * @param errors the errors to format, never {@code null}
+	 * @throws IllegalArgumentException if {@code errors} is {@code null}
+	 * @return a structured JSON object with metadata for external consumption, never {@code null}
 	 */
 	public String formatStructuredReport(List<ErrorContext> errors)
 	{
 		Objects.requireNonNull(errors, "Errors list cannot be null");
 
-		StringBuilder json = new StringBuilder();
-		json.append("{\n");
-		json.append(JSON_INDENT).append("\"version\": \"1.0\",\n");
-		json.append(JSON_INDENT).append("\"generator\": \"styler-error-reporter\",\n");
-		json.append(JSON_INDENT).append("\"timestamp\": \"").append(java.time.Instant.now().toString()).append("\",\n");
+		StringBuilder json = new StringBuilder(512);
+		json.append("{\n").
+			append(JSON_INDENT).append("\"version\": \"1.0\",\n").
+			append(JSON_INDENT).append("\"generator\": \"styler-error-reporter\",\n");
+		String timestamp = java.time.Instant.now().toString();
+	json.append(JSON_INDENT).append("\"timestamp\": \"").append(timestamp).append("\",\n");
 
 		// Group errors by file for structured reporting
-		var errorsByFile = errors.stream()
-			.collect(Collectors.groupingBy(ErrorContext::filePath));
+		Map<Path, List<ErrorContext>> errorsByFile = errors.stream().
+			collect(Collectors.groupingBy(ErrorContext::filePath));
 
 		json.append(JSON_INDENT).append("\"files\": [\n");
 		boolean firstFile = true;
-		for (var entry : errorsByFile.entrySet())
+		for (Map.Entry<Path, List<ErrorContext>> entry : errorsByFile.entrySet())
 		{
 			if (!firstFile) json.append(",\n");
 			firstFile = false;
 
-			var filePath = entry.getKey();
-			var fileErrors = entry.getValue();
+			Path filePath = entry.getKey();
+			List<ErrorContext> fileErrors = entry.getValue();
 
 			json.append(JSON_INDENT).append(JSON_INDENT).append("{\n");
-			json.append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).append("\"path\": \"").append(escapeJson(filePath.toString())).append("\",\n");
-			json.append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).append("\"errorCount\": ").append(fileErrors.size()).append(",\n");
-			json.append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).append("\"errors\": [\n");
+			String pathString = escapeJson(filePath.toString());
+		json.append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).
+			append("\"path\": \"").append(pathString).append("\",\n").
+				append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).
+			append("\"errorCount\": ").append(fileErrors.size()).append(",\n").
+				append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).append("\"errors\": [\n");
 
-			for (int i = 0; i < fileErrors.size(); i++)
+			for (int i = 0; i < fileErrors.size(); ++i)
 			{
 				String compactError = formatCompactError(fileErrors.get(i));
-				json.append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).append(compactError);
-				if (i < fileErrors.size() - 1) json.append(",");
-				json.append("\n");
+				json.append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).
+					append(compactError);
+				if (i < fileErrors.size() - 1) json.append(',');
+				json.append('\n');
 			}
 
-			json.append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).append("]\n");
-			json.append(JSON_INDENT).append(JSON_INDENT).append("}");
+			json.append(JSON_INDENT).append(JSON_INDENT).append(JSON_INDENT).append("]\n").
+				append(JSON_INDENT).append(JSON_INDENT).append('}');
 		}
 
-		json.append("\n").append(JSON_INDENT).append("]\n");
-		json.append("}");
+		json.append('\n').append(JSON_INDENT).append("]\n").
+			append('}');
 		return json.toString();
 	}
 }

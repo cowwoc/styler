@@ -20,7 +20,7 @@ import java.util.Objects;
  * <b>Thread Safety:</b> This class is immutable and thread-safe.
  * <b>Security:</b> All configuration values are validated for security compliance.
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -75,14 +75,70 @@ public final class GlobalConfiguration
 	                          @JsonProperty("trimTrailingWhitespace") Boolean trimTrailingWhitespace,
 	                          @JsonProperty("tabWidth") Integer tabWidth)
 	{
-		this.indentationType = indentationType != null ? indentationType : IndentationType.SPACES;
-		this.indentationSize = validateIndentationSize(indentationSize != null ? indentationSize : 4);
-		this.maxLineLength = validateMaxLineLength(maxLineLength != null ? maxLineLength : 120);
-		this.lineEnding = lineEnding != null ? lineEnding : LineEnding.SYSTEM;
-		this.charset = validateCharset(charset != null ? charset : StandardCharsets.UTF_8.name());
-		this.insertFinalNewline = insertFinalNewline != null ? insertFinalNewline : true;
-		this.trimTrailingWhitespace = trimTrailingWhitespace != null ? trimTrailingWhitespace : true;
-		this.tabWidth = validateTabWidth(tabWidth != null ? tabWidth : 4);
+		if (indentationType != null)
+		{
+			this.indentationType = indentationType;
+		}
+		else
+		{
+			this.indentationType = IndentationType.SPACES;
+		}
+		if (indentationSize != null)
+		{
+			this.indentationSize = validateIndentationSize(indentationSize);
+		}
+		else
+		{
+			this.indentationSize = validateIndentationSize(4);
+		}
+		if (maxLineLength != null)
+		{
+			this.maxLineLength = validateMaxLineLength(maxLineLength);
+		}
+		else
+		{
+			this.maxLineLength = validateMaxLineLength(120);
+		}
+		if (lineEnding != null)
+		{
+			this.lineEnding = lineEnding;
+		}
+		else
+		{
+			this.lineEnding = LineEnding.SYSTEM;
+		}
+		if (charset != null)
+		{
+			this.charset = validateCharset(charset);
+		}
+		else
+		{
+			this.charset = validateCharset(StandardCharsets.UTF_8.name());
+		}
+		if (insertFinalNewline != null)
+		{
+			this.insertFinalNewline = insertFinalNewline;
+		}
+		else
+		{
+			this.insertFinalNewline = true;
+		}
+		if (trimTrailingWhitespace != null)
+		{
+			this.trimTrailingWhitespace = trimTrailingWhitespace;
+		}
+		else
+		{
+			this.trimTrailingWhitespace = true;
+		}
+		if (tabWidth != null)
+		{
+			this.tabWidth = validateTabWidth(tabWidth);
+		}
+		else
+		{
+			this.tabWidth = validateTabWidth(4);
+		}
 	}
 
 	/**
@@ -98,8 +154,7 @@ public final class GlobalConfiguration
 			StandardCharsets.UTF_8.name(),
 			true,
 			true,
-			4
-		);
+			4);
 	}
 
 	/**
@@ -129,13 +184,13 @@ public final class GlobalConfiguration
 	 * @param newIndentationType the new indentation type, never {@code null}
 	 * @param newIndentationSize the new indentation size
 	 * @return a new global configuration with updated indentation
+	  * @throws NullPointerException if {@code charset} is null
 	 */
 	public GlobalConfiguration withIndentation(IndentationType newIndentationType, int newIndentationSize)
 	{
 		return new GlobalConfiguration(
 			newIndentationType, newIndentationSize, maxLineLength, lineEnding,
-			charset, insertFinalNewline, trimTrailingWhitespace, tabWidth
-		);
+			charset, insertFinalNewline, trimTrailingWhitespace, tabWidth);
 	}
 
 	/**
@@ -143,29 +198,38 @@ public final class GlobalConfiguration
 	 *
 	 * @param newMaxLineLength the new maximum line length
 	 * @return a new global configuration with updated line length
+	  * @throws NullPointerException if {@code charset} is null
 	 */
 	public GlobalConfiguration withMaxLineLength(int newMaxLineLength)
 	{
 		return new GlobalConfiguration(
 			indentationType, indentationSize, newMaxLineLength, lineEnding,
-			charset, insertFinalNewline, trimTrailingWhitespace, tabWidth
-		);
+			charset, insertFinalNewline, trimTrailingWhitespace, tabWidth);
 	}
 
-	public IndentationType getIndentationType() { return indentationType; }
-	public int getIndentationSize() { return indentationSize; }
-	public int getMaxLineLength() { return maxLineLength; }
-	public LineEnding getLineEnding() { return lineEnding; }
-	public String getCharset() { return charset; }
-	public boolean isInsertFinalNewline() { return insertFinalNewline; }
-	public boolean isTrimTrailingWhitespace() { return trimTrailingWhitespace; }
-	public int getTabWidth() { return tabWidth; }
+	public IndentationType getIndentationType()
+	{ return indentationType; }
+	public int getIndentationSize()
+	{ return indentationSize; }
+	public int getMaxLineLength()
+	{ return maxLineLength; }
+	public LineEnding getLineEnding()
+	{ return lineEnding; }
+	public String getCharset()
+	{ return charset; }
+	public boolean isInsertFinalNewline()
+	{ return insertFinalNewline; }
+	public boolean isTrimTrailingWhitespace()
+	{ return trimTrailingWhitespace; }
+	public int getTabWidth()
+	{ return tabWidth; }
 
 	/**
 	 * Returns the character encoding as a Charset object.
 	 *
 	 * @return the charset, never {@code null}
 	 * @throws ConfigurationException if the charset name is invalid
+	  * @throws NullPointerException if {@code charset} is null
 	 */
 	public Charset getCharsetObject() throws ConfigurationException
 	{
@@ -267,13 +331,13 @@ public final class GlobalConfiguration
 	 */
 	public enum IndentationType
 	{
-		/** Use space characters for indentation */
+		/** Use space characters for indentation. */
 		SPACES,
 
-		/** Use tab characters for indentation */
+		/** Use tab characters for indentation. */
 		TABS,
 
-		/** Mixed indentation (tabs for major levels, spaces for alignment) */
+		/** Mixed indentation (tabs for major levels, spaces for alignment). */
 		MIXED
 	}
 
@@ -282,16 +346,16 @@ public final class GlobalConfiguration
 	 */
 	public enum LineEnding
 	{
-		/** Unix-style line endings (LF) */
+		/** Unix-style line endings (LF). */
 		LF,
 
-		/** Windows-style line endings (CRLF) */
+		/** Windows-style line endings (CRLF). */
 		CRLF,
 
-		/** Classic Mac-style line endings (CR) */
+		/** Classic Mac-style line endings (CR). */
 		CR,
 
-		/** Use the system's default line ending */
+		/** Use the system's default line ending. */
 		SYSTEM;
 
 		/**

@@ -12,14 +12,14 @@ import java.util.Objects;
  * messages with source location, context, and fix suggestions. This record serves
  * as the primary data transfer object for error reporting throughout the system.
  *
- * @param filePath the file where the error occurred, never null
- * @param location the precise location within the file, never null
- * @param sourceText the original source text for context extraction, never null
- * @param category the type of error that occurred, never null
- * @param severity the severity level of this error, never null
- * @param errorCode a unique identifier for this type of error, never null
- * @param message a human-readable description of the error, never null
- * @param suggestedFix an optional suggested fix for the error, may be null
+ * @param filePath the file where the error occurred, never {@code null}
+ * @param location the precise location within the file, never {@code null}
+ * @param sourceText the original source text for context extraction, never {@code null}
+ * @param category the type of error that occurred, never {@code null}
+ * @param severity the severity level of this error, never {@code null}
+ * @param errorCode a unique identifier for this type of error, never {@code null}
+ * @param message a human-readable description of the error, never {@code null}
+ * @param suggestedFix an optional suggested fix for the error, may be {@code null}
  */
 public record ErrorContext(
 	Path filePath,
@@ -29,9 +29,11 @@ public record ErrorContext(
 	ErrorSeverity severity,
 	String errorCode,
 	String message,
-	String suggestedFix
-)
+	String suggestedFix)
 {
+	/**
+	 * Compact constructor that validates error context parameters.
+	 */
 	public ErrorContext
 	{
 		Objects.requireNonNull(filePath, "File path cannot be null");
@@ -53,12 +55,12 @@ public record ErrorContext(
 	/**
 	 * Creates an ErrorContext for a parse error.
 	 *
-	 * @param filePath the file where the parse error occurred, never null
-	 * @param location the location of the syntax error, never null
-	 * @param sourceText the source text being parsed, never null
-	 * @param message the parse error message, never null
-	 * @return a new ErrorContext for the parse error, never null
-	 * @throws IllegalArgumentException if any parameter is null
+	 * @param filePath the file where the parse error occurred, never {@code null}
+	 * @param location the location of the syntax error, never {@code null}
+	 * @param sourceText the source text being parsed, never {@code null}
+	 * @param message the parse error message, never {@code null}
+	 * @return a new ErrorContext for the parse error, never {@code null}
+	 * @throws IllegalArgumentException if any parameter is {@code null}
 	 */
 	public static ErrorContext parseError(Path filePath, SourceRange location,
 	                                     String sourceText, String message)
@@ -71,20 +73,19 @@ public record ErrorContext(
 			ErrorSeverity.ERROR,
 			"PARSE-0001",
 			message,
-			null
-		);
+			null);
 	}
 
 	/**
 	 * Creates an ErrorContext for a configuration error.
 	 *
-	 * @param filePath the configuration file with the error, never null
-	 * @param location the location within the config file, never null
-	 * @param sourceText the configuration file content, never null
-	 * @param message the configuration error message, never null
-	 * @param suggestedFix an optional suggested fix, may be null
-	 * @return a new ErrorContext for the configuration error, never null
-	 * @throws IllegalArgumentException if any required parameter is null
+	 * @param filePath the configuration file with the error, never {@code null}
+	 * @param location the location within the config file, never {@code null}
+	 * @param sourceText the configuration file content, never {@code null}
+	 * @param message the configuration error message, never {@code null}
+	 * @param suggestedFix an optional suggested fix, may be {@code null}
+	 * @return a new ErrorContext for the configuration error, never {@code null}
+	 * @throws IllegalArgumentException if any required parameter is {@code null}
 	 */
 	public static ErrorContext configError(Path filePath, SourceRange location,
 	                                      String sourceText, String message,
@@ -98,22 +99,21 @@ public record ErrorContext(
 			ErrorSeverity.ERROR,
 			"CONFIG-0001",
 			message,
-			suggestedFix
-		);
+			suggestedFix);
 	}
 
 	/**
 	 * Creates an ErrorContext for a formatting violation.
 	 *
-	 * @param filePath the file with the formatting violation, never null
-	 * @param location the location of the violation, never null
-	 * @param sourceText the source text being formatted, never null
-	 * @param ruleId the ID of the rule that detected the violation, never null
-	 * @param message the violation message, never null
-	 * @param severity the severity of the violation, never null
-	 * @param suggestedFix an optional suggested fix, may be null
-	 * @return a new ErrorContext for the formatting violation, never null
-	 * @throws IllegalArgumentException if any required parameter is null
+	 * @param filePath the file with the formatting violation, never {@code null}
+	 * @param location the location of the violation, never {@code null}
+	 * @param sourceText the source text being formatted, never {@code null}
+	 * @param ruleId the ID of the rule that detected the violation, never {@code null}
+	 * @param message the violation message, never {@code null}
+	 * @param severity the severity of the violation, never {@code null}
+	 * @param suggestedFix an optional suggested fix, may be {@code null}
+	 * @return a new ErrorContext for the formatting violation, never {@code null}
+	 * @throws IllegalArgumentException if any required parameter is {@code null}
 	 */
 	public static ErrorContext formatViolation(Path filePath, SourceRange location,
 	                                          String sourceText, String ruleId,
@@ -126,19 +126,18 @@ public record ErrorContext(
 			sourceText,
 			ErrorCategory.FORMAT,
 			severity,
-			"FORMAT-" + String.format("%04d", Math.abs(ruleId.hashCode() % 10000)),
+			"FORMAT-" + String.format("%04d", Math.abs(ruleId.hashCode() % 10_000)),
 			message,
-			suggestedFix
-		);
+			suggestedFix);
 	}
 
 	/**
 	 * Creates an ErrorContext for a system error.
 	 *
-	 * @param filePath the file being processed when the system error occurred, never null
-	 * @param message the system error message, never null
-	 * @return a new ErrorContext for the system error, never null
-	 * @throws IllegalArgumentException if any parameter is null
+	 * @param filePath the file being processed when the system error occurred, never {@code null}
+	 * @param message the system error message, never {@code null}
+	 * @return a new ErrorContext for the system error, never {@code null}
+	 * @throws IllegalArgumentException if any parameter is {@code null}
 	 */
 	public static ErrorContext systemError(Path filePath, String message)
 	{
@@ -150,24 +149,23 @@ public record ErrorContext(
 			ErrorSeverity.ERROR,
 			"SYSTEM-0001",
 			message,
-			null
-		);
+			null);
 	}
 
 	/**
 	 * Returns whether this error has a suggested fix available.
 	 *
-	 * @return true if a suggested fix is provided, false otherwise
+	 * @return {@code true} if a suggested fix is provided, {@code false} otherwise
 	 */
 	public boolean hasSuggestedFix()
 	{
-		return suggestedFix != null && !suggestedFix.trim().isEmpty();
+		return suggestedFix != null && !suggestedFix.isBlank();
 	}
 
 	/**
 	 * Returns whether this error should halt processing.
 	 *
-	 * @return true if processing should stop due to this error, false otherwise
+	 * @return {@code true} if processing should stop due to this error, {@code false} otherwise
 	 */
 	public boolean shouldHaltProcessing()
 	{
@@ -177,7 +175,7 @@ public record ErrorContext(
 	/**
 	 * Returns the line number where this error occurred.
 	 *
-	 * @return the 1-based line number
+	 * @return the {@code 1}-based line number
 	 */
 	public int getLineNumber()
 	{
@@ -187,7 +185,7 @@ public record ErrorContext(
 	/**
 	 * Returns the column number where this error occurred.
 	 *
-	 * @return the 1-based column number
+	 * @return the {@code 1}-based column number
 	 */
 	public int getColumnNumber()
 	{
@@ -197,7 +195,7 @@ public record ErrorContext(
 	/**
 	 * Returns a short identifier combining category and code for this error.
 	 *
-	 * @return a short error identifier in format "CATEGORY:CODE", never null
+	 * @return a short error identifier in format "CATEGORY:CODE", never {@code null}
 	 */
 	public String getShortId()
 	{

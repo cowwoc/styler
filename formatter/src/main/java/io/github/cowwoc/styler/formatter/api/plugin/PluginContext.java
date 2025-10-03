@@ -18,7 +18,7 @@ import org.slf4j.Logger;
  * <b>Performance:</b> Context operations are optimized for frequent access
  * during formatting operations.
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
  */
 public interface PluginContext

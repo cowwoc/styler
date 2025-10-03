@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class RecursionDepthTracker
 {
-	private static final Logger logger = LoggerFactory.getLogger(RecursionDepthTracker.class);
+	private final Logger log = LoggerFactory.getLogger(RecursionDepthTracker.class);
 
 	private final int maxDepth;
 	private final int warnDepth;
@@ -71,7 +71,7 @@ public final class RecursionDepthTracker
 	 *
 	 * @param location the location context (e.g., "ClassDeclaration", "MethodCall")
 	 * @throws RecursionDepthExceededException if depth exceeds maximum limit
-	 * @throws NullPointerException if location is null
+	 * @throws NullPointerException if location is {@code null}
 	 */
 	public void enter(String location)
 	{
@@ -81,13 +81,12 @@ public final class RecursionDepthTracker
 		}
 
 		DepthContext ctx = context.get();
-		ctx.depth++;
-		ctx.location = location;
+		++ctx.depth;
 
 		// Check warning threshold
 		if (ctx.depth == warnDepth)
 		{
-			logger.warn("Recursion depth approaching limit: {} levels at {}",
+			log.warn("Recursion depth approaching limit: {} levels at {}",
 				ctx.depth, location);
 		}
 
@@ -113,13 +112,13 @@ public final class RecursionDepthTracker
 		{
 			throw new IllegalStateException("exit() called without matching enter()");
 		}
-		ctx.depth--;
+		--ctx.depth;
 	}
 
 	/**
 	 * Returns the current recursion depth for the calling thread.
 	 *
-	 * @return current recursion depth (0 if not inside recursive traversal)
+	 * @return current recursion depth ({@code 0} if not inside recursive traversal)
 	 */
 	public int getCurrentDepth()
 	{
@@ -136,7 +135,6 @@ public final class RecursionDepthTracker
 	{
 		DepthContext ctx = context.get();
 		ctx.depth = 0;
-		ctx.location = null;
 	}
 
 	/**
@@ -150,11 +148,10 @@ public final class RecursionDepthTracker
 	}
 
 	/**
-	 * Thread-local context for tracking recursion depth and location.
+	 * Thread-local context for tracking recursion depth.
 	 */
 	private static final class DepthContext
 	{
-		private int depth = 0;
-		private String location = null;
+		private int depth;
 	}
 }

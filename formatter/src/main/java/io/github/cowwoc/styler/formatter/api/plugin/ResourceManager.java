@@ -16,7 +16,7 @@ import java.util.concurrent.TimeoutException;
  * <b>Security:</b> Resource limits are enforced automatically and cannot be
  * bypassed by plugins. Violations result in immediate plugin termination.
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
  */
 public interface ResourceManager
@@ -51,7 +51,7 @@ public interface ResourceManager
 	 * This provides a convenient way to check memory usage relative to the
 	 * configured limit without manual calculation.
 	 *
-	 * @return the memory usage percentage (0.0 to 100.0)
+	 * @return the memory usage percentage ({@code 0}.{@code 0} to 100.{@code 0})
 	 */
 	default double getMemoryUsagePercentage()
 	{

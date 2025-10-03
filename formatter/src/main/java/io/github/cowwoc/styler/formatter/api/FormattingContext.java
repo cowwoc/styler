@@ -1,6 +1,5 @@
 package io.github.cowwoc.styler.formatter.api;
 
-import io.github.cowwoc.styler.ast.ASTNode;
 import io.github.cowwoc.styler.ast.node.CompilationUnitNode;
 
 import java.nio.file.Path;
@@ -33,12 +32,12 @@ public final class FormattingContext
 	 * engine only. Formatting rules should receive context objects rather than
 	 * creating them.
 	 *
-	 * @param rootNode      the root AST node for the source file, never null
-	 * @param sourceText    the original source text, never null
-	 * @param filePath      the path to the source file being formatted, never null
-	 * @param configuration the rule configuration to use, never null
-	 * @param enabledRules  the set of enabled rule IDs, never null
-	 * @param metadata      additional metadata for rule processing, never null
+	 * @param rootNode      the root AST node for the source file, never {@code null}
+	 * @param sourceText    the original source text, never {@code null}
+	 * @param filePath      the path to the source file being formatted, never {@code null}
+	 * @param configuration the rule configuration to use, never {@code null}
+	 * @param enabledRules  the set of enabled rule IDs, never {@code null}
+	 * @param metadata      additional metadata for rule processing, never {@code null}
 	 * @throws SecurityException if the file path is outside allowed directories
 	 */
 	public FormattingContext(CompilationUnitNode rootNode,
@@ -72,7 +71,6 @@ public final class FormattingContext
 		// If normalization significantly changes the path structure, it may indicate
 		// an attempt to escape outside the intended directory
 		String originalPath = path.toString();
-		String normalizedPath = normalized.toString();
 
 		// Count directory traversal segments in original path
 		int traversalCount = 0;
@@ -81,7 +79,7 @@ public final class FormattingContext
 		{
 			if ("..".equals(segment))
 			{
-				traversalCount++;
+				++traversalCount;
 			}
 		}
 
@@ -103,7 +101,7 @@ public final class FormattingContext
 	 * Rules should traverse this tree using the visitor pattern to identify
 	 * formatting opportunities.
 	 *
-	 * @return the root AST node, never null
+	 * @return the root AST node, never {@code null}
 	 */
 		public CompilationUnitNode getRootNode()
 	{
@@ -117,7 +115,7 @@ public final class FormattingContext
 	 * Rules can use this for position-based operations and to understand the
 	 * original formatting context.
 	 *
-	 * @return the source text, never null
+	 * @return the source text, never {@code null}
 	 */
 		public String getSourceText()
 	{
@@ -130,7 +128,7 @@ public final class FormattingContext
 	 * <b>Security Note:</b> The path has been validated and normalized to prevent
 	 * directory traversal attacks. It is safe to use for logging and metadata.
 	 *
-	 * @return the validated file path, never null
+	 * @return the validated file path, never {@code null}
 	 */
 		public Path getFilePath()
 	{
@@ -143,7 +141,7 @@ public final class FormattingContext
 	 * The configuration object contains all user-specified parameters and
 	 * settings that control rule behavior.
 	 *
-	 * @return the rule configuration, never null
+	 * @return the rule configuration, never {@code null}
 	 */
 		public RuleConfiguration getConfiguration()
 	{
@@ -156,7 +154,7 @@ public final class FormattingContext
 	 * Rules can use this information to understand which other rules are active
 	 * and potentially coordinate their behavior to avoid conflicts.
 	 *
-	 * @return the set of enabled rule IDs, never null or modified after creation
+	 * @return the set of enabled rule IDs, never {@code null} or modified after creation
 	 */
 		public Set<String> getEnabledRules()
 	{
@@ -169,7 +167,7 @@ public final class FormattingContext
 	 * Metadata can include information like project settings, IDE context,
 	 * or other environmental factors that may influence formatting decisions.
 	 *
-	 * @return the metadata map, never null or modified after creation
+	 * @return the metadata map, never {@code null} or modified after creation
 	 */
 		public Map<String, Object> getMetadata()
 	{
@@ -179,8 +177,8 @@ public final class FormattingContext
 	/**
 	 * Checks if a specific rule is enabled in this context.
 	 *
-	 * @param ruleId the ID of the rule to check, never null
-	 * @return true if the rule is enabled, false otherwise
+	 * @param ruleId the ID of the rule to check, never {@code null}
+	 * @return {@code true} if the rule is enabled, {@code false} otherwise
 	 */
 	public boolean isRuleEnabled(String ruleId)
 	{
@@ -190,15 +188,19 @@ public final class FormattingContext
 	/**
 	 * Retrieves a metadata value with type safety.
 	 *
-	 * @param key  the metadata key, never null
-	 * @param type the expected type of the value, never null
+	 * @param key  the metadata key, never {@code null}
+	 * @param type the expected type of the value, never {@code null}
 	 * @param <T>  the type parameter
-	 * @return the metadata value cast to the specified type, or null if not present
+	 * @return the metadata value cast to the specified type, or {@code null} if not present
 	 * @throws ClassCastException if the value cannot be cast to the specified type
 	 */
 	public <T> T getMetadata(String key, Class<T> type)
 	{
 		Object value = metadata.get(key);
-		return value != null ? type.cast(value) : null;
+		if (value != null)
+		{
+			return type.cast(value);
+		}
+		return null;
 	}
 }

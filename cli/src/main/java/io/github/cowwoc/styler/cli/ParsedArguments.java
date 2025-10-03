@@ -32,8 +32,7 @@ public record ParsedArguments(
 	boolean helpRequested,
 	boolean versionRequested,
 	Command command,
-	Optional<Path> outputDirectory
-)
+	Optional<Path> outputDirectory)
 {
 	/**
 	 * Static factory method for creating ParsedArguments with raw parameter types.
@@ -48,18 +47,25 @@ public record ParsedArguments(
 		boolean helpRequested,
 		boolean versionRequested,
 		Command command,
-		Path outputDirectory
-	)
+		Path outputDirectory)
 	{
 		// Convert raw parameters to Optional types
 		Optional<Path> configPathOpt = Optional.ofNullable(configPath);
-		Optional<String> rulesFilterOpt = Optional.ofNullable(rulesFilter)
-			.filter(s -> !s.trim().isEmpty())
-			.map(String::trim);
+		Optional<String> rulesFilterOpt = Optional.ofNullable(rulesFilter).
+			filter(s -> !s.isBlank()).
+			map(String::trim);
 		Optional<Path> outputDirectoryOpt = Optional.ofNullable(outputDirectory);
 
 		// Validate defensive copying
-		List<Path> inputFilesCopy = (inputFiles == null) ? List.of() : List.copyOf(inputFiles);
+		List<Path> inputFilesCopy;
+		if (inputFiles == null)
+			{
+			inputFilesCopy = List.of();
+			}
+		else
+			{
+			inputFilesCopy = List.copyOf(inputFiles);
+			}
 
 		// Validate that verbose and quiet are not both enabled
 		if (verbose && quiet)
@@ -68,7 +74,15 @@ public record ParsedArguments(
 		}
 
 		// Ensure command is specified
-		Command commandSafe = (command == null) ? Command.HELP : command;
+		Command commandSafe;
+		if (command == null)
+			{
+			commandSafe = Command.HELP;
+			}
+		else
+			{
+			commandSafe = command;
+			}
 
 		return new ParsedArguments(
 			inputFilesCopy,
@@ -80,23 +94,22 @@ public record ParsedArguments(
 			helpRequested,
 			versionRequested,
 			commandSafe,
-			outputDirectoryOpt
-		);
+			outputDirectoryOpt);
 	}
 	/**
 	 * Enumeration of available commands.
 	 */
 	public enum Command
 	{
-		/** Format Java source files */
+		/** Format Java source files. */
 		FORMAT,
-		/** Check formatting without making changes */
+		/** Check formatting without making changes. */
 		CHECK,
-		/** Show or validate configuration */
+		/** Show or validate configuration. */
 		CONFIG,
-		/** Show help information */
+		/** Show help information. */
 		HELP,
-		/** Show version information */
+		/** Show version information. */
 		VERSION
 	}
 
@@ -104,7 +117,7 @@ public record ParsedArguments(
 	/**
 	 * Checks if any informational request was made (help or version).
 	 *
-	 * @return true if help or version was requested
+	 * @return {@code true} if help or version was requested
 	 */
 	public boolean isInformationalRequest()
 	{
@@ -115,7 +128,7 @@ public record ParsedArguments(
 	/**
 	 * Checks if processing mode requires input files.
 	 *
-	 * @return true if the command requires input files to be specified
+	 * @return {@code true} if the command requires input files to be specified
 	 */
 	public boolean requiresInputFiles()
 	{
@@ -133,14 +146,11 @@ public record ParsedArguments(
 		{
 			return LogLevel.VERBOSE;
 		}
-		else if (quiet)
+		if (quiet)
 		{
 			return LogLevel.QUIET;
 		}
-		else
-		{
-			return LogLevel.NORMAL;
-		}
+		return LogLevel.NORMAL;
 	}
 
 	/**
@@ -148,11 +158,11 @@ public record ParsedArguments(
 	 */
 	public enum LogLevel
 	{
-		/** Only error messages */
+		/** Only error messages. */
 		QUIET,
-		/** Normal informational messages */
+		/** Normal informational messages. */
 		NORMAL,
-		/** Detailed debug information */
+		/** Detailed debug information. */
 		VERBOSE
 	}
 }

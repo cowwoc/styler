@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.cli.output;
 
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -38,8 +40,8 @@ public class HumanOutputFormatter implements OutputFormatter
 
 		if (!results.violations().isEmpty())
 		{
-			output.append(formatViolationsSection(results.violations()));
-			output.append("\n");
+			output.append(formatViolationsSection(results.violations())).
+				append('\n');
 		}
 
 		output.append(formatSummary(results.summary()));
@@ -53,30 +55,30 @@ public class HumanOutputFormatter implements OutputFormatter
 		StringBuilder sb = new StringBuilder();
 
 		// File path with line/column
-		sb.append(formatPath(violation.filePath()));
-		sb.append(":");
-		sb.append(violation.line());
-		sb.append(":");
-		sb.append(violation.column());
+		sb.append(formatPath(violation.filePath())).
+			append(':').
+			append(violation.line()).
+			append(':').
+			append(violation.column());
 
 		// Severity indicator
-		sb.append(" ");
-		sb.append(formatSeverity(violation.severity()));
+		sb.append(' ').
+			append(formatSeverity(violation.severity()));
 
 		// Rule ID
-		sb.append(" [");
-		sb.append(violation.ruleId());
-		sb.append("]");
+		sb.append(" [").
+			append(violation.ruleId()).
+			append(']');
 
 		// Message
-		sb.append(" ");
-		sb.append(violation.message());
+		sb.append(' ').
+			append(violation.message());
 
 		// Suggested fix (if available)
 		if (violation.suggestedFix() != null && !violation.suggestedFix().isEmpty())
 		{
-			sb.append("\n  ");
-			sb.append(colorize("Fix: " + violation.suggestedFix(), AnsiColor.CYAN));
+			sb.append("\n  ").
+				append(colorize("Fix: " + violation.suggestedFix(), AnsiColor.CYAN));
 		}
 
 		return sb.toString();
@@ -85,38 +87,38 @@ public class HumanOutputFormatter implements OutputFormatter
 	@Override
 	public String formatSummary(OperationSummary summary)
 	{
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(1024);
 
-		sb.append(colorize("=== Summary ===", AnsiColor.BOLD));
-		sb.append("\n");
+		sb.append(colorize("=== Summary ===", AnsiColor.BOLD)).
+			append('\n');
 
 		// Operation type
-		sb.append("Operation: ").append(summary.operationType()).append("\n");
+		sb.append("Operation: ").append(summary.operationType()).append('\n');
 
 		// File counts
-		sb.append("Files processed: ").append(summary.processedFiles())
-			.append("/").append(summary.totalFiles()).append("\n");
+		sb.append("Files processed: ").append(summary.processedFiles()).
+			append('/').append(summary.totalFiles()).append('\n');
 
 		// Violation count with color coding
 		if (summary.violationCount() > 0)
 		{
 			String violationText = summary.violationCount() + " violations found";
-			sb.append(colorize(violationText, AnsiColor.YELLOW)).append("\n");
+			sb.append(colorize(violationText, AnsiColor.YELLOW)).append('\n');
 		}
 		else
 		{
-			sb.append(colorize("No violations found", AnsiColor.GREEN)).append("\n");
+			sb.append(colorize("No violations found", AnsiColor.GREEN)).append('\n');
 		}
 
 		// Error count
 		if (summary.errorCount() > 0)
 		{
 			String errorText = summary.errorCount() + " errors occurred";
-			sb.append(colorize(errorText, AnsiColor.RED)).append("\n");
+			sb.append(colorize(errorText, AnsiColor.RED)).append('\n');
 		}
 
 		// Processing time
-		sb.append("Processing time: ").append(formatTime(summary.processingTimeMs())).append("\n");
+		sb.append("Processing time: ").append(formatTime(summary.processingTimeMs())).append('\n');
 
 		return sb.toString();
 	}
@@ -129,28 +131,31 @@ public class HumanOutputFormatter implements OutputFormatter
 
 	/**
 	 * Formats the violations section with grouping by file.
+	 *
+	 * @param violations the list of violations to format
+	 * @return the formatted violations section
 	 */
-	private String formatViolationsSection(java.util.List<FormattingViolation> violations)
+	private String formatViolationsSection(List<FormattingViolation> violations)
 	{
 		StringBuilder sb = new StringBuilder();
 
 		// Group violations by file
-		var violationsByFile = violations.stream()
-			.collect(Collectors.groupingBy(FormattingViolation::filePath));
+		Map<String, List<FormattingViolation>> violationsByFile = violations.stream().
+			collect(Collectors.groupingBy(FormattingViolation::filePath));
 
-		for (var entry : violationsByFile.entrySet())
+		for (Map.Entry<String, List<FormattingViolation>> entry : violationsByFile.entrySet())
 		{
 			String filePath = entry.getKey();
-			var fileViolations = entry.getValue();
+			List<FormattingViolation> fileViolations = entry.getValue();
 
-			sb.append(colorize(filePath, AnsiColor.BOLD)).append("\n");
+			sb.append(colorize(filePath, AnsiColor.BOLD)).append('\n');
 
 			for (FormattingViolation violation : fileViolations)
 			{
-				sb.append("  ").append(formatViolationLine(violation)).append("\n");
+				sb.append("  ").append(formatViolationLine(violation)).append('\n');
 			}
 
-			sb.append("\n");
+			sb.append('\n');
 		}
 
 		return sb.toString();
@@ -158,16 +163,19 @@ public class HumanOutputFormatter implements OutputFormatter
 
 	/**
 	 * Formats a single violation line (without file path).
+	 *
+	 * @param violation the violation to format
+	 * @return the formatted violation line
 	 */
 	private String formatViolationLine(FormattingViolation violation)
 	{
 		StringBuilder sb = new StringBuilder();
 
 		// Line:column
-		sb.append(violation.line()).append(":").append(violation.column());
+		sb.append(violation.line()).append(':').append(violation.column());
 
 		// Severity
-		sb.append(" ").append(formatSeverity(violation.severity()));
+		sb.append(' ').append(formatSeverity(violation.severity()));
 
 		// Rule and message
 		sb.append(" [").append(violation.ruleId()).append("] ");
@@ -178,6 +186,9 @@ public class HumanOutputFormatter implements OutputFormatter
 
 	/**
 	 * Formats file path with appropriate styling.
+	 *
+	 * @param path the file path to format
+	 * @return the formatted file path with color styling
 	 */
 	private String formatPath(String path)
 	{
@@ -186,6 +197,9 @@ public class HumanOutputFormatter implements OutputFormatter
 
 	/**
 	 * Formats severity level with color coding.
+	 *
+	 * @param severity the severity level to format
+	 * @return the formatted severity with color codes
 	 */
 	private String formatSeverity(SeverityLevel severity)
 	{
@@ -200,6 +214,9 @@ public class HumanOutputFormatter implements OutputFormatter
 
 	/**
 	 * Formats processing time in human-readable form.
+	 *
+	 * @param milliseconds the time in milliseconds to format
+	 * @return the formatted time string (e.g., "{@code 1}.5s", "2m 30s")
 	 */
 	private String formatTime(long milliseconds)
 	{
@@ -207,20 +224,21 @@ public class HumanOutputFormatter implements OutputFormatter
 		{
 			return milliseconds + "ms";
 		}
-		else if (milliseconds < 60000)
+		if (milliseconds < 60_000)
 		{
 			return String.format("%.1fs", milliseconds / 1000.0);
 		}
-		else
-		{
-			long minutes = milliseconds / 60000;
-			long seconds = (milliseconds % 60000) / 1000;
-			return String.format("%dm %ds", minutes, seconds);
-		}
+		long minutes = milliseconds / 60_000;
+		long seconds = (milliseconds % 60_000) / 1000;
+		return String.format("%dm %ds", minutes, seconds);
 	}
 
 	/**
 	 * Applies color formatting if colors are enabled.
+	 *
+	 * @param text the text to colorize
+	 * @param color the ANSI color to apply
+	 * @return the colorized text, or original text if colors are disabled
 	 */
 	private String colorize(String text, AnsiColor color)
 	{
@@ -233,6 +251,8 @@ public class HumanOutputFormatter implements OutputFormatter
 
 	/**
 	 * Detects if the current terminal supports colors.
+	 *
+	 * @return {@code true} if the terminal supports colors, {@code false} otherwise
 	 */
 	private static boolean isColorTerminal()
 	{

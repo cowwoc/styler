@@ -9,47 +9,65 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * @param line the line number (1-based)
  * @param column the column number (1-based)
  */
-public record SourcePosition(int line, int column) implements Comparable<SourcePosition> {
-	public SourcePosition {
+public record SourcePosition(int line, int column) implements Comparable<SourcePosition>
+	{
+	/**
+	 * Compact constructor validating {@code line} and {@code column} are positive.
+	 *
+	 * @throws IllegalArgumentException if {@code line} or {@code column} is not positive
+	 */
+	public SourcePosition
+		{
 		requireThat(line, "line").isPositive();
 		requireThat(column, "column").isPositive();
 	}
 
 	/**
 	 * Creates a source position representing the beginning of a file.
-	 * @return a SourcePosition at line 1, column 1
+	 *
+	 * @return a {@code SourcePosition} at line 1, column 1
 	 */
-	public static SourcePosition start() {
+	public static SourcePosition start()
+		{
 		return new SourcePosition(1, 1);
 	}
 
 	/**
 	 * Advances this position by the specified number of columns.
+	 *
 	 * @param columns the number of columns to advance
-	 * @return a new SourcePosition with advanced column
+	 * @return a new {@code SourcePosition} with advanced column
+	 * @throws IllegalArgumentException if {@code columns} is negative
 	 */
-	public SourcePosition advanceColumn(int columns) {
+	public SourcePosition advanceColumn(int columns)
+		{
 		requireThat(columns, "columns").isNotNegative();
 		return new SourcePosition(line, column + columns);
 	}
 
 	/**
 	 * Advances this position to the next line.
-	 * @return a new SourcePosition at the beginning of the next line
+	 *
+	 * @return a new {@code SourcePosition} at the beginning of the next line
 	 */
-	public SourcePosition nextLine() {
+	public SourcePosition nextLine()
+		{
 		return new SourcePosition(line + 1, 1);
 	}
 
 	/**
 	 * Compares this source position with another based on line and column.
+	 *
 	 * @param other the other source position to compare with
-	 * @return negative if this position comes before other, positive if after, zero if equal
+	 * @return negative if this position comes before {@code other}, positive if after, zero if equal
 	 */
 	@Override
-	public int compareTo(SourcePosition other) {
+	@SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable") // Records auto-generate equals/hashCode
+	public int compareTo(SourcePosition other)
+		{
 		int lineComparison = Integer.compare(this.line, other.line);
-		if (lineComparison != 0) {
+		if (lineComparison != 0)
+			{
 			return lineComparison;
 		}
 		return Integer.compare(this.column, other.column);

@@ -13,11 +13,12 @@ import java.nio.file.Path;
  */
 public final class TempFileLimitExceededException extends SecurityException
 {
+	private static final long serialVersionUID = 1L;
 	private final int currentFiles;
 	private final int maxFiles;
 	private final long currentDiskBytes;
 	private final long maxDiskBytes;
-	private final Path tempDirectory;
+	private final transient Path tempDirectory;
 
 	/**
 	 * Creates a new temporary file limit exceeded exception for file count.
@@ -26,7 +27,7 @@ public final class TempFileLimitExceededException extends SecurityException
 	 * @param maxFiles maximum allowed temporary files
 	 * @param tempDirectory the temporary directory
 	 * @throws IllegalArgumentException if currentFiles or maxFiles are not positive
-	 * @throws NullPointerException if tempDirectory is null
+	 * @throws NullPointerException if tempDirectory is {@code null}
 	 */
 	public TempFileLimitExceededException(int currentFiles, int maxFiles, Path tempDirectory)
 	{
@@ -57,7 +58,7 @@ public final class TempFileLimitExceededException extends SecurityException
 	 * @param maxDiskBytes maximum allowed temporary disk usage in bytes
 	 * @param tempDirectory the temporary directory
 	 * @throws IllegalArgumentException if currentDiskBytes or maxDiskBytes are not positive
-	 * @throws NullPointerException if tempDirectory is null
+	 * @throws NullPointerException if tempDirectory is {@code null}
 	 */
 	public TempFileLimitExceededException(long currentDiskBytes, long maxDiskBytes, Path tempDirectory)
 	{
@@ -84,7 +85,7 @@ public final class TempFileLimitExceededException extends SecurityException
 	/**
 	 * Returns the current number of temporary files.
 	 *
-	 * @return current temporary file count (0 if limit was disk usage)
+	 * @return current temporary file count ({@code 0} if limit was disk usage)
 	 */
 	public int getCurrentFiles()
 	{
@@ -94,7 +95,7 @@ public final class TempFileLimitExceededException extends SecurityException
 	/**
 	 * Returns the maximum allowed temporary files.
 	 *
-	 * @return maximum temporary files (0 if limit was disk usage)
+	 * @return maximum temporary files ({@code 0} if limit was disk usage)
 	 */
 	public int getMaxFiles()
 	{
@@ -104,7 +105,7 @@ public final class TempFileLimitExceededException extends SecurityException
 	/**
 	 * Returns the current temporary disk usage in bytes.
 	 *
-	 * @return current disk usage (0 if limit was file count)
+	 * @return current disk usage ({@code 0} if limit was file count)
 	 */
 	public long getCurrentDiskBytes()
 	{
@@ -114,7 +115,7 @@ public final class TempFileLimitExceededException extends SecurityException
 	/**
 	 * Returns the maximum allowed temporary disk usage in bytes.
 	 *
-	 * @return maximum disk usage (0 if limit was file count)
+	 * @return maximum disk usage ({@code 0} if limit was file count)
 	 */
 	public long getMaxDiskBytes()
 	{
@@ -133,6 +134,11 @@ public final class TempFileLimitExceededException extends SecurityException
 
 	/**
 	 * Formats an error message for file count limit.
+	 *
+	 * @param currentFiles the current number of temporary files
+	 * @param maxFiles the maximum allowed number of temporary files
+	 * @param tempDirectory the temporary directory path
+	 * @return the formatted error message
 	 */
 	private static String formatFileCountMessage(int currentFiles, int maxFiles, Path tempDirectory)
 	{
@@ -149,12 +155,16 @@ public final class TempFileLimitExceededException extends SecurityException
 			"  - Increasing limit in configuration",
 			tempDirectory,
 			currentFiles,
-			maxFiles
-		);
+			maxFiles);
 	}
 
 	/**
 	 * Formats an error message for disk usage limit.
+	 *
+	 * @param currentBytes the current disk usage in bytes
+	 * @param maxBytes the maximum allowed disk usage in bytes
+	 * @param tempDirectory the temporary directory path
+	 * @return the formatted error message
 	 */
 	private static String formatDiskUsageMessage(long currentBytes, long maxBytes, Path tempDirectory)
 	{
@@ -171,7 +181,6 @@ public final class TempFileLimitExceededException extends SecurityException
 			"  - Increasing limit in configuration",
 			tempDirectory,
 			currentBytes / 1024.0 / 1024.0,
-			maxBytes / 1024.0 / 1024.0
-		);
+			maxBytes / 1024.0 / 1024.0);
 	}
 }

@@ -16,11 +16,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Unit tests for ConfigSearchPath class.
  * Tests search path building, platform-specific path resolution, and file discovery with thread-safe design.
  */
+@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public class ConfigSearchPathTest
 {
 	private ConfigSearchPath searchPath;
 	private Path tempDir;
 
+	/**
+	 * Sets up fresh ConfigSearchPath instance and temp directory for each test.
+	 */
 	@BeforeMethod
 	public void setUp() throws IOException
 	{
@@ -29,6 +33,9 @@ public class ConfigSearchPathTest
 		tempDir = Files.createTempDirectory("styler-search-test-");
 	}
 
+	/**
+	 * Verifies that search path from single directory includes the directory and platform-specific paths.
+	 */
 	@Test
 	public void buildSearchPath_fromSingleDirectory_includesDirectoryAndPlatformPaths()
 	{
@@ -40,10 +47,15 @@ public class ConfigSearchPathTest
 		assertThat(result.get(0)).isEqualTo(tempDir.toAbsolutePath().normalize());
 	}
 
+	/**
+	 * Verifies that search path traverses parent directories from nested structure.
+	 */
 	@Test
 	public void buildSearchPath_traversesParentDirectories() throws IOException
 	{
-		// Given: nested directory structure
+		// Given: nested directory structure with git repository boundary
+		Path gitDir = tempDir.resolve(".git");
+		Files.createDirectories(gitDir);
 		Path childDir = tempDir.resolve("child");
 		Path grandchildDir = childDir.resolve("grandchild");
 		Files.createDirectories(grandchildDir);
@@ -51,13 +63,16 @@ public class ConfigSearchPathTest
 		// When: building search path from grandchild
 		List<Path> result = searchPath.buildSearchPath(grandchildDir);
 
-		// Then: includes grandchild, child, and temp directory
+		// Then: includes grandchild, child, and temp directory (stops at git boundary)
 		assertThat(result).hasSize(3);
 		assertThat(result.get(0)).isEqualTo(grandchildDir.toAbsolutePath().normalize());
 		assertThat(result.get(1)).isEqualTo(childDir.toAbsolutePath().normalize());
 		assertThat(result.get(2)).isEqualTo(tempDir.toAbsolutePath().normalize());
 	}
 
+	/**
+	 * Verifies that search path stops at git repository boundary.
+	 */
 	@Test
 	public void buildSearchPath_stopsAtGitBoundary() throws IOException
 	{
@@ -76,15 +91,21 @@ public class ConfigSearchPathTest
 		assertThat(result).doesNotContain(tempDir.getParent());
 	}
 
+	/**
+	 * Verifies that null start directory throws NullPointerException.
+	 */
 	@Test
 	public void buildSearchPath_withNullStartDir_throwsNullPointerException()
 	{
 		// When/Then: null start directory throws exception
-		assertThatThrownBy(() -> searchPath.buildSearchPath(null))
-			.isInstanceOf(NullPointerException.class)
-			.hasMessageContaining("startDir cannot be null");
+		assertThatThrownBy(() -> searchPath.buildSearchPath(null)).
+			isInstanceOf(NullPointerException.class).
+			hasMessageContaining("startDir cannot be null");
 	}
 
+	/**
+	 * Verifies that user config path returns Optional (platform-dependent).
+	 */
 	@Test
 	public void getUserConfigPath_returnsOptionalPath()
 	{
@@ -96,6 +117,9 @@ public class ConfigSearchPathTest
 		// Note: actual path depends on platform and user home directory
 	}
 
+	/**
+	 * Verifies that global config path returns Optional (platform-dependent).
+	 */
 	@Test
 	public void getGlobalConfigPath_returnsOptionalPath()
 	{
@@ -107,6 +131,9 @@ public class ConfigSearchPathTest
 		// Note: actual path depends on platform and system configuration
 	}
 
+	/**
+	 * Verifies that config discovery finds TOML file.
+	 */
 	@Test
 	public void discoverConfigFiles_withTomlFile_findsTomlFile() throws IOException
 	{
@@ -124,6 +151,9 @@ public class ConfigSearchPathTest
 		assertThat(result.get(0)).isEqualTo(configFile);
 	}
 
+	/**
+	 * Verifies that config discovery finds YAML file.
+	 */
 	@Test
 	public void discoverConfigFiles_withYamlFile_findsYamlFile() throws IOException
 	{
@@ -141,6 +171,9 @@ public class ConfigSearchPathTest
 		assertThat(result.get(0)).isEqualTo(configFile);
 	}
 
+	/**
+	 * Verifies that config discovery prefers TOML over YAML when both formats exist.
+	 */
 	@Test
 	public void discoverConfigFiles_withBothFormats_prefersToml() throws IOException
 	{
@@ -160,6 +193,9 @@ public class ConfigSearchPathTest
 		assertThat(result.get(0)).isEqualTo(tomlFile);
 	}
 
+	/**
+	 * Verifies that config discovery respects directory precedence when files exist in multiple directories.
+	 */
 	@Test
 	public void discoverConfigFiles_inMultipleDirectories_respectsPrecedence() throws IOException
 	{
@@ -185,6 +221,9 @@ public class ConfigSearchPathTest
 		assertThat(result.get(1)).isEqualTo(config2);
 	}
 
+	/**
+	 * Verifies that config discovery returns empty list when no config files exist.
+	 */
 	@Test
 	public void discoverConfigFiles_withNoConfigFiles_returnsEmptyList()
 	{
@@ -198,6 +237,9 @@ public class ConfigSearchPathTest
 		assertThat(result).isEmpty();
 	}
 
+	/**
+	 * Verifies that config discovery handles unreadable files gracefully.
+	 */
 	@Test
 	public void discoverConfigFiles_withUnreadableFile_ignoresFile() throws IOException
 	{
@@ -217,12 +259,15 @@ public class ConfigSearchPathTest
 		assertThat(result).isNotNull();
 	}
 
+	/**
+	 * Verifies that null search paths throws NullPointerException.
+	 */
 	@Test
 	public void discoverConfigFiles_withNullSearchPaths_throwsNullPointerException()
 	{
 		// When/Then: null search paths throws exception
-		assertThatThrownBy(() -> searchPath.discoverConfigFiles(null))
-			.isInstanceOf(NullPointerException.class)
-			.hasMessageContaining("searchPaths cannot be null");
+		assertThatThrownBy(() -> searchPath.discoverConfigFiles(null)).
+			isInstanceOf(NullPointerException.class).
+			hasMessageContaining("searchPaths cannot be null");
 	}
 }

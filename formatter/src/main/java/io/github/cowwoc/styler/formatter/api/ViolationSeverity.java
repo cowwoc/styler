@@ -38,8 +38,8 @@ public enum ViolationSeverity
 	/**
 	 * Returns whether this severity level is at least as severe as another level.
 	 *
-	 * @param other the severity level to compare with, never null
-	 * @return true if this severity is at least as severe as the other
+	 * @param other the severity level to compare with, never {@code null}
+	 * @return {@code true} if this severity is at least as severe as the other
 	 */
 	public boolean isAtLeast(ViolationSeverity other)
 	{
@@ -49,7 +49,7 @@ public enum ViolationSeverity
 	/**
 	 * Returns whether this is an error level severity.
 	 *
-	 * @return true if this is ERROR severity, false otherwise
+	 * @return {@code true} if this is ERROR severity, {@code false} otherwise
 	 */
 	public boolean isError()
 	{
@@ -59,7 +59,7 @@ public enum ViolationSeverity
 	/**
 	 * Returns whether this is a warning level severity.
 	 *
-	 * @return true if this is WARNING severity, false otherwise
+	 * @return {@code true} if this is WARNING severity, {@code false} otherwise
 	 */
 	public boolean isWarning()
 	{
@@ -69,7 +69,7 @@ public enum ViolationSeverity
 	/**
 	 * Returns whether this is an info level severity.
 	 *
-	 * @return true if this is INFO severity, false otherwise
+	 * @return {@code true} if this is INFO severity, {@code false} otherwise
 	 */
 	public boolean isInfo()
 	{

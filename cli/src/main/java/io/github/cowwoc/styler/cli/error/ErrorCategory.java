@@ -60,7 +60,7 @@ public enum ErrorCategory
 	/**
 	 * Returns the human-readable display name for this error category.
 	 *
-	 * @return the display name used in error messages, never null
+	 * @return the display name used in error messages, never {@code null}
 	 */
 	public String getDisplayName()
 	{
@@ -73,7 +73,7 @@ public enum ErrorCategory
 	 * Recoverable errors allow processing to continue with other files or rules,
 	 * while non-recoverable errors typically halt processing entirely.
 	 *
-	 * @return true if processing can continue despite this error type, false otherwise
+	 * @return {@code true} if processing can continue despite this error type, {@code false} otherwise
 	 */
 	public boolean isRecoverable()
 	{
@@ -87,7 +87,7 @@ public enum ErrorCategory
 	/**
 	 * Returns the default severity level for this error category.
 	 *
-	 * @return the typical severity for errors in this category, never null
+	 * @return the typical severity for errors in this category, never {@code null}
 	 */
 	public ErrorSeverity getDefaultSeverity()
 	{

@@ -5,8 +5,6 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 /**
  * Utility class for processing files and directories with pattern matching.
@@ -15,9 +13,18 @@ import java.util.regex.Pattern;
  * applying include/exclude patterns, and traversing directory structures
  * safely and efficiently.
  */
-public class FileProcessor
+@SuppressWarnings("PMD.SystemPrintln") // CLI utility: System.out/err required for user output
+public final class FileProcessor
 {
 	private static final String DEFAULT_JAVA_PATTERN = "**/*.java";
+
+	/**
+	 * Private constructor to prevent instantiation of utility class.
+	 */
+	private FileProcessor()
+	{
+		throw new AssertionError("Utility class - do not instantiate");
+	}
 
 	/**
 	 * Discovers Java source files from the given input paths.
@@ -35,11 +42,25 @@ public class FileProcessor
 		List<Path> javaFiles = new ArrayList<>();
 
 		// Use default pattern if no includes specified
-		List<String> includes = (includePatterns != null && !includePatterns.isEmpty())
-			? includePatterns
-			: List.of(DEFAULT_JAVA_PATTERN);
+		List<String> includes;
+		if (includePatterns != null && !includePatterns.isEmpty())
+		{
+			includes = includePatterns;
+		}
+		else
+		{
+			includes = List.of(DEFAULT_JAVA_PATTERN);
+		}
 
-		List<String> excludes = excludePatterns != null ? excludePatterns : List.of();
+		List<String> excludes;
+		if (excludePatterns != null)
+		{
+			excludes = excludePatterns;
+		}
+		else
+		{
+			excludes = List.of();
+		}
 
 		// Create path matchers for patterns
 		List<PathMatcher> includeMatchers = createPathMatchers(includes);
@@ -80,9 +101,9 @@ public class FileProcessor
 	private static List<PathMatcher> createPathMatchers(List<String> patterns)
 	{
 		FileSystem fileSystem = FileSystems.getDefault();
-		return patterns.stream()
-			.map(pattern -> fileSystem.getPathMatcher("glob:" + pattern))
-			.toList();
+		return patterns.stream().
+			map(pattern -> fileSystem.getPathMatcher("glob:" + pattern)).
+			toList();
 	}
 
 	/**
@@ -100,7 +121,7 @@ public class FileProcessor
 	{
 		List<Path> matchingFiles = new ArrayList<>();
 
-		Files.walkFileTree(directory, new SimpleFileVisitor<Path>()
+		Files.walkFileTree(directory, new SimpleFileVisitor<>()
 		{
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
@@ -130,7 +151,7 @@ public class FileProcessor
 	 * @param filePath the file path to check
 	 * @param includeMatchers patterns for files to include
 	 * @param excludeMatchers patterns for files to exclude
-	 * @return true if the file should be included
+	 * @return {@code true} if the file should be included
 	 */
 	private static boolean matchesPatterns(Path filePath,
 	                                       List<PathMatcher> includeMatchers,
@@ -191,7 +212,7 @@ public class FileProcessor
 	 * Checks if a file appears to be a Java source file based on content.
 	 *
 	 * @param filePath the file to check
-	 * @return true if the file appears to be Java source
+	 * @return {@code true} if the file appears to be Java source
 	 * @throws IOException if file reading fails
 	 */
 	public static boolean isJavaSourceFile(Path filePath) throws IOException
@@ -211,11 +232,11 @@ public class FileProcessor
 		// Basic content validation (check for Java keywords in first few lines)
 		try
 		{
-			List<String> firstLines = Files.readAllLines(filePath).stream()
-				.limit(10)
-				.toList();
+			List<String> firstLines = Files.readAllLines(filePath).stream().
+				limit(10).
+				toList();
 
-			String content = String.join(" ", firstLines).toLowerCase();
+			String content = String.join(" ", firstLines).toLowerCase(java.util.Locale.ROOT);
 
 			// Look for common Java keywords/patterns
 			return content.contains("package ") ||

@@ -48,9 +48,9 @@ public final class FileValidator
 	 * Constructs a new file validator with the specified limits.
 	 *
 	 * @param maxFileSizeBytes maximum file size in bytes, must be positive
-	 * @param allowedExtensions set of allowed file extensions (e.g., ".java"), must not be null or empty
+	 * @param allowedExtensions set of allowed file extensions (e.g., ".java"), must not be {@code null} or empty
 	 * @throws IllegalArgumentException if maxFileSizeBytes is not positive
-	 * @throws NullPointerException if allowedExtensions is null
+	 * @throws NullPointerException if allowedExtensions is {@code null}
 	 * @throws IllegalArgumentException if allowedExtensions is empty
 	 */
 	public FileValidator(long maxFileSizeBytes, Set<String> allowedExtensions)
@@ -81,12 +81,12 @@ public final class FileValidator
 	 *   <li>File is a regular file (not directory or special file)</li>
 	 * </ul>
 	 *
-	 * @param filePath the path to validate, must not be null
+	 * @param filePath the path to validate, must not be {@code null}
 	 * @throws SecurityException if file does not exist or is not readable
 	 * @throws FileSizeExceededException if file exceeds size limit
 	 * @throws FileTypeNotAllowedException if file extension not allowed
 	 * @throws IOException if file metadata cannot be accessed
-	 * @throws NullPointerException if filePath is null
+	 * @throws NullPointerException if filePath is {@code null}
 	 */
 	public void validateFile(Path filePath) throws SecurityException, IOException
 	{

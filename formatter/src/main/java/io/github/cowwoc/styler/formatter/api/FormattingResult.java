@@ -21,9 +21,9 @@ public final class FormattingResult
 	/**
 	 * Creates a new formatting result.
 	 *
-	 * @param edits      the list of text edits to apply, never null
-	 * @param violations the list of formatting violations found, never null
-	 * @param metrics    performance and diagnostic metrics, never null
+	 * @param edits      the list of text edits to apply, never {@code null}
+	 * @param violations the list of formatting violations found, never {@code null}
+	 * @param metrics    performance and diagnostic metrics, never {@code null}
 	 */
 	public FormattingResult(List<TextEdit> edits,
 	                        List<FormattingViolation> violations,
@@ -37,7 +37,7 @@ public final class FormattingResult
 	/**
 	 * Creates an empty formatting result with no edits or violations.
 	 *
-	 * @return an empty formatting result, never null
+	 * @return an empty formatting result, never {@code null}
 	 */
 		public static FormattingResult empty()
 	{
@@ -47,8 +47,8 @@ public final class FormattingResult
 	/**
 	 * Creates a formatting result with only text edits.
 	 *
-	 * @param edits the list of text edits, never null
-	 * @return a formatting result with the specified edits, never null
+	 * @param edits the list of text edits, never {@code null}
+	 * @return a formatting result with the specified edits, never {@code null}
 	 */
 		public static FormattingResult withEdits(List<TextEdit> edits)
 	{
@@ -58,8 +58,8 @@ public final class FormattingResult
 	/**
 	 * Creates a formatting result with only violations (no edits).
 	 *
-	 * @param violations the list of formatting violations, never null
-	 * @return a formatting result with the specified violations, never null
+	 * @param violations the list of formatting violations, never {@code null}
+	 * @return a formatting result with the specified violations, never {@code null}
 	 */
 		public static FormattingResult withViolations(List<FormattingViolation> violations)
 	{
@@ -73,7 +73,7 @@ public final class FormattingResult
 	 * They are ordered by position in the source file and should be applied
 	 * in reverse order to maintain correct positions.
 	 *
-	 * @return the list of text edits, never null but may be empty
+	 * @return the list of text edits, never {@code null} but may be empty
 	 */
 		public List<TextEdit> getEdits()
 	{
@@ -86,7 +86,7 @@ public final class FormattingResult
 	 * Violations represent issues that were detected but could not be
 	 * automatically fixed, or rules configured to only report issues.
 	 *
-	 * @return the list of violations, never null but may be empty
+	 * @return the list of violations, never {@code null} but may be empty
 	 */
 		public List<FormattingViolation> getViolations()
 	{
@@ -100,7 +100,7 @@ public final class FormattingResult
 	 * processed, or other diagnostic information useful for monitoring and
 	 * optimization.
 	 *
-	 * @return the metrics map, never null but may be empty
+	 * @return the metrics map, never {@code null} but may be empty
 	 */
 		public Map<String, Object> getMetrics()
 	{
@@ -110,7 +110,7 @@ public final class FormattingResult
 	/**
 	 * Returns whether this result contains any text edits.
 	 *
-	 * @return true if there are text edits, false otherwise
+	 * @return {@code true} if there are text edits, {@code false} otherwise
 	 */
 	public boolean hasEdits()
 	{
@@ -120,7 +120,7 @@ public final class FormattingResult
 	/**
 	 * Returns whether this result contains any violations.
 	 *
-	 * @return true if there are violations, false otherwise
+	 * @return {@code true} if there are violations, {@code false} otherwise
 	 */
 	public boolean hasViolations()
 	{
@@ -130,7 +130,7 @@ public final class FormattingResult
 	/**
 	 * Returns whether this result is empty (no edits, violations, or metrics).
 	 *
-	 * @return true if the result is empty, false otherwise
+	 * @return {@code true} if the result is empty, {@code false} otherwise
 	 */
 	public boolean isEmpty()
 	{
@@ -140,16 +140,20 @@ public final class FormattingResult
 	/**
 	 * Retrieves a metric value with type safety.
 	 *
-	 * @param key  the metric key, never null
-	 * @param type the expected type of the metric value, never null
+	 * @param key  the metric key, never {@code null}
+	 * @param type the expected type of the metric value, never {@code null}
 	 * @param <T>  the type parameter
-	 * @return the metric value cast to the specified type, or null if not present
+	 * @return the metric value cast to the specified type, or {@code null} if not present
 	 * @throws ClassCastException if the value cannot be cast to the specified type
 	 */
 	public <T> T getMetric(String key, Class<T> type)
 	{
 		Object value = metrics.get(key);
-		return value != null ? type.cast(value) : null;
+		if (value != null)
+		{
+			return type.cast(value);
+		}
+		return null;
 	}
 
 	@Override

@@ -18,7 +18,7 @@ import java.util.Set;
  * <b>Performance:</b> Plugin descriptors are cached during discovery to avoid
  * repeated validation overhead.
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
  */
 public final class PluginDescriptor
@@ -35,7 +35,7 @@ public final class PluginDescriptor
 	 * <p>
 	 * All parameters are validated for security and correctness. The plugin ID
 	 * must follow reverse domain name convention (e.g., "com.example.styler.rules").
-	 * Version must follow semantic versioning (e.g., "1.2.3").
+	 * Version must follow semantic versioning (e.g., "{@code 1}.2.3").
 	 *
 	 * @param pluginId     the unique plugin identifier, never {@code null} or empty
 	 * @param version      the plugin version in semantic format, never {@code null}
@@ -81,6 +81,7 @@ public final class PluginDescriptor
 	 * across different plugin vendors and avoid naming conflicts.
 	 *
 	 * @return the plugin identifier, never {@code null} or empty
+	  * @throws NullPointerException if {@code pluginId} is null
 	 */
 	public String getPluginId()
 	{
@@ -91,6 +92,7 @@ public final class PluginDescriptor
 	 * Returns the plugin version in semantic versioning format.
 	 *
 	 * @return the plugin version, never {@code null}
+	  * @throws NullPointerException if {@code pluginId} is null
 	 */
 	public String getVersion()
 	{
@@ -101,6 +103,7 @@ public final class PluginDescriptor
 	 * Returns the human-readable plugin name.
 	 *
 	 * @return the plugin name, never {@code null}
+	  * @throws NullPointerException if {@code pluginId} is null
 	 */
 	public String getName()
 	{
@@ -111,6 +114,7 @@ public final class PluginDescriptor
 	 * Returns the plugin vendor or author name.
 	 *
 	 * @return the vendor name, never {@code null}
+	  * @throws NullPointerException if {@code pluginId} is null
 	 */
 	public String getVendor()
 	{
@@ -124,6 +128,7 @@ public final class PluginDescriptor
 	 * Circular dependencies are detected and prevented during plugin loading.
 	 *
 	 * @return the set of dependency plugin IDs, never {@code null} but may be empty
+	  * @throws NullPointerException if {@code pluginId} is null
 	 */
 	public Set<String> getDependencies()
 	{
@@ -137,6 +142,8 @@ public final class PluginDescriptor
 	 * plugin categories, or custom configuration options.
 	 *
 	 * @return the metadata map, never {@code null} but may be empty
+	  * @throws NullPointerException if {@code version} is null
+	  * @throws NullPointerException if {@code pluginId} is null
 	 */
 	public Map<String, String> getMetadata()
 	{
@@ -147,6 +154,9 @@ public final class PluginDescriptor
 	 * Returns whether this plugin has any dependencies.
 	 *
 	 * @return {@code true} if the plugin has dependencies, {@code false} otherwise
+	  * @throws NullPointerException if {@code version} is null
+	  * @throws NullPointerException if {@code pluginId} is null
+	  * @throws NullPointerException if {@code name} is null
 	 */
 	public boolean hasDependencies()
 	{
@@ -158,6 +168,9 @@ public final class PluginDescriptor
 	 *
 	 * @param pluginId the plugin ID to check, never {@code null}
 	 * @return {@code true} if this plugin depends on the specified plugin
+	  * @throws NullPointerException if {@code version} is null
+	  * @throws NullPointerException if {@code pluginId} is null
+	  * @throws NullPointerException if {@code name} is null
 	 */
 	public boolean dependsOn(String pluginId)
 	{
@@ -172,6 +185,10 @@ public final class PluginDescriptor
 	 * @return the validated plugin ID
 	 * @throws IllegalArgumentException if the plugin ID is invalid
 	 * @throws PluginSecurityException  if the plugin ID contains dangerous content
+	  * @throws NullPointerException if {@code version} is null
+	  * @throws NullPointerException if {@code vendor} is null
+	  * @throws NullPointerException if {@code pluginId} is null
+	  * @throws NullPointerException if {@code name} is null
 	 */
 	private static String validatePluginId(String pluginId)
 	{
@@ -204,6 +221,10 @@ public final class PluginDescriptor
 	 * @param version the version to validate
 	 * @return the validated version
 	 * @throws IllegalArgumentException if the version is invalid
+	  * @throws NullPointerException if {@code version} is null
+	  * @throws NullPointerException if {@code vendor} is null
+	  * @throws NullPointerException if {@code name} is null
+	  * @throws NullPointerException if {@code metadataKey} is null
 	 */
 	private static String validateVersion(String version)
 	{
@@ -225,6 +246,10 @@ public final class PluginDescriptor
 	 * @param name the name to validate
 	 * @return the validated name
 	 * @throws PluginSecurityException if the name contains dangerous content
+	  * @throws NullPointerException if {@code vendor} is null
+	  * @throws NullPointerException if {@code name} is null
+	  * @throws NullPointerException if {@code metadataValue} is null
+	  * @throws NullPointerException if {@code metadataKey} is null
 	 */
 	private static String validateName(String name)
 	{
@@ -245,6 +270,9 @@ public final class PluginDescriptor
 	 * @param vendor the vendor to validate
 	 * @return the validated vendor
 	 * @throws PluginSecurityException if the vendor contains dangerous content
+	  * @throws NullPointerException if {@code vendor} is null
+	  * @throws NullPointerException if {@code metadataValue} is null
+	  * @throws NullPointerException if {@code metadataKey} is null
 	 */
 	private static String validateVendor(String vendor)
 	{
@@ -264,11 +292,13 @@ public final class PluginDescriptor
 	 *
 	 * @param key the key to validate
 	 * @throws PluginSecurityException if the key contains dangerous content
+	  * @throws NullPointerException if {@code metadataValue} is null
+	  * @throws NullPointerException if {@code metadataKey} is null
 	 */
 	private static void validateMetadataKey(String key)
 	{
-		requireThat(key, "metadata key").isNotNull();
-		requireThat(key.trim(), "metadata key").isNotEmpty();
+		requireThat(key, "metadataKey").isNotNull();
+		requireThat(key.trim(), "metadataKey").isNotEmpty();
 
 		if (key.length() > 50)
 		{
@@ -277,7 +307,8 @@ public final class PluginDescriptor
 
 		if (!key.matches("^[a-zA-Z][a-zA-Z0-9\\-_]*$"))
 		{
-			throw new IllegalArgumentException("Metadata key must contain only letters, numbers, hyphens, and underscores");
+			throw new IllegalArgumentException(
+				"Metadata key must contain only letters, numbers, hyphens, and underscores");
 		}
 	}
 
@@ -286,10 +317,11 @@ public final class PluginDescriptor
 	 *
 	 * @param value the value to validate
 	 * @throws PluginSecurityException if the value contains dangerous content
+	  * @throws NullPointerException if {@code metadataValue} is null
 	 */
 	private static void validateMetadataValue(String value)
 	{
-		requireThat(value, "metadata value").isNotNull();
+		requireThat(value, "metadataValue").isNotNull();
 
 		if (value.length() > 500)
 		{

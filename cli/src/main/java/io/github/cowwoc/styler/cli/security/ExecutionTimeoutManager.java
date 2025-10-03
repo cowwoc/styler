@@ -1,6 +1,8 @@
 package io.github.cowwoc.styler.cli.security;
 
 import io.github.cowwoc.styler.cli.security.exceptions.ExecutionTimeoutException;
+import io.github.cowwoc.styler.cli.security.exceptions.OperationExecutionException;
+import io.github.cowwoc.styler.cli.security.exceptions.OperationInterruptedException;
 
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -64,12 +66,14 @@ public final class ExecutionTimeoutManager
 	 * is thrown.
 	 *
 	 * @param <T> the result type
-	 * @param operation the operation to execute, must not be null
-	 * @param operationName descriptive name for error messages, must not be null
+	 * @param operation the operation to execute, must not be {@code null}
+	 * @param operationName descriptive name for error messages, must not be {@code null}
 	 * @return the operation result
 	 * @throws ExecutionTimeoutException if operation exceeds timeout
-	 * @throws RuntimeException if operation throws an exception
-	 * @throws NullPointerException if operation or operationName is null
+	 * @throws OperationInterruptedException if operation is interrupted before completion
+	 * @throws OperationExecutionException if operation throws a checked exception
+	 * @throws RuntimeException if operation throws a runtime exception (rethrown as-is)
+	 * @throws NullPointerException if operation or operationName is {@code null}
 	 */
 	public <T> T executeWithTimeout(Callable<T> operation, String operationName)
 		throws ExecutionTimeoutException
@@ -77,6 +81,7 @@ public final class ExecutionTimeoutManager
 		Objects.requireNonNull(operation, "operation must not be null");
 		Objects.requireNonNull(operationName, "operationName must not be null");
 
+		@SuppressWarnings("PMD.CloseResource") // ExecutorService is properly shut down in finally block
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		Future<T> future = executor.submit(operation);
 
@@ -99,7 +104,7 @@ public final class ExecutionTimeoutManager
 			// Current thread interrupted - cancel operation and restore flag
 			future.cancel(true);
 			Thread.currentThread().interrupt();
-			throw new RuntimeException("Operation interrupted: " + operationName, e);
+			throw new OperationInterruptedException(operationName, e);
 		}
 		catch (ExecutionException e)
 		{
@@ -109,7 +114,7 @@ public final class ExecutionTimeoutManager
 			{
 				throw runtimeException;
 			}
-			throw new RuntimeException("Operation failed: " + operationName, cause);
+			throw new OperationExecutionException(operationName, cause);
 		}
 		finally
 		{

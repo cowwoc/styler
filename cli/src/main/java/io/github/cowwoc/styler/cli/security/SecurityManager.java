@@ -68,8 +68,8 @@ public final class SecurityManager
 	/**
 	 * Constructs a new security manager with the specified configuration.
 	 *
-	 * @param config the security configuration, must not be null
-	 * @throws NullPointerException if config is null
+	 * @param config the security configuration, must not be {@code null}
+	 * @throws NullPointerException if config is {@code null}
 	 */
 	public SecurityManager(SecurityConfig config)
 	{
@@ -77,19 +77,16 @@ public final class SecurityManager
 
 		this.fileValidator = new FileValidator(
 			config.maxFileSizeBytes(),
-			config.allowedExtensions()
-		);
+			config.allowedExtensions());
 		this.pathSanitizer = new PathSanitizer();
 		this.memoryMonitor = new MemoryMonitor(config.maxMemoryBytes());
 		this.timeoutManager = new ExecutionTimeoutManager(config.timeoutMillis());
 		this.recursionDepthTracker = new RecursionDepthTracker(
 			config.maxRecursionDepth(),
-			config.warnRecursionDepth()
-		);
+			config.warnRecursionDepth());
 		this.tempFileManager = new TempFileManager(
 			config.maxTempFiles(),
-			config.maxTempDiskBytes()
-		);
+			config.maxTempDiskBytes());
 	}
 
 	/**
@@ -101,11 +98,11 @@ public final class SecurityManager
 	 *   <li>Validates file size, type, and existence</li>
 	 * </ol>
 	 *
-	 * @param filePath the file to validate, must not be null
+	 * @param filePath the file to validate, must not be {@code null}
 	 * @return the sanitized file path
 	 * @throws SecurityException if validation fails
 	 * @throws IOException if file metadata cannot be accessed
-	 * @throws NullPointerException if filePath is null
+	 * @throws NullPointerException if filePath is {@code null}
 	 */
 	public Path validateFile(Path filePath) throws SecurityException, IOException
 	{
@@ -126,18 +123,19 @@ public final class SecurityManager
 	 * <p>This is a convenience method that calls {@link #validateFile(Path)}
 	 * for each file in the list.
 	 *
-	 * @param filePaths the files to validate, must not be null
+	 * @param filePaths the files to validate, must not be {@code null}
 	 * @return list of sanitized file paths in same order
 	 * @throws SecurityException if any validation fails
 	 * @throws IOException if file metadata cannot be accessed
-	 * @throws NullPointerException if filePaths is null or contains null
+	 * @throws NullPointerException if filePaths is {@code null} or contains {@code null}
 	 */
 	public List<Path> validateFiles(List<Path> filePaths) throws SecurityException, IOException
 	{
 		Objects.requireNonNull(filePaths, "filePaths must not be null");
 
-		return filePaths.stream()
-			.map(path -> {
+		return filePaths.stream().
+			map(path ->
+			{
 				try
 				{
 					return validateFile(path);
@@ -146,8 +144,8 @@ public final class SecurityManager
 				{
 					throw new SecurityException("File validation failed: " + path, e);
 				}
-			})
-			.toList();
+			}).
+			toList();
 	}
 
 	/**
@@ -155,10 +153,10 @@ public final class SecurityManager
 	 *
 	 * <p>Use this when you need path validation but the file may not exist yet.
 	 *
-	 * @param filePath the path to sanitize, must not be null
+	 * @param filePath the path to sanitize, must not be {@code null}
 	 * @return the sanitized absolute path
 	 * @throws SecurityException if path contains suspicious patterns
-	 * @throws NullPointerException if filePath is null
+	 * @throws NullPointerException if filePath is {@code null}
 	 */
 	public Path sanitizePath(Path filePath) throws SecurityException
 	{
@@ -187,13 +185,13 @@ public final class SecurityManager
 	 * If it exceeds the timeout, the operation is interrupted and an exception is thrown.
 	 *
 	 * @param <T> the result type
-	 * @param operation the operation to execute, must not be null
-	 * @param operationName descriptive name for error messages, must not be null
+	 * @param operation the operation to execute, must not be {@code null}
+	 * @param operationName descriptive name for error messages, must not be {@code null}
 	 * @return the operation result
 	 * @throws io.github.cowwoc.styler.cli.security.exceptions.ExecutionTimeoutException
 	 *     if operation exceeds timeout
 	 * @throws RuntimeException if operation throws an exception
-	 * @throws NullPointerException if operation or operationName is null
+	 * @throws NullPointerException if operation or operationName is {@code null}
 	 */
 	public <T> T executeWithTimeout(Callable<T> operation, String operationName)
 	{
@@ -209,8 +207,8 @@ public final class SecurityManager
 	 * <p>This sets up a {@link ResourceContext} for tracking operation metrics.
 	 * Always call {@link #stopResourceMonitoring()} in a finally block.
 	 *
-	 * @param operationName descriptive name for this operation, must not be null
-	 * @throws NullPointerException if operationName is null
+	 * @param operationName descriptive name for this operation, must not be {@code null}
+	 * @throws NullPointerException if operationName is {@code null}
 	 */
 	public void startResourceMonitoring(String operationName)
 	{
@@ -231,7 +229,7 @@ public final class SecurityManager
 	/**
 	 * Returns the current memory usage percentage.
 	 *
-	 * @return memory usage as percentage of configured limit (0.0 to 100.0+)
+	 * @return memory usage as percentage of configured limit ({@code 0}.{@code 0} to 100.{@code 0}+)
 	 */
 	public double getMemoryUsagePercentage()
 	{
@@ -247,7 +245,7 @@ public final class SecurityManager
 	 * @param location the location context (e.g., "ClassDeclaration", "MethodCall")
 	 * @throws io.github.cowwoc.styler.cli.security.exceptions.RecursionDepthExceededException
 	 *     if depth exceeds configured limit
-	 * @throws NullPointerException if location is null
+	 * @throws NullPointerException if location is {@code null}
 	 */
 	public void enterRecursion(String location)
 	{
@@ -271,7 +269,7 @@ public final class SecurityManager
 	/**
 	 * Returns the current recursion depth for the calling thread.
 	 *
-	 * @return current recursion depth (0 if not inside recursive traversal)
+	 * @return current recursion depth ({@code 0} if not inside recursive traversal)
 	 */
 	public int getCurrentRecursionDepth()
 	{
@@ -299,7 +297,7 @@ public final class SecurityManager
 	 * @throws io.github.cowwoc.styler.cli.security.exceptions.TempFileLimitExceededException
 	 *     if file count or disk usage limit exceeded
 	 * @throws IOException if file creation fails
-	 * @throws NullPointerException if prefix or suffix is null
+	 * @throws NullPointerException if prefix or suffix is {@code null}
 	 */
 	public Path createTempFile(String prefix, String suffix) throws IOException
 	{
@@ -319,7 +317,7 @@ public final class SecurityManager
 	 *     if new disk usage exceeds configured limit
 	 * @throws IOException if file size cannot be determined
 	 * @throws IllegalArgumentException if file is not tracked
-	 * @throws NullPointerException if tempFile is null
+	 * @throws NullPointerException if tempFile is {@code null}
 	 */
 	public void updateTempFileSize(Path tempFile) throws IOException
 	{

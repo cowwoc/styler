@@ -1,6 +1,7 @@
 package io.github.cowwoc.styler.cli.config.exceptions;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
 /**
  * Exception thrown when a configuration file exists but contains invalid format or content.
@@ -8,18 +9,21 @@ import java.nio.file.Path;
  */
 public class ConfigValidationException extends ConfigDiscoveryException
 {
-	private final Path configFile;
+	private static final long serialVersionUID = 1L;
+	private final transient Path configFile;
 
 	/**
 	 * Creates a new config validation exception.
 	 *
 	 * @param configFile the path to the configuration file that failed validation
 	 * @param message    the error message describing the validation failure
-	 * @throws NullPointerException if configFile or message is null
+	 * @throws NullPointerException if configFile or message is {@code null}
 	 */
 	public ConfigValidationException(Path configFile, String message)
 	{
-		super(buildMessage(configFile, message));
+		super(buildMessage(
+			Objects.requireNonNull(configFile, "configFile must not be null"),
+			Objects.requireNonNull(message, "message must not be null")));
 		this.configFile = configFile;
 	}
 
@@ -29,11 +33,13 @@ public class ConfigValidationException extends ConfigDiscoveryException
 	 * @param configFile the path to the configuration file that failed validation
 	 * @param message    the error message describing the validation failure
 	 * @param cause      the underlying exception that caused the validation failure
-	 * @throws NullPointerException if configFile, message, or cause is null
+	 * @throws NullPointerException if configFile, message, or cause is {@code null}
 	 */
 	public ConfigValidationException(Path configFile, String message, Throwable cause)
 	{
-		super(buildMessage(configFile, message), cause);
+		super(buildMessage(
+			Objects.requireNonNull(configFile, "configFile must not be null"),
+			Objects.requireNonNull(message, "message must not be null")), cause);
 		this.configFile = configFile;
 	}
 

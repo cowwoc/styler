@@ -21,15 +21,16 @@ import java.util.Set;
  */
 public final class FileTypeNotAllowedException extends SecurityException
 {
-	private final Path filePath;
+	private static final long serialVersionUID = 1L;
+	private final transient Path filePath;
 	private final String extension;
-	private final Set<String> allowedExtensions;
+	private final transient Set<String> allowedExtensions;
 
 	/**
 	 * Constructs a new file type not allowed exception.
 	 *
 	 * @param filePath the path to the file with disallowed extension
-	 * @param extension the actual extension of the file
+	 * @param extension the actual {@code extension} of the file
 	 * @param allowedExtensions the set of allowed extensions
 	 */
 	public FileTypeNotAllowedException(Path filePath, String extension,
@@ -44,6 +45,15 @@ public final class FileTypeNotAllowedException extends SecurityException
 	private static String formatMessage(Path filePath, String extension,
 		Set<String> allowedExtensions)
 	{
+		String extensionDisplay;
+		if (extension.isEmpty())
+			{
+			extensionDisplay = "(none)";
+			}
+		else
+			{
+			extensionDisplay = extension;
+			}
 		return String.format(
 			"File type not allowed%n" +
 			"  File: %s%n" +
@@ -53,9 +63,8 @@ public final class FileTypeNotAllowedException extends SecurityException
 			"  Only Java source files can be formatted.%n" +
 			"  Binary and executable files are not supported.",
 			filePath,
-			extension.isEmpty() ? "(none)" : extension,
-			allowedExtensions
-		);
+			extensionDisplay,
+			allowedExtensions);
 	}
 
 	/**

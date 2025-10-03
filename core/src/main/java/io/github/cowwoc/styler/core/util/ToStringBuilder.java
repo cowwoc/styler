@@ -12,7 +12,7 @@ import java.util.StringJoiner;
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
- * A class that generates a String representation of an object using a JSON-like format.
+ * A class that generates a {@code String} representation of an object using a JSON-like format.
  */
 public final class ToStringBuilder
 {
@@ -23,7 +23,7 @@ public final class ToStringBuilder
 	 * Creates a builder.
 	 *
 	 * @param theClass the type of object being processed
-	 * @throws NullPointerException if {@code theClass} is null
+	 * @throws NullPointerException if {@code theClass} is {@code null}
 	 */
 	public ToStringBuilder(Class<?> theClass)
 	{
@@ -45,7 +45,7 @@ public final class ToStringBuilder
 	 * @param name  the name of the property
 	 * @param value the value of the property
 	 * @return this
-	 * @throws NullPointerException     if {@code name} is null
+	 * @throws NullPointerException     if {@code name} is {@code null}
 	 * @throws IllegalArgumentException if {@code name} contains leading, trailing whitespace or is blank
 	 */
 	public ToStringBuilder add(String name, Object value)

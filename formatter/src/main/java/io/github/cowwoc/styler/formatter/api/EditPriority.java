@@ -66,8 +66,8 @@ public enum EditPriority
 	/**
 	 * Returns whether this priority is higher than another priority.
 	 *
-	 * @param other the other priority to compare with, never null
-	 * @return true if this priority is higher, false otherwise
+	 * @param other the other priority to compare with, never {@code null}
+	 * @return {@code true} if this priority is higher, {@code false} otherwise
 	 */
 	public boolean isHigherThan(EditPriority other)
 	{
@@ -77,8 +77,8 @@ public enum EditPriority
 	/**
 	 * Returns whether this priority is lower than another priority.
 	 *
-	 * @param other the other priority to compare with, never null
-	 * @return true if this priority is lower, false otherwise
+	 * @param other the other priority to compare with, never {@code null}
+	 * @return {@code true} if this priority is lower, {@code false} otherwise
 	 */
 	public boolean isLowerThan(EditPriority other)
 	{

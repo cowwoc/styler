@@ -35,8 +35,9 @@ import java.util.Objects;
  * <b>Security:</b> All configuration inputs are validated to prevent injection attacks.
  * <b>Performance:</b> Configurations are cached and reused for better performance.
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
+  * @throws NullPointerException if {@code configPath} is null
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"version", "profile", "extends", "global", "rules"})
@@ -68,6 +69,7 @@ public final class ConfigurationSchema
 	 * @param extendsProfiles the list of profiles to extend, never {@code null}
 	 * @param global          the global configuration settings, may be {@code null}
 	 * @param rules           the rule-specific configurations, never {@code null}
+	  * @throws NullPointerException if {@code configPath} is null
 	 */
 	public ConfigurationSchema(@JsonProperty("version") String version,
 	                          @JsonProperty("profile") String profile,
@@ -75,11 +77,39 @@ public final class ConfigurationSchema
 	                          @JsonProperty("global") GlobalConfiguration global,
 	                          @JsonProperty("rules") Map<String, Map<String, Object>> rules)
 	{
-		this.version = validateVersion(version != null ? version : SCHEMA_VERSION);
+		if (version != null)
+		{
+			this.version = validateVersion(version);
+		}
+		else
+		{
+			this.version = validateVersion(SCHEMA_VERSION);
+		}
 		this.profile = validateProfile(profile);
-		this.extendsProfiles = List.copyOf(extendsProfiles != null ? extendsProfiles : Collections.emptyList());
-		this.global = global != null ? global : new GlobalConfiguration();
-		this.rules = Map.copyOf(rules != null ? rules : Collections.emptyMap());
+		if (extendsProfiles != null)
+		{
+			this.extendsProfiles = List.copyOf(extendsProfiles);
+		}
+		else
+		{
+			this.extendsProfiles = List.copyOf(Collections.emptyList());
+		}
+		if (global != null)
+		{
+			this.global = global;
+		}
+		else
+		{
+			this.global = new GlobalConfiguration();
+		}
+		if (rules != null)
+		{
+			this.rules = Map.copyOf(rules);
+		}
+		else
+		{
+			this.rules = Map.copyOf(Collections.emptyMap());
+		}
 
 		try
 		{
@@ -93,6 +123,9 @@ public final class ConfigurationSchema
 
 	/**
 	 * Creates a default configuration schema.
+	 *
+	 * @throws NullPointerException if {@code resourcePath} is null
+	 * @throws NullPointerException if {@code configPath} is null
 	 */
 	public ConfigurationSchema()
 	{
@@ -106,6 +139,9 @@ public final class ConfigurationSchema
 	 * @return the parsed configuration schema, never {@code null}
 	 * @throws ConfigurationException if the file cannot be read or parsed
 	 * @throws SecurityException      if the file contains security violations
+	  * @throws NullPointerException if {@code tomlContent} is null
+	  * @throws NullPointerException if {@code resourcePath} is null
+	  * @throws NullPointerException if {@code configPath} is null
 	 */
 	public static ConfigurationSchema fromFile(Path configPath) throws ConfigurationException
 	{
@@ -145,6 +181,9 @@ public final class ConfigurationSchema
 	 * @param resourcePath the classpath resource path, never {@code null}
 	 * @return the parsed configuration schema, never {@code null}
 	 * @throws ConfigurationException if the resource cannot be read or parsed
+	  * @throws NullPointerException if {@code tomlContent} is null
+	  * @throws NullPointerException if {@code resourcePath} is null
+	  * @throws NullPointerException if {@code other} is null
 	 */
 	public static ConfigurationSchema fromResource(String resourcePath) throws ConfigurationException
 	{
@@ -173,6 +212,8 @@ public final class ConfigurationSchema
 	 * @return the parsed configuration schema, never {@code null}
 	 * @throws ConfigurationException if the TOML cannot be parsed
 	 * @throws SecurityException      if the content contains security violations
+	  * @throws NullPointerException if {@code tomlContent} is null
+	  * @throws NullPointerException if {@code other} is null
 	 */
 	public static ConfigurationSchema fromToml(String tomlContent) throws ConfigurationException
 	{
@@ -198,6 +239,7 @@ public final class ConfigurationSchema
 	 *
 	 * @return the TOML representation, never {@code null}
 	 * @throws ConfigurationException if serialization fails
+	  * @throws NullPointerException if {@code other} is null
 	 */
 	public String toToml() throws ConfigurationException
 	{
@@ -221,6 +263,7 @@ public final class ConfigurationSchema
 	 * @param other the configuration to merge with, never {@code null}
 	 * @return a new merged configuration, never {@code null}
 	 * @throws ConfigurationException if the configurations cannot be merged
+	  * @throws NullPointerException if {@code other} is null
 	 */
 	public ConfigurationSchema merge(ConfigurationSchema other) throws ConfigurationException
 	{
@@ -247,13 +290,52 @@ public final class ConfigurationSchema
 		}
 
 		// Other configuration takes precedence for top-level settings
+		String mergedVersion;
+		if (other.version != null)
+		{
+			mergedVersion = other.version;
+		}
+		else
+		{
+			mergedVersion = this.version;
+		}
+
+		String mergedProfile;
+		if (other.profile != null)
+		{
+			mergedProfile = other.profile;
+		}
+		else
+		{
+			mergedProfile = this.profile;
+		}
+
+		List<String> mergedExtendsProfiles;
+		if (other.extendsProfiles.isEmpty())
+		{
+			mergedExtendsProfiles = this.extendsProfiles;
+		}
+		else
+		{
+			mergedExtendsProfiles = other.extendsProfiles;
+		}
+
+		GlobalConfiguration mergedGlobal;
+		if (other.global != null)
+		{
+			mergedGlobal = other.global;
+		}
+		else
+		{
+			mergedGlobal = this.global;
+		}
+
 		return new ConfigurationSchema(
-			other.version != null ? other.version : this.version,
-			other.profile != null ? other.profile : this.profile,
-			other.extendsProfiles.isEmpty() ? this.extendsProfiles : other.extendsProfiles,
-			other.global != null ? other.global : this.global,
-			mergedRules
-		);
+			mergedVersion,
+			mergedProfile,
+			mergedExtendsProfiles,
+			mergedGlobal,
+			mergedRules);
 	}
 
 	/**
@@ -264,6 +346,9 @@ public final class ConfigurationSchema
 	 * @param <T> the configuration type
 	 * @return the rule configuration, or {@code null} if not configured
 	 * @throws ConfigurationException if the configuration cannot be converted
+	  * @throws NullPointerException if {@code version} is null
+	  * @throws NullPointerException if {@code ruleName} is null
+	  * @throws NullPointerException if {@code configClass} is null
 	 */
 	public <T extends RuleConfiguration> T getRuleConfiguration(String ruleName, Class<T> configClass)
 		throws ConfigurationException
@@ -287,16 +372,23 @@ public final class ConfigurationSchema
 		}
 	}
 
-	public String getVersion() { return version; }
-	public String getProfile() { return profile; }
-	public List<String> getExtendsProfiles() { return extendsProfiles; }
-	public GlobalConfiguration getGlobal() { return global; }
-	public Map<String, Map<String, Object>> getRules() { return rules; }
+	public String getVersion()
+	{ return version; }
+	public String getProfile()
+	{ return profile; }
+	public List<String> getExtendsProfiles()
+	{ return extendsProfiles; }
+	public GlobalConfiguration getGlobal()
+	{ return global; }
+	public Map<String, Map<String, Object>> getRules()
+	{ return rules; }
 
 	/**
 	 * Validates the entire configuration schema.
 	 *
 	 * @throws ConfigurationException if validation fails
+	  * @throws NullPointerException if {@code version} is null
+	  * @throws NullPointerException if {@code ruleName} is null
 	 */
 	private void validate() throws ConfigurationException
 	{
@@ -341,7 +433,8 @@ public final class ConfigurationSchema
 
 		if (!profile.matches("^[a-zA-Z][a-zA-Z0-9\\-_]*$"))
 		{
-			throw new IllegalArgumentException("Profile name must contain only letters, numbers, hyphens, and underscores: " + profile);
+			throw new IllegalArgumentException(
+				"Profile name must contain only letters, numbers, hyphens, and underscores: " + profile);
 		}
 
 		if (profile.length() > 50)
@@ -375,21 +468,19 @@ public final class ConfigurationSchema
 		for (Map.Entry<String, Object> entry : config.entrySet())
 		{
 			String paramName = entry.getKey();
-			Object paramValue = entry.getValue();
 
-			if (paramName == null || paramName.trim().isEmpty())
+			if (paramName == null || paramName.isBlank())
 			{
 				throw new IllegalArgumentException("Rule '" + ruleName + "' has empty parameter name");
 			}
 
 			// Security validation for parameter values
-			if (paramValue instanceof String stringValue)
+			Object paramValue = entry.getValue();
+			if (paramValue instanceof String stringValue &&
+				(stringValue.contains("${") || stringValue.contains("#{") || stringValue.contains("<%")))
 			{
-				if (stringValue.contains("${") || stringValue.contains("#{") || stringValue.contains("<%"))
-				{
-					throw new SecurityException("Rule '" + ruleName + "' parameter '" + paramName +
-					                          "' contains potentially dangerous content");
-				}
+				throw new SecurityException("Rule '" + ruleName + "' parameter '" + paramName +
+				                          "' contains potentially dangerous content");
 			}
 		}
 	}

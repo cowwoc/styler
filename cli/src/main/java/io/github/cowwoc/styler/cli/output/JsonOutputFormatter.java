@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.time.Instant;
+import java.util.Locale;
 
 /**
  * JSON output formatter for machine-readable CLI results.
@@ -74,10 +75,7 @@ public class JsonOutputFormatter implements OutputFormatter
 			{
 				return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(root);
 			}
-			else
-			{
-				return objectMapper.writeValueAsString(root);
-			}
+			return objectMapper.writeValueAsString(root);
 		}
 		catch (Exception e)
 		{
@@ -97,10 +95,7 @@ public class JsonOutputFormatter implements OutputFormatter
 			{
 				return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(violationNode);
 			}
-			else
-			{
-				return objectMapper.writeValueAsString(violationNode);
-			}
+			return objectMapper.writeValueAsString(violationNode);
 		}
 		catch (Exception e)
 		{
@@ -119,10 +114,7 @@ public class JsonOutputFormatter implements OutputFormatter
 			{
 				return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(summaryNode);
 			}
-			else
-			{
-				return objectMapper.writeValueAsString(summaryNode);
-			}
+			return objectMapper.writeValueAsString(summaryNode);
 		}
 		catch (Exception e)
 		{
@@ -138,6 +130,9 @@ public class JsonOutputFormatter implements OutputFormatter
 
 	/**
 	 * Creates an ObjectNode for a violation.
+	 *
+	 * @param violation the violation to format as JSON
+	 * @return the JSON object node representing the violation
 	 */
 	private ObjectNode formatViolationNode(FormattingViolation violation)
 	{
@@ -148,7 +143,7 @@ public class JsonOutputFormatter implements OutputFormatter
 		node.put("column", violation.column());
 		node.put("ruleId", violation.ruleId());
 		node.put("message", violation.message());
-		node.put("severity", violation.severity().name().toLowerCase());
+		node.put("severity", violation.severity().name().toLowerCase(Locale.ROOT));
 
 		if (violation.suggestedFix() != null && !violation.suggestedFix().isEmpty())
 		{
@@ -160,6 +155,9 @@ public class JsonOutputFormatter implements OutputFormatter
 
 	/**
 	 * Creates an ObjectNode for a summary.
+	 *
+	 * @param summary the operation summary to format as JSON
+	 * @return the JSON object node representing the summary
 	 */
 	private ObjectNode formatSummaryNode(OperationSummary summary)
 	{
@@ -186,6 +184,9 @@ public class JsonOutputFormatter implements OutputFormatter
 
 	/**
 	 * Creates a simple error JSON response.
+	 *
+	 * @param errorMessage the error message to include in the JSON response
+	 * @return the JSON error response string
 	 */
 	private String createErrorJson(String errorMessage)
 	{
@@ -208,7 +209,7 @@ public class JsonOutputFormatter implements OutputFormatter
 	/**
 	 * Sets whether to pretty-print JSON output.
 	 *
-	 * @param prettyPrint true to enable pretty printing
+	 * @param prettyPrint {@code true} to enable pretty printing
 	 * @return a new formatter instance with the specified setting
 	 */
 	public JsonOutputFormatter withPrettyPrint(boolean prettyPrint)

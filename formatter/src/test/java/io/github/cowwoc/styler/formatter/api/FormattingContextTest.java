@@ -3,10 +3,8 @@ package io.github.cowwoc.styler.formatter.api;
 import io.github.cowwoc.styler.ast.node.CompilationUnitNode;
 import io.github.cowwoc.styler.ast.SourcePosition;
 import io.github.cowwoc.styler.ast.SourceRange;
-import io.github.cowwoc.styler.ast.Comment;
 import io.github.cowwoc.styler.ast.WhitespaceInfo;
 import io.github.cowwoc.styler.ast.FormattingHints;
-import io.github.cowwoc.styler.ast.ASTNode;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,8 +23,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 public class FormattingContextTest
 {
+	/**
+	 * Test valid context creation.
+	 */
 	@Test
-	public void testValidContextCreation()
+	public void validContextCreation()
 	{
 		// Create a minimal test configuration
 		RuleConfiguration config = new TestRuleConfiguration();
@@ -36,8 +37,7 @@ public class FormattingContextTest
 		Map<String, Object> metadata = Map.of("key1", "value1");
 
 		FormattingContext context = new FormattingContext(
-			ast, "public class Example {}", filePath, config, enabledRules, metadata
-		);
+			ast, "public class Example {}", filePath, config, enabledRules, metadata);
 
 		assertThat(context.getRootNode()).isEqualTo(ast);
 		assertThat(context.getSourceText()).isEqualTo("public class Example {}");
@@ -47,8 +47,11 @@ public class FormattingContextTest
 		assertThat(context.getMetadata()).containsEntry("key1", "value1");
 	}
 
+	/**
+	 * Test directory traversal prevention.
+	 */
 	@Test
-	public void testDirectoryTraversalPrevention()
+	public void directoryTraversalPrevention()
 	{
 		RuleConfiguration config = new TestRuleConfiguration();
 		CompilationUnitNode ast = createTestAST();
@@ -57,14 +60,16 @@ public class FormattingContextTest
 		Map<String, Object> metadata = Map.of();
 
 		assertThatThrownBy(() -> new FormattingContext(
-			ast, "source", maliciousPath, config, enabledRules, metadata
-		))
-			.isInstanceOf(SecurityException.class)
-			.hasMessageContaining("Directory traversal not allowed");
+			ast, "source", maliciousPath, config, enabledRules, metadata)).
+			isInstanceOf(SecurityException.class).
+			hasMessageContaining("Directory traversal not allowed");
 	}
 
+	/**
+	 * Test path normalization.
+	 */
 	@Test
-	public void testPathNormalization()
+	public void pathNormalization()
 	{
 		RuleConfiguration config = new TestRuleConfiguration();
 		CompilationUnitNode ast = createTestAST();
@@ -73,8 +78,7 @@ public class FormattingContextTest
 		Map<String, Object> metadata = Map.of();
 
 		FormattingContext context = new FormattingContext(
-			ast, "source", unnormalizedPath, config, enabledRules, metadata
-		);
+			ast, "source", unnormalizedPath, config, enabledRules, metadata);
 
 		// Path should be normalized and absolute
 		assertThat(context.getFilePath()).isAbsolute();
@@ -82,8 +86,11 @@ public class FormattingContextTest
 		assertThat(context.getFilePath().toString()).doesNotContain("./");
 	}
 
+	/**
+	 * Test immutable collections.
+	 */
 	@Test
-	public void testImmutableCollections()
+	public void immutableCollections()
 	{
 		RuleConfiguration config = new TestRuleConfiguration();
 		CompilationUnitNode ast = createTestAST();
@@ -92,19 +99,21 @@ public class FormattingContextTest
 		Map<String, Object> metadata = Map.of("key1", "value1");
 
 		FormattingContext context = new FormattingContext(
-			ast, "source", filePath, config, enabledRules, metadata
-		);
+			ast, "source", filePath, config, enabledRules, metadata);
 
 		// Collections should be immutable
-		assertThatThrownBy(() -> context.getEnabledRules().add("rule2"))
-			.isInstanceOf(UnsupportedOperationException.class);
+		assertThatThrownBy(() -> context.getEnabledRules().add("rule2")).
+			isInstanceOf(UnsupportedOperationException.class);
 
-		assertThatThrownBy(() -> context.getMetadata().put("key2", "value2"))
-			.isInstanceOf(UnsupportedOperationException.class);
+		assertThatThrownBy(() -> context.getMetadata().put("key2", "value2")).
+			isInstanceOf(UnsupportedOperationException.class);
 	}
 
+	/**
+	 * Test rule enabled check.
+	 */
 	@Test
-	public void testRuleEnabledCheck()
+	public void ruleEnabledCheck()
 	{
 		RuleConfiguration config = new TestRuleConfiguration();
 		CompilationUnitNode ast = createTestAST();
@@ -113,16 +122,18 @@ public class FormattingContextTest
 		Map<String, Object> metadata = Map.of();
 
 		FormattingContext context = new FormattingContext(
-			ast, "source", filePath, config, enabledRules, metadata
-		);
+			ast, "source", filePath, config, enabledRules, metadata);
 
 		assertThat(context.isRuleEnabled("rule1")).isTrue();
 		assertThat(context.isRuleEnabled("rule2")).isTrue();
 		assertThat(context.isRuleEnabled("rule3")).isFalse();
 	}
 
+	/**
+	 * Test typed metadata access.
+	 */
 	@Test
-	public void testTypedMetadataAccess()
+	public void typedMetadataAccess()
 	{
 		RuleConfiguration config = new TestRuleConfiguration();
 		CompilationUnitNode ast = createTestAST();
@@ -131,12 +142,10 @@ public class FormattingContextTest
 		Map<String, Object> metadata = Map.of(
 			"stringValue", "test",
 			"intValue", 42,
-			"boolValue", true
-		);
+			"boolValue", true);
 
 		FormattingContext context = new FormattingContext(
-			ast, "source", filePath, config, enabledRules, metadata
-		);
+			ast, "source", filePath, config, enabledRules, metadata);
 
 		assertThat(context.getMetadata("stringValue", String.class)).isEqualTo("test");
 		assertThat(context.getMetadata("intValue", Integer.class)).isEqualTo(42);
@@ -144,19 +153,20 @@ public class FormattingContextTest
 		assertThat(context.getMetadata("nonexistent", String.class)).isNull();
 
 		// Test type mismatch
-		assertThatThrownBy(() -> context.getMetadata("stringValue", Integer.class))
-			.isInstanceOf(ClassCastException.class);
+		assertThatThrownBy(() -> context.getMetadata("stringValue", Integer.class)).
+			isInstanceOf(ClassCastException.class);
 	}
 
 	/**
 	 * Creates a minimal CompilationUnit for testing.
+	 *
+	 * @return a minimal CompilationUnitNode for testing purposes
 	 */
 	private CompilationUnitNode createTestAST()
 	{
 		SourceRange range = new SourceRange(
 			new SourcePosition(1, 1),
-			new SourcePosition(1, 10)
-		);
+			new SourcePosition(1, 10));
 
 		// Create minimal CompilationUnitNode for testing
 		return new CompilationUnitNode(
@@ -168,14 +178,13 @@ public class FormattingContextTest
 			Optional.empty(), // parent
 			Optional.empty(), // packageDeclaration
 			List.of(), // imports
-			List.of()  // typeDeclarations
-		);
+			List.of());  // typeDeclarations
 	}
 
 	/**
 	 * Test implementation of RuleConfiguration for unit tests.
 	 */
-	private static class TestRuleConfiguration extends RuleConfiguration
+	private static final class TestRuleConfiguration extends RuleConfiguration
 	{
 		@Override
 		public void validate() throws ConfigurationException

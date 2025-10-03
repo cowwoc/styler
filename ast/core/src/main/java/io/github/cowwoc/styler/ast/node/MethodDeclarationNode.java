@@ -1,7 +1,11 @@
 package io.github.cowwoc.styler.ast.node;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import io.github.cowwoc.styler.ast.*;
+import io.github.cowwoc.styler.ast.ASTNode;
+import io.github.cowwoc.styler.ast.Comment;
+import io.github.cowwoc.styler.ast.FormattingHints;
+import io.github.cowwoc.styler.ast.SourceRange;
+import io.github.cowwoc.styler.ast.WhitespaceInfo;
 import io.github.cowwoc.styler.ast.visitor.ASTVisitor;
 import io.github.cowwoc.styler.ast.builder.ASTNodeBuilder;
 
@@ -11,7 +15,8 @@ import java.util.Optional;
 /**
  * AST node representing a method declaration.
  */
-public final class MethodDeclarationNode extends ASTNode {
+public final class MethodDeclarationNode extends ASTNode
+	{
 	private final List<ASTNode> modifiers;
 	private final List<ASTNode> typeParameters;
 	private final ASTNode returnType;
@@ -20,11 +25,32 @@ public final class MethodDeclarationNode extends ASTNode {
 	private final List<ASTNode> thrownExceptions;
 	private final Optional<ASTNode> body;
 
+	/**
+	 * Creates a method declaration node.
+	 *
+	 * @param range the source range
+	 * @param leadingComments comments before this node
+	 * @param trailingComments comments after this node
+	 * @param whitespace whitespace information
+	 * @param hints formatting hints
+	 * @param parent the parent node
+	 * @param modifiers method modifiers (public, static, etc.)
+	 * @param typeParameters generic type parameters
+	 * @param returnType the return type
+	 * @param name the method name
+	 * @param parameters method parameters
+	 * @param thrownExceptions exceptions thrown by this method
+	 * @param body the method body (empty for abstract methods)
+	 * @throws NullPointerException if modifiers, typeParameters, returnType, name, parameters,
+	 *         thrownExceptions, or body is {@code null}
+	 * @throws IllegalArgumentException if name is blank
+	 */
 	public MethodDeclarationNode(SourceRange range, List<Comment> leadingComments,
 		List<Comment> trailingComments, WhitespaceInfo whitespace, FormattingHints hints,
 		Optional<ASTNode> parent, List<ASTNode> modifiers, List<ASTNode> typeParameters,
 		ASTNode returnType, String name, List<ASTNode> parameters, List<ASTNode> thrownExceptions,
-		Optional<ASTNode> body) {
+		Optional<ASTNode> body)
+			{
 		super(range, leadingComments, trailingComments, whitespace, hints, parent);
 		requireThat(modifiers, "modifiers").isNotNull();
 		requireThat(typeParameters, "typeParameters").isNotNull();
@@ -42,29 +68,54 @@ public final class MethodDeclarationNode extends ASTNode {
 		this.body = body;
 	}
 
-	public List<ASTNode> getModifiers() { return modifiers; }
-	public List<ASTNode> getTypeParameters() { return typeParameters; }
-	public ASTNode getReturnType() { return returnType; }
-	public String getName() { return name; }
-	public List<ASTNode> getParameters() { return parameters; }
-	public List<ASTNode> getThrownExceptions() { return thrownExceptions; }
-	public Optional<ASTNode> getBody() { return body; }
+	public List<ASTNode> getModifiers()
+		{
+		return modifiers;
+		}
+	public List<ASTNode> getTypeParameters()
+		{
+		return typeParameters;
+		}
+	public ASTNode getReturnType()
+		{
+		return returnType;
+		}
+	public String getName()
+		{
+		return name;
+		}
+	public List<ASTNode> getParameters()
+		{
+		return parameters;
+		}
+	public List<ASTNode> getThrownExceptions()
+		{
+		return thrownExceptions;
+		}
+	public Optional<ASTNode> getBody()
+		{
+		return body;
+		}
 
 	@Override
-	public <R, A> R accept(ASTVisitor<R, A> visitor, final A arg) {
+	public <R, A> R accept(ASTVisitor<R, A> visitor, final A arg)
+		{
 		return visitor.visitMethodDeclaration(this, arg);
 	}
 
 	@Override
-	public ASTNodeBuilder<MethodDeclarationNode> toBuilder() {
-		return new Builder().setRange(getRange()).setLeadingComments(getLeadingComments())
-			.setTrailingComments(getTrailingComments()).setWhitespace(getWhitespace())
-			.setHints(getHints()).setParent(getParent()).setModifiers(modifiers).setTypeParameters(typeParameters)
-			.setReturnType(returnType).setName(name).setParameters(parameters).setThrownExceptions(thrownExceptions).setBody(body);
+	public ASTNodeBuilder<MethodDeclarationNode> toBuilder()
+		{
+		return new Builder().setRange(getRange()).setLeadingComments(getLeadingComments()).
+			setTrailingComments(getTrailingComments()).setWhitespace(getWhitespace()).
+			setHints(getHints()).setParent(getParent()).setModifiers(modifiers).setTypeParameters(typeParameters).
+			setReturnType(returnType).setName(name).setParameters(parameters).
+			setThrownExceptions(thrownExceptions).setBody(body);
 	}
 
 	@Override
-	public List<ASTNode> getChildren() {
+	public List<ASTNode> getChildren()
+		{
 		var children = new java.util.ArrayList<ASTNode>();
 		children.addAll(modifiers);
 		children.addAll(typeParameters);
@@ -78,12 +129,18 @@ public final class MethodDeclarationNode extends ASTNode {
 	@Override
 	protected ASTNode withMetadata(SourceRange newRange, List<Comment> newLeadingComments,
 		List<Comment> newTrailingComments, WhitespaceInfo newWhitespace, FormattingHints newHints,
-		Optional<ASTNode> newParent) {
+		Optional<ASTNode> newParent)
+			{
 		return new MethodDeclarationNode(newRange, newLeadingComments, newTrailingComments,
-			newWhitespace, newHints, newParent, modifiers, typeParameters, returnType, name, parameters, thrownExceptions, body);
+			newWhitespace, newHints, newParent, modifiers, typeParameters, returnType, name,
+		parameters, thrownExceptions, body);
 	}
 
-	public static final class Builder implements ASTNodeBuilder<MethodDeclarationNode> {
+/**
+ * Builder for creating {@link MethodDeclarationNode} instances.
+ */
+	public static final class Builder implements ASTNodeBuilder<MethodDeclarationNode>
+		{
 		private SourceRange range;
 		private List<Comment> leadingComments = List.of();
 		private List<Comment> trailingComments = List.of();
@@ -98,32 +155,140 @@ public final class MethodDeclarationNode extends ASTNode {
 		private List<ASTNode> thrownExceptions = List.of();
 		private Optional<ASTNode> body = Optional.empty();
 
-		@Override public Builder setRange(SourceRange range) { this.range = range; return this; }
-		@Override public Builder setLeadingComments(List<Comment> comments) { this.leadingComments = List.copyOf(comments); return this; }
-		@Override public Builder setTrailingComments(List<Comment> comments) { this.trailingComments = List.copyOf(comments); return this; }
-		@Override public Builder setWhitespace(WhitespaceInfo whitespace) { this.whitespace = whitespace; return this; }
-		@Override public Builder setHints(FormattingHints hints) { this.hints = hints; return this; }
-		@Override public Builder setParent(Optional<ASTNode> parent) { this.parent = parent; return this; }
-		@Override public Builder addLeadingComment(Comment comment) { var newComments = new java.util.ArrayList<>(leadingComments); newComments.add(comment); this.leadingComments = List.copyOf(newComments); return this; }
-		@Override public Builder addTrailingComment(Comment comment) { var newComments = new java.util.ArrayList<>(trailingComments); newComments.add(comment); this.trailingComments = List.copyOf(newComments); return this; }
+		@Override public Builder setRange(SourceRange range)
+			{
+			this.range = range; return this;
+			}
+		@Override public Builder setLeadingComments(List<Comment> comments)
+			{
+			this.leadingComments = List.copyOf(comments); return this;
+			}
+		@Override public Builder setTrailingComments(List<Comment> comments)
+			{
+			this.trailingComments = List.copyOf(comments); return this;
+			}
+		@Override public Builder setWhitespace(WhitespaceInfo whitespace)
+			{
+			this.whitespace = whitespace; return this;
+			}
+		@Override public Builder setHints(FormattingHints hints)
+			{
+			this.hints = hints; return this;
+			}
+		@Override public Builder setParent(Optional<ASTNode> parent)
+			{
+			this.parent = parent; return this;
+			}
+		@Override public Builder addLeadingComment(Comment comment)
+			{
+			var newComments = new java.util.ArrayList<>(leadingComments);
+			newComments.add(comment);
+			this.leadingComments = List.copyOf(newComments);
+			return this;
+			}
+		@Override public Builder addTrailingComment(Comment comment)
+			{
+			var newComments = new java.util.ArrayList<>(trailingComments);
+			newComments.add(comment);
+			this.trailingComments = List.copyOf(newComments);
+			return this;
+			}
 
-		public Builder setModifiers(List<ASTNode> modifiers) { this.modifiers = List.copyOf(modifiers); return this; }
-		public Builder setTypeParameters(List<ASTNode> typeParameters) { this.typeParameters = List.copyOf(typeParameters); return this; }
-		public Builder setReturnType(ASTNode returnType) { this.returnType = returnType; return this; }
-		public Builder setName(String name) { this.name = name; return this; }
-		public Builder setParameters(List<ASTNode> parameters) { this.parameters = List.copyOf(parameters); return this; }
-		public Builder setThrownExceptions(List<ASTNode> thrownExceptions) { this.thrownExceptions = List.copyOf(thrownExceptions); return this; }
-		public Builder setBody(Optional<ASTNode> body) { this.body = body; return this; }
+		/**
+		 * Sets the method modifiers.
+		 *
+		 * @param modifiers method modifiers (public, static, etc.)
+		 * @return this builder
+		 */
+		public Builder setModifiers(List<ASTNode> modifiers)
+			{
+			this.modifiers = List.copyOf(modifiers); return this;
+			}
+		/**
+		 * Sets the generic type parameters.
+		 *
+		 * @param typeParameters generic type parameters
+		 * @return this builder
+		 */
+		public Builder setTypeParameters(List<ASTNode> typeParameters)
+			{
+			this.typeParameters = List.copyOf(typeParameters); return this;
+			}
+		/**
+		 * Sets the return type.
+		 *
+		 * @param returnType the return type
+		 * @return this builder
+		 */
+		public Builder setReturnType(ASTNode returnType)
+			{
+			this.returnType = returnType; return this;
+			}
+		/**
+		 * Sets the method name.
+		 *
+		 * @param name the method name
+		 * @return this builder
+		 */
+		public Builder setName(String name)
+			{
+			this.name = name; return this;
+			}
+		/**
+		 * Sets the method parameters.
+		 *
+		 * @param parameters method parameters
+		 * @return this builder
+		 */
+		public Builder setParameters(List<ASTNode> parameters)
+			{
+			this.parameters = List.copyOf(parameters); return this;
+			}
+		/**
+		 * Sets the exceptions thrown by this method.
+		 *
+		 * @param thrownExceptions exceptions thrown by this method
+		 * @return this builder
+		 */
+		public Builder setThrownExceptions(List<ASTNode> thrownExceptions)
+			{
+			this.thrownExceptions = List.copyOf(thrownExceptions); return this;
+			}
+		/**
+		 * Sets the method body.
+		 *
+		 * @param body the method body (empty for abstract methods)
+		 * @return this builder
+		 */
+		public Builder setBody(Optional<ASTNode> body)
+			{
+			this.body = body; return this;
+			}
 
 		@Override
-		public MethodDeclarationNode build() {
-			if (!isValid()) throw new IllegalStateException("Invalid builder state: " + String.join(", ", getValidationErrors()));
-			return new MethodDeclarationNode(range, leadingComments, trailingComments, whitespace, hints, parent, modifiers, typeParameters, returnType, name, parameters, thrownExceptions, body);
+		public MethodDeclarationNode build()
+			{
+			if (!isValid())
+				throw new IllegalStateException("Invalid builder state: " +
+					String.join(", ", getValidationErrors()));
+			return new MethodDeclarationNode(range, leadingComments, trailingComments, whitespace,
+				hints, parent, modifiers, typeParameters, returnType, name, parameters, thrownExceptions, body);
 		}
 
-		@Override public Builder reset() { range = null; leadingComments = List.of(); trailingComments = List.of(); whitespace = WhitespaceInfo.none(); hints = FormattingHints.defaults(); parent = Optional.empty(); modifiers = List.of(); typeParameters = List.of(); returnType = null; name = null; parameters = List.of(); thrownExceptions = List.of(); body = Optional.empty(); return this; }
-		@Override public Builder copy() { return new Builder().setRange(range).setLeadingComments(leadingComments).setTrailingComments(trailingComments).setWhitespace(whitespace).setHints(hints).setParent(parent).setModifiers(modifiers).setTypeParameters(typeParameters).setReturnType(returnType).setName(name).setParameters(parameters).setThrownExceptions(thrownExceptions).setBody(body); }
-		@Override public boolean isValid() { return range != null && returnType != null && name != null && !name.isBlank(); }
-		@Override public List<String> getValidationErrors() { var errors = new java.util.ArrayList<String>(); if (range == null) errors.add("range is required"); if (returnType == null) errors.add("returnType final is required"); if (name == null || name.isBlank()) errors.add("name is required and cannot final be blank"); return errors; }
+		@Override public boolean isValid()
+			{
+			return range != null && returnType != null && name != null && !name.isBlank();
+			}
+		@Override public List<String> getValidationErrors()
+			{
+			var errors = new java.util.ArrayList<String>();
+			if (range == null)
+				errors.add("range is required");
+			if (returnType == null)
+				errors.add("returnType final is required");
+			if (name == null || name.isBlank())
+				errors.add("name is required and cannot final be blank");
+			return errors;
+			}
 	}
 }

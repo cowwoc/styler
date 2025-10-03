@@ -34,7 +34,7 @@ public final class ConfigParser
 	 * @return the parsed global configuration
 	 * @throws FileAccessException      if the file cannot be read
 	 * @throws ConfigValidationException if the file format is invalid or parsing fails
-	 * @throws NullPointerException     if configFile is null
+	 * @throws NullPointerException     if configFile is {@code null}
 	 */
 	public GlobalConfiguration parse(Path configFile)
 	{
@@ -53,11 +53,7 @@ public final class ConfigParser
 		try
 		{
 			// Read and parse the TOML configuration file
-			GlobalConfiguration config = tomlMapper.readValue(configFile.toFile(), GlobalConfiguration.class);
-
-			// Validate the parsed configuration if validation method exists
-			// Note: We'll check if validate() method exists on GlobalConfiguration
-			return config;
+			return tomlMapper.readValue(configFile.toFile(), GlobalConfiguration.class);
 		}
 		catch (IOException e)
 		{

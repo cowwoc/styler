@@ -14,7 +14,7 @@ import java.util.Optional;
  */
 public final class ConfigSearchPath
 {
-	private static final String[] CONFIG_FILENAMES = {".styler.toml"};
+	private static final String[] CONFIG_FILENAMES = {".styler.toml", ".styler.yaml", ".styler.yml"};
 
 	/**
 	 * Builds an ordered search path starting from the specified directory.
@@ -23,7 +23,7 @@ public final class ConfigSearchPath
 	 *
 	 * @param startDir the directory to start searching from
 	 * @return an ordered list of directories to search for configuration files
-	 * @throws NullPointerException if startDir is null
+	 * @throws NullPointerException if startDir is {@code null}
 	 */
 	public List<Path> buildSearchPath(Path startDir)
 	{
@@ -72,7 +72,7 @@ public final class ConfigSearchPath
 		if (homeDir == null || homeDir.isEmpty())
 			return Optional.empty();
 
-		String osName = System.getProperty("os.name", "").toLowerCase();
+		String osName = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT);
 		Path configDir;
 
 		if (osName.contains("win"))
@@ -99,7 +99,11 @@ public final class ConfigSearchPath
 				configDir = Paths.get(homeDir, ".config", "styler");
 		}
 
-		return Files.isDirectory(configDir) ? Optional.of(configDir) : Optional.empty();
+		if (Files.isDirectory(configDir))
+			{
+			return Optional.of(configDir);
+			}
+		return Optional.empty();
 	}
 
 	/**
@@ -111,17 +115,18 @@ public final class ConfigSearchPath
 	 */
 	public Optional<Path> getGlobalConfigPath()
 	{
-		String osName = System.getProperty("os.name", "").toLowerCase();
+		String osName = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT);
 		Path globalDir;
 
 		if (osName.contains("win"))
 		{
 			// Windows: %PROGRAMDATA%/styler/
 			String programData = System.getenv("PROGRAMDATA");
-			if (programData != null && !programData.isEmpty())
-				globalDir = Paths.get(programData, "styler");
-			else
+			if (programData == null || programData.isEmpty())
+			{
 				return Optional.empty();
+			}
+			globalDir = Paths.get(programData, "styler");
 		}
 		else
 		{
@@ -129,7 +134,11 @@ public final class ConfigSearchPath
 			globalDir = Paths.get("/etc", "styler");
 		}
 
-		return Files.isDirectory(globalDir) ? Optional.of(globalDir) : Optional.empty();
+		if (Files.isDirectory(globalDir))
+			{
+			return Optional.of(globalDir);
+			}
+		return Optional.empty();
 	}
 
 	/**
@@ -138,7 +147,7 @@ public final class ConfigSearchPath
 	 *
 	 * @param searchPaths the directories to search for configuration files
 	 * @return a list of discovered configuration file paths, ordered by precedence
-	 * @throws NullPointerException if searchPaths is null
+	 * @throws NullPointerException if searchPaths is {@code null}
 	 */
 	public List<Path> discoverConfigFiles(List<Path> searchPaths)
 	{

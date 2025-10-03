@@ -38,8 +38,8 @@ public final class ResourceContext
 	/**
 	 * Constructs a new resource context for the current operation.
 	 *
-	 * @param operationName descriptive name for this operation, must not be null
-	 * @throws NullPointerException if operationName is null
+	 * @param operationName descriptive name for this operation, must not be {@code null}
+	 * @throws NullPointerException if operationName is {@code null}
 	 */
 	public ResourceContext(String operationName)
 	{
@@ -55,7 +55,7 @@ public final class ResourceContext
 	/**
 	 * Returns the resource context for the current thread.
 	 *
-	 * @return the current context, or null if not set
+	 * @return the current context, or {@code null} if not set
 	 */
 	public static ResourceContext get()
 	{
@@ -65,8 +65,8 @@ public final class ResourceContext
 	/**
 	 * Sets the resource context for the current thread.
 	 *
-	 * @param context the context to set, must not be null
-	 * @throws NullPointerException if context is null
+	 * @param context the context to set, must not be {@code null}
+	 * @throws NullPointerException if context is {@code null}
 	 */
 	public static void set(ResourceContext context)
 	{

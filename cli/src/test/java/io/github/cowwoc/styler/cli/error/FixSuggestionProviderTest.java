@@ -6,7 +6,8 @@ import org.testng.annotations.Test;
 
 import java.nio.file.Paths;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Unit tests for FixSuggestionProvider functionality.
@@ -14,15 +15,17 @@ import static org.testng.Assert.*;
  */
 public class FixSuggestionProviderTest
 {
+	/**
+	 * Verifies that suggestions for missing semicolon parse errors are generated correctly.
+	 */
 	@Test
-	public void testGenerateParseSuggestionMissingSemicolon()
+	public void generateParseSuggestionMissingSemicolon()
 	{
 		ErrorContext context = ErrorContext.parseError(
 			Paths.get("Test.java"),
 			new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 5)),
 			"int x = 1",
-			"missing ';' at end of statement"
-		);
+			"missing ';' at end of statement");
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
@@ -31,15 +34,17 @@ public class FixSuggestionProviderTest
 		assertTrue(suggestion.contains(";"));
 	}
 
+	/**
+	 * Verifies that suggestions for missing opening brace parse errors are generated correctly.
+	 */
 	@Test
-	public void testGenerateParseSuggestionMissingBrace()
+	public void generateParseSuggestionMissingBrace()
 	{
 		ErrorContext context = ErrorContext.parseError(
 			Paths.get("Test.java"),
 			new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 5)),
 			"public class Test",
-			"missing '{' to start block"
-		);
+			"missing '{' to start block");
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
@@ -48,16 +53,18 @@ public class FixSuggestionProviderTest
 		assertTrue(suggestion.contains("{"));
 	}
 
+	/**
+	 * Verifies that suggestions for unknown configuration key errors are generated correctly.
+	 */
 	@Test
-	public void testGenerateConfigSuggestionUnknownKey()
+	public void generateConfigSuggestionUnknownKey()
 	{
 		ErrorContext context = ErrorContext.configError(
 			Paths.get("config.toml"),
 			new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 10)),
 			"invalid_key = value",
 			"unknown configuration key 'invalid_key'",
-			null
-		);
+			null);
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
@@ -65,8 +72,11 @@ public class FixSuggestionProviderTest
 		assertTrue(suggestion.contains("configuration documentation"));
 	}
 
+	/**
+	 * Verifies that suggestions for line length violations are generated correctly.
+	 */
 	@Test
-	public void testGenerateFormatSuggestionLineLength()
+	public void generateFormatSuggestionLineLength()
 	{
 		ErrorContext context = ErrorContext.formatViolation(
 			Paths.get("Test.java"),
@@ -75,8 +85,7 @@ public class FixSuggestionProviderTest
 			"LineLength",
 			"Line too long: 130 characters",
 			ErrorSeverity.WARNING,
-			null
-		);
+			null);
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
@@ -84,8 +93,11 @@ public class FixSuggestionProviderTest
 		assertTrue(suggestion.contains("Break long lines") || suggestion.contains("line length"));
 	}
 
+	/**
+	 * Verifies that suggestions for indentation violations are generated correctly.
+	 */
 	@Test
-	public void testGenerateFormatSuggestionIndentation()
+	public void generateFormatSuggestionIndentation()
 	{
 		ErrorContext context = ErrorContext.formatViolation(
 			Paths.get("Test.java"),
@@ -94,8 +106,7 @@ public class FixSuggestionProviderTest
 			"Indentation",
 			"Incorrect indentation: expected 4 spaces",
 			ErrorSeverity.WARNING,
-			null
-		);
+			null);
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
@@ -103,13 +114,15 @@ public class FixSuggestionProviderTest
 		assertTrue(suggestion.contains("indentation") || suggestion.contains("consistent"));
 	}
 
+	/**
+	 * Verifies that suggestions for permission denied system errors are generated correctly.
+	 */
 	@Test
-	public void testGenerateSystemSuggestionPermission()
+	public void generateSystemSuggestionPermission()
 	{
 		ErrorContext context = ErrorContext.systemError(
 			Paths.get("Test.java"),
-			"Permission denied accessing file Test.java"
-		);
+			"Permission denied accessing file Test.java");
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
@@ -117,13 +130,15 @@ public class FixSuggestionProviderTest
 		assertTrue(suggestion.contains("permission") || suggestion.contains("access"));
 	}
 
+	/**
+	 * Verifies that suggestions for file not found system errors are generated correctly.
+	 */
 	@Test
-	public void testGenerateSystemSuggestionFileNotFound()
+	public void generateSystemSuggestionFileNotFound()
 	{
 		ErrorContext context = ErrorContext.systemError(
 			Paths.get("Missing.java"),
-			"File not found: Missing.java"
-		);
+			"File not found: Missing.java");
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
@@ -131,15 +146,17 @@ public class FixSuggestionProviderTest
 		assertTrue(suggestion.contains("file path") || suggestion.contains("exists"));
 	}
 
+	/**
+	 * Verifies that contextual suggestions include both the fix and the context information.
+	 */
 	@Test
-	public void testGenerateContextualSuggestion()
+	public void generateContextualSuggestion()
 	{
 		ErrorContext context = ErrorContext.parseError(
 			Paths.get("Test.java"),
 			new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 5)),
 			"int x = 1",
-			"missing ';' at end of statement"
-		);
+			"missing ';' at end of statement");
 
 		String suggestion = FixSuggestionProvider.generateContextualSuggestion(
 			context, "inside method declaration");
@@ -150,15 +167,17 @@ public class FixSuggestionProviderTest
 		assertTrue(suggestion.contains("inside method declaration"));
 	}
 
+	/**
+	 * Verifies that contextual suggestions for errors at column one include position information.
+	 */
 	@Test
-	public void testGenerateContextualSuggestionAtColumnOne()
+	public void generateContextualSuggestionAtColumnOne()
 	{
 		ErrorContext context = ErrorContext.parseError(
 			Paths.get("Test.java"),
 			new SourceRange(new SourcePosition(5, 1), new SourcePosition(5, 1)),
 			"invalid statement",
-			"Syntax error at beginning of line"
-		);
+			"Syntax error at beginning of line");
 
 		String suggestion = FixSuggestionProvider.generateContextualSuggestion(context, null);
 
@@ -166,8 +185,11 @@ public class FixSuggestionProviderTest
 		assertTrue(suggestion.contains("beginning of line"));
 	}
 
+	/**
+	 * Verifies that suggestions are available for all error categories.
+	 */
 	@Test
-	public void testHasSuggestionForAllCategories()
+	public void hasSuggestionForAllCategories()
 	{
 		assertTrue(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.PARSE));
 		assertTrue(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.CONFIG));
@@ -176,8 +198,11 @@ public class FixSuggestionProviderTest
 		assertTrue(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.SYSTEM));
 	}
 
+	/**
+	 * Verifies that suggestions for validation errors are generated correctly.
+	 */
 	@Test
-	public void testGenerateValidationSuggestion()
+	public void generateValidationSuggestion()
 	{
 		ErrorContext context = new ErrorContext(
 			Paths.get("Test.java"),
@@ -187,8 +212,7 @@ public class FixSuggestionProviderTest
 			ErrorSeverity.WARNING,
 			"VALIDATE-0001",
 			"Constraint violation: value exceeds limit",
-			null
-		);
+			null);
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
@@ -196,20 +220,29 @@ public class FixSuggestionProviderTest
 		assertTrue(suggestion.contains("constraint") || suggestion.contains("configuration"));
 	}
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void testNullErrorContextThrows()
+	/**
+	 * Verifies that passing a null error context to generateSuggestion throws an exception.
+	 */
+	@Test(expectedExceptions = NullPointerException.class)
+	public void nullErrorContextThrows()
 	{
 		FixSuggestionProvider.generateSuggestion(null);
 	}
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void testNullCategoryThrows()
+	/**
+	 * Verifies that passing a null category to hasSuggestionFor throws an exception.
+	 */
+	@Test(expectedExceptions = NullPointerException.class)
+	public void nullCategoryThrows()
 	{
 		FixSuggestionProvider.hasSuggestionFor(null);
 	}
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void testNullContextualErrorContextThrows()
+	/**
+	 * Verifies that passing a null error context to generateContextualSuggestion throws an exception.
+	 */
+	@Test(expectedExceptions = NullPointerException.class)
+	public void nullContextualErrorContextThrows()
 	{
 		FixSuggestionProvider.generateContextualSuggestion(null, "context");
 	}

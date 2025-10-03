@@ -10,7 +10,10 @@ import org.testng.annotations.Test;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Unit tests for ErrorReporter functionality.
@@ -23,6 +26,9 @@ public class ErrorReporterTest
 	private Path testFile;
 	private String testSource;
 
+	/**
+	 * Sets up test fixtures with human and machine error reporters and sample test data.
+	 */
 	@BeforeMethod
 	public void setUp()
 	{
@@ -36,8 +42,11 @@ public class ErrorReporterTest
 		             "}";
 	}
 
+	/**
+	 * Verifies that parse errors are correctly reported and categorized.
+	 */
 	@Test
-	public void testReportParseError()
+	public void reportParseError()
 	{
 		Exception parseException = new RuntimeException("Syntax error at line 2, column 5");
 
@@ -52,8 +61,11 @@ public class ErrorReporterTest
 		assertEquals(error.filePath(), testFile);
 	}
 
+	/**
+	 * Verifies that configuration errors are correctly reported and categorized.
+	 */
 	@Test
-	public void testReportConfigError()
+	public void reportConfigError()
 	{
 		String configText = "invalid_key = \"value\"\n[section]\nkey = value";
 		Exception configException = new RuntimeException("Unknown configuration key 'invalid_key' at line 1");
@@ -66,21 +78,22 @@ public class ErrorReporterTest
 		assertEquals(error.severity(), ErrorSeverity.ERROR);
 	}
 
+	/**
+	 * Verifies that formatting violations are correctly reported with location and suggested fixes.
+	 */
 	@Test
-	public void testReportFormattingViolation()
+	public void reportFormattingViolation()
 	{
 		SourceRange location = new SourceRange(
 			new SourcePosition(2, 5),
-			new SourcePosition(2, 20)
-		);
+			new SourcePosition(2, 20));
 
 		FormattingViolation violation = new FormattingViolation(
 			"LineLength",
 			location,
 			"Line too long: 125 characters (max 120)",
 			ViolationSeverity.WARNING,
-			"Break line at method call"
-		);
+			"Break line at method call");
 
 		humanReporter.reportViolation(violation, testFile, testSource);
 
@@ -93,8 +106,11 @@ public class ErrorReporterTest
 		assertTrue(error.hasSuggestedFix());
 	}
 
+	/**
+	 * Verifies that system errors are correctly reported and categorized.
+	 */
 	@Test
-	public void testReportSystemError()
+	public void reportSystemError()
 	{
 		Exception systemException = new RuntimeException("Permission denied accessing file");
 
@@ -106,8 +122,11 @@ public class ErrorReporterTest
 		assertEquals(error.severity(), ErrorSeverity.ERROR);
 	}
 
+	/**
+	 * Verifies that the error reporter respects the maximum error limit and halts processing.
+	 */
 	@Test
-	public void testMaxErrorsLimit()
+	public void maxErrorsLimit()
 	{
 		humanReporter.setMaxErrors(2);
 
@@ -122,8 +141,11 @@ public class ErrorReporterTest
 		assertEquals(humanReporter.getErrorCount(), 2);
 	}
 
+	/**
+	 * Verifies that clearing errors resets the error count and processing state.
+	 */
 	@Test
-	public void testClearErrors()
+	public void clearErrors()
 	{
 		Exception exception = new RuntimeException("Test error");
 		humanReporter.reportSystemError(exception, testFile);
@@ -137,8 +159,11 @@ public class ErrorReporterTest
 		assertFalse(humanReporter.shouldHaltProcessing());
 	}
 
+	/**
+	 * Verifies that error reports are formatted correctly with file and error information.
+	 */
 	@Test
-	public void testFormatErrorReport()
+	public void formatErrorReport()
 	{
 		Exception parseException = new RuntimeException("Parse error at line 1");
 		humanReporter.reportParseError(parseException, testFile, testSource);
@@ -146,13 +171,16 @@ public class ErrorReporterTest
 		String report = humanReporter.formatErrorReport();
 
 		assertNotNull(report);
-		assertFalse(report.trim().isEmpty());
+		assertFalse(report.isBlank());
 		assertTrue(report.contains("TestFile.java"));
 		assertTrue(report.contains("Parse error"));
 	}
 
+	/**
+	 * Verifies that error summaries include operation type and error counts.
+	 */
 	@Test
-	public void testFormatSummary()
+	public void formatSummary()
 	{
 		Exception parseException = new RuntimeException("Parse error");
 		humanReporter.reportParseError(parseException, testFile, testSource);
@@ -160,13 +188,16 @@ public class ErrorReporterTest
 		String summary = humanReporter.formatSummary("format");
 
 		assertNotNull(summary);
-		assertFalse(summary.trim().isEmpty());
+		assertFalse(summary.isBlank());
 		assertTrue(summary.contains("format"));
 		assertTrue(summary.contains("1"));
 	}
 
+	/**
+	 * Verifies that machine-readable output is formatted as valid JSON.
+	 */
 	@Test
-	public void testMachineReadableOutput()
+	public void machineReadableOutput()
 	{
 		Exception parseException = new RuntimeException("Parse error at line 1");
 		machineReporter.reportParseError(parseException, testFile, testSource);
@@ -181,16 +212,22 @@ public class ErrorReporterTest
 		assertFalse(machineReporter.supportsColors());
 	}
 
+	/**
+	 * Verifies that human-readable output uses plain text format.
+	 */
 	@Test
-	public void testHumanReadableOutput()
+	public void humanReadableOutput()
 	{
 		assertEquals(humanReporter.getMimeType(), "text/plain");
 		// Color support depends on constructor parameter
 		assertFalse(humanReporter.supportsColors()); // Disabled in test setup
 	}
 
+	/**
+	 * Verifies that line and column numbers are correctly extracted from exception messages.
+	 */
 	@Test
-	public void testLocationExtractionFromException()
+	public void locationExtractionFromException()
 	{
 		Exception exceptionWithLocation = new RuntimeException("Syntax error at line 15, column 23");
 		humanReporter.reportParseError(exceptionWithLocation, testFile, testSource);
@@ -200,8 +237,11 @@ public class ErrorReporterTest
 		assertEquals(error.getColumnNumber(), 23);
 	}
 
+	/**
+	 * Verifies that location extraction falls back to line 1, column 1 when location is not found.
+	 */
 	@Test
-	public void testLocationExtractionFallback()
+	public void locationExtractionFallback()
 	{
 		Exception exceptionWithoutLocation = new RuntimeException("Generic parse error");
 		humanReporter.reportParseError(exceptionWithoutLocation, testFile, testSource);
@@ -211,8 +251,11 @@ public class ErrorReporterTest
 		assertEquals(error.getColumnNumber(), 1);
 	}
 
+	/**
+	 * Verifies that all ErrorReporter constructor variants create properly configured instances.
+	 */
 	@Test
-	public void testConstructorVariants()
+	public void constructorVariants()
 	{
 		// Test default constructor
 		ErrorReporter defaultReporter = new ErrorReporter();
@@ -226,32 +269,47 @@ public class ErrorReporterTest
 		assertEquals(machineReporter.getMimeType(), "application/json");
 	}
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void testNullFormatterThrows()
+	/**
+	 * Verifies that passing a null formatter to the constructor throws an exception.
+	 */
+	@Test(expectedExceptions = NullPointerException.class)
+	public void nullFormatterThrows()
 	{
 		new ErrorReporter(null);
 	}
 
+	/**
+	 * Verifies that setting max errors to zero or negative throws an exception.
+	 */
 	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void testInvalidMaxErrorsThrows()
+	public void invalidMaxErrorsThrows()
 	{
 		humanReporter.setMaxErrors(0);
 	}
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void testNullParseExceptionThrows()
+	/**
+	 * Verifies that reporting a null parse exception throws an exception.
+	 */
+	@Test(expectedExceptions = NullPointerException.class)
+	public void nullParseExceptionThrows()
 	{
 		humanReporter.reportParseError(null, testFile, testSource);
 	}
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void testNullViolationThrows()
+	/**
+	 * Verifies that reporting a null formatting violation throws an exception.
+	 */
+	@Test(expectedExceptions = NullPointerException.class)
+	public void nullViolationThrows()
 	{
 		humanReporter.reportViolation(null, testFile, testSource);
 	}
 
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void testNullOperationTypeThrows()
+	/**
+	 * Verifies that formatting a summary with a null operation type throws an exception.
+	 */
+	@Test(expectedExceptions = NullPointerException.class)
+	public void nullOperationTypeThrows()
 	{
 		humanReporter.formatSummary(null);
 	}

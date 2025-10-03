@@ -22,7 +22,7 @@ public final class ValidationResult
 	 * Creates a new validation result.
 	 *
 	 * @param valid         whether the validation succeeded
-	 * @param errorMessages list of error messages for failed validation, never null
+	 * @param errorMessages list of error messages for failed validation, never {@code null}
 	 */
 	private ValidationResult(boolean valid,  List<String> errorMessages)
 	{
@@ -33,9 +33,9 @@ public final class ValidationResult
 	/**
 	 * Creates a successful validation result.
 	 *
-	 * @return a validation result indicating success, never null
+	 * @return a validation result indicating success, never {@code null}
 	 */
-	
+
 	public static ValidationResult success()
 	{
 		return SUCCESS;
@@ -44,10 +44,10 @@ public final class ValidationResult
 	/**
 	 * Creates a failed validation result with a single error message.
 	 *
-	 * @param errorMessage the error message describing why validation failed, never null
-	 * @return a validation result indicating failure, never null
+	 * @param errorMessage the error message describing why validation failed, never {@code null}
+	 * @return a validation result indicating failure, never {@code null}
 	 */
-	
+
 	public static ValidationResult failure( String errorMessage)
 	{
 		Objects.requireNonNull(errorMessage, "Error message cannot be null");
@@ -57,10 +57,10 @@ public final class ValidationResult
 	/**
 	 * Creates a failed validation result with multiple error messages.
 	 *
-	 * @param errorMessages the list of error messages, never null or empty
-	 * @return a validation result indicating failure, never null
+	 * @param errorMessages the list of error messages, never {@code null} or empty
+	 * @return a validation result indicating failure, never {@code null}
 	 */
-	
+
 	public static ValidationResult failure( List<String> errorMessages)
 	{
 		Objects.requireNonNull(errorMessages, "Error messages cannot be null");
@@ -74,7 +74,7 @@ public final class ValidationResult
 	/**
 	 * Returns whether the validation was successful.
 	 *
-	 * @return true if validation succeeded, false if it failed
+	 * @return {@code true} if validation succeeded, {@code false} if it failed
 	 */
 	public boolean isValid()
 	{
@@ -84,7 +84,7 @@ public final class ValidationResult
 	/**
 	 * Returns whether the validation failed.
 	 *
-	 * @return true if validation failed, false if it succeeded
+	 * @return {@code true} if validation failed, {@code false} if it succeeded
 	 */
 	public boolean isFailure()
 	{
@@ -96,9 +96,9 @@ public final class ValidationResult
 	 * <p>
 	 * For successful validation, this list is empty.
 	 *
-	 * @return the list of error messages, never null but may be empty
+	 * @return the list of error messages, never {@code null} but may be empty
 	 */
-	
+
 	public List<String> getErrorMessages()
 	{
 		return errorMessages;
@@ -107,20 +107,24 @@ public final class ValidationResult
 	/**
 	 * Returns the first error message, if any.
 	 *
-	 * @return the first error message, or null if validation succeeded
+	 * @return the first error message, or {@code null} if validation succeeded
 	 */
-	
+
 	public String getFirstErrorMessage()
 	{
-		return errorMessages.isEmpty() ? null : errorMessages.get(0);
+		if (errorMessages.isEmpty())
+		{
+			return null;
+		}
+		return errorMessages.get(0);
 	}
 
 	/**
 	 * Returns a combined error message containing all validation failures.
 	 *
-	 * @return a combined error message, or null if validation succeeded
+	 * @return a combined error message, or {@code null} if validation succeeded
 	 */
-	
+
 	public String getCombinedErrorMessage()
 	{
 		if (errorMessages.isEmpty())
@@ -156,9 +160,6 @@ public final class ValidationResult
 		{
 			return "ValidationResult{valid=true}";
 		}
-		else
-		{
-			return "ValidationResult{valid=false, errors=" + errorMessages + "}";
-		}
+		return "ValidationResult{valid=false, errors=" + errorMessages + "}";
 	}
 }

@@ -280,6 +280,13 @@
 						<version>${checkstyle.version}</version>
 					</dependency>
 				</dependencies>
+				<executions>
+					<execution>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
 				<configuration>
 					<configLocation>${project.root.basedir}/config/checkstyle.xml</configLocation>
 					<consoleOutput>true</consoleOutput>
@@ -288,14 +295,6 @@
 					<includeTestSourceDirectory>true</includeTestSourceDirectory>
 					<excludeGeneratedSources>true</excludeGeneratedSources>
 				</configuration>
-				<executions>
-					<execution>
-						<phase>validate</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -336,7 +335,6 @@
 				</configuration>
 				<executions>
 					<execution>
-						<phase>validate</phase>
 						<goals>
 							<goal>check</goal>
 						</goals>

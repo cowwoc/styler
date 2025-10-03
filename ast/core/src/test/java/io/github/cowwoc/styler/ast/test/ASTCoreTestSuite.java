@@ -12,25 +12,33 @@ import java.util.List;
  * Comprehensive test suite for AST Core module.
  * Organizes and executes all test categories for complete validation.
  */
-public class ASTCoreTestSuite {
+public class ASTCoreTestSuite
+	{
 	/**
 	 * Main entry point for running the complete test suite.
+	 *
+	 * @param args command line arguments (accepts "quick" for quick validation)
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args)
+		{
 		ASTCoreTestSuite suite = new ASTCoreTestSuite();
 
-		if (args.length > 0 && "quick".equals(args[0])) {
+		if (args.length > 0 && "quick".equals(args[0]))
+			{
 			suite.runQuickValidation();
-		} else {
+		}
+		else
+			{
 			suite.runFullTestSuite();
 		}
 	}
 
 	/**
 	 * Runs the complete test suite with all categories.
-	 * @throws SecurityException if security manager prevents exit
 	 */
-	public void runFullTestSuite() {
+	@SuppressWarnings({"PMD.SystemPrintln", "PMD.DoNotTerminateVM"}) // Test runner output and exit
+	public void runFullTestSuite()
+		{
 		System.out.println("=== Running AST Core Module Complete Test Suite ===");
 
 		XmlSuite suite = new XmlSuite();
@@ -39,10 +47,9 @@ public class ASTCoreTestSuite {
 		suite.setThreadCount(4);
 
 		// Core Infrastructure Tests
-		XmlTest coreTest = createTest(suite, "Core Infrastructure Tests", Arrays.asList(
+		createTest(suite, "Core Infrastructure Tests", Arrays.asList(
 			BasicFunctionalityTest.class,
-			VisitorPatternComplianceTest.class
-		));
+			VisitorPatternComplianceTest.class));
 
 		// Run the suite
 		TestNG testng = new TestNG();
@@ -50,19 +57,23 @@ public class ASTCoreTestSuite {
 		testng.run();
 
 		// Print summary
-		if (testng.hasFailure()) {
+		if (testng.hasFailure())
+			{
 			System.err.println("❌ Test suite completed with failures");
 			System.exit(1);
-		} else {
+		}
+		else
+			{
 			System.out.println("✅ All tests passed successfully");
 		}
 	}
 
 	/**
 	 * Runs a quick validation subset for development feedback.
-	 * @throws SecurityException if security manager prevents exit
 	 */
-	public void runQuickValidation() {
+	@SuppressWarnings({"PMD.SystemPrintln", "PMD.DoNotTerminateVM"}) // Test runner output and exit
+	public void runQuickValidation()
+		{
 		System.out.println("=== Running AST Core Module Quick Validation ===");
 
 		XmlSuite suite = new XmlSuite();
@@ -71,10 +82,9 @@ public class ASTCoreTestSuite {
 		suite.setThreadCount(2);
 
 		// Quick validation focuses on core functionality
-		XmlTest quickTest = createTest(suite, "Quick Validation", Arrays.asList(
+		createTest(suite, "Quick Validation", Arrays.asList(
 			BasicFunctionalityTest.class,
-			VisitorPatternComplianceTest.class
-		));
+			VisitorPatternComplianceTest.class));
 
 		// Run the suite
 		TestNG testng = new TestNG();
@@ -82,24 +92,33 @@ public class ASTCoreTestSuite {
 		testng.run();
 
 		// Print summary
-		if (testng.hasFailure()) {
+		if (testng.hasFailure())
+			{
 			System.err.println("❌ Quick validation failed");
 			System.exit(1);
-		} else {
+		}
+		else
+			{
 			System.out.println("✅ Quick validation passed");
 		}
 	}
 
 	/**
 	 * Creates a TestNG XML test configuration.
+	 *
+	 * @param suite the parent XML suite
+	 * @param testName the name for this test
+	 * @param testClasses the list of test classes to include
+	 * @return the configured XML test
 	 */
-	private XmlTest createTest(XmlSuite suite, String testName, List<Class<?>> testClasses) {
+	private XmlTest createTest(XmlSuite suite, String testName, List<Class<?>> testClasses)
+		{
 		XmlTest test = new XmlTest(suite);
 		test.setName(testName);
 
-		List<XmlClass> xmlClasses = testClasses.stream()
-			.map(clazz -> new XmlClass(clazz.getName()))
-			.toList();
+		List<XmlClass> xmlClasses = testClasses.stream().
+			map(clazz -> new XmlClass(clazz.getName())).
+			toList();
 
 		test.setXmlClasses(xmlClasses);
 		return test;
@@ -108,16 +127,25 @@ public class ASTCoreTestSuite {
 	/**
 	 * Programmatic test execution for CI/CD integration.
 	 */
-	public static class ProgrammaticRunner {
+	public static final class ProgrammaticRunner
+		{
+		private ProgrammaticRunner()
+			{
+			// Utility class - prevent instantiation
+			}
+
 		/**
 		 * Runs tests programmatically and returns success status.
+		 *
 		 * @return true if all tests pass, false otherwise
 		 */
-		public static boolean runAllTests() {
+		public static boolean runAllTests()
+			{
 			TestNG testng = new TestNG();
 
 			// Configure test classes
-			testng.setTestClasses(new Class<?>[] {
+			testng.setTestClasses(new Class<?>[]
+				{
 			    BasicFunctionalityTest.class,
 			    VisitorPatternComplianceTest.class
 			});
@@ -134,12 +162,15 @@ public class ASTCoreTestSuite {
 
 		/**
 		 * Runs core tests only for quick feedback.
+		 *
 		 * @return true if core tests pass, false otherwise
 		 */
-		public static boolean runCoreTests() {
+		public static boolean runCoreTests()
+			{
 			TestNG testng = new TestNG();
 
-			testng.setTestClasses(new Class<?>[] {
+			testng.setTestClasses(new Class<?>[]
+				{
 			    BasicFunctionalityTest.class,
 			    VisitorPatternComplianceTest.class
 			});

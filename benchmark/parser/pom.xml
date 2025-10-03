@@ -15,7 +15,7 @@
 	<description>JMH performance benchmarks for the Styler parser</description>
 
 	<properties>
-		<project.root.basedir>${project.parent.basedir}</project.root.basedir>
+		<project.root.basedir>${project.parent.parent.basedir}</project.root.basedir>
 	</properties>
 
 	<dependencies>
@@ -44,6 +44,24 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 			</plugin>
 
+			<!-- Disable checkstyle for benchmark code (follows JMH conventions) -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-checkstyle-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
+
+		<!-- Disable PMD for benchmark code (follows JMH conventions) -->
+		<plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-pmd-plugin</artifactId>
+			<configuration>
+				<skip>true</skip>
+			</configuration>
+		</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>

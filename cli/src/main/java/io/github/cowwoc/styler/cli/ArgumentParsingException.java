@@ -9,12 +9,13 @@ package io.github.cowwoc.styler.cli;
  */
 public class ArgumentParsingException extends Exception
 {
+	private static final long serialVersionUID = 1L;
 	private final String usageText;
 
 	/**
 	 * Creates a new argument parsing exception.
 	 *
-	 * @param message the error message describing what went wrong
+	 * @param message the error {@code message} describing what went wrong
 	 * @param usageText the usage text to display to help the user
 	 */
 	public ArgumentParsingException(String message, String usageText)
@@ -26,9 +27,9 @@ public class ArgumentParsingException extends Exception
 	/**
 	 * Creates a new argument parsing exception with a cause.
 	 *
-	 * @param message the error message describing what went wrong
+	 * @param message the error {@code message} describing what went wrong
 	 * @param usageText the usage text to display to help the user
-	 * @param cause the underlying cause of the parsing failure
+	 * @param cause the underlying {@code cause} of the parsing failure
 	 */
 	public ArgumentParsingException(String message, String usageText, Throwable cause)
 	{

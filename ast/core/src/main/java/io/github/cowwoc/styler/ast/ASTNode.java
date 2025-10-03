@@ -13,7 +13,8 @@ import java.util.Optional;
  * Provides immutable structure with comprehensive metadata preservation and visitor pattern support.
  * All AST nodes are immutable after construction and thread-safe for concurrent access.
  */
-public abstract class ASTNode {
+public abstract class ASTNode
+	{
 	private final SourceRange range;
 	private final List<Comment> leadingComments;
 	private final List<Comment> trailingComments;
@@ -25,14 +26,26 @@ public abstract class ASTNode {
 	 * Constructs an AST node with complete metadata.
 	 *
 	 * @param range the source range of this node
+	 *
 	 * @param leadingComments comments appearing before this node
+	 *
 	 * @param trailingComments comments appearing after this node
+	 *
 	 * @param whitespace whitespace information for this node
+	 *
 	 * @param hints formatting hints for this node
+	 *
 	 * @param parent the parent node (empty for final root nodes)
+	  * @throws NullPointerException if {@code whitespace} is null
+	  * @throws NullPointerException if {@code trailingComments} is null
+	  * @throws NullPointerException if {@code range} is null
+	  * @throws NullPointerException if {@code parent} is null
+	  * @throws NullPointerException if {@code leadingComments} is null
+	  * @throws NullPointerException if {@code hints} is null
 	 */
 	protected ASTNode(SourceRange range, List<Comment> leadingComments, List<Comment> trailingComments,
-		WhitespaceInfo whitespace, FormattingHints hints, Optional<ASTNode> parent) {
+		WhitespaceInfo whitespace, FormattingHints hints, Optional<ASTNode> parent)
+			{
 		requireThat(range, "range").isNotNull();
 		requireThat(leadingComments, "leadingComments").isNotNull();
 		requireThat(trailingComments, "trailingComments").isNotNull();
@@ -50,65 +63,81 @@ public abstract class ASTNode {
 
 	/**
 	 * Gets the source range covered by this AST node.
+	 *
 	 * @return the source range of this node
 	 */
-	public final SourceRange getRange() {
+	public final SourceRange getRange()
+		{
 		return range;
 	}
 
 	/**
 	 * Gets the starting position of this AST node.
+	 *
 	 * @return the start position
 	 */
-	public final SourcePosition getStartPosition() {
+	public final SourcePosition getStartPosition()
+		{
 		return range.start();
 	}
 
 	/**
 	 * Gets the ending position of this AST node.
+	 *
 	 * @return the end position
 	 */
-	public final SourcePosition getEndPosition() {
+	public final SourcePosition getEndPosition()
+		{
 		return range.end();
 	}
 
 	/**
 	 * Gets the comments that appear before this node.
+	 *
 	 * @return an immutable list of leading comments
 	 */
-	public final List<Comment> getLeadingComments() {
+	public final List<Comment> getLeadingComments()
+		{
 		return leadingComments;
 	}
 
 	/**
 	 * Gets the comments that appear after this node.
+	 *
 	 * @return an immutable list of trailing comments
 	 */
-	public final List<Comment> getTrailingComments() {
+	public final List<Comment> getTrailingComments()
+		{
 		return trailingComments;
 	}
 
 	/**
 	 * Gets the whitespace information for this node.
+	 *
 	 * @return the whitespace information
 	 */
-	public final WhitespaceInfo getWhitespace() {
+	public final WhitespaceInfo getWhitespace()
+		{
 		return whitespace;
 	}
 
 	/**
 	 * Gets the formatting hints for this node.
+	 *
 	 * @return the formatting hints
 	 */
-	public final FormattingHints getHints() {
+	public final FormattingHints getHints()
+		{
 		return hints;
 	}
 
 	/**
 	 * Gets the parent node of this AST node.
+	 *
 	 * @return the parent node, or empty if this is a root node
 	 */
-	public final Optional<ASTNode> getParent() {
+	public final Optional<ASTNode> getParent()
+		{
 		return parent;
 	}
 
@@ -117,9 +146,13 @@ public abstract class ASTNode {
 	 * This method implements double-dispatch to call the appropriate visit method on the visitor.
 	 *
 	 * @param <R> the return type of the visitor
+	 *
 	 * @param <A> the argument type for the visitor
+	 *
 	 * @param visitor the visitor to accept
+	 *
 	 * @param arg the argument to pass to the visitor
+	 *
 	 * @return the result of the visitor operation
 	 */
 	public abstract <R, A> R accept(ASTVisitor<R, A> visitor, final A arg);
@@ -145,11 +178,17 @@ public abstract class ASTNode {
 	 * This is useful for preserving AST structure while updating formatting information.
 	 *
 	 * @param newRange the new source range
+	 *
 	 * @param newLeadingComments the new leading comments
+	 *
 	 * @param newTrailingComments the new trailing comments
+	 *
 	 * @param newWhitespace the new whitespace information
+	 *
 	 * @param newHints the new formatting hints
+	 *
 	 * @param newParent the new parent node
+	 *
 	 * @return a new AST node with updated metadata
 	 */
 	protected abstract ASTNode withMetadata(SourceRange newRange, List<Comment> newLeadingComments,
@@ -158,30 +197,37 @@ public abstract class ASTNode {
 
 	/**
 	 * Checks if this node has any associated comments.
-	 * @return true if this node has leading or trailing comments
+	 *
+	 * @return {@code true} if this node has leading or trailing comments
 	 */
-	public final boolean hasComments() {
+	public final boolean hasComments()
+		{
 		return !leadingComments.isEmpty() || !trailingComments.isEmpty();
 	}
 
 	/**
 	 * Checks if this node has any child nodes.
-	 * @return true if this node has child nodes
+	 *
+	 * @return {@code true} if this node has child nodes
 	 */
-	public final boolean hasChildren() {
+	public final boolean hasChildren()
+		{
 		return !getChildren().isEmpty();
 	}
 
 	/**
 	 * Checks if this node is a leaf node (no children).
-	 * @return true if this node has no children
+	 *
+	 * @return {@code true} if this node has no children
 	 */
-	public final boolean isLeaf() {
+	public final boolean isLeaf()
+		{
 		return getChildren().isEmpty();
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(Object obj)
+		{
 		if (this == obj) return true;
 		if (obj == null || getClass() != obj.getClass()) return false;
 
@@ -194,12 +240,14 @@ public abstract class ASTNode {
 	}
 
 	@Override
-	public int hashCode() {
+	public int hashCode()
+		{
 		return Objects.hash(range, leadingComments, trailingComments, whitespace, hints);
 	}
 
 	@Override
-	public String toString() {
+	public String toString()
+		{
 		return getClass().getSimpleName() + "[" + range + "]";
 	}
 }

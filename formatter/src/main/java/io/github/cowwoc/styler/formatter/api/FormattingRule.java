@@ -1,7 +1,5 @@
 package io.github.cowwoc.styler.formatter.api;
 
-import io.github.cowwoc.styler.ast.ASTNode;
-
 import java.time.Duration;
 
 /**
@@ -23,7 +21,7 @@ public interface FormattingRule
 	 * They must be unique across all loaded plugins and follow reverse DNS naming
 	 * convention (e.g., "com.example.rules.LineLength").
 	 *
-	 * @return the rule identifier, never null or empty
+	 * @return the rule identifier, never {@code null} or empty
 	 */
 	String getRuleId();
 
@@ -32,7 +30,7 @@ public interface FormattingRule
 	 * <p>
 	 * Rules with higher priority values are applied later in the formatting pipeline.
 	 * This enables dependent rules to build upon the results of foundational rules.
-	 * Priority values should be between 0 (earliest) and 1000 (latest).
+	 * Priority values should be between {@code 0} (earliest) and 1000 (latest).
 	 *
 	 * @return the priority value for rule execution ordering
 	 */
@@ -45,7 +43,7 @@ public interface FormattingRule
 	 * exhaustion attacks. Rules that exceed this timeout will be terminated
 	 * and marked as failed.
 	 *
-	 * @return the maximum execution duration, never null
+	 * @return the maximum execution duration, never {@code null}
 	 */
 	default Duration getMaxExecutionTime()
 	{
@@ -71,7 +69,7 @@ public interface FormattingRule
 	 * The default configuration provides sensible defaults for all rule parameters
 	 * and serves as the base for user customizations.
 	 *
-	 * @return the default rule configuration, never null
+	 * @return the default rule configuration, never {@code null}
 	 */
 	RuleConfiguration getDefaultConfiguration();
 
@@ -82,7 +80,7 @@ public interface FormattingRule
 	 * It verifies that the AST structure, file type, and configuration are
 	 * compatible with this rule's requirements.
 	 *
-	 * @param context the formatting context to validate, never null
+	 * @param context the formatting context to validate, never {@code null}
 	 * @return the validation result indicating success or failure reasons
 	 * @throws SecurityException if the rule attempts unauthorized operations
 	 */
@@ -103,8 +101,8 @@ public interface FormattingRule
 	 *   <li>Must not exceed memory allocation limits</li>
 	 * </ul>
 	 *
-	 * @param context the formatting context containing AST and metadata, never null
-	 * @return the formatting result with text edits and diagnostics, never null
+	 * @param context the formatting context containing AST and metadata, never {@code null}
+	 * @return the formatting result with text edits and diagnostics, never {@code null}
 	 * @throws SecurityException if the rule attempts unauthorized operations
 	 */
 	FormattingResult apply(FormattingContext context);

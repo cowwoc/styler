@@ -13,8 +13,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Unit tests for configuration discovery exception hierarchy.
  * Tests exception creation, message formatting, and business context preservation.
  */
+@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public class ConfigExceptionsTest
 {
+	/**
+	 * Verifies that ConfigDiscoveryException preserves error message.
+	 */
 	@Test
 	public void configDiscoveryException_withMessage_preservesMessage()
 	{
@@ -29,6 +33,9 @@ public class ConfigExceptionsTest
 		assertThat(exception.getCause()).isNull();
 	}
 
+	/**
+	 * Verifies that ConfigDiscoveryException preserves both message and cause.
+	 */
 	@Test
 	public void configDiscoveryException_withMessageAndCause_preservesBoth()
 	{
@@ -44,14 +51,20 @@ public class ConfigExceptionsTest
 		assertThat(exception.getCause()).isEqualTo(cause);
 	}
 
+	/**
+	 * Verifies that null message throws NullPointerException.
+	 */
 	@Test
 	public void configDiscoveryException_withNullMessage_throwsNullPointerException()
 	{
 		// When/Then: null message throws exception
-		assertThatThrownBy(() -> new ConfigDiscoveryException(null))
-			.isInstanceOf(NullPointerException.class);
+		assertThatThrownBy(() -> new ConfigDiscoveryException(null)).
+			isInstanceOf(NullPointerException.class);
 	}
 
+	/**
+	 * Verifies that ConfigNotFoundException builds descriptive message with all searched paths.
+	 */
 	@Test
 	public void configNotFoundException_withSearchedPaths_buildsDescriptiveMessage()
 	{
@@ -59,8 +72,7 @@ public class ConfigExceptionsTest
 		List<Path> searchedPaths = List.of(
 			Paths.get("/project/.styler.toml"),
 			Paths.get("/home/user/.config/styler/.styler.toml"),
-			Paths.get("/etc/styler/.styler.toml")
-		);
+			Paths.get("/etc/styler/.styler.toml"));
 
 		// When: creating exception
 		ConfigNotFoundException exception = new ConfigNotFoundException(searchedPaths);
@@ -74,11 +86,14 @@ public class ConfigExceptionsTest
 		assertThat(message).contains("create a .styler.toml file");
 		assertThat(message).contains("--config");
 
-		// And: searched paths are accessible
+		// And: searched paths are accessible and immutable
 		assertThat(exception.getSearchedPaths()).isEqualTo(searchedPaths);
-		assertThat(exception.getSearchedPaths()).isNotSameAs(searchedPaths); // Should be immutable copy
+		// Note: List.copyOf may return same instance if input is already immutable (optimization)
 	}
 
+	/**
+	 * Verifies that ConfigNotFoundException handles empty search paths appropriately.
+	 */
 	@Test
 	public void configNotFoundException_withEmptySearchPaths_buildsAppropriateMessage()
 	{
@@ -94,14 +109,20 @@ public class ConfigExceptionsTest
 		assertThat(exception.getSearchedPaths()).isEmpty();
 	}
 
+	/**
+	 * Verifies that null searched paths throws NullPointerException.
+	 */
 	@Test
 	public void configNotFoundException_withNullSearchedPaths_throwsNullPointerException()
 	{
 		// When/Then: null searched paths throws exception
-		assertThatThrownBy(() -> new ConfigNotFoundException(null))
-			.isInstanceOf(NullPointerException.class);
+		assertThatThrownBy(() -> new ConfigNotFoundException(null)).
+			isInstanceOf(NullPointerException.class);
 	}
 
+	/**
+	 * Verifies that ConfigValidationException builds descriptive message with file path and validation details.
+	 */
 	@Test
 	public void configValidationException_withConfigFileAndMessage_buildsDescriptiveMessage()
 	{
@@ -124,6 +145,9 @@ public class ConfigExceptionsTest
 		assertThat(exception.getCause()).isNull();
 	}
 
+	/**
+	 * Verifies that ConfigValidationException preserves config file, message, and cause.
+	 */
 	@Test
 	public void configValidationException_withConfigFileMessageAndCause_preservesAllDetails()
 	{
@@ -144,14 +168,20 @@ public class ConfigExceptionsTest
 		assertThat(exception.getCause()).isEqualTo(cause);
 	}
 
+	/**
+	 * Verifies that null config file throws NullPointerException.
+	 */
 	@Test
 	public void configValidationException_withNullConfigFile_throwsNullPointerException()
 	{
 		// When/Then: null config file throws exception
-		assertThatThrownBy(() -> new ConfigValidationException(null, "message"))
-			.isInstanceOf(NullPointerException.class);
+		assertThatThrownBy(() -> new ConfigValidationException(null, "message")).
+			isInstanceOf(NullPointerException.class);
 	}
 
+	/**
+	 * Verifies that null validation message throws NullPointerException.
+	 */
 	@Test
 	public void configValidationException_withNullMessage_throwsNullPointerException()
 	{
@@ -159,10 +189,13 @@ public class ConfigExceptionsTest
 		Path configFile = Paths.get("/project/.styler.toml");
 
 		// When/Then: null message throws exception
-		assertThatThrownBy(() -> new ConfigValidationException(configFile, null))
-			.isInstanceOf(NullPointerException.class);
+		assertThatThrownBy(() -> new ConfigValidationException(configFile, null)).
+			isInstanceOf(NullPointerException.class);
 	}
 
+	/**
+	 * Verifies that FileAccessException builds descriptive message with file path and access details.
+	 */
 	@Test
 	public void fileAccessException_withConfigFileAndMessage_buildsDescriptiveMessage()
 	{
@@ -185,6 +218,9 @@ public class ConfigExceptionsTest
 		assertThat(exception.getCause()).isNull();
 	}
 
+	/**
+	 * Verifies that FileAccessException preserves config file, message, and cause.
+	 */
 	@Test
 	public void fileAccessException_withConfigFileMessageAndCause_preservesAllDetails()
 	{
@@ -205,14 +241,20 @@ public class ConfigExceptionsTest
 		assertThat(exception.getCause()).isEqualTo(cause);
 	}
 
+	/**
+	 * Verifies that null config file throws NullPointerException for FileAccessException.
+	 */
 	@Test
 	public void fileAccessException_withNullConfigFile_throwsNullPointerException()
 	{
 		// When/Then: null config file throws exception
-		assertThatThrownBy(() -> new FileAccessException(null, "message"))
-			.isInstanceOf(NullPointerException.class);
+		assertThatThrownBy(() -> new FileAccessException(null, "message")).
+			isInstanceOf(NullPointerException.class);
 	}
 
+	/**
+	 * Verifies that null access message throws NullPointerException for FileAccessException.
+	 */
 	@Test
 	public void fileAccessException_withNullMessage_throwsNullPointerException()
 	{
@@ -220,7 +262,7 @@ public class ConfigExceptionsTest
 		Path configFile = Paths.get("/project/.styler.toml");
 
 		// When/Then: null message throws exception
-		assertThatThrownBy(() -> new FileAccessException(configFile, null))
-			.isInstanceOf(NullPointerException.class);
+		assertThatThrownBy(() -> new FileAccessException(configFile, null)).
+			isInstanceOf(NullPointerException.class);
 	}
 }

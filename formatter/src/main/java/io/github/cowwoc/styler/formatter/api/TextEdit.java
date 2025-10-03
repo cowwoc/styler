@@ -22,10 +22,10 @@ public final class TextEdit implements Comparable<TextEdit>
 	/**
 	 * Creates a new text edit.
 	 *
-	 * @param range       the source range to replace, never null
-	 * @param replacement the replacement text, never null
-	 * @param ruleId      the ID of the rule that generated this edit, never null
-	 * @param priority    the priority for conflict resolution, never null
+	 * @param range       the source range to replace, never {@code null}
+	 * @param replacement the replacement text, never {@code null}
+	 * @param ruleId      the ID of the rule that generated this edit, never {@code null}
+	 * @param priority    the priority for conflict resolution, never {@code null}
 	 */
 	public TextEdit( SourceRange range,
 	                 String replacement,
@@ -41,12 +41,12 @@ public final class TextEdit implements Comparable<TextEdit>
 	/**
 	 * Creates a new text edit with normal priority.
 	 *
-	 * @param range       the source range to replace, never null
-	 * @param replacement the replacement text, never null
-	 * @param ruleId      the ID of the rule that generated this edit, never null
-	 * @return a new text edit with normal priority, never null
+	 * @param range       the source range to replace, never {@code null}
+	 * @param replacement the replacement text, never {@code null}
+	 * @param ruleId      the ID of the rule that generated this edit, never {@code null}
+	 * @return a new text edit with normal priority, never {@code null}
 	 */
-	
+
 	public static TextEdit create( SourceRange range,
 	                               String replacement,
 	                               String ruleId)
@@ -60,9 +60,9 @@ public final class TextEdit implements Comparable<TextEdit>
 	 * The range specifies the exact positions in the source text where
 	 * the edit should be applied.
 	 *
-	 * @return the source range, never null
+	 * @return the source range, never {@code null}
 	 */
-	
+
 	public SourceRange getRange()
 	{
 		return range;
@@ -74,9 +74,9 @@ public final class TextEdit implements Comparable<TextEdit>
 	 * This text will replace the content at the specified range.
 	 * Empty string indicates deletion of the range content.
 	 *
-	 * @return the replacement text, never null
+	 * @return the replacement text, never {@code null}
 	 */
-	
+
 	public String getReplacement()
 	{
 		return replacement;
@@ -87,9 +87,9 @@ public final class TextEdit implements Comparable<TextEdit>
 	 * <p>
 	 * The rule ID is used for conflict resolution and audit logging.
 	 *
-	 * @return the rule ID, never null
+	 * @return the rule ID, never {@code null}
 	 */
-	
+
 	public String getRuleId()
 	{
 		return ruleId;
@@ -101,9 +101,9 @@ public final class TextEdit implements Comparable<TextEdit>
 	 * When multiple edits overlap, the priority determines which edit
 	 * should be preferred.
 	 *
-	 * @return the edit priority, never null
+	 * @return the edit priority, never {@code null}
 	 */
-	
+
 	public EditPriority getPriority()
 	{
 		return priority;
@@ -112,7 +112,7 @@ public final class TextEdit implements Comparable<TextEdit>
 	/**
 	 * Returns whether this edit represents a deletion.
 	 *
-	 * @return true if the replacement text is empty, false otherwise
+	 * @return {@code true} if the replacement text is empty, {@code false} otherwise
 	 */
 	public boolean isDeletion()
 	{
@@ -122,7 +122,7 @@ public final class TextEdit implements Comparable<TextEdit>
 	/**
 	 * Returns whether this edit represents an insertion.
 	 *
-	 * @return true if the range has zero length, false otherwise
+	 * @return {@code true} if the range has zero length, {@code false} otherwise
 	 */
 	public boolean isInsertion()
 	{
@@ -132,8 +132,8 @@ public final class TextEdit implements Comparable<TextEdit>
 	/**
 	 * Returns whether this edit overlaps with another edit.
 	 *
-	 * @param other the other text edit to check, never null
-	 * @return true if the edits overlap, false otherwise
+	 * @param other the other text edit to check, never {@code null}
+	 * @return {@code true} if the edits overlap, {@code false} otherwise
 	 */
 	public boolean overlapsWith( TextEdit other)
 	{

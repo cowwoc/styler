@@ -13,7 +13,7 @@ import java.nio.file.Path;
  * File size exceeds maximum limit
  *   File: /path/to/LargeClass.java
  *   Size: 75.3 MB
- *   Limit: 50.0 MB
+ *   Limit: 50.{@code 0} MB
  *
  *   This file is too large for safe parsing. Consider:
  *   - Splitting into smaller files
@@ -23,7 +23,8 @@ import java.nio.file.Path;
  */
 public final class FileSizeExceededException extends SecurityException
 {
-	private final Path filePath;
+	private static final long serialVersionUID = 1L;
+	private final transient Path filePath;
 	private final long actualSize;
 	private final long maxSize;
 
@@ -56,8 +57,7 @@ public final class FileSizeExceededException extends SecurityException
 			"  - Increasing limit in configuration",
 			filePath,
 			actualSize / 1024.0 / 1024.0,
-			maxSize / 1024.0 / 1024.0
-		);
+			maxSize / 1024.0 / 1024.0);
 	}
 
 	/**

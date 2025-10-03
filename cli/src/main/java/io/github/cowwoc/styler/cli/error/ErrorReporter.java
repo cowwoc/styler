@@ -29,14 +29,14 @@ public final class ErrorReporter
 	/**
 	 * Creates an error reporter with the specified formatter.
 	 *
-	 * @param formatter the error formatter to use for output, never null
-	 * @throws IllegalArgumentException if {@code formatter} is null
+	 * @param formatter the error formatter to use for output, never {@code null}
+	 * @throws NullPointerException if {@code formatter} is {@code null}
 	 */
 	public ErrorReporter(ErrorFormatter formatter)
 	{
 		if (formatter == null)
 		{
-			throw new IllegalArgumentException("Error formatter cannot be null");
+			throw new NullPointerException("Error formatter cannot be null");
 		}
 		this.formatter = formatter;
 		this.collectedErrors = new CopyOnWriteArrayList<>();
@@ -56,42 +56,53 @@ public final class ErrorReporter
 	/**
 	 * Creates an error reporter with the specified output format.
 	 *
-	 * @param machineReadable true for JSON output, false for human-readable output
+	 * @param machineReadable {@code true} for JSON output, {@code false} for human-readable output
 	 * @param enableColors whether to enable color output (ignored for machine-readable)
 	 */
 	public ErrorReporter(boolean machineReadable, boolean enableColors)
 	{
-		this(machineReadable ? new MachineErrorFormatter() : new HumanErrorFormatter(enableColors));
+		if (machineReadable)
+		{
+			this.formatter = new MachineErrorFormatter();
+		}
+		else
+		{
+			this.formatter = new HumanErrorFormatter(enableColors);
+		}
+		this.collectedErrors = new CopyOnWriteArrayList<>();
+		this.startTime = System.currentTimeMillis();
+		this.maxErrors = 100; // Default limit
+		this.shouldHalt = false;
 	}
 
 	/**
 	 * Reports a parse error that occurred during source code analysis.
 	 *
-	 * @param parseException the parse exception containing error details, never null
-	 * @param sourceFile the file being parsed, never null
-	 * @param sourceText the source text being parsed, never null
-	 * @throws IllegalArgumentException if any parameter is null
+	 * @param parseException the parse exception containing error details, never {@code null}
+	 * @param sourceFile the file being parsed, never {@code null}
+	 * @param sourceText the source text being parsed, never {@code null}
+	 * @throws NullPointerException if any parameter is {@code null}
 	 */
 	public void reportParseError(Exception parseException, Path sourceFile, String sourceText)
 	{
 		if (parseException == null)
 		{
-			throw new IllegalArgumentException("Parse exception cannot be null");
+			throw new NullPointerException("Parse exception cannot be null");
 		}
 		if (sourceFile == null)
 		{
-			throw new IllegalArgumentException("Source file cannot be null");
+			throw new NullPointerException("Source file cannot be null");
 		}
 		if (sourceText == null)
 		{
-			throw new IllegalArgumentException("Source text cannot be null");
+			throw new NullPointerException("Source text cannot be null");
 		}
 
 		// Extract location information from exception if available
-		SourceRange location = extractLocationFromException(parseException, sourceText);
+		SourceRange location = extractLocationFromException(parseException);
 		String message = parseException.getMessage();
 
-		if (message == null || message.trim().isEmpty())
+		if (message == null || message.isBlank())
 		{
 			message = "Parse error: " + parseException.getClass().getSimpleName();
 		}
@@ -103,10 +114,10 @@ public final class ErrorReporter
 	/**
 	 * Reports a configuration error that occurred during config file loading or validation.
 	 *
-	 * @param configException the configuration exception, never null
-	 * @param configFile the configuration file with the error, never null
-	 * @param configText the configuration file content, never null
-	 * @throws IllegalArgumentException if any parameter is null
+	 * @param configException the configuration exception, never {@code null}
+	 * @param configFile the configuration file with the error, never {@code null}
+	 * @param configText the configuration file content, never {@code null}
+	 * @throws NullPointerException if any parameter is {@code null}
 	 */
 	public void reportConfigError(Exception configException, Path configFile, String configText)
 	{
@@ -114,17 +125,16 @@ public final class ErrorReporter
 		Objects.requireNonNull(configFile, "Config file cannot be null");
 		Objects.requireNonNull(configText, "Config text cannot be null");
 
-		SourceRange location = extractLocationFromException(configException, configText);
+		SourceRange location = extractLocationFromException(configException);
 		String message = configException.getMessage();
 
-		if (message == null || message.trim().isEmpty())
+		if (message == null || message.isBlank())
 		{
 			message = "Configuration error: " + configException.getClass().getSimpleName();
 		}
 
 		String suggestedFix = FixSuggestionProvider.generateSuggestion(
-			ErrorContext.configError(configFile, location, configText, message, null)
-		);
+			ErrorContext.configError(configFile, location, configText, message, null));
 
 		ErrorContext errorContext = ErrorContext.configError(
 			configFile, location, configText, message, suggestedFix);
@@ -134,33 +144,38 @@ public final class ErrorReporter
 	/**
 	 * Reports a formatting violation detected by a formatting rule.
 	 *
-	 * @param violation the formatting violation to report, never null
-	 * @param sourceFile the file containing the violation, never null
-	 * @param sourceText the source text for context extraction, never null
-	 * @throws IllegalArgumentException if any parameter is null
+	 * @param violation the formatting violation to report, never {@code null}
+	 * @param sourceFile the file containing the violation, never {@code null}
+	 * @param sourceText the source text for context extraction, never {@code null}
+	 * @throws NullPointerException if any parameter is {@code null}
 	 */
 	public void reportViolation(FormattingViolation violation, Path sourceFile, String sourceText)
 	{
 		if (violation == null)
 		{
-			throw new IllegalArgumentException("Formatting violation cannot be null");
+			throw new NullPointerException("Formatting violation cannot be null");
 		}
 		if (sourceFile == null)
 		{
-			throw new IllegalArgumentException("Source file cannot be null");
+			throw new NullPointerException("Source file cannot be null");
 		}
 		if (sourceText == null)
 		{
-			throw new IllegalArgumentException("Source text cannot be null");
+			throw new NullPointerException("Source text cannot be null");
 		}
 
 		ErrorSeverity severity = convertViolationSeverity(violation.getSeverity());
-		String suggestedFix = violation.hasSuggestedFix() ?
-			violation.getSuggestedFix() :
-			FixSuggestionProvider.generateSuggestion(
+		String suggestedFix;
+		if (violation.hasSuggestedFix())
+		{
+			suggestedFix = violation.getSuggestedFix();
+		}
+		else
+		{
+			suggestedFix = FixSuggestionProvider.generateSuggestion(
 				ErrorContext.formatViolation(sourceFile, violation.getLocation(), sourceText,
-					violation.getRuleId(), violation.getMessage(), severity, null)
-			);
+					violation.getRuleId(), violation.getMessage(), severity, null));
+		}
 
 		ErrorContext errorContext = ErrorContext.formatViolation(
 			sourceFile, violation.getLocation(), sourceText, violation.getRuleId(),
@@ -171,9 +186,9 @@ public final class ErrorReporter
 	/**
 	 * Reports a system error that occurred during file processing or system operations.
 	 *
-	 * @param systemException the system exception, never null
-	 * @param relatedFile the file being processed when the error occurred, never null
-	 * @throws IllegalArgumentException if any parameter is null
+	 * @param systemException the system exception, never {@code null}
+	 * @param relatedFile the file being processed when the error occurred, never {@code null}
+	 * @throws NullPointerException if any parameter is {@code null}
 	 */
 	public void reportSystemError(Exception systemException, Path relatedFile)
 	{
@@ -181,7 +196,7 @@ public final class ErrorReporter
 		Objects.requireNonNull(relatedFile, "Related file cannot be null");
 
 		String message = systemException.getMessage();
-		if (message == null || message.trim().isEmpty())
+		if (message == null || message.isBlank())
 		{
 			message = "System error: " + systemException.getClass().getSimpleName();
 		}
@@ -193,20 +208,22 @@ public final class ErrorReporter
 	/**
 	 * Reports an error context directly (used by ErrorCollector integration).
 	 *
-	 * @param errorContext the error context to report, never null
-	 * @throws IllegalArgumentException if {@code errorContext} is null
+	 * @param errorContext the error context to report, never {@code null}
+	 * @throws NullPointerException if {@code errorContext} is {@code null}
 	 */
 	public void reportError(ErrorContext errorContext)
 	{
 		if (errorContext == null)
 		{
-			throw new IllegalArgumentException("Error context cannot be null");
+			throw new NullPointerException("Error context cannot be null");
 		}
 		addError(errorContext);
 	}
 
 	/**
 	 * Adds an error context to the collection and checks halt conditions.
+	 *
+	 * @param errorContext the error context to add
 	 */
 	private void addError(ErrorContext errorContext)
 	{
@@ -229,7 +246,7 @@ public final class ErrorReporter
 	/**
 	 * Returns all collected errors.
 	 *
-	 * @return an immutable list of collected errors, never null
+	 * @return an immutable list of collected errors, never {@code null}
 	 */
 	public List<ErrorContext> getErrors()
 	{
@@ -249,7 +266,7 @@ public final class ErrorReporter
 	/**
 	 * Returns whether any critical errors have been reported.
 	 *
-	 * @return true if critical errors exist that should halt processing
+	 * @return {@code true} if critical errors exist that should halt processing
 	 */
 	public boolean hasErrors()
 	{
@@ -259,7 +276,7 @@ public final class ErrorReporter
 	/**
 	 * Returns whether processing should be halted due to critical errors.
 	 *
-	 * @return true if processing should stop, false otherwise
+	 * @return {@code true} if processing should stop, {@code false} otherwise
 	 */
 	public boolean shouldHaltProcessing()
 	{
@@ -293,7 +310,7 @@ public final class ErrorReporter
 	/**
 	 * Formats all collected errors as a complete report.
 	 *
-	 * @return a formatted error report, never null
+	 * @return a formatted error report, never {@code null}
 	 */
 	public String formatErrorReport()
 	{
@@ -303,15 +320,15 @@ public final class ErrorReporter
 	/**
 	 * Formats a summary of all collected errors.
 	 *
-	 * @param operationType the type of operation that generated these errors, never null
-	 * @throws IllegalArgumentException if {@code operationType} is null
-	 * @return a formatted error summary, never null
+	 * @param operationType the type of operation that generated these errors, never {@code null}
+	 * @throws NullPointerException if {@code operationType} is {@code null}
+	 * @return a formatted error summary, never {@code null}
 	 */
 	public String formatSummary(String operationType)
 	{
 		if (operationType == null)
 		{
-			throw new IllegalArgumentException("Operation type cannot be null");
+			throw new NullPointerException("Operation type cannot be null");
 		}
 
 		long processingTime = System.currentTimeMillis() - startTime;
@@ -324,9 +341,9 @@ public final class ErrorReporter
 	/**
 	 * Formats a single error for immediate display.
 	 *
-	 * @param errorContext the error to format, never null
-	 * @throws IllegalArgumentException if {@code errorContext} is null
-	 * @return a formatted error message, never null
+	 * @param errorContext the error to format, never {@code null}
+	 * @throws NullPointerException if {@code errorContext} is {@code null}
+	 * @return a formatted error message, never {@code null}
 	 */
 	public String formatError(ErrorContext errorContext)
 	{
@@ -337,7 +354,7 @@ public final class ErrorReporter
 	/**
 	 * Returns the MIME type for this reporter's output format.
 	 *
-	 * @return the MIME type (e.g., "text/plain", "application/json"), never null
+	 * @return the MIME type (e.g., "text/plain", "application/json"), never {@code null}
 	 */
 	public String getMimeType()
 	{
@@ -347,7 +364,7 @@ public final class ErrorReporter
 	/**
 	 * Returns whether this reporter supports colored output.
 	 *
-	 * @return true if colored output is supported, false otherwise
+	 * @return {@code true} if colored output is supported, {@code false} otherwise
 	 */
 	public boolean supportsColors()
 	{
@@ -356,6 +373,9 @@ public final class ErrorReporter
 
 	/**
 	 * Converts ViolationSeverity to ErrorSeverity for unified error handling.
+	 *
+	 * @param violationSeverity the violation severity to convert
+	 * @return the equivalent error severity
 	 */
 	private ErrorSeverity convertViolationSeverity(ViolationSeverity violationSeverity)
 	{
@@ -369,8 +389,12 @@ public final class ErrorReporter
 
 	/**
 	 * Extracts source location from exception when possible.
+	 *
+	 * @param exception the exception to extract location from
+	 * @return the source range extracted from the exception, or a default range if extraction fails
 	 */
-	private SourceRange extractLocationFromException(Exception exception, String sourceText)
+	@SuppressWarnings("PMD.EmptyCatchBlock") // Intentional fallback to default location
+	private SourceRange extractLocationFromException(Exception exception)
 	{
 		// Try to extract line/column information from exception message
 		String message = exception.getMessage();
@@ -385,7 +409,15 @@ public final class ErrorReporter
 			if (matcher.find())
 			{
 				int line = Integer.parseInt(matcher.group(1));
-				int column = matcher.group(2) != null ? Integer.parseInt(matcher.group(2)) : 1;
+				int column;
+			if (matcher.group(2) != null)
+			{
+				column = Integer.parseInt(matcher.group(2));
+			}
+			else
+			{
+				column = 1;
+			}
 
 				try
 				{
@@ -395,7 +427,7 @@ public final class ErrorReporter
 				}
 				catch (IllegalArgumentException e)
 				{
-					// Invalid line/column numbers, fall back to default
+					// Invalid line/column numbers, fall back to default below
 				}
 			}
 		}

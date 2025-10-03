@@ -23,8 +23,9 @@ import java.nio.file.Path;
  */
 public final class PathTraversalException extends SecurityException
 {
-	private final Path attemptedPath;
-	private final Path normalizedPath;
+	private static final long serialVersionUID = 1L;
+	private final transient Path attemptedPath;
+	private final transient Path normalizedPath;
 
 	/**
 	 * Constructs a new path traversal exception.
@@ -74,14 +75,13 @@ public final class PathTraversalException extends SecurityException
 			"  This path attempts to access files outside your project directory.%n" +
 			"  Use relative paths within the project or explicit absolute paths.",
 			attemptedPath,
-			normalizedPath
-		);
+			normalizedPath);
 	}
 
 	/**
 	 * Returns the original path provided by the user.
 	 *
-	 * @return the attempted path, or null if constructed with custom message
+	 * @return the attempted path, or {@code null} if constructed with custom message
 	 */
 	public Path attemptedPath()
 	{
@@ -91,7 +91,7 @@ public final class PathTraversalException extends SecurityException
 	/**
 	 * Returns the resolved absolute path.
 	 *
-	 * @return the normalized path, or null if constructed with custom message
+	 * @return the normalized path, or {@code null} if constructed with custom message
 	 */
 	public Path normalizedPath()
 	{

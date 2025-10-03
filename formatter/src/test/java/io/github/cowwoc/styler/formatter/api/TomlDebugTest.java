@@ -2,27 +2,26 @@ package io.github.cowwoc.styler.formatter.api;
 
 import org.testng.annotations.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 /**
- * Debug test for TOML parsing issues.
+ * Test for TOML parsing functionality.
  */
 public class TomlDebugTest
 {
+	/**
+	 * Test simple TOML parsing.
+	 */
 	@Test
-	public void testSimpleTomlParsing() throws Exception
+	public void simpleTomlParsing() throws ConfigurationException
 	{
 		String simpleToml = """
 			version = "1.0"
 			""";
 
-		try
-		{
-			ConfigurationSchema config = ConfigurationSchema.fromToml(simpleToml);
-			System.out.println("Successfully parsed: " + config);
-		}
-		catch (Exception e)
-		{
-			System.err.println("Failed to parse simple TOML: " + e.getMessage());
-			e.printStackTrace();
-		}
+		ConfigurationSchema config = ConfigurationSchema.fromToml(simpleToml);
+
+		assertThat(config).isNotNull();
+		assertThat(config.getVersion()).isEqualTo("1.0");
 	}
 }

@@ -44,15 +44,28 @@ public interface OutputFormatter
 
 	/**
 	 * Results of a formatting or checking operation.
+	 *
+	 * @param violations the list of formatting violations found
+	 * @param processedFiles the list of files that were processed
+	 * @param summary the operation summary statistics
 	 */
 	record FormattingResults(
 		List<FormattingViolation> violations,
 		List<String> processedFiles,
-		OperationSummary summary
-	) {}
+		OperationSummary summary)
+	{
+	}
 
 	/**
 	 * A single formatting violation.
+	 *
+	 * @param filePath the path to the file containing the violation
+	 * @param line the line number where the violation occurs
+	 * @param column the column number where the violation occurs
+	 * @param ruleId the identifier of the rule that was violated
+	 * @param message the description of the violation
+	 * @param severity the severity level of the violation
+	 * @param suggestedFix the suggested fix for the violation, or {@code null} if none available
 	 */
 	record FormattingViolation(
 		String filePath,
@@ -61,11 +74,19 @@ public interface OutputFormatter
 		String ruleId,
 		String message,
 		SeverityLevel severity,
-		String suggestedFix
-	) {}
+		String suggestedFix)
+	{
+	}
 
 	/**
 	 * Summary of the operation.
+	 *
+	 * @param totalFiles the total number of files to process
+	 * @param processedFiles the number of files successfully processed
+	 * @param violationCount the total number of violations found
+	 * @param errorCount the number of errors encountered
+	 * @param processingTimeMs the processing time in milliseconds
+	 * @param operationType the type of operation performed (e.g., "format", "check")
 	 */
 	record OperationSummary(
 		int totalFiles,
@@ -73,8 +94,9 @@ public interface OutputFormatter
 		int violationCount,
 		int errorCount,
 		long processingTimeMs,
-		String operationType
-	) {}
+		String operationType)
+	{
+	}
 
 	/**
 	 * Severity levels for violations.

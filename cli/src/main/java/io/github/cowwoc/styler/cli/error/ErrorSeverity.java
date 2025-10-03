@@ -51,7 +51,7 @@ public enum ErrorSeverity
 	/**
 	 * Returns the human-readable display name for this severity level.
 	 *
-	 * @return the display name used in error messages, never null
+	 * @return the display name used in error messages, never {@code null}
 	 */
 	public String getDisplayName()
 	{
@@ -61,15 +61,15 @@ public enum ErrorSeverity
 	/**
 	 * Returns whether this severity level is at least as severe as another level.
 	 *
-	 * @param other the severity level to compare with, never null
-	 * @throws IllegalArgumentException if {@code other} is null
-	 * @return true if this severity is at least as severe as the other
+	 * @param other the severity level to compare with, never {@code null}
+	 * @throws NullPointerException if {@code other} is {@code null}
+	 * @return {@code true} if this severity is at least as severe as the other
 	 */
 	public boolean isAtLeast(ErrorSeverity other)
 	{
 		if (other == null)
 		{
-			throw new IllegalArgumentException("Severity level cannot be null");
+			throw new NullPointerException("Severity level cannot be null");
 		}
 		return this.ordinal() >= other.ordinal();
 	}
@@ -77,7 +77,7 @@ public enum ErrorSeverity
 	/**
 	 * Returns whether this severity represents an error condition.
 	 *
-	 * @return true if this is ERROR severity, false otherwise
+	 * @return {@code true} if this is ERROR severity, {@code false} otherwise
 	 */
 	public boolean isError()
 	{
@@ -87,7 +87,7 @@ public enum ErrorSeverity
 	/**
 	 * Returns whether this severity represents a warning condition.
 	 *
-	 * @return true if this is WARNING severity, false otherwise
+	 * @return {@code true} if this is WARNING severity, {@code false} otherwise
 	 */
 	public boolean isWarning()
 	{
@@ -97,7 +97,7 @@ public enum ErrorSeverity
 	/**
 	 * Returns whether this severity represents informational content.
 	 *
-	 * @return true if this is INFO severity, false otherwise
+	 * @return {@code true} if this is INFO severity, {@code false} otherwise
 	 */
 	public boolean isInfo()
 	{
@@ -107,7 +107,7 @@ public enum ErrorSeverity
 	/**
 	 * Returns whether this severity represents debug information.
 	 *
-	 * @return true if this is DEBUG severity, false otherwise
+	 * @return {@code true} if this is DEBUG severity, {@code false} otherwise
 	 */
 	public boolean isDebug()
 	{
@@ -117,7 +117,7 @@ public enum ErrorSeverity
 	/**
 	 * Returns whether this severity level indicates a problem that should halt processing.
 	 *
-	 * @return true if processing should stop for this severity level, false otherwise
+	 * @return {@code true} if processing should stop for this severity level, {@code false} otherwise
 	 */
 	public boolean shouldHaltProcessing()
 	{

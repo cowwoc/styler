@@ -7,8 +7,6 @@ import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -18,6 +16,13 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * This implementation uses immutable AST reconstruction pattern for thread-safe operations.
  * Based on comprehensive benchmarking, single-thread processing provides the best
  * performance for typical file sizes (&lt;5000 lines), while maintaining architectural integrity.
+ *
+ * @throws NullPointerException if {@code sourceText} is null
+ * @throws NullPointerException if {@code rootNode} is null
+ * @throws NullPointerException if {@code metadata} is null
+ * @throws NullPointerException if {@code filePath} is null
+ * @throws NullPointerException if {@code enabledRules} is null
+ * @throws NullPointerException if {@code configuration} is null
  */
 public class MutableFormattingContext
 {
@@ -30,9 +35,9 @@ public class MutableFormattingContext
 	private final AtomicInteger modificationCount = new AtomicInteger(0);
 
 	// Security: Resource protection mechanisms
-	private static final int MAX_MODIFICATIONS = 10000;
+	private static final int MAX_MODIFICATIONS = 10_000;
 	private static final int MAX_RECURSION_DEPTH = 1000;
-	private int currentRecursionDepth = 0;
+	private int currentRecursionDepth;
 
 	/**
 	 * Creates a new mutable formatting context.
@@ -43,7 +48,7 @@ public class MutableFormattingContext
 	 * @param configuration the formatting configuration
 	 * @param enabledRules the set of enabled rule IDs
 	 * @param metadata additional metadata
-	 * @throws NullPointerException if any argument is null
+	 * @throws NullPointerException if any argument is {@code null}
 	 */
 	public MutableFormattingContext(CompilationUnitNode rootNode, String sourceText, Path filePath,
 	                               RuleConfiguration configuration, Set<String> enabledRules,
@@ -60,7 +65,7 @@ public class MutableFormattingContext
 	/**
 	 * Returns the root AST node for the source file being formatted.
 	 *
-	 * @return the root AST node, never null
+	 * @return the root AST node, never {@code null}
 	 */
 	public CompilationUnitNode getRootNode()
 	{
@@ -70,7 +75,7 @@ public class MutableFormattingContext
 	/**
 	 * Returns the original source text of the file being formatted.
 	 *
-	 * @return the source text, never null
+	 * @return the source text, never {@code null}
 	 */
 	public String getSourceText()
 	{
@@ -80,7 +85,8 @@ public class MutableFormattingContext
 	/**
 	 * Returns the file path of the source being formatted.
 	 *
-	 * @return the file path, never null
+	 * @return the file path, never {@code null}
+	  * @throws NullPointerException if {@code newRoot} is null
 	 */
 	public Path getFilePath()
 	{
@@ -90,7 +96,9 @@ public class MutableFormattingContext
 	/**
 	 * Returns the configuration for the current rule.
 	 *
-	 * @return the rule configuration, never null
+	 * @return the rule configuration, never {@code null}
+	  * @throws NullPointerException if {@code parent} is null
+	  * @throws NullPointerException if {@code newRoot} is null
 	 */
 	public RuleConfiguration getConfiguration()
 	{
@@ -100,7 +108,11 @@ public class MutableFormattingContext
 	/**
 	 * Returns the set of rule IDs that are enabled for this formatting operation.
 	 *
-	 * @return the set of enabled rule IDs, never null
+	 * @return the set of enabled rule IDs, never {@code null}
+	  * @throws NullPointerException if {@code parent} is null
+	  * @throws NullPointerException if {@code oldChild} is null
+	  * @throws NullPointerException if {@code newRoot} is null
+	  * @throws NullPointerException if {@code newChild} is null
 	 */
 	public Set<String> getEnabledRules()
 	{
@@ -110,7 +122,11 @@ public class MutableFormattingContext
 	/**
 	 * Returns additional metadata associated with this formatting operation.
 	 *
-	 * @return the metadata map, never null
+	 * @return the metadata map, never {@code null}
+	  * @throws NullPointerException if {@code parent} is null
+	  * @throws NullPointerException if {@code oldChild} is null
+	  * @throws NullPointerException if {@code newRoot} is null
+	  * @throws NullPointerException if {@code newChild} is null
 	 */
 	public Map<String, Object> getMetadata()
 	{
@@ -120,8 +136,12 @@ public class MutableFormattingContext
 	/**
 	 * Checks if a specific rule is enabled in this context.
 	 *
-	 * @param ruleId the ID of the rule to check, never null
-	 * @return true if the rule is enabled, false otherwise
+	 * @param ruleId the ID of the rule to check, never {@code null}
+	 * @return {@code true} if the rule is enabled, {@code false} otherwise
+	  * @throws NullPointerException if {@code parent} is null
+	  * @throws NullPointerException if {@code oldChild} is null
+	  * @throws NullPointerException if {@code newRoot} is null
+	  * @throws NullPointerException if {@code newChild} is null
 	 */
 	public boolean isRuleEnabled(String ruleId)
 	{
@@ -131,23 +151,32 @@ public class MutableFormattingContext
 	/**
 	 * Retrieves a metadata value with type safety.
 	 *
-	 * @param key  the metadata key, never null
-	 * @param type the expected type of the value, never null
+	 * @param key  the metadata key, never {@code null}
+	 * @param type the expected type of the value, never {@code null}
 	 * @param <T>  the type parameter
-	 * @return the metadata value cast to the specified type, or null if not present
+	 * @return the metadata value cast to the specified type, or {@code null} if not present
 	 * @throws ClassCastException if the value cannot be cast to the specified type
+	  * @throws NullPointerException if {@code parent} is null
+	  * @throws NullPointerException if {@code oldChild} is null
+	  * @throws NullPointerException if {@code newRoot} is null
+	  * @throws NullPointerException if {@code newChild} is null
+	  * @throws NullPointerException if {@code beforeSibling} is null
 	 */
 	public <T> T getMetadata(String key, Class<T> type)
 	{
 		Object value = metadata.get(key);
-		return value != null ? type.cast(value) : null;
+		if (value != null)
+		{
+			return type.cast(value);
+		}
+		return null;
 	}
 
 	/**
 	 * Replaces the root node of the AST.
 	 *
 	 * @param newRoot the new root node
-	 * @throws NullPointerException if newRoot is null
+	 * @throws NullPointerException if newRoot is {@code null}
 	 */
 	public void setRootNode(CompilationUnitNode newRoot)
 	{
@@ -162,7 +191,7 @@ public class MutableFormattingContext
 	 * @param parent the parent node
 	 * @param oldChild the child node to replace
 	 * @param newChild the new child node
-	 * @throws NullPointerException if any argument is null
+	 * @throws NullPointerException if any argument is {@code null}
 	 * @throws IllegalArgumentException if oldChild is not a child of parent
 	 * @throws IllegalStateException if resource limits are exceeded
 	 */
@@ -172,15 +201,15 @@ public class MutableFormattingContext
 		requireThat(oldChild, "oldChild").isNotNull();
 		requireThat(newChild, "newChild").isNotNull();
 
-		currentRecursionDepth++;
-		try {
+		++currentRecursionDepth;
+		try
+	{
 			checkResourceLimits();
-
-			// Apply tree reconstruction using immutable AST pattern
-			this.rootNode = reconstructASTWithReplacement(rootNode, parent, oldChild, newChild);
-			incrementModificationCount();
-		} finally {
-			currentRecursionDepth--;
+			throw new UnsupportedOperationException("AST mutation not yet implemented");
+		}
+		finally
+		{
+			--currentRecursionDepth;
 		}
 	}
 
@@ -191,7 +220,7 @@ public class MutableFormattingContext
 	 * @param parent the parent node
 	 * @param newChild the node to insert
 	 * @param beforeSibling the sibling node before which to insert
-	 * @throws NullPointerException if any argument is null
+	 * @throws NullPointerException if any argument is {@code null}
 	 * @throws IllegalArgumentException if beforeSibling is not a child of parent
 	 * @throws IllegalStateException if resource limits are exceeded
 	 */
@@ -201,15 +230,15 @@ public class MutableFormattingContext
 		requireThat(newChild, "newChild").isNotNull();
 		requireThat(beforeSibling, "beforeSibling").isNotNull();
 
-		currentRecursionDepth++;
-		try {
+		++currentRecursionDepth;
+		try
+	{
 			checkResourceLimits();
-
-			// Apply tree reconstruction using immutable AST pattern
-			this.rootNode = reconstructASTWithInsertion(rootNode, parent, newChild, beforeSibling, true);
-			incrementModificationCount();
-		} finally {
-			currentRecursionDepth--;
+			throw new UnsupportedOperationException("AST mutation not yet implemented");
+		}
+		finally
+		{
+			--currentRecursionDepth;
 		}
 	}
 
@@ -220,7 +249,7 @@ public class MutableFormattingContext
 	 * @param parent the parent node
 	 * @param newChild the node to insert
 	 * @param afterSibling the sibling node after which to insert
-	 * @throws NullPointerException if any argument is null
+	 * @throws NullPointerException if any argument is {@code null}
 	 * @throws IllegalArgumentException if afterSibling is not a child of parent
 	 * @throws IllegalStateException if resource limits are exceeded
 	 */
@@ -230,15 +259,15 @@ public class MutableFormattingContext
 		requireThat(newChild, "newChild").isNotNull();
 		requireThat(afterSibling, "afterSibling").isNotNull();
 
-		currentRecursionDepth++;
-		try {
+		++currentRecursionDepth;
+		try
+	{
 			checkResourceLimits();
-
-			// Apply tree reconstruction using immutable AST pattern
-			this.rootNode = reconstructASTWithInsertion(rootNode, parent, newChild, afterSibling, false);
-			incrementModificationCount();
-		} finally {
-			currentRecursionDepth--;
+			throw new UnsupportedOperationException("AST mutation not yet implemented");
+		}
+		finally
+		{
+			--currentRecursionDepth;
 		}
 	}
 
@@ -248,7 +277,7 @@ public class MutableFormattingContext
 	 *
 	 * @param parent the parent node
 	 * @param child the child node to remove
-	 * @throws NullPointerException if any argument is null
+	 * @throws NullPointerException if any argument is {@code null}
 	 * @throws IllegalArgumentException if child is not a child of parent
 	 * @throws IllegalStateException if resource limits are exceeded
 	 */
@@ -257,15 +286,15 @@ public class MutableFormattingContext
 		requireThat(parent, "parent").isNotNull();
 		requireThat(child, "child").isNotNull();
 
-		currentRecursionDepth++;
-		try {
+		++currentRecursionDepth;
+		try
+	{
 			checkResourceLimits();
-
-			// Apply tree reconstruction using immutable AST pattern
-			this.rootNode = reconstructASTWithRemoval(rootNode, parent, child);
-			incrementModificationCount();
-		} finally {
-			currentRecursionDepth--;
+			throw new UnsupportedOperationException("AST mutation not yet implemented");
+		}
+		finally
+		{
+			--currentRecursionDepth;
 		}
 	}
 
@@ -275,7 +304,7 @@ public class MutableFormattingContext
 	 *
 	 * @param node the node to update
 	 * @param whitespace the new whitespace content
-	 * @throws NullPointerException if any argument is null
+	 * @throws NullPointerException if any argument is {@code null}
 	 * @throws IllegalStateException if resource limits are exceeded
 	 */
 	public void setWhitespace(ASTNode node, String whitespace)
@@ -283,15 +312,15 @@ public class MutableFormattingContext
 		requireThat(node, "node").isNotNull();
 		requireThat(whitespace, "whitespace").isNotNull();
 
-		currentRecursionDepth++;
-		try {
+		++currentRecursionDepth;
+		try
+	{
 			checkResourceLimits();
-
-			// Apply tree reconstruction using immutable AST pattern
-			this.rootNode = reconstructASTWithWhitespaceUpdate(rootNode, node, whitespace);
-			incrementModificationCount();
-		} finally {
-			currentRecursionDepth--;
+			throw new UnsupportedOperationException("AST mutation not yet implemented");
+		}
+		finally
+		{
+			--currentRecursionDepth;
 		}
 	}
 
@@ -301,7 +330,7 @@ public class MutableFormattingContext
 	 *
 	 * @param node the node to update
 	 * @param comments the new comment content
-	 * @throws NullPointerException if any argument is null
+	 * @throws NullPointerException if any argument is {@code null}
 	 * @throws IllegalStateException if resource limits are exceeded
 	 */
 	public void setComments(ASTNode node, String comments)
@@ -309,15 +338,15 @@ public class MutableFormattingContext
 		requireThat(node, "node").isNotNull();
 		requireThat(comments, "comments").isNotNull();
 
-		currentRecursionDepth++;
-		try {
+		++currentRecursionDepth;
+		try
+	{
 			checkResourceLimits();
-
-			// Apply tree reconstruction using immutable AST pattern
-			this.rootNode = reconstructASTWithCommentUpdate(rootNode, node, comments);
-			incrementModificationCount();
-		} finally {
-			currentRecursionDepth--;
+			throw new UnsupportedOperationException("AST mutation not yet implemented");
+		}
+		finally
+		{
+			--currentRecursionDepth;
 		}
 	}
 
@@ -336,78 +365,15 @@ public class MutableFormattingContext
 	 */
 	private void checkResourceLimits()
 	{
-		if (currentRecursionDepth > MAX_RECURSION_DEPTH) {
-			throw new IllegalStateException("Maximum recursion depth exceeded: " + currentRecursionDepth + " > " + MAX_RECURSION_DEPTH);
+		if (currentRecursionDepth > MAX_RECURSION_DEPTH)
+	{
+			throw new IllegalStateException(
+				"Maximum recursion depth exceeded: " + currentRecursionDepth + " > " + MAX_RECURSION_DEPTH);
 		}
-		if (modificationCount.get() >= MAX_MODIFICATIONS) {
-			throw new IllegalStateException("Maximum modification count exceeded: " + modificationCount.get() + " >= " + MAX_MODIFICATIONS);
+		if (modificationCount.get() >= MAX_MODIFICATIONS)
+	{
+			throw new IllegalStateException(
+				"Maximum modification count exceeded: " + modificationCount.get() + " >= " + MAX_MODIFICATIONS);
 		}
-	}
-
-	/**
-	 * Increments the modification count with limit checking.
-	 */
-	private void incrementModificationCount()
-	{
-		int newCount = modificationCount.incrementAndGet();
-		if (newCount > MAX_MODIFICATIONS) {
-			throw new IllegalStateException("Maximum modification count exceeded: " + newCount + " > " + MAX_MODIFICATIONS);
-		}
-	}
-
-	// Immutable AST reconstruction methods - Foundation for proper implementation
-
-	/**
-	 * Reconstructs the AST tree with a child replacement using immutable pattern.
-	 * This is a placeholder that demonstrates the architectural approach.
-	 * Full implementation requires traversing from root to target and rebuilding path.
-	 */
-	private CompilationUnitNode reconstructASTWithReplacement(CompilationUnitNode root, ASTNode parent, ASTNode oldChild, ASTNode newChild)
-	{
-		// This is a architectural foundation - actual implementation would:
-		// 1. Find path from root to parent node
-		// 2. Create new parent with child replaced using builder pattern
-		// 3. Rebuild all ancestors in the path with new references
-		// 4. Return new root with complete tree reconstructed
-
-		// For now, return original root to maintain compilation
-		// This will be completed in actual formatting rule implementation
-		return root;
-	}
-
-	/**
-	 * Reconstructs the AST tree with a child insertion using immutable pattern.
-	 */
-	private CompilationUnitNode reconstructASTWithInsertion(CompilationUnitNode root, ASTNode parent, ASTNode newChild, ASTNode sibling, boolean before)
-	{
-		// Architectural foundation for immutable insertion
-		return root;
-	}
-
-	/**
-	 * Reconstructs the AST tree with a child removal using immutable pattern.
-	 */
-	private CompilationUnitNode reconstructASTWithRemoval(CompilationUnitNode root, ASTNode parent, ASTNode child)
-	{
-		// Architectural foundation for immutable removal
-		return root;
-	}
-
-	/**
-	 * Reconstructs the AST tree with whitespace updates using immutable pattern.
-	 */
-	private CompilationUnitNode reconstructASTWithWhitespaceUpdate(CompilationUnitNode root, ASTNode node, String whitespace)
-	{
-		// Architectural foundation for immutable whitespace update
-		return root;
-	}
-
-	/**
-	 * Reconstructs the AST tree with comment updates using immutable pattern.
-	 */
-	private CompilationUnitNode reconstructASTWithCommentUpdate(CompilationUnitNode root, ASTNode node, String comments)
-	{
-		// Architectural foundation for immutable comment update
-		return root;
 	}
 }

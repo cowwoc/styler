@@ -1,10 +1,15 @@
 package io.github.cowwoc.styler.ast.test;
 
-import io.github.cowwoc.styler.ast.*;
-import io.github.cowwoc.styler.ast.node.*;
+import io.github.cowwoc.styler.ast.SourceRange;
+import io.github.cowwoc.styler.ast.SourcePosition;
+import io.github.cowwoc.styler.ast.node.ClassDeclarationNode;
+import io.github.cowwoc.styler.ast.node.IdentifierNode;
+import io.github.cowwoc.styler.ast.node.StringLiteralNode;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 
 /**
  * Basic functionality tests for the AST core module.
@@ -16,7 +21,7 @@ public class BasicFunctionalityTest
 	 * Test that basic module functionality is working.
 	 */
 	@Test
-	public void testBasicFunctionality()
+	public void basicFunctionality()
 	{
 		// Basic test to ensure module loads correctly
 		assert true : "Basic functionality test passed";
@@ -26,14 +31,14 @@ public class BasicFunctionalityTest
 	 * Test basic AST node creation.
 	 */
 	@Test
-	public void testNodeCreation()
+	public void nodeCreation()
 	{
 		// Test that we can create basic AST nodes
 		SourceRange defaultRange = new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 10));
-		IdentifierNode identifier = new IdentifierNode.Builder()
-			.setName("testVariable")
-			.setRange(defaultRange)
-			.build();
+		IdentifierNode identifier = new IdentifierNode.Builder().
+			setName("testVariable").
+			setRange(defaultRange).
+			build();
 
 		assertNotNull(identifier);
 		assertEquals("testVariable", identifier.getName());
@@ -43,7 +48,7 @@ public class BasicFunctionalityTest
 	 * Test basic source position functionality.
 	 */
 	@Test
-	public void testSourcePosition()
+	public void sourcePosition()
 	{
 		SourcePosition pos = new SourcePosition(1, 5);
 		assertEquals(1, pos.line());
@@ -59,7 +64,7 @@ public class BasicFunctionalityTest
 	 * Test basic source range functionality.
 	 */
 	@Test
-	public void testSourceRange()
+	public void sourceRange()
 	{
 		SourcePosition start = new SourcePosition(1, 1);
 		SourcePosition end = new SourcePosition(1, 10);
@@ -73,25 +78,25 @@ public class BasicFunctionalityTest
 	 * Test that multiple node types can be created.
 	 */
 	@Test
-	public void testMultipleNodeTypes()
+	public void multipleNodeTypes()
 	{
 		// Test different node types
 		SourceRange defaultRange = new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 10));
 
-		IdentifierNode identifier = new IdentifierNode.Builder()
-			.setName("variable")
-			.setRange(defaultRange)
-			.build();
+		IdentifierNode identifier = new IdentifierNode.Builder().
+			setName("variable").
+			setRange(defaultRange).
+			build();
 
-		StringLiteralNode stringLiteral = new StringLiteralNode.Builder()
-			.setValue("test string")
-			.setRange(defaultRange)
-			.build();
+		StringLiteralNode stringLiteral = new StringLiteralNode.Builder().
+			setValue("test string").
+			setRange(defaultRange).
+			build();
 
-		ClassDeclarationNode classDecl = new ClassDeclarationNode.Builder()
-			.setName("TestClass")
-			.setRange(defaultRange)
-			.build();
+		ClassDeclarationNode classDecl = new ClassDeclarationNode.Builder().
+			setName("TestClass").
+			setRange(defaultRange).
+			build();
 
 		// Verify all nodes are created successfully
 		assertNotNull(identifier);
@@ -106,13 +111,13 @@ public class BasicFunctionalityTest
 	 * Test toString() methods work.
 	 */
 	@Test
-	public void testToStringMethods()
+	public void toStringMethods()
 	{
 		SourceRange defaultRange = new SourceRange(new SourcePosition(1, 1), new SourcePosition(1, 10));
-		IdentifierNode node = new IdentifierNode.Builder()
-			.setName("test")
-			.setRange(defaultRange)
-			.build();
+		IdentifierNode node = new IdentifierNode.Builder().
+			setName("test").
+			setRange(defaultRange).
+			build();
 
 		String toString = node.toString();
 		assertNotNull(toString);

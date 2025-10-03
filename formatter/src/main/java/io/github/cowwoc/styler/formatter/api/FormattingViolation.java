@@ -24,11 +24,11 @@ public final class FormattingViolation
 	/**
 	 * Creates a new formatting violation.
 	 *
-	 * @param ruleId       the ID of the rule that detected the violation, never null
-	 * @param location     the location of the violation in the source code, never null
-	 * @param message      a human-readable description of the violation, never null
-	 * @param severity     the severity level of the violation, never null
-	 * @param suggestedFix an optional suggested fix for the violation, may be null
+	 * @param ruleId       the ID of the rule that detected the violation, never {@code null}
+	 * @param location     the location of the violation in the source code, never {@code null}
+	 * @param message      a human-readable description of the violation, never {@code null}
+	 * @param severity     the severity level of the violation, never {@code null}
+	 * @param suggestedFix an optional suggested fix for the violation, may be {@code null}
 	 */
 	public FormattingViolation( String ruleId,
 	                            SourceRange location,
@@ -46,13 +46,13 @@ public final class FormattingViolation
 	/**
 	 * Creates a new formatting violation without a suggested fix.
 	 *
-	 * @param ruleId   the ID of the rule that detected the violation, never null
-	 * @param location the location of the violation in the source code, never null
-	 * @param message  a human-readable description of the violation, never null
-	 * @param severity the severity level of the violation, never null
-	 * @return a new formatting violation, never null
+	 * @param ruleId   the ID of the rule that detected the violation, never {@code null}
+	 * @param location the location of the violation in the source code, never {@code null}
+	 * @param message  a human-readable description of the violation, never {@code null}
+	 * @param severity the severity level of the violation, never {@code null}
+	 * @return a new formatting violation, never {@code null}
 	 */
-	
+
 	public static FormattingViolation create( String ruleId,
 	                                           SourceRange location,
 	                                           String message,
@@ -64,12 +64,12 @@ public final class FormattingViolation
 	/**
 	 * Creates a warning-level formatting violation.
 	 *
-	 * @param ruleId   the ID of the rule that detected the violation, never null
-	 * @param location the location of the violation in the source code, never null
-	 * @param message  a human-readable description of the violation, never null
-	 * @return a new warning violation, never null
+	 * @param ruleId   the ID of the rule that detected the violation, never {@code null}
+	 * @param location the location of the violation in the source code, never {@code null}
+	 * @param message  a human-readable description of the violation, never {@code null}
+	 * @return a new warning violation, never {@code null}
 	 */
-	
+
 	public static FormattingViolation warning( String ruleId,
 	                                            SourceRange location,
 	                                            String message)
@@ -80,12 +80,12 @@ public final class FormattingViolation
 	/**
 	 * Creates an error-level formatting violation.
 	 *
-	 * @param ruleId   the ID of the rule that detected the violation, never null
-	 * @param location the location of the violation in the source code, never null
-	 * @param message  a human-readable description of the violation, never null
-	 * @return a new error violation, never null
+	 * @param ruleId   the ID of the rule that detected the violation, never {@code null}
+	 * @param location the location of the violation in the source code, never {@code null}
+	 * @param message  a human-readable description of the violation, never {@code null}
+	 * @return a new error violation, never {@code null}
 	 */
-	
+
 	public static FormattingViolation error( String ruleId,
 	                                          SourceRange location,
 	                                          String message)
@@ -96,9 +96,9 @@ public final class FormattingViolation
 	/**
 	 * Returns the ID of the rule that detected this violation.
 	 *
-	 * @return the rule ID, never null
+	 * @return the rule ID, never {@code null}
 	 */
-	
+
 	public String getRuleId()
 	{
 		return ruleId;
@@ -107,9 +107,9 @@ public final class FormattingViolation
 	/**
 	 * Returns the location of the violation in the source code.
 	 *
-	 * @return the source location, never null
+	 * @return the source location, never {@code null}
 	 */
-	
+
 	public SourceRange getLocation()
 	{
 		return location;
@@ -118,9 +118,9 @@ public final class FormattingViolation
 	/**
 	 * Returns a human-readable description of the violation.
 	 *
-	 * @return the violation message, never null
+	 * @return the violation message, never {@code null}
 	 */
-	
+
 	public String getMessage()
 	{
 		return message;
@@ -129,9 +129,9 @@ public final class FormattingViolation
 	/**
 	 * Returns the severity level of this violation.
 	 *
-	 * @return the violation severity, never null
+	 * @return the violation severity, never {@code null}
 	 */
-	
+
 	public ViolationSeverity getSeverity()
 	{
 		return severity;
@@ -140,9 +140,9 @@ public final class FormattingViolation
 	/**
 	 * Returns a suggested fix for this violation, if available.
 	 *
-	 * @return the suggested fix, or null if no fix is suggested
+	 * @return the suggested fix, or {@code null} if no fix is suggested
 	 */
-	
+
 	public String getSuggestedFix()
 	{
 		return suggestedFix;
@@ -151,17 +151,17 @@ public final class FormattingViolation
 	/**
 	 * Returns whether this violation has a suggested fix.
 	 *
-	 * @return true if a suggested fix is available, false otherwise
+	 * @return {@code true} if a suggested fix is available, {@code false} otherwise
 	 */
 	public boolean hasSuggestedFix()
 	{
-		return suggestedFix != null && !suggestedFix.trim().isEmpty();
+		return suggestedFix != null && !suggestedFix.isBlank();
 	}
 
 	/**
 	 * Returns whether this violation is an error.
 	 *
-	 * @return true if the severity is ERROR, false otherwise
+	 * @return {@code true} if the severity is ERROR, {@code false} otherwise
 	 */
 	public boolean isError()
 	{
@@ -171,7 +171,7 @@ public final class FormattingViolation
 	/**
 	 * Returns whether this violation is a warning.
 	 *
-	 * @return true if the severity is WARNING, false otherwise
+	 * @return {@code true} if the severity is WARNING, {@code false} otherwise
 	 */
 	public boolean isWarning()
 	{
@@ -181,7 +181,7 @@ public final class FormattingViolation
 	/**
 	 * Returns whether this violation is informational.
 	 *
-	 * @return true if the severity is INFO, false otherwise
+	 * @return {@code true} if the severity is INFO, {@code false} otherwise
 	 */
 	public boolean isInfo()
 	{
@@ -210,7 +210,11 @@ public final class FormattingViolation
 	@Override
 	public String toString()
 	{
-		return severity + " [" + ruleId + "] " + message + " at " + location +
-			(hasSuggestedFix() ? " (suggested fix: " + suggestedFix + ")" : "");
+		String fixPart = "";
+		if (hasSuggestedFix())
+		{
+			fixPart = " (suggested fix: " + suggestedFix + ")";
+		}
+		return severity + " [" + ruleId + "] " + message + " at " + location + fixPart;
 	}
 }

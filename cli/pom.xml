@@ -17,6 +17,7 @@
     <description>Command-line interface for the Styler Java Code Formatter</description>
 
     <properties>
+        <project.root.basedir>${project.parent.basedir}</project.root.basedir>
         <picocli.version>4.7.5</picocli.version>
         <logback.version>1.4.14</logback.version>
         <main.class>io.github.cowwoc.styler.cli.StylerCLI</main.class>
@@ -35,14 +36,6 @@
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
             <version>${picocli.version}</version>
-        </dependency>
-
-        <!-- Annotation processor for picocli -->
-        <dependency>
-            <groupId>info.picocli</groupId>
-            <artifactId>picocli-codegen</artifactId>
-            <version>${picocli.version}</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- Configuration parsing -->
@@ -80,22 +73,10 @@
 
     <build>
         <plugins>
-            <!-- Compiler plugin with annotation processing -->
+            <!-- Compiler plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>info.picocli</groupId>
-                            <artifactId>picocli-codegen</artifactId>
-                            <version>${picocli.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
-                    <compilerArgs>
-                        <arg>-Aproject=${project.groupId}/${project.artifactId}</arg>
-                    </compilerArgs>
-                </configuration>
             </plugin>
 
             <!-- Surefire plugin for unit tests -->
@@ -120,6 +101,7 @@
                     </archive>
                     <finalName>styler-${project.version}</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
+                    <attach>false</attach>
                 </configuration>
                 <executions>
                     <execution>
@@ -131,33 +113,6 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- Native Image plugin for GraalVM (disabled by default) -->
-            <!-- Enable with -Pnative profile when GraalVM is available -->
         </plugins>
     </build>
-
-    <profiles>
-        <!-- Profile for native image build -->
-        <profile>
-            <id>native</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.graalvm.buildtools</groupId>
-                        <artifactId>native-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>build-native</id>
-                                <goals>
-                                    <goal>compile-no-fork</goal>
-                                </goals>
-                                <phase>package</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Configuration for line length formatting rules.
@@ -21,7 +20,7 @@ import java.util.Set;
  * <b>Thread Safety:</b> This class is immutable and thread-safe.
  * <b>Security:</b> All configuration values are validated for security compliance.
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -84,15 +83,78 @@ public final class LineLengthRuleConfiguration extends RuleConfiguration
 		@JsonProperty("allowLongImports") Boolean allowLongImports,
 		@JsonProperty("allowLongPackageNames") Boolean allowLongPackageNames)
 	{
-		this.maxLineLength = maxLineLength != null ? maxLineLength : 120;
-		this.wrapStrategy = wrapStrategy != null ? wrapStrategy : WrapStrategy.SMART;
-		this.indentContinuations = indentContinuations != null ? indentContinuations : 4;
-		this.breakBeforeOperators = breakBeforeOperators != null ? breakBeforeOperators : true;
-		this.exceptionsIgnore = exceptionsIgnore != null ? List.copyOf(exceptionsIgnore) : Collections.emptyList();
-		this.preferBreakingBeforeParameters = preferBreakingBeforeParameters != null ? preferBreakingBeforeParameters : false;
-		this.alignParameters = alignParameters != null ? alignParameters : false;
-		this.allowLongImports = allowLongImports != null ? allowLongImports : true;
-		this.allowLongPackageNames = allowLongPackageNames != null ? allowLongPackageNames : true;
+		if (maxLineLength != null)
+		{
+			this.maxLineLength = maxLineLength;
+		}
+		else
+		{
+			this.maxLineLength = 120;
+		}
+		if (wrapStrategy != null)
+		{
+			this.wrapStrategy = wrapStrategy;
+		}
+		else
+		{
+			this.wrapStrategy = WrapStrategy.SMART;
+		}
+		if (indentContinuations != null)
+		{
+			this.indentContinuations = indentContinuations;
+		}
+		else
+		{
+			this.indentContinuations = 4;
+		}
+		if (breakBeforeOperators != null)
+		{
+			this.breakBeforeOperators = breakBeforeOperators;
+		}
+		else
+		{
+			this.breakBeforeOperators = true;
+		}
+		if (exceptionsIgnore != null)
+		{
+			this.exceptionsIgnore = List.copyOf(exceptionsIgnore);
+		}
+		else
+		{
+			this.exceptionsIgnore = Collections.emptyList();
+		}
+		if (preferBreakingBeforeParameters != null)
+		{
+			this.preferBreakingBeforeParameters = preferBreakingBeforeParameters;
+		}
+		else
+		{
+			this.preferBreakingBeforeParameters = false;
+		}
+		if (alignParameters != null)
+		{
+			this.alignParameters = alignParameters;
+		}
+		else
+		{
+			this.alignParameters = false;
+		}
+		if (allowLongImports != null)
+		{
+			this.allowLongImports = allowLongImports;
+		}
+		else
+		{
+			this.allowLongImports = true;
+		}
+		if (allowLongPackageNames != null)
+		{
+			this.allowLongPackageNames = allowLongPackageNames;
+		}
+		else
+		{
+			this.allowLongPackageNames = true;
+		}
 
 		try
 		{
@@ -143,17 +205,107 @@ public final class LineLengthRuleConfiguration extends RuleConfiguration
 			                                 override.getClass().getSimpleName());
 		}
 
+		// Merge logic: use other's value if it differs from default, otherwise use this's value
+		int mergedMaxLineLength;
+		if (other.maxLineLength == 120)
+		{
+			mergedMaxLineLength = this.maxLineLength;
+		}
+		else
+		{
+			mergedMaxLineLength = other.maxLineLength;
+		}
+
+		WrapStrategy mergedWrapStrategy;
+		if (other.wrapStrategy == WrapStrategy.SMART)
+		{
+			mergedWrapStrategy = this.wrapStrategy;
+		}
+		else
+		{
+			mergedWrapStrategy = other.wrapStrategy;
+		}
+
+		int mergedIndentContinuations;
+		if (other.indentContinuations == 4)
+		{
+			mergedIndentContinuations = this.indentContinuations;
+		}
+		else
+		{
+			mergedIndentContinuations = other.indentContinuations;
+		}
+
+		boolean mergedBreakBeforeOperators;
+		if (other.breakBeforeOperators)
+		{
+			mergedBreakBeforeOperators = this.breakBeforeOperators;
+		}
+		else
+		{
+			mergedBreakBeforeOperators = other.breakBeforeOperators;
+		}
+
+		List<String> mergedExceptionsIgnore;
+		if (other.exceptionsIgnore.isEmpty())
+		{
+			mergedExceptionsIgnore = this.exceptionsIgnore;
+		}
+		else
+		{
+			mergedExceptionsIgnore = other.exceptionsIgnore;
+		}
+
+		boolean mergedPreferBreakingBeforeParameters;
+		if (other.preferBreakingBeforeParameters)
+		{
+			mergedPreferBreakingBeforeParameters = other.preferBreakingBeforeParameters;
+		}
+		else
+		{
+			mergedPreferBreakingBeforeParameters = this.preferBreakingBeforeParameters;
+		}
+
+		boolean mergedAlignParameters;
+		if (other.alignParameters)
+		{
+			mergedAlignParameters = other.alignParameters;
+		}
+		else
+		{
+			mergedAlignParameters = this.alignParameters;
+		}
+
+		boolean mergedAllowLongImports;
+		if (other.allowLongImports)
+		{
+			mergedAllowLongImports = this.allowLongImports;
+		}
+		else
+		{
+			mergedAllowLongImports = other.allowLongImports;
+		}
+
+		boolean mergedAllowLongPackageNames;
+		if (other.allowLongPackageNames)
+		{
+			mergedAllowLongPackageNames = this.allowLongPackageNames;
+		}
+		else
+		{
+			mergedAllowLongPackageNames = other.allowLongPackageNames;
+		}
+
 		return new LineLengthRuleConfiguration(
-			other.maxLineLength != 120 ? other.maxLineLength : this.maxLineLength,
-			other.wrapStrategy != WrapStrategy.SMART ? other.wrapStrategy : this.wrapStrategy,
-			other.indentContinuations != 4 ? other.indentContinuations : this.indentContinuations,
-			other.breakBeforeOperators != true ? other.breakBeforeOperators : this.breakBeforeOperators,
-			!other.exceptionsIgnore.isEmpty() ? other.exceptionsIgnore : this.exceptionsIgnore,
-			other.preferBreakingBeforeParameters != false ? other.preferBreakingBeforeParameters : this.preferBreakingBeforeParameters,
-			other.alignParameters != false ? other.alignParameters : this.alignParameters,
-			other.allowLongImports != true ? other.allowLongImports : this.allowLongImports,
-			other.allowLongPackageNames != true ? other.allowLongPackageNames : this.allowLongPackageNames
-		);
+			mergedMaxLineLength,
+			mergedWrapStrategy,
+			mergedIndentContinuations,
+			mergedBreakBeforeOperators,
+			mergedExceptionsIgnore,
+			mergedPreferBreakingBeforeParameters,
+			mergedAlignParameters,
+			mergedAllowLongImports,
+			mergedAllowLongPackageNames);
 	}
 
 	@Override
@@ -167,7 +319,7 @@ public final class LineLengthRuleConfiguration extends RuleConfiguration
 	 * Checks if a specific type of construct should be ignored for line length checking.
 	 *
 	 * @param constructType the type of construct to check
-	 * @return true if this construct type should be ignored
+	 * @return {@code true} if this construct type should be ignored
 	 */
 	public boolean shouldIgnore(String constructType)
 	{
@@ -192,15 +344,24 @@ public final class LineLengthRuleConfiguration extends RuleConfiguration
 		return maxLineLength;
 	}
 
-	public int getMaxLineLength() { return maxLineLength; }
-	public WrapStrategy getWrapStrategy() { return wrapStrategy; }
-	public int getIndentContinuations() { return indentContinuations; }
-	public boolean isBreakBeforeOperators() { return breakBeforeOperators; }
-	public List<String> getExceptionsIgnore() { return exceptionsIgnore; }
-	public boolean isPreferBreakingBeforeParameters() { return preferBreakingBeforeParameters; }
-	public boolean isAlignParameters() { return alignParameters; }
-	public boolean isAllowLongImports() { return allowLongImports; }
-	public boolean isAllowLongPackageNames() { return allowLongPackageNames; }
+	public int getMaxLineLength()
+	{ return maxLineLength; }
+	public WrapStrategy getWrapStrategy()
+	{ return wrapStrategy; }
+	public int getIndentContinuations()
+	{ return indentContinuations; }
+	public boolean isBreakBeforeOperators()
+	{ return breakBeforeOperators; }
+	public List<String> getExceptionsIgnore()
+	{ return exceptionsIgnore; }
+	public boolean isPreferBreakingBeforeParameters()
+	{ return preferBreakingBeforeParameters; }
+	public boolean isAlignParameters()
+	{ return alignParameters; }
+	public boolean isAllowLongImports()
+	{ return allowLongImports; }
+	public boolean isAllowLongPackageNames()
+	{ return allowLongPackageNames; }
 
 	@Override
 	public boolean equals(Object obj)
@@ -249,19 +410,19 @@ public final class LineLengthRuleConfiguration extends RuleConfiguration
 	 */
 	public enum WrapStrategy
 	{
-		/** Smart wrapping based on code structure and readability */
+		/** Smart wrapping based on code structure and readability. */
 		SMART,
 
-		/** Always wrap at the maximum line length */
+		/** Always wrap at the maximum line length. */
 		HARD_WRAP,
 
-		/** Never wrap lines automatically */
+		/** Never wrap lines automatically. */
 		NO_WRAP,
 
-		/** Wrap only at natural break points (commas, operators, etc.) */
+		/** Wrap only at natural break points (commas, operators, etc.). */
 		NATURAL_BREAKS,
 
-		/** Wrap with preference for keeping related elements together */
+		/** Wrap with preference for keeping related elements together. */
 		SEMANTIC_GROUPING
 	}
 }

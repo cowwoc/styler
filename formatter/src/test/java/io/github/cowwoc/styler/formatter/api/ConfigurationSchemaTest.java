@@ -17,8 +17,11 @@ import java.util.Map;
  */
 public class ConfigurationSchemaTest
 {
+	/**
+	 * Test default configuration.
+	 */
 	@Test
-	public void testDefaultConfiguration()
+	public void defaultConfiguration()
 	{
 		ConfigurationSchema config = new ConfigurationSchema();
 
@@ -29,8 +32,11 @@ public class ConfigurationSchemaTest
 		assertThat(config.getRules()).isEmpty();
 	}
 
+	/**
+	 * Test configuration with all fields.
+	 */
 	@Test
-	public void testConfigurationWithAllFields() throws ConfigurationException
+	public void configurationWithAllFields() throws ConfigurationException
 	{
 		GlobalConfiguration global = new GlobalConfiguration(
 			GlobalConfiguration.IndentationType.SPACES,
@@ -40,8 +46,7 @@ public class ConfigurationSchemaTest
 			StandardCharsets.UTF_8.name(),
 			true,
 			true,
-			4
-		);
+			4);
 
 		Map<String, Object> lineLengthRule = new HashMap<>();
 		lineLengthRule.put("maxLineLength", 120);
@@ -56,8 +61,7 @@ public class ConfigurationSchemaTest
 			"test-profile",
 			Arrays.asList("base-profile", "extended-profile"),
 			global,
-			rules
-		);
+			rules);
 
 		assertThat(config.getVersion()).isEqualTo("1.0");
 		assertThat(config.getProfile()).isEqualTo("test-profile");
@@ -67,8 +71,11 @@ public class ConfigurationSchemaTest
 		assertThat(config.getRules().get("LineLength")).isEqualTo(lineLengthRule);
 	}
 
+	/**
+	 * Test YAML serialization.
+	 */
 	@Test
-	public void testYamlSerialization() throws ConfigurationException
+	public void yamlSerialization() throws ConfigurationException
 	{
 		GlobalConfiguration global = new GlobalConfiguration();
 		Map<String, Object> rules = new HashMap<>();
@@ -82,8 +89,7 @@ public class ConfigurationSchemaTest
 			"test",
 			Collections.emptyList(),
 			global,
-			ruleMap
-		);
+			ruleMap);
 
 		String toml = config.toToml();
 
@@ -93,8 +99,11 @@ public class ConfigurationSchemaTest
 		assertThat(toml).contains("rules.LineLength.maxLineLength = 100");
 	}
 
+	/**
+	 * Test TOML deserialization.
+	 */
 	@Test
-	public void testTomlDeserialization() throws ConfigurationException
+	public void tomlDeserialization() throws ConfigurationException
 	{
 		String toml = """
 			version = "1.0"
@@ -123,8 +132,11 @@ public class ConfigurationSchemaTest
 		assertThat(config.getRules().get("LineLength").get("wrapStrategy")).isEqualTo("SMART");
 	}
 
+	/**
+	 * Test resource loading.
+	 */
 	@Test
-	public void testResourceLoading() throws ConfigurationException
+	public void resourceLoading() throws ConfigurationException
 	{
 		ConfigurationSchema config = ConfigurationSchema.fromResource("/sample-config.toml");
 
@@ -136,8 +148,11 @@ public class ConfigurationSchemaTest
 		assertThat(config.getRules()).containsKey("ImportOrder");
 	}
 
+	/**
+	 * Test rule configuration conversion.
+	 */
 	@Test
-	public void testRuleConfigurationConversion() throws ConfigurationException
+	public void ruleConfigurationConversion() throws ConfigurationException
 	{
 		String toml = """
 			version = "1.0"
@@ -151,7 +166,8 @@ public class ConfigurationSchemaTest
 			""";
 
 		ConfigurationSchema config = ConfigurationSchema.fromToml(toml);
-		LineLengthRuleConfiguration lineConfig = config.getRuleConfiguration("LineLength", LineLengthRuleConfiguration.class);
+		LineLengthRuleConfiguration lineConfig = config.getRuleConfiguration("LineLength",
+			LineLengthRuleConfiguration.class);
 
 		assertThat(lineConfig).isNotNull();
 		assertThat(lineConfig.getMaxLineLength()).isEqualTo(100);
@@ -161,8 +177,11 @@ public class ConfigurationSchemaTest
 		assertThat(lineConfig.isAllowLongImports()).isFalse();
 	}
 
+	/**
+	 * Test configuration merging.
+	 */
 	@Test
-	public void testConfigurationMerging() throws ConfigurationException
+	public void configurationMerging() throws ConfigurationException
 	{
 		// Base configuration
 		Map<String, Object> baseRule = new HashMap<>();
@@ -173,8 +192,7 @@ public class ConfigurationSchemaTest
 		baseRules.put("LineLength", baseRule);
 
 		ConfigurationSchema base = new ConfigurationSchema(
-			"1.0", "base", Collections.emptyList(), new GlobalConfiguration(), baseRules
-		);
+			"1.0", "base", Collections.emptyList(), new GlobalConfiguration(), baseRules);
 
 		// Override configuration
 		Map<String, Object> overrideRule = new HashMap<>();
@@ -185,8 +203,7 @@ public class ConfigurationSchemaTest
 		overrideRules.put("LineLength", overrideRule);
 
 		ConfigurationSchema override = new ConfigurationSchema(
-			"1.0", "override", Collections.emptyList(), new GlobalConfiguration(), overrideRules
-		);
+			"1.0", "override", Collections.emptyList(), new GlobalConfiguration(), overrideRules);
 
 		// Merge configurations
 		ConfigurationSchema merged = base.merge(override);
@@ -198,8 +215,11 @@ public class ConfigurationSchemaTest
 		assertThat(mergedLineLength.get("indentContinuations")).isEqualTo(4);  // New from override
 	}
 
+	/**
+	 * Test invalid TOML throws exception.
+	 */
 	@Test
-	public void testInvalidTomlThrowsException()
+	public void invalidTomlThrowsException()
 	{
 		String invalidToml = """
 			version = "1.0"
@@ -210,48 +230,66 @@ public class ConfigurationSchemaTest
 
 		// Should not throw during parsing (Jackson will handle type conversion)
 		// but might throw during rule configuration conversion
-		assertThatThrownBy(() -> {
+		assertThatThrownBy(() ->
+		{
 			ConfigurationSchema config = ConfigurationSchema.fromToml(invalidToml);
 			config.getRuleConfiguration("LineLength", LineLengthRuleConfiguration.class);
 		}).isInstanceOf(ConfigurationException.class);
 	}
 
+	/**
+	 * Test security validation.
+	 */
 	@Test
-	public void testSecurityValidation()
+	public void securityValidation()
 	{
 		// Test dangerous content detection
-		assertThatThrownBy(() -> {
+		assertThatThrownBy(() ->
+		{
 			ConfigurationSchema.fromToml("version = \"${{java.version}}\"");
-		}).isInstanceOf(SecurityException.class)
-		  .hasMessageContaining("dangerous");
+		}).isInstanceOf(SecurityException.class).
+		  hasMessageContaining("dangerous");
 
 		// Test template expressions (TOML equivalent security concern)
-		assertThatThrownBy(() -> {
+		assertThatThrownBy(() ->
+		{
 			ConfigurationSchema.fromToml("version = \"<%malicious%>\"");
-		}).isInstanceOf(SecurityException.class)
-		  .hasMessageContaining("dangerous");
+		}).isInstanceOf(SecurityException.class).
+		  hasMessageContaining("dangerous");
 	}
 
+	/**
+	 * Test version validation.
+	 */
 	@Test
-	public void testVersionValidation()
+	public void versionValidation()
 	{
-		assertThatThrownBy(() -> {
+		assertThatThrownBy(() ->
+		{
 			new ConfigurationSchema("invalid-version", null, Collections.emptyList(), null, Collections.emptyMap());
-		}).isInstanceOf(IllegalArgumentException.class)
-		  .hasMessageContaining("major.minor");
+		}).isInstanceOf(IllegalArgumentException.class).
+		  hasMessageContaining("major.minor");
 	}
 
+	/**
+	 * Test profile name validation.
+	 */
 	@Test
-	public void testProfileNameValidation()
+	public void profileNameValidation()
 	{
-		assertThatThrownBy(() -> {
-			new ConfigurationSchema("1.0", "invalid profile name!", Collections.emptyList(), null, Collections.emptyMap());
-		}).isInstanceOf(IllegalArgumentException.class)
-		  .hasMessageContaining("letters, numbers, hyphens");
+		assertThatThrownBy(() ->
+		{
+			new ConfigurationSchema("1.0", "invalid profile name!", Collections.emptyList(), null,
+				Collections.emptyMap());
+		}).isInstanceOf(IllegalArgumentException.class).
+		  hasMessageContaining("letters, numbers, hyphens");
 	}
 
+	/**
+	 * Test equals and hash code.
+	 */
 	@Test
-	public void testEqualsAndHashCode()
+	public void equalsAndHashCode()
 	{
 		ConfigurationSchema config1 = new ConfigurationSchema();
 		ConfigurationSchema config2 = new ConfigurationSchema();
@@ -262,14 +300,18 @@ public class ConfigurationSchemaTest
 		// Test with different content
 		Map<String, Map<String, Object>> rules = new HashMap<>();
 		rules.put("test", new HashMap<>());
-		ConfigurationSchema config3 = new ConfigurationSchema("1.0", null, Collections.emptyList(), new GlobalConfiguration(), rules);
+		ConfigurationSchema config3 = new ConfigurationSchema("1.0", null, Collections.emptyList(),
+			new GlobalConfiguration(), rules);
 
 		assertThat(config1).isNotEqualTo(config3);
 		assertThat(config1.hashCode()).isNotEqualTo(config3.hashCode());
 	}
 
+	/**
+	 * Verifies that toString() returns a meaningful string representation.
+	 */
 	@Test
-	public void testToString()
+	public void toStringRepresentation()
 	{
 		ConfigurationSchema config = new ConfigurationSchema();
 		String toString = config.toString();

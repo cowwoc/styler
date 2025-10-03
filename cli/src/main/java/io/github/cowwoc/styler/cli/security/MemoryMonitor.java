@@ -28,9 +28,9 @@ import org.slf4j.LoggerFactory;
  */
 public final class MemoryMonitor
 {
-	private static final Logger logger = LoggerFactory.getLogger(MemoryMonitor.class);
+	private final Logger log = LoggerFactory.getLogger(MemoryMonitor.class);
 
-	/** Warning threshold at 80% of max memory */
+	/** Warning threshold at 80% of max memory. */
 	private static final double WARNING_THRESHOLD = 0.80;
 
 	private final long maxMemoryBytes;
@@ -62,6 +62,8 @@ public final class MemoryMonitor
 	 *
 	 * @throws MemoryLimitExceededException if memory usage exceeds limit
 	 */
+	// Intentional defensive measure when approaching limit
+	@SuppressWarnings("PMD.DoNotCallGarbageCollectionExplicitly")
 	public void checkMemoryLimit() throws MemoryLimitExceededException
 	{
 		long usedMemory = getCurrentHeapUsage();
@@ -76,13 +78,12 @@ public final class MemoryMonitor
 		long warningThreshold = (long) (maxMemoryBytes * WARNING_THRESHOLD);
 		if (usedMemory > warningThreshold)
 		{
-			logger.warn(
+			log.warn(
 				"Memory usage approaching limit: {} MB / {} MB ({}%). Triggering garbage collection.",
 				usedMemory / 1024 / 1024,
 				maxMemoryBytes / 1024 / 1024,
-				(int) (usedMemory * 100.0 / maxMemoryBytes)
-			);
-			// Suggest GC (JVM may ignore)
+				(int) (usedMemory * 100.0 / maxMemoryBytes));
+			// Suggest GC (JVM may ignore) - PMD warning suppressed: intentional defensive measure
 			runtime.gc();
 		}
 	}
@@ -112,7 +113,7 @@ public final class MemoryMonitor
 	/**
 	 * Returns the current memory usage as a percentage of the configured limit.
 	 *
-	 * @return memory usage percentage (0.0 to 100.0+)
+	 * @return memory usage percentage ({@code 0}.{@code 0} to 100.{@code 0}+)
 	 */
 	public double getMemoryUsagePercentage()
 	{

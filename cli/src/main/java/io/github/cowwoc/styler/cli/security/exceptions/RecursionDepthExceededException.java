@@ -11,6 +11,7 @@ package io.github.cowwoc.styler.cli.security.exceptions;
  */
 public final class RecursionDepthExceededException extends SecurityException
 {
+	private static final long serialVersionUID = 1L;
 	private final int currentDepth;
 	private final int maxDepth;
 	private final String location;
@@ -22,7 +23,7 @@ public final class RecursionDepthExceededException extends SecurityException
 	 * @param maxDepth the configured maximum depth
 	 * @param location the location context (e.g., file name, AST node type)
 	 * @throws IllegalArgumentException if currentDepth or maxDepth are not positive
-	 * @throws NullPointerException if location is null
+	 * @throws NullPointerException if location is {@code null}
 	 */
 	public RecursionDepthExceededException(int currentDepth, int maxDepth, String location)
 	{
@@ -76,6 +77,11 @@ public final class RecursionDepthExceededException extends SecurityException
 
 	/**
 	 * Formats a detailed, actionable error message.
+	 *
+	 * @param currentDepth the current recursion depth
+	 * @param maxDepth the maximum allowed recursion depth
+	 * @param location the location where the recursion limit was exceeded
+	 * @return the formatted error message
 	 */
 	private static String formatMessage(int currentDepth, int maxDepth, String location)
 	{
@@ -92,7 +98,6 @@ public final class RecursionDepthExceededException extends SecurityException
 			"  - Increasing recursion limit in configuration (if justified)",
 			location,
 			currentDepth,
-			maxDepth
-		);
+			maxDepth);
 	}
 }

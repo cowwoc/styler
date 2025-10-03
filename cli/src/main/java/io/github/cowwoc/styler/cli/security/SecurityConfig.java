@@ -23,6 +23,14 @@ import java.util.Set;
  *     .build();
  * }</pre>
  *
+ * @param maxFileSizeBytes the maximum file size in bytes
+ * @param allowedExtensions the set of allowed file extensions
+ * @param maxMemoryBytes the maximum memory usage in bytes
+ * @param timeoutMillis the timeout per file in milliseconds
+ * @param maxRecursionDepth the maximum recursion depth
+ * @param warnRecursionDepth the recursion depth at which to warn
+ * @param maxTempFiles the maximum number of temporary files
+ * @param maxTempDiskBytes the maximum temporary disk usage in bytes
  * @see SecurityManager
  */
 public record SecurityConfig(
@@ -33,35 +41,36 @@ public record SecurityConfig(
 	int maxRecursionDepth,
 	int warnRecursionDepth,
 	int maxTempFiles,
-	long maxTempDiskBytes
-)
+	long maxTempDiskBytes)
 {
-	/** Default maximum file size: 50 MB */
+	/** Default maximum file size: 50 MB. */
 	private static final long DEFAULT_MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024;
 
-	/** Default maximum memory usage: 512 MB */
+	/** Default maximum memory usage: 512 MB. */
 	private static final long DEFAULT_MAX_MEMORY_BYTES = 512 * 1024 * 1024;
 
-	/** Default timeout per file: 30 seconds */
+	/** Default timeout per file: 30 seconds. */
 	private static final long DEFAULT_TIMEOUT_MILLIS = 30_000;
 
-	/** Default maximum recursion depth: 1000 levels */
+	/** Default maximum recursion depth: 1000 levels. */
 	private static final int DEFAULT_MAX_RECURSION_DEPTH = 1000;
 
-	/** Default warning recursion depth: 500 levels */
+	/** Default warning recursion depth: 500 levels. */
 	private static final int DEFAULT_WARN_RECURSION_DEPTH = 500;
 
-	/** Default maximum temporary files: 1000 files */
+	/** Default maximum temporary files: 1000 files. */
 	private static final int DEFAULT_MAX_TEMP_FILES = 1000;
 
-	/** Default maximum temporary disk usage: 1 GB */
+	/**
+	 * Default maximum temporary disk usage: {@code 1} GB.
+	 */
 	private static final long DEFAULT_MAX_TEMP_DISK_BYTES = 1024 * 1024 * 1024;
 
 	/**
 	 * Compact constructor with validation.
 	 *
 	 * @throws IllegalArgumentException if any parameter is invalid
-	 * @throws NullPointerException if allowedExtensions is null
+	 * @throws NullPointerException if allowedExtensions is {@code null}
 	 */
 	public SecurityConfig
 	{
@@ -133,7 +142,7 @@ public record SecurityConfig(
 	 *   <li>Max recursion depth: 1000 levels</li>
 	 *   <li>Warn recursion depth: 500 levels</li>
 	 *   <li>Max temp files: 1000 files</li>
-	 *   <li>Max temp disk: 1 GB</li>
+	 *   <li>Max temp disk: {@code 1} GB</li>
 	 * </ul>
 	 *
 	 * @return configuration with default security settings
@@ -148,8 +157,7 @@ public record SecurityConfig(
 			DEFAULT_MAX_RECURSION_DEPTH,
 			DEFAULT_WARN_RECURSION_DEPTH,
 			DEFAULT_MAX_TEMP_FILES,
-			DEFAULT_MAX_TEMP_DISK_BYTES
-		);
+			DEFAULT_MAX_TEMP_DISK_BYTES);
 	}
 
 	/**
@@ -201,9 +209,9 @@ public record SecurityConfig(
 		/**
 		 * Sets the allowed file extensions.
 		 *
-		 * @param allowedExtensions set of allowed extensions (e.g., ".java"), must not be null or empty
+		 * @param allowedExtensions set of allowed extensions (e.g., ".java"), must not be {@code null} or empty
 		 * @return this builder
-		 * @throws NullPointerException if allowedExtensions is null
+		 * @throws NullPointerException if allowedExtensions is {@code null}
 		 * @throws IllegalArgumentException if allowedExtensions is empty
 		 */
 		public Builder allowedExtensions(Set<String> allowedExtensions)
@@ -340,8 +348,7 @@ public record SecurityConfig(
 				maxRecursionDepth,
 				warnRecursionDepth,
 				maxTempFiles,
-				maxTempDiskBytes
-			);
+				maxTempDiskBytes);
 		}
 	}
 }

@@ -10,7 +10,7 @@ package io.github.cowwoc.styler.formatter.api.plugin;
  * <b>Thread Safety:</b> This exception class is thread-safe.
  * <b>Security:</b> Exception messages are sanitized to prevent information disclosure.
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
  */
 public class PluginException extends Exception

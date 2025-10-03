@@ -10,7 +10,7 @@ package io.github.cowwoc.styler.cli.security.exceptions;
  * File processing timeout
  *   Operation: format-file
  *   Elapsed: 32.5 seconds
- *   Timeout: 30.0 seconds
+ *   Timeout: 30.{@code 0} seconds
  *
  *   This file took too long to process. Possible causes:
  *   - Extremely deep nesting (>100 levels)
@@ -20,6 +20,7 @@ package io.github.cowwoc.styler.cli.security.exceptions;
  */
 public final class ExecutionTimeoutException extends SecurityException
 {
+	private static final long serialVersionUID = 1L;
 	private final String operationName;
 	private final long elapsedMillis;
 	private final long timeoutMillis;
@@ -53,8 +54,7 @@ public final class ExecutionTimeoutException extends SecurityException
 			"  - Infinite loop (please report bug)",
 			operationName,
 			elapsedMillis / 1000.0,
-			timeoutMillis / 1000.0
-		);
+			timeoutMillis / 1000.0);
 	}
 
 	/**

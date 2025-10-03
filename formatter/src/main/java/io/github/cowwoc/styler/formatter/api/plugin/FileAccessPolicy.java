@@ -14,7 +14,7 @@ import java.nio.file.Path;
  * <b>Security:</b> Policy violations result in SecurityException and may
  * trigger plugin termination for repeated offenses.
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
  */
 public interface FileAccessPolicy
@@ -63,7 +63,7 @@ public interface FileAccessPolicy
 	 * @param accessType the type of access being requested, never {@code null}
 	 * @throws SecurityException if access is denied
 	 */
-	void validateAccess(Path path, FileAccessType accessType) throws SecurityException;
+	void validateAccess(Path path, FileAccessType accessType);
 
 	/**
 	 * Returns the set of allowed file extensions for plugin access.
@@ -91,16 +91,16 @@ public interface FileAccessPolicy
 	 */
 	enum FileAccessType
 	{
-		/** Read access to file contents */
+		/** Read access to file contents. */
 		READ,
 
-		/** Write access to modify or create files */
+		/** Write access to modify or create files. */
 		WRITE,
 
-		/** Execute access to run files as programs */
+		/** Execute access to run files as programs. */
 		EXECUTE,
 
-		/** Access to file metadata (size, modification time, etc.) */
+		/** Access to file metadata (size, modification time, etc.). */
 		METADATA
 	}
 }

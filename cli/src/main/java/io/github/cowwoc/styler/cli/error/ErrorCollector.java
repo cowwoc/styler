@@ -2,6 +2,7 @@ package io.github.cowwoc.styler.cli.error;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -17,9 +18,10 @@ import java.util.function.Consumer;
  * files with potentially many errors. It supports both synchronous and asynchronous
  * error collection with configurable batch sizes and processing strategies.
  */
+@SuppressWarnings("PMD.SystemPrintln") // CLI utility: System.out/err required for user output
 public final class ErrorCollector implements AutoCloseable
 {
-	private final ConcurrentLinkedQueue<ErrorContext> pendingErrors;
+	private final Queue<ErrorContext> pendingErrors;
 	private final List<ErrorContext> allCollectedErrors;
 	private final AtomicInteger errorCount;
 	private final int batchSize;
@@ -32,9 +34,11 @@ public final class ErrorCollector implements AutoCloseable
 	 * Creates an error collector with the specified batch processing configuration.
 	 *
 	 * @param batchSize the number of errors to collect before triggering batch processing
-	 * @param batchProcessor the function to process error batches, never null
-	 * @param synchronousProcessing whether to process batches synchronously (true) or asynchronously (false)
-	 * @throws IllegalArgumentException if {@code batchSize} is not positive or {@code batchProcessor} is null
+	 * @param batchProcessor the function to process error batches, never {@code null}
+	 * @param synchronousProcessing whether to process batches synchronously ({@code true}) or
+	 *        asynchronously ({@code false})
+	 * @throws IllegalArgumentException if {@code batchSize} is not positive
+	 * @throws NullPointerException if {@code batchProcessor} is {@code null}
 	 */
 	private ErrorCollector(int batchSize, Consumer<List<ErrorContext>> batchProcessor, boolean synchronousProcessing)
 	{
@@ -44,7 +48,7 @@ public final class ErrorCollector implements AutoCloseable
 		}
 		if (batchProcessor == null)
 		{
-			throw new IllegalArgumentException("Batch processor cannot be null");
+			throw new NullPointerException("Batch processor cannot be null");
 		}
 
 		this.pendingErrors = new ConcurrentLinkedQueue<>();
@@ -53,11 +57,19 @@ public final class ErrorCollector implements AutoCloseable
 		this.batchSize = batchSize;
 		this.batchProcessor = batchProcessor;
 		this.synchronousProcessing = synchronousProcessing;
-		this.processingExecutor = synchronousProcessing ? null : Executors.newSingleThreadExecutor(r -> {
-			Thread t = new Thread(r, "ErrorCollector-Processor");
-			t.setDaemon(true);
-			return t;
-		});
+		if (synchronousProcessing)
+		{
+			this.processingExecutor = null;
+		}
+		else
+		{
+			this.processingExecutor = Executors.newSingleThreadExecutor(r ->
+			{
+				Thread t = new Thread(r, "ErrorCollector-Processor");
+				t.setDaemon(true);
+				return t;
+			});
+		}
 		this.closed = false;
 	}
 
@@ -65,8 +77,8 @@ public final class ErrorCollector implements AutoCloseable
 	 * Creates an error collector with the specified batch processing configuration (asynchronous).
 	 *
 	 * @param batchSize the number of errors to collect before triggering batch processing
-	 * @param batchProcessor the function to process error batches, never null
-	 * @throws IllegalArgumentException if {@code batchSize} is not positive or {@code batchProcessor} is null
+	 * @param batchProcessor the function to process error batches, never {@code null}
+	 * @throws IllegalArgumentException if {@code batchSize} is not positive or {@code batchProcessor} is {@code null}
 	 */
 	public ErrorCollector(int batchSize, Consumer<List<ErrorContext>> batchProcessor)
 	{
@@ -76,8 +88,8 @@ public final class ErrorCollector implements AutoCloseable
 	/**
 	 * Creates an error collector with default batch size of 50.
 	 *
-	 * @param batchProcessor the function to process error batches, never null
-	 * @throws IllegalArgumentException if {@code batchProcessor} is null
+	 * @param batchProcessor the function to process error batches, never {@code null}
+	 * @throws IllegalArgumentException if {@code batchProcessor} is {@code null}
 	 */
 	public ErrorCollector(Consumer<List<ErrorContext>> batchProcessor)
 	{
@@ -87,15 +99,15 @@ public final class ErrorCollector implements AutoCloseable
 	/**
 	 * Adds an error to the collection for batch processing.
 	 *
-	 * @param error the error to add, never null
-	 * @throws IllegalArgumentException if {@code error} is null
+	 * @param error the error to add, never {@code null}
+	 * @throws NullPointerException if {@code error} is {@code null}
 	 * @throws IllegalStateException if the collector has been closed
 	 */
 	public void addError(ErrorContext error)
 	{
 		if (error == null)
 		{
-			throw new IllegalArgumentException("Error cannot be null");
+			throw new NullPointerException("Error cannot be null");
 		}
 		if (closed)
 		{
@@ -123,15 +135,15 @@ public final class ErrorCollector implements AutoCloseable
 	/**
 	 * Adds multiple errors to the collection efficiently.
 	 *
-	 * @param errors the errors to add, never null
-	 * @throws IllegalArgumentException if {@code errors} is null or contains null elements
+	 * @param errors the errors to add, never {@code null}
+	 * @throws NullPointerException if {@code errors} is {@code null} or contains {@code null} elements
 	 * @throws IllegalStateException if the collector has been closed
 	 */
 	public void addErrors(List<ErrorContext> errors)
 	{
 		if (errors == null)
 		{
-			throw new IllegalArgumentException("Errors list cannot be null");
+			throw new NullPointerException("Errors list cannot be null");
 		}
 		if (closed)
 		{
@@ -142,7 +154,7 @@ public final class ErrorCollector implements AutoCloseable
 		{
 			if (error == null)
 			{
-				throw new IllegalArgumentException("Error list cannot contain null elements");
+				throw new NullPointerException("Error list cannot contain null elements");
 			}
 			pendingErrors.offer(error);
 			allCollectedErrors.add(error);
@@ -152,7 +164,7 @@ public final class ErrorCollector implements AutoCloseable
 
 		// Process multiple batches if necessary
 		int batchesToProcess = newCount / batchSize - (newCount - errors.size()) / batchSize;
-		for (int i = 0; i < batchesToProcess; i++)
+		for (int i = 0; i < batchesToProcess; ++i)
 		{
 			if (synchronousProcessing)
 			{
@@ -188,7 +200,7 @@ public final class ErrorCollector implements AutoCloseable
 	 * Processes any remaining errors and returns all collected errors.
 	 * This method blocks until all processing is complete.
 	 *
-	 * @return all errors that have been collected, never null
+	 * @return all errors that have been collected, never {@code null}
 	 */
 	public List<ErrorContext> getAllErrors()
 	{
@@ -208,7 +220,7 @@ public final class ErrorCollector implements AutoCloseable
 	/**
 	 * Returns whether any errors have been collected.
 	 *
-	 * @return true if errors are present, false otherwise
+	 * @return {@code true} if errors are present, {@code false} otherwise
 	 */
 	public boolean hasErrors()
 	{
@@ -228,7 +240,7 @@ public final class ErrorCollector implements AutoCloseable
 	/**
 	 * Returns whether this collector has been closed.
 	 *
-	 * @return true if closed, false if still accepting errors
+	 * @return {@code true} if closed, {@code false} if still accepting errors
 	 */
 	public boolean isClosed()
 	{
@@ -247,7 +259,7 @@ public final class ErrorCollector implements AutoCloseable
 
 		// Extract a batch of errors
 		List<ErrorContext> batch = new ArrayList<>();
-		for (int i = 0; i < batchSize && !pendingErrors.isEmpty(); i++)
+		for (int i = 0; i < batchSize && !pendingErrors.isEmpty(); ++i)
 		{
 			ErrorContext error = pendingErrors.poll();
 			if (error != null)
@@ -259,8 +271,9 @@ public final class ErrorCollector implements AutoCloseable
 		if (!batch.isEmpty())
 		{
 			// Process batch asynchronously
-			CompletableFuture.runAsync(() -> batchProcessor.accept(batch), processingExecutor)
-				.exceptionally(throwable -> {
+			CompletableFuture.runAsync(() -> batchProcessor.accept(batch), processingExecutor).
+				exceptionally(throwable ->
+				{
 					// Log processing error but continue
 					System.err.println("Error processing batch: " + throwable.getMessage());
 					return null;
@@ -280,7 +293,7 @@ public final class ErrorCollector implements AutoCloseable
 
 		// Extract a batch of errors
 		List<ErrorContext> batch = new ArrayList<>();
-		for (int i = 0; i < batchSize && !pendingErrors.isEmpty(); i++)
+		for (int i = 0; i < batchSize && !pendingErrors.isEmpty(); ++i)
 		{
 			ErrorContext error = pendingErrors.poll();
 			if (error != null)
@@ -341,23 +354,25 @@ public final class ErrorCollector implements AutoCloseable
 	/**
 	 * Creates an error collector that integrates with an ErrorReporter for streaming processing.
 	 *
-	 * @param errorReporter the error reporter to send batches to, never null
+	 * @param errorReporter the error reporter to send batches to, never {@code null}
 	 * @param batchSize the batch size for processing
-	 * @throws IllegalArgumentException if {@code errorReporter} is null or {@code batchSize} is not positive
-	 * @return a new ErrorCollector that forwards batches to the reporter, never null
+	 * @throws NullPointerException if {@code errorReporter} is {@code null}
+	 * @throws IllegalArgumentException if {@code batchSize} is not positive
+	 * @return a new ErrorCollector that forwards batches to the reporter, never {@code null}
 	 */
 	public static ErrorCollector forReporter(ErrorReporter errorReporter, int batchSize)
 	{
 		if (errorReporter == null)
 		{
-			throw new IllegalArgumentException("Error reporter cannot be null");
+			throw new NullPointerException("Error reporter cannot be null");
 		}
 		if (batchSize <= 0)
 		{
 			throw new IllegalArgumentException("Batch size must be positive: " + batchSize);
 		}
 
-		return new ErrorCollector(batchSize, batch -> {
+		return new ErrorCollector(batchSize, batch ->
+		{
 			// Forward each error in the batch to the reporter
 			for (ErrorContext error : batch)
 			{
@@ -369,11 +384,12 @@ public final class ErrorCollector implements AutoCloseable
 	/**
 	 * Creates a simple error collector that accumulates all errors without batch processing.
 	 *
-	 * @return a new ErrorCollector for simple accumulation, never null
+	 * @return a new ErrorCollector for simple accumulation, never {@code null}
 	 */
 	public static ErrorCollector createSimple()
 	{
-		return new ErrorCollector(Integer.MAX_VALUE, batch -> {
+		return new ErrorCollector(Integer.MAX_VALUE, batch ->
+		{
 			// No-op processor for simple accumulation
 		});
 	}

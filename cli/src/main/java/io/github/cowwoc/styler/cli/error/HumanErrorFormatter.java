@@ -1,6 +1,8 @@
 package io.github.cowwoc.styler.cli.error;
 
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -40,39 +42,35 @@ public final class HumanErrorFormatter implements ErrorFormatter
 
 		StringBuilder output = new StringBuilder();
 
-		// File path and location with colored formatting
-		output.append(colorize(errorContext.filePath().toString(), AnsiColor.CYAN));
-		output.append(":");
-		output.append(colorize(String.valueOf(errorContext.getLineNumber()), AnsiColor.YELLOW));
-		output.append(":");
-		output.append(colorize(String.valueOf(errorContext.getColumnNumber()), AnsiColor.YELLOW));
-
-		// Severity and category
-		output.append(" ");
-		output.append(formatSeverity(errorContext.severity()));
-		output.append(" ");
-		output.append(colorize("[" + errorContext.errorCode() + "]", AnsiColor.GRAY));
-
-		// Main error message
-		output.append(" ");
-		output.append(errorContext.message());
-		output.append("\n");
+		// File path, location, severity, category, and message
+		output.append(colorize(errorContext.filePath().toString(), AnsiColor.CYAN)).
+			append(':').
+			append(colorize(String.valueOf(errorContext.getLineNumber()), AnsiColor.YELLOW)).
+			append(':').
+			append(colorize(String.valueOf(errorContext.getColumnNumber()), AnsiColor.YELLOW)).
+			append(' ').
+			append(formatSeverity(errorContext.severity())).
+			append(' ').
+			append(colorize("[" + errorContext.errorCode() + "]", AnsiColor.GRAY)).
+			append(' ').
+			append(errorContext.message()).
+			append('\n');
 
 		// Code snippet with context
 		String snippet = SourceSnippetExtractor.extractSnippet(
 			errorContext.sourceText(), errorContext.location());
-		if (!snippet.trim().isEmpty())
+		if (!snippet.isBlank())
 		{
-			output.append("\n");
-			output.append(colorize(snippet, AnsiColor.GRAY));
+			output.append('\n').
+				append(colorize(snippet, AnsiColor.GRAY));
 		}
 
 		// Suggested fix if available
 		if (errorContext.hasSuggestedFix())
 		{
-			output.append(colorize("💡 Fix: ", AnsiColor.GREEN));
-			output.append(errorContext.suggestedFix());
-			output.append("\n");
+			output.append(colorize("💡 Fix: ", AnsiColor.GREEN)).
+				append(errorContext.suggestedFix()).
+				append('\n');
 		}
 
 		return output.toString();
@@ -91,18 +89,23 @@ public final class HumanErrorFormatter implements ErrorFormatter
 		StringBuilder report = new StringBuilder();
 
 		// Group errors by file for organized presentation
-		var errorsByFile = errors.stream()
-			.collect(Collectors.groupingBy(ErrorContext::filePath));
+		Map<Path, List<ErrorContext>> errorsByFile = errors.stream().
+			collect(Collectors.groupingBy(ErrorContext::filePath));
 
-		for (var entry : errorsByFile.entrySet())
+		for (Map.Entry<Path, List<ErrorContext>> entry : errorsByFile.entrySet())
 		{
-			var filePath = entry.getKey();
-			var fileErrors = entry.getValue();
+			Path filePath = entry.getKey();
+			List<ErrorContext> fileErrors = entry.getValue();
 
 			// File header
-			report.append(colorize("📄 " + filePath, AnsiColor.BOLD_CYAN));
-			report.append(" (").append(fileErrors.size()).append(" error");
-			if (fileErrors.size() != 1) report.append("s");
+			report.append(colorize("📄 " + filePath, AnsiColor.BOLD_CYAN)).
+				append(" (").
+				append(fileErrors.size()).
+				append(" error");
+			if (fileErrors.size() != 1)
+			{
+				report.append('s');
+			}
 			report.append(")\n");
 
 			// Errors for this file
@@ -113,12 +116,12 @@ public final class HumanErrorFormatter implements ErrorFormatter
 				String[] lines = formattedError.split("\n");
 				for (String line : lines)
 				{
-					if (!line.trim().isEmpty())
+					if (!line.isBlank())
 					{
-						report.append("  ").append(line).append("\n");
+						report.append("  ").append(line).append('\n');
 					}
 				}
-				report.append("\n");
+				report.append('\n');
 			}
 		}
 
@@ -130,16 +133,18 @@ public final class HumanErrorFormatter implements ErrorFormatter
 	{
 		Objects.requireNonNull(summary, "Summary cannot be null");
 
-		StringBuilder output = new StringBuilder();
+		StringBuilder output = new StringBuilder(1024);
 
-		// Header
-		output.append(colorize("═══ Error Summary ═══", AnsiColor.BOLD));
-		output.append("\n");
-
-		// Operation info
-		output.append("Operation: ").append(summary.operationType()).append("\n");
-		output.append("Processing time: ").append(formatTime(summary.processingTimeMs())).append("\n");
-		output.append("\n");
+		// Header and operation info
+		output.append(colorize("═══ Error Summary ═══", AnsiColor.BOLD)).
+			append('\n').
+			append("Operation: ").
+			append(summary.operationType()).
+			append('\n').
+			append("Processing time: ").
+			append(formatTime(summary.processingTimeMs())).
+			append('\n').
+			append('\n');
 
 		// Error counts by category
 		if (summary.totalErrors() == 0)
@@ -148,52 +153,60 @@ public final class HumanErrorFormatter implements ErrorFormatter
 		}
 		else
 		{
-			output.append("Total errors: ");
-			output.append(colorize(String.valueOf(summary.totalErrors()),
-				summary.criticalErrors() > 0 ? AnsiColor.RED : AnsiColor.YELLOW));
-			output.append("\n");
+			AnsiColor totalErrorColor;
+			if (summary.criticalErrors() > 0)
+			{
+				totalErrorColor = AnsiColor.RED;
+			}
+			else
+			{
+				totalErrorColor = AnsiColor.YELLOW;
+			}
+			output.append("Total errors: ").
+				append(colorize(String.valueOf(summary.totalErrors()), totalErrorColor)).
+				append('\n');
 
 			if (summary.parseErrors() > 0)
 			{
-				output.append("  Parse errors: ");
-				output.append(colorize(String.valueOf(summary.parseErrors()), AnsiColor.RED));
-				output.append("\n");
+				output.append("  Parse errors: ").
+					append(colorize(String.valueOf(summary.parseErrors()), AnsiColor.RED)).
+					append('\n');
 			}
 			if (summary.configErrors() > 0)
 			{
-				output.append("  Config errors: ");
-				output.append(colorize(String.valueOf(summary.configErrors()), AnsiColor.RED));
-				output.append("\n");
+				output.append("  Config errors: ").
+					append(colorize(String.valueOf(summary.configErrors()), AnsiColor.RED)).
+					append('\n');
 			}
 			if (summary.formatViolations() > 0)
 			{
-				output.append("  Format violations: ");
-				output.append(colorize(String.valueOf(summary.formatViolations()), AnsiColor.YELLOW));
-				output.append("\n");
+				output.append("  Format violations: ").
+					append(colorize(String.valueOf(summary.formatViolations()), AnsiColor.YELLOW)).
+					append('\n');
 			}
 			if (summary.validationErrors() > 0)
 			{
-				output.append("  Validation errors: ");
-				output.append(colorize(String.valueOf(summary.validationErrors()), AnsiColor.YELLOW));
-				output.append("\n");
+				output.append("  Validation errors: ").
+					append(colorize(String.valueOf(summary.validationErrors()), AnsiColor.YELLOW)).
+					append('\n');
 			}
 			if (summary.systemErrors() > 0)
 			{
-				output.append("  System errors: ");
-				output.append(colorize(String.valueOf(summary.systemErrors()), AnsiColor.RED));
-				output.append("\n");
+				output.append("  System errors: ").
+					append(colorize(String.valueOf(summary.systemErrors()), AnsiColor.RED)).
+					append('\n');
 			}
 
 			// Critical error indicator
 			if (summary.criticalErrors() > 0)
 			{
-				output.append("\n");
-				output.append(colorize("❌ " + summary.criticalErrors() +
-					" critical error(s) require attention", AnsiColor.BOLD_RED));
+				output.append('\n').
+					append(colorize("❌ " + summary.criticalErrors() +
+						" critical error(s) require attention", AnsiColor.BOLD_RED));
 			}
 		}
 
-		output.append("\n");
+		output.append('\n');
 		return output.toString();
 	}
 
@@ -211,6 +224,9 @@ public final class HumanErrorFormatter implements ErrorFormatter
 
 	/**
 	 * Formats severity level with appropriate color coding.
+	 *
+	 * @param severity the error severity to format
+	 * @return the formatted severity string with color codes
 	 */
 	private String formatSeverity(ErrorSeverity severity)
 	{
@@ -225,6 +241,9 @@ public final class HumanErrorFormatter implements ErrorFormatter
 
 	/**
 	 * Formats processing time in human-readable form.
+	 *
+	 * @param milliseconds the time in milliseconds to format
+	 * @return the formatted time string (e.g., "{@code 1}.5s", "2m 30s")
 	 */
 	private String formatTime(long milliseconds)
 	{
@@ -232,20 +251,21 @@ public final class HumanErrorFormatter implements ErrorFormatter
 		{
 			return milliseconds + "ms";
 		}
-		else if (milliseconds < 60000)
+		if (milliseconds < 60_000)
 		{
 			return String.format("%.1fs", milliseconds / 1000.0);
 		}
-		else
-		{
-			long minutes = milliseconds / 60000;
-			long seconds = (milliseconds % 60000) / 1000;
-			return String.format("%dm %ds", minutes, seconds);
-		}
+		long minutes = milliseconds / 60_000;
+		long seconds = (milliseconds % 60_000) / 1000;
+		return String.format("%dm %ds", minutes, seconds);
 	}
 
 	/**
 	 * Applies color formatting if colors are enabled.
+	 *
+	 * @param text the text to colorize
+	 * @param color the ANSI color to apply
+	 * @return the colorized text, or original text if colors are disabled
 	 */
 	private String colorize(String text, AnsiColor color)
 	{
@@ -259,6 +279,8 @@ public final class HumanErrorFormatter implements ErrorFormatter
 	/**
 	 * Detects if the current terminal supports colors.
 	 * Based on common environment variables that indicate color support.
+	 *
+	 * @return {@code true} if the terminal supports colors, {@code false} otherwise
 	 */
 	private static boolean isColorTerminal()
 	{

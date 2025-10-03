@@ -15,7 +15,7 @@ import java.time.Instant;
  * <b>Performance:</b> Statistics collection is optimized for minimal overhead
  * during plugin execution.
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
  */
 public final class ResourceUsageStats
@@ -191,10 +191,10 @@ public final class ResourceUsageStats
 	/**
 	 * Returns the memory efficiency ratio (deallocations / allocations).
 	 * <p>
-	 * Values close to 1.0 indicate efficient memory management with proper cleanup.
-	 * Values significantly less than 1.0 may indicate memory leaks.
+	 * Values close to {@code 1}.{@code 0} indicate efficient memory management with proper cleanup.
+	 * Values significantly less than {@code 1}.{@code 0} may indicate memory leaks.
 	 *
-	 * @return the memory efficiency ratio (0.0 to 1.0)
+	 * @return the memory efficiency ratio ({@code 0}.{@code 0} to {@code 1}.{@code 0})
 	 */
 	public double getMemoryEfficiencyRatio()
 	{
@@ -225,7 +225,7 @@ public final class ResourceUsageStats
 	public boolean hasMemoryIssues()
 	{
 		return getMemoryEfficiencyRatio() < 0.8 ||
-		       (peakMemoryUsage > averageMemoryUsage * 3);
+		       peakMemoryUsage > averageMemoryUsage * 3;
 	}
 
 	/**

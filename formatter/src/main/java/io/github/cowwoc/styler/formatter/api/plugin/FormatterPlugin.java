@@ -23,26 +23,26 @@ import java.util.List;
  * public class MyFormatterPlugin implements FormatterPlugin {
  *     private static final PluginDescriptor DESCRIPTOR = new PluginDescriptor(
  *         "com.example.myformatter",
- *         "1.0.0",
+ *         "{@code 1}.{@code 0}.{@code 0}",
  *         "My Formatter Plugin",
  *         "Example Corp",
  *         Set.of(),
  *         Map.of("category", "formatting")
  *     );
  *
- *     @Override
+ *     // Override
  *     public PluginDescriptor getDescriptor() {
  *         return DESCRIPTOR;
  *     }
  *
- *     @Override
+ *     // Override
  *     public List<FormattingRule> createRules(PluginContext context) {
  *         return List.of(new MyFormattingRule());
  *     }
  * }
  * }</pre>
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
  * @see PluginDescriptor
  * @see PluginContext

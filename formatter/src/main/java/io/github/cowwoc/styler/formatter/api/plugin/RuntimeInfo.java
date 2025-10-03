@@ -15,7 +15,7 @@ import java.util.Map;
  * <b>Security:</b> Sensitive system information is filtered to prevent information
  * disclosure while providing useful environmental context.
  *
- * @since 1.0.0
+ * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
  */
 public interface RuntimeInfo

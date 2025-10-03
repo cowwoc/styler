@@ -10,22 +10,23 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.Option;
 
+import java.io.PrintStream;
 import java.util.concurrent.Callable;
 
 /**
  * Main entry point for the Styler Java Code Formatter CLI application.
  * <p>
- * This class coordinates command execution, handles global options, and manages
- * the application lifecycle. It uses Picocli for command-line parsing and
- * provides subcommands for different formatting operations.
+ * This class coordinates command execution, handles global options, and manages the application lifecycle. It
+ * uses Picocli for command-line parsing and provides subcommands for different formatting operations.
  * <p>
  * <b>Exit Codes:</b>
  * <ul>
- *   <li>0: Success (no violations found or formatting completed)</li>
- *   <li>1: Violations found (in check mode) or formatting changes applied</li>
+ *   <li>{@code 0}: Success (no violations found or formatting completed)</li>
+ *   <li>{@code 1}: Violations found (in check mode) or formatting changes applied</li>
  *   <li>2: Error occurred during processing</li>
  * </ul>
  */
+@SuppressWarnings("PMD.SystemPrintln") // CLI app: System.out/err required for user output
 @Command(
 	name = "styler",
 	description = "Java Code Formatter with AI-friendly output",
@@ -36,20 +37,19 @@ import java.util.concurrent.Callable;
 		CheckCommand.class,
 		ConfigCommand.class,
 		HelpCommand.class
-	}
-)
+	})
 public class StylerCLI implements Callable<Integer>
 {
+	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
 	private static final Logger logger = LoggerFactory.getLogger(StylerCLI.class);
 
 	@Option(names = {"-v", "--verbose"}, description = "Enable verbose logging")
-	private boolean verbose = false;
+	private boolean verbose;
 
 	@Option(names = {"-q", "--quiet"}, description = "Suppress all output except errors")
-	private boolean quiet = false;
+	private boolean quiet;
 
-	@Option(names = {"--version"}, versionHelp = true, description = "Show version information")
-	private boolean versionRequested = false;
+	private PrintStream out;
 
 	/**
 	 * Main entry point for the application.
@@ -72,16 +72,32 @@ public class StylerCLI implements Callable<Integer>
 	}
 
 	/**
-	 * Executes the main command when no subcommand is specified.
-	 * Shows help information by default.
+	 * Sets the output stream for help and usage messages. Used primarily for testing to redirect output.
 	 *
-	 * @return exit code (0 for success, non-zero for failure)
+	 * @param out the print stream to use for output
+	 */
+	public void setOut(PrintStream out)
+	{
+		this.out = out;
+	}
+
+	/**
+	 * Executes the main command when no subcommand is specified. Shows help information by default.
+	 *
+	 * @return exit code ({@code 0} for success, non-zero for failure)
 	 */
 	@Override
 	public Integer call()
 	{
-		// When no subcommand is provided, show help
-		CommandLine.usage(this, System.out);
+		@SuppressWarnings("PMD.CloseResource")
+		PrintStream stream;
+		if (out == null)
+			stream = System.out;
+		else
+			stream = out;
+
+		// Show the help screen
+		CommandLine.usage(this, stream);
 		return 0;
 	}
 
@@ -103,12 +119,14 @@ public class StylerCLI implements Callable<Integer>
 	/**
 	 * Handles execution exceptions with user-friendly error messages.
 	 *
-	 * @param exception the exception that occurred
+	 * @param exception   the exception that occurred
 	 * @param commandLine the command line instance
 	 * @param parseResult the parse result
 	 * @return exit code
 	 */
-	private static int handleExecutionException(Exception exception, CommandLine commandLine, CommandLine.ParseResult parseResult)
+	@SuppressWarnings("PMD.UnusedFormalParameter") // Required by Picocli handler signature
+	private static int handleExecutionException(Exception exception, CommandLine commandLine,
+		CommandLine.ParseResult parseResult)
 	{
 		logger.error("Command execution failed", exception);
 
@@ -132,9 +150,10 @@ public class StylerCLI implements Callable<Integer>
 	 * Handles parameter parsing exceptions with helpful suggestions.
 	 *
 	 * @param exception the parameter exception
-	 * @param args the command line arguments
+	 * @param args      the command line arguments
 	 * @return exit code
 	 */
+	@SuppressWarnings("PMD.UnusedFormalParameter") // Required by Picocli handler signature
 	private static int handleParameterException(CommandLine.ParameterException exception, String[] args)
 	{
 		CommandLine commandLine = exception.getCommandLine();
@@ -153,7 +172,7 @@ public class StylerCLI implements Callable<Integer>
 	/**
 	 * Returns whether verbose logging is enabled.
 	 *
-	 * @return true if verbose mode is active
+	 * @return {@code true} if verbose mode is active
 	 */
 	public boolean isVerbose()
 	{
@@ -163,7 +182,7 @@ public class StylerCLI implements Callable<Integer>
 	/**
 	 * Returns whether quiet mode is enabled.
 	 *
-	 * @return true if quiet mode is active
+	 * @return {@code true} if quiet mode is active
 	 */
 	public boolean isQuiet()
 	{

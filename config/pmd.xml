@@ -14,6 +14,10 @@
 		<exclude name="PreserveStackTrace"/>
 		<exclude name="AvoidStringBufferField"/>
 		<exclude name="UnitTestShouldIncludeAssert"/>
+		<!-- Overly strict - multiple assertions per test are often appropriate -->
+		<exclude name="UnitTestContainsTooManyAsserts"/>
+		<!-- Test names and assertion types are self-documenting -->
+		<exclude name="UnitTestAssertionsShouldIncludeMessage"/>
 	</rule>
 	<!--	<rule ref="category/java/bestpractices.xml/UnnecessaryWarningSuppression"/>-->
 
@@ -27,6 +31,7 @@
 		<exclude name="UselessParentheses"/>
 		<exclude name="MethodArgumentCouldBeFinal"/>
 		<exclude name="LocalVariableCouldBeFinal"/>
+		<exclude name="FinalParameterInAbstractMethod"/>
 		<exclude name="OnlyOneReturn"/>
 		<exclude name="FieldDeclarationsShouldBeAtStartOfClass"/>
 		<exclude name="ShortVariable"/>
@@ -84,6 +89,8 @@
 		<exclude name="CyclomaticComplexity"/>
 		<exclude name="NPathComplexity"/>
 		<exclude name="ExceptionAsFlowControl"/>
+		<!-- Documenting unchecked exceptions is intentional design choice for security/validation APIs -->
+		<exclude name="AvoidUncheckedExceptionsInSignatures"/>
 		<!--
 		The check is not really useful. It makes it more difficult to debug by commenting-out code and it
 		suffers from this false-positive: https://github.com/pmd/pmd/issues/4911
@@ -94,6 +101,8 @@
 		<exclude name="UncommentedEmptyConstructor"/>
 		<exclude name="UncommentedEmptyMethodBody"/>
 		<exclude name="CommentSize"/>
+		<!-- WORKAROUND: https://github.com/pmd/pmd/issues/6103 -->
+		<exclude name="DanglingJavadoc"/>
 	</rule>
 	<rule ref="category/java/documentation.xml/CommentRequired">
 		<properties>
@@ -145,6 +154,8 @@
 		<exclude name="AvoidInstantiatingObjectsInLoops"/>
 		<exclude name="ConsecutiveLiteralAppends"/>
 		<exclude name="TooFewBranchesForSwitch"/>
+		<!-- Chaining appends reduces readability for minimal performance gain -->
+		<exclude name="ConsecutiveAppendsShouldReuse"/>
 	</rule>
 	<rule ref="category/java/security.xml"/>
 </ruleset>

@@ -16,6 +16,7 @@ import java.util.concurrent.Callable;
  * including validation, profile management, and initialization of
  * default configurations.
  */
+@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
 @Command(
 	name = "config",
 	description = "Manage formatter configuration files and profiles",
@@ -24,10 +25,10 @@ import java.util.concurrent.Callable;
 		ConfigCommand.InitCommand.class,
 		ConfigCommand.ValidateCommand.class,
 		ConfigCommand.ListCommand.class
-	}
-)
+	})
 public class ConfigCommand implements Callable<Integer>
 {
+	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
 	private static final Logger logger = LoggerFactory.getLogger(ConfigCommand.class);
 
 	@Override
@@ -46,30 +47,29 @@ public class ConfigCommand implements Callable<Integer>
 	/**
 	 * Initialize a new configuration file.
 	 */
+@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
 	@Command(
 		name = "init",
-		description = "Initialize a new configuration file with default settings"
-	)
+		description = "Initialize a new configuration file with default settings")
 	static class InitCommand implements Callable<Integer>
 	{
+		@SuppressWarnings("PMD.ImmutableField") // Picocli sets this via reflection
 		@Option(
 			names = {"-f", "--file"},
-			description = "Configuration file path (default: .styler.toml)"
-		)
+			description = "Configuration file path (default: .styler.toml)")
 		private Path configFile = Path.of(".styler.toml");
 
+		@SuppressWarnings("PMD.ImmutableField") // Picocli sets this via reflection
 		@Option(
 			names = {"-p", "--profile"},
 			description = "Base profile to use: ${COMPLETION-CANDIDATES} (default: GOOGLE)",
-			paramLabel = "<profile>"
-		)
+			paramLabel = "<profile>")
 		private Profile profile = Profile.GOOGLE;
 
 		@Option(
 			names = {"--force"},
-			description = "Overwrite existing configuration file"
-		)
-		private boolean force = false;
+			description = "Overwrite existing configuration file")
+		private boolean force;
 
 		public enum Profile
 		{
@@ -81,7 +81,7 @@ public class ConfigCommand implements Callable<Integer>
 		{
 			try
 			{
-				// TODO: Implement configuration file initialization
+				// TODO Implement configuration file initialization
 				// This will be implemented when the configuration API is integrated
 
 				logger.info("Initializing configuration file: {}", configFile);
@@ -105,30 +105,28 @@ public class ConfigCommand implements Callable<Integer>
 	/**
 	 * Validate an existing configuration file.
 	 */
+@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
 	@Command(
 		name = "validate",
-		description = "Validate configuration file syntax and rules"
-	)
+		description = "Validate configuration file syntax and rules")
 	static class ValidateCommand implements Callable<Integer>
 	{
 		@Parameters(
 			paramLabel = "<config-file>",
-			description = "Configuration file to validate"
-		)
+			description = "Configuration file to validate")
 		private Path configFile;
 
 		@Option(
 			names = {"--json"},
-			description = "Output validation results in JSON format"
-		)
-		private boolean jsonOutput = false;
+			description = "Output validation results in JSON format")
+		private boolean jsonOutput;
 
 		@Override
 		public Integer call()
 		{
 			try
 			{
-				// TODO: Implement configuration validation
+				// TODO Implement configuration validation
 				// This will be implemented when the configuration API is integrated
 
 				logger.info("Validating configuration file: {}", configFile);
@@ -150,36 +148,33 @@ public class ConfigCommand implements Callable<Integer>
 	/**
 	 * List available configuration profiles.
 	 */
+@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
 	@Command(
 		name = "list",
-		description = "List available configuration profiles and rules"
-	)
+		description = "List available configuration profiles and rules")
 	static class ListCommand implements Callable<Integer>
 	{
 		@Option(
 			names = {"--profiles"},
-			description = "List available profiles"
-		)
-		private boolean listProfiles = false;
+			description = "List available profiles")
+		private boolean listProfiles;
 
 		@Option(
 			names = {"--rules"},
-			description = "List available formatting rules"
-		)
-		private boolean listRules = false;
+			description = "List available formatting rules")
+		private boolean listRules;
 
 		@Option(
 			names = {"--json"},
-			description = "Output results in JSON format"
-		)
-		private boolean jsonOutput = false;
+			description = "Output results in JSON format")
+		private boolean jsonOutput;
 
 		@Override
 		public Integer call()
 		{
 			try
 			{
-				// TODO: Implement profile and rule listing
+				// TODO Implement profile and rule listing
 				// This will be implemented when the configuration API is integrated
 
 				if (!listProfiles && !listRules)

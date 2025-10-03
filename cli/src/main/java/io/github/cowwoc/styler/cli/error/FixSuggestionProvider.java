@@ -2,7 +2,7 @@ package io.github.cowwoc.styler.cli.error;
 
 import io.github.cowwoc.styler.ast.SourceRange;
 
-import java.util.Objects;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -25,17 +25,25 @@ public final class FixSuggestionProvider
 	private static final Pattern INVALID_CONFIG_VALUE = Pattern.compile("invalid.*value|illegal.*value");
 
 	/**
+	 * Private constructor to prevent instantiation of utility class.
+	 */
+	private FixSuggestionProvider()
+	{
+		throw new AssertionError("Utility class - do not instantiate");
+	}
+
+	/**
 	 * Generates a fix suggestion for the given error context.
 	 *
-	 * @param errorContext the error context containing error details, never null
-	 * @throws IllegalArgumentException if {@code errorContext} is null
-	 * @return a suggested fix for the error, or null if no suggestion is available
+	 * @param errorContext the error context containing error details, never {@code null}
+	 * @throws NullPointerException if {@code errorContext} is {@code null}
+	 * @return a suggested fix for the error, or {@code null} if no suggestion is available
 	 */
 	public static String generateSuggestion(ErrorContext errorContext)
 	{
 		if (errorContext == null)
 		{
-			throw new IllegalArgumentException("Error context cannot be null");
+			throw new NullPointerException("Error context cannot be null");
 		}
 
 		return switch (errorContext.category())
@@ -50,10 +58,13 @@ public final class FixSuggestionProvider
 
 	/**
 	 * Generates suggestions for parse errors based on common syntax issues.
+	 *
+	 * @param errorContext the error context containing parse error information
+	 * @return a suggested fix for the parse error
 	 */
 	private static String generateParseSuggestion(ErrorContext errorContext)
 	{
-		String message = errorContext.message().toLowerCase();
+		String message = errorContext.message().toLowerCase(Locale.ROOT);
 		String sourceSnippet = SourceSnippetExtractor.extractInlineSnippet(
 			errorContext.sourceText(), errorContext.location());
 
@@ -68,10 +79,7 @@ public final class FixSuggestionProvider
 			{
 				return "Add an opening brace '{' to start the block";
 			}
-			else
-			{
-				return "Add a closing brace '}' to end the block";
-			}
+			return "Add a closing brace '}' to end the block";
 		}
 
 		if (INVALID_IDENTIFIER.matcher(message).find())
@@ -90,10 +98,13 @@ public final class FixSuggestionProvider
 
 	/**
 	 * Generates suggestions for configuration errors.
+	 *
+	 * @param errorContext the error context containing configuration error information
+	 * @return a suggested fix for the configuration error
 	 */
 	private static String generateConfigSuggestion(ErrorContext errorContext)
 	{
-		String message = errorContext.message().toLowerCase();
+		String message = errorContext.message().toLowerCase(Locale.ROOT);
 
 		if (UNKNOWN_CONFIG_KEY.matcher(message).find())
 		{
@@ -115,11 +126,13 @@ public final class FixSuggestionProvider
 
 	/**
 	 * Generates suggestions for formatting violations.
+	 *
+	 * @param errorContext the error context containing formatting violation information
+	 * @return a suggested fix for the formatting violation
 	 */
 	private static String generateFormatSuggestion(ErrorContext errorContext)
 	{
-		String ruleCode = errorContext.errorCode();
-		String message = errorContext.message().toLowerCase();
+		String message = errorContext.message().toLowerCase(Locale.ROOT);
 
 		// Rule-specific suggestions based on common formatting rules
 		if (message.contains("line length") || message.contains("too long"))
@@ -152,10 +165,13 @@ public final class FixSuggestionProvider
 
 	/**
 	 * Generates suggestions for validation errors.
+	 *
+	 * @param errorContext the error context containing validation error information
+	 * @return a suggested fix for the validation error
 	 */
 	private static String generateValidationSuggestion(ErrorContext errorContext)
 	{
-		String message = errorContext.message().toLowerCase();
+		String message = errorContext.message().toLowerCase(Locale.ROOT);
 
 		if (message.contains("constraint") || message.contains("violation"))
 		{
@@ -172,10 +188,13 @@ public final class FixSuggestionProvider
 
 	/**
 	 * Generates suggestions for system errors.
+	 *
+	 * @param errorContext the error context containing system error information
+	 * @return a suggested fix for the system error
 	 */
 	private static String generateSystemSuggestion(ErrorContext errorContext)
 	{
-		String message = errorContext.message().toLowerCase();
+		String message = errorContext.message().toLowerCase(Locale.ROOT);
 
 		if (message.contains("permission") || message.contains("access"))
 		{
@@ -203,16 +222,16 @@ public final class FixSuggestionProvider
 	/**
 	 * Generates context-aware suggestions based on the source code around the error.
 	 *
-	 * @param errorContext the error context, never null
-	 * @param additionalContext extra context information, may be null
-	 * @throws IllegalArgumentException if {@code errorContext} is null
-	 * @return an enhanced suggestion with contextual information, or null if no suggestion available
+	 * @param errorContext the error context, never {@code null}
+	 * @param additionalContext extra context information, may be {@code null}
+	 * @throws NullPointerException if {@code errorContext} is {@code null}
+	 * @return an enhanced suggestion with contextual information, or {@code null} if no suggestion available
 	 */
 	public static String generateContextualSuggestion(ErrorContext errorContext, String additionalContext)
 	{
 		if (errorContext == null)
 		{
-			throw new IllegalArgumentException("Error context cannot be null");
+			throw new NullPointerException("Error context cannot be null");
 		}
 
 		String baseSuggestion = generateSuggestion(errorContext);
@@ -224,9 +243,9 @@ public final class FixSuggestionProvider
 		StringBuilder suggestion = new StringBuilder(baseSuggestion);
 
 		// Add context-specific enhancements
-		if (additionalContext != null && !additionalContext.trim().isEmpty())
+		if (additionalContext != null && !additionalContext.isBlank())
 		{
-			suggestion.append(" (Context: ").append(additionalContext.trim()).append(")");
+			suggestion.append(" (Context: ").append(additionalContext.trim()).append(')');
 		}
 
 		// Add location-specific hints for parse errors
@@ -249,15 +268,15 @@ public final class FixSuggestionProvider
 	/**
 	 * Returns whether a fix suggestion is available for the given error type.
 	 *
-	 * @param category the error category, never null
-	 * @throws IllegalArgumentException if {@code category} is null
-	 * @return true if suggestions are typically available for this error type
+	 * @param category the error category, never {@code null}
+	 * @throws NullPointerException if {@code category} is {@code null}
+	 * @return {@code true} if suggestions are typically available for this error type
 	 */
 	public static boolean hasSuggestionFor(ErrorCategory category)
 	{
 		if (category == null)
 		{
-			throw new IllegalArgumentException("Error category cannot be null");
+			throw new NullPointerException("Error category cannot be null");
 		}
 		return true; // All error categories can have suggestions
 	}

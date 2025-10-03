@@ -19,7 +19,7 @@ public final class ConfigMerger
 	 *
 	 * @param configs the list of configurations to merge, ordered from lowest to highest precedence
 	 * @return the merged configuration, or a default configuration if the list is empty
-	 * @throws NullPointerException if configs is null
+	 * @throws NullPointerException if configs is {@code null}
 	 */
 	public GlobalConfiguration merge(List<GlobalConfiguration> configs)
 	{
@@ -33,7 +33,7 @@ public final class ConfigMerger
 		GlobalConfiguration result = configs.get(0);
 
 		// Merge each subsequent config, with later configs taking precedence
-		for (int i = 1; i < configs.size(); i++)
+		for (int i = 1; i < configs.size(); ++i)
 		{
 			result = mergeTwo(result, configs.get(i));
 		}
@@ -48,7 +48,7 @@ public final class ConfigMerger
 	 * @param base        the base configuration to apply overrides to
 	 * @param cliOverrides map of CLI override values keyed by configuration property names
 	 * @return the configuration with CLI overrides applied
-	 * @throws NullPointerException if base or cliOverrides is null
+	 * @throws NullPointerException if base or cliOverrides is {@code null}
 	 */
 	public GlobalConfiguration applyOverrides(GlobalConfiguration base, Map<String, Object> cliOverrides)
 	{
@@ -143,7 +143,7 @@ public final class ConfigMerger
 	 *
 	 * @param config1 first configuration
 	 * @param config2 second configuration
-	 * @return true if all non-mergeable fields are equal
+	 * @return {@code true} if all non-mergeable fields are equal
 	 */
 	private boolean fieldsEqual(GlobalConfiguration config1, GlobalConfiguration config2)
 	{
@@ -167,24 +167,28 @@ public final class ConfigMerger
 		// Apply the override based on the key using available withXxx methods
 		return switch (key)
 		{
-			case "maxLineLength" -> {
+			case "maxLineLength" ->
+			{
 				if (value instanceof Integer intValue)
 					yield config.withMaxLineLength(intValue);
 				else
 					yield config;
 			}
-			case "indentationSize" -> {
+			case "indentationSize" ->
+			{
 				if (value instanceof Integer intValue)
 					yield config.withIndentation(config.getIndentationType(), intValue);
 				else
 					yield config;
 			}
-			case "indentationType" -> {
+			case "indentationType" ->
+			{
 				if (value instanceof String stringValue)
 				{
 					try
 					{
-						IndentationType indentType = IndentationType.valueOf(stringValue.toUpperCase());
+						String upperValue = stringValue.toUpperCase(java.util.Locale.ROOT);
+						IndentationType indentType = IndentationType.valueOf(upperValue);
 						yield config.withIndentation(indentType, config.getIndentationSize());
 					}
 					catch (IllegalArgumentException e)

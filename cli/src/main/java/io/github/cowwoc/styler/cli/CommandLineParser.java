@@ -10,11 +10,11 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.HelpCommand;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -80,8 +80,7 @@ public class CommandLineParser
 				throw new ArgumentParsingException(
 					e.getMessage(),
 					getUsageText(),
-					e
-				);
+					e);
 			}
 
 			// Handle version and help requests
@@ -97,8 +96,7 @@ public class CommandLineParser
 					false,
 					true,
 					ParsedArguments.Command.VERSION,
-					null
-				);
+					null);
 			}
 
 			if (parseResult.isUsageHelpRequested())
@@ -113,8 +111,7 @@ public class CommandLineParser
 					true,
 					false,
 					ParsedArguments.Command.HELP,
-					null
-				);
+					null);
 			}
 
 			// Determine which subcommand was invoked
@@ -169,8 +166,7 @@ public class CommandLineParser
 					throw new ArgumentParsingException(
 						"Security validation failed: " + e.getMessage(),
 						getUsageText(),
-						e
-					);
+						e);
 				}
 			}
 
@@ -184,16 +180,14 @@ public class CommandLineParser
 				false,
 				false,
 				command,
-				outputDirectory.orElse(null)
-			);
+				outputDirectory.orElse(null));
 		}
 		catch (IllegalArgumentException e)
 		{
 			throw new ArgumentParsingException(
 				e.getMessage(),
 				getUsageText(),
-				e
-			);
+				e);
 		}
 	}
 
@@ -208,12 +202,16 @@ public class CommandLineParser
 		CommandLine commandLine = new CommandLine(captureCommand);
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		try (PrintWriter writer = new PrintWriter(baos))
+		@SuppressWarnings("PMD.RelianceOnDefaultCharset") // CLI output uses system default charset
+		PrintWriter writer = new PrintWriter(baos);
+		try (writer)
 		{
 			commandLine.usage(writer);
 		}
 
-		return baos.toString();
+		@SuppressWarnings("PMD.RelianceOnDefaultCharset") // CLI output uses system default charset
+		String result = baos.toString();
+		return result;
 	}
 
 	/**
@@ -228,6 +226,9 @@ public class CommandLineParser
 
 	/**
 	 * Determines which command was invoked based on the parse result.
+	 *
+	 * @param parseResult the result of parsing command line arguments
+	 * @return the command that was invoked
 	 */
 	private ParsedArguments.Command determineCommand(CommandLine.ParseResult parseResult)
 	{
@@ -251,6 +252,11 @@ public class CommandLineParser
 
 	/**
 	 * Validates argument combinations and constraints.
+	 *
+	 * @param command the command being executed
+	 * @param inputFiles the list of input files
+	 * @param verbose whether verbose mode is enabled
+	 * @param quiet whether quiet mode is enabled
 	 */
 	private void validateArguments(ParsedArguments.Command command, List<Path> inputFiles,
 		boolean verbose, boolean quiet)
@@ -265,22 +271,31 @@ public class CommandLineParser
 		if ((command == ParsedArguments.Command.FORMAT || command == ParsedArguments.Command.CHECK) &&
 			inputFiles.isEmpty())
 		{
-			throw new IllegalArgumentException("Input files are required for " + command.name().toLowerCase() + " command");
+			String commandName = command.name().toLowerCase(java.util.Locale.ROOT);
+		throw new IllegalArgumentException("Input files are required for " + commandName + " command");
 		}
 	}
 
 	/**
 	 * Extracts input files using reflection from command objects.
+	 *
+	 * @param command the command object to extract files from
+	 * @return the list of input file paths, or empty list if none found
 	 */
+	@SuppressWarnings("PMD.AvoidAccessibilityAlteration") // Reflection-based field extraction requires setAccessible
 	private List<Path> extractInputFiles(Object command)
 	{
 		try
 		{
-			var field = command.getClass().getDeclaredField("inputPaths");
+			Field field = command.getClass().getDeclaredField("inputPaths");
 			field.setAccessible(true);
 			@SuppressWarnings("unchecked")
 			List<Path> paths = (List<Path>) field.get(command);
-			return paths != null ? paths : List.of();
+			if (paths != null)
+				{
+				return paths;
+				}
+			return List.of();
 		}
 		catch (NoSuchFieldException | IllegalAccessException e)
 		{
@@ -290,12 +305,16 @@ public class CommandLineParser
 
 	/**
 	 * Extracts config path using reflection from command objects.
+	 *
+	 * @param command the command object to extract config path from
+	 * @return the config file path, or empty if none found
 	 */
+	@SuppressWarnings("PMD.AvoidAccessibilityAlteration") // Reflection-based field extraction requires setAccessible
 	private Optional<Path> extractConfigPath(Object command)
 	{
 		try
 		{
-			var field = command.getClass().getDeclaredField("configFile");
+			Field field = command.getClass().getDeclaredField("configFile");
 			field.setAccessible(true);
 			Path path = (Path) field.get(command);
 			return Optional.ofNullable(path);
@@ -308,12 +327,16 @@ public class CommandLineParser
 
 	/**
 	 * Extracts dry run flag using reflection from FormatCommand.
+	 *
+	 * @param command the format command to extract dry run flag from
+	 * @return {@code true} if dry run is enabled, {@code false} otherwise
 	 */
+	@SuppressWarnings("PMD.AvoidAccessibilityAlteration") // Reflection-based field extraction requires setAccessible
 	private boolean extractDryRun(FormatCommand command)
 	{
 		try
 		{
-			var field = command.getClass().getDeclaredField("dryRun");
+			Field field = command.getClass().getDeclaredField("dryRun");
 			field.setAccessible(true);
 			Boolean dryRun = (Boolean) field.get(command);
 			return dryRun != null && dryRun;
@@ -326,12 +349,16 @@ public class CommandLineParser
 
 	/**
 	 * Extracts output directory using reflection from FormatCommand.
+	 *
+	 * @param command the format command to extract output directory from
+	 * @return the output directory path, or empty if none specified
 	 */
+	@SuppressWarnings("PMD.AvoidAccessibilityAlteration") // Reflection-based field extraction requires setAccessible
 	private Optional<Path> extractOutputDirectory(FormatCommand command)
 	{
 		try
 		{
-			var field = command.getClass().getDeclaredField("outputDirectory");
+			Field field = command.getClass().getDeclaredField("outputDirectory");
 			field.setAccessible(true);
 			Path path = (Path) field.get(command);
 			return Optional.ofNullable(path);
@@ -355,15 +382,14 @@ public class CommandLineParser
 			CheckCommand.class,
 			ConfigCommand.class,
 			HelpCommand.class
-		}
-	)
-	private static class CaptureCommand implements Callable<Integer>
+		})
+	private static final class CaptureCommand implements Callable<Integer>
 	{
 		@Option(names = {"-v", "--verbose"}, description = "Enable verbose logging")
-		private boolean verbose = false;
+		private boolean verbose;
 
 		@Option(names = {"-q", "--quiet"}, description = "Suppress all output except errors")
-		private boolean quiet = false;
+		private boolean quiet;
 
 		@Override
 		public Integer call()

@@ -32,12 +32,12 @@ public abstract class RuleConfiguration
 	 * while this configuration provides defaults for unspecified values.
 	 * The result is a new configuration object; neither input is modified.
 	 *
-	 * @param override the configuration to merge with this one, never null
-	 * @return a new merged configuration, never null
+	 * @param override the configuration to merge with this one, never {@code null}
+	 * @return a new merged configuration, never {@code null}
 	 * @throws ConfigurationException if the merged configuration would be invalid
 	 * @throws IllegalArgumentException if the override is not compatible with this configuration
 	 */
-	
+
 	public abstract RuleConfiguration merge( RuleConfiguration override);
 
 	/**
@@ -46,9 +46,9 @@ public abstract class RuleConfiguration
 	 * This method is used for debugging and audit logging. It should include
 	 * all significant configuration parameters but avoid exposing sensitive data.
 	 *
-	 * @return a description of the configuration, never null
+	 * @return a description of the configuration, never {@code null}
 	 */
-	
+
 	public abstract String getDescription();
 
 	/**
@@ -57,8 +57,8 @@ public abstract class RuleConfiguration
 	 * Two configurations are considered equivalent if they would produce
 	 * identical formatting results when applied to the same source code.
 	 *
-	 * @param other the configuration to compare with, may be null
-	 * @return true if the configurations are equivalent, false otherwise
+	 * @param other the configuration to compare with, may be {@code null}
+	 * @return {@code true} if the configurations are equivalent, {@code false} otherwise
 	 */
 	@Override
 	public abstract boolean equals(Object other);
@@ -80,15 +80,15 @@ public abstract class RuleConfiguration
 	 * This utility method can be used by subclasses to validate individual
 	 * parameters and ensure they meet security requirements.
 	 *
-	 * @param parameterName  the name of the parameter being validated, never null
-	 * @param value         the value to validate, may be null
-	 * @param expectedType  the expected type of the value, never null
+	 * @param parameterName  the name of the parameter being validated, never {@code null}
+	 * @param value         the value to validate, may be {@code null}
+	 * @param expectedType  the expected type of the value, never {@code null}
 	 * @param <T>           the type parameter
 	 * @return the validated value cast to the expected type
 	 * @throws ConfigurationException if the value is invalid
 	 * @throws SecurityException      if the value poses security risks
 	 */
-	
+
 	protected static <T> T validateParameter( String parameterName,
 	                                         Object value,
 	                                          Class<T> expectedType)
@@ -126,11 +126,12 @@ public abstract class RuleConfiguration
 		// Check for potential injection attempts
 		if (value.contains("${") || value.contains("#{") || value.contains("<%") || value.contains("<script"))
 		{
-			throw new SecurityException("Parameter '" + parameterName + "' contains potentially dangerous content: " + value);
+			throw new SecurityException(
+				"Parameter '" + parameterName + "' contains potentially dangerous content: " + value);
 		}
 
 		// Check for excessively long strings that could cause DoS
-		if (value.length() > 10000)
+		if (value.length() > 10_000)
 		{
 			throw new SecurityException("Parameter '" + parameterName + "' exceeds maximum length limit");
 		}

@@ -25,6 +25,7 @@ public final class ConfigDiscovery
 	private final ConfigMerger merger;
 
 	// Simple cache for configuration discovery results (thread-safe)
+	@SuppressWarnings("PMD.FieldNamingConventions") // Standard naming for collections
 	private static final Map<String, GlobalConfiguration> configCache = new ConcurrentHashMap<>();
 
 	/**
@@ -46,7 +47,7 @@ public final class ConfigDiscovery
 	 * @param explicitConfig optional explicit configuration file path (takes highest precedence)
 	 * @return the merged global configuration
 	 * @throws ConfigNotFoundException if no configuration files can be found and no defaults are available
-	 * @throws NullPointerException   if startingPath is null
+	 * @throws NullPointerException   if startingPath is {@code null}
 	 */
 	public GlobalConfiguration discover(Path startingPath, Path explicitConfig)
 	{
@@ -61,7 +62,7 @@ public final class ConfigDiscovery
 	 * @param explicitConfig optional explicit configuration file path (takes highest precedence)
 	 * @return the discovery result containing both configuration and discovered locations
 	 * @throws ConfigNotFoundException if no configuration files can be found and no defaults are available
-	 * @throws NullPointerException   if startingPath is null
+	 * @throws NullPointerException   if startingPath is {@code null}
 	 */
 	public DiscoveryResult discoverWithLocations(Path startingPath, Path explicitConfig)
 	{
@@ -69,8 +70,16 @@ public final class ConfigDiscovery
 			throw new NullPointerException("startingPath cannot be null");
 
 		// Create cache key based on starting path and explicit config
-		String cacheKey = startingPath.toAbsolutePath().normalize().toString() +
-		                  (explicitConfig != null ? "|" + explicitConfig.toAbsolutePath().normalize().toString() : "");
+		String explicitConfigSuffix;
+		if (explicitConfig != null)
+			{
+			explicitConfigSuffix = "|" + explicitConfig.toAbsolutePath().normalize().toString();
+			}
+		else
+			{
+			explicitConfigSuffix = "";
+			}
+		String cacheKey = startingPath.toAbsolutePath().normalize().toString() + explicitConfigSuffix;
 
 		// Check cache first for performance (target: <50ms)
 		GlobalConfiguration cached = configCache.get(cacheKey);
@@ -114,7 +123,7 @@ public final class ConfigDiscovery
 			}
 
 			// Parse discovered configurations in reverse order (lowest to highest precedence)
-			for (int i = configFiles.size() - 1; i >= 0; i--)
+			for (int i = configFiles.size() - 1; i >= 0; --i)
 			{
 				Path configFile = configFiles.get(i);
 				GlobalConfiguration config = parser.parse(configFile);
@@ -150,7 +159,7 @@ public final class ConfigDiscovery
 	 * @param cliOverrides   map of CLI override values
 	 * @return the final configuration with all sources merged and CLI overrides applied
 	 * @throws ConfigNotFoundException if no configuration files can be found
-	 * @throws NullPointerException   if startingPath or cliOverrides is null
+	 * @throws NullPointerException   if startingPath or cliOverrides is {@code null}
 	 */
 	public GlobalConfiguration discoverWithOverrides(Path startingPath, Path explicitConfig,
 	                                                 Map<String, Object> cliOverrides)
@@ -174,6 +183,12 @@ public final class ConfigDiscovery
 		private final GlobalConfiguration configuration;
 		private final List<Path> discoveredLocations;
 
+		/**
+		 * Creates a discovery result with the given configuration and discovered locations.
+		 *
+		 * @param configuration the merged global configuration
+		 * @param discoveredLocations the paths where configuration files were found
+		 */
 		public DiscoveryResult(GlobalConfiguration configuration, List<Path> discoveredLocations)
 		{
 			this.configuration = configuration;
@@ -231,7 +246,7 @@ public final class ConfigDiscovery
 		 * @param key   the configuration property name
 		 * @param value the override value
 		 * @return this builder for method chaining
-		 * @throws NullPointerException if key is null
+		 * @throws NullPointerException if key is {@code null}
 		 */
 		public Builder withOverride(String key, Object value)
 		{
@@ -247,7 +262,7 @@ public final class ConfigDiscovery
 		 *
 		 * @param overrides map of configuration property names to override values
 		 * @return this builder for method chaining
-		 * @throws NullPointerException if overrides is null
+		 * @throws NullPointerException if overrides is {@code null}
 		 */
 		public Builder withOverrides(Map<String, Object> overrides)
 		{

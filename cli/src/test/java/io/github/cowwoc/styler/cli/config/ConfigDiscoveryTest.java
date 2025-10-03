@@ -19,11 +19,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Unit tests for ConfigDiscovery class.
  * Tests configuration discovery, merging, and precedence rules with thread-safe design.
  */
+@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public class ConfigDiscoveryTest
 {
 	private Path tempProjectDir;
 	private ConfigDiscovery configDiscovery;
 
+	/**
+	 * Sets up temporary project directory and config discovery instance for each test.
+	 */
 	@BeforeMethod
 	public void setUp() throws IOException
 	{
@@ -32,6 +36,9 @@ public class ConfigDiscoveryTest
 		configDiscovery = new ConfigDiscovery();
 	}
 
+	/**
+	 * Verifies that TOML configuration is correctly loaded from current directory.
+	 */
 	@Test
 	public void discoverConfig_withTomlInCurrentDir_returnsTomlConfiguration() throws IOException
 	{
@@ -53,8 +60,9 @@ public class ConfigDiscoveryTest
 		assertThat(discovered.get(0)).isEqualTo(configFile);
 	}
 
-
-
+	/**
+	 * Verifies that explicit config path takes precedence over project config.
+	 */
 	@Test
 	public void discoverConfig_withExplicitConfig_usesExplicitPath() throws IOException
 	{
@@ -83,17 +91,23 @@ public class ConfigDiscoveryTest
 		assertThat(discovered.get(0)).isEqualTo(explicitConfig);
 	}
 
+	/**
+	 * Verifies that discovering config without any config files throws ConfigNotFoundException.
+	 */
 	@Test
 	public void discoverConfig_withNoConfigFiles_throwsConfigNotFoundException()
 	{
 		// Given: Empty project directory with no config files
 
 		// When/Then: discovering configuration throws exception
-		assertThatThrownBy(() -> configDiscovery.discover(tempProjectDir, null))
-			.isInstanceOf(ConfigNotFoundException.class)
-			.hasMessageContaining("Configuration files (.styler.toml, .styler.yaml) not found");
+		assertThatThrownBy(() -> configDiscovery.discover(tempProjectDir, null)).
+			isInstanceOf(ConfigNotFoundException.class).
+			hasMessageContaining("Configuration files (.styler.toml, .styler.yaml) not found");
 	}
 
+	/**
+	 * Verifies that config discovery traverses parent directories to find config files.
+	 */
 	@Test
 	public void discoverConfig_withParentDirectoryConfig_findsParentConfig() throws IOException
 	{
@@ -117,6 +131,9 @@ public class ConfigDiscoveryTest
 		assertThat(discovered.get(0)).isEqualTo(parentConfig);
 	}
 
+	/**
+	 * Verifies that config discovery stops at git repository boundaries.
+	 */
 	@Test
 	public void discoverConfig_stopsAtGitBoundary() throws IOException
 	{
@@ -133,10 +150,13 @@ public class ConfigDiscoveryTest
 
 		// When: discovering from child directory in git repo
 		// Then: should throw exception as config above git boundary is not found
-		assertThatThrownBy(() -> configDiscovery.discover(childDir, null))
-			.isInstanceOf(ConfigNotFoundException.class);
+		assertThatThrownBy(() -> configDiscovery.discover(childDir, null)).
+			isInstanceOf(ConfigNotFoundException.class);
 	}
 
+	/**
+	 * Verifies that CLI overrides are correctly applied to discovered configuration.
+	 */
 	@Test
 	public void discoverWithOverrides_appliesCliOverrides() throws IOException
 	{
@@ -160,15 +180,21 @@ public class ConfigDiscoveryTest
 		// Note: Actual assertion would depend on GlobalConfiguration API
 	}
 
+	/**
+	 * Verifies that null starting path throws NullPointerException.
+	 */
 	@Test
 	public void discoverConfig_withNullStartingPath_throwsNullPointerException()
 	{
 		// When/Then: null starting path throws exception
-		assertThatThrownBy(() -> configDiscovery.discover(null, null))
-			.isInstanceOf(NullPointerException.class)
-			.hasMessageContaining("startingPath cannot be null");
+		assertThatThrownBy(() -> configDiscovery.discover(null, null)).
+			isInstanceOf(NullPointerException.class).
+			hasMessageContaining("startingPath cannot be null");
 	}
 
+	/**
+	 * Verifies that null overrides parameter throws NullPointerException.
+	 */
 	@Test
 	public void discoverWithOverrides_withNullOverrides_throwsNullPointerException() throws IOException
 	{
@@ -177,11 +203,14 @@ public class ConfigDiscoveryTest
 		Files.writeString(configFile, "maxLineLength = 100");
 
 		// When/Then: null overrides throws exception
-		assertThatThrownBy(() -> configDiscovery.discoverWithOverrides(tempProjectDir, null, null))
-			.isInstanceOf(NullPointerException.class)
-			.hasMessageContaining("cliOverrides cannot be null");
+		assertThatThrownBy(() -> configDiscovery.discoverWithOverrides(tempProjectDir, null, null)).
+			isInstanceOf(NullPointerException.class).
+			hasMessageContaining("cliOverrides cannot be null");
 	}
 
+	/**
+	 * Verifies that builder pattern correctly applies overrides to configuration.
+	 */
 	@Test
 	public void builderPattern_withOverrides_buildsCorrectConfiguration() throws IOException
 	{
@@ -194,14 +223,17 @@ public class ConfigDiscoveryTest
 		Files.writeString(configFile, configContent);
 
 		// When: using builder pattern with overrides
-		GlobalConfiguration result = ConfigDiscovery.builder()
-			.withOverride("maxLineLength", 120)
-			.build(tempProjectDir, null);
+		GlobalConfiguration result = ConfigDiscovery.builder().
+			withOverride("maxLineLength", 120).
+			build(tempProjectDir, null);
 
 		// Then: configuration is built with overrides applied
 		assertThat(result).isNotNull();
 	}
 
+	/**
+	 * Verifies that builder pattern with default build uses current directory.
+	 */
 	@Test
 	public void builderPattern_withDefaultBuild_usesCurrentDirectory() throws IOException
 	{

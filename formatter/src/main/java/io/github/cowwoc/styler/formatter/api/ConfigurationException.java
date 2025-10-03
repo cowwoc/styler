@@ -14,7 +14,7 @@ public class ConfigurationException extends Exception
 	/**
 	 * Creates a new configuration exception with the specified message.
 	 *
-	 * @param message the error message describing the configuration problem, never null
+	 * @param message the error message describing the configuration problem, never {@code null}
 	 */
 	public ConfigurationException(String message)
 	{
@@ -24,8 +24,8 @@ public class ConfigurationException extends Exception
 	/**
 	 * Creates a new configuration exception with the specified message and cause.
 	 *
-	 * @param message the error message describing the configuration problem, never null
-	 * @param cause   the underlying cause of the configuration error, may be null
+	 * @param message the error message describing the configuration problem, never {@code null}
+	 * @param cause   the underlying cause of the configuration error, may be {@code null}
 	 */
 	public ConfigurationException(String message, Throwable cause)
 	{

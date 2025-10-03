@@ -2,6 +2,7 @@ package io.github.cowwoc.styler.cli.config.exceptions;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Exception thrown when no configuration files can be found in any of the search locations.
@@ -9,17 +10,18 @@ import java.util.List;
  */
 public class ConfigNotFoundException extends ConfigDiscoveryException
 {
-	private final List<Path> searchedPaths;
+	private static final long serialVersionUID = 1L;
+	private final transient List<Path> searchedPaths;
 
 	/**
 	 * Creates a new config not found exception.
 	 *
 	 * @param searchedPaths the list of paths that were searched for configuration files
-	 * @throws NullPointerException if searchedPaths is null
+	 * @throws NullPointerException if searchedPaths is {@code null}
 	 */
 	public ConfigNotFoundException(List<Path> searchedPaths)
 	{
-		super(buildMessage(searchedPaths));
+		super(buildMessage(Objects.requireNonNull(searchedPaths, "searchedPaths must not be null")));
 		this.searchedPaths = List.copyOf(searchedPaths);
 	}
 
@@ -46,12 +48,15 @@ public class ConfigNotFoundException extends ConfigDiscoveryException
 			return "No configuration files found - no search paths were provided";
 		}
 
-		StringBuilder message = new StringBuilder("Configuration files (.styler.toml, .styler.yaml) not found in any of the searched locations:");
+		StringBuilder message = new StringBuilder(512);
+	message.append("Configuration files (.styler.toml, .styler.yaml) ").
+		append("not found in any of the searched locations:");
 		for (Path path : searchedPaths)
 		{
 			message.append("\n  - ").append(path.toAbsolutePath());
 		}
-		message.append("\n\nTo resolve this, create a .styler.toml file in your project directory or specify a configuration file with --config");
+		message.append("\n\nTo resolve this, create a .styler.toml file ").
+		append("in your project directory or specify a configuration file with --config");
 		return message.toString();
 	}
 }

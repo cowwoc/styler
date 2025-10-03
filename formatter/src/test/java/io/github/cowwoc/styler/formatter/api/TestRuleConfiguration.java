@@ -15,7 +15,11 @@ public class TestRuleConfiguration extends RuleConfiguration
 	public RuleConfiguration merge(RuleConfiguration override)
 	{
 		// Simple merge - return the override if it's the same type, otherwise return this
-		return override instanceof TestRuleConfiguration ? override : this;
+		if (override instanceof TestRuleConfiguration)
+		{
+			return override;
+		}
+		return this;
 	}
 
 	@Override

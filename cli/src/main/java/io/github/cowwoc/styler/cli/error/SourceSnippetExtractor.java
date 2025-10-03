@@ -1,11 +1,6 @@
 package io.github.cowwoc.styler.cli.error;
 
-import io.github.cowwoc.styler.ast.SourcePosition;
 import io.github.cowwoc.styler.ast.SourceRange;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * Extracts code snippets with context around error locations for display in error messages.
@@ -21,24 +16,32 @@ public final class SourceSnippetExtractor
 	private static final int MAX_LINE_LENGTH = 120;
 
 	/**
+	 * Private constructor to prevent instantiation of utility class.
+	 */
+	private SourceSnippetExtractor()
+	{
+		throw new AssertionError("Utility class - do not instantiate");
+	}
+
+	/**
 	 * Extracts a formatted code snippet showing the error location with surrounding context.
 	 *
-	 * @param sourceText the complete source text, never null
-	 * @param errorRange the location of the error, never null
+	 * @param sourceText the complete source text, never {@code null}
+	 * @param errorRange the location of the error, never {@code null}
 	 * @param contextLines the number of lines to show before and after the error
-	 * @throws IllegalArgumentException if {@code sourceText} or {@code errorRange} is null,
-	 *                                 or if {@code contextLines} is negative
-	 * @return a formatted code snippet with line numbers and error indicators, never null
+	 * @throws NullPointerException if {@code sourceText} or {@code errorRange} is {@code null}
+	 * @throws IllegalArgumentException if {@code contextLines} is negative
+	 * @return a formatted code snippet with line numbers and error indicators, never {@code null}
 	 */
 	public static String extractSnippet(String sourceText, SourceRange errorRange, int contextLines)
 	{
 		if (sourceText == null)
 		{
-			throw new IllegalArgumentException("Source text cannot be null");
+			throw new NullPointerException("Source text cannot be null");
 		}
 		if (errorRange == null)
 		{
-			throw new IllegalArgumentException("Error range cannot be null");
+			throw new NullPointerException("Error range cannot be null");
 		}
 		if (contextLines < 0)
 		{
@@ -46,7 +49,7 @@ public final class SourceSnippetExtractor
 		}
 
 		String[] lines = sourceText.split("\\r?\\n");
-		if (lines.length == 0 || sourceText.trim().isEmpty())
+		if (lines.length == 0 || sourceText.isBlank())
 		{
 			return "(empty file)";
 		}
@@ -58,7 +61,7 @@ public final class SourceSnippetExtractor
 		StringBuilder snippet = new StringBuilder();
 		int maxLineNumberWidth = String.valueOf(endLine).length();
 
-		for (int lineNumber = startLine; lineNumber <= endLine; lineNumber++)
+		for (int lineNumber = startLine; lineNumber <= endLine; ++lineNumber)
 		{
 			String lineContent = getLineContent(lines, lineNumber);
 			String expandedContent = expandTabs(lineContent);
@@ -66,8 +69,8 @@ public final class SourceSnippetExtractor
 
 			// Format line number with consistent width
 			String lineNumberStr = String.format("%" + maxLineNumberWidth + "d", lineNumber);
-			snippet.append(" ").append(lineNumberStr).append(" | ");
-			snippet.append(truncatedContent).append("\n");
+			snippet.append(' ').append(lineNumberStr).append(" | ").
+				append(truncatedContent).append('\n');
 
 			// Add error indicator for the error line
 			if (lineNumber == errorLine)
@@ -83,10 +86,10 @@ public final class SourceSnippetExtractor
 	/**
 	 * Extracts a code snippet with default context (2 lines before and after).
 	 *
-	 * @param sourceText the complete source text, never null
-	 * @param errorRange the location of the error, never null
-	 * @throws IllegalArgumentException if {@code sourceText} or {@code errorRange} is null
-	 * @return a formatted code snippet with line numbers and error indicators, never null
+	 * @param sourceText the complete source text, never {@code null}
+	 * @param errorRange the location of the error, never {@code null}
+	 * @throws IllegalArgumentException if {@code sourceText} or {@code errorRange} is {@code null}
+	 * @return a formatted code snippet with line numbers and error indicators, never {@code null}
 	 */
 	public static String extractSnippet(String sourceText, SourceRange errorRange)
 	{
@@ -96,20 +99,20 @@ public final class SourceSnippetExtractor
 	/**
 	 * Creates a compact single-line snippet for inline error display.
 	 *
-	 * @param sourceText the complete source text, never null
-	 * @param errorRange the location of the error, never null
-	 * @throws IllegalArgumentException if {@code sourceText} or {@code errorRange} is null
-	 * @return a single-line snippet showing just the error line, never null
+	 * @param sourceText the complete source text, never {@code null}
+	 * @param errorRange the location of the error, never {@code null}
+	 * @throws NullPointerException if {@code sourceText} or {@code errorRange} is {@code null}
+	 * @return a single-line snippet showing just the error line, never {@code null}
 	 */
 	public static String extractInlineSnippet(String sourceText, SourceRange errorRange)
 	{
 		if (sourceText == null)
 		{
-			throw new IllegalArgumentException("Source text cannot be null");
+			throw new NullPointerException("Source text cannot be null");
 		}
 		if (errorRange == null)
 		{
-			throw new IllegalArgumentException("Error range cannot be null");
+			throw new NullPointerException("Error range cannot be null");
 		}
 
 		String[] lines = sourceText.split("\\r?\\n");
@@ -127,6 +130,10 @@ public final class SourceSnippetExtractor
 
 	/**
 	 * Gets the content of a specific line from the source text lines array.
+	 *
+	 * @param lines the array of source text lines
+	 * @param lineNumber the {@code 1}-based line number to retrieve
+	 * @return the line content, or empty string if line number is out of bounds
 	 */
 	private static String getLineContent(String[] lines, int lineNumber)
 	{
@@ -139,11 +146,14 @@ public final class SourceSnippetExtractor
 
 	/**
 	 * Expands tab characters to spaces for consistent display.
+	 *
+	 * @param line the line content with potential tab characters
+	 * @return the line with tabs expanded to spaces
 	 */
 	private static String expandTabs(String line)
 	{
 		StringBuilder expanded = new StringBuilder();
-		for (int i = 0; i < line.length(); i++)
+		for (int i = 0; i < line.length(); ++i)
 		{
 			char c = line.charAt(i);
 			if (c == '\t')
@@ -161,6 +171,9 @@ public final class SourceSnippetExtractor
 
 	/**
 	 * Truncates long lines for readable display.
+	 *
+	 * @param line the line content to potentially truncate
+	 * @return the truncated line with "..." appended if it exceeded max length
 	 */
 	private static String truncateLine(String line)
 	{
@@ -173,11 +186,16 @@ public final class SourceSnippetExtractor
 
 	/**
 	 * Creates visual indicators pointing to the error location.
+	 *
+	 * @param lineNumberWidth the width of the line number column for alignment
+	 * @param errorRange the source range indicating the error location
+	 * @param expandedLineContent the line content with tabs expanded to spaces
+	 * @return a string with caret characters (^) pointing to the error location
 	 */
 	private static String createErrorIndicator(int lineNumberWidth, SourceRange errorRange,
 	                                          String expandedLineContent)
 	{
-		StringBuilder indicator = new StringBuilder();
+		StringBuilder indicator = new StringBuilder(256);
 
 		// Add spacing to align with line content
 		indicator.append(" ".repeat(lineNumberWidth + 3));
@@ -189,7 +207,7 @@ public final class SourceSnippetExtractor
 		if (errorRange.start().line() == errorRange.end().line())
 		{
 			// Add spaces before the error position
-			for (int i = 1; i < startColumn; i++)
+			for (int i = 1; i < startColumn; ++i)
 			{
 				if (i <= expandedLineContent.length() && expandedLineContent.charAt(i - 1) == '\t')
 				{
@@ -197,7 +215,7 @@ public final class SourceSnippetExtractor
 				}
 				else
 				{
-					indicator.append(" ");
+					indicator.append(' ');
 				}
 			}
 
@@ -209,37 +227,37 @@ public final class SourceSnippetExtractor
 		else
 		{
 			// Multi-line range - just point to start
-			for (int i = 1; i < startColumn; i++)
+			for (int i = 1; i < startColumn; ++i)
 			{
-				indicator.append(" ");
+				indicator.append(' ');
 			}
 			indicator.append("^--- error starts here");
 		}
 
-		return indicator.append("\n").toString();
+		return indicator.append('\n').toString();
 	}
 
 	/**
 	 * Extracts multiple lines of context for complex error ranges.
 	 *
-	 * @param sourceText the complete source text, never null
-	 * @param errorRange the location of the error, never null
+	 * @param sourceText the complete source text, never {@code null}
+	 * @param errorRange the location of the error, never {@code null}
 	 * @param beforeLines number of lines to show before the error
 	 * @param afterLines number of lines to show after the error
-	 * @throws IllegalArgumentException if {@code sourceText} or {@code errorRange} is null,
-	 *                                 or if line counts are negative
-	 * @return a formatted multi-line snippet with context, never null
+	 * @throws NullPointerException if {@code sourceText} or {@code errorRange} is {@code null}
+	 * @throws IllegalArgumentException if line counts are negative
+	 * @return a formatted multi-line snippet with context, never {@code null}
 	 */
 	public static String extractExtendedSnippet(String sourceText, SourceRange errorRange,
 	                                           int beforeLines, int afterLines)
 	{
 		if (sourceText == null)
 		{
-			throw new IllegalArgumentException("Source text cannot be null");
+			throw new NullPointerException("Source text cannot be null");
 		}
 		if (errorRange == null)
 		{
-			throw new IllegalArgumentException("Error range cannot be null");
+			throw new NullPointerException("Error range cannot be null");
 		}
 		if (beforeLines < 0)
 		{
@@ -264,17 +282,25 @@ public final class SourceSnippetExtractor
 		StringBuilder snippet = new StringBuilder();
 		int maxLineNumberWidth = String.valueOf(endLine).length();
 
-		for (int lineNumber = startLine; lineNumber <= endLine; lineNumber++)
+		for (int lineNumber = startLine; lineNumber <= endLine; ++lineNumber)
 		{
 			String lineContent = getLineContent(lines, lineNumber);
 			String expandedContent = expandTabs(lineContent);
 			String truncatedContent = truncateLine(expandedContent);
 
 			// Mark error lines with asterisk
-			String marker = (lineNumber >= errorStartLine && lineNumber <= errorEndLine) ? "*" : " ";
+			String marker;
+			if (lineNumber >= errorStartLine && lineNumber <= errorEndLine)
+				{
+				marker = "*";
+				}
+			else
+				{
+				marker = " ";
+				}
 			String lineNumberStr = String.format("%" + maxLineNumberWidth + "d", lineNumber);
-			snippet.append(marker).append(lineNumberStr).append(" | ");
-			snippet.append(truncatedContent).append("\n");
+			snippet.append(marker).append(lineNumberStr).append(" | ").
+				append(truncatedContent).append('\n');
 		}
 
 		return snippet.toString();

@@ -35,10 +35,12 @@ import java.util.Map;
  * @see SecurityConfig#maxTempFiles()
  * @see SecurityConfig#maxTempDiskBytes()
  */
+@SuppressWarnings("PMD.AvoidSynchronizedStatement") // synchronized(lock) is optimal for this straightforward tracker
 public final class TempFileManager
 {
-	private static final Logger logger = LoggerFactory.getLogger(TempFileManager.class);
+	private final Logger log = LoggerFactory.getLogger(TempFileManager.class);
 
+	private final Object lock = new Object();
 	private final int maxFiles;
 	private final long maxDiskBytes;
 	private final Path tempDirectory;
@@ -87,9 +89,9 @@ public final class TempFileManager
 	 * @return path to the created temporary file
 	 * @throws TempFileLimitExceededException if file count or disk usage limit exceeded
 	 * @throws IOException if file creation fails
-	 * @throws NullPointerException if prefix or suffix is null
+	 * @throws NullPointerException if prefix or suffix is {@code null}
 	 */
-	public synchronized Path createTempFile(String prefix, String suffix) throws IOException
+	public Path createTempFile(String prefix, String suffix) throws IOException
 	{
 		if (prefix == null)
 		{
@@ -100,49 +102,50 @@ public final class TempFileManager
 			throw new NullPointerException("suffix must not be null");
 		}
 
-		// Check file count limit
-		if (trackedFiles.size() >= maxFiles)
+		synchronized (lock)
 		{
-			throw new TempFileLimitExceededException(
-				trackedFiles.size() + 1,
-				maxFiles,
-				tempDirectory
-			);
-		}
-
-		// Create the temporary file
-		Path tempFile = Files.createTempFile(prefix, suffix);
-		long fileSize = Files.size(tempFile);
-
-		// Check disk usage limit
-		if (currentDiskUsage + fileSize > maxDiskBytes)
-		{
-			// Delete the file we just created since we can't track it
-			try
+			// Check file count limit
+			if (trackedFiles.size() >= maxFiles)
 			{
-				Files.deleteIfExists(tempFile);
-			}
-			catch (IOException e)
-			{
-				logger.warn("Failed to delete temporary file after limit exceeded: {}", tempFile, e);
+				throw new TempFileLimitExceededException(
+					trackedFiles.size() + 1,
+					maxFiles,
+					tempDirectory);
 			}
 
-			throw new TempFileLimitExceededException(
-				currentDiskUsage + fileSize,
-				maxDiskBytes,
-				tempDirectory
-			);
+			// Create the temporary file
+			Path tempFile = Files.createTempFile(prefix, suffix);
+			long fileSize = Files.size(tempFile);
+
+			// Check disk usage limit
+			if (currentDiskUsage + fileSize > maxDiskBytes)
+			{
+				// Delete the file we just created since we can't track it
+				try
+				{
+					Files.deleteIfExists(tempFile);
+				}
+				catch (IOException e)
+				{
+					log.warn("Failed to delete temporary file after limit exceeded: {}", tempFile, e);
+				}
+
+				throw new TempFileLimitExceededException(
+					currentDiskUsage + fileSize,
+					maxDiskBytes,
+					tempDirectory);
+			}
+
+			// Track the file
+			trackedFiles.add(tempFile);
+			fileSizes.put(tempFile, fileSize);
+			currentDiskUsage += fileSize;
+
+			log.debug("Created temporary file: {} (size: {} bytes, total: {} files, {} MB)",
+				tempFile, fileSize, trackedFiles.size(), currentDiskUsage / 1024 / 1024);
+
+			return tempFile;
 		}
-
-		// Track the file
-		trackedFiles.add(tempFile);
-		fileSizes.put(tempFile, fileSize);
-		currentDiskUsage += fileSize;
-
-		logger.debug("Created temporary file: {} (size: {} bytes, total: {} files, {} MB)",
-			tempFile, fileSize, trackedFiles.size(), currentDiskUsage / 1024 / 1024);
-
-		return tempFile;
 	}
 
 	/**
@@ -156,29 +159,32 @@ public final class TempFileManager
 	 * @throws IOException if file size cannot be determined
 	 * @throws IllegalArgumentException if file is not tracked
 	 */
-	public synchronized void updateFileSize(Path tempFile) throws IOException
+	public void updateFileSize(Path tempFile) throws IOException
 	{
-		if (!trackedFiles.contains(tempFile))
+		synchronized (lock)
 		{
-			throw new IllegalArgumentException("File is not tracked: " + tempFile);
+			if (!trackedFiles.contains(tempFile))
+			{
+				throw new IllegalArgumentException("File is not tracked: " + tempFile);
+			}
+
+			// Get the previously recorded size for this file
+			long oldSize = fileSizes.getOrDefault(tempFile, 0L);
+			long newSize = Files.size(tempFile);
+
+			// Calculate the size delta
+			long sizeDelta = newSize - oldSize;
+			long newTotal = currentDiskUsage + sizeDelta;
+
+			if (newTotal > maxDiskBytes)
+			{
+				throw new TempFileLimitExceededException(newTotal, maxDiskBytes, tempDirectory);
+			}
+
+			// Update tracking
+			currentDiskUsage = newTotal;
+			fileSizes.put(tempFile, newSize);
 		}
-
-		// Get the previously recorded size for this file
-		long oldSize = fileSizes.getOrDefault(tempFile, 0L);
-		long newSize = Files.size(tempFile);
-
-		// Calculate the size delta
-		long sizeDelta = newSize - oldSize;
-		long newTotal = currentDiskUsage + sizeDelta;
-
-		if (newTotal > maxDiskBytes)
-		{
-			throw new TempFileLimitExceededException(newTotal, maxDiskBytes, tempDirectory);
-		}
-
-		// Update tracking
-		currentDiskUsage = newTotal;
-		fileSizes.put(tempFile, newSize);
 	}
 
 	/**
@@ -186,9 +192,12 @@ public final class TempFileManager
 	 *
 	 * @return current file count
 	 */
-	public synchronized int getCurrentFileCount()
+	public int getCurrentFileCount()
 	{
-		return trackedFiles.size();
+		synchronized (lock)
+		{
+			return trackedFiles.size();
+		}
 	}
 
 	/**
@@ -196,9 +205,12 @@ public final class TempFileManager
 	 *
 	 * @return current disk usage in bytes
 	 */
-	public synchronized long getCurrentDiskUsage()
+	public long getCurrentDiskUsage()
 	{
-		return currentDiskUsage;
+		synchronized (lock)
+		{
+			return currentDiskUsage;
+		}
 	}
 
 	/**
@@ -207,35 +219,38 @@ public final class TempFileManager
 	 * <p>This method is idempotent and can be called multiple times safely.
 	 * It is automatically called by the shutdown hook.
 	 */
-	public synchronized void cleanup()
+	public void cleanup()
 	{
-		int deletedCount = 0;
-		int failedCount = 0;
-
-		for (Path file : trackedFiles)
+		synchronized (lock)
 		{
-			try
+			int deletedCount = 0;
+			int failedCount = 0;
+
+			for (Path file : trackedFiles)
 			{
-				if (Files.deleteIfExists(file))
+				try
 				{
-					deletedCount++;
+					if (Files.deleteIfExists(file))
+					{
+						++deletedCount;
+					}
+				}
+				catch (IOException e)
+				{
+					++failedCount;
+					log.warn("Failed to delete temporary file: {}", file, e);
 				}
 			}
-			catch (IOException e)
+
+			if (deletedCount > 0 || failedCount > 0)
 			{
-				failedCount++;
-				logger.warn("Failed to delete temporary file: {}", file, e);
+				log.info("Temporary file cleanup: {} deleted, {} failed",
+					deletedCount, failedCount);
 			}
-		}
 
-		if (deletedCount > 0 || failedCount > 0)
-		{
-			logger.info("Temporary file cleanup: {} deleted, {} failed",
-				deletedCount, failedCount);
+			trackedFiles.clear();
+			fileSizes.clear();
+			currentDiskUsage = 0;
 		}
-
-		trackedFiles.clear();
-		fileSizes.clear();
-		currentDiskUsage = 0;
 	}
 }

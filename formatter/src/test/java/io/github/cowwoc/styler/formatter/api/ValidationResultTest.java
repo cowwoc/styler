@@ -12,8 +12,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 public class ValidationResultTest
 {
+	/**
+	 * Test successful validation.
+	 */
 	@Test
-	public void testSuccessfulValidation()
+	public void successfulValidation()
 	{
 		ValidationResult result = ValidationResult.success();
 
@@ -24,8 +27,11 @@ public class ValidationResultTest
 		assertThat(result.getCombinedErrorMessage()).isNull();
 	}
 
+	/**
+	 * Test failed validation with single error.
+	 */
 	@Test
-	public void testFailedValidationWithSingleError()
+	public void failedValidationWithSingleError()
 	{
 		String errorMessage = "Invalid configuration parameter";
 		ValidationResult result = ValidationResult.failure(errorMessage);
@@ -37,8 +43,11 @@ public class ValidationResultTest
 		assertThat(result.getCombinedErrorMessage()).isEqualTo(errorMessage);
 	}
 
+	/**
+	 * Test failed validation with multiple errors.
+	 */
 	@Test
-	public void testFailedValidationWithMultipleErrors()
+	public void failedValidationWithMultipleErrors()
 	{
 		List<String> errorMessages = List.of("Error 1", "Error 2", "Error 3");
 		ValidationResult result = ValidationResult.failure(errorMessages);
@@ -50,32 +59,44 @@ public class ValidationResultTest
 		assertThat(result.getCombinedErrorMessage()).isEqualTo("Error 1; Error 2; Error 3");
 	}
 
+	/**
+	 * Test failure with null error message.
+	 */
 	@Test
-	public void testFailureWithNullErrorMessage()
+	public void failureWithNullErrorMessage()
 	{
-		assertThatThrownBy(() -> ValidationResult.failure((String) null))
-			.isInstanceOf(NullPointerException.class)
-			.hasMessageContaining("Error message cannot be null");
+		assertThatThrownBy(() -> ValidationResult.failure((String) null)).
+			isInstanceOf(NullPointerException.class).
+			hasMessageContaining("Error message cannot be null");
 	}
 
+	/**
+	 * Test failure with null error message list.
+	 */
 	@Test
-	public void testFailureWithNullErrorMessageList()
+	public void failureWithNullErrorMessageList()
 	{
-		assertThatThrownBy(() -> ValidationResult.failure((List<String>) null))
-			.isInstanceOf(NullPointerException.class)
-			.hasMessageContaining("Error messages cannot be null");
+		assertThatThrownBy(() -> ValidationResult.failure((List<String>) null)).
+			isInstanceOf(NullPointerException.class).
+			hasMessageContaining("Error messages cannot be null");
 	}
 
+	/**
+	 * Test failure with empty error message list.
+	 */
 	@Test
-	public void testFailureWithEmptyErrorMessageList()
+	public void failureWithEmptyErrorMessageList()
 	{
-		assertThatThrownBy(() -> ValidationResult.failure(List.of()))
-			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessageContaining("Error messages list cannot be empty");
+		assertThatThrownBy(() -> ValidationResult.failure(List.of())).
+			isInstanceOf(IllegalArgumentException.class).
+			hasMessageContaining("Error messages list cannot be empty");
 	}
 
+	/**
+	 * Test equals and hash code.
+	 */
 	@Test
-	public void testEqualsAndHashCode()
+	public void equalsAndHashCode()
 	{
 		ValidationResult success1 = ValidationResult.success();
 		ValidationResult success2 = ValidationResult.success();
@@ -94,8 +115,11 @@ public class ValidationResultTest
 		assertThat(failure1.hashCode()).isEqualTo(failure2.hashCode());
 	}
 
+	/**
+	 * Verifies that toString() returns a meaningful string representation.
+	 */
 	@Test
-	public void testToString()
+	public void toStringRepresentation()
 	{
 		ValidationResult success = ValidationResult.success();
 		ValidationResult failure = ValidationResult.failure("Test error");
