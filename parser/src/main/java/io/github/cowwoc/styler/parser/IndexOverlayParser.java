@@ -66,11 +66,15 @@ public class IndexOverlayParser implements AutoCloseable
 {
 	private final ArenaNodeStorage nodeStorage;
 	private final String sourceText;
+	private final JavaVersion targetVersion;
 	private final JavaLexer lexer;
 	private final List<TokenInfo> tokens;
 
 	// Extensibility: Strategy-based parsing for different Java versions
 	private final ParseStrategyRegistry strategyRegistry;
+
+	// Phase tracking for context-aware parsing
+	private final java.util.Deque<ParsingPhase> phaseStack = new java.util.ArrayDeque<>();
 
 	// For incremental parsing - track dirty regions
 	private final List<EditRange> pendingEdits = new ArrayList<>();
@@ -103,6 +107,7 @@ public class IndexOverlayParser implements AutoCloseable
 {
 		validateInput(sourceText);
 		this.sourceText = sourceText;
+		this.targetVersion = targetVersion;
 		// Estimate nodes based on source size - roughly 1 node per 50 characters
 		int estimatedNodes = Math.max(100, sourceText.length() / 50);
 		this.nodeStorage = ArenaNodeStorage.create(estimatedNodes);
@@ -141,6 +146,56 @@ public class IndexOverlayParser implements AutoCloseable
 	}
 
 	/**
+	 * Enters a new parsing phase. Must be balanced with {@link #exitPhase()}.
+	 *
+	 * <p><strong>Usage Pattern:</strong>
+	 * <pre>{@code
+	 * enterPhase(ParsingPhase.CLASS_BODY);
+	 * try {
+	 *     parseClassMembers(context);
+	 * } finally {
+	 *     exitPhase();
+	 * }
+	 * }</pre>
+	 *
+	 * @param phase the parsing phase to enter
+	 * @throws NullPointerException if phase is null
+	 */
+	private void enterPhase(ParsingPhase phase)
+	{
+		requireThat(phase, "phase").isNotNull();
+		phaseStack.push(phase);
+	}
+
+	/**
+	 * Exits the current parsing phase.
+	 *
+	 * <p><strong>CRITICAL:</strong> Must be called in a finally block to ensure
+	 * phase stack integrity even when parse errors occur.
+	 *
+	 * @throws IllegalStateException if phase stack is empty
+	 */
+	private void exitPhase()
+	{
+		if (phaseStack.isEmpty())
+		{
+			throw new IllegalStateException(
+				"Phase stack underflow - exitPhase() called without matching enterPhase()");
+		}
+		phaseStack.pop();
+	}
+
+	/**
+	 * Gets the current parsing phase.
+	 *
+	 * @return the current phase, or {@link ParsingPhase#TOP_LEVEL} if no phase is active
+	 */
+	private ParsingPhase getCurrentPhase()
+	{
+		return phaseStack.isEmpty() ? ParsingPhase.TOP_LEVEL : phaseStack.peek();
+	}
+
+	/**
      * Parses the entire source text and returns the root node ID.
      *
      * This is the main entry point for parsing. The method performs tokenization
@@ -166,6 +221,7 @@ public class IndexOverlayParser implements AutoCloseable
 
 		// Phase 2: Recursive descent parsing
 		ParseContext context = new ParseContext(tokens, nodeStorage, sourceText);
+		context.setStatementParser(this::parseStatement); // Register callback for strategies
 		int rootNodeId = parseCompilationUnit(context);
 
 		// Record metrics
@@ -675,7 +731,7 @@ public class IndexOverlayParser implements AutoCloseable
 		else
 {
 			// Parse generic parameters, extends, implements etc.
-			parseTypeDeclarationTail(context);
+			parseTypeDeclarationTail(context, nodeType);
 		}
 
 		int endPos = context.getCurrentPosition();
@@ -722,7 +778,15 @@ public class IndexOverlayParser implements AutoCloseable
 
 		// Record body
 		context.expect(TokenType.LBRACE);
-		parseClassBody(context);
+		enterPhase(ParsingPhase.RECORD_BODY);
+		try
+		{
+			parseClassBody(context);
+		}
+		finally
+		{
+			exitPhase();
+		}
 		context.expect(TokenType.RBRACE);
 	}
 
@@ -751,7 +815,7 @@ public class IndexOverlayParser implements AutoCloseable
 		nodeStorage.allocateNode(startPos, endPos - startPos, NodeType.PARAMETER_DECLARATION, -1);
 	}
 
-	private void parseTypeDeclarationTail(ParseContext context)
+	private void parseTypeDeclarationTail(ParseContext context, byte nodeType)
 {
 		// Generic parameters
 		if (context.currentTokenIs(TokenType.LT))
@@ -796,9 +860,26 @@ public class IndexOverlayParser implements AutoCloseable
 			}
 		}
 
-		// Class body
+		// Determine parsing phase based on type declaration kind
+		ParsingPhase phase = switch (nodeType)
+		{
+			case NodeType.CLASS_DECLARATION -> ParsingPhase.CLASS_BODY;
+			case NodeType.INTERFACE_DECLARATION, NodeType.ANNOTATION_DECLARATION -> ParsingPhase.INTERFACE_BODY;
+			case NodeType.ENUM_DECLARATION -> ParsingPhase.ENUM_BODY;
+			default -> ParsingPhase.CLASS_BODY; // fallback
+		};
+
+		// Parse body with appropriate phase tracking
 		context.expect(TokenType.LBRACE);
-		parseClassBody(context);
+		enterPhase(phase);
+		try
+		{
+			parseClassBody(context);
+		}
+		finally
+		{
+			exitPhase();
+		}
 		context.expect(TokenType.RBRACE);
 	}
 
@@ -1088,7 +1169,27 @@ public class IndexOverlayParser implements AutoCloseable
 		if (context.currentTokenIs(TokenType.LBRACE))
 {
 			// Compact constructor: no parameters, goes directly to body
-			parseFlexibleConstructorBody(context);
+			enterPhase(ParsingPhase.CONSTRUCTOR_BODY);
+			try
+			{
+				// Try strategy pattern first for phase-aware features
+				ParseStrategy strategy = strategyRegistry.findStrategy(
+					targetVersion, getCurrentPhase(), context);
+
+				if (strategy != null)
+				{
+					strategy.parseConstruct(context);
+				}
+				else
+				{
+					// Fallback to standard constructor body parsing
+					parseBlockStatement(context);
+				}
+			}
+			finally
+			{
+				exitPhase();
+			}
 		}
 		else
 {
@@ -1109,10 +1210,30 @@ public class IndexOverlayParser implements AutoCloseable
 				}
 			}
 
-			// JDK 25: Flexible constructor bodies (JEP 513)
+			// Constructor body
 			if (context.currentTokenIs(TokenType.LBRACE))
 {
-				parseFlexibleConstructorBody(context);
+				enterPhase(ParsingPhase.CONSTRUCTOR_BODY);
+				try
+				{
+					// Try strategy pattern first for phase-aware features
+					ParseStrategy strategy = strategyRegistry.findStrategy(
+						targetVersion, getCurrentPhase(), context);
+
+					if (strategy != null)
+					{
+						strategy.parseConstruct(context);
+					}
+					else
+					{
+						// Fallback to standard constructor body parsing
+						parseBlockStatement(context);
+					}
+				}
+				finally
+				{
+					exitPhase();
+				}
 			}
 		}
 
@@ -1150,29 +1271,6 @@ public class IndexOverlayParser implements AutoCloseable
 
 		int endPos = context.getCurrentPosition();
 		nodeStorage.allocateNode(startPos, endPos - startPos, NodeType.ENUM_CONSTANT, -1);
-	}
-
-	/**
-     * Parses JDK 25 flexible constructor bodies (JEP 513).
-     * Allows statements before super() or this() calls.
-     *
-     * @param context the parse context
-     */
-	private void parseFlexibleConstructorBody(ParseContext context)
-{
-		int startPos = context.getCurrentPosition();
-		context.expect(TokenType.LBRACE);
-
-		// Parse statements - some may come before super()/this()
-		while (!context.currentTokenIs(TokenType.RBRACE) && !context.isAtEnd())
-{
-			parseStatement(context);
-		}
-
-		context.expect(TokenType.RBRACE);
-
-		int endPos = context.getCurrentPosition();
-		nodeStorage.allocateNode(startPos, endPos - startPos, NodeType.FLEXIBLE_CONSTRUCTOR_BODY, -1);
 	}
 
 	/**
@@ -1229,7 +1327,15 @@ public class IndexOverlayParser implements AutoCloseable
 		// Method body or semicolon (for abstract methods)
 		if (context.currentTokenIs(TokenType.LBRACE))
 {
-			parseBlockStatement(context);
+			enterPhase(ParsingPhase.METHOD_BODY);
+			try
+			{
+				parseBlockStatement(context);
+			}
+			finally
+			{
+				exitPhase();
+			}
 		}
 		else
 {

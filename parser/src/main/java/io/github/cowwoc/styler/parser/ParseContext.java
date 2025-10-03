@@ -13,6 +13,7 @@ public class ParseContext
 	private final String sourceText;
 	private int currentTokenIndex;
 	private TokenInfo pendingToken; // For injected tokens (e.g., splitting >> into > >)
+	private StatementParser statementParser; // Callback for parsing statements from strategies
 
 	// Security: Recursion depth protection against stack overflow attacks
 	private static final int MAX_RECURSION_DEPTH = 1000;
@@ -308,5 +309,46 @@ public class ParseContext
 			throw new IllegalStateException("Parent stack underflow: no parent to pop");
 		}
 		--parentStackTop;
+	}
+
+	/**
+	 * Sets the statement parser callback for strategies that need to parse statements.
+	 *
+	 * @param statementParser the statement parser callback to use
+	 */
+	public void setStatementParser(StatementParser statementParser)
+{
+		this.statementParser = statementParser;
+	}
+
+	/**
+	 * Parses a statement using the registered statement parser callback.
+	 * This allows strategies to delegate statement parsing back to the main parser.
+	 *
+	 * @throws IllegalStateException if no statement parser has been registered
+	 */
+	public void parseStatement()
+{
+		if (statementParser == null)
+{
+			throw new IllegalStateException(
+				"No statement parser registered. Call setStatementParser() before using parseStatement()");
+		}
+		statementParser.parseStatement(this);
+	}
+
+	/**
+	 * Callback interface for parsing statements.
+	 * Allows strategies to delegate statement parsing back to the main parser.
+	 */
+	@FunctionalInterface
+	public interface StatementParser
+	{
+		/**
+		 * Parses a single statement at the current position in the context.
+		 *
+		 * @param context the parse context
+		 */
+		void parseStatement(ParseContext context);
 	}
 }

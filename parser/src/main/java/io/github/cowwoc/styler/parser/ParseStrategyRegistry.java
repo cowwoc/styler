@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.parser;
 
+import io.github.cowwoc.styler.parser.strategies.FlexibleConstructorBodiesStrategy;
 import io.github.cowwoc.styler.parser.strategies.RecordDeclarationStrategy;
 import io.github.cowwoc.styler.parser.strategies.SealedClassStrategy;
 import io.github.cowwoc.styler.parser.strategies.StringTemplateStrategy;
@@ -31,11 +32,20 @@ public class ParseStrategyRegistry
 	/**
 	 * Finds a strategy that can handle the current parsing context.
 	 *
+	 * <p>Selection algorithm:
+	 * <ol>
+	 * <li>Try strategies for target version, highest priority first</li>
+	 * <li>For each strategy, call canHandle(version, phase, context)</li>
+	 * <li>Return first matching strategy</li>
+	 * <li>If none match, try strategies from earlier versions</li>
+	 * </ol>
+	 *
 	 * @param version The target Java version
+	 * @param phase The current parsing phase
 	 * @param context The current parsing context
 	 * @return A strategy that can handle the construct, or {@code null} if none found
 	 */
-	public ParseStrategy findStrategy(JavaVersion version, ParseContext context)
+	public ParseStrategy findStrategy(JavaVersion version, ParsingPhase phase, ParseContext context)
 {
 		// Try strategies for the target version first
 		List<ParseStrategy> versionStrategies = strategies.get(version);
@@ -43,7 +53,7 @@ public class ParseStrategyRegistry
 {
 			for (ParseStrategy strategy : versionStrategies)
 {
-				if (strategy.canHandle(version, context))
+				if (strategy.canHandle(version, phase, context))
 	{
 					return strategy;
 				}
@@ -67,7 +77,7 @@ public class ParseStrategyRegistry
 
 			for (ParseStrategy strategy : fallbackStrategies)
 {
-				if (strategy.canHandle(version, context))
+				if (strategy.canHandle(version, phase, context))
 	{
 					return strategy;
 				}
@@ -98,19 +108,20 @@ public class ParseStrategyRegistry
 		// Java 14: Switch expressions
 		registerStrategy(JavaVersion.JAVA_14, new SwitchExpressionStrategy());
 
-		// Java 16: Records
-		registerStrategy(JavaVersion.JAVA_16, new RecordDeclarationStrategy());
+		// Java 16: Records - NOT YET IMPLEMENTED
+		// registerStrategy(JavaVersion.JAVA_16, new RecordDeclarationStrategy());
 
-		// Java 17: Sealed classes
-		registerStrategy(JavaVersion.JAVA_17, new SealedClassStrategy());
+		// Java 17: Sealed classes - NOT YET IMPLEMENTED
+		// registerStrategy(JavaVersion.JAVA_17, new SealedClassStrategy());
 
-		// Java 21: String templates (preview)
-		registerStrategy(JavaVersion.JAVA_21, new StringTemplateStrategy());
+		// Java 21: String templates (preview) - NOT YET IMPLEMENTED
+		// registerStrategy(JavaVersion.JAVA_21, new StringTemplateStrategy());
 
-		// Java 25 features to implement when needed:
-		//   - Flexible constructor bodies
-		//   - Primitive type patterns
-		// Implement with proper parsing logic, not stub methods that return false
+		// Java 25: Flexible constructor bodies (JEP 513)
+		registerStrategy(JavaVersion.JAVA_25, new FlexibleConstructorBodiesStrategy());
+
+		// Java 25 features remaining:
+		//   - Primitive type patterns (token-based, not phase-aware)
 	}
 
 	/**

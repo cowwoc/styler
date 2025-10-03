@@ -4,17 +4,22 @@ import io.github.cowwoc.styler.parser.JavaVersion;
 import io.github.cowwoc.styler.parser.NodeType;
 import io.github.cowwoc.styler.parser.ParseContext;
 import io.github.cowwoc.styler.parser.ParseStrategy;
+import io.github.cowwoc.styler.parser.ParsingPhase;
 import io.github.cowwoc.styler.parser.TokenInfo;
 import io.github.cowwoc.styler.parser.TokenType;
 
 /**
  * Strategy for parsing switch expressions introduced in Java 14.
+ *
+ * <p>This is a simple token-based strategy - the phase parameter is not relevant
+ * since switch keyword with expression context is unambiguous.
  */
 public class SwitchExpressionStrategy implements ParseStrategy
 {
 	@Override
-	public boolean canHandle(JavaVersion version, ParseContext context)
+	public boolean canHandle(JavaVersion version, ParsingPhase phase, ParseContext context)
 {
+		// Phase not relevant - switch keyword is unambiguous
 		// Switch expressions are available from Java 14+
 		if (!version.isAtLeast(JavaVersion.JAVA_14))
 {
@@ -56,7 +61,7 @@ public class SwitchExpressionStrategy implements ParseStrategy
 	@Override
 	public int getPriority()
 {
-		return 10; // High priority for Java 14+ features
+		return PRIORITY_KEYWORD_BASED;
 	}
 
 	@Override
