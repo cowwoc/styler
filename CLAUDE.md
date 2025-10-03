@@ -9,6 +9,28 @@ Styler Java Code Formatter project configuration and workflow guidance.
 **CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See task-protocol.md
 **CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
 **CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL 7 phases of task protocol are finished. Implementation completion does NOT equal task completion. Only mark tasks as complete after Phase 7 cleanup and finalization.
+**IMPLEMENTATION COMPLETION TRIGGER**: When you have finished implementation work (code changes, fixes, features complete), you MUST:
+1. **CHECK**: Am I currently executing a task protocol? (Look for worktree at `/workspace/branches/{task-name}/`, stakeholder reports, or active todo items)
+2. **IF YES**: Continue with remaining protocol phases (Phase 6: Stakeholder Review, Phase 7: Cleanup/Finalization)
+3. **IF NO**: Task was completed outside protocol (simple fixes, investigations) - proceed normally
+4. **NEVER** look for the next task until current task protocol completes ALL 7 phases
+
+**Prohibited Pattern**: ❌ "Implementation is done, let me look for what to work on next" (while in active task protocol)
+**Required Pattern**: ✅ "Implementation is done, checking if I'm in a task protocol... Yes, now I'll run Phase 6 stakeholder reviews and Phase 7 cleanup"
+
+**PHASE COMPLETION VERIFICATION**: Before declaring ANY phase complete, you MUST:
+1. **READ**: Execute `grep -A 20 "^## State [N]:" docs/project/task-protocol.md` to read ACTUAL phase requirements
+2. **CHECKLIST**: Create explicit checklist of all phase requirements from task-protocol.md
+3. **VERIFY**: Confirm EACH requirement is met with evidence (command output, file checks, etc.)
+4. **DECLARE**: Only after ALL requirements verified, declare phase complete
+
+**Prohibited Pattern**: ❌ "Phase N is complete" (based on assumption)
+**Required Pattern**: ✅ "Reading Phase N requirements... [shows grep output]... Requirements: [list from doc]... Executing: [commands with output]... Verified: [checklist with evidence]... Phase N complete"
+
+**Example:**
+❌ BAD: "Phase 7 complete! I committed changes and updated todo.md"
+✅ GOOD: "Reading Phase 7 requirements: `grep -A 20 'State 6: CLEANUP'`... Requirements: remove worktree, release locks, clean temp files... Executing: [commands]... Verified: [checks]... Phase 7 complete"
+
 **TODO Synchronization**: Keep TodoWrite tool synced with todo.md file.
 **TODO Clarity**: Each todo.md entry must contain sufficient detail to understand the task without external context. One-line descriptions require nested sub-items explaining Purpose, Scope, Components/Features, and Integration points.
 **🚨 VIOLATION = IMMEDIATE TASK RESTART REQUIRED**

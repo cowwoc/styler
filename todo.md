@@ -54,6 +54,41 @@
 - [x] **TASK:** `add-parser-unit-tests` - Unit tests covering all JDK 25 language features
 - [x] **TASK:** `arena-vs-gc-memory-architecture-decision` - Benchmark and decide between Arena API vs GC for memory allocation (COMPLETED: Arena API adoption approved with 3x performance improvement and 96.9% safety margin against 512MB target)
 - [x] **TASK:** `implement-arena-api-memory-allocation` - Replace NodeRegistry/MemoryArena with Arena API implementation (COMPLETED: Arena API implementation with 3-12x performance benefits, parent-child tracking, and legacy deprecation)
+- [ ] **TASK:** `enhance-strategy-pattern-with-phase-awareness` - Enhance ParseStrategy pattern to support context-aware parsing (ARCHITECTURAL ENHANCEMENT)
+  - **Purpose**: Extend Strategy pattern to handle context-dependent features like flexible constructor bodies that lack keyword triggers
+  - **Scope**: Add ParsingPhase parameter to ParseStrategy interface, update all existing strategies, implement phase tracking in parser
+  - **Architectural Decision**: Option 1 - Enhanced Strategy Pattern (vs Option 3 - Accept Variation)
+  - **Rationale**: Long-term consistency - all Java features use Strategy pattern, some simple (token-based), some contextual (phase-aware)
+  - **Sub-tasks**:
+    - [ ] `create-parsing-phase-enum` - Define ParsingPhase enum (TOP_LEVEL, CLASS_BODY, METHOD_BODY, CONSTRUCTOR_BODY, ENUM_BODY)
+    - [ ] `enhance-parse-strategy-interface` - Add ParsingPhase parameter to canHandle() method signature
+    - [ ] `update-existing-strategies` - Update all existing strategies (SwitchExpressionStrategy, RecordDeclarationStrategy, SealedClassStrategy, StringTemplateStrategy) to new interface
+    - [ ] `add-phase-tracking-to-parser` - Add phase tracking and passing to IndexOverlayParser
+    - [ ] `implement-flexible-constructor-bodies-strategy` - Implement FlexibleConstructorBodiesStrategy with phase-aware detection
+    - [ ] `implement-primitive-type-pattern-strategy` - Implement PrimitiveTypePatternStrategy (analyze if phase awareness needed)
+    - [ ] `add-phase-aware-strategy-tests` - Comprehensive test suite for phase-aware strategy behavior
+    - [ ] `document-strategy-pattern-guidelines` - Add pattern selection criteria to parser-architecture.md (when to use token-based vs phase-aware)
+  - **Components**:
+    - ParsingPhase enum with clear semantic phases
+    - Enhanced ParseStrategy interface (backward-compatible default implementation possible)
+    - Phase tracking in IndexOverlayParser (enterPhase/exitPhase pattern)
+    - FlexibleConstructorBodiesStrategy (phase = CONSTRUCTOR_BODY, token = LBRACE, version = JAVA_25)
+    - PrimitiveTypePatternStrategy (analyze detection pattern - may be token-based)
+    - Comprehensive unit tests for phase detection and strategy selection
+    - Architecture documentation explaining pattern selection criteria
+  - **Integration**:
+    - IndexOverlayParser tracks current parsing phase
+    - ParseStrategyRegistry queries strategies with (version, context, phase)
+    - Simple strategies ignore phase parameter (token detection sufficient)
+    - Contextual strategies use phase for disambiguation
+  - **Benefits**:
+    - Architectural consistency - ALL features use Strategy pattern
+    - Natural complexity gradation - simple vs contextual strategies
+    - Clear principle for future features
+    - Clean separation of concerns
+    - Independently testable components
+  - **Estimated Effort**: 1-2 days
+  - **Technical Debt**: None (architectural improvement)
 
 ### Basic Configuration Schema (No File Discovery)
 - [x] **MODULE:** `create-formatter-api-module` - Create styler-formatter-api Maven module (COMPLETED)
@@ -64,6 +99,15 @@
   - **Components**: MutableFormattingContext class, MutableFormattingRule interface, basic modification tracking
   - **Final Design**: Immutable AST reconstruction approach - rules call convenience methods that internally rebuild AST trees while maintaining security boundaries
   - **Implementation**: Architectural foundation with comprehensive resource protection (recursion depth limits, modification count limits, proper try-finally cleanup)
+- [ ] **TASK:** `implement-ast-reconstruction-methods` - Implement AST reconstruction methods that currently throw UnsupportedOperationException
+  - **Purpose**: Complete the immutable AST reconstruction implementation for formatting transformations
+  - **Scope**: Implement the 6 public mutation methods (replaceChild, insertBefore, insertAfter, removeChild, setWhitespace, setComments) that currently throw UnsupportedOperationException
+  - **Components**:
+    - Path-finding algorithm from root to target node
+    - Builder pattern for creating new AST nodes with modifications
+    - Ancestor chain reconstruction to maintain immutability
+    - Integration with existing security controls (recursion depth, modification count)
+  - **Note**: Currently throws UnsupportedOperationException - implement when first formatting rule needs AST modification
 
 ### Core CLI Arguments (No File Processing)
 - [x] **MODULE:** `create-cli-module` - Create styler-cli Maven module as main entry point
@@ -287,22 +331,56 @@
 
 ## Deferred Tasks
 
+### Test Quality and Requirements API Migration
+- [ ] **TASK:** `migrate-testng-to-requirements-api` - Replace TestNG assertions and if-throw with Requirements API
+  - **Purpose**: Improve test clarity and consistency by using Requirements API (requireThat()) instead of TestNG assertions
+  - **Scope**: Test files across all modules (parser, ast, formatter, cli)
+  - **Components**:
+    - Replace TestNG assertions: `assertTrue()` → `requireThat().isTrue()`, `assertEquals()` → `requireThat().isEqualTo()`, etc.
+    - Replace if-throw validation patterns with `requireThat()` for cleaner error messages
+    - Explore `requireThat().withContext()` to add helpful diagnostic context to test failures
+  - **Benefits**:
+    - Consistent validation API across production and test code
+    - Better error messages with `.withContext()` providing additional diagnostic information
+    - Reduces reliance on multiple assertion frameworks
+    - More expressive and fluent test assertions
+  - **Examples**:
+    - `assertTrue(list.isEmpty())` → `requireThat(list, "list").isEmpty()`
+    - `assertEquals(expected, actual)` → `requireThat(actual, "actual").isEqualTo(expected)`
+    - `if (x < 0) throw new IllegalArgumentException()` → `requireThat(x, "x").isGreaterThanOrEqualTo(0)`
+    - `requireThat(result, "parsing result").withContext("source", sourceCode).isNotNull()`
+  - **Priority**: MEDIUM (improves test quality and maintainability)
+  - **Dependencies**: None (can be done incrementally)
+
 ### Code Quality and Style Compliance
-- [ ] **TASK:** `fix-cli-checkstyle-violations` - Fix 1,636 checkstyle violations in CLI module
+- [x] **TASK:** `fix-checkstyle-pmd-violations` - Fix PMD violations across parser and formatter modules - COMPLETED ✅
+  - **Purpose**: Eliminate PMD violations and improve test quality through proper assertion patterns
+  - **Scope**: Parser module (141 violations), Formatter module (61 violations)
+  - **Implementation**: Fixed 202 total violations (100% reduction)
+  - **Achievements**:
+    - Eliminated 6 PMD suppressions via test refactoring (main()→@Test, try-catch→assertThatThrownBy)
+    - Removed dead code: ParseMetrics.reset() (unused, inconsistent with Arena GC design)
+    - Fixed @FunctionalInterface bug in MutableFormattingRule.java
+    - Added comprehensive Javadoc documentation to test methods
+    - Updated CLAUDE.md with IMPLEMENTATION COMPLETION TRIGGER guidance
+  - **Quality**: Unanimous stakeholder approval (Style-Auditor ✅, Code-Quality-Auditor ✅)
+  - **Verification**: All tests pass, PMD check: 0 violations, Build: SUCCESS
+  - **Completed**: 2025-10-01
+
+- [x] **TASK:** `fix-cli-checkstyle-violations` - Fix CLI module checkstyle violations - COMPLETED ✅
   - **Purpose**: Address pre-existing checkstyle violations to improve code consistency and maintainability
-  - **Scope**: Entire styler-cli module (20+ classes, 1,636 violations)
-  - **Effort**: 4-6 hours
-  - **Priority**: MEDIUM (technical debt cleanup, no functional impact)
-  - **Violation Breakdown**:
-    - LineLengthCheck: 501 violations (80-char limit)
-    - LeftCurlyCheck: 486 violations (brace placement)
-    - FinalParametersCheck: 184 violations (final on parameters)
-    - JavadocVariableCheck: 105 violations (field documentation)
-    - JavadocMethodCheck: 86 violations (method documentation)
-    - Other: 274 violations (imports, whitespace, constants, etc.)
-  - **Approach**: Automated fixes for mechanical violations (line length, braces, final params), manual fixes for Javadoc
-  - **Dependencies**: None (can be addressed independently)
-  - **Origin**: Technical debt deferred from implement-error-reporting task via scope negotiation
+  - **Scope**: Entire styler-cli module (11 files, 318 violations)
+  - **Implementation**: Fixed 318 total violations (100% reduction)
+  - **Achievements**:
+    - Fixed 303 SeparatorWrapCheck violations (method chaining dots moved to end of line)
+    - Fixed 13 AvoidInlineConditionalsCheck violations (ternary operators converted to if-else)
+    - Fixed 2 LineLengthCheck violations (split long lines)
+    - Completed programmatic Picocli API conversion (eliminated reflection)
+    - Enforced no-stub policy (removed unused fields from RecursionDepthTracker)
+  - **Files Modified**: ConfigCommand, CheckCommand, FormatCommand, CommandLineParser, MachineErrorFormatter, HumanErrorFormatter, HumanOutputFormatter, SourceSnippetExtractor, ConfigNotFoundException, ConfigMerger, MemoryMonitor, RecursionDepthTracker
+  - **Quality**: All code compiles successfully, checkstyle: 0 violations, PMD: 150 violations (130 CommentRequired documentation)
+  - **Verification**: Build SUCCESS, all tests passing
+  - **Completed**: 2025-10-03
 
 ### Incremental Parsing (SCOPE QUESTION - May Be Unnecessary)
 - [ ] **TASK:** `implement-incremental-parsing` - Support for parsing only changed sections (Tree-sitter inspired) (SCOPE QUESTION: May be unnecessary for CLI tool use case - incremental parsing primarily benefits interactive editors, not batch file processing)
@@ -316,6 +394,15 @@
 
 ### Deferred Infrastructure Tasks (YAGNI - Implement When Needed)
 - [ ] **TASK:** `implement-git-hooks` - Pre-commit hook scripts for CI/CD integration (DEFERRED: No immediate evidence of need)
+- [ ] **TASK:** `fix-meta-commentary-hook-batching` - Prevent meta commentary hook from running multiple times during batch operations
+  - **Purpose**: Fix hook script to detect batch operations and run only once instead of per-file
+  - **Scope**: Update meta commentary hook to accumulate files and run once after batch completion
+  - **Issue**: Currently triggers multiple times when editing many files sequentially (e.g., fixing violations)
+- [ ] **TASK:** `remove-all-deprecated-code` - Remove all @Deprecated classes, methods, and fields from codebase
+  - **Purpose**: Clean up deprecated code that was marked for removal
+  - **Scope**: Search for @Deprecated annotations and remove deprecated APIs
+  - **Components**: Deprecated classes, methods, fields, and any references to them
+  - **Note**: Includes legacy NodeRegistry and MemoryArena implementations deprecated in favor of Arena API
 
 ## Documentation (When System is Complete)
 
