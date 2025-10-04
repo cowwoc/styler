@@ -24,7 +24,6 @@ final class LineAnalyzer
 
 	private final String sourceText;
 	private final LineLengthConfiguration config;
-	private final IndentationCalculator indentationCalculator;
 
 	/**
 	 * Creates a new line analyzer for the specified source code.
@@ -40,7 +39,6 @@ final class LineAnalyzer
 
 		this.sourceText = sourceText;
 		this.config = config;
-		this.indentationCalculator = new IndentationCalculator(config.getTabWidth());
 	}
 
 	/**
@@ -126,15 +124,5 @@ final class LineAnalyzer
 			"lineIndex must be less than the number of lines");
 
 		return lines[lineIndex];
-	}
-
-	/**
-	 * Returns the indentation calculator used by this analyzer.
-	 *
-	 * @return the indentation calculator, never {@code null}
-	 */
-	IndentationCalculator getIndentationCalculator()
-	{
-		return indentationCalculator;
 	}
 }

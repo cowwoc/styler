@@ -1,4 +1,4 @@
-package io.github.cowwoc.styler.formatter.impl;
+package io.github.cowwoc.styler.formatter.impl.wrap;
 
 import io.github.cowwoc.styler.ast.SourcePosition;
 
@@ -7,20 +7,23 @@ import java.util.Objects;
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
- * Represents a potential location where a line can be broken for wrapping.
+ * Represents a potential location where a line can be wrapped to meet length constraints.
  * <p>
- * Break points are identified by their position in source code and assigned a
- * priority based on semantic significance. Higher priority break points produce
+ * Wrap points are identified by their position in source code and assigned a
+ * priority based on semantic significance. Higher priority wrap points produce
  * more readable wrapped code.
+ * <p>
+ * Wrap points are detected by {@link WrapPointDetector} based on syntactic analysis
+ * of source code.
  */
-final class BreakPoint implements Comparable<BreakPoint>
+public final class WrapPoint implements Comparable<WrapPoint>
 {
 	/**
-	 * Priority levels for break point selection.
+	 * Priority levels for wrap point selection.
 	 * <p>
-	 * Higher priority break points are preferred when multiple options exist.
+	 * Higher priority wrap points are preferred when multiple options exist.
 	 */
-	enum Priority
+	public enum Priority
 	{
 		/**
 		 * Low priority for basic whitespace between tokens.
@@ -38,7 +41,7 @@ final class BreakPoint implements Comparable<BreakPoint>
 		PARAMETER(8),
 
 		/**
-		 * Highest priority for method chain break points.
+		 * Highest priority for method chain wrap points.
 		 */
 		METHOD_CHAIN(10);
 
@@ -49,7 +52,7 @@ final class BreakPoint implements Comparable<BreakPoint>
 			this.value = value;
 		}
 
-		int getValue()
+		public int getValue()
 		{
 			return value;
 		}
@@ -60,14 +63,14 @@ final class BreakPoint implements Comparable<BreakPoint>
 	private final String context;
 
 	/**
-	 * Creates a new break point.
+	 * Creates a new wrap point.
 	 *
-	 * @param position the source position where the break can occur, never {@code null}
-	 * @param priority the priority level for this break point, never {@code null}
-	 * @param context descriptive context about this break point, never {@code null}
+	 * @param position the source position where the wrap can occur, never {@code null}
+	 * @param priority the priority level for this wrap point, never {@code null}
+	 * @param context descriptive context about this wrap point, never {@code null}
 	 * @throws NullPointerException if any parameter is {@code null}
 	 */
-	BreakPoint(SourcePosition position, Priority priority, String context)
+	public WrapPoint(SourcePosition position, Priority priority, String context)
 	{
 		requireThat(position, "position").isNotNull();
 		requireThat(priority, "priority").isNotNull();
@@ -79,37 +82,37 @@ final class BreakPoint implements Comparable<BreakPoint>
 	}
 
 	/**
-	 * Returns the source position of this break point.
+	 * Returns the source position of this wrap point.
 	 *
 	 * @return the position, never {@code null}
 	 */
-	SourcePosition getPosition()
+	public SourcePosition getPosition()
 	{
 		return position;
 	}
 
 	/**
-	 * Returns the priority of this break point.
+	 * Returns the priority of this wrap point.
 	 *
 	 * @return the priority, never {@code null}
 	 */
-	Priority getPriority()
+	public Priority getPriority()
 	{
 		return priority;
 	}
 
 	/**
-	 * Returns the context description for this break point.
+	 * Returns the context description for this wrap point.
 	 *
 	 * @return the context, never {@code null}
 	 */
-	String getContext()
+	public String getContext()
 	{
 		return context;
 	}
 
 	@Override
-	public int compareTo(BreakPoint other)
+	public int compareTo(WrapPoint other)
 	{
 		int priorityComparison = Integer.compare(other.priority.value, this.priority.value);
 		if (priorityComparison != 0)
@@ -125,7 +128,7 @@ final class BreakPoint implements Comparable<BreakPoint>
 		if (this == obj) return true;
 		if (obj == null || getClass() != obj.getClass()) return false;
 
-		BreakPoint that = (BreakPoint) obj;
+		WrapPoint that = (WrapPoint) obj;
 		return Objects.equals(position, that.position) &&
 		       priority == that.priority &&
 		       Objects.equals(context, that.context);
@@ -140,7 +143,7 @@ final class BreakPoint implements Comparable<BreakPoint>
 	@Override
 	public String toString()
 	{
-		return String.format("BreakPoint[position=%s, priority=%s, context='%s']",
+		return String.format("WrapPoint[position=%s, priority=%s, context='%s']",
 			position, priority, context);
 	}
 }

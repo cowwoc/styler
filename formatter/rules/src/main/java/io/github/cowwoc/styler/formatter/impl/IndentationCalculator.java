@@ -12,25 +12,29 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * Per <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-3.html#jls-3.2">JLS §3.2</a>,
  * whitespace includes space (SP) and horizontal tab (HT) characters.
  */
-final class IndentationCalculator
+public final class IndentationCalculator
 {
-	private static final int CONTINUATION_INDENT = 8;
 	private static final char SPACE = ' ';
 	private static final char TAB = '\t';
 
 	private final int tabWidth;
+	private final int continuationIndentSpaces;
 
 	/**
-	 * Creates a new indentation calculator with the specified tab width.
+	 * Creates a new indentation calculator with the specified configuration.
 	 *
 	 * @param tabWidth the number of spaces equivalent to one tab character,
 	 *                 must be positive
-	 * @throws IllegalArgumentException if {@code tabWidth} is not positive
+	 * @param continuationIndentSpaces the number of spaces to add for continuation lines,
+	 *                                 must be positive
+	 * @throws IllegalArgumentException if any parameter is not positive
 	 */
-	IndentationCalculator(int tabWidth)
+	public IndentationCalculator(int tabWidth, int continuationIndentSpaces)
 	{
 		requireThat(tabWidth, "tabWidth").isPositive();
+		requireThat(continuationIndentSpaces, "continuationIndentSpaces").isPositive();
 		this.tabWidth = tabWidth;
+		this.continuationIndentSpaces = continuationIndentSpaces;
 	}
 
 	/**
@@ -40,12 +44,15 @@ final class IndentationCalculator
 	 * to their equivalent space count based on the configured tab width.
 	 *
 	 * @param line the line to analyze, never {@code null}
+	 * @param tabWidth the number of spaces equivalent to one tab character
 	 * @return the indentation level in spaces, always non-negative
 	 * @throws NullPointerException if {@code line} is {@code null}
+	 * @throws IllegalArgumentException if {@code tabWidth} is not positive
 	 */
-	int calculateIndentationLevel(String line)
+	public static int calculateIndentationLevel(String line, int tabWidth)
 	{
 		requireThat(line, "line").isNotNull();
+		requireThat(tabWidth, "tabWidth").isPositive();
 
 		int indentation = 0;
 		for (int i = 0; i < line.length(); i += 1)
@@ -68,6 +75,21 @@ final class IndentationCalculator
 	}
 
 	/**
+	 * Calculates the indentation level of a line in spaces.
+	 * <p>
+	 * This is an instance method that delegates to the static method using
+	 * the configured tab width.
+	 *
+	 * @param line the line to analyze, never {@code null}
+	 * @return the indentation level in spaces, always non-negative
+	 * @throws NullPointerException if {@code line} is {@code null}
+	 */
+	public int calculateIndentationLevel(String line)
+	{
+		return calculateIndentationLevel(line, tabWidth);
+	}
+
+	/**
 	 * Generates an indentation string with the specified number of spaces.
 	 * <p>
 	 * This method creates a string containing only space characters to represent
@@ -78,7 +100,7 @@ final class IndentationCalculator
 	 * @return an indentation string, never {@code null}
 	 * @throws IllegalArgumentException if {@code spaces} is negative
 	 */
-	String generateIndentation(int spaces)
+	public String generateIndentation(int spaces)
 	{
 		requireThat(spaces, "spaces").isNotNegative();
 		return " ".repeat(spaces);
@@ -88,17 +110,17 @@ final class IndentationCalculator
 	 * Generates a continuation indentation string based on the base indentation.
 	 * <p>
 	 * Continuation indentation is used for wrapped lines that are part of the same
-	 * statement or expression. This method adds {@value CONTINUATION_INDENT} spaces
-	 * to the base indentation level.
+	 * statement or expression. This method adds the configured continuation indent
+	 * spaces to the base indentation level.
 	 *
 	 * @param baseIndentation the base indentation level in spaces, must not be negative
 	 * @return a continuation indentation string, never {@code null}
 	 * @throws IllegalArgumentException if {@code baseIndentation} is negative
 	 */
-	String generateContinuationIndentation(int baseIndentation)
+	public String generateContinuationIndentation(int baseIndentation)
 	{
 		requireThat(baseIndentation, "baseIndentation").isNotNegative();
-		return generateIndentation(baseIndentation + CONTINUATION_INDENT);
+		return generateIndentation(baseIndentation + continuationIndentSpaces);
 	}
 
 	/**
@@ -112,7 +134,7 @@ final class IndentationCalculator
 	 * @return the leading whitespace, never {@code null} but may be empty
 	 * @throws NullPointerException if {@code line} is {@code null}
 	 */
-	String extractIndentation(String line)
+	public String extractIndentation(String line)
 	{
 		requireThat(line, "line").isNotNull();
 

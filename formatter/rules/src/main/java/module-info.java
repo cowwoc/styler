@@ -7,4 +7,7 @@ module io.github.cowwoc.styler.formatter.impl
 
 	// Export implementation packages for plugin loading
 	exports io.github.cowwoc.styler.formatter.impl;
+
+	// Qualified export for testing - prevents external API exposure
+	exports io.github.cowwoc.styler.formatter.impl.wrap to io.github.cowwoc.styler.formatter.impl.test;
 }

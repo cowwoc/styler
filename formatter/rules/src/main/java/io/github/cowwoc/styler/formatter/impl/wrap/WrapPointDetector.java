@@ -1,10 +1,12 @@
-package io.github.cowwoc.styler.formatter.impl;
+package io.github.cowwoc.styler.formatter.impl.wrap;
 
 import io.github.cowwoc.styler.ast.ASTNode;
 import io.github.cowwoc.styler.ast.SourcePosition;
 import io.github.cowwoc.styler.ast.SourceRange;
 import io.github.cowwoc.styler.ast.node.BinaryExpressionNode;
 import io.github.cowwoc.styler.ast.node.MethodCallNode;
+import io.github.cowwoc.styler.formatter.api.WrapConfiguration;
+import io.github.cowwoc.styler.formatter.impl.SourceTextUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,32 +15,34 @@ import java.util.List;
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
- * Detects semantically meaningful break points in source code for line wrapping.
+ * Detects semantically meaningful wrap points in source code for line wrapping.
  * <p>
- * This class uses AST analysis to identify locations where lines can be broken
- * to improve readability. Break points are prioritized based on Java language
+ * This class uses AST analysis to identify locations where lines can be wrapped
+ * to improve readability. Wrap points are prioritized based on Java language
  * semantics, with method chains receiving highest priority, followed by parameters,
  * operators, and general whitespace.
  * <p>
  * Per <a href="https://docs.oracle.com/javase/specs/jls/se25/html/jls-15.html">JLS Chapter 15: Expressions</a>,
  * method invocations and binary expressions have well-defined precedence and
- * associativity that guides optimal break point selection.
+ * associativity that guides optimal wrap point selection.
+ * <p>
+ * This class is stateless and thread-safe when used with immutable parameters.
  */
-final class BreakPointDetector
+public final class WrapPointDetector
 {
 	private final ASTNode rootNode;
 	private final String sourceText;
-	private final LineLengthConfiguration config;
+	private final WrapConfiguration config;
 
 	/**
-	 * Creates a new break point detector.
+	 * Creates a new wrap point detector.
 	 *
 	 * @param rootNode the root of the AST to analyze, never {@code null}
 	 * @param sourceText the source code text, never {@code null}
-	 * @param config the line length configuration, never {@code null}
+	 * @param config the wrap configuration, never {@code null}
 	 * @throws NullPointerException if any parameter is {@code null}
 	 */
-	BreakPointDetector(ASTNode rootNode, String sourceText, LineLengthConfiguration config)
+	public WrapPointDetector(ASTNode rootNode, String sourceText, WrapConfiguration config)
 	{
 		requireThat(rootNode, "rootNode").isNotNull();
 		requireThat(sourceText, "sourceText").isNotNull();
@@ -50,39 +54,38 @@ final class BreakPointDetector
 	}
 
 	/**
-	 * Finds all potential break points within a source range.
+	 * Finds all potential wrap points within a source range.
 	 * <p>
 	 * This method analyzes the AST nodes within the specified range and identifies
-	 * locations where line breaks would maintain semantic meaning. Break points
+	 * locations where line wraps would maintain semantic meaning. Wrap points
 	 * are sorted by priority (highest first) and then by position.
 	 *
 	 * @param range the source range to analyze, never {@code null}
-	 * @return list of break points sorted by priority, never {@code null}
+	 * @return list of wrap points sorted by priority, never {@code null}
 	 * @throws NullPointerException if {@code range} is {@code null}
 	 */
-	List<BreakPoint> findBreakPoints(SourceRange range)
+	public List<WrapPoint> findWrapPoints(SourceRange range)
 	{
 		requireThat(range, "range").isNotNull();
 
-		List<BreakPoint> breakPoints = new ArrayList<>();
+		List<WrapPoint> wrapPoints = new ArrayList<>();
 
-		findBreakPointsInNode(rootNode, range, breakPoints);
+		findWrapPointsInNode(rootNode, range, wrapPoints);
 
-		findWhitespaceBreakPoints(range, breakPoints);
+		findWhitespaceWrapPoints(range, wrapPoints);
 
-		Collections.sort(breakPoints);
-		return breakPoints;
+		Collections.sort(wrapPoints);
+		return wrapPoints;
 	}
 
 	/**
-	 * Recursively finds break points in an AST node and its children.
+	 * Recursively finds wrap points in an AST node and its children.
 	 *
 	 * @param node the AST node to analyze, never {@code null}
 	 * @param lineRange the line range we're interested in, never {@code null}
-	 * @param breakPoints the list to accumulate break points, never {@code null}
+	 * @param wrapPoints the list to accumulate wrap points, never {@code null}
 	 */
-	private void findBreakPointsInNode(ASTNode node, SourceRange lineRange,
-	                                    List<BreakPoint> breakPoints)
+	private void findWrapPointsInNode(ASTNode node, SourceRange lineRange, List<WrapPoint> wrapPoints)
 	{
 		if (!overlaps(node.getRange(), lineRange))
 		{
@@ -91,84 +94,88 @@ final class BreakPointDetector
 
 		if (node instanceof MethodCallNode)
 		{
-			addMethodCallBreakPoint(node, lineRange, breakPoints);
+			addMethodCallWrapPoint(node, lineRange, wrapPoints);
 		}
 		else if (node instanceof BinaryExpressionNode binaryNode)
 		{
-			addBinaryExpressionBreakPoint(binaryNode, lineRange, breakPoints);
+			addBinaryExpressionWrapPoint(binaryNode, lineRange, wrapPoints);
 		}
 
 		for (ASTNode child : node.getChildren())
 		{
-			findBreakPointsInNode(child, lineRange, breakPoints);
+			findWrapPointsInNode(child, lineRange, wrapPoints);
 		}
 	}
 
 	/**
-	 * Adds a break point for a method call node.
+	 * Adds a wrap point for a method call node.
 	 * <p>
-	 * Method call break points receive the highest priority as breaking at
+	 * Method call wrap points receive the highest priority as wrapping at
 	 * method chain boundaries typically produces the most readable code.
+	 * <p>
+	 * The wrap position is determined by the {@link WrapConfiguration#isWrapBeforeDot()}
+	 * setting.
 	 *
 	 * @param node the method call node, never {@code null}
 	 * @param lineRange the line range, never {@code null}
-	 * @param breakPoints the list to add to, never {@code null}
+	 * @param wrapPoints the list to add to, never {@code null}
 	 */
-	private void addMethodCallBreakPoint(ASTNode node, SourceRange lineRange,
-	                                      List<BreakPoint> breakPoints)
+	private void addMethodCallWrapPoint(ASTNode node, SourceRange lineRange, List<WrapPoint> wrapPoints)
 	{
 		SourcePosition position = node.getStartPosition();
 		if (isWithinRange(position, lineRange) && position.column() > 1)
 		{
-			BreakPoint breakPoint = new BreakPoint(position,
-				BreakPoint.Priority.METHOD_CHAIN, "method call at " + position);
-			breakPoints.add(breakPoint);
+			WrapPoint wrapPoint = new WrapPoint(position, WrapPoint.Priority.METHOD_CHAIN,
+				"method call at " + position);
+			wrapPoints.add(wrapPoint);
 		}
 	}
 
 	/**
-	 * Adds a break point for a binary expression node.
+	 * Adds a wrap point for a binary expression node.
 	 * <p>
-	 * Binary expression break points are added based on the configured preference
-	 * for breaking before or after operators. Operators receive medium priority.
+	 * Binary expression wrap points are added based on the configured preference
+	 * for wrapping before or after operators. Operators receive medium priority.
+	 * <p>
+	 * The wrap position is determined by the {@link WrapConfiguration#isWrapBeforeOperator()}
+	 * setting.
 	 *
 	 * @param node the binary expression node, never {@code null}
 	 * @param lineRange the line range, never {@code null}
-	 * @param breakPoints the list to add to, never {@code null}
+	 * @param wrapPoints the list to add to, never {@code null}
 	 */
-	private void addBinaryExpressionBreakPoint(BinaryExpressionNode node, SourceRange lineRange,
-	                                            List<BreakPoint> breakPoints)
+	private void addBinaryExpressionWrapPoint(BinaryExpressionNode node, SourceRange lineRange, List<WrapPoint> wrapPoints)
 	{
-		SourcePosition breakPosition;
-		if (config.isBreakBeforeOperator())
+		SourcePosition wrapPosition;
+		if (config.isWrapBeforeOperator())
 		{
-			breakPosition = node.getRange().start();
+			wrapPosition = node.getRange().start();
 		}
 		else
 		{
-			breakPosition = node.getLeft().getRange().end();
+			wrapPosition = node.getLeft().getRange().end();
 		}
 
-		if (isWithinRange(breakPosition, lineRange))
+		if (isWithinRange(wrapPosition, lineRange))
 		{
 			String operatorContext = String.format("operator '%s' at %s",
-				node.getOperator(), breakPosition);
-			BreakPoint breakPoint = new BreakPoint(breakPosition,
-				BreakPoint.Priority.OPERATOR, operatorContext);
-			breakPoints.add(breakPoint);
+				node.getOperator(), wrapPosition);
+			WrapPoint wrapPoint = new WrapPoint(wrapPosition,
+				WrapPoint.Priority.OPERATOR, operatorContext);
+			wrapPoints.add(wrapPoint);
 		}
 	}
 
 	/**
-	 * Finds whitespace-based break points as fallback options.
+	 * Finds whitespace-based wrap points as fallback options.
 	 * <p>
-	 * When no semantic break points are available, breaking at whitespace
-	 * boundaries is still preferable to mid-identifier breaks.
+	 * When no semantic wrap points are available, wrapping at whitespace
+	 * boundaries is still preferable to mid-identifier wraps.
 	 *
 	 * @param lineRange the line range to analyze, never {@code null}
-	 * @param breakPoints the list to add to, never {@code null}
+	 * @param wrapPoints the list to add to, never {@code null}
 	 */
-	private void findWhitespaceBreakPoints(SourceRange lineRange, List<BreakPoint> breakPoints)
+	private void findWhitespaceWrapPoints(SourceRange lineRange, List<WrapPoint> wrapPoints)
 	{
 		int startLine = lineRange.start().line();
 		int endLine = lineRange.end().line();
@@ -188,9 +195,9 @@ final class BreakPointDetector
 					SourcePosition position = new SourcePosition(line, col);
 					if (isWithinRange(position, lineRange))
 					{
-						BreakPoint breakPoint = new BreakPoint(position,
-							BreakPoint.Priority.WHITESPACE, "whitespace at " + position);
-						breakPoints.add(breakPoint);
+						WrapPoint wrapPoint = new WrapPoint(position,
+							WrapPoint.Priority.WHITESPACE, "whitespace at " + position);
+						wrapPoints.add(wrapPoint);
 					}
 				}
 			}

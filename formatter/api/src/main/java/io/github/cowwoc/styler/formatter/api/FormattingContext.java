@@ -24,13 +24,16 @@ public final class FormattingContext
 	private final RuleConfiguration configuration;
 	private final Set<String> enabledRules;
 	private final Map<String, Object> metadata;
+	private final WrapConfiguration wrapConfiguration;
 
 	/**
-	 * Creates a new formatting context.
+	 * Creates a new formatting context with default wrap configuration.
 	 * <p>
 	 * <b>Internal API:</b> This constructor is intended for use by the formatting
 	 * engine only. Formatting rules should receive context objects rather than
 	 * creating them.
+	 * <p>
+	 * This constructor provides backward compatibility by using default wrap configuration.
 	 *
 	 * @param rootNode      the root AST node for the source file, never {@code null}
 	 * @param sourceText    the original source text, never {@code null}
@@ -47,12 +50,41 @@ public final class FormattingContext
 	                         Set<String> enabledRules,
 	                         Map<String, Object> metadata)
 	{
+		this(rootNode, sourceText, filePath, configuration, enabledRules, metadata,
+			WrapConfiguration.createDefault());
+	}
+
+	/**
+	 * Creates a new formatting context with explicit wrap configuration.
+	 * <p>
+	 * <b>Internal API:</b> This constructor is intended for use by the formatting
+	 * engine only. Formatting rules should receive context objects rather than
+	 * creating them.
+	 *
+	 * @param rootNode          the root AST node for the source file, never {@code null}
+	 * @param sourceText        the original source text, never {@code null}
+	 * @param filePath          the path to the source file being formatted, never {@code null}
+	 * @param configuration     the rule configuration to use, never {@code null}
+	 * @param enabledRules      the set of enabled rule IDs, never {@code null}
+	 * @param metadata          additional metadata for rule processing, never {@code null}
+	 * @param wrapConfiguration the wrap configuration for line wrapping, never {@code null}
+	 * @throws SecurityException if the file path is outside allowed directories
+	 */
+	public FormattingContext(CompilationUnitNode rootNode,
+	                         String sourceText,
+	                         Path filePath,
+	                         RuleConfiguration configuration,
+	                         Set<String> enabledRules,
+	                         Map<String, Object> metadata,
+	                         WrapConfiguration wrapConfiguration)
+	{
 		this.rootNode = rootNode;
 		this.sourceText = sourceText;
 		this.filePath = validateFilePath(filePath);
 		this.configuration = configuration;
 		this.enabledRules = Set.copyOf(enabledRules);
 		this.metadata = Map.copyOf(metadata);
+		this.wrapConfiguration = wrapConfiguration;
 	}
 
 	/**
@@ -172,6 +204,19 @@ public final class FormattingContext
 		public Map<String, Object> getMetadata()
 	{
 		return metadata;
+	}
+
+	/**
+	 * Returns the wrap configuration for line wrapping operations.
+	 * <p>
+	 * This configuration defines how lines should be wrapped to meet length constraints,
+	 * including operator positioning, indentation strategy, and URL handling.
+	 *
+	 * @return the wrap configuration, never {@code null}
+	 */
+	public WrapConfiguration getWrapConfiguration()
+	{
+		return wrapConfiguration;
 	}
 
 	/**

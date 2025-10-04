@@ -175,7 +175,7 @@
   - **Fixes**: Added @FunctionalInterface to MutableFormattingRule, removed 8 unused wildcard imports from test files
   - **Verification**: BUILD SUCCESS, 0 checkstyle violations, 0 PMD violations, all 125 tests passing
   - **Commits**: 2025214 (POMs), 7cc1457 (file moves)
-- [ ] **TASK:** `refactor-line-wrapping-architecture` - Extract line-wrapping behavior from rules into centralized configuration system
+- [x] **TASK:** `refactor-line-wrapping-architecture` - Extract line-wrapping behavior from rules into centralized configuration system ✅ COMPLETED (2025-10-04)
   - **Purpose**: Decouple line-wrapping decisions (when to wrap) from line-wrapping behavior (how to wrap) to enable multiple rules to trigger wrapping with consistent formatting
   - **Scope**: Refactor LineLength rule and create new centralized wrapping configuration system
   - **Components**:

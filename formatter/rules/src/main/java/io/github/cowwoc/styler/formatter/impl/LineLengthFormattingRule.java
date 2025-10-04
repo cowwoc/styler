@@ -5,6 +5,9 @@ import io.github.cowwoc.styler.formatter.api.FormattingContext;
 import io.github.cowwoc.styler.formatter.api.FormattingResult;
 import io.github.cowwoc.styler.formatter.api.RuleConfiguration;
 import io.github.cowwoc.styler.formatter.api.ValidationResult;
+import io.github.cowwoc.styler.formatter.api.WrapConfiguration;
+import io.github.cowwoc.styler.formatter.impl.wrap.WrapBehavior;
+import io.github.cowwoc.styler.formatter.impl.wrap.WrapPoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,6 +71,7 @@ public final class LineLengthFormattingRule implements FormattingRule
 		}
 
 		LineLengthConfiguration config = (LineLengthConfiguration) context.getConfiguration();
+		WrapConfiguration wrapConfig = context.getWrapConfiguration();
 		String sourceText = context.getSourceText();
 
 		LineAnalyzer analyzer = new LineAnalyzer(sourceText, config);
@@ -78,21 +82,20 @@ public final class LineLengthFormattingRule implements FormattingRule
 			return FormattingResult.empty();
 		}
 
-		BreakPointDetector detector = new BreakPointDetector(context.getRootNode(),
-			sourceText, config);
-		WrapStrategy strategy = new WrapStrategy(config);
+		WrapBehavior wrapBehavior = new WrapBehavior(wrapConfig);
 
 		List<io.github.cowwoc.styler.formatter.api.TextEdit> edits = new ArrayList<>();
 
 		for (io.github.cowwoc.styler.ast.SourceRange lineRange : violatingLines)
 		{
-			List<BreakPoint> breakPoints = detector.findBreakPoints(lineRange);
+			List<WrapPoint> wrapPoints = wrapBehavior.findWrapPoints(lineRange,
+				context.getRootNode(), sourceText);
 
-			if (!breakPoints.isEmpty())
+			if (!wrapPoints.isEmpty())
 			{
-				BreakPoint bestBreakPoint = breakPoints.get(0);
+				WrapPoint bestWrapPoint = wrapPoints.get(0);
 				io.github.cowwoc.styler.formatter.api.TextEdit edit =
-					strategy.createWrapEdit(bestBreakPoint, sourceText);
+					wrapBehavior.createWrapEdit(bestWrapPoint, sourceText);
 				edits.add(edit);
 			}
 		}

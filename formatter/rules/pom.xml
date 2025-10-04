@@ -13,7 +13,7 @@
 	<artifactId>styler-formatter-rules</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Styler Java Code Formatter - Rules</name>
+	<name>Styler Java Code Formatter - Implementation</name>
 	<description>Built-in formatting rule implementations including line length enforcement, indentation, and whitespace management.</description>
 
 	<properties>
@@ -40,6 +40,11 @@
 		</dependency>
 
 		<!-- TEST DEPENDENCIES -->
+	<dependency>
+		<groupId>${project.groupId}</groupId>
+		<artifactId>styler-formatter-api</artifactId>
+		<type>test-jar</type>
+	</dependency>
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>

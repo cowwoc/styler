@@ -147,8 +147,56 @@ public class FormattingContextTest
 		assertThat(context.getMetadata("nonexistent", String.class)).isNull();
 
 		// Test type mismatch
-		assertThatThrownBy(() -> context.getMetadata("stringValue", Integer.class)).
-			isInstanceOf(ClassCastException.class);
+		assertThatThrownBy(() -> context.getMetadata("stringValue", Integer.class))
+			.isInstanceOf(ClassCastException.class);
+	}
+
+	/**
+	 * Test default wrap configuration.
+	 */
+	@Test
+	public void defaultWrapConfiguration()
+	{
+		RuleConfiguration config = new TestRuleConfiguration();
+		CompilationUnitNode ast = TestUtilities.createTestAST();
+		Path filePath = Paths.get("/project/src/Example.java");
+		Set<String> enabledRules = Set.of();
+		Map<String, Object> metadata = Map.of();
+
+		FormattingContext context = new FormattingContext(
+			ast, "source", filePath, config, enabledRules, metadata);
+
+		// Should have default wrap configuration
+		assertThat(context.getWrapConfiguration()).isNotNull();
+		assertThat(context.getWrapConfiguration().getMaxLineLength()).isEqualTo(120);
+		assertThat(context.getWrapConfiguration().isWrapBeforeOperator()).isTrue();
+		assertThat(context.getWrapConfiguration().isWrapBeforeDot()).isTrue();
+	}
+
+	/**
+	 * Test explicit wrap configuration.
+	 */
+	@Test
+	public void explicitWrapConfiguration() throws ConfigurationException
+	{
+		RuleConfiguration config = new TestRuleConfiguration();
+		CompilationUnitNode ast = TestUtilities.createTestAST();
+		Path filePath = Paths.get("/project/src/Example.java");
+		Set<String> enabledRules = Set.of();
+		Map<String, Object> metadata = Map.of();
+
+		WrapConfiguration wrapConfig = WrapConfiguration.builder()
+			.withMaxLineLength(100)
+			.withWrapBeforeOperator(false)
+			.build();
+
+		FormattingContext context = new FormattingContext(
+			ast, "source", filePath, config, enabledRules, metadata, wrapConfig);
+
+		// Should use provided wrap configuration
+		assertThat(context.getWrapConfiguration()).isSameAs(wrapConfig);
+		assertThat(context.getWrapConfiguration().getMaxLineLength()).isEqualTo(100);
+		assertThat(context.getWrapConfiguration().isWrapBeforeOperator()).isFalse();
 	}
 
 	/**
