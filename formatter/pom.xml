@@ -9,63 +9,18 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>styler-formatter-api</artifactId>
-	<packaging>jar</packaging>
+	<artifactId>styler-formatter</artifactId>
+	<packaging>pom</packaging>
 
-	<name>Styler Java Code Formatter - API</name>
-	<description>Plugin interface and configuration APIs for the formatter system</description>
+	<name>Styler Java Code Formatter</name>
+	<description>Parent aggregator module organizing formatter API and rule implementations with clear separation of concerns</description>
 
 	<properties>
 		<project.root.basedir>${project.parent.basedir}</project.root.basedir>
 	</properties>
 
-	<dependencies>
-		<!-- AST Core dependency for AST node access -->
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>styler-ast-core</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-toml</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
+	<modules>
+		<module>api</module>
+		<module>rules</module>
+	</modules>
 </project>

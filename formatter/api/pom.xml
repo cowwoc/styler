@@ -5,40 +5,41 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>io.github.cowwoc.styler</groupId>
-		<artifactId>styler</artifactId>
+		<artifactId>styler-formatter</artifactId>
 		<version>1.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>styler-formatter-impl</artifactId>
+	<artifactId>styler-formatter-api</artifactId>
 	<packaging>jar</packaging>
 
-	<name>Styler Java Code Formatter - Implementation</name>
-	<description>Built-in formatting rule implementations</description>
+	<name>Styler Java Code Formatter - API</name>
+	<description>Plugin interface and configuration APIs for the formatter system. Defines contracts for formatting rules, plugin lifecycle, and configuration schema.</description>
 
 	<properties>
-		<project.root.basedir>${project.parent.basedir}</project.root.basedir>
+		<project.root.basedir>${project.parent.parent.basedir}</project.root.basedir>
 	</properties>
 
 	<dependencies>
-		<!-- REQUIRED DEPENDENCIES -->
-		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>styler-formatter-api</artifactId>
-		</dependency>
+		<!-- AST Core dependency for AST node access -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>styler-ast-core</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>io.github.cowwoc.requirements</groupId>
-			<artifactId>requirements-java</artifactId>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-toml</artifactId>
 		</dependency>
 
-		<!-- TEST DEPENDENCIES -->
 		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>

@@ -27,7 +27,6 @@
 		<module>core</module>
 		<module>parser</module>
 		<module>formatter</module>
-		<module>formatter-impl</module>
 		<module>cli</module>
 		<module>benchmark</module>
 	</modules>
@@ -56,7 +55,7 @@
 			</dependency>
 			<dependency>
 				<groupId>${project.groupId}</groupId>
-				<artifactId>styler-formatter-impl</artifactId>
+				<artifactId>styler-formatter-rules</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 

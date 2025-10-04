@@ -167,7 +167,14 @@
 ## Phase C: Horizontal Expansion (Scale the Working Pipeline)
 
 ### Multiple Formatter Rules (Expand Formatter Capabilities)
-- [ ] **MODULE:** `create-formatter-impl-module` - Create styler-formatter-impl Maven module
+- [x] **MODULE:** `restructure-formatter-modules` - Restructure formatter into hierarchical parent/child module architecture ✅ COMPLETED (2025-10-04)
+  - **Completed**: Converted formatter into parent POM, moved code to formatter/api/, moved formatter-impl to formatter/rules/
+  - **Structure**: formatter/ (parent POM) → formatter/api/ (API interfaces) + formatter/rules/ (rule implementations)
+  - **Artifacts**: styler-formatter (parent), styler-formatter-api, styler-formatter-rules
+  - **Quality**: Unanimous stakeholder approval (technical-architect ✅, build-validator ✅ after PMD fixes, code-quality-auditor ✅ 9.5/10)
+  - **Fixes**: Added @FunctionalInterface to MutableFormattingRule, removed 8 unused wildcard imports from test files
+  - **Verification**: BUILD SUCCESS, 0 checkstyle violations, 0 PMD violations, all 125 tests passing
+  - **Commits**: 2025214 (POMs), 7cc1457 (file moves)
 - [ ] **TASK:** `refactor-line-wrapping-architecture` - Extract line-wrapping behavior from rules into centralized configuration system
   - **Purpose**: Decouple line-wrapping decisions (when to wrap) from line-wrapping behavior (how to wrap) to enable multiple rules to trigger wrapping with consistent formatting
   - **Scope**: Refactor LineLength rule and create new centralized wrapping configuration system
