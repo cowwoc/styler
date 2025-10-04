@@ -1,2 +1,3 @@
+io.github.cowwoc.styler.formatter.impl.IndentationFormattingRule
 io.github.cowwoc.styler.formatter.impl.LineLengthFormattingRule
 io.github.cowwoc.styler.formatter.impl.ImportOrganizerFormattingRule

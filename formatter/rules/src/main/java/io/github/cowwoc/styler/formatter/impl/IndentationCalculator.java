@@ -93,17 +93,61 @@ public final class IndentationCalculator
 	 * Generates an indentation string with the specified number of spaces.
 	 * <p>
 	 * This method creates a string containing only space characters to represent
-	 * the specified indentation level. The implementation uses spaces exclusively
-	 * for generated indentation to ensure consistent rendering.
+	 * the specified indentation level. For mode-aware generation, use
+	 * {@link #generateIndentation(int, IndentationMode, int)}.
 	 *
 	 * @param spaces the number of spaces to generate, must not be negative
-	 * @return an indentation string, never {@code null}
+	 * @return an indentation string using only spaces, never {@code null}
 	 * @throws IllegalArgumentException if {@code spaces} is negative
 	 */
 	public String generateIndentation(int spaces)
 	{
 		requireThat(spaces, "spaces").isNotNegative();
 		return " ".repeat(spaces);
+	}
+
+	/**
+	 * Generates an indentation string according to the specified mode.
+	 * <p>
+	 * This method supports three indentation modes:
+	 * <ul>
+	 *   <li>{@link IndentationMode#SPACES} - Uses only space characters</li>
+	 *   <li>{@link IndentationMode#TABS} - Uses only tab characters</li>
+	 *   <li>{@link IndentationMode#MIXED} - Uses tabs for structural indentation,
+	 *       spaces for alignment within the final indentation level</li>
+	 * </ul>
+	 *
+	 * @param spaces the total indentation level in spaces, must not be negative
+	 * @param mode the indentation mode to use, never {@code null}
+	 * @param indentSize the number of spaces per indentation level, must be positive
+	 * @return an indentation string in the specified mode, never {@code null}
+	 * @throws NullPointerException if {@code mode} is {@code null}
+	 * @throws IllegalArgumentException if {@code spaces} is negative or {@code indentSize}
+	 *         is not positive
+	 */
+	public String generateIndentation(int spaces, IndentationMode mode, int indentSize)
+	{
+		requireThat(spaces, "spaces").isNotNegative();
+		requireThat(mode, "mode").isNotNull();
+		requireThat(indentSize, "indentSize").isPositive();
+
+		return switch (mode)
+		{
+			case SPACES -> " ".repeat(spaces);
+			case TABS ->
+			{
+				// Convert spaces to tabs, rounding up partial tabs
+				int tabCount = (spaces + indentSize - 1) / indentSize;
+				yield String.valueOf(TAB).repeat(tabCount);
+			}
+			case MIXED ->
+			{
+				// Use tabs for full indentation levels, spaces for remainder
+				int fullLevels = spaces / indentSize;
+				int remainingSpaces = spaces % indentSize;
+				yield String.valueOf(TAB).repeat(fullLevels) + " ".repeat(remainingSpaces);
+			}
+		};
 	}
 
 	/**
