@@ -31,6 +31,13 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- Parser for Java source files -->
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>styler-parser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <!-- Command-line parsing -->
         <dependency>
             <groupId>info.picocli</groupId>
@@ -73,7 +80,6 @@
         <dependency>
             <groupId>io.github.cowwoc.requirements</groupId>
             <artifactId>requirements-java</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

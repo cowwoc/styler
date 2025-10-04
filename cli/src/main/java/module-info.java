@@ -9,11 +9,13 @@ module io.github.cowwoc.styler.cli
 {
 	// Required dependencies
 	requires io.github.cowwoc.styler.formatter.api;
+	requires io.github.cowwoc.styler.parser;
 	requires info.picocli;
 	requires com.fasterxml.jackson.dataformat.toml;
 	requires com.fasterxml.jackson.databind;
 	requires org.slf4j;
 	requires ch.qos.logback.classic;
+	requires io.github.cowwoc.requirements12.java;
 
 	// For ServiceLoader discovery of formatting rules
 	uses io.github.cowwoc.styler.formatter.api.plugin.FormatterPlugin;
