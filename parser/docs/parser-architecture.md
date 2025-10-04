@@ -85,16 +85,21 @@ The security model is designed for single-user scenarios where:
 
 ### Strategy Pattern Implementation
 
-The parser uses a **Strategy Pattern** to handle version-specific Java language features:
+The parser uses a **Strategy Pattern** to handle version-specific Java language features with context-aware parsing support:
 
 ```java
 public interface ParseStrategy {
-    boolean canHandle(JavaVersion version, ParseContext context);
+    boolean canHandle(JavaVersion version, ParsingPhase phase, ParseContext context);
     int parseConstruct(ParseContext context);
     int getPriority();
     String getDescription();
 }
 ```
+
+**Enhanced Interface** (since 1.0):
+- The `canHandle()` method now accepts a `ParsingPhase` parameter for context-dependent features
+- This enables strategies to disambiguate constructs based on parsing context
+- Token-based strategies can ignore the `phase` parameter for keyword-triggered features
 
 #### Strategy Registration
 
@@ -126,17 +131,168 @@ Each Java version introduces new language features that require specialized pars
 - **Java 21**: String templates, virtual threads
 - **Java 25**: Primitive type patterns, flexible constructor bodies
 
+### Phase-Aware Strategy Pattern
+
+The parser supports both **token-based** and **phase-aware** parsing strategies to handle different types of language features.
+
+#### ParsingPhase Enum
+
+The `ParsingPhase` enum defines semantic contexts during parsing:
+
+```java
+public enum ParsingPhase {
+    TOP_LEVEL,          // Top-level declarations (package, import, class)
+    CLASS_BODY,         // Inside class body
+    INTERFACE_BODY,     // Inside interface body
+    ENUM_BODY,          // Inside enum body
+    RECORD_BODY,        // Inside record body
+    CONSTRUCTOR_BODY,   // Inside constructor body
+    METHOD_BODY,        // Inside method body
+    INITIALIZER_BLOCK   // Inside static/instance initializer
+}
+```
+
+#### Strategy Selection Criteria
+
+**Use Token-Based Strategies When:**
+- Feature has an unambiguous keyword trigger
+- Examples: `record`, `sealed`, `switch` expressions, primitive type patterns
+- Implementation: Ignore `phase` parameter, check `context.currentTokenIs()`
+- Priority: `PRIORITY_KEYWORD_BASED = 10`
+
+**Use Phase-Aware Strategies When:**
+- Feature lacks keyword trigger and requires semantic context
+- Examples: Flexible constructor bodies (JEP 513)
+- Implementation: Check `phase == ParsingPhase.CONSTRUCTOR_BODY`
+- Priority: `PRIORITY_PHASE_AWARE = 15`
+
+#### Token-Based Strategy Example
+
+```java
+public class RecordDeclarationStrategy implements ParseStrategy {
+    @Override
+    public boolean canHandle(JavaVersion version, ParsingPhase phase, ParseContext context) {
+        // Phase not relevant for keyword-triggered features
+        return version.isAtLeast(JavaVersion.JAVA_16) &&
+               context.currentTokenIs(TokenType.RECORD);
+    }
+
+    @Override
+    public int parseConstruct(ParseContext context) {
+        // Parse record declaration
+        return nodeId;
+    }
+
+    @Override
+    public int getPriority() {
+        return PRIORITY_KEYWORD_BASED;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Record declarations (Java 16+)";
+    }
+}
+```
+
+#### Phase-Aware Strategy Example
+
+```java
+public class FlexibleConstructorBodiesStrategy implements ParseStrategy {
+    @Override
+    public boolean canHandle(JavaVersion version, ParsingPhase phase, ParseContext context) {
+        // CRITICAL: Only in constructor bodies (JEP 513)
+        // This feature allows statements before super()/this() calls
+        return version.isAtLeast(JavaVersion.JAVA_25) &&
+               phase == ParsingPhase.CONSTRUCTOR_BODY &&
+               context.currentTokenIs(TokenType.LBRACE);
+    }
+
+    @Override
+    public int parseConstruct(ParseContext context) {
+        // Parse flexible constructor body
+        return nodeId;
+    }
+
+    @Override
+    public int getPriority() {
+        return PRIORITY_PHASE_AWARE;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Flexible constructor bodies (Java 25+, JEP 513)";
+    }
+}
+```
+
+#### Phase Tracking Usage
+
+The parser tracks the current parsing phase using a stack-based approach:
+
+```java
+// In IndexOverlayParser
+private final Deque<ParsingPhase> phaseStack = new ArrayDeque<>();
+
+public void enterPhase(ParsingPhase phase) {
+    phaseStack.push(phase);
+}
+
+public void exitPhase() {
+    if (phaseStack.isEmpty()) {
+        throw new IllegalStateException("Phase stack underflow");
+    }
+    phaseStack.pop();
+}
+
+public ParsingPhase getCurrentPhase() {
+    return phaseStack.isEmpty() ? ParsingPhase.TOP_LEVEL : phaseStack.peek();
+}
+```
+
+**Best Practice: Always Use Try-Finally**
+
+```java
+enterPhase(ParsingPhase.CONSTRUCTOR_BODY);
+try {
+    // Parsing logic
+    return parseConstructorBody();
+} finally {
+    exitPhase();
+}
+```
+
+#### Priority-Based Strategy Selection
+
+When multiple strategies can handle the same construct, the registry selects the strategy with the highest priority:
+
+- **`PRIORITY_PHASE_AWARE = 15`**: Context-dependent features (flexible constructor bodies)
+- **`PRIORITY_KEYWORD_BASED = 10`**: Keyword-triggered features (records, sealed classes, primitives)
+- **`PRIORITY_DEFAULT = 0`**: Fallback strategies
+
+**Rationale**: Phase-aware strategies have higher priority because they require semantic context and are more specific than general keyword detection.
+
 ### Adding New Language Features
 
 To add support for a new Java language feature:
 
-1. **Create Strategy Class**:
+1. **Determine Strategy Type**:
+   - Does the feature have an unambiguous keyword? → Token-based
+   - Does the feature require parsing context? → Phase-aware
+
+2. **Create Strategy Class**:
 ```java
 public class NewFeatureStrategy implements ParseStrategy {
     @Override
-    public boolean canHandle(JavaVersion version, ParseContext context) {
+    public boolean canHandle(JavaVersion version, ParsingPhase phase, ParseContext context) {
+        // Token-based: ignore phase parameter
         return version.isAtLeast(JavaVersion.JAVA_XX) &&
                context.currentTokenIs(TokenType.NEW_FEATURE_TOKEN);
+
+        // Phase-aware: check specific phase
+        // return version.isAtLeast(JavaVersion.JAVA_XX) &&
+        //        phase == ParsingPhase.SPECIFIC_PHASE &&
+        //        context.currentTokenIs(TokenType.TRIGGER);
     }
 
     @Override
@@ -147,17 +303,17 @@ public class NewFeatureStrategy implements ParseStrategy {
 
     @Override
     public int getPriority() {
-        return 10; // Higher = more priority
+        return PRIORITY_KEYWORD_BASED; // or PRIORITY_PHASE_AWARE
     }
 
     @Override
     public String getDescription() {
-        return "New feature description (Java XX+)";
+        return "New feature description (Java XX+, JEP YYY)";
     }
 }
 ```
 
-2. **Register Strategy**:
+3. **Register Strategy**:
 ```java
 // In ParseStrategyRegistry.registerDefaultStrategies()
 registerStrategy(new NewFeatureStrategy());

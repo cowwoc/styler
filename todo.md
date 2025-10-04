@@ -45,20 +45,20 @@
 - [x] **TASK:** `add-parser-unit-tests` - Unit tests covering all JDK 25 language features
 - [x] **TASK:** `arena-vs-gc-memory-architecture-decision` - Benchmark and decide between Arena API vs GC for memory allocation (COMPLETED: Arena API adoption approved with 3x performance improvement and 96.9% safety margin against 512MB target)
 - [x] **TASK:** `implement-arena-api-memory-allocation` - Replace NodeRegistry/MemoryArena with Arena API implementation (COMPLETED: Arena API implementation with 3-12x performance benefits, parent-child tracking, and legacy deprecation)
-- [ ] **TASK:** `enhance-strategy-pattern-with-phase-awareness` - Enhance ParseStrategy pattern to support context-aware parsing (ARCHITECTURAL ENHANCEMENT)
+- [x] **TASK:** `enhance-strategy-pattern-with-phase-awareness` - Enhance ParseStrategy pattern to support context-aware parsing (ARCHITECTURAL ENHANCEMENT) (COMPLETED: 2025-10-04)
   - **Purpose**: Extend Strategy pattern to handle context-dependent features like flexible constructor bodies that lack keyword triggers
   - **Scope**: Add ParsingPhase parameter to ParseStrategy interface, update all existing strategies, implement phase tracking in parser
   - **Architectural Decision**: Option 1 - Enhanced Strategy Pattern (vs Option 3 - Accept Variation)
   - **Rationale**: Long-term consistency - all Java features use Strategy pattern, some simple (token-based), some contextual (phase-aware)
   - **Sub-tasks**:
-    - [ ] `create-parsing-phase-enum` - Define ParsingPhase enum (TOP_LEVEL, CLASS_BODY, METHOD_BODY, CONSTRUCTOR_BODY, ENUM_BODY)
-    - [ ] `enhance-parse-strategy-interface` - Add ParsingPhase parameter to canHandle() method signature
-    - [ ] `update-existing-strategies` - Update all existing strategies (SwitchExpressionStrategy, RecordDeclarationStrategy, SealedClassStrategy, StringTemplateStrategy) to new interface
-    - [ ] `add-phase-tracking-to-parser` - Add phase tracking and passing to IndexOverlayParser
-    - [ ] `implement-flexible-constructor-bodies-strategy` - Implement FlexibleConstructorBodiesStrategy with phase-aware detection
-    - [ ] `implement-primitive-type-pattern-strategy` - Implement PrimitiveTypePatternStrategy (analyze if phase awareness needed)
-    - [x] `add-phase-aware-strategy-tests` - Comprehensive test suite for phase-aware strategy behavior
-    - [ ] `document-strategy-pattern-guidelines` - Add pattern selection criteria to parser-architecture.md (when to use token-based vs phase-aware)
+    - [x] `create-parsing-phase-enum` - Define ParsingPhase enum (COMPLETED in previous session)
+    - [x] `enhance-parse-strategy-interface` - Add ParsingPhase parameter to canHandle() method signature (COMPLETED in previous session)
+    - [x] `update-existing-strategies` - Update all existing strategies (COMPLETED in previous session)
+    - [x] `add-phase-tracking-to-parser` - Add phase tracking to IndexOverlayParser (COMPLETED in previous session)
+    - [x] `implement-flexible-constructor-bodies-strategy` - Implement FlexibleConstructorBodiesStrategy (COMPLETED in previous session)
+    - [x] `implement-primitive-type-pattern-strategy` - Implement PrimitiveTypePatternStrategy (COMPLETED: Token-based detection for JEP 507)
+    - [x] `add-phase-aware-strategy-tests` - Comprehensive test suite (COMPLETED in previous session + PrimitiveTypePattern tests added)
+    - [x] `document-strategy-pattern-guidelines` - Add pattern selection criteria to parser-architecture.md (COMPLETED: Phase-aware pattern section added)
   - **Components**:
     - ParsingPhase enum with clear semantic phases
     - Enhanced ParseStrategy interface (backward-compatible default implementation possible)
