@@ -204,34 +204,21 @@ public class ErrorCollectorTest
 	/**
 	 * Verifies that creating a collector with null batch processor throws NullPointerException.
 	 */
-	@Test
+	@Test(expectedExceptions = NullPointerException.class)
 	public void nullBatchProcessor()
 	{
-		try
-		{
-			new ErrorCollector(5, null);
-			throw new AssertionError("Expected NullPointerException");
-		}
-		catch (NullPointerException expected)
-		{
-			// Expected exception
-		}
+		new ErrorCollector(5, null);
 	}
 
 	/**
 	 * Verifies that adding a null error throws NullPointerException.
 	 */
-	@Test
-	public void nullError()
+	@Test(expectedExceptions = NullPointerException.class)
+	public void nullError() throws Exception
 	{
 		try (ErrorCollector collector = ErrorCollector.createSimple())
 		{
 			collector.addError(null);
-			throw new AssertionError("Expected NullPointerException");
-		}
-		catch (NullPointerException expected)
-		{
-			// Expected exception
 		}
 	}
 

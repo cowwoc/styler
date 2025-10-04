@@ -329,6 +329,67 @@ public void canHandleWithJava25ReturnsTrue()
 
 **RATIONALE**: JavaDoc comments require understanding the business domain and technical context. Automated scripts cannot comprehend what a method actually does or why it matters, leading to meaningless documentation that provides no value to developers.
 
+## 🧪 TESTNG TEST REQUIREMENTS
+
+**CRITICAL THREAD SAFETY**: All tests must be thread-safe to support parallel execution.
+
+**PROHIBITED PATTERNS**:
+❌ `@BeforeMethod` - Creates mutable shared state between test methods
+❌ `@AfterMethod` - Cleanup methods that assume sequential execution
+❌ Mutable instance fields shared across test methods
+❌ `assertThatThrownBy()` - Use TestNG's native exception handling instead
+
+**REQUIRED PATTERNS**:
+✅ `@Test(expectedExceptions = ExceptionType.class)` - For exception testing
+✅ Local variables within each test method
+✅ Static helper methods for test data creation
+✅ Each test method is completely independent and self-contained
+
+**LOOP INCREMENT STYLE**:
+✅ Use `++i` for pre-increment (standard style)
+❌ Do NOT use `i++` or `i += 1`
+
+**EXAMPLE - BAD**:
+```java
+public class MyTest {
+    private Configuration config;  // Shared mutable state
+
+    @BeforeMethod
+    public void setUp() {
+        config = new Configuration();  // Not thread-safe
+    }
+
+    @Test
+    public void testFeature() {
+        assertThatThrownBy(() -> config.validate())
+            .isInstanceOf(ValidationException.class);
+    }
+}
+```
+
+**EXAMPLE - GOOD**:
+```java
+public class MyTest {
+    @Test(expectedExceptions = ValidationException.class)
+    public void testFeatureThrowsValidationException() {
+        Configuration config = new Configuration();  // Local state
+        config.validate();
+    }
+
+    @Test
+    public void testAnotherFeature() {
+        Configuration config = createTestConfig();  // Independent
+        assertThat(config.isValid()).isTrue();
+    }
+
+    private static Configuration createTestConfig() {
+        return new Configuration();
+    }
+}
+```
+
+**RATIONALE**: TestNG runs tests in parallel by default. Using `@BeforeMethod` or mutable instance fields creates race conditions and non-deterministic test failures. Each test method must be completely independent.
+
 ## Essential References
 
 [docs/project/architecture.md](docs/project/architecture.md) - Project architecture and features

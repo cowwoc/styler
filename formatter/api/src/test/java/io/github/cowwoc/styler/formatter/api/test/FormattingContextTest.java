@@ -147,8 +147,8 @@ public class FormattingContextTest
 		assertThat(context.getMetadata("nonexistent", String.class)).isNull();
 
 		// Test type mismatch
-		assertThatThrownBy(() -> context.getMetadata("stringValue", Integer.class))
-			.isInstanceOf(ClassCastException.class);
+		assertThatThrownBy(() -> context.getMetadata("stringValue", Integer.class)).
+			isInstanceOf(ClassCastException.class);
 	}
 
 	/**
@@ -185,10 +185,10 @@ public class FormattingContextTest
 		Set<String> enabledRules = Set.of();
 		Map<String, Object> metadata = Map.of();
 
-		WrapConfiguration wrapConfig = WrapConfiguration.builder()
-			.withMaxLineLength(100)
-			.withWrapBeforeOperator(false)
-			.build();
+		WrapConfiguration wrapConfig = WrapConfiguration.builder().
+			withMaxLineLength(100).
+			withWrapBeforeOperator(false).
+			build();
 
 		FormattingContext context = new FormattingContext(
 			ast, "source", filePath, config, enabledRules, metadata, wrapConfig);

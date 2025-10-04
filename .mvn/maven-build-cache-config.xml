@@ -25,6 +25,8 @@
 		<projectVersioning adjustMetaInf="true" calculateProjectVersionChecksum="true"/>
 		<attachedOutputs>
 			<dirNames>
+				<dirName>classes</dirName>
+				<dirName>test-classes</dirName>
 				<dirName>maven-status</dirName>
 			</dirNames>
 		</attachedOutputs>

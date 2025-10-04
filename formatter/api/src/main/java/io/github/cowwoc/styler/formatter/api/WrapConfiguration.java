@@ -2,8 +2,6 @@ package io.github.cowwoc.styler.formatter.api;
 
 import java.util.Objects;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-
 /**
  * Centralized configuration for line wrapping behavior across all formatting rules.
  * <p>

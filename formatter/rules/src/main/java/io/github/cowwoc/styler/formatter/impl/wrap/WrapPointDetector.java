@@ -144,7 +144,8 @@ public final class WrapPointDetector
 	 * @param lineRange the line range, never {@code null}
 	 * @param wrapPoints the list to add to, never {@code null}
 	 */
-	private void addBinaryExpressionWrapPoint(BinaryExpressionNode node, SourceRange lineRange, List<WrapPoint> wrapPoints)
+	private void addBinaryExpressionWrapPoint(BinaryExpressionNode node, SourceRange lineRange,
+		List<WrapPoint> wrapPoints)
 	{
 		SourcePosition wrapPosition;
 		if (config.isWrapBeforeOperator())

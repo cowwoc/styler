@@ -9,7 +9,6 @@ import io.github.cowwoc.styler.formatter.api.WrapConfiguration;
 import io.github.cowwoc.styler.formatter.api.test.TestUtilities;
 import io.github.cowwoc.styler.formatter.impl.wrap.WrapBehavior;
 import io.github.cowwoc.styler.formatter.impl.wrap.WrapPoint;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -22,25 +21,38 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class WrapBehaviorTest
 {
-	private WrapConfiguration config;
-	private WrapBehavior behavior;
-
-	@BeforeMethod
-	public void setUp() throws ConfigurationException
+	/**
+	 * Creates default test configuration with 8-space continuation indent and 4-space tabs.
+	 *
+	 * @return configured WrapConfiguration instance
+	 * @throws ConfigurationException if configuration validation fails
+	 */
+	private static WrapConfiguration createDefaultConfig() throws ConfigurationException
 	{
-		config = WrapConfiguration.builder()
-			.withContinuationIndentSpaces(8)
-			.withTabWidth(4)
-			.build();
-		behavior = new WrapBehavior(config);
+		return WrapConfiguration.builder().
+			withContinuationIndentSpaces(8).
+			withTabWidth(4).
+			build();
+	}
+
+	/**
+	 * Creates WrapBehavior instance with default test configuration.
+	 *
+	 * @return configured WrapBehavior instance
+	 * @throws ConfigurationException if configuration validation fails
+	 */
+	private static WrapBehavior createDefaultBehavior() throws ConfigurationException
+	{
+		return new WrapBehavior(createDefaultConfig());
 	}
 
 	/**
 	 * Verifies WrapBehavior constructor stores configuration and creates indentation calculator.
 	 */
 	@Test
-	public void constructorStoresConfiguration()
+	public void constructorStoresConfiguration() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		assertThat(behavior.getIndentationCalculator()).isNotNull();
 		assertThat(behavior.getIndentationCalculator()).isNotNull();
 	}
@@ -49,8 +61,9 @@ public class WrapBehaviorTest
 	 * Verifies findWrapPoints() delegates to WrapPointDetector and returns sorted results.
 	 */
 	@Test
-	public void findWrapPointsReturnsDetectedPoints()
+	public void findWrapPointsReturnsDetectedPoints() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		CompilationUnitNode rootNode = TestUtilities.createTestAST();
 		String sourceText = "    int x = 5 + 10;";
 		SourceRange range = new SourceRange(
@@ -66,8 +79,9 @@ public class WrapBehaviorTest
 	 * Verifies createWrapEdit() generates a text edit with newline and continuation indentation.
 	 */
 	@Test
-	public void createWrapEditGeneratesEditWithIndentation()
+	public void createWrapEditGeneratesEditWithIndentation() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		String sourceText = "    int x = 5 + 10;";
 		WrapPoint wrapPoint = new WrapPoint(
 			new SourcePosition(5, 15),
@@ -86,8 +100,9 @@ public class WrapBehaviorTest
 	 * Verifies createWrapEdit() calculates base indentation from the current line.
 	 */
 	@Test
-	public void createWrapEditCalculatesBaseIndentation()
+	public void createWrapEditCalculatesBaseIndentation() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		String sourceText = "        int x = 5 + 10;";
 		WrapPoint wrapPoint = new WrapPoint(
 			new SourcePosition(3, 20),
@@ -104,8 +119,9 @@ public class WrapBehaviorTest
 	 * Verifies createWrapEdit() uses rule ID "io.github.cowwoc.styler.rules.LineLength".
 	 */
 	@Test
-	public void createWrapEditUsesCorrectRuleId()
+	public void createWrapEditUsesCorrectRuleId() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		String sourceText = "    int x = 5 + 10;";
 		WrapPoint wrapPoint = new WrapPoint(
 			new SourcePosition(4, 15),
@@ -121,8 +137,9 @@ public class WrapBehaviorTest
 	 * Verifies createWrapEdit() creates edit at the exact wrap point position.
 	 */
 	@Test
-	public void createWrapEditUsesExactPosition()
+	public void createWrapEditUsesExactPosition() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		String sourceText = "    int x = 5 + 10;";
 		SourcePosition position = new SourcePosition(6, 12);
 		WrapPoint wrapPoint = new WrapPoint(
@@ -140,8 +157,9 @@ public class WrapBehaviorTest
 	 * Verifies createMultipleWrapEdits() creates edits for all provided wrap points.
 	 */
 	@Test
-	public void createMultipleWrapEditsCreatesEditForEachPoint()
+	public void createMultipleWrapEditsCreatesEditForEachPoint() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		String sourceText = "    int x = 5 + 10 + 20;";
 
 		List<WrapPoint> wrapPoints = new ArrayList<>();
@@ -163,12 +181,13 @@ public class WrapBehaviorTest
 	 * Verifies createMultipleWrapEdits() limits edits to maximum of 3 wrap points.
 	 */
 	@Test
-	public void createMultipleWrapEditsLimitsToThreePoints()
+	public void createMultipleWrapEditsLimitsToThreePoints() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		String sourceText = "    int x = 1 + 2 + 3 + 4 + 5;";
 
 		List<WrapPoint> wrapPoints = new ArrayList<>();
-		for (int i = 0; i < 5; i++)
+		for (int i = 0; i < 5; ++i)
 		{
 			wrapPoints.add(new WrapPoint(
 				new SourcePosition(8, 15 + i * 4),
@@ -185,8 +204,9 @@ public class WrapBehaviorTest
 	 * Verifies createMultipleWrapEdits() returns empty list when no wrap points provided.
 	 */
 	@Test
-	public void createMultipleWrapEditsWithNoPointsReturnsEmptyList()
+	public void createMultipleWrapEditsWithNoPointsReturnsEmptyList() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		String sourceText = "    int x = 5;";
 		List<WrapPoint> wrapPoints = new ArrayList<>();
 
@@ -199,8 +219,9 @@ public class WrapBehaviorTest
 	 * Verifies createMultipleWrapEdits() maintains wrap point priority order in edits.
 	 */
 	@Test
-	public void createMultipleWrapEditsMaintainsPriorityOrder()
+	public void createMultipleWrapEditsMaintainsPriorityOrder() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		String sourceText = "    int x = 1 + 2;";
 
 		List<WrapPoint> wrapPoints = new ArrayList<>();
@@ -233,8 +254,9 @@ public class WrapBehaviorTest
 	 * Verifies findWrapPoints() validates range is not null.
 	 */
 	@Test(expectedExceptions = NullPointerException.class)
-	public void findWrapPointsWithNullRangeThrowsException()
+	public void findWrapPointsWithNullRangeThrowsException() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		CompilationUnitNode rootNode = TestUtilities.createTestAST();
 		behavior.findWrapPoints(null, rootNode, "source");
 	}
@@ -243,8 +265,9 @@ public class WrapBehaviorTest
 	 * Verifies findWrapPoints() validates rootNode is not null.
 	 */
 	@Test(expectedExceptions = NullPointerException.class)
-	public void findWrapPointsWithNullRootNodeThrowsException()
+	public void findWrapPointsWithNullRootNodeThrowsException() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		SourceRange range = new SourceRange(
 			new SourcePosition(1, 1),
 			new SourcePosition(1, 80));
@@ -255,8 +278,9 @@ public class WrapBehaviorTest
 	 * Verifies findWrapPoints() validates sourceText is not null.
 	 */
 	@Test(expectedExceptions = NullPointerException.class)
-	public void findWrapPointsWithNullSourceTextThrowsException()
+	public void findWrapPointsWithNullSourceTextThrowsException() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		CompilationUnitNode rootNode = TestUtilities.createTestAST();
 		SourceRange range = new SourceRange(
 			new SourcePosition(1, 1),
@@ -268,8 +292,9 @@ public class WrapBehaviorTest
 	 * Verifies createWrapEdit() validates wrapPoint is not null.
 	 */
 	@Test(expectedExceptions = NullPointerException.class)
-	public void createWrapEditWithNullWrapPointThrowsException()
+	public void createWrapEditWithNullWrapPointThrowsException() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		behavior.createWrapEdit(null, "source");
 	}
 
@@ -277,8 +302,9 @@ public class WrapBehaviorTest
 	 * Verifies createWrapEdit() validates sourceText is not null.
 	 */
 	@Test(expectedExceptions = NullPointerException.class)
-	public void createWrapEditWithNullSourceTextThrowsException()
+	public void createWrapEditWithNullSourceTextThrowsException() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		WrapPoint wrapPoint = new WrapPoint(
 			new SourcePosition(1, 10),
 			WrapPoint.Priority.OPERATOR,
@@ -290,8 +316,9 @@ public class WrapBehaviorTest
 	 * Verifies createMultipleWrapEdits() validates wrapPoints is not null.
 	 */
 	@Test(expectedExceptions = NullPointerException.class)
-	public void createMultipleWrapEditsWithNullWrapPointsThrowsException()
+	public void createMultipleWrapEditsWithNullWrapPointsThrowsException() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		behavior.createMultipleWrapEdits(null, "source", 120);
 	}
 
@@ -299,8 +326,9 @@ public class WrapBehaviorTest
 	 * Verifies createMultipleWrapEdits() validates sourceText is not null.
 	 */
 	@Test(expectedExceptions = NullPointerException.class)
-	public void createMultipleWrapEditsWithNullSourceTextThrowsException()
+	public void createMultipleWrapEditsWithNullSourceTextThrowsException() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		behavior.createMultipleWrapEdits(new ArrayList<>(), null, 120);
 	}
 
@@ -308,8 +336,9 @@ public class WrapBehaviorTest
 	 * Verifies createMultipleWrapEdits() validates maxLineLength is positive.
 	 */
 	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void createMultipleWrapEditsWithNegativeMaxLineLengthThrowsException()
+	public void createMultipleWrapEditsWithNegativeMaxLineLengthThrowsException() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		behavior.createMultipleWrapEdits(new ArrayList<>(), "source", -1);
 	}
 
@@ -317,8 +346,9 @@ public class WrapBehaviorTest
 	 * Verifies getIndentationCalculator() returns the indentation calculator instance.
 	 */
 	@Test
-	public void getIndentationCalculatorReturnsCalculator()
+	public void getIndentationCalculatorReturnsCalculator() throws ConfigurationException
 	{
+		WrapBehavior behavior = createDefaultBehavior();
 		assertThat(behavior.getIndentationCalculator()).isNotNull();
 	}
 
@@ -328,10 +358,10 @@ public class WrapBehaviorTest
 	@Test
 	public void wrapBehaviorUsesConfiguredTabWidth() throws ConfigurationException
 	{
-		WrapConfiguration customConfig = WrapConfiguration.builder()
-			.withTabWidth(2)
-			.withContinuationIndentSpaces(4)
-			.build();
+		WrapConfiguration customConfig = WrapConfiguration.builder().
+			withTabWidth(2).
+			withContinuationIndentSpaces(4).
+			build();
 		WrapBehavior customBehavior = new WrapBehavior(customConfig);
 
 		assertThat(customBehavior.getIndentationCalculator()).isNotNull();

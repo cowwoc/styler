@@ -38,15 +38,15 @@ public class WrapConfigurationTest
 	@Test
 	public void builderWithValidParametersBuildsSuccessfully() throws ConfigurationException
 	{
-		WrapConfiguration config = WrapConfiguration.builder()
-			.withMaxLineLength(100)
-			.withContinuationIndentSpaces(4)
-			.withTabWidth(2)
-			.withWrapBeforeOperator(false)
-			.withWrapBeforeDot(false)
-			.withWrapAfterUrlsInStrings(true)
-			.withUrlProtection(false)
-			.build();
+		WrapConfiguration config = WrapConfiguration.builder().
+			withMaxLineLength(100).
+			withContinuationIndentSpaces(4).
+			withTabWidth(2).
+			withWrapBeforeOperator(false).
+			withWrapBeforeDot(false).
+			withWrapAfterUrlsInStrings(true).
+			withUrlProtection(false).
+			build();
 
 		assertThat(config.getMaxLineLength()).isEqualTo(100);
 		assertThat(config.getContinuationIndentSpaces()).isEqualTo(4);
@@ -65,9 +65,9 @@ public class WrapConfigurationTest
 	public void builderWithMaxLineLengthTooSmallThrowsConfigurationException()
 	{
 		assertThatThrownBy(() ->
-			WrapConfiguration.builder().withMaxLineLength(30).build())
-			.isInstanceOf(ConfigurationException.class)
-			.hasMessageContaining("maxLineLength must be between 40 and 500");
+			WrapConfiguration.builder().withMaxLineLength(30).build()).
+			isInstanceOf(ConfigurationException.class).
+			hasMessageContaining("maxLineLength must be between 40 and 500");
 	}
 
 	/**
@@ -78,9 +78,9 @@ public class WrapConfigurationTest
 	public void builderWithMaxLineLengthTooLargeThrowsConfigurationException()
 	{
 		assertThatThrownBy(() ->
-			WrapConfiguration.builder().withMaxLineLength(600).build())
-			.isInstanceOf(ConfigurationException.class)
-			.hasMessageContaining("maxLineLength must be between 40 and 500");
+			WrapConfiguration.builder().withMaxLineLength(600).build()).
+			isInstanceOf(ConfigurationException.class).
+			hasMessageContaining("maxLineLength must be between 40 and 500");
 	}
 
 	/**
@@ -89,9 +89,9 @@ public class WrapConfigurationTest
 	@Test
 	public void builderWithMinimumLineLengthBuildsSuccessfully() throws ConfigurationException
 	{
-		WrapConfiguration config = WrapConfiguration.builder()
-			.withMaxLineLength(40)
-			.build();
+		WrapConfiguration config = WrapConfiguration.builder().
+			withMaxLineLength(40).
+			build();
 
 		assertThat(config.getMaxLineLength()).isEqualTo(40);
 	}
@@ -102,9 +102,9 @@ public class WrapConfigurationTest
 	@Test
 	public void builderWithMaximumLineLengthBuildsSuccessfully() throws ConfigurationException
 	{
-		WrapConfiguration config = WrapConfiguration.builder()
-			.withMaxLineLength(500)
-			.build();
+		WrapConfiguration config = WrapConfiguration.builder().
+			withMaxLineLength(500).
+			build();
 
 		assertThat(config.getMaxLineLength()).isEqualTo(500);
 	}
@@ -117,9 +117,9 @@ public class WrapConfigurationTest
 	public void builderWithContinuationIndentTooSmallThrowsConfigurationException()
 	{
 		assertThatThrownBy(() ->
-			WrapConfiguration.builder().withContinuationIndentSpaces(1).build())
-			.isInstanceOf(ConfigurationException.class)
-			.hasMessageContaining("continuationIndentSpaces must be between 2 and 16");
+			WrapConfiguration.builder().withContinuationIndentSpaces(1).build()).
+			isInstanceOf(ConfigurationException.class).
+			hasMessageContaining("continuationIndentSpaces must be between 2 and 16");
 	}
 
 	/**
@@ -130,9 +130,9 @@ public class WrapConfigurationTest
 	public void builderWithContinuationIndentTooLargeThrowsConfigurationException()
 	{
 		assertThatThrownBy(() ->
-			WrapConfiguration.builder().withContinuationIndentSpaces(20).build())
-			.isInstanceOf(ConfigurationException.class)
-			.hasMessageContaining("continuationIndentSpaces must be between 2 and 16");
+			WrapConfiguration.builder().withContinuationIndentSpaces(20).build()).
+			isInstanceOf(ConfigurationException.class).
+			hasMessageContaining("continuationIndentSpaces must be between 2 and 16");
 	}
 
 	/**
@@ -141,9 +141,9 @@ public class WrapConfigurationTest
 	@Test
 	public void builderWithMinimumContinuationIndentBuildsSuccessfully() throws ConfigurationException
 	{
-		WrapConfiguration config = WrapConfiguration.builder()
-			.withContinuationIndentSpaces(2)
-			.build();
+		WrapConfiguration config = WrapConfiguration.builder().
+			withContinuationIndentSpaces(2).
+			build();
 
 		assertThat(config.getContinuationIndentSpaces()).isEqualTo(2);
 	}
@@ -154,9 +154,9 @@ public class WrapConfigurationTest
 	@Test
 	public void builderWithMaximumContinuationIndentBuildsSuccessfully() throws ConfigurationException
 	{
-		WrapConfiguration config = WrapConfiguration.builder()
-			.withContinuationIndentSpaces(16)
-			.build();
+		WrapConfiguration config = WrapConfiguration.builder().
+			withContinuationIndentSpaces(16).
+			build();
 
 		assertThat(config.getContinuationIndentSpaces()).isEqualTo(16);
 	}
@@ -169,9 +169,9 @@ public class WrapConfigurationTest
 	public void builderWithTabWidthTooSmallThrowsConfigurationException()
 	{
 		assertThatThrownBy(() ->
-			WrapConfiguration.builder().withTabWidth(0).build())
-			.isInstanceOf(ConfigurationException.class)
-			.hasMessageContaining("tabWidth must be between 1 and 8");
+			WrapConfiguration.builder().withTabWidth(0).build()).
+			isInstanceOf(ConfigurationException.class).
+			hasMessageContaining("tabWidth must be between 1 and 8");
 	}
 
 	/**
@@ -182,9 +182,9 @@ public class WrapConfigurationTest
 	public void builderWithTabWidthTooLargeThrowsConfigurationException()
 	{
 		assertThatThrownBy(() ->
-			WrapConfiguration.builder().withTabWidth(10).build())
-			.isInstanceOf(ConfigurationException.class)
-			.hasMessageContaining("tabWidth must be between 1 and 8");
+			WrapConfiguration.builder().withTabWidth(10).build()).
+			isInstanceOf(ConfigurationException.class).
+			hasMessageContaining("tabWidth must be between 1 and 8");
 	}
 
 	/**
@@ -193,9 +193,9 @@ public class WrapConfigurationTest
 	@Test
 	public void builderWithMinimumTabWidthBuildsSuccessfully() throws ConfigurationException
 	{
-		WrapConfiguration config = WrapConfiguration.builder()
-			.withTabWidth(1)
-			.build();
+		WrapConfiguration config = WrapConfiguration.builder().
+			withTabWidth(1).
+			build();
 
 		assertThat(config.getTabWidth()).isEqualTo(1);
 	}
@@ -206,9 +206,9 @@ public class WrapConfigurationTest
 	@Test
 	public void builderWithMaximumTabWidthBuildsSuccessfully() throws ConfigurationException
 	{
-		WrapConfiguration config = WrapConfiguration.builder()
-			.withTabWidth(8)
-			.build();
+		WrapConfiguration config = WrapConfiguration.builder().
+			withTabWidth(8).
+			build();
 
 		assertThat(config.getTabWidth()).isEqualTo(8);
 	}
@@ -239,14 +239,14 @@ public class WrapConfigurationTest
 	@Test
 	public void equalsWithSameValuesReturnsTrue() throws ConfigurationException
 	{
-		WrapConfiguration config1 = WrapConfiguration.builder()
-			.withMaxLineLength(100)
-			.withContinuationIndentSpaces(4)
-			.build();
-		WrapConfiguration config2 = WrapConfiguration.builder()
-			.withMaxLineLength(100)
-			.withContinuationIndentSpaces(4)
-			.build();
+		WrapConfiguration config1 = WrapConfiguration.builder().
+			withMaxLineLength(100).
+			withContinuationIndentSpaces(4).
+			build();
+		WrapConfiguration config2 = WrapConfiguration.builder().
+			withMaxLineLength(100).
+			withContinuationIndentSpaces(4).
+			build();
 
 		assertThat(config1).isEqualTo(config2);
 		assertThat(config1.hashCode()).isEqualTo(config2.hashCode());
@@ -258,12 +258,12 @@ public class WrapConfigurationTest
 	@Test
 	public void equalsWithDifferentValuesReturnsFalse() throws ConfigurationException
 	{
-		WrapConfiguration config1 = WrapConfiguration.builder()
-			.withMaxLineLength(100)
-			.build();
-		WrapConfiguration config2 = WrapConfiguration.builder()
-			.withMaxLineLength(110)
-			.build();
+		WrapConfiguration config1 = WrapConfiguration.builder().
+			withMaxLineLength(100).
+			build();
+		WrapConfiguration config2 = WrapConfiguration.builder().
+			withMaxLineLength(110).
+			build();
 
 		assertThat(config1).isNotEqualTo(config2);
 	}
@@ -308,15 +308,15 @@ public class WrapConfigurationTest
 	{
 		WrapConfiguration.Builder builder = WrapConfiguration.builder();
 
-		WrapConfiguration config = builder
-			.withMaxLineLength(80)
-			.withContinuationIndentSpaces(4)
-			.withTabWidth(2)
-			.withWrapBeforeOperator(false)
-			.withWrapBeforeDot(false)
-			.withWrapAfterUrlsInStrings(true)
-			.withUrlProtection(false)
-			.build();
+		WrapConfiguration config = builder.
+			withMaxLineLength(80).
+			withContinuationIndentSpaces(4).
+			withTabWidth(2).
+			withWrapBeforeOperator(false).
+			withWrapBeforeDot(false).
+			withWrapAfterUrlsInStrings(true).
+			withUrlProtection(false).
+			build();
 
 		assertThat(config.getMaxLineLength()).isEqualTo(80);
 		assertThat(config.getContinuationIndentSpaces()).isEqualTo(4);

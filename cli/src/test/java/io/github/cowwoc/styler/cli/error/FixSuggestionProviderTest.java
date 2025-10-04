@@ -197,7 +197,8 @@ public class FixSuggestionProviderTest
 		requireThat(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.PARSE), "hasSuggestionForParse").isTrue();
 		requireThat(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.CONFIG), "hasSuggestionForConfig").isTrue();
 		requireThat(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.FORMAT), "hasSuggestionForFormat").isTrue();
-		requireThat(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.VALIDATE), "hasSuggestionForValidate").isTrue();
+		requireThat(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.VALIDATE),
+			"hasSuggestionForValidate").isTrue();
 		requireThat(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.SYSTEM), "hasSuggestionForSystem").isTrue();
 	}
 
