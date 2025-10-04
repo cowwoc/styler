@@ -122,6 +122,8 @@ Styler Java Code Formatter project configuration and workflow guidance.
 ❌ "The optimal solution would take too long" (without effort estimation)
 ❌ "Let's use a quick workaround for now" (without technical debt assessment)
 ❌ "I'll implement the minimum viable solution" (when requirements specify comprehensive solution)
+❌ "Due to complexity and token usage, I'll create a solid MVP implementation" (complexity/tokens never justify incomplete implementation)
+❌ "Given token constraints, I'll implement a basic version" (token budget does not override quality requirements)
 ❌ "This edge case is too hard to handle properly" (without stakeholder consultation)
 ❌ "The existing pattern is suboptimal but I'll follow it" (without improvement attempt)
 
