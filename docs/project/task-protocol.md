@@ -365,10 +365,120 @@ Every task MUST maintain a `state.json` file in the task directory containing:
 }
 ```
 
+## PRE-INIT VERIFICATION: Task Selection and Lock Validation
+
+**CRITICAL**: Before executing INIT phase, you MUST verify that the selected task is available for work by checking existing locks and worktrees.
+
+### Decision Logic: Can I Work on This Task?
+
+**Step 1: Check for existing lock file**
+```bash
+# Replace {TASK_NAME} with actual task name
+# Check if another instance has locked this task
+cat /workspace/locks/{TASK_NAME}.json 2>/dev/null
+```
+
+**Step 2: Analyze lock ownership**
+```bash
+# If lock file exists, compare session IDs
+LOCK_SESSION=$(jq -r '.session_id' /workspace/locks/{TASK_NAME}.json 2>/dev/null)
+CURRENT_SESSION="{SESSION_ID}"  # From system environment
+
+if [ "$LOCK_SESSION" = "$CURRENT_SESSION" ]; then
+    echo "✅ Lock owned by current session - can resume task"
+elif [ -n "$LOCK_SESSION" ]; then
+    echo "❌ Lock owned by different session ($LOCK_SESSION) - SELECT ALTERNATIVE TASK"
+else
+    echo "✅ No lock exists - can acquire lock and start task"
+fi
+```
+
+**Step 3: Check for existing worktree**
+```bash
+# Verify if worktree already exists
+ls -d /workspace/branches/{TASK_NAME} 2>/dev/null && echo "Worktree exists" || echo "No worktree"
+```
+
+### Task Selection Decision Matrix
+
+| Lock Exists? | Lock Owner | Worktree Exists? | Action |
+|--------------|------------|------------------|--------|
+| ✅ YES | Current session | ✅ YES | **RESUME**: Skip INIT, verify current state, continue from last phase |
+| ✅ YES | Current session | ❌ NO | **ERROR**: Inconsistent state - lock exists but worktree missing - ask user |
+| ✅ YES | Different session | ✅ YES | **SELECT ALTERNATIVE TASK**: Another instance is working on this task |
+| ✅ YES | Different session | ❌ NO | **SELECT ALTERNATIVE TASK**: Lock exists without worktree - may be initializing |
+| ❌ NO | N/A | ✅ YES | **ASK USER**: Worktree exists without lock - crashed session or manual intervention |
+| ❌ NO | N/A | ❌ NO | **PROCEED WITH INIT**: Task is available - execute normal INIT phase |
+
+### Prohibited Actions
+
+❌ **NEVER** delete or override a lock file owned by a different session
+❌ **NEVER** assume an existing worktree without a lock is abandoned
+❌ **NEVER** proceed with INIT if a lock exists for a different session
+❌ **NEVER** skip lock verification when user says "continue with next task"
+
+### Required Actions
+
+✅ **ALWAYS** check `/workspace/locks/{TASK_NAME}.json` before starting work
+✅ **ALWAYS** compare lock session_id with current session_id
+✅ **ALWAYS** check for existing worktree at `/workspace/branches/{TASK_NAME}`
+✅ **ALWAYS** select an alternative task if lock is owned by different session
+✅ **ALWAYS** ask user for guidance if worktree exists without a lock
+
+### Example: Proper Task Selection Verification
+
+```bash
+# User: "continue with next task"
+
+# Step 1: Identify next task from todo.md
+TASK_NAME="implement-indentation-formatter"
+
+# Step 2: MANDATORY - Check for existing lock
+cat /workspace/locks/${TASK_NAME}.json 2>/dev/null
+# Output: {"session_id": "abc-123-def-456", "start_time": "2025-10-04 10:30:00 UTC", "task_name": "implement-indentation-formatter"}
+
+# Step 3: Compare with current session ID
+CURRENT_SESSION="xyz-789-ghi-012"  # From system environment
+LOCK_SESSION=$(jq -r '.session_id' /workspace/locks/${TASK_NAME}.json 2>/dev/null)
+# LOCK_SESSION = "abc-123-def-456"
+
+# Step 4: Decision
+if [ "$LOCK_SESSION" != "$CURRENT_SESSION" ]; then
+    echo "Task '${TASK_NAME}' is locked by another instance (session ${LOCK_SESSION})"
+    echo "Selecting alternative task from todo.md..."
+    # Find next available task without lock
+fi
+
+# Step 5: Check next available task and repeat verification
+```
+
+### Recovery from Crashed Sessions
+
+**Scenario**: Worktree exists at `/workspace/branches/{TASK_NAME}` but no lock file exists.
+
+**Possible Causes**:
+- Previous Claude instance crashed before cleanup
+- Manual worktree creation outside protocol
+- Lock file manually deleted
+
+**Required Action**: Ask user for guidance
+```
+"I found an existing worktree for task '{TASK_NAME}' at /workspace/branches/{TASK_NAME}
+but no lock file exists at /workspace/locks/{TASK_NAME}.json. This may indicate a
+crashed session. Should I:
+1. Clean up the abandoned worktree and start fresh
+2. Resume work in the existing worktree
+3. Select a different task"
+```
+
+**DO NOT** make this decision autonomously - user knows if another instance is running.
+
+---
+
 ### INIT → CLASSIFIED
 **Mandatory Conditions:**
 - [ ] Session ID validated and unique
-- [ ] Atomic lock acquired for task
+- [ ] Atomic lock acquired for task (LOCK_SUCCESS received)
 - [ ] Task exists in todo.md
 - [ ] Worktree created for task isolation
 - [ ] **CRITICAL: Changed directory to task worktree**
