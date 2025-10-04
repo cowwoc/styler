@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
  * Unit tests for ErrorCollector batch processing functionality.
@@ -42,11 +40,11 @@ public class ErrorCollectorTest
 			// Allow some time for async processing
 			Thread.sleep(100);
 
-			assertEquals(collector.getErrorCount(), 7);
-			assertEquals(batchCount.get(), 2); // Two complete batches of 3
-			assertEquals(processedBatches.size(), 2);
-			assertEquals(processedBatches.get(0).size(), 3);
-			assertEquals(processedBatches.get(1).size(), 3);
+			requireThat(collector.getErrorCount(), "errorCount").isEqualTo(7);
+			requireThat(batchCount.get(), "batchCountValue").isEqualTo(2); // Two complete batches of 3
+			requireThat(processedBatches.size(), "processedBatchesSize").isEqualTo(2);
+			requireThat(processedBatches.get(0).size(), "processedBatches.get(0)Size").isEqualTo(3);
+			requireThat(processedBatches.get(1).size(), "processedBatches.get(1)Size").isEqualTo(3);
 		}
 	}
 
@@ -68,13 +66,13 @@ public class ErrorCollectorTest
 				collector.addError(error);
 			}
 
-			assertEquals(collector.getErrorCount(), 3);
-			assertTrue(processedErrors.isEmpty()); // No batch processed yet
+			requireThat(collector.getErrorCount(), "errorCount").isEqualTo(3);
+			requireThat(processedErrors.isEmpty(), "isEmpty").isTrue(); // No batch processed yet
 
 			collector.flush();
 			Thread.sleep(50); // Allow async processing
 
-			assertEquals(processedErrors.size(), 3);
+			requireThat(processedErrors.size(), "processedErrorsSize").isEqualTo(3);
 		}
 	}
 
@@ -101,8 +99,8 @@ public class ErrorCollectorTest
 			collector.addErrors(errors);
 			Thread.sleep(100);
 
-			assertEquals(collector.getErrorCount(), 5);
-			assertEquals(batchCount.get(), 2); // 2 complete batches
+			requireThat(collector.getErrorCount(), "errorCount").isEqualTo(5);
+			requireThat(batchCount.get(), "batchCountValue").isEqualTo(2); // 2 complete batches
 		}
 	}
 
@@ -124,7 +122,7 @@ public class ErrorCollectorTest
 			}
 
 			List<ErrorContext> allErrors = collector.getAllErrors();
-			assertEquals(allErrors.size(), 5);
+			requireThat(allErrors.size(), "allErrorsSize").isEqualTo(5);
 		}
 	}
 
@@ -139,13 +137,13 @@ public class ErrorCollectorTest
 			ErrorContext error = ErrorContext.systemError(Paths.get("test.java"), "Test error");
 			collector.addError(error);
 
-			assertTrue(collector.hasErrors());
-			assertEquals(collector.getErrorCount(), 1);
+			requireThat(collector.hasErrors(), "hasErrors").isTrue();
+			requireThat(collector.getErrorCount(), "errorCount").isEqualTo(1);
 
 			collector.clear();
 
-			assertFalse(collector.hasErrors());
-			assertEquals(collector.getErrorCount(), 0);
+			requireThat(collector.hasErrors(), "hasErrors").isFalse();
+			requireThat(collector.getErrorCount(), "errorCount").isEqualTo(0);
 		}
 	}
 
@@ -166,7 +164,7 @@ public class ErrorCollectorTest
 			collector.addError(error2);
 
 			// Errors should be forwarded to reporter
-			assertEquals(reporter.getErrorCount(), 2);
+			requireThat(reporter.getErrorCount(), "errorCount").isEqualTo(2);
 		}
 	}
 
@@ -181,53 +179,82 @@ public class ErrorCollectorTest
 			ErrorContext error = ErrorContext.systemError(Paths.get("test.java"), "Test error");
 			collector.addError(error);
 
-			assertEquals(collector.getErrorCount(), 1);
-			assertTrue(collector.hasErrors());
+			requireThat(collector.getErrorCount(), "errorCount").isEqualTo(1);
+			requireThat(collector.hasErrors(), "hasErrors").isTrue();
 		}
 	}
 
 	/**
 	 * Verifies that creating a collector with invalid batch size (0 or negative) throws IllegalArgumentException.
 	 */
-	@Test(expectedExceptions = IllegalArgumentException.class)
+	@Test
 	public void invalidBatchSize()
 	{
-		new ErrorCollector(0, batch -> {});
+		try
+		{
+			new ErrorCollector(0, batch -> {});
+			throw new AssertionError("Expected IllegalArgumentException");
+		}
+		catch (IllegalArgumentException expected)
+		{
+			// Expected exception
+		}
 	}
 
 	/**
 	 * Verifies that creating a collector with null batch processor throws NullPointerException.
 	 */
-	@Test(expectedExceptions = NullPointerException.class)
+	@Test
 	public void nullBatchProcessor()
 	{
-		new ErrorCollector(5, null);
+		try
+		{
+			new ErrorCollector(5, null);
+			throw new AssertionError("Expected NullPointerException");
+		}
+		catch (NullPointerException expected)
+		{
+			// Expected exception
+		}
 	}
 
 	/**
 	 * Verifies that adding a null error throws NullPointerException.
 	 */
-	@Test(expectedExceptions = NullPointerException.class)
+	@Test
 	public void nullError()
 	{
 		try (ErrorCollector collector = ErrorCollector.createSimple())
 		{
 			collector.addError(null);
+			throw new AssertionError("Expected NullPointerException");
+		}
+		catch (NullPointerException expected)
+		{
+			// Expected exception
 		}
 	}
 
 	/**
 	 * Verifies that adding errors after closing the collector throws IllegalStateException.
 	 */
-	@Test(expectedExceptions = IllegalStateException.class)
+	@Test
 	@SuppressWarnings("PMD.CloseResource")
 	public void addAfterClose()
 	{
-		ErrorCollector collector = ErrorCollector.createSimple();
-		collector.close();
+		try
+		{
+			ErrorCollector collector = ErrorCollector.createSimple();
+			collector.close();
 
-		ErrorContext error = ErrorContext.systemError(Paths.get("test.java"), "Test error");
-		collector.addError(error);
+			ErrorContext error = ErrorContext.systemError(Paths.get("test.java"), "Test error");
+			collector.addError(error);
+			throw new AssertionError("Expected IllegalStateException");
+		}
+		catch (IllegalStateException expected)
+		{
+			// Expected exception
+		}
 	}
 
 	/**
@@ -239,12 +266,12 @@ public class ErrorCollectorTest
 	{
 		ErrorCollector collector = ErrorCollector.createSimple();
 
-		assertFalse(collector.isClosed());
+		requireThat(collector.isClosed(), "isClosed").isFalse();
 		collector.close();
-		assertTrue(collector.isClosed());
+		requireThat(collector.isClosed(), "isClosed").isTrue();
 
 		// Second close should not throw
 		collector.close();
-		assertTrue(collector.isClosed());
+		requireThat(collector.isClosed(), "isClosed").isTrue();
 	}
 }

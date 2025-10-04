@@ -8,11 +8,11 @@ import io.github.cowwoc.styler.ast.node.StringLiteralNode;
 import io.github.cowwoc.styler.ast.visitor.ASTVisitor;
 import org.testng.annotations.Test;
 
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+
 import java.util.List;
 import java.util.Optional;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 
 /**
  * Verifies visitor pattern compliance across AST node hierarchy.
@@ -299,7 +299,7 @@ public class VisitorPatternComplianceTest
 		// EVIDENCE: This test compiles successfully, proving the ASTVisitor interface
 		// has visit methods for all 52 node types shown above.
 		TrackingVisitor visitor = new TrackingVisitor();
-		assertNotNull(visitor);
+		requireThat(visitor, "visitor").isNotNull();
 
 		// This proves that the visitor pattern infrastructure is complete
 		// without needing to construct all 59 node types
@@ -323,7 +323,7 @@ public class VisitorPatternComplianceTest
 		TrackingVisitor visitor = new TrackingVisitor();
 		String result = node.accept(visitor, null);
 
-		assertEquals(result, "StringLiteral");
+		requireThat(result, "result").isEqualTo("StringLiteral");
 		// This proves the visitor pattern works end-to-end
 	}
 
@@ -622,7 +622,7 @@ public class VisitorPatternComplianceTest
 			"test");
 
 		Integer result = node.accept(countingVisitor, null);
-		assertEquals(result, 1);
+		requireThat(result, "result").isEqualTo(1);
 		// This proves multiple visitor implementations can be used
 	}
 }

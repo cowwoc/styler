@@ -66,14 +66,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.annotations.Test;
 
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
 
 /**
  * Unit tests for AST node immutability and thread safety.
@@ -109,11 +107,12 @@ public class ImmutabilityTest
 				String methodName = method.getName();
 
 				// No public setter methods should exist
-				if (methodName.startsWith("set") &&
+				boolean hasSetter = methodName.startsWith("set") &&
 					Modifier.isPublic(method.getModifiers()) &&
-					method.getParameterCount() > 0)
+					method.getParameterCount() > 0;
+				if (hasSetter)
 						{
-					fail("Node class " + nodeClass.getSimpleName() +
+					throw new AssertionError("Node class " + nodeClass.getSimpleName() +
 						" has public setter method: " + methodName);
 				}
 			}
@@ -139,8 +138,7 @@ public class ImmutabilityTest
 
 		for (Class<?> nodeClass : nodeClasses)
 			{
-			assertTrue(Modifier.isFinal(nodeClass.getModifiers()),
-				"Node class " + nodeClass.getSimpleName() + " should be final");
+			requireThat(Modifier.isFinal(nodeClass.getModifiers()), "isFinal").isTrue();
 		}
 	}
 
@@ -167,10 +165,10 @@ public class ImmutabilityTest
 		String result = node.accept(visitor, "prefix_");
 
 		// Verify original node is unchanged
-		assertEquals(originalName, node.getName());
+		requireThat(node.getName(), "nodeName").isEqualTo(originalName);
 
 		// Verify visitor result
-		assertEquals("prefix_immutableTest", result);
+		requireThat(result, "result").isEqualTo("prefix_immutableTest");
 	}
 
 	/**
@@ -234,7 +232,7 @@ public class ImmutabilityTest
 		// Verify all threads succeeded
 		for (int i = 0; i < numThreads; ++i)
 			{
-			assertTrue(results[i], "Thread " + i + " failed concurrent access test");
+			requireThat(results[i], "result_" + i).isTrue();
 		}
 	}
 
@@ -260,8 +258,8 @@ public class ImmutabilityTest
 		IdentifierNode node2 = builder.build();
 
 		// Verify first node is unaffected by builder changes
-		assertEquals("builderTest", node1.getName());
-		assertEquals("modified", node2.getName());
+		requireThat(node1.getName(), "node1Name").isEqualTo("builderTest");
+		requireThat(node2.getName(), "node2Name").isEqualTo("modified");
 	}
 
 	/**
@@ -283,15 +281,15 @@ public class ImmutabilityTest
 
 		// Verify metadata is accessible but immutable
 		SourceRange retrievedRange = node.getRange();
-		assertNotNull(retrievedRange);
+		requireThat(retrievedRange, "retrievedRange").isNotNull();
 
 		// Should get same range instance or equivalent range
-		assertEquals(range, retrievedRange);
+		requireThat(retrievedRange, "retrievedRange").isEqualTo(range);
 
 		// Original range should be unmodifiable
 		// (SourceRange should be immutable record)
-		assertEquals(start, retrievedRange.start());
-		assertEquals(end, retrievedRange.end());
+		requireThat(retrievedRange.start(), "retrievedRangeStart").isEqualTo(start);
+		requireThat(retrievedRange.end(), "retrievedRangeEnd").isEqualTo(end);
 	}
 
 	/**
@@ -308,7 +306,7 @@ public class ImmutabilityTest
 
 		// Get the statements list
 		List<ASTNode> statements = blockNode.getStatements();
-		assertNotNull(statements);
+		requireThat(statements, "statements").isNotNull();
 
 		// Try to modify the list (should fail if properly immutable)
 		try

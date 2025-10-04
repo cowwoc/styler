@@ -381,7 +381,7 @@
 ## Deferred Tasks
 
 ### Test Quality and Requirements API Migration
-- [ ] **TASK:** `migrate-testng-to-requirements-api` - Replace TestNG assertions and if-throw with Requirements API
+- [x] **TASK:** `migrate-testng-to-requirements-api` - Replace TestNG assertions and if-throw with Requirements API (COMPLETED: 2025-10-04)
   - **Purpose**: Improve test clarity and consistency by using Requirements API (requireThat()) instead of TestNG assertions
   - **Scope**: Test files across all modules (parser, ast, formatter, cli)
   - **Components**:

@@ -63,9 +63,8 @@ import io.github.cowwoc.styler.ast.node.WildcardTypeNode;
 import io.github.cowwoc.styler.ast.visitor.ASTVisitor;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+
 
 /**
  * Comprehensive unit tests for AST core functionality.
@@ -92,9 +91,9 @@ public class ComprehensiveTest
 			setRange(range).
 			build();
 
-		assertNotNull(identifier);
-		assertEquals("testVariable", identifier.getName());
-		assertEquals(range, identifier.getRange());
+		requireThat(identifier, "identifier").isNotNull();
+		requireThat(identifier.getName(), "identifierName").isEqualTo("testVariable");
+		requireThat(identifier.getRange(), "identifierRange").isEqualTo(range);
 	}
 
 	/**
@@ -123,13 +122,13 @@ public class ComprehensiveTest
 			build();
 
 		// Verify all nodes are created successfully
-		assertNotNull(identifier);
-		assertNotNull(stringLiteral);
-		assertNotNull(classDecl);
+		requireThat(identifier, "identifier").isNotNull();
+		requireThat(stringLiteral, "stringLiteral").isNotNull();
+		requireThat(classDecl, "classDecl").isNotNull();
 
 		// Verify specific properties
-		assertEquals("variable", identifier.getName());
-		assertEquals("TestClass", classDecl.getName());
+		requireThat("variable", identifier.getName());
+		requireThat("TestClass", classDecl.getName());
 	}
 
 	/**
@@ -149,7 +148,7 @@ public class ComprehensiveTest
 		TestVisitor visitor = new TestVisitor();
 		String result = node.accept(visitor, "prefix_");
 
-		assertEquals("prefix_visitorTest", result);
+		requireThat(result, "result").isEqualTo("prefix_visitorTest");
 	}
 
 	/**
@@ -173,10 +172,10 @@ public class ComprehensiveTest
 
 		// Test equality (behavior depends on implementation)
 		// At minimum, verify nodes are created and comparable
-		assertNotNull(node1);
-		assertNotNull(node2);
-		assertEquals("test", node1.getName());
-		assertEquals("test", node2.getName());
+		requireThat(node1, "node1").isNotNull();
+		requireThat(node2, "node2").isNotNull();
+		requireThat("test", node1.getName());
+		requireThat("test", node2.getName());
 	}
 
 	/**
@@ -187,18 +186,18 @@ public class ComprehensiveTest
 		{
 		SourcePosition pos = new SourcePosition(5, 10);
 
-		assertEquals(5, pos.line());
-		assertEquals(10, pos.column());
+		requireThat(pos.line(), "posLine").isEqualTo(5);
+		requireThat(pos.column(), "posColumn").isEqualTo(10);
 
 		// Test advancement
 		SourcePosition advanced = pos.advanceColumn(5);
-		assertEquals(5, advanced.line());
-		assertEquals(15, advanced.column());
+		requireThat(advanced.line(), "advancedLine").isEqualTo(5);
+		requireThat(advanced.column(), "advancedColumn").isEqualTo(15);
 
 		// Test line advancement
 		SourcePosition nextLine = pos.nextLine();
-		assertEquals(6, nextLine.line());
-		assertEquals(1, nextLine.column());
+		requireThat(nextLine.line(), "nextLineLine").isEqualTo(6);
+		requireThat(nextLine.column(), "nextLineColumn").isEqualTo(1);
 	}
 
 	/**
@@ -211,8 +210,8 @@ public class ComprehensiveTest
 		SourcePosition end = new SourcePosition(1, 10);
 		SourceRange range = new SourceRange(start, end);
 
-		assertEquals(start, range.start());
-		assertEquals(end, range.end());
+		requireThat(range.start(), "rangeStart").isEqualTo(start);
+		requireThat(range.end(), "rangeEnd").isEqualTo(end);
 	}
 
 	/**
@@ -230,8 +229,8 @@ public class ComprehensiveTest
 		IdentifierNode node1 = builder.setName("first").build();
 		IdentifierNode node2 = builder.setName("second").build();
 
-		assertEquals("first", node1.getName());
-		assertEquals("second", node2.getName());
+		requireThat("first", node1.getName());
+		requireThat("second", node2.getName());
 	}
 
 	/**
@@ -252,8 +251,8 @@ public class ComprehensiveTest
 			setName("modified").
 			build();
 
-		assertEquals("original", original.getName());
-		assertEquals("modified", modified.getName());
+		requireThat("original", original.getName());
+		requireThat("modified", modified.getName());
 	}
 
 	/**
@@ -270,8 +269,8 @@ public class ComprehensiveTest
 			build();
 
 		String toString = node.toString();
-		assertNotNull(toString);
-		assertFalse(toString.isEmpty());
+		requireThat(toString, "toString").isNotNull();
+		requireThat(toString.isEmpty(), "toStringIsEmpty").isFalse();
 	}
 
 	/**
@@ -288,9 +287,9 @@ public class ComprehensiveTest
 			build();
 
 		// Verify metadata is accessible
-		assertEquals(range, node.getRange());
-		assertNotNull(node.getLeadingComments());
-		assertNotNull(node.getTrailingComments());
+		requireThat(node.getRange(), "nodeRange").isEqualTo(range);
+		requireThat(node.getLeadingComments(), "leadingComments").isNotNull();
+		requireThat(node.getTrailingComments(), "trailingComments").isNotNull();
 	}
 
 	// Helper visitor for testing

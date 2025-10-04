@@ -6,8 +6,7 @@ import org.testng.annotations.Test;
 
 import java.nio.file.Paths;
 
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
  * Unit tests for FixSuggestionProvider functionality.
@@ -29,9 +28,9 @@ public class FixSuggestionProviderTest
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
-		assertNotNull(suggestion);
-		assertTrue(suggestion.contains("semicolon"));
-		assertTrue(suggestion.contains(";"));
+		requireThat(suggestion, "suggestion").isNotNull();
+		requireThat(suggestion.contains("semicolon"), "suggestionContainsSemicolon").isTrue();
+		requireThat(suggestion.contains(";"), "suggestionContainsSemicolonChar").isTrue();
 	}
 
 	/**
@@ -48,9 +47,9 @@ public class FixSuggestionProviderTest
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
-		assertNotNull(suggestion);
-		assertTrue(suggestion.contains("opening brace"));
-		assertTrue(suggestion.contains("{"));
+		requireThat(suggestion, "suggestion").isNotNull();
+		requireThat(suggestion.contains("opening brace"), "suggestionContainsOpeningBrace").isTrue();
+		requireThat(suggestion.contains("{"), "suggestionContainsBraceChar").isTrue();
 	}
 
 	/**
@@ -68,8 +67,8 @@ public class FixSuggestionProviderTest
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
-		assertNotNull(suggestion);
-		assertTrue(suggestion.contains("configuration documentation"));
+		requireThat(suggestion, "suggestion").isNotNull();
+		requireThat(suggestion.contains("configuration documentation"), "suggestionContainsConfigDocs").isTrue();
 	}
 
 	/**
@@ -89,8 +88,9 @@ public class FixSuggestionProviderTest
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
-		assertNotNull(suggestion);
-		assertTrue(suggestion.contains("Break long lines") || suggestion.contains("line length"));
+		requireThat(suggestion, "suggestion").isNotNull();
+		requireThat(suggestion.contains("Break long lines") || suggestion.contains("line length"),
+			"suggestionContainsLineLengthAdvice").isTrue();
 	}
 
 	/**
@@ -110,8 +110,9 @@ public class FixSuggestionProviderTest
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
-		assertNotNull(suggestion);
-		assertTrue(suggestion.contains("indentation") || suggestion.contains("consistent"));
+		requireThat(suggestion, "suggestion").isNotNull();
+		requireThat(suggestion.contains("indentation") || suggestion.contains("consistent"),
+			"suggestionContainsIndentationAdvice").isTrue();
 	}
 
 	/**
@@ -126,8 +127,9 @@ public class FixSuggestionProviderTest
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
-		assertNotNull(suggestion);
-		assertTrue(suggestion.contains("permission") || suggestion.contains("access"));
+		requireThat(suggestion, "suggestion").isNotNull();
+		requireThat(suggestion.contains("permission") || suggestion.contains("access"),
+			"suggestionContainsPermissionAdvice").isTrue();
 	}
 
 	/**
@@ -142,8 +144,9 @@ public class FixSuggestionProviderTest
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
-		assertNotNull(suggestion);
-		assertTrue(suggestion.contains("file path") || suggestion.contains("exists"));
+		requireThat(suggestion, "suggestion").isNotNull();
+		requireThat(suggestion.contains("file path") || suggestion.contains("exists"),
+			"suggestionContainsFileAdvice").isTrue();
 	}
 
 	/**
@@ -161,10 +164,10 @@ public class FixSuggestionProviderTest
 		String suggestion = FixSuggestionProvider.generateContextualSuggestion(
 			context, "inside method declaration");
 
-		assertNotNull(suggestion);
-		assertTrue(suggestion.contains("semicolon"));
-		assertTrue(suggestion.contains("Context:"));
-		assertTrue(suggestion.contains("inside method declaration"));
+		requireThat(suggestion, "suggestion").isNotNull();
+		requireThat(suggestion.contains("semicolon"), "suggestionContainsSemicolon").isTrue();
+		requireThat(suggestion.contains("Context:"), "suggestionContainsContext").isTrue();
+		requireThat(suggestion.contains("inside method declaration"), "suggestionContainsMethodContext").isTrue();
 	}
 
 	/**
@@ -181,8 +184,8 @@ public class FixSuggestionProviderTest
 
 		String suggestion = FixSuggestionProvider.generateContextualSuggestion(context, null);
 
-		assertNotNull(suggestion);
-		assertTrue(suggestion.contains("beginning of line"));
+		requireThat(suggestion, "suggestion").isNotNull();
+		requireThat(suggestion.contains("beginning of line"), "suggestionContainsLineBeginning").isTrue();
 	}
 
 	/**
@@ -191,11 +194,11 @@ public class FixSuggestionProviderTest
 	@Test
 	public void hasSuggestionForAllCategories()
 	{
-		assertTrue(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.PARSE));
-		assertTrue(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.CONFIG));
-		assertTrue(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.FORMAT));
-		assertTrue(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.VALIDATE));
-		assertTrue(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.SYSTEM));
+		requireThat(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.PARSE), "hasSuggestionForParse").isTrue();
+		requireThat(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.CONFIG), "hasSuggestionForConfig").isTrue();
+		requireThat(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.FORMAT), "hasSuggestionForFormat").isTrue();
+		requireThat(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.VALIDATE), "hasSuggestionForValidate").isTrue();
+		requireThat(FixSuggestionProvider.hasSuggestionFor(ErrorCategory.SYSTEM), "hasSuggestionForSystem").isTrue();
 	}
 
 	/**
@@ -216,8 +219,9 @@ public class FixSuggestionProviderTest
 
 		String suggestion = FixSuggestionProvider.generateSuggestion(context);
 
-		assertNotNull(suggestion);
-		assertTrue(suggestion.contains("constraint") || suggestion.contains("configuration"));
+		requireThat(suggestion, "suggestion").isNotNull();
+		requireThat(suggestion.contains("constraint") || suggestion.contains("configuration"),
+			"suggestionContainsConstraintAdvice").isTrue();
 	}
 
 	/**

@@ -10,10 +10,7 @@ import org.testng.annotations.Test;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
  * Unit tests for ErrorReporter functionality.
@@ -52,13 +49,13 @@ public class ErrorReporterTest
 
 		humanReporter.reportParseError(parseException, testFile, testSource);
 
-		assertEquals(humanReporter.getErrorCount(), 1);
-		assertTrue(humanReporter.hasErrors());
+		requireThat(humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
+		requireThat(humanReporter.hasErrors(), "hasErrors").isTrue();
 
 		ErrorContext error = humanReporter.getErrors().get(0);
-		assertEquals(error.category(), ErrorCategory.PARSE);
-		assertEquals(error.severity(), ErrorSeverity.ERROR);
-		assertEquals(error.filePath(), testFile);
+		requireThat(error.category(), "errorCategory").isEqualTo(ErrorCategory.PARSE);
+		requireThat(error.severity(), "errorSeverity").isEqualTo(ErrorSeverity.ERROR);
+		requireThat(error.filePath(), "errorFilePath").isEqualTo(testFile);
 	}
 
 	/**
@@ -72,10 +69,10 @@ public class ErrorReporterTest
 
 		humanReporter.reportConfigError(configException, testFile, configText);
 
-		assertEquals(humanReporter.getErrorCount(), 1);
+		requireThat(humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
 		ErrorContext error = humanReporter.getErrors().get(0);
-		assertEquals(error.category(), ErrorCategory.CONFIG);
-		assertEquals(error.severity(), ErrorSeverity.ERROR);
+		requireThat(error.category(), "errorCategory").isEqualTo(ErrorCategory.CONFIG);
+		requireThat(error.severity(), "errorSeverity").isEqualTo(ErrorSeverity.ERROR);
 	}
 
 	/**
@@ -97,13 +94,13 @@ public class ErrorReporterTest
 
 		humanReporter.reportViolation(violation, testFile, testSource);
 
-		assertEquals(humanReporter.getErrorCount(), 1);
+		requireThat(humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
 		ErrorContext error = humanReporter.getErrors().get(0);
-		assertEquals(error.category(), ErrorCategory.FORMAT);
-		assertEquals(error.severity(), ErrorSeverity.WARNING);
-		assertEquals(error.getLineNumber(), 2);
-		assertEquals(error.getColumnNumber(), 5);
-		assertTrue(error.hasSuggestedFix());
+		requireThat(error.category(), "errorCategory").isEqualTo(ErrorCategory.FORMAT);
+		requireThat(error.severity(), "errorSeverity").isEqualTo(ErrorSeverity.WARNING);
+		requireThat(error.getLineNumber(), "errorLineNumber").isEqualTo(2);
+		requireThat(error.getColumnNumber(), "errorColumnNumber").isEqualTo(5);
+		requireThat(error.hasSuggestedFix(), "errorHasSuggestedFix").isTrue();
 	}
 
 	/**
@@ -116,10 +113,10 @@ public class ErrorReporterTest
 
 		humanReporter.reportSystemError(systemException, testFile);
 
-		assertEquals(humanReporter.getErrorCount(), 1);
+		requireThat(humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
 		ErrorContext error = humanReporter.getErrors().get(0);
-		assertEquals(error.category(), ErrorCategory.SYSTEM);
-		assertEquals(error.severity(), ErrorSeverity.ERROR);
+		requireThat(error.category(), "errorCategory").isEqualTo(ErrorCategory.SYSTEM);
+		requireThat(error.severity(), "errorSeverity").isEqualTo(ErrorSeverity.ERROR);
 	}
 
 	/**
@@ -137,8 +134,8 @@ public class ErrorReporterTest
 		humanReporter.reportSystemError(exception, testFile);
 
 		// Should stop at max limit
-		assertTrue(humanReporter.shouldHaltProcessing());
-		assertEquals(humanReporter.getErrorCount(), 2);
+		requireThat(humanReporter.shouldHaltProcessing(), "shouldHaltProcessing").isTrue();
+		requireThat(humanReporter.getErrorCount(), "errorCount").isEqualTo(2);
 	}
 
 	/**
@@ -150,13 +147,13 @@ public class ErrorReporterTest
 		Exception exception = new RuntimeException("Test error");
 		humanReporter.reportSystemError(exception, testFile);
 
-		assertTrue(humanReporter.hasErrors());
+		requireThat(humanReporter.hasErrors(), "hasErrors").isTrue();
 
 		humanReporter.clearErrors();
 
-		assertFalse(humanReporter.hasErrors());
-		assertEquals(humanReporter.getErrorCount(), 0);
-		assertFalse(humanReporter.shouldHaltProcessing());
+		requireThat(humanReporter.hasErrors(), "hasErrorsAfterClear").isFalse();
+		requireThat(humanReporter.getErrorCount(), "errorCountAfterClear").isEqualTo(0);
+		requireThat(humanReporter.shouldHaltProcessing(), "shouldHaltProcessingAfterClear").isFalse();
 	}
 
 	/**
@@ -170,10 +167,10 @@ public class ErrorReporterTest
 
 		String report = humanReporter.formatErrorReport();
 
-		assertNotNull(report);
-		assertFalse(report.isBlank());
-		assertTrue(report.contains("TestFile.java"));
-		assertTrue(report.contains("Parse error"));
+		requireThat(report, "report").isNotNull();
+		requireThat(report.isBlank(), "reportIsBlank").isFalse();
+		requireThat(report.contains("TestFile.java"), "reportContainsFilename").isTrue();
+		requireThat(report.contains("Parse error"), "reportContainsErrorType").isTrue();
 	}
 
 	/**
@@ -187,10 +184,10 @@ public class ErrorReporterTest
 
 		String summary = humanReporter.formatSummary("format");
 
-		assertNotNull(summary);
-		assertFalse(summary.isBlank());
-		assertTrue(summary.contains("format"));
-		assertTrue(summary.contains("1"));
+		requireThat(summary, "summary").isNotNull();
+		requireThat(summary.isBlank(), "summaryIsBlank").isFalse();
+		requireThat(summary.contains("format"), "summaryContainsOperation").isTrue();
+		requireThat(summary.contains("1"), "summaryContainsCount").isTrue();
 	}
 
 	/**
@@ -204,12 +201,12 @@ public class ErrorReporterTest
 
 		String report = machineReporter.formatErrorReport();
 
-		assertNotNull(report);
-		assertTrue(report.contains("{"));
-		assertTrue(report.contains("\"type\":"));
-		assertTrue(report.contains("\"error-report\""));
-		assertEquals(machineReporter.getMimeType(), "application/json");
-		assertFalse(machineReporter.supportsColors());
+		requireThat(report, "report").isNotNull();
+		requireThat(report.contains("{"), "reportContainsOpenBrace").isTrue();
+		requireThat(report.contains("\"type\":"), "reportContainsTypeField").isTrue();
+		requireThat(report.contains("\"error-report\""), "reportContainsErrorReport").isTrue();
+		requireThat(machineReporter.getMimeType(), "mimeType").isEqualTo("application/json");
+		requireThat(machineReporter.supportsColors(), "supportsColors").isFalse();
 	}
 
 	/**
@@ -218,9 +215,9 @@ public class ErrorReporterTest
 	@Test
 	public void humanReadableOutput()
 	{
-		assertEquals(humanReporter.getMimeType(), "text/plain");
+		requireThat(humanReporter.getMimeType(), "mimeType").isEqualTo("text/plain");
 		// Color support depends on constructor parameter
-		assertFalse(humanReporter.supportsColors()); // Disabled in test setup
+		requireThat(humanReporter.supportsColors(), "supportsColors").isFalse(); // Disabled in test setup
 	}
 
 	/**
@@ -233,8 +230,8 @@ public class ErrorReporterTest
 		humanReporter.reportParseError(exceptionWithLocation, testFile, testSource);
 
 		ErrorContext error = humanReporter.getErrors().get(0);
-		assertEquals(error.getLineNumber(), 15);
-		assertEquals(error.getColumnNumber(), 23);
+		requireThat(error.getLineNumber(), "errorLineNumber").isEqualTo(15);
+		requireThat(error.getColumnNumber(), "errorColumnNumber").isEqualTo(23);
 	}
 
 	/**
@@ -247,8 +244,8 @@ public class ErrorReporterTest
 		humanReporter.reportParseError(exceptionWithoutLocation, testFile, testSource);
 
 		ErrorContext error = humanReporter.getErrors().get(0);
-		assertEquals(error.getLineNumber(), 1);
-		assertEquals(error.getColumnNumber(), 1);
+		requireThat(error.getLineNumber(), "errorLineNumber").isEqualTo(1);
+		requireThat(error.getColumnNumber(), "errorColumnNumber").isEqualTo(1);
 	}
 
 	/**
@@ -259,14 +256,14 @@ public class ErrorReporterTest
 	{
 		// Test default constructor
 		ErrorReporter defaultReporter = new ErrorReporter();
-		assertEquals(defaultReporter.getMimeType(), "text/plain");
+		requireThat(defaultReporter.getMimeType(), "defaultMimeType").isEqualTo("text/plain");
 
 		// Test parameterized constructor
 		ErrorReporter humanReporter = new ErrorReporter(false, true);
-		assertEquals(humanReporter.getMimeType(), "text/plain");
+		requireThat(humanReporter.getMimeType(), "humanMimeType").isEqualTo("text/plain");
 
 		ErrorReporter machineReporter = new ErrorReporter(true, false);
-		assertEquals(machineReporter.getMimeType(), "application/json");
+		requireThat(machineReporter.getMimeType(), "machineMimeType").isEqualTo("application/json");
 	}
 
 	/**

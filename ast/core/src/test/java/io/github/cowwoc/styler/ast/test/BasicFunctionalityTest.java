@@ -7,9 +7,7 @@ import io.github.cowwoc.styler.ast.node.IdentifierNode;
 import io.github.cowwoc.styler.ast.node.StringLiteralNode;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
  * Basic functionality tests for the AST core module.
@@ -40,8 +38,8 @@ public class BasicFunctionalityTest
 			setRange(defaultRange).
 			build();
 
-		assertNotNull(identifier);
-		assertEquals("testVariable", identifier.getName());
+		requireThat(identifier, "identifier").isNotNull();
+		requireThat(identifier.getName(), "identifierName").isEqualTo("testVariable");
 	}
 
 	/**
@@ -51,13 +49,13 @@ public class BasicFunctionalityTest
 	public void sourcePosition()
 	{
 		SourcePosition pos = new SourcePosition(1, 5);
-		assertEquals(1, pos.line());
-		assertEquals(5, pos.column());
+		requireThat(pos.line(), "line").isEqualTo(1);
+		requireThat(pos.column(), "column").isEqualTo(5);
 
 		// Test advancement
 		SourcePosition advanced = pos.advanceColumn(3);
-		assertEquals(1, advanced.line());
-		assertEquals(8, advanced.column());
+		requireThat(advanced.line(), "advancedLine").isEqualTo(1);
+		requireThat(advanced.column(), "advancedColumn").isEqualTo(8);
 	}
 
 	/**
@@ -70,8 +68,8 @@ public class BasicFunctionalityTest
 		SourcePosition end = new SourcePosition(1, 10);
 		SourceRange range = new SourceRange(start, end);
 
-		assertEquals(start, range.start());
-		assertEquals(end, range.end());
+		requireThat(range.start(), "rangeStart").isEqualTo(start);
+		requireThat(range.end(), "rangeEnd").isEqualTo(end);
 	}
 
 	/**
@@ -99,12 +97,12 @@ public class BasicFunctionalityTest
 			build();
 
 		// Verify all nodes are created successfully
-		assertNotNull(identifier);
-		assertNotNull(stringLiteral);
-		assertNotNull(classDecl);
+		requireThat(identifier, "identifier").isNotNull();
+		requireThat(stringLiteral, "stringLiteral").isNotNull();
+		requireThat(classDecl, "classDecl").isNotNull();
 
-		assertEquals("variable", identifier.getName());
-		assertEquals("TestClass", classDecl.getName());
+		requireThat(identifier.getName(), "identifierName").isEqualTo("variable");
+		requireThat(classDecl.getName(), "className").isEqualTo("TestClass");
 	}
 
 	/**
@@ -120,7 +118,7 @@ public class BasicFunctionalityTest
 			build();
 
 		String toString = node.toString();
-		assertNotNull(toString);
-		assertFalse(toString.isEmpty());
+		requireThat(toString, "toString").isNotNull();
+		requireThat(toString.isEmpty(), "toStringIsEmpty").isFalse();
 	}
 }

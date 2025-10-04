@@ -6,10 +6,8 @@ import io.github.cowwoc.styler.ast.node.IdentifierNode;
 import io.github.cowwoc.styler.ast.node.StringLiteralNode;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotEquals;
-import static org.testng.Assert.assertNotNull;
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+
 
 /**
  * Unit tests for AST node equality and immutability contracts.
@@ -37,11 +35,11 @@ public class EqualityTest
 			build();
 
 		// Test equality contract
-		assertEquals(node1, node2);
-		assertEquals(node1.hashCode(), node2.hashCode());
+		requireThat(node2, "node2").isEqualTo(node1);
+		requireThat(node2.hashCode(), "node2HashCode").isEqualTo(node1.hashCode());
 
 		// Test reflexivity
-		assertEquals(node1, node1);
+		requireThat(node1, "node1").isEqualTo(node1);
 	}
 
 	/**
@@ -63,7 +61,7 @@ public class EqualityTest
 			build();
 
 		// Test inequality - nodes with different ranges should not be equal
-		assertNotEquals(node1, node2);
+		requireThat(node1, "node1").isNotEqualTo(node2);
 	}
 
 	/**
@@ -79,7 +77,7 @@ public class EqualityTest
 			build();
 
 		// Test null safety
-		assertNotEquals(node, null);
+		requireThat(node, "node").isNotEqualTo(null);
 	}
 
 	/**
@@ -100,7 +98,7 @@ public class EqualityTest
 			build();
 
 		// Different node types should not be equal
-		assertNotEquals(identifierNode, stringNode);
+		requireThat(identifierNode, "identifierNode").isNotEqualTo(stringNode);
 	}
 
 	/**
@@ -118,14 +116,14 @@ public class EqualityTest
 
 		// Verify the node's name doesn't change
 		String originalName = node.getName();
-		assertEquals("immutableNode", originalName);
+		requireThat(originalName, "originalName").isEqualTo("immutableNode");
 
 		// Try to get the name again - should be the same
-		assertEquals(originalName, node.getName());
+		requireThat(node.getName(), "nodeName").isEqualTo(originalName);
 
 		// Nodes should be immutable - no setters should exist at runtime
 		// This is verified by the fact that nodes are final classes with no mutating methods
-		assertNotNull(node.toString()); // Just verify object is healthy
+		requireThat(node.toString(), "nodeToString").isNotNull(); // Just verify object is healthy
 	}
 
 	/**
@@ -148,9 +146,9 @@ public class EqualityTest
 		IdentifierNode node2 = builder.setName("modified").setRange(range2).build();
 
 		// Verify nodes are different (due to different ranges)
-		assertNotEquals(node1, node2);
-		assertEquals("original", node1.getName());
-		assertEquals("modified", node2.getName());
+		requireThat(node1, "node1").isNotEqualTo(node2);
+		requireThat(node1.getName(), "node1Name").isEqualTo("original");
+		requireThat(node2.getName(), "node2Name").isEqualTo("modified");
 	}
 
 	/**
@@ -174,11 +172,11 @@ public class EqualityTest
 
 		// Nodes with same metadata but different content are equal
 		// This is the architectural design - equality based on structural metadata
-		assertEquals(node1, node2);
-		assertEquals(node1.hashCode(), node2.hashCode());
+		requireThat(node2, "node2").isEqualTo(node1);
+		requireThat(node2.hashCode(), "node2HashCode").isEqualTo(node1.hashCode());
 
 		// But content is different
-		assertNotEquals(node1.getName(), node2.getName());
+		requireThat(node1.getName(), "node1Name").isNotEqualTo(node2.getName());
 	}
 
 	/**
@@ -204,7 +202,7 @@ public class EqualityTest
 			build();
 
 		// Nodes with same content and metadata should be equal
-		assertEquals(node1, node2);
+		requireThat(node2, "node2").isEqualTo(node1);
 
 		// Create node with different range
 		SourceRange differentRange = new SourceRange(new SourcePosition(2, 1), new SourcePosition(2, 10));
@@ -215,7 +213,7 @@ public class EqualityTest
 
 		// Nodes with different metadata should not be equal (if equality includes metadata)
 		// Note: Actual behavior depends on the equals() implementation
-		assertNotNull(node3); // At minimum, node should be constructable
+		requireThat(node3, "node3").isNotNull(); // At minimum, node should be constructable
 	}
 
 	/**
@@ -235,8 +233,8 @@ public class EqualityTest
 		int hash2 = node.hashCode();
 		int hash3 = node.hashCode();
 
-		assertEquals(hash1, hash2);
-		assertEquals(hash2, hash3);
+		requireThat(hash2, "hash2").isEqualTo(hash1);
+		requireThat(hash3, "hash3").isEqualTo(hash2);
 	}
 
 	/**
@@ -254,12 +252,12 @@ public class EqualityTest
 		String stringRep = node.toString();
 
 		// toString should not return null
-		assertNotNull(stringRep);
+		requireThat(stringRep, "stringRep").isNotNull();
 
 		// toString should contain some meaningful information
-		assertFalse(stringRep.isEmpty());
+		requireThat(stringRep.isEmpty(), "stringRepIsEmpty").isFalse();
 
 		// toString should be consistent
-		assertEquals(stringRep, node.toString());
+		requireThat(node.toString(), "nodeToString").isEqualTo(stringRep);
 	}
 }

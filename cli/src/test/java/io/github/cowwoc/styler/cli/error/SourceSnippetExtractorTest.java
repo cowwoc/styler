@@ -4,10 +4,7 @@ import io.github.cowwoc.styler.ast.SourcePosition;
 import io.github.cowwoc.styler.ast.SourceRange;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
  * Unit tests for SourceSnippetExtractor functionality.
@@ -36,11 +33,11 @@ public class SourceSnippetExtractorTest
 
 		String snippet = SourceSnippetExtractor.extractSnippet(SAMPLE_CODE, errorRange);
 
-		assertNotNull(snippet);
-		assertFalse(snippet.isBlank());
-		assertTrue(snippet.contains("public void method()"));
-		assertTrue(snippet.contains("System.out.println"));
-		assertTrue(snippet.contains("^")); // Error indicator
+		requireThat(snippet, "snippet").isNotNull();
+		requireThat(snippet.isBlank(), "snippetIsBlank").isFalse();
+		requireThat(snippet.contains("public void method()"), "snippetContainsMethod").isTrue();
+		requireThat(snippet.contains("System.out.println"), "snippetContainsPrintln").isTrue();
+		requireThat(snippet.contains("^"), "snippetContainsErrorIndicator").isTrue();
 	}
 
 	/**
@@ -55,10 +52,10 @@ public class SourceSnippetExtractorTest
 
 		String snippet = SourceSnippetExtractor.extractSnippet(SAMPLE_CODE, errorRange, 1);
 
-		assertNotNull(snippet);
-		assertTrue(snippet.contains("public void method()"));
-		assertTrue(snippet.contains("System.out.println"));
-		assertTrue(snippet.contains("}"));
+		requireThat(snippet, "snippet").isNotNull();
+		requireThat(snippet.contains("public void method()"), "snippetContainsMethod").isTrue();
+		requireThat(snippet.contains("System.out.println"), "snippetContainsPrintln").isTrue();
+		requireThat(snippet.contains("}"), "snippetContainsBrace").isTrue();
 	}
 
 	/**
@@ -73,9 +70,9 @@ public class SourceSnippetExtractorTest
 
 		String snippet = SourceSnippetExtractor.extractInlineSnippet(SAMPLE_CODE, errorRange);
 
-		assertNotNull(snippet);
-		assertTrue(snippet.contains("System.out.println"));
-		assertFalse(snippet.contains("^")); // No error indicator for inline
+		requireThat(snippet, "snippet").isNotNull();
+		requireThat(snippet.contains("System.out.println"), "snippetContainsPrintln").isTrue();
+		requireThat(snippet.contains("^"), "snippetContainsErrorIndicator").isFalse();
 	}
 
 	/**
@@ -91,9 +88,9 @@ public class SourceSnippetExtractorTest
 
 		String snippet = SourceSnippetExtractor.extractSnippet(codeWithTabs, errorRange);
 
-		assertNotNull(snippet);
+		requireThat(snippet, "snippet").isNotNull();
 		// Tabs should be expanded to spaces
-		assertTrue(snippet.contains("    int x = 1")); // Tab expanded to 4 spaces
+		requireThat(snippet.contains("    int x = 1"), "snippetContainsExpandedTab").isTrue();
 	}
 
 	/**
@@ -108,7 +105,7 @@ public class SourceSnippetExtractorTest
 
 		String snippet = SourceSnippetExtractor.extractSnippet("", errorRange);
 
-		assertEquals(snippet.trim(), "(empty file)");
+		requireThat(snippet.trim(), "snippetTrimmed").isEqualTo("(empty file)");
 	}
 
 	/**
@@ -123,7 +120,7 @@ public class SourceSnippetExtractorTest
 
 		String snippet = SourceSnippetExtractor.extractInlineSnippet(SAMPLE_CODE, errorRange);
 
-		assertTrue(snippet.contains("line 100 not found"));
+		requireThat(snippet.contains("line 100 not found"), "snippetContainsNotFound").isTrue();
 	}
 
 	/**
@@ -138,11 +135,11 @@ public class SourceSnippetExtractorTest
 
 		String snippet = SourceSnippetExtractor.extractExtendedSnippet(SAMPLE_CODE, errorRange, 1, 1);
 
-		assertNotNull(snippet);
-		assertTrue(snippet.contains("public class Example"));
-		assertTrue(snippet.contains("public void method()"));
-		assertTrue(snippet.contains("System.out.println"));
-		assertTrue(snippet.contains("*")); // Error line marker
+		requireThat(snippet, "snippet").isNotNull();
+		requireThat(snippet.contains("public class Example"), "snippetContainsClass").isTrue();
+		requireThat(snippet.contains("public void method()"), "snippetContainsMethod").isTrue();
+		requireThat(snippet.contains("System.out.println"), "snippetContainsPrintln").isTrue();
+		requireThat(snippet.contains("*"), "snippetContainsErrorMarker").isTrue();
 	}
 
 	/**
@@ -160,8 +157,8 @@ public class SourceSnippetExtractorTest
 
 		String snippet = SourceSnippetExtractor.extractSnippet(codeWithLongLine, errorRange);
 
-		assertNotNull(snippet);
-		assertTrue(snippet.contains("...")); // Truncation indicator
+		requireThat(snippet, "snippet").isNotNull();
+		requireThat(snippet.contains("..."), "snippetContainsTruncation").isTrue();
 	}
 
 	/**
