@@ -370,37 +370,99 @@ Every task MUST maintain a `state.json` file in the task directory containing:
 - [ ] Session ID validated and unique
 - [ ] Atomic lock acquired for task
 - [ ] Task exists in todo.md
-- [ ] Working directory confirmed as main branch
+- [ ] Worktree created for task isolation
+- [ ] **CRITICAL: Changed directory to task worktree**
+- [ ] **CRITICAL: Verified pwd shows task directory**
 
 **Evidence Required:**
 - Lock file creation timestamp
 - Session ID validation output
-- pwd verification showing `/workspace/branches/main/code`
+- Worktree creation confirmation
+- **pwd verification showing `/workspace/branches/{task-name}/code`**
 
 **Implementation:**
 ```bash
-export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && mkdir -p ../../../locks && (set -C; echo '{"session_id": "'${SESSION_ID}'", "start_time": "'$(date '+%Y-%m-%d %H:%M:%S %Z')'"}' > ../../../locks/task-name.json) && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
+# IMPORTANT: Replace {TASK_NAME} with actual task name (e.g., "refactor-line-wrapping-architecture")
+# IMPORTANT: Replace {SESSION_ID} with current session ID (from system environment)
+
+# Step 1: Create atomic lock (single bash execution required)
+export SESSION_ID="{SESSION_ID}" && mkdir -p /workspace/locks && (set -C; echo "{\"session_id\": \"${SESSION_ID}\", \"start_time\": \"$(date '+%Y-%m-%d %H:%M:%S %Z')\", \"task_name\": \"{TASK_NAME}\"}" > /workspace/locks/{TASK_NAME}.json) && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
+
+# Step 2: Create worktree (must execute from main branch directory)
+cd /workspace/branches/main/code && mkdir -p /workspace/branches/{TASK_NAME} && git worktree add /workspace/branches/{TASK_NAME}/code -b {TASK_NAME} && echo "Worktree created"
+
+# Step 3: CRITICAL - Change to task worktree (separate execution)
+cd /workspace/branches/{TASK_NAME}/code
+
+# Step 4: MANDATORY - Verify working directory (separate execution)
+pwd | grep -q "/workspace/branches/{TASK_NAME}/code$" && echo "✅ INIT complete - Working in: $(pwd)" || echo "❌ ERROR: Not in task worktree! Currently in: $(pwd)"
 ```
+
+**Example for task "refactor-line-wrapping-architecture" with session ID "6cca10f2-3c44-49ba-8c90-6dfaeda8f20f"**:
+```bash
+# Step 1: Create atomic lock (replace session ID with your actual session ID)
+export SESSION_ID="6cca10f2-3c44-49ba-8c90-6dfaeda8f20f" && mkdir -p /workspace/locks && (set -C; echo "{\"session_id\": \"${SESSION_ID}\", \"start_time\": \"$(date '+%Y-%m-%d %H:%M:%S %Z')\", \"task_name\": \"refactor-line-wrapping-architecture\"}" > /workspace/locks/refactor-line-wrapping-architecture.json) && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
+
+# Step 2: Create worktree (from main branch)
+cd /workspace/branches/main/code && mkdir -p /workspace/branches/refactor-line-wrapping-architecture && git worktree add /workspace/branches/refactor-line-wrapping-architecture/code -b refactor-line-wrapping-architecture && echo "Worktree created"
+
+# Step 3: Change to task worktree
+cd /workspace/branches/refactor-line-wrapping-architecture/code
+
+# Step 4: Verify working directory
+pwd | grep -q "/workspace/branches/refactor-line-wrapping-architecture/code$" && echo "✅ INIT complete - Working in: $(pwd)" || echo "❌ ERROR: Not in task worktree! Currently in: $(pwd)"
+```
+
+**🚨 CRITICAL**: State 0 is NOT complete until you have executed `cd` to the task worktree and verified `pwd` shows the correct directory. NEVER proceed to State 1 while still in main branch.
 
 ### CLASSIFIED → REQUIREMENTS
 **Mandatory Conditions:**
 - [ ] Risk level determined (HIGH/MEDIUM/LOW)
 - [ ] Agent set selected based on risk classification
-- [ ] Worktree isolation established (for HIGH/MEDIUM risk)
+- [ ] **CRITICAL: Verified currently in task worktree (pwd check)**
 - [ ] Context.md created with explicit scope boundaries
 
 **Evidence Required:**
 - Risk classification reasoning documented
-- Worktree creation verification (`pwd` shows task directory)
+- **MANDATORY: pwd verification showing task directory**
 - Agent selection justification based on file patterns
 - Context.md exists with mandatory sections
 
-**Implementation:**
+**🚨 CRITICAL PRE-REQUIREMENTS VERIFICATION**:
 ```bash
-cd /workspace/branches/main/code
-git worktree add -b task-name /workspace/branches/task-name/code
-cd /workspace/branches/task-name/code
+# IMPORTANT: Replace {TASK_NAME} with actual task name before executing
+# MANDATORY: Verify working directory BEFORE invoking ANY agents
+pwd | grep -q "/workspace/branches/{TASK_NAME}/code$" || {
+  echo "❌ CRITICAL ERROR: Not in task worktree!"
+  echo "Current directory: $(pwd)"
+  echo "Required directory: /workspace/branches/{TASK_NAME}/code"
+  echo "ABORT: Cannot proceed to REQUIREMENTS state"
+  exit 1
+}
+echo "✅ Directory verification PASSED: $(pwd)"
 ```
+
+**Example for task "refactor-line-wrapping-architecture"**:
+```bash
+pwd | grep -q "/workspace/branches/refactor-line-wrapping-architecture/code$" || {
+  echo "❌ CRITICAL ERROR: Not in task worktree!"
+  echo "Current directory: $(pwd)"
+  echo "Required directory: /workspace/branches/refactor-line-wrapping-architecture/code"
+  echo "ABORT: Cannot proceed to REQUIREMENTS state"
+  exit 1
+}
+echo "✅ Directory verification PASSED: $(pwd)"
+```
+
+**PROHIBITED PATTERN**:
+❌ Invoking stakeholder agents while in main branch
+❌ Proceeding to State 2 without pwd verification
+❌ Assuming you're in the correct directory without checking
+
+**REQUIRED PATTERN**:
+✅ Execute pwd verification command
+✅ Confirm output matches task worktree path
+✅ Only then invoke stakeholder agents
 
 ### REQUIREMENTS → SYNTHESIS
 **Mandatory Conditions:**
@@ -711,25 +773,41 @@ If RESOLVE_NOW: Confirm all issues must be resolved in current task
 
 **Git Safety Sequence:**
 ```bash
+# IMPORTANT: Replace {TASK_NAME} with actual task name before executing
+
 # Ensure clean working state
 rm -f .temp_dir
 git status --porcelain | grep -E "(dist/|target/|\.temp_dir$)" | wc -l  # Must be 0
 
 # REQUIRED: Rebase onto main to create linear history
-cd /workspace/branches/task-name/code
+cd /workspace/branches/{TASK_NAME}/code
 git rebase main
 
 # REQUIRED: Fast-forward merge only (creates linear history)
 cd /workspace/branches/main/code
-git merge --ff-only task-name
+git merge --ff-only {TASK_NAME}
 
 # ❌ PROHIBITED: Never use --no-ff (creates merge commits)
-# git merge --no-ff task-name  # WRONG - violates linear history
+# git merge --no-ff {TASK_NAME}  # WRONG - violates linear history
 
 # Verification
 git log --oneline -5  # Must show linear history, no merge commits
 git log --graph --oneline -10  # Should show straight line, not branches
 ./mvnw clean verify -q  # Verify build integrity
+```
+
+**Example for task "refactor-line-wrapping-architecture"**:
+```bash
+# Rebase task branch onto main
+cd /workspace/branches/refactor-line-wrapping-architecture/code
+git rebase main
+
+# Fast-forward merge to main
+cd /workspace/branches/main/code
+git merge --ff-only refactor-line-wrapping-architecture
+
+# Verify linear history
+git log --graph --oneline -10
 ```
 
 **Fast-Forward Merge Validation:**
@@ -759,19 +837,34 @@ NOT this (merge commit creates non-linear history):
 
 **Implementation:**
 ```bash
+# IMPORTANT: Replace {TASK_NAME} with actual task name before executing
+
 # Verify work preserved before cleanup
 cd /workspace/branches/main/code
-git log --oneline -5 | grep "task-name" || exit 1
+git log --oneline -5 | grep "{TASK_NAME}" || exit 1
 
 # Safe cleanup sequence
-rm -f ../../../locks/task-name.json
+rm -f /workspace/locks/{TASK_NAME}.json
 cd /workspace/branches/main/code
-git worktree remove /workspace/branches/task-name/code
-git branch -d task-name
-rm -rf /workspace/branches/task-name
+git worktree remove /workspace/branches/{TASK_NAME}/code
+git branch -d {TASK_NAME}
+rm -rf /workspace/branches/{TASK_NAME}
 
 # Temporary file cleanup
 TEMP_DIR=$(cat .temp_dir 2>/dev/null) && [ -n "$TEMP_DIR" ] && rm -rf "$TEMP_DIR"
+```
+
+**Example for task "refactor-line-wrapping-architecture"**:
+```bash
+# Verify work in main branch
+cd /workspace/branches/main/code
+git log --oneline -5 | grep "refactor-line-wrapping-architecture" || exit 1
+
+# Clean up task resources
+rm -f /workspace/locks/refactor-line-wrapping-architecture.json
+git worktree remove /workspace/branches/refactor-line-wrapping-architecture/code
+git branch -d refactor-line-wrapping-architecture
+rm -rf /workspace/branches/refactor-line-wrapping-architecture
 ```
 
 ## TRANSITION VALIDATION FUNCTIONS

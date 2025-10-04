@@ -138,6 +138,35 @@ When user explicitly confirms acceptance of risks proceed with destructive opera
 
 **🚨 VIOLATION CONSEQUENCE**: If ANY stakeholder agent is launched before completing this checklist, IMMEDIATELY STOP and establish proper isolation before continuing.
 
+**MANDATORY VERIFICATION BEFORE STATE 2 (REQUIREMENTS)**:
+```bash
+# IMPORTANT: Replace {TASK_NAME} with actual task name before executing
+# CRITICAL: Execute these commands BEFORE invoking ANY stakeholder agents
+pwd | grep -q "/workspace/branches/{TASK_NAME}/code$" || {
+  echo "ERROR: Not in task worktree! Currently in: $(pwd)"
+  echo "REQUIRED: cd /workspace/branches/{TASK_NAME}/code"
+  exit 1
+}
+echo "✅ Worktree verification PASSED: $(pwd)"
+```
+
+**Example for task "refactor-line-wrapping-architecture"**:
+```bash
+pwd | grep -q "/workspace/branches/refactor-line-wrapping-architecture/code$" || {
+  echo "ERROR: Not in task worktree! Currently in: $(pwd)"
+  echo "REQUIRED: cd /workspace/branches/refactor-line-wrapping-architecture/code"
+  exit 1
+}
+echo "✅ Worktree verification PASSED: $(pwd)"
+```
+
+**STATE 0 (INIT) COMPLETION REQUIREMENTS**:
+After creating worktree, you MUST:
+1. Execute `cd /workspace/branches/{TASK_NAME}/code` (replace {TASK_NAME} with actual task name)
+2. Verify with `pwd` that output shows task directory
+3. Only then mark State 0 as completed
+4. Only then proceed to State 1
+
 **CONFIGURATION ENFORCEMENT**: This safety checklist prevents data loss, merge conflicts, and coordination failures between multiple Claude instances.
 
 ### Multi-Instance Safety Measures
