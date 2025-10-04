@@ -7,6 +7,7 @@ module io.github.cowwoc.styler.formatter.api
 	requires com.fasterxml.jackson.dataformat.toml;
 
 	exports io.github.cowwoc.styler.formatter.api;
+	exports io.github.cowwoc.styler.formatter.api.conflict;
 	exports io.github.cowwoc.styler.formatter.api.plugin;
 
 	// Open packages to Jackson for YAML serialization/deserialization
