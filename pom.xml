@@ -27,6 +27,7 @@
 		<module>core</module>
 		<module>parser</module>
 		<module>formatter</module>
+		<module>formatter-impl</module>
 		<module>cli</module>
 		<module>benchmark</module>
 	</modules>
@@ -46,6 +47,16 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>styler-ast-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>styler-formatter-api</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${project.groupId}</groupId>
+				<artifactId>styler-formatter-impl</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
