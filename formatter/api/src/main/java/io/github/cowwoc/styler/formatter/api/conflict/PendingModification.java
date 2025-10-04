@@ -17,11 +17,7 @@ import java.util.Objects;
  * @param sequenceNumber order in which this modification was created, used as tiebreaker when priorities are
  *     equal, must be non-negative
  */
-public record PendingModification(
-	TextEdit edit,
-	String ruleId,
-	int priority,
-	int sequenceNumber)
+public record PendingModification(TextEdit edit, String ruleId, int priority, int sequenceNumber)
 	implements Serializable
 {
 	/**

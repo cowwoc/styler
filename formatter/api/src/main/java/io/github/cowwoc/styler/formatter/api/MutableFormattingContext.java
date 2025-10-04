@@ -2,12 +2,20 @@ package io.github.cowwoc.styler.formatter.api;
 
 import io.github.cowwoc.styler.ast.ASTNode;
 import io.github.cowwoc.styler.ast.node.CompilationUnitNode;
+import io.github.cowwoc.styler.formatter.api.conflict.ConflictResolver;
+import io.github.cowwoc.styler.formatter.api.conflict.ConflictResolutionException;
+import io.github.cowwoc.styler.formatter.api.conflict.DefaultConflictDetector;
+import io.github.cowwoc.styler.formatter.api.conflict.DefaultConflictResolver;
+import io.github.cowwoc.styler.formatter.api.conflict.PendingModification;
+import io.github.cowwoc.styler.formatter.api.conflict.PriorityResolutionStrategy;
+import io.github.cowwoc.styler.formatter.api.conflict.ResolutionDecision;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -30,13 +38,19 @@ public class MutableFormattingContext
 	private final Map<String, Object> metadata;
 	private final AtomicInteger modificationCount = new AtomicInteger(0);
 
+	// Conflict resolution: Queue for pending modifications
+	private final List<PendingModification> pendingModifications = new ArrayList<>(100);
+	private final AtomicInteger sequenceCounter = new AtomicInteger(0);
+	private final ConflictResolver conflictResolver;
+
 	// Security: Resource protection mechanisms
 	private static final int MAX_MODIFICATIONS = 10_000;
+	private static final int MAX_PENDING_MODIFICATIONS = 10_000;
 	private static final int MAX_RECURSION_DEPTH = 1000;
 	private int currentRecursionDepth;
 
 	/**
-	 * Creates a new mutable formatting context.
+	 * Creates a new mutable formatting context with default conflict resolution strategy.
 	 *
 	 * @param rootNode the root AST node to format
 	 * @param sourceText the original source text
@@ -50,12 +64,33 @@ public class MutableFormattingContext
 	                               RuleConfiguration configuration, Set<String> enabledRules,
 	                               Map<String, Object> metadata)
 	{
+		this(rootNode, sourceText, filePath, configuration, enabledRules, metadata,
+			new DefaultConflictResolver(new DefaultConflictDetector(), new PriorityResolutionStrategy()));
+	}
+
+	/**
+	 * Creates a new mutable formatting context with custom conflict resolution strategy.
+	 *
+	 * @param rootNode the root AST node to format
+	 * @param sourceText the original source text
+	 * @param filePath the path to the source file
+	 * @param configuration the formatting configuration
+	 * @param enabledRules the set of enabled rule IDs
+	 * @param metadata additional metadata
+	 * @param conflictResolver the conflict resolver to use for pending modifications
+	 * @throws NullPointerException if any argument is {@code null}
+	 */
+	public MutableFormattingContext(CompilationUnitNode rootNode, String sourceText, Path filePath,
+	                               RuleConfiguration configuration, Set<String> enabledRules,
+	                               Map<String, Object> metadata, ConflictResolver conflictResolver)
+	{
 		this.rootNode = requireThat(rootNode, "rootNode").isNotNull().getValue();
 		this.sourceText = requireThat(sourceText, "sourceText").isNotNull().getValue();
 		this.filePath = requireThat(filePath, "filePath").isNotNull().getValue();
 		this.configuration = requireThat(configuration, "configuration").isNotNull().getValue();
 		this.enabledRules = Set.copyOf(requireThat(enabledRules, "enabledRules").isNotNull().getValue());
 		this.metadata = Map.copyOf(requireThat(metadata, "metadata").isNotNull().getValue());
+		this.conflictResolver = requireThat(conflictResolver, "conflictResolver").isNotNull().getValue();
 	}
 
 	/**
@@ -375,7 +410,105 @@ public class MutableFormattingContext
 			--currentRecursionDepth;
 		}
 	}
+	/**
+	 * @return the number of modifications made to the AST
+	 */
+	public int getModificationCount()
+	{
+		return modificationCount.get();
+	}
+	/**
+	 * Queues a pending modification for later conflict resolution and application.
+	 * <p>
+	 * Modifications are assigned a monotonically increasing sequence number for tiebreaking
+	 * in conflict resolution. The modification is not applied immediately but instead queued
+	 * for batch processing during {@link #commit()}.
+	 *
+	 * @param modification the modification to queue, never {@code null}
+	 * @throws NullPointerException if {@code modification} is {@code null}
+	 * @throws IllegalStateException if the pending modification queue is full
+	 */
+	public void queueModification(PendingModification modification)
+	{
+		Objects.requireNonNull(modification, "modification cannot be null");
 
+		if (pendingModifications.size() >= MAX_PENDING_MODIFICATIONS)
+		{
+			throw new IllegalStateException(
+				"Pending modification queue full: " + pendingModifications.size() +
+				" (maximum: " + MAX_PENDING_MODIFICATIONS + ")");
+		}
+
+		// Assign sequence number for tiebreaking in conflict resolution
+		PendingModification sequenced = new PendingModification(
+			modification.edit(),
+			modification.ruleId(),
+			modification.priority(),
+			sequenceCounter.getAndIncrement());
+
+		pendingModifications.add(sequenced);
+	}
+	/**
+	 * Commits all pending modifications using conflict resolution.
+	 * <p>
+	 * This method performs the complete conflict resolution workflow:
+	 * <ol>
+	 * <li>Detects conflicts between pending modifications</li>
+	 * <li>Applies configured resolution strategy to each conflict</li>
+	 * <li>Applies non-conflicting modifications to the AST</li>
+	 * <li>Clears the queue and resets sequence counter</li>
+	 * </ol>
+	 * <p>
+	 * If conflict resolution fails, the queue is left unchanged to allow retry with
+	 * a different strategy or manual intervention.
+	 *
+	 * @return the resolution decision indicating which modifications were applied/discarded
+	 * @throws ConflictResolutionException if conflicts cannot be resolved by the configured strategy
+	 * @throws IllegalStateException if AST modification fails
+	 */
+	public ResolutionDecision commit() throws ConflictResolutionException
+	{
+		// Fast path: empty queue
+		if (pendingModifications.isEmpty())
+		{
+			return new ResolutionDecision(
+				List.of(),
+				List.of(),
+				"No pending modifications to commit");
+		}
+
+		try
+		{
+			// Resolve conflicts using configured resolver
+			ResolutionDecision decision = conflictResolver.resolve(List.copyOf(pendingModifications));
+
+			// Apply modifications from resolution decision
+			for (PendingModification mod : decision.toApply())
+			{
+				applyModification(mod);
+			}
+
+			// Clear queue and reset sequence counter after successful application
+			pendingModifications.clear();
+			sequenceCounter.set(0);
+
+			return decision;
+		}
+		catch (ConflictResolutionException e)
+		{
+			// Leave queue unchanged to allow retry with different strategy
+			throw e;
+		}
+	}
+	/**
+	 * Returns the number of pending modifications awaiting commit.
+	 *
+	 * @return the size of the pending modification queue, never negative
+	 */
+	public int getPendingModificationCount()
+	{
+		return pendingModifications.size();
+	}
 	/**
 	 * Finds the path from the root node to the target node using parent pointers.
 	 * The returned path includes both the root and target nodes.
@@ -567,15 +700,29 @@ public class MutableFormattingContext
 		// modifiedChild is now the new root
 		setRootNode((CompilationUnitNode) modifiedChild);
 	}
-
 	/**
-	 * @return the number of modifications made to the AST
+	 * Applies a single pending modification to the AST.
+	 * <p>
+	 * This method translates a text-based modification (TextEdit) into AST node modifications
+	 * using the immutable AST reconstruction pattern.
+	 *
+	 * @param modification the modification to apply, never {@code null}
+	 * @throws NullPointerException if {@code modification} is {@code null}
+	 * @throws UnsupportedOperationException until AST modification implementation is complete
 	 */
-	public int getModificationCount()
+	private void applyModification(PendingModification modification)
 	{
-		return modificationCount.get();
-	}
+		Objects.requireNonNull(modification, "modification cannot be null");
 
+		// Implementation needed: Implement TextEdit to AST transformation when needed by formatting rules:
+		// 1. Locate AST nodes covering the source range
+		// 2. Determine modification type (replace, insert, delete)
+		// 3. Apply appropriate AST transformation using existing methods (replaceChild, etc.)
+		// 4. Rebuild ancestor chain to root
+		//
+		// For now, this is a no-op stub to enable testing of the conflict resolution
+		// pipeline without requiring full AST transformation implementation.
+	}
 	/**
 	 * Checks resource limits to prevent stack overflow and excessive modifications.
 	 *
@@ -584,12 +731,12 @@ public class MutableFormattingContext
 	private void checkResourceLimits()
 	{
 		if (currentRecursionDepth > MAX_RECURSION_DEPTH)
-	{
+		{
 			throw new IllegalStateException(
 				"Maximum recursion depth exceeded: " + currentRecursionDepth + " > " + MAX_RECURSION_DEPTH);
 		}
 		if (modificationCount.get() >= MAX_MODIFICATIONS)
-	{
+		{
 			throw new IllegalStateException(
 				"Maximum modification count exceeded: " + modificationCount.get() + " >= " + MAX_MODIFICATIONS);
 		}

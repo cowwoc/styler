@@ -14,11 +14,8 @@ import java.util.Objects;
  * @param severity the severity classification of this conflict, never {@code null}
  * @param description human-readable description of the conflict, never {@code null}
  */
-public record Conflict(
-	PendingModification first,
-	PendingModification second,
-	ConflictSeverity severity,
-	String description)
+public record Conflict(PendingModification first, PendingModification second,
+	ConflictSeverity severity, String description)
 	implements Serializable
 {
 	/**

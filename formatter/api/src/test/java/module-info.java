@@ -11,4 +11,5 @@ module io.github.cowwoc.styler.formatter.api.test
 
 	// CRITICAL: Use 'opens' NOT 'exports' for TestNG reflection access
 	opens io.github.cowwoc.styler.formatter.api.test to org.testng;
+	opens io.github.cowwoc.styler.formatter.api.test.conflict to org.testng;
 }

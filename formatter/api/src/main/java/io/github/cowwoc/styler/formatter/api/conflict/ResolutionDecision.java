@@ -13,10 +13,8 @@ import java.util.Objects;
  * @param toDiscard modifications that should not be applied due to conflicts, never {@code null}, may be empty
  * @param rationale human-readable explanation of the resolution decision, never {@code null}
  */
-public record ResolutionDecision(
-	List<PendingModification> toApply,
-	List<PendingModification> toDiscard,
-	String rationale)
+public record ResolutionDecision(List<PendingModification> toApply,
+	List<PendingModification> toDiscard, String rationale)
 {
 	/**
 	 * Compact constructor with validation and defensive copying.

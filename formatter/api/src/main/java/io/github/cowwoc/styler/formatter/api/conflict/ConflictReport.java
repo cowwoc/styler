@@ -16,11 +16,8 @@ import java.util.Objects;
  * @param maxSeverity highest severity level detected, never {@code null}
  * @param summary human-readable summary of conflicts, never {@code null}
  */
-public record ConflictReport(
-	List<Conflict> conflicts,
-	Map<String, Integer> conflictsByRule,
-	ConflictSeverity maxSeverity,
-	String summary)
+public record ConflictReport(List<Conflict> conflicts, Map<String, Integer> conflictsByRule,
+	ConflictSeverity maxSeverity, String summary)
 	implements Serializable
 {
 	/**
