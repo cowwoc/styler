@@ -23,7 +23,7 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDA
 - **IMPLEMENTATION**: Code and tests created according to synthesis plan
 - **VALIDATION**: Build verification and automated quality gates passed
 - **REVIEW**: All stakeholder agents provide unanimous approval
-- **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns
+- **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns (ONLY when resolution effort > 2x task scope AND agent consensus permits deferral - NEVER ask user for permission)
 - **COMPLETE**: Work preserved to main branch, todo.md updated
 - **CLEANUP**: Worktrees removed, locks released, temporary files cleaned
 
@@ -714,8 +714,10 @@ def validate_unanimous_approval(agent_responses):
 ```
 
 **CRITICAL ENFORCEMENT RULES:**
-- **NO HUMAN OVERRIDE**: Agent decisions are atomic and binding
+- **NO HUMAN OVERRIDE**: Agent decisions are atomic and binding - Claude MUST NOT ask user for permission to implement or defer
 - **MANDATORY RESOLUTION**: ANY ❌ REJECTED triggers either resolution cycle OR scope negotiation
+- **AUTOMATIC IMPLEMENTATION**: If stakeholder requirements are technically feasible, implement them immediately without asking user
+- **AGENT AUTHORITY**: Only agents (not users) decide what is BLOCKING vs DEFERRABLE during scope negotiation
 
 **Scope Assessment Decision Logic:**
 ```python
@@ -733,6 +735,8 @@ def handle_agent_rejections(rejecting_agents, rejection_feedback):
 ❌ "Proceeding despite minor rejections"
 ❌ "Issues are enhancement-level, not blocking"
 ❌ "Critical functionality complete, finalizing"
+❌ "Would you like me to implement these tests or defer this work?" (NEVER ask user - agents decide)
+❌ "This seems complex, should I proceed or skip?" (If feasible, implement - don't ask)
 
 **Required Response to ❌ REJECTED:**
 ✅ "Agent [name] returned ❌ REJECTED, analyzing resolution scope..."
