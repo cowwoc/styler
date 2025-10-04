@@ -72,16 +72,55 @@ public final class BraceFormatterFormattingRule implements FormattingRule
 	@Override
 	public FormattingResult apply(FormattingContext context)
 	{
-		// IMPLEMENTATION NOTE: This is a minimal demonstration showing the integration pattern.
-		// Full implementation requires:
-		// 1. BraceNodeCollector (AST visitor to identify brace-containing nodes)
-		// 2. BraceStyleAnalyzer (violation detection using style strategies)
-		// 3. BraceEditGenerator (TextEdit creation for brace repositioning)
-		//
-		// Current implementation returns empty result to demonstrate compilation and integration
-		// without actual formatting logic. This allows stakeholders to review the architectural
-		// approach before investing in full implementation.
+		BraceFormatterRuleConfiguration config = (BraceFormatterRuleConfiguration) context.getConfiguration();
+		if (config == null)
+		{
+			config = (BraceFormatterRuleConfiguration) getDefaultConfiguration();
+		}
 
-		return FormattingResult.empty();
+		// Initialize components
+		String sourceText = context.getSourceText();
+		// Use default values for tab width and continuation indent
+		IndentationCalculator indentCalc = new IndentationCalculator(4, 4);
+
+		// Create strategy map
+		java.util.Map<String, BraceStyleStrategy> strategies = new java.util.HashMap<>();
+		strategies.put("class", createStrategy(config.getEffectiveBraceStyle("class")));
+		strategies.put("method", createStrategy(config.getEffectiveBraceStyle("method")));
+		strategies.put("control", createStrategy(config.getEffectiveBraceStyle("control")));
+		strategies.put("general", createStrategy(config.getEffectiveBraceStyle("general")));
+
+		// Phase 2: Collect brace contexts
+		BraceNodeCollector collector = new BraceNodeCollector(sourceText);
+		java.util.List<BraceContext> contexts = new java.util.ArrayList<>();
+		context.getRootNode().accept(collector, contexts);
+
+		// Phase 3: Analyze violations
+		BraceStyleAnalyzer analyzer = new BraceStyleAnalyzer(strategies, sourceText, indentCalc);
+		java.util.List<BraceViolation> violations = new java.util.ArrayList<>();
+		for (BraceContext braceContext : contexts)
+		{
+			violations.addAll(analyzer.analyzeNode(braceContext));
+		}
+
+		// Phase 4: Generate edits
+		BraceEditGenerator generator = new BraceEditGenerator(sourceText, indentCalc);
+		java.util.List<io.github.cowwoc.styler.formatter.api.TextEdit> edits = new java.util.ArrayList<>();
+		for (BraceViolation violation : violations)
+		{
+			edits.add(generator.generateEdit(violation));
+		}
+
+		return FormattingResult.withEdits(edits);
+	}
+
+	private BraceStyleStrategy createStrategy(io.github.cowwoc.styler.formatter.api.BraceStyle style)
+	{
+		return switch (style)
+		{
+			case K_AND_R -> new KAndRStrategy();
+			case ALLMAN -> new AllmanStrategy();
+			case GNU -> new GnuStrategy();
+		};
 	}
 }
