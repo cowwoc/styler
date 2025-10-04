@@ -81,5 +81,4 @@ public class FlexibleConstructorBodiesStrategy implements ParseStrategy
 	{
 		return "Flexible constructor bodies (Java 25+, JEP 513)";
 	}
-
 }

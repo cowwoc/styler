@@ -564,8 +564,9 @@ def validate_requirements_complete(required_agents, task_dir):
 IF (source_code_modified OR runtime_behavior_changed):
     EXECUTE full validation sequence
     REQUIRED CONDITIONS:
-    - [ ] Build validation passes (./mvnw clean compile test)
-    - [ ] All automated quality gates pass
+    - [ ] Full build validation passes (./mvnw verify)
+    - [ ] All tests pass
+    - [ ] All automated quality gates pass (checkstyle, PMD, etc.)
     - [ ] Performance benchmarks within acceptable ranges (if applicable)
     - [ ] Security scanning clean (if applicable)
 ELSE:
@@ -573,7 +574,7 @@ ELSE:
 ```
 
 **Evidence Required (Full Path):**
-- Build success output with zero exit code
+- Build success output with zero exit code from `./mvnw verify`
 - Quality gate results (checkstyle, PMD, etc.)
 - Test execution results showing all tests pass
 - Performance baseline comparison (if performance-critical changes)
@@ -754,12 +755,12 @@ If RESOLVE_NOW: Confirm all issues must be resolved in current task
 - [ ] All work committed to task branch with descriptive commit message
 - [ ] Task branch merged to main branch with **LINEAR COMMIT HISTORY** (fast-forward only, NO merge commits)
 - [ ] todo.md updated to mark task complete (in same commit as deliverables)
-- [ ] Build verification passes on main branch after merge
+- [ ] Full build verification passes on main branch after merge (`./mvnw verify`)
 
 **Evidence Required:**
 - Git log showing clean linear history (no merge commits)
 - todo.md modification included in final commit
-- Main branch build success after integration
+- Main branch build success after integration (`./mvnw verify` passes)
 - All deliverables preserved in main branch
 
 **CRITICAL: Linear Commit History Requirement**
@@ -793,7 +794,7 @@ git merge --ff-only {TASK_NAME}
 # Verification
 git log --oneline -5  # Must show linear history, no merge commits
 git log --graph --oneline -10  # Should show straight line, not branches
-./mvnw clean verify -q  # Verify build integrity
+./mvnw verify -q  # Verify build + tests + linters all pass
 ```
 
 **Example for task "refactor-line-wrapping-architecture"**:
@@ -1296,11 +1297,10 @@ git status --porcelain | grep -E "(dist/|node_modules/|target/|\.jar$)" && (echo
 ### Build Validation Gates
 **Mandatory after implementation:**
 ```bash
-# Compile and test validation
-./mvnw clean compile test -q || (echo "ERROR: Build/test failure" && exit 1)
+# Full verification (build + tests + linters) before completion
+./mvnw verify -q || (echo "ERROR: Build/test/linter failure - task cannot be completed" && exit 1)
 
-# Full verification before completion
-./mvnw clean verify -q || (echo "ERROR: Full build failure - task cannot be completed" && exit 1)
+# Note: 'mvnw verify' executes: compile → test → checkstyle → PMD → all quality gates
 ```
 
 ### Decision Parsing Enforcement

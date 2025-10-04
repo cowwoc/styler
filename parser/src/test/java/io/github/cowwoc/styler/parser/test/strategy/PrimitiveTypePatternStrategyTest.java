@@ -18,8 +18,11 @@ public final class PrimitiveTypePatternStrategyTest
 {
 	// ========== Version Filtering Tests ==========
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles Java 25 int keyword.
+	 */
 	@Test
-	public void canHandle_withJava25AndIntKeyword_returnsTrue()
+	public void canHandleWithJava25AndIntKeywordReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.INT);
@@ -29,8 +32,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy rejects Java 24 source version.
+	 */
 	@Test
-	public void canHandle_withJava24_returnsFalse()
+	public void canHandleWithJava24ReturnsFalse()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.INT);
@@ -42,8 +48,11 @@ public final class PrimitiveTypePatternStrategyTest
 
 	// ========== Primitive Type Coverage Tests ==========
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles int primitive type keyword.
+	 */
 	@Test
-	public void canHandle_withIntKeyword_returnsTrue()
+	public void canHandleWithIntKeywordReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.INT);
@@ -53,8 +62,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles long primitive type keyword.
+	 */
 	@Test
-	public void canHandle_withLongKeyword_returnsTrue()
+	public void canHandleWithLongKeywordReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LONG);
@@ -64,8 +76,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles double primitive type keyword.
+	 */
 	@Test
-	public void canHandle_withDoubleKeyword_returnsTrue()
+	public void canHandleWithDoubleKeywordReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.DOUBLE);
@@ -75,8 +90,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles float primitive type keyword.
+	 */
 	@Test
-	public void canHandle_withFloatKeyword_returnsTrue()
+	public void canHandleWithFloatKeywordReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.FLOAT);
@@ -86,8 +104,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles boolean primitive type keyword.
+	 */
 	@Test
-	public void canHandle_withBooleanKeyword_returnsTrue()
+	public void canHandleWithBooleanKeywordReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.BOOLEAN);
@@ -97,8 +118,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles byte primitive type keyword.
+	 */
 	@Test
-	public void canHandle_withByteKeyword_returnsTrue()
+	public void canHandleWithByteKeywordReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.BYTE);
@@ -108,8 +132,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles short primitive type keyword.
+	 */
 	@Test
-	public void canHandle_withShortKeyword_returnsTrue()
+	public void canHandleWithShortKeywordReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.SHORT);
@@ -119,8 +146,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles char primitive type keyword.
+	 */
 	@Test
-	public void canHandle_withCharKeyword_returnsTrue()
+	public void canHandleWithCharKeywordReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.CHAR);
@@ -132,8 +162,11 @@ public final class PrimitiveTypePatternStrategyTest
 
 	// ========== Negative Cases ==========
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy rejects non-primitive keywords.
+	 */
 	@Test
-	public void canHandle_withNonPrimitiveKeyword_returnsFalse()
+	public void canHandleWithNonPrimitiveKeywordReturnsFalse()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.CLASS);
@@ -143,8 +176,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isFalse();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy rejects identifier tokens.
+	 */
 	@Test
-	public void canHandle_withIdentifier_returnsFalse()
+	public void canHandleWithIdentifierReturnsFalse()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.IDENTIFIER);
@@ -154,8 +190,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isFalse();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy rejects void keyword.
+	 */
 	@Test
-	public void canHandle_withVoid_returnsFalse()
+	public void canHandleWithVoidReturnsFalse()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.VOID);
@@ -167,8 +206,11 @@ public final class PrimitiveTypePatternStrategyTest
 
 	// ========== Phase Independence Validation ==========
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles top-level parsing phase.
+	 */
 	@Test
-	public void canHandle_withTopLevelPhase_returnsTrue()
+	public void canHandleWithTopLevelPhaseReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.INT);
@@ -178,8 +220,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles class body parsing phase.
+	 */
 	@Test
-	public void canHandle_withClassBodyPhase_returnsTrue()
+	public void canHandleWithClassBodyPhaseReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.INT);
@@ -189,8 +234,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles method body parsing phase.
+	 */
 	@Test
-	public void canHandle_withMethodBodyPhase_returnsTrue()
+	public void canHandleWithMethodBodyPhaseReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.INT);
@@ -200,8 +248,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy handles constructor body parsing phase.
+	 */
 	@Test
-	public void canHandle_withConstructorBodyPhase_returnsTrue()
+	public void canHandleWithConstructorBodyPhaseReturnsTrue()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.INT);
@@ -211,8 +262,11 @@ public final class PrimitiveTypePatternStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy behaves consistently across all parsing phases.
+	 */
 	@Test
-	public void canHandle_phaseDoesNotAffectResult_allPhasesConsistent()
+	public void canHandlePhaseDoesNotAffectResultAllPhasesConsistent()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LONG);
@@ -230,8 +284,11 @@ public final class PrimitiveTypePatternStrategyTest
 
 	// ========== Priority Validation ==========
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy returns keyword-based priority level.
+	 */
 	@Test
-	public void getPriority_returnsKeywordBasedPriority()
+	public void getPriorityReturnsKeywordBasedPriority()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 
@@ -242,8 +299,11 @@ public final class PrimitiveTypePatternStrategyTest
 
 	// ========== Description Validation ==========
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy description includes Java version and JEP reference.
+	 */
 	@Test
-	public void getDescription_containsJavaVersionAndJep()
+	public void getDescriptionContainsJavaVersionAndJep()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 
@@ -255,8 +315,11 @@ public final class PrimitiveTypePatternStrategyTest
 
 	// ========== Error Handling ==========
 
+	/**
+	 * Verifies that PrimitiveTypePatternStrategy throws UnsupportedOperationException for parseConstruct.
+	 */
 	@Test(expectedExceptions = UnsupportedOperationException.class)
-	public void parseConstruct_throwsUnsupportedOperationException()
+	public void parseConstructThrowsUnsupportedOperationException()
 	{
 		PrimitiveTypePatternStrategy strategy = new PrimitiveTypePatternStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.INT);

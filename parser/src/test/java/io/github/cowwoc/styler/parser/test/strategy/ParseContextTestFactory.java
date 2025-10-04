@@ -57,7 +57,11 @@ public final class ParseContextTestFactory
 		List<TokenInfo> tokenList = new ArrayList<>(tokens);
 		if (tokenList.isEmpty() || tokenList.get(tokenList.size() - 1).type() != TokenType.EOF)
 		{
-			int lastPos = tokenList.isEmpty() ? 0 : tokenList.get(tokenList.size() - 1).endOffset();
+			int lastPos;
+			if (tokenList.isEmpty())
+				lastPos = 0;
+			else
+				lastPos = tokenList.get(tokenList.size() - 1).endOffset();
 			tokenList.add(new TokenInfo(TokenType.EOF, lastPos, 0, ""));
 		}
 
@@ -78,7 +82,7 @@ public final class ParseContextTestFactory
 		{
 			if (token.type() != TokenType.EOF)
 			{
-				sb.append(token.text()).append(" ");
+				sb.append(token.text()).append(' ');
 			}
 		}
 		return sb.toString().trim();

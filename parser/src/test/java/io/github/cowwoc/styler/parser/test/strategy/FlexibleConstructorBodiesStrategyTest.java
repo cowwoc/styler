@@ -17,8 +17,11 @@ import static io.github.cowwoc.styler.parser.test.strategy.StrategyTestConstants
  */
 public final class FlexibleConstructorBodiesStrategyTest
 {
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy handles constructor bodies in Java 25 with LBRACE token.
+	 */
 	@Test
-	public void canHandle_withConstructorPhaseAndJava25AndLbrace_returnsTrue()
+	public void canHandleWithConstructorPhaseAndJava25AndLbraceReturnsTrue()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
@@ -28,8 +31,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(result, "canHandle").isTrue();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy does not handle method body parsing phase.
+	 */
 	@Test
-	public void canHandle_withMethodBodyPhase_returnsFalse()
+	public void canHandleWithMethodBodyPhaseReturnsFalse()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
@@ -39,8 +45,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(result, "canHandle").isFalse();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy does not handle initializer block parsing phase.
+	 */
 	@Test
-	public void canHandle_withInitializerBlockPhase_returnsFalse()
+	public void canHandleWithInitializerBlockPhaseReturnsFalse()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
@@ -50,8 +59,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(result, "canHandle").isFalse();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy does not handle class body parsing phase.
+	 */
 	@Test
-	public void canHandle_withClassBodyPhase_returnsFalse()
+	public void canHandleWithClassBodyPhaseReturnsFalse()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
@@ -61,8 +73,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(result, "canHandle").isFalse();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy does not handle top-level parsing phase.
+	 */
 	@Test
-	public void canHandle_withTopLevelPhase_returnsFalse()
+	public void canHandleWithTopLevelPhaseReturnsFalse()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
@@ -72,8 +87,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(result, "canHandle").isFalse();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy does not handle Java 24 source version.
+	 */
 	@Test
-	public void canHandle_withJava24_returnsFalse()
+	public void canHandleWithJava24ReturnsFalse()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
@@ -83,8 +101,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(result, "canHandle").isFalse();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy does not handle Java 21 source version.
+	 */
 	@Test
-	public void canHandle_withJava21_returnsFalse()
+	public void canHandleWithJava21ReturnsFalse()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
@@ -94,8 +115,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(result, "canHandle").isFalse();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy does not handle RBRACE token type.
+	 */
 	@Test
-	public void canHandle_withRbraceToken_returnsFalse()
+	public void canHandleWithRbraceTokenReturnsFalse()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.RBRACE);
@@ -105,8 +129,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(result, "canHandle").isFalse();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy does not handle SEMICOLON token type.
+	 */
 	@Test
-	public void canHandle_withSemicolonToken_returnsFalse()
+	public void canHandleWithSemicolonTokenReturnsFalse()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.SEMICOLON);
@@ -116,8 +143,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(result, "canHandle").isFalse();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy does not handle IDENTIFIER token type.
+	 */
 	@Test
-	public void canHandle_withIdentifierToken_returnsFalse()
+	public void canHandleWithIdentifierTokenReturnsFalse()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.IDENTIFIER);
@@ -127,8 +157,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(result, "canHandle").isFalse();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy returns phase-aware priority level.
+	 */
 	@Test
-	public void getPriority_returnsPhaseAwarePriority()
+	public void getPriorityReturnsPhaseAwarePriority()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 
@@ -137,8 +170,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(priority, "priority").isEqualTo(ParseStrategy.PRIORITY_PHASE_AWARE);
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy priority value is 15.
+	 */
 	@Test
-	public void getPriority_returns15()
+	public void getPriorityReturns15()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 
@@ -147,8 +183,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(priority, "priority").isEqualTo(15);
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy returns a non-null description.
+	 */
 	@Test
-	public void getDescription_returnsNonNull()
+	public void getDescriptionReturnsNonNull()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 
@@ -157,8 +196,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(description, "description").isNotNull();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy description contains Java 25 reference.
+	 */
 	@Test
-	public void getDescription_containsJava25Reference()
+	public void getDescriptionContainsJava25Reference()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 
@@ -167,8 +209,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(description.contains("25"), "descriptionContainsJava25").isTrue();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy description contains JEP reference.
+	 */
 	@Test
-	public void getDescription_containsJepReference()
+	public void getDescriptionContainsJepReference()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 
@@ -177,8 +222,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		requireThat(description.contains("JEP"), "descriptionContainsJEP").isTrue();
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy rejects all parsing phases except constructor body.
+	 */
 	@Test
-	public void canHandle_allPhasesExceptConstructorBody_returnsFalse()
+	public void canHandleAllPhasesExceptConstructorBodyReturnsFalse()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
@@ -193,8 +241,11 @@ public final class FlexibleConstructorBodiesStrategyTest
 		}
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy rejects all Java versions before Java 25.
+	 */
 	@Test
-	public void canHandle_allVersionsBelow25_returnsFalse()
+	public void canHandleAllVersionsBelow25ReturnsFalse()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
@@ -207,27 +258,30 @@ public final class FlexibleConstructorBodiesStrategyTest
 		}
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy requires all three conditions to be met simultaneously.
+	 */
 	@Test
-	public void canHandle_allConditionsMustBeTrue()
+	public void canHandleAllConditionsMustBeTrue()
 	{
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
 
 		// All three conditions met = true
 		ParseContext validContext = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
-		requireThat(strategy.canHandle(JAVA_25, CONSTRUCTOR_BODY, validContext), "allConditionsMet")
-			.isTrue();
+		requireThat(strategy.canHandle(JAVA_25, CONSTRUCTOR_BODY, validContext), "allConditionsMet").
+			isTrue();
 
 		// Wrong version
-		requireThat(strategy.canHandle(JAVA_24, CONSTRUCTOR_BODY, validContext), "wrongVersion")
-			.isFalse();
+		requireThat(strategy.canHandle(JAVA_24, CONSTRUCTOR_BODY, validContext), "wrongVersion").
+			isFalse();
 
 		// Wrong phase
-		requireThat(strategy.canHandle(JAVA_25, METHOD_BODY, validContext), "wrongPhase")
-			.isFalse();
+		requireThat(strategy.canHandle(JAVA_25, METHOD_BODY, validContext), "wrongPhase").
+			isFalse();
 
 		// Wrong token
 		ParseContext wrongToken = ParseContextTestFactory.createMinimalContext(TokenType.SEMICOLON);
-		requireThat(strategy.canHandle(JAVA_25, CONSTRUCTOR_BODY, wrongToken), "wrongToken")
-			.isFalse();
+		requireThat(strategy.canHandle(JAVA_25, CONSTRUCTOR_BODY, wrongToken), "wrongToken").
+			isFalse();
 	}
 }

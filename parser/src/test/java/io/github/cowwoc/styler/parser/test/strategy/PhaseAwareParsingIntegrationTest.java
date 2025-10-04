@@ -22,8 +22,11 @@ import static io.github.cowwoc.styler.parser.test.strategy.StrategyTestConstants
  */
 public final class PhaseAwareParsingIntegrationTest
 {
+	/**
+	 * Verifies that parser finds FlexibleConstructorBodiesStrategy when parsing constructor body.
+	 */
 	@Test
-	public void parseConstructorBody_withFlexibleConstructorBodiesStrategy_findsStrategy()
+	public void parseConstructorBodyWithFlexibleConstructorBodiesStrategyFindsStrategy()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
@@ -35,8 +38,11 @@ public final class PhaseAwareParsingIntegrationTest
 		requireThat(found, "foundStrategy").isEqualTo(strategy);
 	}
 
+	/**
+	 * Verifies that FlexibleConstructorBodiesStrategy is not selected for Java 24 source version.
+	 */
 	@Test
-	public void parseConstructorBody_java24_doesNotFindFlexibleConstructorBodiesStrategy()
+	public void parseConstructorBodyJava24DoesNotFindFlexibleConstructorBodiesStrategy()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
@@ -49,8 +55,11 @@ public final class PhaseAwareParsingIntegrationTest
 		requireThat(found, "foundStrategy").isNull();
 	}
 
+	/**
+	 * Verifies that constructor-specific strategy is not selected for method body parsing.
+	 */
 	@Test
-	public void parseMethodBody_withConstructorOnlyStrategy_returnsNull()
+	public void parseMethodBodyWithConstructorOnlyStrategyReturnsNull()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
@@ -62,8 +71,11 @@ public final class PhaseAwareParsingIntegrationTest
 		requireThat(found, "foundStrategy").isNull();
 	}
 
+	/**
+	 * Verifies that parser selects appropriate phase-aware strategy during phase transitions.
+	 */
 	@Test
-	public void phaseTransition_fromClassToConstructor_selectsPhaseAwareStrategy()
+	public void phaseTransitionFromClassToConstructorSelectsPhaseAwareStrategy()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		PhaseTrackingStrategy classStrategy = new PhaseTrackingStrategy(CLASS_BODY, 10);
@@ -83,8 +95,11 @@ public final class PhaseAwareParsingIntegrationTest
 		requireThat(constructorPhase, "constructorPhaseStrategy").isEqualTo(constructorStrategy);
 	}
 
+	/**
+	 * Verifies that multiple phase-aware strategies correctly handle their respective parsing phases.
+	 */
 	@Test
-	public void multiplePhaseAwareStrategies_eachHandlesDifferentPhase()
+	public void multiplePhaseAwareStrategiesEachHandlesDifferentPhase()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		PhaseTrackingStrategy topLevel = new PhaseTrackingStrategy(TOP_LEVEL, 10);
@@ -97,16 +112,19 @@ public final class PhaseAwareParsingIntegrationTest
 
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
 
-		requireThat(registry.findStrategy(JAVA_25, TOP_LEVEL, context), "topLevelResult")
-			.isEqualTo(topLevel);
-		requireThat(registry.findStrategy(JAVA_25, CLASS_BODY, context), "classBodyResult")
-			.isEqualTo(classBody);
-		requireThat(registry.findStrategy(JAVA_25, METHOD_BODY, context), "methodBodyResult")
-			.isEqualTo(methodBody);
+		requireThat(registry.findStrategy(JAVA_25, TOP_LEVEL, context), "topLevelResult").
+			isEqualTo(topLevel);
+		requireThat(registry.findStrategy(JAVA_25, CLASS_BODY, context), "classBodyResult").
+			isEqualTo(classBody);
+		requireThat(registry.findStrategy(JAVA_25, METHOD_BODY, context), "methodBodyResult").
+			isEqualTo(methodBody);
 	}
 
+	/**
+	 * Verifies that parser selects FlexibleConstructorBodiesStrategy for Java 25 constructor with statements.
+	 */
 	@Test
-	public void constructorWithStatements_java25_selectsFlexibleConstructorStrategy()
+	public void constructorWithStatementsJava25SelectsFlexibleConstructorStrategy()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		registry.registerDefaultStrategies();
@@ -127,8 +145,11 @@ public final class PhaseAwareParsingIntegrationTest
 		requireThat(found.getDescription().contains("25"), "descriptionContains25").isTrue();
 	}
 
+	/**
+	 * Verifies that parser falls back from Java 25 to Java 21 strategy when needed.
+	 */
 	@Test
-	public void versionFallback_java25Request_findsJava21Strategy()
+	public void versionFallbackJava25RequestFindsJava21Strategy()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		PhaseTrackingStrategy java21Strategy = new PhaseTrackingStrategy(CONSTRUCTOR_BODY, 15);
@@ -144,8 +165,11 @@ public final class PhaseAwareParsingIntegrationTest
 		requireThat(found, "foundStrategy").isEqualTo(java21Strategy);
 	}
 
+	/**
+	 * Verifies that parser selects first matching strategy when falling back through multiple versions.
+	 */
 	@Test
-	public void versionFallback_multipleEarlierVersions_selectsFirstMatch()
+	public void versionFallbackMultipleEarlierVersionsSelectsFirstMatch()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		PhaseTrackingStrategy java14Strategy = new PhaseTrackingStrategy(CONSTRUCTOR_BODY, 15);
@@ -163,8 +187,11 @@ public final class PhaseAwareParsingIntegrationTest
 		requireThat(found, "foundStrategy").isEqualTo(java14Strategy);
 	}
 
+	/**
+	 * Verifies that phase-aware strategy takes precedence over general strategy when applicable.
+	 */
 	@Test
-	public void mixedStrategies_phaseAwareAndGeneral_selectsPhaseAwareWhenApplicable()
+	public void mixedStrategiesPhaseAwareAndGeneralSelectsPhaseAwareWhenApplicable()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		GeneralStrategy generalStrategy = new GeneralStrategy(10);
@@ -185,8 +212,11 @@ public final class PhaseAwareParsingIntegrationTest
 		requireThat(methodResult, "methodResult").isEqualTo(generalStrategy);
 	}
 
+	/**
+	 * Verifies that empty registry returns null for all parsing phases.
+	 */
 	@Test
-	public void emptyRegistry_returnsNull_forAllPhases()
+	public void emptyRegistryReturnsNullForAllPhases()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		ParseContext context = ParseContextTestFactory.createMinimalContext(TokenType.LBRACE);
@@ -198,8 +228,11 @@ public final class PhaseAwareParsingIntegrationTest
 		}
 	}
 
+	/**
+	 * Verifies that default strategies provide coverage for all supported parsing phases.
+	 */
 	@Test
-	public void defaultStrategies_coverAllSupportedPhases()
+	public void defaultStrategiesCoverAllSupportedPhases()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		registry.registerDefaultStrategies();
@@ -211,14 +244,20 @@ public final class PhaseAwareParsingIntegrationTest
 		requireThat(constructorStrategy, "constructorStrategy").isNotNull();
 	}
 
+	/**
+	 * Verifies that phase-aware priority constant equals 15.
+	 */
 	@Test
-	public void strategyPriority_phaseAwareValue_isCorrect()
+	public void strategyPriorityPhaseAwareValueIsCorrect()
 	{
 		requireThat(ParseStrategy.PRIORITY_PHASE_AWARE, "phaseAwarePriority").isEqualTo(15);
 	}
 
+	/**
+	 * Verifies that multiple registries maintain independent strategy state.
+	 */
 	@Test
-	public void registryIsolation_multipleRegistries_independentState()
+	public void registryIsolationMultipleRegistriesIndependentState()
 	{
 		ParseStrategyRegistry registry1 = new ParseStrategyRegistry();
 		ParseStrategyRegistry registry2 = new ParseStrategyRegistry();

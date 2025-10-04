@@ -1,9 +1,6 @@
 package io.github.cowwoc.styler.parser;
 
 import io.github.cowwoc.styler.parser.strategies.FlexibleConstructorBodiesStrategy;
-import io.github.cowwoc.styler.parser.strategies.RecordDeclarationStrategy;
-import io.github.cowwoc.styler.parser.strategies.SealedClassStrategy;
-import io.github.cowwoc.styler.parser.strategies.StringTemplateStrategy;
 import io.github.cowwoc.styler.parser.strategies.SwitchExpressionStrategy;
 import java.util.*;
 

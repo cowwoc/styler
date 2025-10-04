@@ -20,8 +20,11 @@ import static io.github.cowwoc.styler.parser.test.strategy.StrategyTestConstants
  */
 public final class ParseStrategyRegistryIntegrationTest
 {
+	/**
+	 * Verifies that ParseStrategyRegistry supports complete create-register-find workflow.
+	 */
 	@Test
-	public void registryLifecycle_createRegisterFind_worksEndToEnd()
+	public void registryLifecycleCreateRegisterFindWorksEndToEnd()
 	{
 		// Create registry
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
@@ -38,22 +41,28 @@ public final class ParseStrategyRegistryIntegrationTest
 		requireThat(found, "foundStrategy").isEqualTo(strategy);
 	}
 
+	/**
+	 * Verifies that default strategy registration includes FlexibleConstructorBodiesStrategy for Java 25.
+	 */
 	@Test
-	public void defaultStrategies_afterRegistration_containsFlexibleConstructor()
+	public void defaultStrategiesAfterRegistrationContainsFlexibleConstructor()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		registry.registerDefaultStrategies();
 
 		List<ParseStrategy> java25Strategies = registry.getStrategies(JAVA_25);
 
-		boolean hasFlexibleConstructor = java25Strategies.stream()
-			.anyMatch(s -> s.getDescription().contains("JEP"));
+		boolean hasFlexibleConstructor = java25Strategies.stream().
+			anyMatch(s -> s.getDescription().contains("JEP"));
 
 		requireThat(hasFlexibleConstructor, "hasFlexibleConstructorStrategy").isTrue();
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry isolates strategies by Java version independently.
+	 */
 	@Test
-	public void multiVersionRegistry_differentStrategiesPerVersion_isolatesCorrectly()
+	public void multiVersionRegistryDifferentStrategiesPerVersionIsolatesCorrectly()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		VersionSpecificStrategy java21Strategy = new VersionSpecificStrategy(JAVA_21, 10);
@@ -71,8 +80,11 @@ public final class ParseStrategyRegistryIntegrationTest
 		requireThat(found25, "java25Strategy").isEqualTo(java25Strategy);
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry returns empty list when no strategies are registered.
+	 */
 	@Test
-	public void getStrategies_emptyRegistry_returnsEmptyList()
+	public void getStrategiesEmptyRegistryReturnsEmptyList()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 
@@ -81,8 +93,11 @@ public final class ParseStrategyRegistryIntegrationTest
 		requireThat(strategies.isEmpty(), "strategiesIsEmpty").isTrue();
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry returns all registered strategies for a version.
+	 */
 	@Test
-	public void getStrategies_afterMultipleRegistrations_returnsAll()
+	public void getStrategiesAfterMultipleRegistrationsReturnsAll()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		SimpleStrategy strategy1 = new SimpleStrategy(10);
@@ -101,8 +116,11 @@ public final class ParseStrategyRegistryIntegrationTest
 		requireThat(strategies.contains(strategy3), "containsStrategy3").isTrue();
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry returns strategies sorted by priority in descending order.
+	 */
 	@Test
-	public void getStrategies_returnsSortedByPriority_descendingOrder()
+	public void getStrategiesReturnsSortedByPriorityDescendingOrder()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		SimpleStrategy low = new SimpleStrategy(5);
@@ -122,8 +140,11 @@ public final class ParseStrategyRegistryIntegrationTest
 		requireThat(strategies.get(2), "thirdStrategy").isEqualTo(low);
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry falls back through older Java versions when strategy not found.
+	 */
 	@Test
-	public void versionFallbackChain_requestNewest_fallsBackThroughVersions()
+	public void versionFallbackChainRequestNewestFallsBackThroughVersions()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		SimpleStrategy java14Strategy = new SimpleStrategy(10);
@@ -138,8 +159,11 @@ public final class ParseStrategyRegistryIntegrationTest
 		requireThat(found, "foundStrategy").isEqualTo(java14Strategy);
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry uses exact version match when available without fallback.
+	 */
 	@Test
-	public void findStrategy_noVersionFallback_whenExactVersionExists()
+	public void findStrategyNoVersionFallbackWhenExactVersionExists()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		SimpleStrategy java21Strategy = new SimpleStrategy(5);
@@ -156,8 +180,11 @@ public final class ParseStrategyRegistryIntegrationTest
 		requireThat(found, "foundStrategy").isEqualTo(java25Strategy);
 	}
 
+	/**
+	 * Verifies that multiple ParseStrategyRegistry instances maintain independent state.
+	 */
 	@Test
-	public void registryIsolation_twoInstances_completelyIndependent()
+	public void registryIsolationTwoInstancesCompletelyIndependent()
 	{
 		ParseStrategyRegistry registry1 = new ParseStrategyRegistry();
 		ParseStrategyRegistry registry2 = new ParseStrategyRegistry();
@@ -174,8 +201,11 @@ public final class ParseStrategyRegistryIntegrationTest
 		requireThat(strategies1.size(), "registry1Size").isEqualTo(1);
 	}
 
+	/**
+	 * Verifies that default strategy registration populates strategies for supported Java versions.
+	 */
 	@Test
-	public void defaultStrategies_registeredForAllVersions()
+	public void defaultStrategiesRegisteredForAllVersions()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		registry.registerDefaultStrategies();
@@ -185,8 +215,11 @@ public final class ParseStrategyRegistryIntegrationTest
 		requireThat(java25Strategies.isEmpty(), "java25StrategiesNotEmpty").isFalse();
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry selects strategies based on parse context token type.
+	 */
 	@Test
-	public void findStrategy_withDifferentContexts_selectsAppropriately()
+	public void findStrategyWithDifferentContextsSelectsAppropriately()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TokenSpecificStrategy lbraceStrategy = new TokenSpecificStrategy(TokenType.LBRACE, 10);
@@ -206,8 +239,12 @@ public final class ParseStrategyRegistryIntegrationTest
 		requireThat(semicolonResult, "semicolonResult").isEqualTo(semicolonStrategy);
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry correctly handles complex scenarios with multiple versions,
+	 * phases, and priorities.
+	 */
 	@Test
-	public void complexIntegration_multipleVersionsPhasesPriorities_selectsCorrectly()
+	public void complexIntegrationMultipleVersionsPhasesPrioritiesSelectsCorrectly()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 

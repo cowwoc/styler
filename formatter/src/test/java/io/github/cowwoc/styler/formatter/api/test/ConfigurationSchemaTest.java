@@ -5,6 +5,8 @@ import org.testng.annotations.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
@@ -137,16 +139,22 @@ public class ConfigurationSchemaTest
 	 * Test resource loading.
 	 */
 	@Test
-	public void resourceLoading() throws ConfigurationException
+	public void resourceLoading() throws ConfigurationException, IOException
 	{
-		ConfigurationSchema config = ConfigurationSchema.fromResource("/sample-config.toml");
+		// Load from test resources using test classloader
+		try (InputStream inputStream = getClass().getResourceAsStream("/sample-config.toml"))
+		{
+			assertThat(inputStream).as("sample-config.toml resource").isNotNull();
+			String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+			ConfigurationSchema config = ConfigurationSchema.fromToml(content);
 
-		assertThat(config.getVersion()).isEqualTo("1.0");
-		assertThat(config.getProfile()).isEqualTo("corporate-java");
-		assertThat(config.getExtendsProfiles()).containsExactly("google-java-style", "checkstyle-recommended");
-		assertThat(config.getGlobal().getIndentationType()).isEqualTo(GlobalConfiguration.IndentationType.SPACES);
-		assertThat(config.getRules()).containsKey("LineLength");
-		assertThat(config.getRules()).containsKey("ImportOrder");
+			assertThat(config.getVersion()).isEqualTo("1.0");
+			assertThat(config.getProfile()).isEqualTo("corporate-java");
+			assertThat(config.getExtendsProfiles()).containsExactly("google-java-style", "checkstyle-recommended");
+			assertThat(config.getGlobal().getIndentationType()).isEqualTo(GlobalConfiguration.IndentationType.SPACES);
+			assertThat(config.getRules()).containsKey("LineLength");
+			assertThat(config.getRules()).containsKey("ImportOrder");
+		}
 	}
 
 	/**

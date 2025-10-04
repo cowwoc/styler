@@ -292,6 +292,42 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 
 **PRINCIPLE**: Comments should describe WHAT the code does and WHY it works that way, never WHAT it used to do or HOW it changed. When comments become outdated, update them to accurately reflect current behavior.
 
+## 📚 JAVADOC COMMENT REQUIREMENTS
+
+**CRITICAL MANUAL PROCESS**: JavaDoc comments must NEVER be populated using automated scripts or template-based tools.
+
+**MANDATORY APPROACH**:
+✅ Read and understand the actual business logic being implemented
+✅ Write JavaDoc that explains WHAT is being validated/implemented based on context
+✅ Use meaningful descriptions that add value beyond the method name
+✅ Each JavaDoc must be crafted individually based on the specific code's purpose
+
+**PROHIBITED APPROACH**:
+❌ Using scripts to bulk-add generic JavaDoc like "Test method" or "Validates X"
+❌ Template-based JavaDoc generation without understanding business context
+❌ Copy-paste JavaDoc patterns without adapting to specific use case
+❌ Generic descriptions that could apply to any method
+
+**EXAMPLE - BAD**:
+```java
+/**
+ * Test method.
+ */
+@Test
+public void canHandleWithJava25ReturnsTrue()
+```
+
+**EXAMPLE - GOOD**:
+```java
+/**
+ * Verifies that FlexibleConstructorBodiesStrategy handles constructor bodies in Java 25 with LBRACE token.
+ */
+@Test
+public void canHandleWithJava25ReturnsTrue()
+```
+
+**RATIONALE**: JavaDoc comments require understanding the business domain and technical context. Automated scripts cannot comprehend what a method actually does or why it matters, leading to meaningless documentation that provides no value to developers.
+
 ## Essential References
 
 [docs/project/architecture.md](docs/project/architecture.md) - Project architecture and features

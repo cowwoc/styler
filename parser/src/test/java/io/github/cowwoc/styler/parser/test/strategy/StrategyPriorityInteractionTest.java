@@ -17,8 +17,11 @@ import static io.github.cowwoc.styler.parser.test.strategy.StrategyTestConstants
  */
 public final class StrategyPriorityInteractionTest
 {
+	/**
+	 * Verifies that strategy registry selects higher priority strategy when multiple strategies match.
+	 */
 	@Test
-	public void findStrategy_twoStrategiesDifferentPriorities_selectsHigherPriority()
+	public void findStrategyTwoStrategiesDifferentPrioritiesSelectsHigherPriority()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestStrategy lowPriority = new TestStrategy(5, true);
@@ -33,8 +36,11 @@ public final class StrategyPriorityInteractionTest
 		requireThat(selected, "selectedStrategy").isEqualTo(highPriority);
 	}
 
+	/**
+	 * Verifies that strategy registry selects highest priority among three competing strategies.
+	 */
 	@Test
-	public void findStrategy_threeStrategiesDifferentPriorities_selectsHighest()
+	public void findStrategyThreeStrategiesDifferentPrioritiesSelectsHighest()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestStrategy low = new TestStrategy(5, true);
@@ -51,8 +57,11 @@ public final class StrategyPriorityInteractionTest
 		requireThat(selected, "selectedStrategy").isEqualTo(high);
 	}
 
+	/**
+	 * Verifies that strategy registry falls back to lower priority when high priority cannot handle request.
+	 */
 	@Test
-	public void findStrategy_highPriorityCannotHandle_selectsLowerPriorityThatCan()
+	public void findStrategyHighPriorityCannotHandleSelectsLowerPriorityThatCan()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestStrategy highButCannot = new TestStrategy(20, false);
@@ -67,8 +76,11 @@ public final class StrategyPriorityInteractionTest
 		requireThat(selected, "selectedStrategy").isEqualTo(lowButCan);
 	}
 
+	/**
+	 * Verifies that strategy registry selects first registered when priorities are equal.
+	 */
 	@Test
-	public void findStrategy_equalPriority_selectsFirstRegistered()
+	public void findStrategyEqualPrioritySelectsFirstRegistered()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestStrategy first = new TestStrategy(10, true);
@@ -83,8 +95,11 @@ public final class StrategyPriorityInteractionTest
 		requireThat(selected, "selectedStrategy").isEqualTo(first);
 	}
 
+	/**
+	 * Verifies that phase-aware strategy overrides keyword-based strategy due to higher priority.
+	 */
 	@Test
-	public void findStrategy_phaseAwareOverridesKeywordBased_whenHigherPriority()
+	public void findStrategyPhaseAwareOverridesKeywordBasedWhenHigherPriority()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		// Phase-aware priority is 15 (PRIORITY_PHASE_AWARE)
@@ -100,8 +115,11 @@ public final class StrategyPriorityInteractionTest
 		requireThat(selected, "selectedStrategy").isEqualTo(phaseAware);
 	}
 
+	/**
+	 * Verifies that keyword-based strategy is selected when phase-aware strategy cannot handle request.
+	 */
 	@Test
-	public void findStrategy_keywordBasedSelectedWhen_phaseAwareCannotHandle()
+	public void findStrategyKeywordBasedSelectedWhenPhaseAwareCannotHandle()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestStrategy keywordBased = new TestStrategy(10, true);
@@ -116,8 +134,11 @@ public final class StrategyPriorityInteractionTest
 		requireThat(selected, "selectedStrategy").isEqualTo(keywordBased);
 	}
 
+	/**
+	 * Verifies that strategy registry selects highest priority among multiple phase-aware strategies.
+	 */
 	@Test
-	public void findStrategy_multiplePhaseAwareStrategies_selectsHighestPriority()
+	public void findStrategyMultiplePhaseAwareStrategiesSelectsHighestPriority()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestStrategy phaseAware1 = new TestStrategy(ParseStrategy.PRIORITY_PHASE_AWARE, true);
@@ -132,8 +153,11 @@ public final class StrategyPriorityInteractionTest
 		requireThat(selected, "selectedStrategy").isEqualTo(phaseAware2);
 	}
 
+	/**
+	 * Verifies that priority determines selection regardless of registration order.
+	 */
 	@Test
-	public void findStrategy_priorityOverridesRegistrationOrder()
+	public void findStrategyPriorityOverridesRegistrationOrder()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestStrategy registeredFirst = new TestStrategy(5, true);
@@ -148,8 +172,11 @@ public final class StrategyPriorityInteractionTest
 		requireThat(selected, "selectedStrategy").isEqualTo(registeredLast);
 	}
 
+	/**
+	 * Verifies that strategy registry returns null when no strategy can handle request.
+	 */
 	@Test
-	public void findStrategy_allStrategiesCannotHandle_returnsNull()
+	public void findStrategyAllStrategiesCannotHandleReturnsNull()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestStrategy strategy1 = new TestStrategy(10, false);
@@ -164,8 +191,11 @@ public final class StrategyPriorityInteractionTest
 		requireThat(selected, "selectedStrategy").isNull();
 	}
 
+	/**
+	 * Verifies that version fallback selects highest priority strategy from earlier Java version.
+	 */
 	@Test
-	public void findStrategy_versionFallback_usesHighestPriorityFromEarlierVersion()
+	public void findStrategyVersionFallbackUsesHighestPriorityFromEarlierVersion()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestStrategy java21Low = new TestStrategy(5, true);
@@ -181,8 +211,11 @@ public final class StrategyPriorityInteractionTest
 		requireThat(selected, "selectedStrategy").isEqualTo(java21High);
 	}
 
+	/**
+	 * Verifies that strategy selection correctly handles complex scenario with multiple versions and priorities.
+	 */
 	@Test
-	public void findStrategy_complexScenario_multipleVersionsAndPriorities()
+	public void findStrategyComplexScenarioMultipleVersionsAndPriorities()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestStrategy java21Medium = new TestStrategy(10, true);
@@ -201,8 +234,11 @@ public final class StrategyPriorityInteractionTest
 		requireThat(selected, "selectedStrategy").isEqualTo(java25Low);
 	}
 
+	/**
+	 * Verifies that phase-specific strategy only handles its designated parsing phase.
+	 */
 	@Test
-	public void findStrategy_phaseSpecificStrategy_onlyHandlesTargetPhase()
+	public void findStrategyPhaseSpecificStrategyOnlyHandlesTargetPhase()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		PhaseSpecificStrategy constructorOnly = new PhaseSpecificStrategy(CONSTRUCTOR_BODY, 15);

@@ -192,7 +192,9 @@ public class IndexOverlayParser implements AutoCloseable
 	 */
 	private ParsingPhase getCurrentPhase()
 	{
-		return phaseStack.isEmpty() ? ParsingPhase.TOP_LEVEL : phaseStack.peek();
+		if (phaseStack.isEmpty())
+			return ParsingPhase.TOP_LEVEL;
+		return phaseStack.peek();
 	}
 
 	/**

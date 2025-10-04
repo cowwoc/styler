@@ -15,8 +15,11 @@ import static io.github.cowwoc.styler.parser.test.strategy.StrategyTestConstants
  */
 public final class ParseStrategyRegistryTest
 {
+	/**
+	 * Verifies that ParseStrategyRegistry successfully registers a valid strategy.
+	 */
 	@Test
-	public void registerStrategy_withValidStrategy_addsToRegistry()
+	public void registerStrategyWithValidStrategyAddsToRegistry()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		FlexibleConstructorBodiesStrategy strategy = new FlexibleConstructorBodiesStrategy();
@@ -27,8 +30,11 @@ public final class ParseStrategyRegistryTest
 		requireThat(strategies.contains(strategy), "strategiesContainsRegistered").isTrue();
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry accumulates all registered strategies.
+	 */
 	@Test
-	public void registerStrategy_multipleStrategies_allAdded()
+	public void registerStrategyMultipleStrategiesAllAdded()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestParseStrategy strategy1 = new TestParseStrategy(10);
@@ -41,8 +47,11 @@ public final class ParseStrategyRegistryTest
 		requireThat(strategies.size(), "strategiesSize").isEqualTo(2);
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry maintains strategies in descending priority order.
+	 */
 	@Test
-	public void registerStrategy_multiplePriorities_sortedByPriorityDescending()
+	public void registerStrategyMultiplePrioritiesSortedByPriorityDescending()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestParseStrategy lowPriority = new TestParseStrategy(5);
@@ -59,8 +68,11 @@ public final class ParseStrategyRegistryTest
 		requireThat(strategies.get(2), "thirdStrategy").isEqualTo(lowPriority);
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry finds and returns a matching strategy.
+	 */
 	@Test
-	public void findStrategy_withSingleMatch_returnsStrategy()
+	public void findStrategyWithSingleMatchReturnsStrategy()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestParseStrategy strategy = new TestParseStrategy(10, true);
@@ -72,8 +84,11 @@ public final class ParseStrategyRegistryTest
 		requireThat(result, "result").isEqualTo(strategy);
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry returns null when no strategy can handle the request.
+	 */
 	@Test
-	public void findStrategy_withNoMatches_returnsNull()
+	public void findStrategyWithNoMatchesReturnsNull()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestParseStrategy strategy = new TestParseStrategy(10, false); // canHandle returns false
@@ -85,8 +100,11 @@ public final class ParseStrategyRegistryTest
 		requireThat(result, "result").isNull();
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry selects highest priority strategy when multiple match.
+	 */
 	@Test
-	public void findStrategy_withMultipleMatches_returnsHighestPriority()
+	public void findStrategyWithMultipleMatchesReturnsHighestPriority()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestParseStrategy lowPriority = new TestParseStrategy(5, true);
@@ -100,8 +118,11 @@ public final class ParseStrategyRegistryTest
 		requireThat(result, "result").isEqualTo(highPriority);
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry returns empty list for unregistered Java version.
+	 */
 	@Test
-	public void getStrategies_withUnregisteredVersion_returnsEmptyList()
+	public void getStrategiesWithUnregisteredVersionReturnsEmptyList()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 
@@ -110,8 +131,11 @@ public final class ParseStrategyRegistryTest
 		requireThat(strategies.isEmpty(), "strategiesIsEmpty").isTrue();
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry retrieves registered strategies for a version.
+	 */
 	@Test
-	public void getStrategies_afterRegistration_returnsStrategies()
+	public void getStrategiesAfterRegistrationReturnsStrategies()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestParseStrategy strategy = new TestParseStrategy(10);
@@ -123,8 +147,11 @@ public final class ParseStrategyRegistryTest
 		requireThat(strategies.size(), "strategiesSize").isEqualTo(1);
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry populates default strategies when requested.
+	 */
 	@Test
-	public void registerDefaultStrategies_populatesRegistry()
+	public void registerDefaultStrategiesPopulatesRegistry()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 
@@ -134,8 +161,11 @@ public final class ParseStrategyRegistryTest
 		requireThat(java25Strategies.isEmpty(), "java25StrategiesIsEmpty").isFalse();
 	}
 
+	/**
+	 * Verifies that ParseStrategyRegistry falls back to earlier Java version strategies when needed.
+	 */
 	@Test
-	public void findStrategy_withVersionFallback_findsEarlierVersionStrategy()
+	public void findStrategyWithVersionFallbackFindsEarlierVersionStrategy()
 	{
 		ParseStrategyRegistry registry = new ParseStrategyRegistry();
 		TestParseStrategy java21Strategy = new TestParseStrategy(10, true);
