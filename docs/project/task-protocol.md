@@ -700,6 +700,7 @@ ELSE:
 - [ ] ALL agents return exactly: "FINAL DECISION: ✅ APPROVED - [reason]"
 - [ ] NO agent returns: "FINAL DECISION: ❌ REJECTED - [issues]"
 - [ ] Review evidence documented in `state.json` file
+- [ ] **Build verification passes in worktree** (`./mvnw verify` must pass before merge attempt)
 
 **Enforcement Logic:**
 ```python
@@ -867,15 +868,35 @@ If RESOLVE_NOW: Confirm all issues must be resolved in current task
 ### COMPLETE → CLEANUP
 **Mandatory Conditions:**
 - [ ] All work committed to task branch with descriptive commit message
+- [ ] **Build verification passes in task worktree BEFORE merge** (`./mvnw verify` in worktree)
 - [ ] Task branch merged to main branch with **LINEAR COMMIT HISTORY** (fast-forward only, NO merge commits)
 - [ ] todo.md updated to mark task complete (in same commit as deliverables)
 - [ ] Full build verification passes on main branch after merge (`./mvnw verify`)
 
 **Evidence Required:**
+- **Pre-merge build success in worktree** (`./mvnw verify` passes before merge attempt)
 - Git log showing clean linear history (no merge commits)
 - **todo.md modification included in final commit** (verify with `git show --stat | grep "todo.md"`)
 - Main branch build success after integration (`./mvnw verify` passes)
 - All deliverables preserved in main branch
+
+**CRITICAL: Pre-Merge Build Verification Gate**
+```bash
+# MANDATORY: Verify build passes in worktree BEFORE attempting merge
+cd /workspace/branches/{TASK_NAME}/code
+./mvnw verify || {
+    echo "❌ VIOLATION: Build fails in worktree - merge BLOCKED"
+    echo "Fix all checkstyle, PMD, and test failures before merging"
+    exit 1
+}
+```
+
+**Rationale:**
+- Prevents contamination of main branch with style violations or build failures
+- Catches linter violations (checkstyle, PMD) before they reach main
+- Ensures all tests pass in isolation before integration
+- Eliminates need for cleanup commits on main branch after merge
+- Maintains main branch in continuously deployable state
 
 **CRITICAL VALIDATION: todo.md Commit Verification**
 ```bash
@@ -918,18 +939,26 @@ git show --stat | grep "todo.md" || { echo "ERROR: todo.md not in commit"; exit 
 # Step 5: Rebase onto main to create linear history
 git rebase main
 
-# Step 6: Fast-forward merge to main (creates linear history)
+# Step 6: PRE-MERGE BUILD VERIFICATION (CRITICAL GATE)
+# MANDATORY: Verify build passes in worktree BEFORE merge attempt
+./mvnw verify || {
+    echo "❌ VIOLATION: Build fails in worktree - merge BLOCKED"
+    echo "Fix all checkstyle, PMD, and test failures before merging"
+    exit 1
+}
+
+# Step 7: Fast-forward merge to main (only after build verification passes)
 cd /workspace/branches/main/code
 git merge --ff-only {TASK_NAME}
 
 # ❌ PROHIBITED: Never use --no-ff (creates merge commits)
 # git merge --no-ff {TASK_NAME}  # WRONG - violates linear history
 
-# Step 7: Verification
+# Step 8: Post-merge verification
 git log --oneline -5  # Must show linear history, no merge commits
 git log --graph --oneline -10  # Should show straight line, not branches
 git show --stat | grep "todo.md" || { echo "ERROR: todo.md missing"; exit 1; }
-./mvnw verify -q  # Verify build + tests + linters all pass
+./mvnw verify -q  # Verify build still passes after merge
 ```
 
 **Example for task "refactor-line-wrapping-architecture"**:
@@ -953,13 +982,20 @@ git show --stat | grep "todo.md"
 # Step 5: Rebase onto main
 git rebase main
 
-# Step 6: Fast-forward merge to main
+# Step 6: PRE-MERGE BUILD VERIFICATION (blocks merge if fails)
+./mvnw verify || {
+    echo "❌ Build failed - fix violations before merging"
+    exit 1
+}
+
+# Step 7: Fast-forward merge to main (only if build passed)
 cd /workspace/branches/main/code
 git merge --ff-only refactor-line-wrapping-architecture
 
-# Step 7: Verify
+# Step 8: Post-merge verification
 git log --graph --oneline -10
 git show --stat | grep "todo.md"
+./mvnw verify -q
 ```
 
 **Fast-Forward Merge Validation:**
