@@ -57,7 +57,7 @@
     - [ ] `add-phase-tracking-to-parser` - Add phase tracking and passing to IndexOverlayParser
     - [ ] `implement-flexible-constructor-bodies-strategy` - Implement FlexibleConstructorBodiesStrategy with phase-aware detection
     - [ ] `implement-primitive-type-pattern-strategy` - Implement PrimitiveTypePatternStrategy (analyze if phase awareness needed)
-    - [ ] `add-phase-aware-strategy-tests` - Comprehensive test suite for phase-aware strategy behavior
+    - [x] `add-phase-aware-strategy-tests` - Comprehensive test suite for phase-aware strategy behavior
     - [ ] `document-strategy-pattern-guidelines` - Add pattern selection criteria to parser-architecture.md (when to use token-based vs phase-aware)
   - **Components**:
     - ParsingPhase enum with clear semantic phases
