@@ -759,9 +759,16 @@ If RESOLVE_NOW: Confirm all issues must be resolved in current task
 
 **Evidence Required:**
 - Git log showing clean linear history (no merge commits)
-- todo.md modification included in final commit
+- **todo.md modification included in final commit** (verify with `git show --stat | grep "todo.md"`)
 - Main branch build success after integration (`./mvnw verify` passes)
 - All deliverables preserved in main branch
+
+**CRITICAL VALIDATION: todo.md Commit Verification**
+```bash
+# MANDATORY: Verify todo.md is in the commit BEFORE merging to main
+git show --stat | grep "todo.md" || { echo "❌ VIOLATION: todo.md not in commit"; exit 1; }
+git show --name-only | grep "todo.md" || { echo "❌ VIOLATION: todo.md not modified"; exit 1; }
+```
 
 **CRITICAL: Linear Commit History Requirement**
 
@@ -776,39 +783,69 @@ If RESOLVE_NOW: Confirm all issues must be resolved in current task
 ```bash
 # IMPORTANT: Replace {TASK_NAME} with actual task name before executing
 
-# Ensure clean working state
+# Step 1: Ensure clean working state
+cd /workspace/branches/{TASK_NAME}/code
 rm -f .temp_dir
 git status --porcelain | grep -E "(dist/|target/|\.temp_dir$)" | wc -l  # Must be 0
 
-# REQUIRED: Rebase onto main to create linear history
-cd /workspace/branches/{TASK_NAME}/code
+# Step 2: Commit all task deliverables (code, tests, docs)
+git add <changed-files>
+git commit -m "Descriptive commit message for task changes"
+
+# Step 3: Update todo.md to mark task complete
+# Edit todo.md to change task status from [ ] to [x] and add completion details
+# Then amend the commit to include todo.md changes
+git add todo.md
+git commit --amend --no-edit
+
+# Step 4: Verify todo.md is included in the commit
+git show --stat | grep "todo.md" || { echo "ERROR: todo.md not in commit"; exit 1; }
+
+# Step 5: Rebase onto main to create linear history
 git rebase main
 
-# REQUIRED: Fast-forward merge only (creates linear history)
+# Step 6: Fast-forward merge to main (creates linear history)
 cd /workspace/branches/main/code
 git merge --ff-only {TASK_NAME}
 
 # ❌ PROHIBITED: Never use --no-ff (creates merge commits)
 # git merge --no-ff {TASK_NAME}  # WRONG - violates linear history
 
-# Verification
+# Step 7: Verification
 git log --oneline -5  # Must show linear history, no merge commits
 git log --graph --oneline -10  # Should show straight line, not branches
+git show --stat | grep "todo.md" || { echo "ERROR: todo.md missing"; exit 1; }
 ./mvnw verify -q  # Verify build + tests + linters all pass
 ```
 
 **Example for task "refactor-line-wrapping-architecture"**:
 ```bash
-# Rebase task branch onto main
+# Step 1: Ensure clean state
 cd /workspace/branches/refactor-line-wrapping-architecture/code
+git status --porcelain | grep -E "(dist/|target/)" | wc -l  # Must be 0
+
+# Step 2: Commit task changes
+git add src/ pom.xml
+git commit -m "refactor: restructure line-wrapping architecture for reusability"
+
+# Step 3: Update todo.md and amend commit
+# (Edit todo.md to mark task complete)
+git add todo.md
+git commit --amend --no-edit
+
+# Step 4: Verify todo.md included
+git show --stat | grep "todo.md"
+
+# Step 5: Rebase onto main
 git rebase main
 
-# Fast-forward merge to main
+# Step 6: Fast-forward merge to main
 cd /workspace/branches/main/code
 git merge --ff-only refactor-line-wrapping-architecture
 
-# Verify linear history
+# Step 7: Verify
 git log --graph --oneline -10
+git show --stat | grep "todo.md"
 ```
 
 **Fast-Forward Merge Validation:**
