@@ -156,6 +156,55 @@
 
 ### Multiple Formatter Rules (Expand Formatter Capabilities)
 - [ ] **MODULE:** `create-formatter-impl-module` - Create styler-formatter-impl Maven module
+- [ ] **TASK:** `refactor-line-wrapping-architecture` - Extract line-wrapping behavior from rules into centralized configuration system
+  - **Purpose**: Decouple line-wrapping decisions (when to wrap) from line-wrapping behavior (how to wrap) to enable multiple rules to trigger wrapping with consistent formatting
+  - **Scope**: Refactor LineLength rule and create new centralized wrapping configuration system
+  - **Components**:
+    - **Separation of Concerns**:
+      - LineLength rule: Only determines IF wrapping should occur (line length threshold detection)
+      - WrapConfiguration: Centralized configuration defining HOW wrapping occurs (wrap points, operator positioning, URL handling)
+      - WrapBehavior: Shared wrapping logic used by multiple rules (LineLength, ImportOrganization, etc.)
+    - **New Configuration Options**:
+      - `wrapBeforeOperator`: Boolean flag controlling operator positioning for binary/unary operators (default: false - operators stay with preceding operand)
+      - `wrapBeforeDot`: Boolean flag controlling dot operator positioning in method chains (default: false - dot stays with preceding object)
+      - `wrapAfterUrlsInStrings`: Boolean flag to avoid wrapping inside URLs in string literals (default: false - wrap URLs normally)
+      - Additional wrapping behavior options (indentation, continuation indent, alignment strategies)
+    - **Safety Constraints**:
+      - **Token Integrity**: Never wrap in the middle of a token to prevent invalid code generation and data loss
+      - **URL Protection in Comments**: Must wrap before or after URLs in comments to maintain clickability (always enforced)
+      - **URL Protection in Strings**: Optionally protect URLs in strings via `wrapAfterUrlsInStrings` flag (default: allow wrapping)
+    - **URL Detection**:
+      - Pattern matching for URLs in comments and string literals
+      - Wrap point adjustment to avoid mid-URL wrapping
+      - Context-aware wrapping (comments vs strings have different default behavior)
+  - **Integration**:
+    - LineLength rule migrates wrapping logic to WrapConfiguration
+    - Future rules (ImportOrganization, Whitespace, etc.) can trigger wrapping via shared WrapBehavior
+    - FormattingContext provides access to WrapConfiguration for all rules
+    - WrapPointDetector uses WrapConfiguration to determine valid wrap points
+  - **Benefits**:
+    - Consistent wrapping behavior across all formatting rules
+    - Centralized control of wrapping policies
+    - Eliminates duplicate wrapping logic in multiple rules
+    - Prevents conflicting wrapping decisions between rules
+    - Safer code generation (token integrity, URL protection)
+  - **Migration Strategy**:
+    - Phase 1: Rename existing BreakPoint → WrapPoint and BreakPointDetector → WrapPointDetector for consistent terminology
+    - Phase 2: Create WrapConfiguration and WrapBehavior classes
+    - Phase 3: Refactor LineLength rule to use new architecture (extract wrapping logic)
+    - Phase 4: Update FormattingContext to provide WrapConfiguration access
+    - Phase 5: Add comprehensive tests for URL protection and token integrity
+    - Phase 6: Update documentation and add migration guide for future rules
+  - **Testing**:
+    - Unit tests for WrapConfiguration (wrapBeforeOperator, wrapBeforeDot, wrapAfterUrlsInStrings)
+    - Integration tests for method chain wrapping (dot positioning before vs after)
+    - Integration tests for operator wrapping (binary/unary operator positioning)
+    - Integration tests for URL detection (comments and strings)
+    - Token integrity tests (verify no mid-token wrapping)
+    - Regression tests for LineLength rule behavior
+    - Edge case tests (nested URLs, escaped strings, multi-line comments)
+  - **Technical Debt**: None (architectural improvement eliminating future duplication)
+  - **Estimated Effort**: 2-3 days
 - [ ] **TASK:** `implement-import-organization` - Import grouping and unused import removal
   - **Purpose**: Organize import statements into groups and remove unused imports to improve code cleanliness
   - **Scope**: ImportOrganizer rule with grouping (java.*, javax.*, org.*, com.*, static imports), unused detection
