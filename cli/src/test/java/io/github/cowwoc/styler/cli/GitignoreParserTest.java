@@ -177,7 +177,7 @@ public class GitignoreParserTest
 			StringBuilder content = new StringBuilder();
 			for (int i = 0; i < 100_000; ++i)
 			{
-				content.append("*.pattern").append(i).append("\n");
+				content.append("*.pattern").append(i).append('\n');
 			}
 			Files.writeString(gitignoreFile, content.toString());
 

@@ -40,7 +40,7 @@ import java.util.stream.Stream;
  */
 public final class GitignoreParser
 {
-	private static final Logger log = LoggerFactory.getLogger(GitignoreParser.class);
+	private static final Logger LOG = LoggerFactory.getLogger(GitignoreParser.class);
 
 	/** Maximum .gitignore file size: 1 MB. */
 	private static final long MAX_FILE_SIZE = 1024 * 1024;
@@ -75,7 +75,7 @@ public final class GitignoreParser
 
 		if (!Files.exists(gitignoreFile))
 		{
-			log.debug("Gitignore file does not exist: {}", gitignoreFile);
+			LOG.debug("Gitignore file does not exist: {}", gitignoreFile);
 			return new GitignoreParser(gitignoreFile, List.of());
 		}
 
@@ -100,7 +100,7 @@ public final class GitignoreParser
 			});
 		}
 
-		log.debug("Parsed {} rules from {}", rules.size(), gitignoreFile);
+		LOG.debug("Parsed {} rules from {}", rules.size(), gitignoreFile);
 		return new GitignoreParser(gitignoreFile, rules);
 	}
 
@@ -129,14 +129,13 @@ public final class GitignoreParser
 			line = line.substring(1);
 		}
 
-		// Check for directory pattern
-		boolean directoryOnly = line.endsWith("/");
-		if (directoryOnly)
+		// Check for directory pattern (simplified implementation ignores this)
+		if (line.endsWith("/"))
 		{
 			line = line.substring(0, line.length() - 1);
 		}
 
-		return new GitignoreRule(line, negation, directoryOnly);
+		return new GitignoreRule(line, negation);
 	}
 
 	/**
@@ -193,13 +192,11 @@ public final class GitignoreParser
 	{
 		private final String pattern;
 		private final boolean negation;
-		private final boolean directoryOnly;
 
-		GitignoreRule(String pattern, boolean negation, boolean directoryOnly)
+		GitignoreRule(String pattern, boolean negation)
 		{
 			this.pattern = pattern;
 			this.negation = negation;
-			this.directoryOnly = directoryOnly;
 		}
 
 		boolean isNegation()
@@ -243,7 +240,7 @@ public final class GitignoreParser
 			while (fileIndex < fileLength)
 			{
 				if (patternIndex < patternLength &&
-					(pattern.charAt(patternIndex) == '*'))
+					pattern.charAt(patternIndex) == '*')
 				{
 					// Remember star position for backtracking
 					starIndex = patternIndex;
@@ -258,16 +255,16 @@ public final class GitignoreParser
 					++fileIndex;
 					++patternIndex;
 				}
-				else if (starIndex != -1)
+				else
 				{
+					if (starIndex == -1)
+					{
+						return false;
+					}
 					// Backtrack to last star and try matching more characters
 					patternIndex = starIndex + 1;
 					++matchIndex;
 					fileIndex = matchIndex;
-				}
-				else
-				{
-					return false;
 				}
 			}
 

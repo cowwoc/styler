@@ -4,7 +4,6 @@ import io.github.cowwoc.styler.cli.security.FileValidator;
 import io.github.cowwoc.styler.cli.security.PathSanitizer;
 import io.github.cowwoc.styler.cli.security.RecursionDepthTracker;
 import io.github.cowwoc.styler.cli.security.SecurityConfig;
-import io.github.cowwoc.styler.cli.security.exceptions.PathTraversalException;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -12,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -21,24 +19,35 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  */
 public class FileDiscoveryTest
 {
+	/**
+	 * Verifies that FileDiscovery constructor throws NullPointerException when pathSanitizer is null.
+	 */
 	@Test(expectedExceptions = NullPointerException.class)
 	public void constructorRejectsNullSanitizer()
 	{
 		SecurityConfig config = SecurityConfig.defaults();
 		FileValidator validator = new FileValidator(config.maxFileSizeBytes(), config.allowedExtensions());
-		RecursionDepthTracker tracker = new RecursionDepthTracker(config.maxRecursionDepth(), config.warnRecursionDepth());
+		RecursionDepthTracker tracker = new RecursionDepthTracker(config.maxRecursionDepth(),
+			config.warnRecursionDepth());
 		new FileDiscovery(null, validator, tracker);
 	}
 
+	/**
+	 * Verifies that FileDiscovery constructor throws NullPointerException when fileValidator is null.
+	 */
 	@Test(expectedExceptions = NullPointerException.class)
 	public void constructorRejectsNullValidator()
 	{
 		PathSanitizer sanitizer = new PathSanitizer();
 		SecurityConfig config = SecurityConfig.defaults();
-		RecursionDepthTracker tracker = new RecursionDepthTracker(config.maxRecursionDepth(), config.warnRecursionDepth());
+		RecursionDepthTracker tracker = new RecursionDepthTracker(config.maxRecursionDepth(),
+			config.warnRecursionDepth());
 		new FileDiscovery(sanitizer, null, tracker);
 	}
 
+	/**
+	 * Verifies that FileDiscovery constructor throws NullPointerException when depthTracker is null.
+	 */
 	@Test(expectedExceptions = NullPointerException.class)
 	public void constructorRejectsNullDepthTracker()
 	{
@@ -48,6 +57,9 @@ public class FileDiscoveryTest
 		new FileDiscovery(sanitizer, validator, null);
 	}
 
+	/**
+	 * Verifies that discover() throws NullPointerException when paths parameter is null.
+	 */
 	@Test(expectedExceptions = NullPointerException.class)
 	public void discoverRejectsNullPaths()
 	{
@@ -55,6 +67,9 @@ public class FileDiscoveryTest
 		discovery.discover(null);
 	}
 
+	/**
+	 * Verifies that discover() throws IllegalArgumentException when paths list is empty.
+	 */
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void discoverRejectsEmptyPaths()
 	{
@@ -62,6 +77,9 @@ public class FileDiscoveryTest
 		discovery.discover(List.of());
 	}
 
+	/**
+	 * Verifies that discover() correctly processes a single Java file.
+	 */
 	@Test
 	public void discoverSingleFile() throws IOException
 	{
@@ -81,6 +99,9 @@ public class FileDiscoveryTest
 		}
 	}
 
+	/**
+	 * Verifies that discover() recursively finds all Java files in a directory.
+	 */
 	@Test
 	public void discoverDirectory() throws IOException
 	{
@@ -106,6 +127,9 @@ public class FileDiscoveryTest
 		}
 	}
 
+	/**
+	 * Verifies that discover() recursively traverses nested directories to find Java files.
+	 */
 	@Test
 	public void discoverNestedDirectories() throws IOException
 	{
@@ -134,6 +158,9 @@ public class FileDiscoveryTest
 		}
 	}
 
+	/**
+	 * Verifies that discover() filters out non-Java files and includes only .java files.
+	 */
 	@Test
 	public void discoverFiltersNonJavaFiles() throws IOException
 	{
@@ -158,6 +185,9 @@ public class FileDiscoveryTest
 		}
 	}
 
+	/**
+	 * Verifies that discover() processes multiple root paths and aggregates results.
+	 */
 	@Test
 	public void discoverMultiplePaths() throws IOException
 	{
@@ -189,8 +219,10 @@ public class FileDiscoveryTest
 	{
 		SecurityConfig config = SecurityConfig.defaults();
 		PathSanitizer sanitizer = new PathSanitizer();
-		FileValidator validator = new FileValidator(config.maxFileSizeBytes(), config.allowedExtensions());
-		RecursionDepthTracker tracker = new RecursionDepthTracker(config.maxRecursionDepth(), config.warnRecursionDepth());
+		FileValidator validator = new FileValidator(config.maxFileSizeBytes(),
+			config.allowedExtensions());
+		RecursionDepthTracker tracker = new RecursionDepthTracker(config.maxRecursionDepth(),
+			config.warnRecursionDepth());
 		return new FileDiscovery(sanitizer, validator, tracker);
 	}
 
@@ -202,9 +234,9 @@ public class FileDiscoveryTest
 	{
 		Path nonExistent = Paths.get("/tmp/this-path-does-not-exist-12345");
 		FileDiscovery discovery = createFileDiscovery();
-		
+
 		DiscoveryResult result = discovery.discover(List.of(nonExistent));
-		
+
 		requireThat(result.fileCount(), "fileCount").isEqualTo(0);
 		requireThat(result.warningCount(), "warningCount").isGreaterThan(0);
 	}
@@ -224,11 +256,11 @@ public class FileDiscoveryTest
 			FileDiscovery discovery = createFileDiscovery();
 			Path file = tempDir.resolve("test.java");
 			Files.writeString(file, "public class Test {}");
-			
+
 			// Verify discovery works normally under the limit
 			DiscoveryResult result = discovery.discover(List.of(tempDir));
 			requireThat(result.fileCount(), "fileCount").isEqualTo(1);
-			
+
 			Files.deleteIfExists(file);
 		}
 		finally
@@ -249,12 +281,12 @@ public class FileDiscoveryTest
 		Files.createDirectories(level2);
 		Path file = level2.resolve("Test.java");
 		Files.writeString(file, "public class Test {}");
-		
+
 		try
 		{
 			FileDiscovery discovery = createFileDiscovery();
 			DiscoveryResult result = discovery.discover(List.of(tempDir));
-			
+
 			requireThat(result.fileCount(), "fileCount").isEqualTo(1);
 			requireThat(result.files().get(0), "file").isEqualTo(file);
 		}
@@ -278,12 +310,11 @@ public class FileDiscoveryTest
 		Path txtFile = tempDir.resolve("readme.txt");
 		Files.writeString(javaFile, "public class Test {}");
 		Files.writeString(txtFile, "This is a readme");
-
 		try
 		{
-			FileFilter filter = FileFilter.builder()
-				.includePattern("**/*.java")
-				.build();
+			FileFilter filter = FileFilter.builder().
+				includePattern("**/*.java").
+				build();
 
 			FileDiscovery discovery = createFileDiscovery();
 			DiscoveryResult result = discovery.discover(List.of(tempDir), filter);
@@ -299,5 +330,4 @@ public class FileDiscoveryTest
 			Files.deleteIfExists(tempDir);
 		}
 	}
-
 }

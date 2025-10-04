@@ -29,10 +29,10 @@ public class FileFilterTest
 	@Test
 	public void includePatternFiltersFiles()
 	{
-		FileFilter filter = FileFilter.builder()
-			.includePattern("*.java")
-			.includePattern("**/*.java")
-			.build();
+		FileFilter filter = FileFilter.builder().
+			includePattern("*.java").
+			includePattern("**/*.java").
+			build();
 
 		requireThat(filter.matches(Paths.get("Example.java")), "matchesExample").isTrue();
 		requireThat(filter.matches(Paths.get("src/main/java/Test.java")), "matchesTest").isTrue();
@@ -45,9 +45,9 @@ public class FileFilterTest
 	@Test
 	public void excludePatternFiltersFiles()
 	{
-		FileFilter filter = FileFilter.builder()
-			.excludePattern("**/test/**")
-			.build();
+		FileFilter filter = FileFilter.builder().
+			excludePattern("**/test/**").
+			build();
 
 		requireThat(filter.matches(Paths.get("src/main/java/Example.java")), "matchesMain").isTrue();
 		requireThat(filter.matches(Paths.get("src/test/java/ExampleTest.java")), "matchesTest").isFalse();
@@ -59,10 +59,10 @@ public class FileFilterTest
 	@Test
 	public void excludeOverridesInclude()
 	{
-		FileFilter filter = FileFilter.builder()
-			.includePattern("**/*.java")
-			.excludePattern("**/generated/*.java")
-			.build();
+		FileFilter filter = FileFilter.builder().
+			includePattern("**/*.java").
+			excludePattern("**/generated/*.java").
+			build();
 
 		requireThat(filter.matches(Paths.get("src/main/java/Example.java")), "matchesExample").isTrue();
 		requireThat(filter.matches(Paths.get("target/generated/Example.java")), "matchesGenerated").isFalse();
@@ -74,10 +74,10 @@ public class FileFilterTest
 	@Test
 	public void multipleIncludePatterns()
 	{
-		FileFilter filter = FileFilter.builder()
-			.includePattern("*.java")
-			.includePattern("*.xml")
-			.build();
+		FileFilter filter = FileFilter.builder().
+			includePattern("*.java").
+			includePattern("*.xml").
+			build();
 
 		requireThat(filter.matches(Paths.get("Example.java")), "matchesJava").isTrue();
 		requireThat(filter.matches(Paths.get("pom.xml")), "matchesXml").isTrue();
@@ -90,10 +90,10 @@ public class FileFilterTest
 	@Test
 	public void multipleExcludePatterns()
 	{
-		FileFilter filter = FileFilter.builder()
-			.excludePattern("**/test/*.java")
-			.excludePattern("target/**")
-			.build();
+		FileFilter filter = FileFilter.builder().
+			excludePattern("**/test/*.java").
+			excludePattern("target/**").
+			build();
 
 		requireThat(filter.matches(Paths.get("src/main/java/Example.java")), "matchesMain").isTrue();
 		requireThat(filter.matches(Paths.get("src/test/Test.java")), "matchesTest").isFalse();
@@ -106,9 +106,9 @@ public class FileFilterTest
 	@Test
 	public void wildcardPatterns()
 	{
-		FileFilter filter = FileFilter.builder()
-			.includePattern("Test*.java")
-			.build();
+		FileFilter filter = FileFilter.builder().
+			includePattern("Test*.java").
+			build();
 
 		requireThat(filter.matches(Paths.get("TestExample.java")), "matchesTestExample").isTrue();
 		requireThat(filter.matches(Paths.get("TestCase.java")), "matchesTestCase").isTrue();
@@ -121,9 +121,9 @@ public class FileFilterTest
 	@Test
 	public void singleCharWildcard()
 	{
-		FileFilter filter = FileFilter.builder()
-			.includePattern("Test?.java")
-			.build();
+		FileFilter filter = FileFilter.builder().
+			includePattern("Test?.java").
+			build();
 
 		requireThat(filter.matches(Paths.get("Test1.java")), "matchesTest1").isTrue();
 		requireThat(filter.matches(Paths.get("TestA.java")), "matchesTestA").isTrue();
@@ -136,10 +136,10 @@ public class FileFilterTest
 	@Test
 	public void shouldExcludeDirectory()
 	{
-		FileFilter filter = FileFilter.builder()
-			.excludePattern("target")
-			.excludePattern("target/**")
-			.build();
+		FileFilter filter = FileFilter.builder().
+			excludePattern("target").
+			excludePattern("target/**").
+			build();
 
 		requireThat(filter.shouldExcludeDirectory(Paths.get("target")), "excludesTarget").isTrue();
 		requireThat(filter.shouldExcludeDirectory(Paths.get("src/main/java")), "excludesMain").isFalse();

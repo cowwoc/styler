@@ -8,8 +8,6 @@ import io.github.cowwoc.styler.cli.security.exceptions.FileTypeNotAllowedExcepti
 import io.github.cowwoc.styler.cli.security.exceptions.PathTraversalException;
 import io.github.cowwoc.styler.cli.security.exceptions.RecursionDepthExceededException;
 import io.github.cowwoc.styler.cli.security.exceptions.SecurityException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -66,8 +64,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public final class FileDiscovery
 {
-	private static final Logger log = LoggerFactory.getLogger(FileDiscovery.class);
-
 	/** Maximum number of files to discover (prevents resource exhaustion). */
 	private static final int MAX_FILES = 100_000;
 

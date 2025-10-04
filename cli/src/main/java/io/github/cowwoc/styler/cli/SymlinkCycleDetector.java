@@ -39,7 +39,7 @@ import java.util.Set;
  */
 public final class SymlinkCycleDetector
 {
-	private static final Logger log = LoggerFactory.getLogger(SymlinkCycleDetector.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SymlinkCycleDetector.class);
 
 	/** Maximum symlink depth to prevent excessive following. */
 	private final int maxSymlinkDepth;
@@ -108,14 +108,14 @@ public final class SymlinkCycleDetector
 		}
 		catch (IOException e)
 		{
-			log.warn("Failed to resolve symlink: {} - {}", path, e.getMessage());
+			LOG.warn("Failed to resolve symlink: {} - {}", path, e.getMessage());
 			return false;  // Treat unresolvable symlinks as non-cycles
 		}
 
 		// Check for cycle
 		if (context.visited.contains(canonical))
 		{
-			log.warn("Symlink cycle detected at: {}", path);
+			LOG.warn("Symlink cycle detected at: {}", path);
 			return true;
 		}
 
