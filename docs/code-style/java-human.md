@@ -125,6 +125,48 @@ public CompletableFuture<FormattingResult> formatFile(Path filePath) {
 
 **When CompletableFuture is still appropriate**: Complex async coordination (combining multiple file operations, timeout handling with sophisticated retry logic), CPU-bound parsing operations, or when integrating with existing async APIs.
 
+### Exception Type Selection - IllegalStateException vs AssertionError
+**Critical semantic distinction**: The choice between these exception types communicates WHO made the mistake.
+
+**IllegalStateException - User/Caller Error**:
+- API contract violation by calling code
+- Object used incorrectly (wrong state, wrong order)
+- Invalid method call sequences
+- Precondition failures caused by external usage
+
+**Why this matters for Styler**: Parser and formatter APIs have strict usage contracts. Calling `apply()` before `validate()`, or using a formatter after it's been closed, are user errors that should throw `IllegalStateException`.
+
+**AssertionError - Implementation Bug**:
+- Internal invariant violated
+- "This should be impossible" scenarios
+- Defensive programming checks that should never fail
+- Post-condition violations in correct code
+
+**Why this matters for Styler**: When merging two valid configurations produces an invalid result, that's a bug in the merge logic itself - not a user error. The implementation violated its own invariants.
+
+**Practical examples**:
+```java
+// ✅ CORRECT - User violated API contract (IllegalStateException)
+public void apply(FormattingContext context) {
+    if (!isInitialized) {
+        throw new IllegalStateException("Formatter must be initialized before applying rules");
+    }
+    // Apply formatting
+}
+
+// ✅ CORRECT - Implementation bug (AssertionError)
+public RuleConfiguration merge(RuleConfiguration override) {
+    try {
+        return builder().withSettings(override.getSettings()).build();
+    } catch (ConfigurationException e) {
+        // If two valid configs can't merge, our merge logic is broken
+        throw new AssertionError("Merged configuration should be valid", e);
+    }
+}
+```
+
+**Detection heuristic**: If the error message contains "should be" or "must be valid", it's likely describing an invariant (use `AssertionError`). If it describes incorrect usage or state, use `IllegalStateException`.
+
 ## 📚 Navigation
 
 ### Related Documentation

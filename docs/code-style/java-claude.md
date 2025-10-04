@@ -133,6 +133,49 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 }
 ```
 
+### Exception Type Selection - IllegalStateException vs AssertionError
+**Detection Pattern**: Look for exception throws in defensive programming contexts
+**Critical Distinction**: Choose exception type based on WHO caused the failure
+
+**Pattern 1 - Detecting User Error (IllegalStateException)**:
+```bash
+# Find state validation checks (user errors)
+grep -rn "throw new IllegalStateException" --include="*.java" .
+```
+**Violation**: `throw new AssertionError("Configuration must be initialized before use");`
+**Correct**: `throw new IllegalStateException("Configuration must be initialized before use");`
+
+**Pattern 2 - Detecting Code Bugs (AssertionError)**:
+```bash
+# Find defensive invariant checks (internal bugs)
+grep -rn "throw new IllegalStateException.*should" --include="*.java" .
+```
+**Violation**: `throw new IllegalStateException("Merged configuration should be valid", e);`
+**Correct**: `throw new AssertionError("Merged configuration should be valid", e);`
+
+**Examples**:
+```java
+// CORRECT - User violated API contract (IllegalStateException)
+public void processConfiguration(RuleConfiguration config) {
+    if (!isInitialized) {
+        throw new IllegalStateException("Formatter must be initialized before use");
+    }
+    // Process config
+}
+
+// CORRECT - Internal invariant violated (AssertionError)
+public RuleConfiguration merge(RuleConfiguration override) {
+    try {
+        return builder().withSettings(override.getSettings()).build();
+    } catch (ConfigurationException e) {
+        // Merging two valid configs should always produce valid result
+        throw new AssertionError("Merged configuration should be valid", e);
+    }
+}
+```
+
+**Rationale**: `IllegalStateException` signals recoverable API usage errors. `AssertionError` signals programming bugs indicating broken implementation invariants.
+
 ## Optimized Detection Commands
 
 **Performance Strategy**: Batch similar patterns, use parallel execution, generate complete violation reports.
