@@ -285,29 +285,44 @@ public final class BraceFormatterRuleConfiguration extends RuleConfiguration
 	 *
 	 * @param constructType the type of construct ("class", "method", or "control")
 	 * @return the effective brace style for the specified construct type
-	 * @throws IllegalArgumentException if {@code constructType} is {@code null}
+	 * @throws NullPointerException if {@code constructType} is {@code null}
 	 * @throws IllegalArgumentException if {@code constructType} is not a recognized construct type
 	 */
 	public BraceStyle getEffectiveBraceStyle(String constructType)
 	{
 		if (constructType == null)
 		{
-			throw new IllegalArgumentException("Construct type cannot be null when determining effective brace style");
+			throw new NullPointerException("Construct type cannot be null when determining effective brace style");
 		}
 
-		return switch (constructType.toLowerCase())
+		return switch (constructType.toLowerCase(java.util.Locale.ROOT))
 		{
 			case "class", "interface", "enum", "record" ->
-				classBraceStyle != null ? classBraceStyle : braceStyle;
+				getStyleOrDefault(classBraceStyle);
 			case "method", "constructor" ->
-				methodBraceStyle != null ? methodBraceStyle : braceStyle;
+				getStyleOrDefault(methodBraceStyle);
 			case "control", "if", "else", "for", "while", "do", "try", "catch", "finally" ->
-				controlBraceStyle != null ? controlBraceStyle : braceStyle;
+				getStyleOrDefault(controlBraceStyle);
 			case "general", "default" -> braceStyle;
 			default -> throw new IllegalArgumentException(
 				"Unknown construct type: " + constructType +
 				" (expected: class, method, control, or general)");
 		};
+	}
+
+	/**
+	 * Returns the specified style if non-null, otherwise returns the default brace style.
+	 *
+	 * @param style the style to check
+	 * @return the specified style or the default brace style
+	 */
+	private BraceStyle getStyleOrDefault(BraceStyle style)
+	{
+		if (style != null)
+		{
+			return style;
+		}
+		return braceStyle;
 	}
 
 	/**
