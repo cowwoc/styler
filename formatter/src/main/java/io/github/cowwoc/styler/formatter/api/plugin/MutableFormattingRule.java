@@ -9,7 +9,6 @@ import io.github.cowwoc.styler.formatter.api.MutableFormattingContext;
  * This interface enables direct AST transformation for optimal single-thread performance. Rules implementing
  * this interface can directly modify the AST using the provided context.
  */
-@FunctionalInterface
 public interface MutableFormattingRule extends FormattingRule
 {
 	/**

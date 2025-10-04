@@ -150,7 +150,19 @@
     - ✅ 24 comprehensive tests (16 integration + 8 unit)
     - ✅ 0 checkstyle violations, 0 PMD violations
     - ✅ Unanimous stakeholder approval (5/5 agents)
-- [ ] **TASK:** `add-formatter-api-unit-tests` - Unit tests for plugin interfaces
+- [x] **TASK:** `add-formatter-api-unit-tests` - Unit tests for plugin interfaces (COMPLETED: 2025-10-04)
+  - **Purpose**: Create comprehensive unit tests for formatter-api plugin interfaces (FormattingRule, MutableFormattingRule) and test infrastructure
+  - **Scope**: JPMS-compliant test module, test utilities, concrete test implementations, comprehensive test coverage
+  - **Components Delivered**:
+    - ✅ JPMS test module (module-info.java with `opens` directive for TestNG)
+    - ✅ TestUtilities (shared factory methods: createTestAST, createTestContext, createMutableTestContext, createTestConfiguration)
+    - ✅ TestFormattingRule (concrete FormattingRule implementation with validation logic)
+    - ✅ FormattingRuleTest (6 test methods validating FormattingRule interface contracts)
+    - ✅ MutableFormattingRuleTest (2 test methods validating MutableFormattingRule interface)
+    - ✅ 8 new unit tests (all passing, plus 30 existing tests migrated to .test package)
+    - ✅ 0 checkstyle violations, 0 PMD violations
+    - ✅ Unanimous stakeholder approval (code-quality-auditor, build-validator after scope negotiation)
+  - **Integration**: Tests use parallel-safe patterns (zero shared state), support all formatter-api interfaces, enable plugin developers to validate implementations
 
 ## Phase C: Horizontal Expansion (Scale the Working Pipeline)
 

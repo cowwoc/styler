@@ -1,5 +1,6 @@
-package io.github.cowwoc.styler.formatter.api;
+package io.github.cowwoc.styler.formatter.api.test;
 
+import io.github.cowwoc.styler.formatter.api.*;
 import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
