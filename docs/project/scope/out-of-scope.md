@@ -16,6 +16,7 @@
 - **Dependency injection frameworks** - No Guice, Spring DI, or external DI containers
 - **JUnit testing framework** - Use TestNG exclusively for consistency and JPMS compatibility
 - **Test mocking frameworks** - No Mockito, EasyMock, or other mocking libraries (use real objects or test stubs)
+- **GraalVM native image** - No native compilation or startup optimization via GraalVM
 
 ## Third-Party Integrations & External Services
 - **CRM integrations** - No Salesforce, HubSpot, etc.
