@@ -1,4 +1,8 @@
-package io.github.cowwoc.styler.cli.pipeline.stages;
+package io.github.cowwoc.styler.cli.test.pipeline.stages;
+import io.github.cowwoc.styler.cli.pipeline.stages.WriteStage;
+import io.github.cowwoc.styler.cli.pipeline.stages.FormatStage;
+import io.github.cowwoc.styler.cli.pipeline.stages.ParseStage;
+import io.github.cowwoc.styler.cli.pipeline.PipelineException;
 
 import io.github.cowwoc.styler.cli.pipeline.FileProcessorPipeline;
 import io.github.cowwoc.styler.cli.pipeline.PipelineResult;

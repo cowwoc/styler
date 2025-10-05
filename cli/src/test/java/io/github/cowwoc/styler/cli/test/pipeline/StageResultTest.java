@@ -1,4 +1,6 @@
-package io.github.cowwoc.styler.cli.pipeline;
+package io.github.cowwoc.styler.cli.test.pipeline;
+import io.github.cowwoc.styler.cli.pipeline.PipelineException;
+import io.github.cowwoc.styler.cli.pipeline.StageResult;
 
 import org.testng.annotations.Test;
 

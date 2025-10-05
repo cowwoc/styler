@@ -1,4 +1,10 @@
-package io.github.cowwoc.styler.cli.config.exceptions;
+package io.github.cowwoc.styler.cli.test.config.exceptions;
+
+import io.github.cowwoc.styler.cli.config.exceptions.ConfigDiscoveryException;
+import io.github.cowwoc.styler.cli.config.exceptions.ConfigNotFoundException;
+import io.github.cowwoc.styler.cli.config.exceptions.InvalidConfigurationException;
+import io.github.cowwoc.styler.cli.config.exceptions.ConfigValidationException;
+import io.github.cowwoc.styler.cli.config.exceptions.FileAccessException;
 
 import org.testng.annotations.Test;
 

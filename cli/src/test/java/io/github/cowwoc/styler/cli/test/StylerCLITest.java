@@ -1,4 +1,6 @@
-package io.github.cowwoc.styler.cli;
+package io.github.cowwoc.styler.cli.test;
+
+import io.github.cowwoc.styler.cli.StylerCLI;
 
 import org.testng.annotations.Test;
 import picocli.CommandLine;

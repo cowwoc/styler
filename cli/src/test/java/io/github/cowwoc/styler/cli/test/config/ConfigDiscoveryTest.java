@@ -1,4 +1,6 @@
-package io.github.cowwoc.styler.cli.config;
+package io.github.cowwoc.styler.cli.test.config;
+
+import io.github.cowwoc.styler.cli.config.ConfigDiscovery;
 
 import io.github.cowwoc.styler.cli.config.exceptions.ConfigNotFoundException;
 import io.github.cowwoc.styler.formatter.api.GlobalConfiguration;

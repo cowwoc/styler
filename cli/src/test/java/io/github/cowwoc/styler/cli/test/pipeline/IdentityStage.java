@@ -1,4 +1,6 @@
-package io.github.cowwoc.styler.cli.pipeline;
+package io.github.cowwoc.styler.cli.test.pipeline;
+import io.github.cowwoc.styler.cli.pipeline.AbstractPipelineStage;
+import io.github.cowwoc.styler.cli.pipeline.ProcessingContext;
 
 /**
  * Simple identity stage for testing that passes input through unchanged.

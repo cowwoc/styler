@@ -1,4 +1,8 @@
-package io.github.cowwoc.styler.cli.pipeline;
+package io.github.cowwoc.styler.cli.test.pipeline;
+import io.github.cowwoc.styler.cli.pipeline.PipelineResult;
+import io.github.cowwoc.styler.cli.pipeline.FileProcessorPipeline;
+import io.github.cowwoc.styler.cli.pipeline.PipelineException;
+import io.github.cowwoc.styler.cli.pipeline.ProcessingContext;
 
 import org.testng.annotations.Test;
 

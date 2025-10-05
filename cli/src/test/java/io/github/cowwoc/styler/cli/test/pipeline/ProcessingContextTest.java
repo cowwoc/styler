@@ -1,4 +1,5 @@
-package io.github.cowwoc.styler.cli.pipeline;
+package io.github.cowwoc.styler.cli.test.pipeline;
+import io.github.cowwoc.styler.cli.pipeline.ProcessingContext;
 
 import org.testng.annotations.Test;
 

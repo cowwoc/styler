@@ -1,4 +1,8 @@
-package io.github.cowwoc.styler.cli;
+package io.github.cowwoc.styler.cli.test;
+
+import io.github.cowwoc.styler.cli.CommandLineParser;
+import io.github.cowwoc.styler.cli.ParsedArguments;
+import io.github.cowwoc.styler.cli.ArgumentParsingException;
 
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;

@@ -1,4 +1,6 @@
-package io.github.cowwoc.styler.cli.config;
+package io.github.cowwoc.styler.cli.test.config;
+
+import io.github.cowwoc.styler.cli.config.ConfigSearchPath;
 
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

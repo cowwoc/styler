@@ -1,4 +1,5 @@
-package io.github.cowwoc.styler.cli.error;
+package io.github.cowwoc.styler.cli.test.error;
+import io.github.cowwoc.styler.cli.error.SourceSnippetExtractor;
 
 import io.github.cowwoc.styler.ast.SourcePosition;
 import io.github.cowwoc.styler.ast.SourceRange;

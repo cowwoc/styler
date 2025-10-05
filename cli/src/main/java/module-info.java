@@ -20,12 +20,24 @@ module io.github.cowwoc.styler.cli
 	// For ServiceLoader discovery of formatting rules
 	uses io.github.cowwoc.styler.formatter.api.plugin.FormatterPlugin;
 
-	// Export CLI package for picocli access
-	exports io.github.cowwoc.styler.cli to info.picocli;
+	// Export CLI package for picocli access and test module
+	exports io.github.cowwoc.styler.cli to info.picocli, io.github.cowwoc.styler.cli.test;
 
-	// Export security packages
+	// Export security packages publicly
 	exports io.github.cowwoc.styler.cli.security;
 	exports io.github.cowwoc.styler.cli.security.exceptions;
+
+	// Export internal packages to test module
+	exports io.github.cowwoc.styler.cli.commands to io.github.cowwoc.styler.cli.test;
+	exports io.github.cowwoc.styler.cli.config to io.github.cowwoc.styler.cli.test;
+	exports io.github.cowwoc.styler.cli.config.exceptions to io.github.cowwoc.styler.cli.test;
+	exports io.github.cowwoc.styler.cli.error to io.github.cowwoc.styler.cli.test;
+	exports io.github.cowwoc.styler.cli.output to io.github.cowwoc.styler.cli.test;
+	exports io.github.cowwoc.styler.cli.pipeline to io.github.cowwoc.styler.cli.test;
+	exports io.github.cowwoc.styler.cli.pipeline.progress to io.github.cowwoc.styler.cli.test;
+	exports io.github.cowwoc.styler.cli.pipeline.recovery to io.github.cowwoc.styler.cli.test;
+	exports io.github.cowwoc.styler.cli.pipeline.stages to io.github.cowwoc.styler.cli.test;
+	exports io.github.cowwoc.styler.cli.util to io.github.cowwoc.styler.cli.test;
 
 	// Open packages for picocli reflection access
 	opens io.github.cowwoc.styler.cli to info.picocli;
