@@ -1,5 +1,8 @@
 package io.github.cowwoc.styler.ast;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
@@ -9,13 +12,15 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * @param line the line number (1-based)
  * @param column the column number (1-based)
  */
-public record SourcePosition(int line, int column) implements Comparable<SourcePosition>
+public record SourcePosition(@JsonProperty("line") int line, @JsonProperty("column") int column)
+	implements Comparable<SourcePosition>
 	{
 	/**
 	 * Compact constructor validating {@code line} and {@code column} are positive.
 	 *
 	 * @throws IllegalArgumentException if {@code line} or {@code column} is not positive
 	 */
+	@JsonCreator
 	public SourcePosition
 		{
 		requireThat(line, "line").isPositive();
@@ -62,7 +67,8 @@ public record SourcePosition(int line, int column) implements Comparable<SourceP
 	 * @return negative if this position comes before {@code other}, positive if after, zero if equal
 	 */
 	@Override
-	@SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable") // Records auto-generate equals/hashCode
+	// Records auto-generate equals/hashCode
+	@SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
 	public int compareTo(SourcePosition other)
 		{
 		int lineComparison = Integer.compare(this.line, other.line);

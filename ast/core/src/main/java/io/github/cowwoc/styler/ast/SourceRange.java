@@ -1,5 +1,8 @@
 package io.github.cowwoc.styler.ast;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
@@ -9,7 +12,8 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * @param start the starting position (inclusive)
  * @param end the ending position (exclusive)
  */
-public record SourceRange(SourcePosition start, SourcePosition end)
+public record SourceRange(@JsonProperty("start") SourcePosition start,
+	@JsonProperty("end") SourcePosition end)
 	{
 	/**
 	 * Compact constructor validating {@code start} position is before or at {@code end} position.
@@ -17,6 +21,7 @@ public record SourceRange(SourcePosition start, SourcePosition end)
 	 * @throws NullPointerException if {@code start} or {@code end} is null
 	 * @throws IllegalArgumentException if {@code start} is after {@code end}
 	 */
+	@JsonCreator
 	public SourceRange
 		{
 		requireThat(start, "start").isNotNull();
@@ -84,6 +89,7 @@ public record SourceRange(SourcePosition start, SourcePosition end)
 			{
 			return end.column() - start.column();
 		}
-		return -1; // Multi-line range length requires full source text
+		// Multi-line range length requires full source text
+		return -1;
 	}
 }

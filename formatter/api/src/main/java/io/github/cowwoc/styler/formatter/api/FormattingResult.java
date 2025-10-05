@@ -1,5 +1,8 @@
 package io.github.cowwoc.styler.formatter.api;
 
+import io.github.cowwoc.styler.formatter.api.report.ViolationReport;
+import io.github.cowwoc.styler.formatter.api.report.ViolationReportGenerator;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -125,6 +128,30 @@ public final class FormattingResult
 	public boolean hasViolations()
 	{
 		return !violations.isEmpty();
+	}
+
+	/**
+	 * Generates a structured violation report from this formatting result.
+	 * <p>
+	 * Creates a {@link ViolationReport} containing all violations with priority scores, statistics,
+	 * and metadata. The report can be serialized to JSON or XML for AI agent consumption. If this
+	 * result has no violations, returns an empty report.
+	 * </p>
+	 * <h2>Usage Example</h2>
+	 * <pre>{@code
+	 * FormattingResult result = ...;
+	 * ViolationReport report = result.generateReport();
+	 * String json = new JsonViolationSerializer().serialize(report);
+	 * }</pre>
+	 *
+	 * @return the violation report, never {@code null}
+	 * @see ViolationReport
+	 * @see io.github.cowwoc.styler.formatter.api.report.JsonViolationSerializer
+	 * @see io.github.cowwoc.styler.formatter.api.report.XmlViolationSerializer
+	 */
+	public ViolationReport generateReport()
+	{
+		return ViolationReportGenerator.generate(violations);
 	}
 
 	/**
