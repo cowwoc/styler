@@ -66,6 +66,27 @@
     - ✅ Unanimous stakeholder approval (7/7 agents)
   - **Blocker Resolution**: Java 25 bytecode compatibility achieved by overriding ASM to 9.8 in maven-plugin-plugin configuration
   - **Quality Gates**: BUILD SUCCESS, all tests passing (188/188), plugin descriptor generated (2 mojos)
+- [ ] **TASK:** `refactor-maven-plugin-dependencies` - Remove CLI dependency and use formatter API directly
+  - **Purpose**: Eliminate cyclic dependency preventing Maven plugin from running on its own project
+  - **Problem**: plugin → cli → formatter-api creates cycle, preventing `mvn verify -Pstyler` from working
+  - **Scope**: Refactor plugin to depend directly on formatter-api and formatter-rules instead of CLI
+  - **Architecture Change**:
+    - **Current (broken)**: plugin → cli → formatter-api → (cycle when plugin tries to format these modules)
+    - **Target**: plugin → formatter-api + formatter-rules (both independent of plugin)
+  - **Implementation**:
+    - Remove styler-cli dependency from plugin/pom.xml
+    - Add direct dependencies: styler-formatter-api, styler-formatter-rules
+    - Implement formatting logic in Mojos using formatter API directly
+    - Replace placeholder MVP implementation with FileProcessorPipeline integration
+    - Update CheckMojo to use FormattingContext and FormattingRule APIs
+    - Update FormatMojo to apply TextEdit operations
+  - **Benefits**:
+    - Plugin can run on entire styler project without cyclic dependencies
+    - Plugin becomes independent consumer of formatter API (same as CLI)
+    - Enables `mvn verify -Pstyler` to work on all modules including CLI
+    - Cleaner separation: both plugin and CLI are formatter API consumers
+  - **Testing**: Verify plugin can format its own source code and all other styler modules
+  - **Estimated Effort**: 1-2 days
 
 ### Parallel File Processing (Virtual Threads)
 - [ ] **TASK:** `implement-parallel-file-processing` - Multi-threaded file processing with virtual threads
