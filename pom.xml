@@ -20,6 +20,7 @@
 		<project.root.basedir>${project.basedir}</project.root.basedir>
 		<checkstyle.version>11.0.1</checkstyle.version>
 		<pmd.version>7.17.0</pmd.version>
+		<maven.plugin.plugin.version>3.15.1</maven.plugin.plugin.version>
 	</properties>
 
 	<modules>
@@ -28,6 +29,7 @@
 		<module>parser</module>
 		<module>formatter</module>
 		<module>cli</module>
+		<module>plugin</module>
 		<module>benchmark</module>
 	</modules>
 
