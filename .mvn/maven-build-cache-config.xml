@@ -18,8 +18,6 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0 https://maven.apache.org/xsd/build-cache-config-1.2.0.xsd">
 	<configuration>
-		<!-- Disabled due to incompatibility with JPMS test modules -->
-		<enabled>false</enabled>
 		<validateXml>true</validateXml>
 		<local>
 			<maxBuildsCached>3</maxBuildsCached>
