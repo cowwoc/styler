@@ -111,6 +111,15 @@ public final class NodeType
 	public static final byte COMPACT_MAIN_METHOD = 115; // JDK 25 compact source files (JEP 512)
 	public static final byte INSTANCE_MAIN_METHOD = 116; // JDK 25 instance main methods (JEP 512)
 
+	// JDK 9+ Module System (JPMS) - module-info.java declarations
+	public static final byte MODULE_DECLARATION = 117; // module foo { ... }
+	public static final byte MODULE_REQUIRES_DIRECTIVE = 118; // requires [transitive] [static] module;
+	public static final byte MODULE_EXPORTS_DIRECTIVE = 119; // exports package [to module...];
+	public static final byte MODULE_OPENS_DIRECTIVE = 120; // opens package [to module...];
+	public static final byte MODULE_PROVIDES_DIRECTIVE = 121; // provides service with impl...;
+	public static final byte MODULE_USES_DIRECTIVE = 122; // uses service;
+	public static final byte MODULE_QUALIFIER = 123; // 'to' and 'with' clause targets
+
 	/**
 	 * Returns a human-readable name for the given node type.
 	 * Useful for debugging and error messages.
@@ -196,9 +205,16 @@ public final class NodeType
 			case PRIMITIVE_PATTERN -> "PrimitivePattern";
 			case COMPACT_MAIN_METHOD -> "CompactMainMethod";
 			case INSTANCE_MAIN_METHOD -> "InstanceMainMethod";
+			case MODULE_DECLARATION -> "ModuleDeclaration";
+			case MODULE_REQUIRES_DIRECTIVE -> "ModuleRequiresDirective";
+			case MODULE_EXPORTS_DIRECTIVE -> "ModuleExportsDirective";
+			case MODULE_OPENS_DIRECTIVE -> "ModuleOpensDirective";
+			case MODULE_PROVIDES_DIRECTIVE -> "ModuleProvidesDirective";
+			case MODULE_USES_DIRECTIVE -> "ModuleUsesDirective";
+			case MODULE_QUALIFIER -> "ModuleQualifier";
 			default -> "Unknown(" + nodeType + ")";
-		};
-	}
+	};
+}
 
 	/**
 	 * Checks if the node type represents a declaration.

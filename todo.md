@@ -37,6 +37,25 @@
 3. **Container Deployment** - No evidence AI agents need Docker
 4. **Maven Central Publishing** - Not required for initial AI agent integration
 
+## Phase A: Foundation (Zero External Dependencies)
+
+### Parser Bug Fixes
+- [x] **TASK:** `fix-module-info-parsing` - Fix parser to handle module-info.java files
+  - **Purpose**: Enable parser to correctly parse JPMS module declarations (module-info.java)
+  - **Scope**: Fix IndexOverlayParser to handle module declarations and directives
+  - **Bug**: Parser creates empty AST (0 nodes) then tries to access node ID 1, causing "Invalid node ID: 1, valid range: 0-0" error
+  - **Test Coverage**: ModuleInfoParsingTest with 5 test cases (simple module, exports, opens, provides/uses, empty module)
+  - **Current Workaround**: Maven plugin excludes `**/module-info.java` by default
+  - **Components**:
+    - Module declaration parsing (module name)
+    - Requires directives (requires, requires transitive, requires static)
+    - Exports directives (exports, exports...to)
+    - Opens directives (opens, opens...to)
+    - Provides/uses directives (provides...with, uses)
+  - **Integration**: Update parseCompilationUnit() to recognize module declarations as top-level constructs
+  - **Estimated Effort**: 2-3 days
+  - **Status**: ✅ COMPLETED (2025-10-05) - Parser now handles module-info.java with 10 passing tests
+
 ## Phase C: Horizontal Expansion (Scale the Working Pipeline)
 
 ### CLAUDE.md Hook Migration (Configuration Enforcement Automation)

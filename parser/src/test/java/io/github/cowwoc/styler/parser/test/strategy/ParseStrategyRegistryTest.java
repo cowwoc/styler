@@ -1,6 +1,11 @@
 package io.github.cowwoc.styler.parser.test.strategy;
 
-import io.github.cowwoc.styler.parser.*;
+import io.github.cowwoc.styler.parser.JavaVersion;
+import io.github.cowwoc.styler.parser.ParseContext;
+import io.github.cowwoc.styler.parser.ParseStrategy;
+import io.github.cowwoc.styler.parser.ParseStrategyRegistry;
+import io.github.cowwoc.styler.parser.ParsingPhase;
+import io.github.cowwoc.styler.parser.TokenType;
 import io.github.cowwoc.styler.parser.strategies.FlexibleConstructorBodiesStrategy;
 import org.testng.annotations.Test;
 

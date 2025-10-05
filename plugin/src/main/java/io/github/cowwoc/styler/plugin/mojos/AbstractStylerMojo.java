@@ -97,7 +97,10 @@ public abstract class AbstractStylerMojo extends AbstractMojo
 		}
 
 		PluginConfiguration config = buildConfiguration();
-		validateConfiguration(config);
+		if (!validateConfiguration(config))
+		{
+			return;
+		}
 		doExecute(config);
 	}
 
@@ -151,18 +154,19 @@ public abstract class AbstractStylerMojo extends AbstractMojo
 
 	/**
 	 * Validate configuration parameters.
-	 * Fail-fast validation per code-quality-auditor requirements.
+	 * Skips execution if source directory doesn't exist (e.g., parent POMs).
 	 *
 	 * @param config configuration to validate
+	 * @return true if validation passed, false if should skip
 	 * @throws MojoExecutionException if configuration is invalid
 	 */
-	private void validateConfiguration(PluginConfiguration config) throws MojoExecutionException
+	private boolean validateConfiguration(PluginConfiguration config) throws MojoExecutionException
 	{
 		if (!config.sourceDirectory().exists())
 		{
-			throw new MojoExecutionException(
-				"Source directory does not exist: " + config.sourceDirectory() +
-					"\nVerify project structure and ${project.build.sourceDirectory} property");
+			getLog().info("Skipping styler execution (no source directory: " +
+				config.sourceDirectory() + ")");
+			return false;
 		}
 
 		if (config.encoding() == null || config.encoding().isBlank())
@@ -171,5 +175,6 @@ public abstract class AbstractStylerMojo extends AbstractMojo
 				"Source encoding not specified\n" +
 					"Set ${project.build.sourceEncoding} or use -Dstyler.encoding=UTF-8");
 		}
+		return true;
 	}
 }
