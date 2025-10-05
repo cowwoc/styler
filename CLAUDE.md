@@ -79,11 +79,13 @@ Styler Java Code Formatter project configuration and workflow guidance.
 
 ## 🎯 COMPLETE STYLE VALIDATION
 
+**AUTOMATED GUIDANCE**: The `smart-doc-prompter.sh` hook automatically injects the 3-component checklist when style work is detected.
+
 **MANDATORY PROCESS**: When user requests "apply style guide" or similar:
 
 1. **NEVER assume checkstyle-only** - Style guide consists of THREE components
 2. **FOLLOW PROTOCOL**: task-protocol.md "Complete Style Validation Gate" pattern
-3. **MANUAL VERIFICATION**: Check docs/code-style/*-claude.md detection patterns  
+3. **MANUAL VERIFICATION**: Check docs/code-style/*-claude.md detection patterns
 4. **ALL THREE REQUIRED**: checkstyle + PMD + manual rules must ALL pass
 
 **CRITICAL ERROR PATTERN**: Checking only checkstyle and declaring "no violations found" when PMD/manual violations exist
@@ -125,22 +127,12 @@ Styler Java Code Formatter project configuration and workflow guidance.
 
 ### 🚨 GIVING UP DETECTION PATTERNS
 
-**CRITICAL FORBIDDEN PHRASES** - AUTOMATIC TASK CONTINUATION REQUIRED:
-❌ "Given the complexity of properly implementing..."
-❌ "Given the evidence that this requires significant changes..."
-❌ "Let me focus on completing the task protocol instead..."
-❌ "Let me focus on features that provide more immediate value..."
-❌ "This would require significant architectural changes..."
-❌ "Rather than diving deeper into this complex issue..."
-❌ "Instead of implementing the full solution, let me..."
-❌ "Due to the complexity, I'll defer this to..."
-❌ "This appears to be beyond the current scope..."
-❌ "Let me move on to easier tasks..."
+**AUTOMATED ENFORCEMENT**: Runtime detection via `/workspace/.claude/hooks/detect-giving-up.sh`
 
 **MANDATORY RESPONSE TO GIVING UP PATTERNS**:
 ✅ IMMEDIATELY return to the original technical problem
 ✅ Apply systematic debugging and decomposition approach
-✅ Continue working on the exact issue that triggered the giving up pattern
+✅ Continue working on the exact issue that triggered the pattern
 ✅ Use incremental progress rather than abandoning the work
 ✅ Exhaust all reasonable technical approaches before any scope modification
 ✅ Document specific technical blockers if genuine limitations exist
