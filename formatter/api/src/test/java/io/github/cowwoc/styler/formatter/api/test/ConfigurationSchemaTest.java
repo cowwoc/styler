@@ -1,7 +1,7 @@
 package io.github.cowwoc.styler.formatter.api.test;
 
-import io.github.cowwoc.styler.formatter.api.*;
 import org.testng.annotations.Test;
+import io.github.cowwoc.styler.formatter.api.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

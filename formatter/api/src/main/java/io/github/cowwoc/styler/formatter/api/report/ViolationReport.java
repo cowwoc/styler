@@ -73,6 +73,10 @@ public final class ViolationReport
 		@JsonProperty("statistics") ViolationStatistics statistics,
 		@JsonProperty("timestampMillis") long timestampMillis)
 	{
+		requireThat(violations, "violations").isNotNull();
+		requireThat(statistics, "statistics").isNotNull();
+		requireThat(timestampMillis, "timestampMillis").isGreaterThan(0L);
+
 		this.violations = List.copyOf(violations);
 		this.statistics = statistics;
 		this.timestampMillis = timestampMillis;

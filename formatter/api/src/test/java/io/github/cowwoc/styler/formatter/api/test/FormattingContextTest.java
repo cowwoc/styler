@@ -1,7 +1,7 @@
 package io.github.cowwoc.styler.formatter.api.test;
 
-import io.github.cowwoc.styler.formatter.api.*;
 import io.github.cowwoc.styler.ast.node.CompilationUnitNode;
+import io.github.cowwoc.styler.formatter.api.*;
 import org.testng.annotations.Test;
 
 import java.nio.file.Path;
