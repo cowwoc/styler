@@ -1193,9 +1193,12 @@ fi
 # Delete lock file (only if ownership verified)
 rm -f /workspace/locks/{TASK_NAME}.json
 
-# Remove worktree and branch (git worktree remove works from any worktree)
+# CRITICAL: Switch to main worktree BEFORE removing task worktree
+# Attempting to remove a worktree while inside it will fail
+cd /workspace/branches/main/code
+
+# Remove worktree and branch
 git worktree remove /workspace/branches/{TASK_NAME}/code --force
-cd /workspace/branches/main/code  # Switch to main before deleting current worktree
 git branch -d {TASK_NAME}
 rm -rf /workspace/branches/{TASK_NAME}
 
@@ -1222,8 +1225,12 @@ if [ "$LOCK_OWNER" != "$SESSION_ID" ]; then
 fi
 
 rm -f /workspace/locks/refactor-line-wrapping-architecture.json
-git worktree remove /workspace/branches/refactor-line-wrapping-architecture/code --force
+
+# CRITICAL: Switch to main worktree BEFORE removing task worktree
 cd /workspace/branches/main/code
+
+# Remove worktree and branch
+git worktree remove /workspace/branches/refactor-line-wrapping-architecture/code --force
 git branch -d refactor-line-wrapping-architecture
 rm -rf /workspace/branches/refactor-line-wrapping-architecture
 ```
