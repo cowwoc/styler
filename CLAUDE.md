@@ -31,6 +31,7 @@ Styler Java Code Formatter project configuration and workflow guidance.
 
 **TODO Synchronization**: Keep TodoWrite tool synced with todo.md file.
 **TODO Clarity**: Each todo.md entry must contain sufficient detail to understand the task without external context. One-line descriptions require nested sub-items explaining Purpose, Scope, Components/Features, and Integration points.
+**CRITICAL TOKEN USAGE**: NEVER pause, stop, or provide status updates due to token usage concerns. Continue working until task completion or explicit user instruction.
 **🚨 VIOLATION = IMMEDIATE TASK RESTART REQUIRED**
 
 ## 🚨 RISK-BASED PROTOCOL SELECTION
@@ -287,6 +288,7 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 ❌ Implementation history: "Previously this used X, now it uses Y"
 ❌ Change rationale: "Updated to fix issue with Z"
 ❌ Refactoring notes: "Changed from approach A to approach B because..."
+❌ Superficial linter avoidance: Replacing "TODO" with "Future" or "Note" to avoid checkstyle violations
 
 **REQUIRED COMMENT PATTERNS**:
 ✅ Current functionality: "Skip constructors and overridden methods"
@@ -295,6 +297,51 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 ✅ Domain constraints: "Source position tracking requires precise integer arithmetic"
 
 **PRINCIPLE**: Comments should describe WHAT the code does and WHY it works that way, never WHAT it used to do or HOW it changed. When comments become outdated, update them to accurately reflect current behavior.
+
+## 🔧 TODO COMMENT HANDLING
+
+**CRITICAL**: Never superficially modify TODO comments or use temporal language to avoid linter checks.
+
+**PROHIBITED APPROACH**:
+❌ Changing "TODO" to "Future" or "Note" to bypass checkstyle
+❌ Rewording TODOs without addressing the underlying issue
+❌ Using temporal terms: "For now", "Currently unused", "Temporarily", "Will be replaced"
+❌ Apologetic comments: "This is a hack", "Quick fix", "Not ideal but works"
+
+**REQUIRED APPROACH**:
+✅ **Implement the TODO**: If it's critical for the current task, implement it now
+✅ **Remove the comment**: If the TODO isn't needed, delete it entirely
+✅ **Fix the code**: If something is "temporary", fix the underlying problem; otherwise, make it permanent or document why it must be temporary
+✅ **Move to task tracker**: Add genuine TODOs to todo.md and remove inline comment
+✅ **Accept the violation**: If the TODO is legitimately needed for documentation, keep it as-is and accept the checkstyle violation (or suppress with @SuppressWarnings if project policy allows)
+
+**EXAMPLE - BAD**:
+```java
+// TODO: Extract configuration from Maven project properties
+// Changed to:
+// Future: Extract configuration from Maven project properties  ❌ Superficial change
+// For now, use default configuration  ❌ Temporal language
+// Currently unused, defaults applied  ❌ Temporal language
+```
+
+**EXAMPLE - GOOD**:
+```java
+// Option 1: Implement it
+RuleConfiguration config = extractConfigFromMavenProperties(mavenProject);  ✅
+
+// Option 2: Remove if not needed
+return new LineLengthRuleConfiguration();  ✅ (no comment)
+
+// Option 3: Remove unused parameter or use it
+private RuleConfiguration createRuleConfiguration()  ✅ (removed unused param)
+
+// Option 4: Move to todo.md
+// Added task to todo.md: "Extract Maven config to RuleConfiguration"  ✅
+return new LineLengthRuleConfiguration();
+
+// Option 5: Keep TODO if genuinely needed for code understanding
+// TODO: Extract configuration from Maven project properties when ConfigurationExtractor is implemented  ✅
+```
 
 ## 📚 JAVADOC COMMENT REQUIREMENTS
 
