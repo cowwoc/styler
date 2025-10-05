@@ -13,6 +13,10 @@
           },
           {
             "type": "command",
+            "command": "/workspace/.claude/hooks/check-lock-ownership.sh"
+          },
+          {
+            "type": "command",
             "command": "/workspace/.claude/hooks/task-protocol-reminder.sh"
           },
           {

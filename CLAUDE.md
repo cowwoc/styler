@@ -12,45 +12,23 @@ Styler Java Code Formatter project configuration and workflow guidance.
 **CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
 **CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL 7 phases of task protocol are finished. Implementation completion does NOT equal task completion. Only mark tasks as complete after Phase 7 cleanup and finalization.
 **IMPLEMENTATION COMPLETION TRIGGER**: When you have finished implementation work (code changes, fixes, features complete), you MUST:
-1. **CHECK**: Do I own an active task?
+
+1. **CHECK**: Did the SessionStart hook show "ACTIVE TASK DETECTED"?
+   - **YES** → Continue with remaining protocol phases (Phase 6: Stakeholder Review, Phase 7: Cleanup/Finalization)
+   - **NO** → Implementation was done outside protocol (proceed normally)
+
+2. **VERIFY**: Check lock file ownership if uncertain:
    ```bash
-   MY_SESSION_ID="<from environment variable CURRENT_SESSION_ID>"
-
-   # Scan for lock files containing my session_id
-   OWNED_LOCK=$(grep -l "\"session_id\":\s*\"$MY_SESSION_ID\"" /workspace/locks/*.json 2>/dev/null | head -1)
-
-   if [ -z "$OWNED_LOCK" ]; then
-     echo "No active task for this session"
-     echo "Implementation was NOT part of task protocol"
-     exit 0
-   fi
-
-   # Extract task name from lock file path
-   TASK_NAME=$(basename "$OWNED_LOCK" .json)
-   echo "Active task found: $TASK_NAME"
-
-   # Read current state
-   TASK_STATE=$(grep -oP '"state":\s*"\K[^"]+' "$OWNED_LOCK")
-   echo "Current state: $TASK_STATE"
+   ls /workspace/locks/*.json 2>/dev/null | xargs grep -l "\"session_id\":\s*\"$CURRENT_SESSION_ID\""
    ```
 
-2. **IF LOCK FOUND WITH MY SESSION_ID**: Continue protocol
-   - Read `state` from lock file
-   - Continue from that phase (Phase 6: Stakeholder Review, Phase 7: Cleanup/Finalization)
-   - Update lock file when changing phases
-
-3. **IF NO LOCK FOUND**: Work was done outside protocol
-   - Proceed normally
-   - Do NOT search for worktrees to "adopt"
-
-4. **NEVER**:
+3. **NEVER**:
+   - Look for the next task until current task protocol completes ALL 7 phases
    - Assume ownership without lock verification
    - Work on tasks locked by other sessions
-   - Remove locks owned by other sessions
-   - Look for the next task until current task protocol completes ALL 7 phases
 
-**Prohibited Pattern**: ❌ "Implementation is done, let me look for what to work on next" (without checking lock ownership)
-**Required Pattern**: ✅ "Implementation is done, checking lock files... Found MY lock for task X... Continue with Phase 6 reviews and Phase 7 cleanup"
+**Prohibited Pattern**: ❌ "Implementation is done, let me look for what to work on next" (while owning an active lock)
+**Required Pattern**: ✅ "Implementation is done. Hook showed active task X in state Y. Continuing with remaining phases."
 
 **PHASE COMPLETION VERIFICATION**: Before declaring ANY phase complete, you MUST:
 1. **READ**: Execute `grep -A 20 "^## State [N]:" docs/project/task-protocol.md` to read ACTUAL phase requirements
@@ -297,114 +275,46 @@ When evaluating whether to defer work via scope negotiation:
 
 **CRITICAL**: After context compaction, you have NO MEMORY of previous work.
 
-### Mandatory First Action: Check Lock Ownership
+### Automatic Lock Ownership Check
 
-Before resuming ANY task, verify lock file ownership:
+**SessionStart Hook**: The `check-lock-ownership.sh` hook automatically runs on every session start and displays:
+- ⚠️ **Warning** if you own an active task (with task name, state, and worktree path)
+- ✅ **Confirmation** if you have no active tasks
 
-```bash
-# Environment variable from session-start-hook
-MY_SESSION_ID="<from system environment variable CURRENT_SESSION_ID>"
+**Your Response to Hook Output**:
 
-# Function to check if I own a task
-check_task_ownership() {
-  local TASK_NAME=$1
-  local LOCK_FILE="/workspace/locks/${TASK_NAME}.json"
+**If hook shows "ACTIVE TASK DETECTED"**:
+1. ✅ `cd` to the worktree path shown
+2. ✅ Resume from the state indicated
+3. ✅ Complete remaining protocol phases
+4. ❌ Do NOT start any new task
 
-  if [ ! -f "$LOCK_FILE" ]; then
-    echo "❌ No lock file - I do not own this task"
-    return 1
-  fi
+**If hook shows "No Active Tasks"**:
+1. ✅ Select new task from `todo.md`
+2. ✅ Follow full task protocol from INIT phase
 
-  local LOCK_OWNER=$(grep -oP '"session_id":\s*"\K[^"]+' "$LOCK_FILE")
+### Lock Ownership Rules
 
-  if [ "$LOCK_OWNER" != "$MY_SESSION_ID" ]; then
-    echo "❌ Lock owned by different session: $LOCK_OWNER"
-    echo "❌ I do NOT own this task"
-    return 1
-  fi
+**ONLY Trust**: Lock files with YOUR session_id
 
-  echo "✅ Lock verified - I own this task"
-  return 0
-}
+**NEVER Assume Ownership From**:
+- ❌ Worktree existence
+- ❌ Uncommitted changes
+- ❌ Stakeholder reports
+- ❌ Synthesis files
+- ❌ Directory modification times
 
-# Check all lock files for ownership
-for lock in /workspace/locks/*.json 2>/dev/null; do
-  TASK_NAME=$(basename "$lock" .json)
-  if check_task_ownership "$TASK_NAME"; then
-    echo "Found MY active task: $TASK_NAME"
-    # Read state from lock file and resume
-    TASK_STATE=$(grep -oP '"state":\s*"\K[^"]+' "/workspace/locks/${TASK_NAME}.json")
-    echo "Resuming from state: $TASK_STATE"
-    break
-  fi
-done
-```
-
-### Decision Logic
-
-**If lock file exists with MY session_id**:
-- ✅ I own this task
-- ✅ Read `state` field from lock to resume at correct phase
-- ✅ Continue protocol execution from that phase
-
-**If lock file missing OR contains different session_id**:
-- ❌ I do NOT own this task
-- ❌ NEVER touch this worktree
-- ❌ Select different task from todo.md
-
-### PROHIBITED ASSUMPTIONS
-
-❌ **NEVER assume task ownership** based on:
-- Worktree existence
-- Uncommitted changes
-- Stakeholder reports
-- Synthesis files
-- Directory modification times
-- "Unfinished" looking work
-
-✅ **ONLY trust**:
-- Lock file with MY session_id
-- Nothing else
-
-### Session Ownership Examples
-
-**Example 1: Found my task**
-```bash
-$ cat /workspace/locks/create-maven-plugin.json
+**Lock File Format**:
+```json
 {
-  "session_id": "f450ff60-c235-4928-a7f2-b30f4413788b",
-  "task_name": "create-maven-plugin",
-  "state": "PHASE_6_REVIEWS",
+  "session_id": "f450ff60-...",
+  "task_name": "task-name",
+  "state": "IMPLEMENTATION",
   "created_at": "2025-10-05T00:30:00Z"
 }
-
-# My session ID matches → I own this task
-# State = PHASE_6_REVIEWS → Resume stakeholder reviews
 ```
 
-**Example 2: Not my task**
-```bash
-$ cat /workspace/locks/some-other-task.json
-{
-  "session_id": "aaaa-bbbb-cccc-dddd",  # Different session!
-  "task_name": "some-other-task",
-  "state": "IMPLEMENTATION",
-  "created_at": "2025-10-05T00:15:00Z"
-}
-
-# Session ID doesn't match → NOT my task
-# Action: Select different task from todo.md
-```
-
-**Example 3: No active tasks**
-```bash
-$ ls /workspace/locks/*.json
-/workspace/locks/old-task-1.json  (session_id: "xyz-123")
-/workspace/locks/old-task-2.json  (session_id: "abc-456")
-
-# None match my session ID → No active work
-# Action: Select new task from todo.md
-```
+See [critical-rules.md](docs/project/critical-rules.md) for complete lock file documentation.
 
 ## Repository Structure
 
