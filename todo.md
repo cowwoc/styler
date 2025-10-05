@@ -96,11 +96,20 @@
   - **Estimated Effort**: 7-10 hours total (2-3h Phase 1 + 3-4h Phase 2 + 2-3h Phase 3)
 
 ### Structured Violation Output (AI Agent Feedback)
-- [ ] **TASK:** `implement-structured-violation-output` - Machine-readable violation reports for AI agent feedback
+- [x] **TASK:** `implement-structured-violation-output` - Machine-readable violation reports for AI agent feedback ✅ COMPLETED (2025-10-05)
   - **Purpose**: Generate structured violation reports enabling AI agents to learn from formatting feedback
   - **Scope**: JSON/XML violation reports with rule IDs, severity, fix suggestions, source locations
   - **Features**: Machine-readable format, priority scoring, fix strategy hints, learning feedback loops
   - **Integration**: Used by rule engine to generate actionable feedback for AI agent training systems
+  - **Deliverables**:
+    - ✅ ViolationReport (aggregate root with Builder pattern)
+    - ✅ ViolationEntry, ViolationStatistics, PriorityScore (immutable records)
+    - ✅ JSON/XML serializers with round-trip guarantee
+    - ✅ ViolationReportGenerator (adapter pattern for FormattingResult integration)
+    - ✅ 78 comprehensive tests across 8 test files
+    - ✅ 0 checkstyle violations, 0 PMD violations
+    - ✅ Unanimous stakeholder approval (5/5 agents)
+  - **Quality Gates**: BUILD SUCCESS, thread-safe immutable design, complete validation
 
 
 ## Phase D: MVP Testing and Validation (Build System Integration First)
@@ -233,6 +242,15 @@
   - **Estimated Effort**: 0.5-1 day
 
 ## Phase E: Ecosystem Integration (External Tool Support)
+
+### Dependency Upgrades
+- [ ] **TASK:** `upgrade-jackson-to-3.0.0` - Upgrade Jackson dependency to version 3.0.0
+  - **Purpose**: Update Jackson data-binding library to latest major version for improved performance and features
+  - **Scope**: Update pom.xml dependency versions, resolve any breaking API changes, update code to use new APIs
+  - **Components**: jackson-databind, jackson-core, jackson-annotations dependencies across all modules
+  - **Testing**: Verify all configuration parsing tests pass, check TOML deserialization still works correctly
+  - **Integration**: Used by configuration module for TOML parsing and object mapping
+  - **Estimated Effort**: 1-2 days (depending on breaking changes)
 
 ### Build Tool Integration
 - [ ] **TASK:** `create-gradle-plugin` - Gradle plugin for build system integration
