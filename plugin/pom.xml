@@ -92,6 +92,13 @@
 			<artifactId>testng</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- Logback Classic - SLF4J implementation for test logging -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
