@@ -11,24 +11,10 @@ Styler Java Code Formatter project configuration and workflow guidance.
 **CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See task-protocol.md
 **CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
 **CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL 7 phases of task protocol are finished. Implementation completion does NOT equal task completion. Only mark tasks as complete after Phase 7 cleanup and finalization.
-**IMPLEMENTATION COMPLETION TRIGGER**: When you have finished implementation work (code changes, fixes, features complete), you MUST:
+**IMPLEMENTATION COMPLETION TRIGGER**: When you have finished implementation work (code changes, fixes, features complete), you MUST complete ALL remaining protocol phases before selecting a new task. The SessionStart hook indicates if you own an active task requiring completion.
 
-1. **CHECK**: Did the SessionStart hook show "ACTIVE TASK DETECTED"?
-   - **YES** → Continue with remaining protocol phases (Phase 6: Stakeholder Review, Phase 7: Cleanup/Finalization)
-   - **NO** → Implementation was done outside protocol (proceed normally)
-
-2. **VERIFY**: Check lock file ownership if uncertain:
-   ```bash
-   ls /workspace/locks/*.json 2>/dev/null | xargs grep -l "\"session_id\":\s*\"$CURRENT_SESSION_ID\""
-   ```
-
-3. **NEVER**:
-   - Look for the next task until current task protocol completes ALL 7 phases
-   - Assume ownership without lock verification
-   - Work on tasks locked by other sessions
-
-**Prohibited Pattern**: ❌ "Implementation is done, let me look for what to work on next" (while owning an active lock)
-**Required Pattern**: ✅ "Implementation is done. Hook showed active task X in state Y. Continuing with remaining phases."
+**Prohibited Pattern**: ❌ "Implementation is done, let me look for what to work on next" (while protocol incomplete)
+**Required Pattern**: ✅ "Implementation is done. Continuing with Phase 6 reviews and Phase 7 cleanup."
 
 **PHASE COMPLETION VERIFICATION**: Before declaring ANY phase complete, you MUST:
 1. **READ**: Execute `grep -A 20 "^## State [N]:" docs/project/task-protocol.md` to read ACTUAL phase requirements
@@ -271,50 +257,13 @@ When evaluating whether to defer work via scope negotiation:
 - [ ] Created follow-up tasks for any deferred improvements
 - [ ] Achieved solution that will remain viable long-term
 
-## 🚨 POST-COMPACTION RECOVERY PROTOCOL
+## 🚨 POST-COMPACTION TASK OWNERSHIP
 
-**CRITICAL**: After context compaction, you have NO MEMORY of previous work.
+**CRITICAL**: After context compaction, the `check-lock-ownership.sh` SessionStart hook automatically checks for active tasks owned by this session and provides specific instructions.
 
-### Automatic Lock Ownership Check
+**Lock Ownership Rule**: ONLY work on tasks whose lock file contains YOUR session_id.
 
-**SessionStart Hook**: The `check-lock-ownership.sh` hook automatically runs on every session start and displays:
-- ⚠️ **Warning** if you own an active task (with task name, state, and worktree path)
-- ✅ **Confirmation** if you have no active tasks
-
-**Your Response to Hook Output**:
-
-**If hook shows "ACTIVE TASK DETECTED"**:
-1. ✅ `cd` to the worktree path shown
-2. ✅ Resume from the state indicated
-3. ✅ Complete remaining protocol phases
-4. ❌ Do NOT start any new task
-
-**If hook shows "No Active Tasks"**:
-1. ✅ Select new task from `todo.md`
-2. ✅ Follow full task protocol from INIT phase
-
-### Lock Ownership Rules
-
-**ONLY Trust**: Lock files with YOUR session_id
-
-**NEVER Assume Ownership From**:
-- ❌ Worktree existence
-- ❌ Uncommitted changes
-- ❌ Stakeholder reports
-- ❌ Synthesis files
-- ❌ Directory modification times
-
-**Lock File Format**:
-```json
-{
-  "session_id": "f450ff60-...",
-  "task_name": "task-name",
-  "state": "IMPLEMENTATION",
-  "created_at": "2025-10-05T00:30:00Z"
-}
-```
-
-See [critical-rules.md](docs/project/critical-rules.md) for complete lock file documentation.
+**Reference**: See [critical-rules.md](docs/project/critical-rules.md) for lock file format and ownership rules.
 
 ## Repository Structure
 
