@@ -1,8 +1,9 @@
 package io.github.cowwoc.styler.cli.output;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Instant;
 import java.util.Locale;
@@ -26,7 +27,9 @@ public class JsonOutputFormatter implements OutputFormatter
 	 */
 	public JsonOutputFormatter(boolean prettyPrint)
 	{
-		this.objectMapper = new ObjectMapper();
+		this.objectMapper = JsonMapper.builder().
+			findAndAddModules().  // Enable Java record support
+			build();
 		this.prettyPrint = prettyPrint;
 	}
 

@@ -1,8 +1,9 @@
 package io.github.cowwoc.styler.formatter.api.report;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -50,7 +51,7 @@ public final class JsonViolationSerializer implements ViolationSerializer
 	 * </p>
 	 * <ul>
 	 * <li>Pretty printing enabled for human readability</li>
-	 * <li>Timestamps as milliseconds (not ISO-8601 strings)</li>
+	 * <li>Timestamps as ISO-8601 strings (not milliseconds)</li>
 	 * <li>Null values omitted from output</li>
 	 * <li>Auto-discover and register modules (enables Java record support)</li>
 	 * </ul>
@@ -59,11 +60,10 @@ public final class JsonViolationSerializer implements ViolationSerializer
 	 */
 	private static ObjectMapper createObjectMapper()
 	{
-		ObjectMapper mapper = new ObjectMapper();
-		mapper.findAndRegisterModules();  // Enable Java record support
-		mapper.enable(SerializationFeature.INDENT_OUTPUT);
-		mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-		return mapper;
+		return JsonMapper.builder().
+			findAndAddModules().  // Enable Java record support
+			enable(SerializationFeature.INDENT_OUTPUT).
+			build();
 	}
 
 	/**
@@ -87,7 +87,7 @@ public final class JsonViolationSerializer implements ViolationSerializer
 		{
 			return OBJECT_MAPPER.writeValueAsString(report);
 		}
-		catch (JsonProcessingException e)
+		catch (JacksonException e)
 		{
 			throw new SerializationException("Failed to serialize violation report to JSON", e);
 		}
@@ -124,7 +124,7 @@ public final class JsonViolationSerializer implements ViolationSerializer
 		{
 			return OBJECT_MAPPER.readValue(content, ViolationReport.class);
 		}
-		catch (JsonProcessingException e)
+		catch (JacksonException e)
 		{
 			throw new SerializationException("Failed to deserialize JSON to violation report", e);
 		}

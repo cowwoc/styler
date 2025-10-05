@@ -1,7 +1,8 @@
 package io.github.cowwoc.styler.formatter.api.report;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.dataformat.xml.XmlMapper;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -58,9 +59,10 @@ public final class XmlViolationSerializer implements ViolationSerializer
 	 */
 	private static XmlMapper createXmlMapper()
 	{
-		XmlMapper mapper = new XmlMapper();
-		mapper.enable(com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT);
-		return mapper;
+		return XmlMapper.builder().
+			findAndAddModules().  // Enable Java record support
+			enable(SerializationFeature.INDENT_OUTPUT).
+			build();
 	}
 
 	/**
@@ -84,7 +86,7 @@ public final class XmlViolationSerializer implements ViolationSerializer
 		{
 			return XML_MAPPER.writeValueAsString(report);
 		}
-		catch (JsonProcessingException e)
+		catch (JacksonException e)
 		{
 			throw new SerializationException("Failed to serialize violation report to XML", e);
 		}
@@ -121,7 +123,7 @@ public final class XmlViolationSerializer implements ViolationSerializer
 		{
 			return XML_MAPPER.readValue(content, ViolationReport.class);
 		}
-		catch (JsonProcessingException e)
+		catch (JacksonException e)
 		{
 			throw new SerializationException("Failed to deserialize XML to violation report", e);
 		}

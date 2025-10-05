@@ -1,12 +1,11 @@
 package io.github.cowwoc.styler.cli.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.toml.TomlFactory;
+import tools.jackson.core.JacksonException;
 import io.github.cowwoc.styler.cli.config.exceptions.ConfigValidationException;
 import io.github.cowwoc.styler.cli.config.exceptions.FileAccessException;
 import io.github.cowwoc.styler.formatter.api.GlobalConfiguration;
+import tools.jackson.dataformat.toml.TomlMapper;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
@@ -17,14 +16,16 @@ import java.util.Locale;
  */
 public final class ConfigParser
 {
-	private final ObjectMapper tomlMapper;
+	private final TomlMapper tomlMapper;
 
 	/**
 	 * Creates a new configuration parser with TOML support.
 	 */
 	public ConfigParser()
 	{
-		this.tomlMapper = new ObjectMapper(new TomlFactory());
+		this.tomlMapper = TomlMapper.builder().
+			findAndAddModules().  // Enable Java record support
+			build();
 	}
 
 	/**
@@ -55,7 +56,7 @@ public final class ConfigParser
 			// Read and parse the TOML configuration file
 			return tomlMapper.readValue(configFile.toFile(), GlobalConfiguration.class);
 		}
-		catch (IOException e)
+		catch (JacksonException e)
 		{
 			throw new ConfigValidationException(configFile,
 				"Failed to parse TOML configuration: " + e.getMessage(), e);

@@ -3,8 +3,8 @@ package io.github.cowwoc.styler.formatter.api;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.toml.TomlFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.dataformat.toml.TomlMapper;
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 import java.io.IOException;
@@ -37,14 +37,13 @@ import java.util.Objects;
  *
  * @since {@code 1}.{@code 0}.{@code 0}
  * @author Plugin Framework Team
-  * @throws NullPointerException if {@code configPath} is null
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({"version", "profile", "extends", "global", "rules"})
 public final class ConfigurationSchema
 {
 	private static final String SCHEMA_VERSION = "1.0";
-	private static final ObjectMapper TOML_MAPPER = createTomlMapper();
+	private static final TomlMapper TOML_MAPPER = createTomlMapper();
 
 	@JsonProperty("version")
 	private final String version;
@@ -69,7 +68,6 @@ public final class ConfigurationSchema
 	 * @param extendsProfiles the list of profiles to extend, never {@code null}
 	 * @param global          the global configuration settings, may be {@code null}
 	 * @param rules           the rule-specific configurations, never {@code null}
-	  * @throws NullPointerException if {@code configPath} is null
 	 */
 	public ConfigurationSchema(@JsonProperty("version") String version,
 	                          @JsonProperty("profile") String profile,
@@ -124,8 +122,6 @@ public final class ConfigurationSchema
 	/**
 	 * Creates a default configuration schema.
 	 *
-	 * @throws NullPointerException if {@code resourcePath} is null
-	 * @throws NullPointerException if {@code configPath} is null
 	 */
 	public ConfigurationSchema()
 	{
@@ -139,9 +135,6 @@ public final class ConfigurationSchema
 	 * @return the parsed configuration schema, never {@code null}
 	 * @throws ConfigurationException if the file cannot be read or parsed
 	 * @throws SecurityException      if the file contains security violations
-	  * @throws NullPointerException if {@code tomlContent} is null
-	  * @throws NullPointerException if {@code resourcePath} is null
-	  * @throws NullPointerException if {@code configPath} is null
 	 */
 	public static ConfigurationSchema fromFile(Path configPath) throws ConfigurationException
 	{
@@ -169,7 +162,7 @@ public final class ConfigurationSchema
 			String content = Files.readString(configPath, StandardCharsets.UTF_8);
 			return fromToml(content);
 		}
-		catch (IOException e)
+		catch (IOException | JacksonException e)
 		{
 			throw new ConfigurationException("Failed to read configuration file: " + configPath, e);
 		}
@@ -181,9 +174,6 @@ public final class ConfigurationSchema
 	 * @param resourcePath the classpath resource path, never {@code null}
 	 * @return the parsed configuration schema, never {@code null}
 	 * @throws ConfigurationException if the resource cannot be read or parsed
-	  * @throws NullPointerException if {@code tomlContent} is null
-	  * @throws NullPointerException if {@code resourcePath} is null
-	  * @throws NullPointerException if {@code other} is null
 	 */
 	public static ConfigurationSchema fromResource(String resourcePath) throws ConfigurationException
 	{
@@ -199,7 +189,7 @@ public final class ConfigurationSchema
 			String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 			return fromToml(content);
 		}
-		catch (IOException e)
+		catch (IOException | JacksonException e)
 		{
 			throw new ConfigurationException("Failed to read configuration resource: " + resourcePath, e);
 		}
@@ -212,8 +202,6 @@ public final class ConfigurationSchema
 	 * @return the parsed configuration schema, never {@code null}
 	 * @throws ConfigurationException if the TOML cannot be parsed
 	 * @throws SecurityException      if the content contains security violations
-	  * @throws NullPointerException if {@code tomlContent} is null
-	  * @throws NullPointerException if {@code other} is null
 	 */
 	public static ConfigurationSchema fromToml(String tomlContent) throws ConfigurationException
 	{
@@ -228,7 +216,7 @@ public final class ConfigurationSchema
 			config.validate();
 			return config;
 		}
-		catch (IOException e)
+		catch (JacksonException e)
 		{
 			throw new ConfigurationException("Failed to parse TOML configuration", e);
 		}
@@ -239,7 +227,6 @@ public final class ConfigurationSchema
 	 *
 	 * @return the TOML representation, never {@code null}
 	 * @throws ConfigurationException if serialization fails
-	  * @throws NullPointerException if {@code other} is null
 	 */
 	public String toToml() throws ConfigurationException
 	{
@@ -249,7 +236,7 @@ public final class ConfigurationSchema
 			TOML_MAPPER.writeValue(writer, this);
 			return writer.toString();
 		}
-		catch (IOException e)
+		catch (JacksonException e)
 		{
 			throw new ConfigurationException("Failed to serialize configuration to TOML", e);
 		}
@@ -263,7 +250,6 @@ public final class ConfigurationSchema
 	 * @param other the configuration to merge with, never {@code null}
 	 * @return a new merged configuration, never {@code null}
 	 * @throws ConfigurationException if the configurations cannot be merged
-	  * @throws NullPointerException if {@code other} is null
 	 */
 	public ConfigurationSchema merge(ConfigurationSchema other) throws ConfigurationException
 	{
@@ -346,9 +332,6 @@ public final class ConfigurationSchema
 	 * @param <T> the configuration type
 	 * @return the rule configuration, or {@code null} if not configured
 	 * @throws ConfigurationException if the configuration cannot be converted
-	  * @throws NullPointerException if {@code version} is null
-	  * @throws NullPointerException if {@code ruleName} is null
-	  * @throws NullPointerException if {@code configClass} is null
 	 */
 	public <T extends RuleConfiguration> T getRuleConfiguration(String ruleName, Class<T> configClass)
 		throws ConfigurationException
@@ -366,7 +349,7 @@ public final class ConfigurationSchema
 		{
 			return TOML_MAPPER.convertValue(ruleData, configClass);
 		}
-		catch (IllegalArgumentException e)
+		catch (IllegalArgumentException | JacksonException e)
 		{
 			throw new ConfigurationException("Failed to convert configuration for rule '" + ruleName + "'", e);
 		}
@@ -387,8 +370,6 @@ public final class ConfigurationSchema
 	 * Validates the entire configuration schema.
 	 *
 	 * @throws ConfigurationException if validation fails
-	  * @throws NullPointerException if {@code version} is null
-	  * @throws NullPointerException if {@code ruleName} is null
 	 */
 	private void validate() throws ConfigurationException
 	{
@@ -501,13 +482,11 @@ public final class ConfigurationSchema
 		}
 	}
 
-	private static ObjectMapper createTomlMapper()
+	private static TomlMapper createTomlMapper()
 	{
-		TomlFactory tomlFactory = new TomlFactory();
-
-		ObjectMapper mapper = new ObjectMapper(tomlFactory);
-		mapper.findAndRegisterModules();
-		return mapper;
+		return TomlMapper.builder().
+			findAndAddModules().  // Enable Java record support
+			build();
 	}
 
 	@Override
