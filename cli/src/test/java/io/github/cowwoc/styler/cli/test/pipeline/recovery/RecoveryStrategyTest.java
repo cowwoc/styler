@@ -1,4 +1,8 @@
 package io.github.cowwoc.styler.cli.test.pipeline.recovery;
+import io.github.cowwoc.styler.cli.pipeline.recovery.FallbackStrategy;
+import io.github.cowwoc.styler.cli.pipeline.recovery.RetryStrategy;
+import io.github.cowwoc.styler.cli.pipeline.recovery.SkipFileStrategy;
+import io.github.cowwoc.styler.cli.pipeline.recovery.ErrorRecoveryStrategy;
 import io.github.cowwoc.styler.cli.pipeline.recovery.FailFastStrategy;
 
 import io.github.cowwoc.styler.cli.pipeline.PipelineException;

@@ -1,4 +1,5 @@
 package io.github.cowwoc.styler.cli.test.pipeline.stages;
+import io.github.cowwoc.styler.cli.pipeline.stages.ParsedFile;
 import io.github.cowwoc.styler.cli.pipeline.stages.FormatStage;
 
 import io.github.cowwoc.styler.cli.pipeline.PipelineException;

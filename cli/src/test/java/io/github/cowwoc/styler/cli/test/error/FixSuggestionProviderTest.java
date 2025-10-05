@@ -1,4 +1,6 @@
 package io.github.cowwoc.styler.cli.test.error;
+import io.github.cowwoc.styler.cli.error.ErrorSeverity;
+import io.github.cowwoc.styler.cli.error.ErrorCategory;
 import io.github.cowwoc.styler.cli.error.FixSuggestionProvider;
 import io.github.cowwoc.styler.cli.error.ErrorContext;
 
