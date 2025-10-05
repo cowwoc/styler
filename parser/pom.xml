@@ -27,6 +27,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>io.github.cowwoc.styler</groupId>
+			<artifactId>styler-ast-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>io.github.cowwoc.requirements</groupId>
 			<artifactId>requirements-java</artifactId>
 		</dependency>

@@ -149,8 +149,8 @@ public final class ArenaNodeStorage implements AutoCloseable
 				"Arena is full. Allocated: " + nodeCount + ", Capacity: " + maxNodes);
 		}
 
-		++nodeCount;
 		int nodeId = nodeCount;
+		++nodeCount;
 		long offset = (long) nodeId * NODE_SIZE_BYTES;
 
 		// Store node data in memory segment

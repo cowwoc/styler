@@ -19,6 +19,7 @@
        xsi:schemaLocation="http://maven.apache.org/BUILD-CACHE-CONFIG/1.2.0 https://maven.apache.org/xsd/build-cache-config-1.2.0.xsd">
 	<configuration>
 		<validateXml>true</validateXml>
+		<enabled>false</enabled><!-- DISABLED: Build cache does not properly cache JPMS module-info.class descriptors, causing module resolution failures. See implement-arena-to-ast-bridge Phase 6 build-validator review for details. -->
 		<local>
 			<maxBuildsCached>3</maxBuildsCached>
 		</local>

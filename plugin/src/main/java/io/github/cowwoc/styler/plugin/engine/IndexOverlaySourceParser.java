@@ -1,6 +1,8 @@
 package io.github.cowwoc.styler.plugin.engine;
 
 import io.github.cowwoc.styler.ast.node.CompilationUnitNode;
+import io.github.cowwoc.styler.parser.ArenaNodeStorage;
+import io.github.cowwoc.styler.parser.ArenaToAstConverter;
 import io.github.cowwoc.styler.parser.IndexOverlayParser;
 import io.github.cowwoc.styler.parser.JavaVersion;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -38,12 +40,24 @@ public final class IndexOverlaySourceParser implements SourceParser
 		try (IndexOverlayParser parser = new IndexOverlayParser(sourceText, targetVersion))
 		{
 			int rootNodeId = parser.parse();
+			ArenaNodeStorage storage = parser.getNodeStorage();
 
-			// AST node conversion requires implementing Arena node to CompilationUnitNode converter
-			throw new UnsupportedOperationException(
-			"Arena-to-AST conversion not implemented. " +
-			"Requires ArenaNodeConverter to convert Arena node ID " + rootNodeId +
-			" to CompilationUnitNode. See todo.md: implement-arena-ast-converter");
+			ArenaToAstConverter converter = new ArenaToAstConverter();
+			return converter.convert(rootNodeId, storage, sourceText);
+		}
+		catch (UnsupportedOperationException e)
+		{
+			throw new MojoExecutionException(
+				"Formatter requires unsupported node type in: " + sourcePath +
+				"\nError: " + e.getMessage() +
+				"\nSolution: Extend ArenaToAstConverter to support this node type", e);
+		}
+		catch (IllegalStateException e)
+		{
+			throw new MojoExecutionException(
+				"Parser generated invalid Arena data for: " + sourcePath +
+				"\nError: " + e.getMessage() +
+				"\nThis indicates a parser bug - please report with source file", e);
 		}
 		catch (Exception e)
 		{

@@ -1,6 +1,7 @@
 module io.github.cowwoc.styler.parser.test
 {
 	requires io.github.cowwoc.styler.parser;
+	requires io.github.cowwoc.styler.ast.core;
 	requires io.github.cowwoc.requirements12.java;
 	requires org.testng;
 	requires java.management;
