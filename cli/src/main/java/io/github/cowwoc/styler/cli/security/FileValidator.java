@@ -88,7 +88,7 @@ public final class FileValidator
 	 * @throws IOException if file metadata cannot be accessed
 	 * @throws NullPointerException if filePath is {@code null}
 	 */
-	public void validateFile(Path filePath) throws SecurityException, IOException
+	public void validateFile(Path filePath) throws IOException
 	{
 		Objects.requireNonNull(filePath, "filePath must not be null");
 
@@ -104,7 +104,7 @@ public final class FileValidator
 	 * @param filePath the file to check
 	 * @throws SecurityException if file does not exist or is not readable
 	 */
-	private void validateFileExists(Path filePath) throws SecurityException
+	private void validateFileExists(Path filePath)
 	{
 		if (!Files.exists(filePath))
 		{
@@ -124,7 +124,7 @@ public final class FileValidator
 	 * @throws FileSizeExceededException if file exceeds size limit
 	 * @throws IOException if file size cannot be determined
 	 */
-	private void validateFileSize(Path filePath) throws FileSizeExceededException, IOException
+	private void validateFileSize(Path filePath) throws IOException
 	{
 		long size = Files.size(filePath);
 		if (size > maxFileSizeBytes)
@@ -139,7 +139,7 @@ public final class FileValidator
 	 * @param filePath the file to check
 	 * @throws FileTypeNotAllowedException if file extension is not allowed
 	 */
-	private void validateFileExtension(Path filePath) throws FileTypeNotAllowedException
+	private void validateFileExtension(Path filePath)
 	{
 		String fileName = filePath.getFileName().toString();
 		String extension = getFileExtension(fileName);
@@ -156,7 +156,7 @@ public final class FileValidator
 	 * @param filePath the file to check
 	 * @throws SecurityException if file is not a regular file
 	 */
-	private void validateRegularFile(Path filePath) throws SecurityException
+	private void validateRegularFile(Path filePath)
 	{
 		if (!Files.isRegularFile(filePath))
 		{

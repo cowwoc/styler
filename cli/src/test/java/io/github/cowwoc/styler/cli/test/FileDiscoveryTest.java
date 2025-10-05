@@ -1,11 +1,9 @@
 package io.github.cowwoc.styler.cli.test;
 
 import io.github.cowwoc.styler.cli.FileFilter;
-
 import io.github.cowwoc.styler.cli.FileDiscovery;
+
 import io.github.cowwoc.styler.cli.DiscoveryResult;
-import io.github.cowwoc.styler.cli.GitignoreParser;
-import io.github.cowwoc.styler.cli.SymlinkCycleDetector;
 
 import io.github.cowwoc.styler.cli.security.FileValidator;
 import io.github.cowwoc.styler.cli.security.PathSanitizer;

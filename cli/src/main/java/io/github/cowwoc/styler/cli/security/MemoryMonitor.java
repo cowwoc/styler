@@ -64,7 +64,7 @@ public final class MemoryMonitor
 	 */
 	// Intentional defensive measure when approaching limit
 	@SuppressWarnings("PMD.DoNotCallGarbageCollectionExplicitly")
-	public void checkMemoryLimit() throws MemoryLimitExceededException
+	public void checkMemoryLimit()
 	{
 		long usedMemory = getCurrentHeapUsage();
 

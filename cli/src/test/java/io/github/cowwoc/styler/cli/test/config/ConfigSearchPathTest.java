@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Unit tests for ConfigSearchPath class.
  * Tests search path building, platform-specific path resolution, and file discovery with thread-safe design.
  */
-@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public class ConfigSearchPathTest
 {
 	private ConfigSearchPath searchPath;
@@ -39,7 +38,7 @@ public class ConfigSearchPathTest
 	 * Verifies that search path from single directory includes the directory and platform-specific paths.
 	 */
 	@Test
-	public void buildSearchPath_fromSingleDirectory_includesDirectoryAndPlatformPaths()
+	public void buildSearchPathFromSingleDirectoryIncludesDirectoryAndPlatformPaths()
 	{
 		// When: building search path from single directory
 		List<Path> result = searchPath.buildSearchPath(tempDir);
@@ -53,7 +52,7 @@ public class ConfigSearchPathTest
 	 * Verifies that search path traverses parent directories from nested structure.
 	 */
 	@Test
-	public void buildSearchPath_traversesParentDirectories() throws IOException
+	public void buildSearchPathTraversesParentDirectories() throws IOException
 	{
 		// Given: nested directory structure with git repository boundary
 		Path gitDir = tempDir.resolve(".git");
@@ -76,7 +75,7 @@ public class ConfigSearchPathTest
 	 * Verifies that search path stops at git repository boundary.
 	 */
 	@Test
-	public void buildSearchPath_stopsAtGitBoundary() throws IOException
+	public void buildSearchPathStopsAtGitBoundary() throws IOException
 	{
 		// Given: git repository structure
 		Path gitDir = tempDir.resolve(".git");
@@ -97,7 +96,7 @@ public class ConfigSearchPathTest
 	 * Verifies that null start directory throws NullPointerException.
 	 */
 	@Test
-	public void buildSearchPath_withNullStartDir_throwsNullPointerException()
+	public void buildSearchPathWithNullStartDirThrowsNullPointerException()
 	{
 		// When/Then: null start directory throws exception
 		assertThatThrownBy(() -> searchPath.buildSearchPath(null)).
@@ -109,7 +108,7 @@ public class ConfigSearchPathTest
 	 * Verifies that user config path returns Optional (platform-dependent).
 	 */
 	@Test
-	public void getUserConfigPath_returnsOptionalPath()
+	public void getUserConfigPathReturnsOptionalPath()
 	{
 		// When: getting user config path
 		Optional<Path> result = searchPath.getUserConfigPath();
@@ -123,7 +122,7 @@ public class ConfigSearchPathTest
 	 * Verifies that global config path returns Optional (platform-dependent).
 	 */
 	@Test
-	public void getGlobalConfigPath_returnsOptionalPath()
+	public void getGlobalConfigPathReturnsOptionalPath()
 	{
 		// When: getting global config path
 		Optional<Path> result = searchPath.getGlobalConfigPath();
@@ -137,7 +136,7 @@ public class ConfigSearchPathTest
 	 * Verifies that config discovery finds TOML file.
 	 */
 	@Test
-	public void discoverConfigFiles_withTomlFile_findsTomlFile() throws IOException
+	public void discoverConfigFilesWithTomlFileFindsTomlFile() throws IOException
 	{
 		// Given: directory with TOML config file
 		Path configFile = tempDir.resolve(".styler.toml");
@@ -157,7 +156,7 @@ public class ConfigSearchPathTest
 	 * Verifies that config discovery finds YAML file.
 	 */
 	@Test
-	public void discoverConfigFiles_withYamlFile_findsYamlFile() throws IOException
+	public void discoverConfigFilesWithYamlFileFindsYamlFile() throws IOException
 	{
 		// Given: directory with YAML config file
 		Path configFile = tempDir.resolve(".styler.yaml");
@@ -177,7 +176,7 @@ public class ConfigSearchPathTest
 	 * Verifies that config discovery prefers TOML over YAML when both formats exist.
 	 */
 	@Test
-	public void discoverConfigFiles_withBothFormats_prefersToml() throws IOException
+	public void discoverConfigFilesWithBothFormatsPrefersToml() throws IOException
 	{
 		// Given: directory with both TOML and YAML files
 		Path tomlFile = tempDir.resolve(".styler.toml");
@@ -199,7 +198,7 @@ public class ConfigSearchPathTest
 	 * Verifies that config discovery respects directory precedence when files exist in multiple directories.
 	 */
 	@Test
-	public void discoverConfigFiles_inMultipleDirectories_respectsPrecedence() throws IOException
+	public void discoverConfigFilesInMultipleDirectoriesRespectsPrecedence() throws IOException
 	{
 		// Given: config files in multiple directories
 		Path dir1 = tempDir.resolve("dir1");
@@ -227,7 +226,7 @@ public class ConfigSearchPathTest
 	 * Verifies that config discovery returns empty list when no config files exist.
 	 */
 	@Test
-	public void discoverConfigFiles_withNoConfigFiles_returnsEmptyList()
+	public void discoverConfigFilesWithNoConfigFilesReturnsEmptyList()
 	{
 		// Given: directory with no config files
 		List<Path> searchPaths = List.of(tempDir);
@@ -243,7 +242,7 @@ public class ConfigSearchPathTest
 	 * Verifies that config discovery handles unreadable files gracefully.
 	 */
 	@Test
-	public void discoverConfigFiles_withUnreadableFile_ignoresFile() throws IOException
+	public void discoverConfigFilesWithUnreadableFileIgnoresFile() throws IOException
 	{
 		// Given: unreadable config file
 		Path configFile = tempDir.resolve(".styler.toml");
@@ -265,7 +264,7 @@ public class ConfigSearchPathTest
 	 * Verifies that null search paths throws NullPointerException.
 	 */
 	@Test
-	public void discoverConfigFiles_withNullSearchPaths_throwsNullPointerException()
+	public void discoverConfigFilesWithNullSearchPathsThrowsNullPointerException()
 	{
 		// When/Then: null search paths throws exception
 		assertThatThrownBy(() -> searchPath.discoverConfigFiles(null)).

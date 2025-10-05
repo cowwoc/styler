@@ -54,24 +54,17 @@ public class HumanOutputFormatter implements OutputFormatter
 	{
 		StringBuilder sb = new StringBuilder();
 
-		// File path with line/column
 		sb.append(formatPath(violation.filePath())).
 			append(':').
 			append(violation.line()).
 			append(':').
-			append(violation.column());
-
-		// Severity indicator
-		sb.append(' ').
-			append(formatSeverity(violation.severity()));
-
-		// Rule ID
-		sb.append(" [").
+			append(violation.column()).
+			append(' ').
+			append(formatSeverity(violation.severity())).
+			append(" [").
 			append(violation.ruleId()).
-			append(']');
-
-		// Message
-		sb.append(' ').
+			append(']').
+			append(' ').
 			append(violation.message());
 
 		// Suggested fix (if available)
@@ -90,13 +83,9 @@ public class HumanOutputFormatter implements OutputFormatter
 		StringBuilder sb = new StringBuilder(1024);
 
 		sb.append(colorize("=== Summary ===", AnsiColor.BOLD)).
-			append('\n');
-
-		// Operation type
-		sb.append("Operation: ").append(summary.operationType()).append('\n');
-
-		// File counts
-		sb.append("Files processed: ").append(summary.processedFiles()).
+			append('\n').
+			append("Operation: ").append(summary.operationType()).append('\n').
+			append("Files processed: ").append(summary.processedFiles()).
 			append('/').append(summary.totalFiles()).append('\n');
 
 		// Violation count with color coding
@@ -171,15 +160,10 @@ public class HumanOutputFormatter implements OutputFormatter
 	{
 		StringBuilder sb = new StringBuilder();
 
-		// Line:column
-		sb.append(violation.line()).append(':').append(violation.column());
-
-		// Severity
-		sb.append(' ').append(formatSeverity(violation.severity()));
-
-		// Rule and message
-		sb.append(" [").append(violation.ruleId()).append("] ");
-		sb.append(violation.message());
+		sb.append(violation.line()).append(':').append(violation.column()).
+			append(' ').append(formatSeverity(violation.severity())).
+			append(" [").append(violation.ruleId()).append("] ").
+			append(violation.message());
 
 		return sb.toString();
 	}

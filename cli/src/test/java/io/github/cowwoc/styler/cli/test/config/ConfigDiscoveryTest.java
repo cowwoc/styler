@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Unit tests for ConfigDiscovery class.
  * Tests configuration discovery, merging, and precedence rules with thread-safe design.
  */
-@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public class ConfigDiscoveryTest
 {
 	private Path tempProjectDir;
@@ -42,7 +41,7 @@ public class ConfigDiscoveryTest
 	 * Verifies that TOML configuration is correctly loaded from current directory.
 	 */
 	@Test
-	public void discoverConfig_withTomlInCurrentDir_returnsTomlConfiguration() throws IOException
+	public void discoverConfigWithTomlInCurrentDirReturnsTomlConfiguration() throws IOException
 	{
 		// Given: TOML config file in project directory
 		Path configFile = tempProjectDir.resolve(".styler.toml");
@@ -66,7 +65,7 @@ public class ConfigDiscoveryTest
 	 * Verifies that explicit config path takes precedence over project config.
 	 */
 	@Test
-	public void discoverConfig_withExplicitConfig_usesExplicitPath() throws IOException
+	public void discoverConfigWithExplicitConfigUsesExplicitPath() throws IOException
 	{
 		// Given: Explicit config file and project config file
 		Path explicitConfig = tempProjectDir.resolve("custom-config.toml");
@@ -97,7 +96,7 @@ public class ConfigDiscoveryTest
 	 * Verifies that discovering config without any config files throws ConfigNotFoundException.
 	 */
 	@Test
-	public void discoverConfig_withNoConfigFiles_throwsConfigNotFoundException()
+	public void discoverConfigWithNoConfigFilesThrowsConfigNotFoundException()
 	{
 		// Given: Empty project directory with no config files
 
@@ -111,7 +110,7 @@ public class ConfigDiscoveryTest
 	 * Verifies that config discovery traverses parent directories to find config files.
 	 */
 	@Test
-	public void discoverConfig_withParentDirectoryConfig_findsParentConfig() throws IOException
+	public void discoverConfigWithParentDirectoryConfigFindsParentConfig() throws IOException
 	{
 		// Given: Config file in parent directory
 		Path parentConfig = tempProjectDir.resolve(".styler.toml");
@@ -137,7 +136,7 @@ public class ConfigDiscoveryTest
 	 * Verifies that config discovery stops at git repository boundaries.
 	 */
 	@Test
-	public void discoverConfig_stopsAtGitBoundary() throws IOException
+	public void discoverConfigStopsAtGitBoundary() throws IOException
 	{
 		// Given: Git repository with config in parent of git root
 		Path gitRoot = tempProjectDir.resolve("project");
@@ -160,7 +159,7 @@ public class ConfigDiscoveryTest
 	 * Verifies that CLI overrides are correctly applied to discovered configuration.
 	 */
 	@Test
-	public void discoverWithOverrides_appliesCliOverrides() throws IOException
+	public void discoverWithOverridesAppliesCliOverrides() throws IOException
 	{
 		// Given: Config file and CLI overrides
 		Path configFile = tempProjectDir.resolve(".styler.toml");
@@ -186,7 +185,7 @@ public class ConfigDiscoveryTest
 	 * Verifies that null starting path throws NullPointerException.
 	 */
 	@Test
-	public void discoverConfig_withNullStartingPath_throwsNullPointerException()
+	public void discoverConfigWithNullStartingPathThrowsNullPointerException()
 	{
 		// When/Then: null starting path throws exception
 		assertThatThrownBy(() -> configDiscovery.discover(null, null)).
@@ -198,7 +197,7 @@ public class ConfigDiscoveryTest
 	 * Verifies that null overrides parameter throws NullPointerException.
 	 */
 	@Test
-	public void discoverWithOverrides_withNullOverrides_throwsNullPointerException() throws IOException
+	public void discoverWithOverridesWithNullOverridesThrowsNullPointerException() throws IOException
 	{
 		// Given: Valid project directory
 		Path configFile = tempProjectDir.resolve(".styler.toml");
@@ -214,7 +213,7 @@ public class ConfigDiscoveryTest
 	 * Verifies that builder pattern correctly applies overrides to configuration.
 	 */
 	@Test
-	public void builderPattern_withOverrides_buildsCorrectConfiguration() throws IOException
+	public void builderPatternWithOverridesBuildsCorrectConfiguration() throws IOException
 	{
 		// Given: Config file and builder with overrides
 		Path configFile = tempProjectDir.resolve(".styler.toml");
@@ -237,7 +236,7 @@ public class ConfigDiscoveryTest
 	 * Verifies that builder pattern with default build uses current directory.
 	 */
 	@Test
-	public void builderPattern_withDefaultBuild_usesCurrentDirectory() throws IOException
+	public void builderPatternWithDefaultBuildUsesCurrentDirectory() throws IOException
 	{
 		// Given: Config file in current working directory simulation
 		// Note: This test would need to be adapted based on actual working directory handling

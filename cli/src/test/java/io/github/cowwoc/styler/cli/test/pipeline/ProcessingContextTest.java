@@ -12,14 +12,13 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 /**
  * Tests for {@link ProcessingContext}.
  */
-@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public final class ProcessingContextTest
 {
 	/**
 	 * Verifies that builder creates context with minimal configuration.
 	 */
 	@Test
-	public void builder_minimalConfiguration_createsContext()
+	public void builderMinimalConfigurationCreatesContext()
 	{
 		Path sourceFile = Paths.get("test.java");
 
@@ -34,7 +33,7 @@ public final class ProcessingContextTest
 	 * Verifies that builder creates context with custom configuration.
 	 */
 	@Test
-	public void builder_withConfiguration_includesConfiguration()
+	public void builderWithConfigurationIncludesConfiguration()
 	{
 		Path sourceFile = Paths.get("test.java");
 		Map<String, Object> config = Map.of("key", "value");
@@ -50,7 +49,7 @@ public final class ProcessingContextTest
 	 * Verifies that builder creates context with custom metadata.
 	 */
 	@Test
-	public void builder_withMetadata_includesMetadata()
+	public void builderWithMetadataIncludesMetadata()
 	{
 		Path sourceFile = Paths.get("test.java");
 		Map<String, Object> metadata = Map.of("timestamp", System.currentTimeMillis());
@@ -66,7 +65,7 @@ public final class ProcessingContextTest
 	 * Verifies that configuration map is immutable.
 	 */
 	@Test(expectedExceptions = UnsupportedOperationException.class)
-	public void context_modifyConfiguration_throwsUnsupportedOperationException()
+	public void contextModifyConfigurationThrowsUnsupportedOperationException()
 	{
 		Path sourceFile = Paths.get("test.java");
 		ProcessingContext context = ProcessingContext.builder(sourceFile).build();
@@ -78,7 +77,7 @@ public final class ProcessingContextTest
 	 * Verifies that metadata map is immutable.
 	 */
 	@Test(expectedExceptions = UnsupportedOperationException.class)
-	public void context_modifyMetadata_throwsUnsupportedOperationException()
+	public void contextModifyMetadataThrowsUnsupportedOperationException()
 	{
 		Path sourceFile = Paths.get("test.java");
 		ProcessingContext context = ProcessingContext.builder(sourceFile).build();
@@ -90,7 +89,7 @@ public final class ProcessingContextTest
 	 * Verifies that toBuilder preserves all context data.
 	 */
 	@Test
-	public void context_toBuilder_preservesData()
+	public void contextToBuilderPreservesData()
 	{
 		Path sourceFile = Paths.get("test.java");
 		Map<String, Object> config = Map.of("key1", "value1");
@@ -112,7 +111,7 @@ public final class ProcessingContextTest
 	 * Verifies that toBuilder allows modifications.
 	 */
 	@Test
-	public void context_toBuilderWithChanges_createsModifiedContext()
+	public void contextToBuilderWithChangesCreatesModifiedContext()
 	{
 		Path sourceFile = Paths.get("test.java");
 		ProcessingContext original = ProcessingContext.builder(sourceFile).build();

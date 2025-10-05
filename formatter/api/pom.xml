@@ -14,19 +14,21 @@
 	<packaging>jar</packaging>
 
 	<name>Styler Java Code Formatter - API</name>
-	<description>Plugin interface and configuration APIs for the formatter system. Defines contracts for formatting rules, plugin lifecycle, and configuration schema.</description>
+	<description>Plugin interface and configuration APIs for the formatter system. Defines contracts for
+		formatting rules, plugin lifecycle, and configuration schema.
+	</description>
 
 	<properties>
 		<project.root.basedir>${project.parent.parent.basedir}</project.root.basedir>
 	</properties>
 
 	<dependencies>
-		<!-- AST Core dependency for AST node access -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
 			<artifactId>styler-ast-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

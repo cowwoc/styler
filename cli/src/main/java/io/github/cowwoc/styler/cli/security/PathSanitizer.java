@@ -54,7 +54,7 @@ public final class PathSanitizer
 	 * @throws PathTraversalException if path contains suspicious traversal patterns
 	 * @throws NullPointerException if inputPath is {@code null}
 	 */
-	public Path sanitize(Path inputPath) throws PathTraversalException
+	public Path sanitize(Path inputPath)
 	{
 		Objects.requireNonNull(inputPath, "inputPath must not be null");
 
@@ -92,7 +92,7 @@ public final class PathSanitizer
 	 * @param inputPath the original input path
 	 * @throws PathTraversalException if suspicious patterns detected
 	 */
-	private void detectTraversalPatterns(Path inputPath) throws PathTraversalException
+	private void detectTraversalPatterns(Path inputPath)
 	{
 		String pathString = inputPath.toString();
 

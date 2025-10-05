@@ -54,7 +54,7 @@ public final class PackageDeclarationNode extends ASTNode
 		}
 
 	@Override
-	public <R, A> R accept(ASTVisitor<R, A> visitor, final A arg)
+	public <R, A> R accept(ASTVisitor<R, A> visitor, A arg)
 		{
 		return visitor.visitPackageDeclaration(this, arg);
 	}

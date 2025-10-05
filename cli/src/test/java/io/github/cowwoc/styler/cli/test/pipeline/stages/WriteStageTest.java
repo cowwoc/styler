@@ -15,14 +15,13 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 /**
  * Tests for {@link WriteStage}.
  */
-@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public final class WriteStageTest
 {
 	/**
 	 * Verifies that WriteStage writes content to file.
 	 */
 	@Test
-	public void validContent_writeStageExecution_writesFile() throws IOException, PipelineException
+	public void validContentWriteStageExecutionWritesFile() throws IOException, PipelineException
 	{
 		String content = "public class Test { }";
 		Path outputFile = Files.createTempFile("output-", ".java");
@@ -52,7 +51,7 @@ public final class WriteStageTest
 	 * Verifies that WriteStage handles empty content gracefully.
 	 */
 	@Test
-	public void emptyContent_writeStageExecution_returnsFailure() throws PipelineException
+	public void emptyContentWriteStageExecutionReturnsFailure() throws PipelineException
 	{
 		Path outputFile = Path.of("/tmp/output.java");
 		WriteStage stage = new WriteStage();
@@ -67,7 +66,7 @@ public final class WriteStageTest
 	 * Verifies that WriteStage returns the correct stage ID.
 	 */
 	@Test
-	public void writeStage_getStageId_returnsWrite()
+	public void writeStageGetStageIdReturnsWrite()
 	{
 		WriteStage stage = new WriteStage();
 		requireThat(stage.getStageId(), "stageId").isEqualTo("write");
@@ -77,7 +76,7 @@ public final class WriteStageTest
 	 * Verifies that WriteStage supports error recovery.
 	 */
 	@Test
-	public void writeStage_supportsErrorRecovery_returnsTrue()
+	public void writeStageSupportsErrorRecoveryReturnsTrue()
 	{
 		WriteStage stage = new WriteStage();
 		requireThat(stage.supportsErrorRecovery(), "supportsRecovery").isTrue();
@@ -87,7 +86,7 @@ public final class WriteStageTest
 	 * Verifies that WriteStage creates parent directories if needed.
 	 */
 	@Test
-	public void nonexistentParentDirectory_writeStageExecution_createsDirectories()
+	public void nonexistentParentDirectoryWriteStageExecutionCreatesDirectories()
 		throws IOException, PipelineException
 	{
 		Path tempDir = Files.createTempDirectory("write-test-");

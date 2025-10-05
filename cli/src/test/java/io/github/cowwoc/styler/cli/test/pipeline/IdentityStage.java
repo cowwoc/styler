@@ -1,12 +1,13 @@
 package io.github.cowwoc.styler.cli.test.pipeline;
+
 import io.github.cowwoc.styler.cli.pipeline.AbstractPipelineStage;
 import io.github.cowwoc.styler.cli.pipeline.ProcessingContext;
 
 /**
  * Simple identity stage for testing that passes input through unchanged.
  * <p>
- * This stage demonstrates the {@link AbstractPipelineStage} Template Method pattern and provides
- * a simple, predictable stage for testing pipeline execution.
+ * This stage demonstrates the {@link AbstractPipelineStage} Template Method pattern and provides a simple,
+ * predictable stage for testing pipeline execution.
  *
  * @param <T> the input and output type (same for identity function)
  */

@@ -39,6 +39,43 @@
 
 ## Phase C: Horizontal Expansion (Scale the Working Pipeline)
 
+### CLAUDE.md Hook Migration (Configuration Enforcement Automation)
+- [x] **TASK:** `migrate-claude-md-to-hooks` - Convert static CLAUDE.md enforcement patterns to runtime hook scripts ✅ COMPLETED (2025-10-05)
+  - **Purpose**: Migrate enforcement patterns from static documentation to automated runtime hooks for improved reliability and reduced CLAUDE.md size
+  - **Scope**: Phase 1-3 hook implementations replacing ~150 lines of static CLAUDE.md with automated enforcement
+  - **Evidence Base**:
+    - Current: 604-line CLAUDE.md with static enforcement patterns requiring Claude self-policing
+    - Existing hooks: 13 operational hooks proving infrastructure viability
+    - Success pattern: critical-thinking.sh (35 lines) replaced ~100 lines of static text
+  - **Phase 1 - Immediate Value** (3 new hooks):
+    - `detect-giving-up.sh`: PreResponse hook detecting prohibited giving-up phrases (lines 126-146)
+    - Enhanced `detect-giving-up.sh`: Prohibited downgrade patterns (lines 116-124)
+    - Enhanced `smart-doc-prompter.sh`: Style validation checklist injection when "apply style" detected
+  - **Phase 2 - Quality Gates** (3 enhanced hooks):
+    - `validate-test-patterns.sh`: PostToolUse scan for TestNG violations (@BeforeMethod, assertThatThrownBy)
+    - Enhanced `block-data-loss.sh`: JavaDoc script blocker (prevent bulk sed/awk on JavaDoc)
+    - Enhanced `block-data-loss.sh`: Worktree isolation enforcer (verify cd after git worktree add)
+  - **Phase 3 - Protocol Enhancement** (1 enhanced hook):
+    - Enhanced `phase-guard-enforcement.sh`: Phase completion verification (verify grep ran before phase complete)
+  - **Benefits**:
+    - Real-time enforcement vs reliance on Claude self-policing
+    - ~150 line reduction in CLAUDE.md (25% smaller, more maintainable)
+    - Circuit-breaker patterns prevent violations before they happen
+    - Consistent enforcement across all Claude instances
+  - **Implementation**:
+    - Phase 1: Create detect-giving-up.sh, enhance smart-doc-prompter.sh (2-3 hours)
+    - Phase 2: Create validate-test-patterns.sh, enhance block-data-loss.sh (3-4 hours)
+    - Phase 3: Enhance phase-guard-enforcement.sh (2-3 hours)
+  - **Testing**: Each hook tested with positive/negative cases, hook execution verified in .claude/settings.json
+  - **Deliverables**:
+    - 3 new hook scripts (detect-giving-up.sh, validate-test-patterns.sh)
+    - 3 enhanced hooks (smart-doc-prompter.sh, block-data-loss.sh, phase-guard-enforcement.sh)
+    - Updated CLAUDE.md with removed sections and hook references
+    - Updated .claude/settings.json with new hook registrations
+    - Hook testing verification report
+  - **Quality Gates**: All hooks execute without errors, pattern detection accuracy >95%, no false positives
+  - **Estimated Effort**: 7-10 hours total (2-3h Phase 1 + 3-4h Phase 2 + 2-3h Phase 3)
+
 ### Structured Violation Output (AI Agent Feedback)
 - [ ] **TASK:** `implement-structured-violation-output` - Machine-readable violation reports for AI agent feedback
   - **Purpose**: Generate structured violation reports enabling AI agents to learn from formatting feedback
@@ -66,7 +103,7 @@
     - ✅ Unanimous stakeholder approval (7/7 agents)
   - **Blocker Resolution**: Java 25 bytecode compatibility achieved by overriding ASM to 9.8 in maven-plugin-plugin configuration
   - **Quality Gates**: BUILD SUCCESS, all tests passing (188/188), plugin descriptor generated (2 mojos)
-- [ ] **TASK:** `refactor-maven-plugin-dependencies` - Remove CLI dependency and use formatter API directly
+- [x] **TASK:** `refactor-maven-plugin-dependencies` - Remove CLI dependency and use formatter API directly ✅ COMPLETED (2025-10-05)
   - **Purpose**: Eliminate cyclic dependency preventing Maven plugin from running on its own project
   - **Problem**: plugin → cli → formatter-api creates cycle, preventing `mvn verify -Pstyler` from working
   - **Scope**: Refactor plugin to depend directly on formatter-api and formatter-rules instead of CLI
@@ -74,19 +111,35 @@
     - **Current (broken)**: plugin → cli → formatter-api → (cycle when plugin tries to format these modules)
     - **Target**: plugin → formatter-api + formatter-rules (both independent of plugin)
   - **Implementation**:
-    - Remove styler-cli dependency from plugin/pom.xml
-    - Add direct dependencies: styler-formatter-api, styler-formatter-rules
-    - Implement formatting logic in Mojos using formatter API directly
-    - Replace placeholder MVP implementation with FileProcessorPipeline integration
-    - Update CheckMojo to use FormattingContext and FormattingRule APIs
-    - Update FormatMojo to apply TextEdit operations
+    - ✅ Remove styler-cli dependency from plugin/pom.xml
+    - ✅ Add direct dependencies: styler-formatter-api, styler-formatter-rules, styler-parser, styler-ast-core, styler-core
+    - ✅ Implement Template Method pattern (AbstractProcessingStrategy) to eliminate code duplication
+    - ✅ Create ValidationStrategy and FormattingStrategy with specialized behavior
+    - ✅ Update CheckMojo to use ValidationStrategy
+    - ✅ Update FormatMojo to use FormattingStrategy
+    - ✅ Add comprehensive test coverage (43 new tests: AbstractProcessingStrategyTest, StrategyIntegrationTest, TextEditApplicatorTest)
   - **Benefits**:
     - Plugin can run on entire styler project without cyclic dependencies
     - Plugin becomes independent consumer of formatter API (same as CLI)
     - Enables `mvn verify -Pstyler` to work on all modules including CLI
     - Cleaner separation: both plugin and CLI are formatter API consumers
-  - **Testing**: Verify plugin can format its own source code and all other styler modules
-  - **Estimated Effort**: 1-2 days
+    - Template Method pattern eliminates 40+ lines of duplication
+  - **Quality Gates**:
+    - ✅ 0 Checkstyle violations
+    - ✅ 0 PMD violations
+    - ✅ 43/43 new tests passing (total: 841/841 project tests)
+    - ✅ Unanimous stakeholder approval (technical-architect, code-quality-auditor, style-auditor, build-validator)
+  - **Deliverables**:
+    - AbstractProcessingStrategy.java (Template Method base class)
+    - ValidationStrategy.java (validation-specific strategy)
+    - FormattingStrategy.java (formatting-specific strategy)
+    - FileProcessingStrategy.java (strategy interface)
+    - FormattingContextBuilder.java (context creation)
+    - FormattingRuleLoader.java (rule loading)
+    - SourceParser.java + IndexOverlaySourceParser.java (parsing abstraction)
+    - TextEditApplicator.java (edit application)
+    - SourceFileDiscovery.java (file discovery)
+    - Comprehensive test suite (3 test classes, 43 tests)
 
 ### Parallel File Processing (Virtual Threads)
 - [ ] **TASK:** `implement-parallel-file-processing` - Multi-threaded file processing with virtual threads

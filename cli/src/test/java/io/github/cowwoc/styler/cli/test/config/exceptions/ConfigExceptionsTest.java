@@ -18,14 +18,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * Unit tests for configuration discovery exception hierarchy.
  * Tests exception creation, message formatting, and business context preservation.
  */
-@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public class ConfigExceptionsTest
 {
 	/**
 	 * Verifies that ConfigDiscoveryException preserves error message.
 	 */
 	@Test
-	public void configDiscoveryException_withMessage_preservesMessage()
+	public void configDiscoveryExceptionWithMessagePreservesMessage()
 	{
 		// Given: error message
 		String message = "Configuration discovery failed";
@@ -42,7 +41,7 @@ public class ConfigExceptionsTest
 	 * Verifies that ConfigDiscoveryException preserves both message and cause.
 	 */
 	@Test
-	public void configDiscoveryException_withMessageAndCause_preservesBoth()
+	public void configDiscoveryExceptionWithMessageAndCausePreservesBoth()
 	{
 		// Given: error message and cause
 		String message = "Configuration discovery failed";
@@ -60,7 +59,7 @@ public class ConfigExceptionsTest
 	 * Verifies that null message throws NullPointerException.
 	 */
 	@Test
-	public void configDiscoveryException_withNullMessage_throwsNullPointerException()
+	public void configDiscoveryExceptionWithNullMessageThrowsNullPointerException()
 	{
 		// When/Then: null message throws exception
 		assertThatThrownBy(() -> new ConfigDiscoveryException(null)).
@@ -71,7 +70,7 @@ public class ConfigExceptionsTest
 	 * Verifies that ConfigNotFoundException builds descriptive message with all searched paths.
 	 */
 	@Test
-	public void configNotFoundException_withSearchedPaths_buildsDescriptiveMessage()
+	public void configNotFoundExceptionWithSearchedPathsBuildsDescriptiveMessage()
 	{
 		// Given: list of searched paths
 		List<Path> searchedPaths = List.of(
@@ -100,7 +99,7 @@ public class ConfigExceptionsTest
 	 * Verifies that ConfigNotFoundException handles empty search paths appropriately.
 	 */
 	@Test
-	public void configNotFoundException_withEmptySearchPaths_buildsAppropriateMessage()
+	public void configNotFoundExceptionWithEmptySearchPathsBuildsAppropriateMessage()
 	{
 		// Given: empty list of searched paths
 		List<Path> searchedPaths = List.of();
@@ -118,7 +117,7 @@ public class ConfigExceptionsTest
 	 * Verifies that null searched paths throws NullPointerException.
 	 */
 	@Test
-	public void configNotFoundException_withNullSearchedPaths_throwsNullPointerException()
+	public void configNotFoundExceptionWithNullSearchedPathsThrowsNullPointerException()
 	{
 		// When/Then: null searched paths throws exception
 		assertThatThrownBy(() -> new ConfigNotFoundException(null)).
@@ -129,7 +128,7 @@ public class ConfigExceptionsTest
 	 * Verifies that ConfigValidationException builds descriptive message with file path and validation details.
 	 */
 	@Test
-	public void configValidationException_withConfigFileAndMessage_buildsDescriptiveMessage()
+	public void configValidationExceptionWithConfigFileAndMessageBuildsDescriptiveMessage()
 	{
 		// Given: config file and validation message
 		Path configFile = Paths.get("/project/.styler.toml");
@@ -154,7 +153,7 @@ public class ConfigExceptionsTest
 	 * Verifies that ConfigValidationException preserves config file, message, and cause.
 	 */
 	@Test
-	public void configValidationException_withConfigFileMessageAndCause_preservesAllDetails()
+	public void configValidationExceptionWithConfigFileMessageAndCausePreservesAllDetails()
 	{
 		// Given: config file, validation message, and cause
 		Path configFile = Paths.get("/project/.styler.toml");
@@ -177,7 +176,7 @@ public class ConfigExceptionsTest
 	 * Verifies that null config file throws NullPointerException.
 	 */
 	@Test
-	public void configValidationException_withNullConfigFile_throwsNullPointerException()
+	public void configValidationExceptionWithNullConfigFileThrowsNullPointerException()
 	{
 		// When/Then: null config file throws exception
 		assertThatThrownBy(() -> new ConfigValidationException(null, "message")).
@@ -188,7 +187,7 @@ public class ConfigExceptionsTest
 	 * Verifies that null validation message throws NullPointerException.
 	 */
 	@Test
-	public void configValidationException_withNullMessage_throwsNullPointerException()
+	public void configValidationExceptionWithNullMessageThrowsNullPointerException()
 	{
 		// Given: valid config file
 		Path configFile = Paths.get("/project/.styler.toml");
@@ -202,7 +201,7 @@ public class ConfigExceptionsTest
 	 * Verifies that FileAccessException builds descriptive message with file path and access details.
 	 */
 	@Test
-	public void fileAccessException_withConfigFileAndMessage_buildsDescriptiveMessage()
+	public void fileAccessExceptionWithConfigFileAndMessageBuildsDescriptiveMessage()
 	{
 		// Given: config file and access message
 		Path configFile = Paths.get("/project/.styler.toml");
@@ -227,7 +226,7 @@ public class ConfigExceptionsTest
 	 * Verifies that FileAccessException preserves config file, message, and cause.
 	 */
 	@Test
-	public void fileAccessException_withConfigFileMessageAndCause_preservesAllDetails()
+	public void fileAccessExceptionWithConfigFileMessageAndCausePreservesAllDetails()
 	{
 		// Given: config file, access message, and cause
 		Path configFile = Paths.get("/project/.styler.toml");
@@ -250,7 +249,7 @@ public class ConfigExceptionsTest
 	 * Verifies that null config file throws NullPointerException for FileAccessException.
 	 */
 	@Test
-	public void fileAccessException_withNullConfigFile_throwsNullPointerException()
+	public void fileAccessExceptionWithNullConfigFileThrowsNullPointerException()
 	{
 		// When/Then: null config file throws exception
 		assertThatThrownBy(() -> new FileAccessException(null, "message")).
@@ -261,7 +260,7 @@ public class ConfigExceptionsTest
 	 * Verifies that null access message throws NullPointerException for FileAccessException.
 	 */
 	@Test
-	public void fileAccessException_withNullMessage_throwsNullPointerException()
+	public void fileAccessExceptionWithNullMessageThrowsNullPointerException()
 	{
 		// Given: valid config file
 		Path configFile = Paths.get("/project/.styler.toml");

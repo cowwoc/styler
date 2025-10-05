@@ -34,7 +34,7 @@ public final class ArrayInitializerNode extends ASTNode
 	}
 
 	@Override
-	public <R, A> R accept(ASTVisitor<R, A> visitor, final A arg)
+	public <R, A> R accept(ASTVisitor<R, A> visitor, A arg)
 		{
 		return visitor.visitArrayInitializer(this, arg);
 	}

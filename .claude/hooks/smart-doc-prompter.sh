@@ -127,18 +127,6 @@ handle_user_prompt_submit()
 	        echo "  • CLAUDE: ./docs/code-style/java-claude.md - Java detection patterns"
 	        echo "  • HUMAN: ./docs/code-style/java-human.md - Java explanations"
 	    fi
-	elif echo "$user_message_lower" | grep -qE "(apply|check|validate|verify).*(style|format|guide|compliance)"; then
-	    if check_and_mark_prompt "complete-style-validation"; then
-	        # Track complete style validation work
-	        track_documentation_access "docs/project/task-protocol.md" "reference" "style-validation" 1 2>/dev/null || true
-
-	        echo "🎯 COMPLETE STYLE VALIDATION: ALL THREE components required:"
-	        echo "  1. checkstyle: ./mvnw checkstyle:check"
-	        echo "  2. PMD: ./mvnw pmd:check"
-	        echo "  3. Manual rules: docs/code-style/*-claude.md detection patterns"
-	        echo ""
-	        echo "📋 CRITICAL: Never assume checkstyle-only. See task-protocol.md 'Complete Style Validation Gate'"
-	    fi
 	elif echo "$user_message_lower" | grep -qE "(create|add|update).*test|(test|testing)"; then
 	    if check_and_mark_prompt "test-work"; then
 	        # Track testing work

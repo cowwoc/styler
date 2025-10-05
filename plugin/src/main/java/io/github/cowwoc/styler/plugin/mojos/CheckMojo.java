@@ -1,10 +1,16 @@
 package io.github.cowwoc.styler.plugin.mojos;
 
 import io.github.cowwoc.styler.plugin.config.PluginConfiguration;
+import io.github.cowwoc.styler.plugin.engine.*;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Maven Mojo that validates Java source files conform to configured style rules.
@@ -36,25 +42,66 @@ public class CheckMojo extends AbstractStylerMojo
 	{
 		getLog().info("Checking source formatting in: " + config.sourceDirectory());
 
-		// MVP implementation: Placeholder for CLI pipeline integration
-		// Full implementation delegates to MavenCliAdapter → FileProcessorPipeline
-		getLog().info("Maven plugin structure created successfully");
-		getLog().info("Configuration:");
-		getLog().info("  - Source directory: " + config.sourceDirectory());
-		getLog().info("  - Encoding: " + config.encoding());
-		getLog().info("  - Fail on violation: " + config.failOnViolation());
+		// Initialize engine components
+		SourceFileDiscovery fileDiscovery = new SourceFileDiscovery();
+		FormattingRuleLoader ruleLoader = new FormattingRuleLoader();
+		FormattingContextBuilder contextBuilder = new FormattingContextBuilder();
+		SourceParser parser = new IndexOverlaySourceParser();
 
-		// Future: Integrate with CLI FileProcessorPipeline
-		// MavenCliAdapter adapter = new MavenCliAdapter(config, getLog());
-		// CheckResult result = adapter.executeCheck();
-		//
-		// if (result.hasViolations()) {
-		//     getLog().error("Found " + result.getViolationCount() + " violations");
-		//     if (config.failOnViolation()) {
-		//         throw new MojoFailureException("Formatting violations detected");
-		//     }
-		// }
+		// Create validation strategy (check-only, no modifications)
+		ValidationStrategy strategy = new ValidationStrategy(config, parser, contextBuilder, ruleLoader);
 
-		getLog().info("Formatting check complete (MVP implementation)");
+		try
+		{
+			// Discover source files matching include/exclude patterns
+			List<Path> sourceFiles = fileDiscovery.discoverFiles(
+				config.sourceDirectory().toPath(),
+				List.of("**/*.java"),
+				List.of("**/generated/**", "**/target/**"));
+
+			getLog().info("Found " + sourceFiles.size() + " source files to check");
+
+			// Process each file and collect violations
+			int totalViolations = 0;
+			int filesWithViolations = 0;
+
+			for (Path sourceFile : sourceFiles)
+			{
+				String sourceText = Files.readString(sourceFile);
+				FileProcessingStrategy.ProcessingResult result = strategy.process(sourceFile, sourceText);
+
+				if (result.violationCount() > 0)
+				{
+					++filesWithViolations;
+					totalViolations += result.violationCount();
+
+					getLog().warn("Violations in " + sourceFile + ":");
+					for (String violation : result.violations())
+					{
+						getLog().warn("  " + violation);
+					}
+				}
+			}
+
+			// Report results
+			if (totalViolations > 0)
+			{
+				getLog().error("Found " + totalViolations + " violations in " +
+					filesWithViolations + " files");
+
+				if (config.failOnViolation())
+				{
+					throw new MojoFailureException("Formatting violations detected");
+				}
+			}
+			else
+			{
+				getLog().info("No formatting violations found");
+			}
+		}
+		catch (IOException e)
+		{
+			throw new MojoExecutionException("Failed to read source files", e);
+		}
 	}
 }

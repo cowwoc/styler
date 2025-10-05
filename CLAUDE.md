@@ -31,6 +31,7 @@ Styler Java Code Formatter project configuration and workflow guidance.
 
 **TODO Synchronization**: Keep TodoWrite tool synced with todo.md file.
 **TODO Clarity**: Each todo.md entry must contain sufficient detail to understand the task without external context. One-line descriptions require nested sub-items explaining Purpose, Scope, Components/Features, and Integration points.
+**CRITICAL TOKEN USAGE**: NEVER pause, stop, or provide status updates due to token usage concerns. Continue working until task completion or explicit user instruction.
 **🚨 VIOLATION = IMMEDIATE TASK RESTART REQUIRED**
 
 ## 🚨 RISK-BASED PROTOCOL SELECTION
@@ -79,13 +80,11 @@ Styler Java Code Formatter project configuration and workflow guidance.
 
 ## 🎯 COMPLETE STYLE VALIDATION
 
-**AUTOMATED GUIDANCE**: The `smart-doc-prompter.sh` hook automatically injects the 3-component checklist when style work is detected.
-
 **MANDATORY PROCESS**: When user requests "apply style guide" or similar:
 
 1. **NEVER assume checkstyle-only** - Style guide consists of THREE components
 2. **FOLLOW PROTOCOL**: task-protocol.md "Complete Style Validation Gate" pattern
-3. **MANUAL VERIFICATION**: Check docs/code-style/*-claude.md detection patterns
+3. **MANUAL VERIFICATION**: Check docs/code-style/*-claude.md detection patterns  
 4. **ALL THREE REQUIRED**: checkstyle + PMD + manual rules must ALL pass
 
 **CRITICAL ERROR PATTERN**: Checking only checkstyle and declaring "no violations found" when PMD/manual violations exist
@@ -127,12 +126,22 @@ Styler Java Code Formatter project configuration and workflow guidance.
 
 ### 🚨 GIVING UP DETECTION PATTERNS
 
-**AUTOMATED ENFORCEMENT**: Runtime detection via `/workspace/.claude/hooks/detect-giving-up.sh`
+**CRITICAL FORBIDDEN PHRASES** - AUTOMATIC TASK CONTINUATION REQUIRED:
+❌ "Given the complexity of properly implementing..."
+❌ "Given the evidence that this requires significant changes..."
+❌ "Let me focus on completing the task protocol instead..."
+❌ "Let me focus on features that provide more immediate value..."
+❌ "This would require significant architectural changes..."
+❌ "Rather than diving deeper into this complex issue..."
+❌ "Instead of implementing the full solution, let me..."
+❌ "Due to the complexity, I'll defer this to..."
+❌ "This appears to be beyond the current scope..."
+❌ "Let me move on to easier tasks..."
 
 **MANDATORY RESPONSE TO GIVING UP PATTERNS**:
 ✅ IMMEDIATELY return to the original technical problem
 ✅ Apply systematic debugging and decomposition approach
-✅ Continue working on the exact issue that triggered the pattern
+✅ Continue working on the exact issue that triggered the giving up pattern
 ✅ Use incremental progress rather than abandoning the work
 ✅ Exhaust all reasonable technical approaches before any scope modification
 ✅ Document specific technical blockers if genuine limitations exist
@@ -282,6 +291,7 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 ❌ Implementation history: "Previously this used X, now it uses Y"
 ❌ Change rationale: "Updated to fix issue with Z"
 ❌ Refactoring notes: "Changed from approach A to approach B because..."
+❌ Superficial linter avoidance: Replacing "TODO" with "Future" or "Note" to avoid checkstyle violations
 
 **REQUIRED COMMENT PATTERNS**:
 ✅ Current functionality: "Skip constructors and overridden methods"
@@ -290,6 +300,51 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 ✅ Domain constraints: "Source position tracking requires precise integer arithmetic"
 
 **PRINCIPLE**: Comments should describe WHAT the code does and WHY it works that way, never WHAT it used to do or HOW it changed. When comments become outdated, update them to accurately reflect current behavior.
+
+## 🔧 TODO COMMENT HANDLING
+
+**CRITICAL**: Never superficially modify TODO comments or use temporal language to avoid linter checks.
+
+**PROHIBITED APPROACH**:
+❌ Changing "TODO" to "Future" or "Note" to bypass checkstyle
+❌ Rewording TODOs without addressing the underlying issue
+❌ Using temporal terms: "For now", "Currently unused", "Temporarily", "Will be replaced"
+❌ Apologetic comments: "This is a hack", "Quick fix", "Not ideal but works"
+
+**REQUIRED APPROACH**:
+✅ **Implement the TODO**: If it's critical for the current task, implement it now
+✅ **Remove the comment**: If the TODO isn't needed, delete it entirely
+✅ **Fix the code**: If something is "temporary", fix the underlying problem; otherwise, make it permanent or document why it must be temporary
+✅ **Move to task tracker**: Add genuine TODOs to todo.md and remove inline comment
+✅ **Accept the violation**: If the TODO is legitimately needed for documentation, keep it as-is and accept the checkstyle violation (or suppress with @SuppressWarnings if project policy allows)
+
+**EXAMPLE - BAD**:
+```java
+// TODO: Extract configuration from Maven project properties
+// Changed to:
+// Future: Extract configuration from Maven project properties  ❌ Superficial change
+// For now, use default configuration  ❌ Temporal language
+// Currently unused, defaults applied  ❌ Temporal language
+```
+
+**EXAMPLE - GOOD**:
+```java
+// Option 1: Implement it
+RuleConfiguration config = extractConfigFromMavenProperties(mavenProject);  ✅
+
+// Option 2: Remove if not needed
+return new LineLengthRuleConfiguration();  ✅ (no comment)
+
+// Option 3: Remove unused parameter or use it
+private RuleConfiguration createRuleConfiguration()  ✅ (removed unused param)
+
+// Option 4: Move to todo.md
+// Added task to todo.md: "Extract Maven config to RuleConfiguration"  ✅
+return new LineLengthRuleConfiguration();
+
+// Option 5: Keep TODO if genuinely needed for code understanding
+// TODO: Extract configuration from Maven project properties when ConfigurationExtractor is implemented  ✅
+```
 
 ## 📚 JAVADOC COMMENT REQUIREMENTS
 

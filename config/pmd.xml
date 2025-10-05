@@ -16,6 +16,7 @@
 		<exclude name="UnitTestShouldIncludeAssert"/>
 		<!-- Overly strict - multiple assertions per test are often appropriate -->
 		<exclude name="UnitTestContainsTooManyAsserts"/>
+		<exclude name="UnitTestAssertionsShouldIncludeMessage"/>
 	</rule>
 	<!--	<rule ref="category/java/bestpractices.xml/UnnecessaryWarningSuppression"/>-->
 

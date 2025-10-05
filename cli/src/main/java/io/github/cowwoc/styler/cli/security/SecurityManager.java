@@ -104,7 +104,7 @@ public final class SecurityManager
 	 * @throws IOException if file metadata cannot be accessed
 	 * @throws NullPointerException if filePath is {@code null}
 	 */
-	public Path validateFile(Path filePath) throws SecurityException, IOException
+	public Path validateFile(Path filePath) throws IOException
 	{
 		Objects.requireNonNull(filePath, "filePath must not be null");
 
@@ -129,7 +129,7 @@ public final class SecurityManager
 	 * @throws IOException if file metadata cannot be accessed
 	 * @throws NullPointerException if filePaths is {@code null} or contains {@code null}
 	 */
-	public List<Path> validateFiles(List<Path> filePaths) throws SecurityException, IOException
+	public List<Path> validateFiles(List<Path> filePaths) throws IOException
 	{
 		Objects.requireNonNull(filePaths, "filePaths must not be null");
 
@@ -158,7 +158,7 @@ public final class SecurityManager
 	 * @throws SecurityException if path contains suspicious patterns
 	 * @throws NullPointerException if filePath is {@code null}
 	 */
-	public Path sanitizePath(Path filePath) throws SecurityException
+	public Path sanitizePath(Path filePath)
 	{
 		Objects.requireNonNull(filePath, "filePath must not be null");
 		return pathSanitizer.sanitize(filePath);

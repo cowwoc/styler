@@ -17,14 +17,13 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * <p>
  * Verifies the pipeline coordinator correctly executes stages in sequence and handles success/failure cases.
  */
-@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public final class FileProcessorPipelineTest
 {
 	/**
 	 * Verifies that a pipeline with a single identity stage successfully processes input.
 	 */
 	@Test
-	public void singleStage_successfulExecution_returnsOutput()
+	public void singleStageSuccessfulExecutionReturnsOutput()
 	{
 		Path testFile = Paths.get("test.java");
 		ProcessingContext context = ProcessingContext.builder(testFile).build();
@@ -46,7 +45,7 @@ public final class FileProcessorPipelineTest
 	 * Verifies that a pipeline with multiple stages executes them in sequence.
 	 */
 	@Test
-	public void multipleStages_successfulExecution_executeInOrder()
+	public void multipleStagesSuccessfulExecutionExecuteInOrder()
 	{
 		Path testFile = Paths.get("test.java");
 		ProcessingContext context = ProcessingContext.builder(testFile).build();
@@ -70,7 +69,7 @@ public final class FileProcessorPipelineTest
 	 * Verifies that pipeline execution fails when a stage throws an exception.
 	 */
 	@Test
-	public void stageThrowsException_pipelineExecution_returnsFailure()
+	public void stageThrowsExceptionPipelineExecutionReturnsFailure()
 	{
 		Path testFile = Paths.get("test.java");
 		ProcessingContext context = ProcessingContext.builder(testFile).build();
@@ -99,7 +98,7 @@ public final class FileProcessorPipelineTest
 	 * Verifies that closing a pipeline is idempotent.
 	 */
 	@Test
-	public void closePipeline_calledMultipleTimes_isIdempotent()
+	public void closePipelineCalledMultipleTimesIsIdempotent()
 	{
 		FileProcessorPipeline<String> pipeline = FileProcessorPipeline.<String>builder().
 			addStage(new IdentityStage<>()).
@@ -114,7 +113,7 @@ public final class FileProcessorPipelineTest
 	 * Verifies that using a closed pipeline throws IllegalStateException.
 	 */
 	@Test(expectedExceptions = IllegalStateException.class)
-	public void closedPipeline_processFile_throwsIllegalStateException()
+	public void closedPipelineProcessFileThrowsIllegalStateException()
 	{
 		Path testFile = Paths.get("test.java");
 		ProcessingContext context = ProcessingContext.builder(testFile).build();
@@ -131,7 +130,7 @@ public final class FileProcessorPipelineTest
 	 * Verifies that building a pipeline without stages throws IllegalStateException.
 	 */
 	@Test(expectedExceptions = IllegalStateException.class)
-	public void buildPipeline_withNoStages_throwsIllegalStateException()
+	public void buildPipelineWithNoStagesThrowsIllegalStateException()
 	{
 		FileProcessorPipeline.builder().build(); // Should throw
 	}

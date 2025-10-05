@@ -18,8 +18,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 /**
  * Tests for error recovery strategies.
  */
-@SuppressWarnings({"PMD.MethodNamingConventions", "PMD.AvoidThrowingRawExceptionTypes"})
-// Test methods use descriptive_scenario_outcome pattern
+@SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
 // Tests intentionally throw RuntimeException to simulate failures
 public final class RecoveryStrategyTest
 {
@@ -29,7 +28,7 @@ public final class RecoveryStrategyTest
 	 * Verifies that SkipFileStrategy returns failure.
 	 */
 	@Test
-	public void skipFileStrategy_recover_returnsFailure()
+	public void skipFileStrategyRecoverReturnsFailure()
 	{
 		Path file = Paths.get("test.java");
 		PipelineException exception = new PipelineException("test error", file, "test-stage");
@@ -47,7 +46,7 @@ public final class RecoveryStrategyTest
 	 * Verifies that RetryStrategy succeeds on first retry.
 	 */
 	@Test
-	public void retryStrategy_firstAttemptSucceeds_returnsSuccess()
+	public void retryStrategyFirstAttemptSucceedsReturnsSuccess()
 	{
 		Path file = Paths.get("test.java");
 		PipelineException exception = new PipelineException("test error", file, "test-stage");
@@ -71,7 +70,7 @@ public final class RecoveryStrategyTest
 	 * Verifies that RetryStrategy retries on failure.
 	 */
 	@Test
-	public void retryStrategy_succeedsOnSecondAttempt_returnsSuccess()
+	public void retryStrategySucceedsOnSecondAttemptReturnsSuccess()
 	{
 		Path file = Paths.get("test.java");
 		PipelineException exception = new PipelineException("test error", file, "test-stage");
@@ -98,7 +97,7 @@ public final class RecoveryStrategyTest
 	 * Verifies that RetryStrategy fails after max attempts.
 	 */
 	@Test
-	public void retryStrategy_allAttemptsExhausted_returnsFailure()
+	public void retryStrategyAllAttemptsExhaustedReturnsFailure()
 	{
 		Path file = Paths.get("test.java");
 		PipelineException exception = new PipelineException("test error", file, "test-stage");
@@ -123,7 +122,7 @@ public final class RecoveryStrategyTest
 	 * Verifies that FallbackStrategy returns fallback value.
 	 */
 	@Test
-	public void fallbackStrategy_recover_returnsFallbackValue()
+	public void fallbackStrategyRecoverReturnsFallbackValue()
 	{
 		Path file = Paths.get("test.java");
 		PipelineException exception = new PipelineException("test error", file, "test-stage");
@@ -141,7 +140,7 @@ public final class RecoveryStrategyTest
 	 * Verifies that FallbackStrategy with null throws exception.
 	 */
 	@Test(expectedExceptions = NullPointerException.class)
-	public void fallbackStrategy_nullFallback_throwsNullPointerException()
+	public void fallbackStrategyNullFallbackThrowsNullPointerException()
 	{
 		new FallbackStrategy<>(null);
 	}
@@ -152,7 +151,7 @@ public final class RecoveryStrategyTest
 	 * Verifies that FailFastStrategy immediately returns failure.
 	 */
 	@Test
-	public void failFastStrategy_recover_returnsFailureImmediately()
+	public void failFastStrategyRecoverReturnsFailureImmediately()
 	{
 		Path file = Paths.get("test.java");
 		PipelineException exception = new PipelineException("test error", file, "test-stage");

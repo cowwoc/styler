@@ -77,7 +77,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitCompilationUnit(CompilationUnitNode node, final A arg);
+	R visitCompilationUnit(CompilationUnitNode node, A arg);
 
 	/**
 	 * Visits a class declaration node.
@@ -86,7 +86,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitClassDeclaration(ClassDeclarationNode node, final A arg);
+	R visitClassDeclaration(ClassDeclarationNode node, A arg);
 	/**
 	 * Visits an interface declaration node.
 	 *
@@ -94,7 +94,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitInterfaceDeclaration(InterfaceDeclarationNode node, final A arg);
+	R visitInterfaceDeclaration(InterfaceDeclarationNode node, A arg);
 	/**
 	 * Visits an enum declaration node.
 	 *
@@ -102,7 +102,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitEnumDeclaration(EnumDeclarationNode node, final A arg);
+	R visitEnumDeclaration(EnumDeclarationNode node, A arg);
 	/**
 	 * Visits a record declaration node.
 	 *
@@ -110,7 +110,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitRecordDeclaration(RecordDeclarationNode node, final A arg);
+	R visitRecordDeclaration(RecordDeclarationNode node, A arg);
 	/**
 	 * Visits a method declaration node.
 	 *
@@ -118,7 +118,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitMethodDeclaration(MethodDeclarationNode node, final A arg);
+	R visitMethodDeclaration(MethodDeclarationNode node, A arg);
 	/**
 	 * Visits a constructor declaration node.
 	 *
@@ -126,7 +126,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitConstructorDeclaration(ConstructorDeclarationNode node, final A arg);
+	R visitConstructorDeclaration(ConstructorDeclarationNode node, A arg);
 	/**
 	 * Visits a field declaration node.
 	 *
@@ -134,7 +134,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitFieldDeclaration(FieldDeclarationNode node, final A arg);
+	R visitFieldDeclaration(FieldDeclarationNode node, A arg);
 	/**
 	 * Visits a variable declaration node.
 	 *
@@ -142,7 +142,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitVariableDeclaration(VariableDeclarationNode node, final A arg);
+	R visitVariableDeclaration(VariableDeclarationNode node, A arg);
 	/**
 	 * Visits a parameter declaration node.
 	 *
@@ -150,7 +150,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitParameterDeclaration(ParameterDeclarationNode node, final A arg);
+	R visitParameterDeclaration(ParameterDeclarationNode node, A arg);
 
 	/**
 	 * Visits a block statement node.
@@ -159,7 +159,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitBlockStatement(BlockStatementNode node, final A arg);
+	R visitBlockStatement(BlockStatementNode node, A arg);
 	/**
 	 * Visits an expression statement node.
 	 *
@@ -167,7 +167,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitExpressionStatement(ExpressionStatementNode node, final A arg);
+	R visitExpressionStatement(ExpressionStatementNode node, A arg);
 	/**
 	 * Visits an if statement node.
 	 *
@@ -175,7 +175,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitIfStatement(IfStatementNode node, final A arg);
+	R visitIfStatement(IfStatementNode node, A arg);
 	/**
 	 * Visits a for statement node.
 	 *
@@ -183,7 +183,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitForStatement(ForStatementNode node, final A arg);
+	R visitForStatement(ForStatementNode node, A arg);
 	/**
 	 * Visits an enhanced for statement node.
 	 *
@@ -191,7 +191,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitEnhancedForStatement(EnhancedForStatementNode node, final A arg);
+	R visitEnhancedForStatement(EnhancedForStatementNode node, A arg);
 	/**
 	 * Visits a while statement node.
 	 *
@@ -199,7 +199,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitWhileStatement(WhileStatementNode node, final A arg);
+	R visitWhileStatement(WhileStatementNode node, A arg);
 	/**
 	 * Visits a do-while statement node.
 	 *
@@ -207,7 +207,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitDoWhileStatement(DoWhileStatementNode node, final A arg);
+	R visitDoWhileStatement(DoWhileStatementNode node, A arg);
 	/**
 	 * Visits a switch statement node.
 	 *
@@ -215,7 +215,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitSwitchStatement(SwitchStatementNode node, final A arg);
+	R visitSwitchStatement(SwitchStatementNode node, A arg);
 	/**
 	 * Visits a try statement node.
 	 *
@@ -223,7 +223,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitTryStatement(TryStatementNode node, final A arg);
+	R visitTryStatement(TryStatementNode node, A arg);
 	/**
 	 * Visits a return statement node.
 	 *
@@ -231,7 +231,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitReturnStatement(ReturnStatementNode node, final A arg);
+	R visitReturnStatement(ReturnStatementNode node, A arg);
 	/**
 	 * Visits a break statement node.
 	 *
@@ -239,7 +239,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitBreakStatement(BreakStatementNode node, final A arg);
+	R visitBreakStatement(BreakStatementNode node, A arg);
 	/**
 	 * Visits a continue statement node.
 	 *
@@ -247,7 +247,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitContinueStatement(ContinueStatementNode node, final A arg);
+	R visitContinueStatement(ContinueStatementNode node, A arg);
 	/**
 	 * Visits a throw statement node.
 	 *
@@ -255,7 +255,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitThrowStatement(ThrowStatementNode node, final A arg);
+	R visitThrowStatement(ThrowStatementNode node, A arg);
 	/**
 	 * Visits a synchronized statement node.
 	 *
@@ -263,7 +263,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitSynchronizedStatement(SynchronizedStatementNode node, final A arg);
+	R visitSynchronizedStatement(SynchronizedStatementNode node, A arg);
 
 	/**
 	 * Visits a binary expression node.
@@ -272,7 +272,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitBinaryExpression(BinaryExpressionNode node, final A arg);
+	R visitBinaryExpression(BinaryExpressionNode node, A arg);
 	/**
 	 * Visits a unary expression node.
 	 *
@@ -280,7 +280,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitUnaryExpression(UnaryExpressionNode node, final A arg);
+	R visitUnaryExpression(UnaryExpressionNode node, A arg);
 	/**
 	 * Visits a method call node.
 	 *
@@ -288,7 +288,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitMethodCall(MethodCallNode node, final A arg);
+	R visitMethodCall(MethodCallNode node, A arg);
 	/**
 	 * Visits a field access node.
 	 *
@@ -296,7 +296,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitFieldAccess(FieldAccessNode node, final A arg);
+	R visitFieldAccess(FieldAccessNode node, A arg);
 	/**
 	 * Visits an array access node.
 	 *
@@ -304,7 +304,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitArrayAccess(ArrayAccessNode node, final A arg);
+	R visitArrayAccess(ArrayAccessNode node, A arg);
 	/**
 	 * Visits a lambda expression node.
 	 *
@@ -312,7 +312,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitLambdaExpression(LambdaExpressionNode node, final A arg);
+	R visitLambdaExpression(LambdaExpressionNode node, A arg);
 	/**
 	 * Visits a method reference node.
 	 *
@@ -320,7 +320,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitMethodReference(MethodReferenceNode node, final A arg);
+	R visitMethodReference(MethodReferenceNode node, A arg);
 	/**
 	 * Visits a conditional expression node.
 	 *
@@ -328,7 +328,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitConditionalExpression(ConditionalExpressionNode node, final A arg);
+	R visitConditionalExpression(ConditionalExpressionNode node, A arg);
 	/**
 	 * Visits a cast expression node.
 	 *
@@ -336,7 +336,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitCastExpression(CastExpressionNode node, final A arg);
+	R visitCastExpression(CastExpressionNode node, A arg);
 	/**
 	 * Visits an instanceof expression node.
 	 *
@@ -344,7 +344,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitInstanceofExpression(InstanceofExpressionNode node, final A arg);
+	R visitInstanceofExpression(InstanceofExpressionNode node, A arg);
 	/**
 	 * Visits a new expression node.
 	 *
@@ -352,7 +352,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitNewExpression(NewExpressionNode node, final A arg);
+	R visitNewExpression(NewExpressionNode node, A arg);
 	/**
 	 * Visits an array initializer node.
 	 *
@@ -360,7 +360,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitArrayInitializer(ArrayInitializerNode node, final A arg);
+	R visitArrayInitializer(ArrayInitializerNode node, A arg);
 
 	/**
 	 * Visits a string literal node.
@@ -369,7 +369,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitStringLiteral(StringLiteralNode node, final A arg);
+	R visitStringLiteral(StringLiteralNode node, A arg);
 	/**
 	 * Visits a number literal node.
 	 *
@@ -377,7 +377,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitNumberLiteral(NumberLiteralNode node, final A arg);
+	R visitNumberLiteral(NumberLiteralNode node, A arg);
 	/**
 	 * Visits a boolean literal node.
 	 *
@@ -385,7 +385,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitBooleanLiteral(BooleanLiteralNode node, final A arg);
+	R visitBooleanLiteral(BooleanLiteralNode node, A arg);
 	/**
 	 * Visits a {@code null} literal node.
 	 *
@@ -393,7 +393,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitNullLiteral(NullLiteralNode node, final A arg);
+	R visitNullLiteral(NullLiteralNode node, A arg);
 	/**
 	 * Visits a character literal node.
 	 *
@@ -401,7 +401,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitCharLiteral(CharLiteralNode node, final A arg);
+	R visitCharLiteral(CharLiteralNode node, A arg);
 	/**
 	 * Visits a text block node.
 	 *
@@ -409,7 +409,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitTextBlock(TextBlockNode node, final A arg);
+	R visitTextBlock(TextBlockNode node, A arg);
 
 	/**
 	 * Visits a primitive type node.
@@ -418,7 +418,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitPrimitiveType(PrimitiveTypeNode node, final A arg);
+	R visitPrimitiveType(PrimitiveTypeNode node, A arg);
 	/**
 	 * Visits a class type node.
 	 *
@@ -426,7 +426,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitClassType(ClassTypeNode node, final A arg);
+	R visitClassType(ClassTypeNode node, A arg);
 	/**
 	 * Visits an array type node.
 	 *
@@ -434,7 +434,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitArrayType(ArrayTypeNode node, final A arg);
+	R visitArrayType(ArrayTypeNode node, A arg);
 	/**
 	 * Visits a generic type node.
 	 *
@@ -442,7 +442,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitGenericType(GenericTypeNode node, final A arg);
+	R visitGenericType(GenericTypeNode node, A arg);
 	/**
 	 * Visits a wildcard type node.
 	 *
@@ -450,7 +450,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitWildcardType(WildcardTypeNode node, final A arg);
+	R visitWildcardType(WildcardTypeNode node, A arg);
 	/**
 	 * Visits a type parameter node.
 	 *
@@ -458,7 +458,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitTypeParameter(TypeParameterNode node, final A arg);
+	R visitTypeParameter(TypeParameterNode node, A arg);
 
 	/**
 	 * Visits a pattern match node.
@@ -467,7 +467,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitPatternMatch(PatternMatchNode node, final A arg);
+	R visitPatternMatch(PatternMatchNode node, A arg);
 	/**
 	 * Visits a guarded pattern node.
 	 *
@@ -475,7 +475,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitGuardedPattern(GuardedPatternNode node, final A arg);
+	R visitGuardedPattern(GuardedPatternNode node, A arg);
 	/**
 	 * Visits a record pattern node.
 	 *
@@ -483,7 +483,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitRecordPattern(RecordPatternNode node, final A arg);
+	R visitRecordPattern(RecordPatternNode node, A arg);
 
 	/**
 	 * Visits an identifier node.
@@ -492,7 +492,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitIdentifier(IdentifierNode node, final A arg);
+	R visitIdentifier(IdentifierNode node, A arg);
 	/**
 	 * Visits a qualified name node.
 	 *
@@ -500,7 +500,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitQualifiedName(QualifiedNameNode node, final A arg);
+	R visitQualifiedName(QualifiedNameNode node, A arg);
 
 	/**
 	 * Visits a package declaration node.
@@ -509,7 +509,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitPackageDeclaration(PackageDeclarationNode node, final A arg);
+	R visitPackageDeclaration(PackageDeclarationNode node, A arg);
 	/**
 	 * Visits an import declaration node.
 	 *
@@ -517,7 +517,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitImportDeclaration(ImportDeclarationNode node, final A arg);
+	R visitImportDeclaration(ImportDeclarationNode node, A arg);
 
 	/**
 	 * Visits an annotation node.
@@ -526,7 +526,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitAnnotation(AnnotationNode node, final A arg);
+	R visitAnnotation(AnnotationNode node, A arg);
 	/**
 	 * Visits an annotation element node.
 	 *
@@ -534,7 +534,7 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitAnnotationElement(AnnotationElementNode node, final A arg);
+	R visitAnnotationElement(AnnotationElementNode node, A arg);
 
 	/**
 	 * Visits a modifier node.
@@ -543,5 +543,5 @@ public interface ASTVisitor<R, A>
 	 * @param arg visitor-specific argument passed during traversal
 	 * @return visitor-specific result
 	 */
-	R visitModifier(ModifierNode node, final A arg);
+	R visitModifier(ModifierNode node, A arg);
 }

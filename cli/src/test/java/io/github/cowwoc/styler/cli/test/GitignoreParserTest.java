@@ -1,8 +1,6 @@
 package io.github.cowwoc.styler.cli.test;
-
-import io.github.cowwoc.styler.cli.FileDiscovery;
 import io.github.cowwoc.styler.cli.GitignoreParser;
-import io.github.cowwoc.styler.cli.SymlinkCycleDetector;
+
 
 import org.testng.annotations.Test;
 

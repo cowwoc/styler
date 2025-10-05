@@ -155,7 +155,7 @@ public abstract class ASTNode
 	 *
 	 * @return the result of the visitor operation
 	 */
-	public abstract <R, A> R accept(ASTVisitor<R, A> visitor, final A arg);
+	public abstract <R, A> R accept(ASTVisitor<R, A> visitor, A arg);
 
 	/**
 	 * Creates a builder for constructing a modified copy of this AST node.

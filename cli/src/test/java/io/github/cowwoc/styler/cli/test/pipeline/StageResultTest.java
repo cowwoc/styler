@@ -13,14 +13,13 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 /**
  * Tests for {@link StageResult}.
  */
-@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public final class StageResultTest
 {
 	/**
 	 * Verifies that success result contains output.
 	 */
 	@Test
-	public void successResult_output_isPresent()
+	public void successResultOutputIsPresent()
 	{
 		String output = "test output";
 		StageResult<String> result = StageResult.success(output);
@@ -35,7 +34,7 @@ public final class StageResultTest
 	 * Verifies that failure result contains exception.
 	 */
 	@Test
-	public void failureResult_exception_isPresent()
+	public void failureResultExceptionIsPresent()
 	{
 		Path file = Paths.get("test.java");
 		PipelineException exception = new PipelineException("test error", file, "test-stage");
@@ -51,7 +50,7 @@ public final class StageResultTest
 	 * Verifies that map transforms success values.
 	 */
 	@Test
-	public void successResult_map_transformsValue()
+	public void successResultMapTransformsValue()
 	{
 		StageResult<Integer> result = StageResult.success(42);
 
@@ -65,7 +64,7 @@ public final class StageResultTest
 	 * Verifies that map on failure returns failure.
 	 */
 	@Test
-	public void failureResult_map_returnsFailure()
+	public void failureResultMapReturnsFailure()
 	{
 		Path file = Paths.get("test.java");
 		PipelineException exception = new PipelineException("test error", file, "test-stage");
@@ -81,7 +80,7 @@ public final class StageResultTest
 	 * Verifies that ifSuccess executes action on success.
 	 */
 	@Test
-	public void successResult_ifSuccess_executesAction()
+	public void successResultIfSuccessExecutesAction()
 	{
 		AtomicBoolean executed = new AtomicBoolean(false);
 		StageResult<String> result = StageResult.success("test");
@@ -95,7 +94,7 @@ public final class StageResultTest
 	 * Verifies that ifSuccess does not execute on failure.
 	 */
 	@Test
-	public void failureResult_ifSuccess_doesNotExecuteAction()
+	public void failureResultIfSuccessDoesNotExecuteAction()
 	{
 		AtomicBoolean executed = new AtomicBoolean(false);
 		Path file = Paths.get("test.java");
@@ -111,7 +110,7 @@ public final class StageResultTest
 	 * Verifies that ifFailure executes action on failure.
 	 */
 	@Test
-	public void failureResult_ifFailure_executesAction()
+	public void failureResultIfFailureExecutesAction()
 	{
 		AtomicBoolean executed = new AtomicBoolean(false);
 		Path file = Paths.get("test.java");
@@ -127,7 +126,7 @@ public final class StageResultTest
 	 * Verifies that ifFailure does not execute on success.
 	 */
 	@Test
-	public void successResult_ifFailure_doesNotExecuteAction()
+	public void successResultIfFailureDoesNotExecuteAction()
 	{
 		AtomicBoolean executed = new AtomicBoolean(false);
 		StageResult<String> result = StageResult.success("test");
@@ -141,7 +140,7 @@ public final class StageResultTest
 	 * Verifies that success with null value throws exception.
 	 */
 	@Test(expectedExceptions = NullPointerException.class)
-	public void successResult_nullValue_throwsNullPointerException()
+	public void successResultNullValueThrowsNullPointerException()
 	{
 		StageResult.success(null);
 	}
@@ -150,7 +149,7 @@ public final class StageResultTest
 	 * Verifies that failure with null exception throws exception.
 	 */
 	@Test(expectedExceptions = NullPointerException.class)
-	public void failureResult_nullException_throwsNullPointerException()
+	public void failureResultNullExceptionThrowsNullPointerException()
 	{
 		StageResult.failure(null);
 	}

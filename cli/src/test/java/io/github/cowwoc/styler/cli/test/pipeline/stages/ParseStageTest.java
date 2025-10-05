@@ -16,14 +16,13 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 /**
  * Tests for {@link ParseStage}.
  */
-@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public final class ParseStageTest
 {
 	/**
 	 * Verifies that ParseStage successfully parses a valid Java source file.
 	 */
 	@Test
-	public void validJavaFile_parseStageExecution_returnsSuccess() throws IOException, PipelineException
+	public void validJavaFileParseStageExecutionReturnsSuccess() throws IOException, PipelineException
 	{
 		String sourceCode = "public class Test { }";
 		Path tempFile = Files.createTempFile("test-", ".java");
@@ -57,7 +56,7 @@ public final class ParseStageTest
 	 * Verifies that ParseStage handles nonexistent files gracefully.
 	 */
 	@Test
-	public void nonexistentFile_parseStageExecution_returnsFailure() throws PipelineException
+	public void nonexistentFileParseStageExecutionReturnsFailure() throws PipelineException
 	{
 		Path nonexistent = Path.of("/nonexistent/file.java");
 		ParseStage stage = new ParseStage();
@@ -73,7 +72,7 @@ public final class ParseStageTest
 	 * Verifies that ParseStage returns the correct stage ID.
 	 */
 	@Test
-	public void parseStage_getStageId_returnsParse()
+	public void parseStageGetStageIdReturnsParse()
 	{
 		ParseStage stage = new ParseStage();
 		requireThat(stage.getStageId(), "stageId").isEqualTo("parse");

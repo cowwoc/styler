@@ -18,8 +18,6 @@
 
     <properties>
         <project.root.basedir>${project.parent.basedir}</project.root.basedir>
-        <picocli.version>4.7.5</picocli.version>
-        <logback.version>1.4.14</logback.version>
         <main.class>io.github.cowwoc.styler.cli.StylerCLI</main.class>
     </properties>
 
@@ -42,7 +40,6 @@
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
-            <version>${picocli.version}</version>
         </dependency>
 
         <!-- Configuration parsing -->
@@ -61,7 +58,6 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
         </dependency>
 
         <!-- Testing dependencies -->
@@ -106,7 +102,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.6.0</version>
                 <configuration>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>

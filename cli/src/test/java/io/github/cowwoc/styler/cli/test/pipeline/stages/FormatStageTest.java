@@ -16,15 +16,13 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 /**
  * Tests for {@link FormatStage}.
  */
-@SuppressWarnings("PMD.MethodNamingConventions")
-// Test methods use descriptive_scenario_outcome pattern
 public final class FormatStageTest
 {
 	/**
 	 * Verifies that FormatStage returns source text unchanged (identity transformation).
 	 */
 	@Test
-	public void parsedFile_formatStageExecution_returnsSourceText() throws PipelineException
+	public void parsedFileFormatStageExecutionReturnsSourceText() throws PipelineException
 	{
 		String sourceCode = "public class Test { }";
 		Path sourceFile = Paths.get("test.java");
@@ -48,7 +46,7 @@ public final class FormatStageTest
 	 * Verifies that FormatStage handles parsed files correctly.
 	 */
 	@Test
-	public void parsedFile_formatStageWithMultipleLines_returnsSourceText() throws PipelineException
+	public void parsedFileFormatStageWithMultipleLinesReturnsSourceText() throws PipelineException
 	{
 		String sourceCode = "public class Test {\n  public void method() {\n  }\n}";
 		Path sourceFile = Paths.get("test.java");
@@ -72,7 +70,7 @@ public final class FormatStageTest
 	 * Verifies that FormatStage returns the correct stage ID.
 	 */
 	@Test
-	public void formatStage_getStageId_returnsFormat()
+	public void formatStageGetStageIdReturnsFormat()
 	{
 		FormatStage stage = new FormatStage();
 		requireThat(stage.getStageId(), "stageId").isEqualTo("format");
@@ -82,7 +80,7 @@ public final class FormatStageTest
 	 * Verifies that FormatStage supports error recovery.
 	 */
 	@Test
-	public void formatStage_supportsErrorRecovery_returnsTrue()
+	public void formatStageSupportsErrorRecoveryReturnsTrue()
 	{
 		FormatStage stage = new FormatStage();
 		requireThat(stage.supportsErrorRecovery(), "supportsRecovery").isTrue();

@@ -1,8 +1,8 @@
 package io.github.cowwoc.styler.cli.test.pipeline.stages;
+import io.github.cowwoc.styler.cli.pipeline.PipelineException;
 import io.github.cowwoc.styler.cli.pipeline.stages.WriteStage;
 import io.github.cowwoc.styler.cli.pipeline.stages.FormatStage;
 import io.github.cowwoc.styler.cli.pipeline.stages.ParseStage;
-import io.github.cowwoc.styler.cli.pipeline.PipelineException;
 
 import io.github.cowwoc.styler.cli.pipeline.FileProcessorPipeline;
 import io.github.cowwoc.styler.cli.pipeline.PipelineResult;
@@ -20,15 +20,14 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * <p>
  * Tests the end-to-end workflow: Parse → Format → Write stages working together.
  */
-@SuppressWarnings("PMD.MethodNamingConventions") // Test methods use descriptive_scenario_outcome pattern
 public final class PipelineIntegrationTest
 {
 	/**
 	 * Verifies that the complete pipeline processes a Java file successfully.
 	 */
 	@Test
-	public void validJavaFile_completePipelineExecution_writesFormattedOutput()
-		throws IOException, io.github.cowwoc.styler.cli.pipeline.PipelineException
+	public void validJavaFileCompletePipelineExecutionWritesFormattedOutput()
+		throws IOException, PipelineException
 	{
 		String sourceCode = "public class Example { public void method() { } }";
 		Path inputFile = Files.createTempFile("input-", ".java");
@@ -68,8 +67,8 @@ public final class PipelineIntegrationTest
 	 * Verifies that pipeline handles parse errors gracefully.
 	 */
 	@Test
-	public void malformedJavaFile_completePipelineExecution_returnsFailure()
-		throws IOException, io.github.cowwoc.styler.cli.pipeline.PipelineException
+	public void malformedJavaFileCompletePipelineExecutionReturnsFailure()
+		throws IOException, PipelineException
 	{
 		String invalidCode = "public class { invalid syntax }";
 		Path inputFile = Files.createTempFile("invalid-", ".java");
@@ -103,7 +102,7 @@ public final class PipelineIntegrationTest
 	 * Verifies that an empty pipeline builder throws IllegalStateException.
 	 */
 	@Test(expectedExceptions = IllegalStateException.class)
-	public void emptyPipeline_build_throwsIllegalStateException()
+	public void emptyPipelineBuildThrowsIllegalStateException()
 	{
 		FileProcessorPipeline.builder().build();
 	}

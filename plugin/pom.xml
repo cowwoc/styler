@@ -19,9 +19,6 @@
 	<properties>
 		<!-- Java 25 with ASM 9.8 override in maven-plugin-plugin -->
 		<maven.compiler.release>25</maven.compiler.release>
-		<maven.plugin.api.version>3.9.6</maven.plugin.api.version>
-		<maven.plugin.annotations.version>3.11.0</maven.plugin.annotations.version>
-		<maven.plugin.testing.harness.version>3.3.0</maven.plugin.testing.harness.version>
 	</properties>
 
 	<dependencies>
@@ -30,7 +27,6 @@
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-plugin-api</artifactId>
-			<version>${maven.plugin.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -38,7 +34,6 @@
 		<dependency>
 			<groupId>org.apache.maven.plugin-tools</groupId>
 			<artifactId>maven-plugin-annotations</artifactId>
-			<version>${maven.plugin.annotations.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -46,14 +41,41 @@
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-core</artifactId>
-			<version>${maven.plugin.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- Styler CLI (compile scope - bundled in plugin) -->
+		<!-- Styler Formatter API - Core formatting abstractions -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>styler-cli</artifactId>
+			<artifactId>styler-formatter-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Styler Formatter Rules - Concrete rule implementations -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>styler-formatter-rules</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Styler Parser - AST generation from Java source -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>styler-parser</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Styler AST Core - AST node definitions -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>styler-ast-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- Styler Core - Shared utilities -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>styler-core</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -61,7 +83,6 @@
 		<dependency>
 			<groupId>org.apache.maven.plugin-testing</groupId>
 			<artifactId>maven-plugin-testing-harness</artifactId>
-			<version>${maven.plugin.testing.harness.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -83,18 +104,19 @@
 				<configuration>
 					<goalPrefix>styler</goalPrefix>
 					<skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+					<requiredJavaVersion>25</requiredJavaVersion>
 				</configuration>
 				<dependencies>
 					<!-- Override ASM to support Java 25 bytecode (major version 69) -->
 					<dependency>
 						<groupId>org.ow2.asm</groupId>
 						<artifactId>asm</artifactId>
-						<version>9.8</version>
+						<version>${asm.version}</version>
 					</dependency>
 					<dependency>
 						<groupId>org.ow2.asm</groupId>
 						<artifactId>asm-commons</artifactId>
-						<version>9.8</version>
+						<version>${asm.version}</version>
 					</dependency>
 				</dependencies>
 				<executions>

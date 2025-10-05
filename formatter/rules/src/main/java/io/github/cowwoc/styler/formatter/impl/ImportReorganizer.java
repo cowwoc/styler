@@ -185,8 +185,7 @@ public final class ImportReorganizer
 			// Add each import in the group
 			for (ImportAnalyzer.ImportInfo importInfo : group.getImports())
 			{
-				result.append(formatImport(importInfo));
-				result.append('\n');
+				result.append(formatImport(importInfo)).append('\n');
 			}
 		}
 
@@ -213,9 +212,7 @@ public final class ImportReorganizer
 			result.append("static ");
 		}
 
-		result.append(importInfo.getFullName());
-		result.append(';');
-
+		result.append(importInfo.getFullName()).append(';');
 		return result.toString();
 	}
 }

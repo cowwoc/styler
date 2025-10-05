@@ -100,28 +100,28 @@ public final class MachineErrorFormatter implements ErrorFormatter
 		Objects.requireNonNull(summary, "Summary cannot be null");
 
 		StringBuilder json = new StringBuilder(512);
-		json.append("{\n").
-			append(JSON_INDENT).append("\"type\": \"error-summary\",\n");
 		String timestamp = java.time.Instant.now().toString();
-	json.append(JSON_INDENT).append("\"timestamp\": \"").append(timestamp).append("\",\n");
 		String operation = escapeJson(summary.operationType());
-	json.append(JSON_INDENT).append("\"operation\": \"").append(operation).append("\",\n").
+		json.append("{\n").
+			append(JSON_INDENT).append("\"type\": \"error-summary\",\n").
+			append(JSON_INDENT).append("\"timestamp\": \"").append(timestamp).append("\",\n").
+			append(JSON_INDENT).append("\"operation\": \"").append(operation).append("\",\n").
 			append(JSON_INDENT).append("\"processingTimeMs\": ").append(summary.processingTimeMs()).append(",\n").
 			append(JSON_INDENT).append("\"success\": ").append(summary.isSuccess()).append(",\n").
-			append(JSON_INDENT).append("\"shouldHalt\": ");
-	json.append(summary.shouldHaltProcessing()).append(",\n").
+			append(JSON_INDENT).append("\"shouldHalt\": ").
+			append(summary.shouldHaltProcessing()).append(",\n").
 			append(JSON_INDENT).append("\"totalErrors\": ").append(summary.totalErrors()).append(",\n").
-			append(JSON_INDENT).append("\"criticalErrors\": ");
-	json.append(summary.criticalErrors()).append(",\n").
+			append(JSON_INDENT).append("\"criticalErrors\": ").
+			append(summary.criticalErrors()).append(",\n").
 			append(JSON_INDENT).append("\"errorBreakdown\": {\n").
-			append(JSON_INDENT).append(JSON_INDENT).append("\"parse\": ");
-	json.append(summary.parseErrors()).append(",\n").
-			append(JSON_INDENT).append(JSON_INDENT).append("\"config\": ");
-	json.append(summary.configErrors()).append(",\n").
-			append(JSON_INDENT).append(JSON_INDENT).append("\"format\": ");
-	json.append(summary.formatViolations()).append(",\n").
-			append(JSON_INDENT).append(JSON_INDENT).append("\"validation\": ");
-	json.append(summary.validationErrors()).append(",\n").
+			append(JSON_INDENT).append(JSON_INDENT).append("\"parse\": ").
+			append(summary.parseErrors()).append(",\n").
+			append(JSON_INDENT).append(JSON_INDENT).append("\"config\": ").
+			append(summary.configErrors()).append(",\n").
+			append(JSON_INDENT).append(JSON_INDENT).append("\"format\": ").
+			append(summary.formatViolations()).append(",\n").
+			append(JSON_INDENT).append(JSON_INDENT).append("\"validation\": ").
+			append(summary.validationErrors()).append(",\n").
 			append(JSON_INDENT).append(JSON_INDENT).append("\"system\": ").append(summary.systemErrors()).append('\n').
 			append(JSON_INDENT).append("}\n").
 			append('}');
