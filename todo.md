@@ -21,14 +21,15 @@
 10. **Structured Violation Output** - AI agent feedback (depends on formatter rules)
 11. **CLI Startup Optimization** - Performance tuning (depends on complete pipeline)
 
-### Phase D: Parallel Processing (Optimize the Complete System)
-12. **Parallel File Processing** - Multi-threading (depends on complete file pipeline)
-13. **Block-Based Concurrency Benchmarking** - Advanced optimizations
-14. **Performance Benchmarks** - System validation
+### Phase D: MVP Testing and Validation (Build System Integration First)
+12. **Maven Plugin** - Build system integration for MVP testing in real projects (PRIORITY: Build first)
+13. **Parallel File Processing** - Virtual threads for concurrent file processing
+14. **Performance Benchmarks** - Validate scalability and identify bottlenecks
+15. **Advanced Optimizations** - Evidence-based improvements after benchmarking
 
 ### Phase E: Ecosystem Integration (External Tool Support)
-15. **Maven/Gradle Plugins** - Build tool integration (depends on complete CLI)
-16. **CI/CD Integration** - Automated workflows
+16. **Gradle Plugin** - Gradle build tool integration
+17. **CI/CD Integration** - Automated workflows
 
 ### DEFERRED (YAGNI violations - implement when demand proven):
 1. **Enterprise Security** - JAR signing, certificates not needed for CLI tool
@@ -36,7 +37,216 @@
 3. **Container Deployment** - No evidence AI agents need Docker
 4. **Maven Central Publishing** - Not required for initial AI agent integration
 
-## Phase A: Foundation (Zero External Dependencies)
+## Phase C: Horizontal Expansion (Scale the Working Pipeline)
+
+### Structured Violation Output (AI Agent Feedback)
+- [ ] **TASK:** `implement-structured-violation-output` - Machine-readable violation reports for AI agent feedback
+  - **Purpose**: Generate structured violation reports enabling AI agents to learn from formatting feedback
+  - **Scope**: JSON/XML violation reports with rule IDs, severity, fix suggestions, source locations
+  - **Features**: Machine-readable format, priority scoring, fix strategy hints, learning feedback loops
+  - **Integration**: Used by rule engine to generate actionable feedback for AI agent training systems
+
+
+## Phase D: MVP Testing and Validation (Build System Integration First)
+
+### Maven Plugin (Priority: Test MVP in Real Projects)
+- [ ] **TASK:** `create-maven-plugin` - Maven plugin for build system integration
+  - **Purpose**: Enable real-world testing of styler MVP in Maven projects before investing in optimizations
+  - **Scope**: Maven plugin with goals for check, format, validate phases, configuration inheritance
+  - **Features**: Multi-module support, incremental formatting, build failure on violations, IDE integration
+  - **Integration**: Uses styler CLI as dependency with Maven-specific configuration and reporting
+  - **Rationale**: Building the Maven plugin first allows us to test styler in real projects (like this one), gather performance data, and identify actual bottlenecks before optimizing
+  - **Estimated Effort**: 3-4 days
+
+### Parallel File Processing (Virtual Threads)
+- [ ] **TASK:** `implement-parallel-file-processing` - Multi-threaded file processing with virtual threads
+  - **Purpose**: Process multiple files concurrently using Java 21+ virtual threads for high-throughput I/O
+  - **Scope**: Virtual thread executor configuration, file distribution, progress reporting, error isolation
+  - **Implementation**:
+    - Use `Executors.newVirtualThreadPerTaskExecutor()` for lightweight concurrency
+    - Thread count configuration via CLI: `-t N` (max concurrent files), default: unlimited virtual threads
+    - File-level task granularity (entire file per task, following Checkstyle/PMD pattern)
+    - Integration with existing ProgressObserver for real-time updates
+    - Per-file error isolation (one file failure doesn't stop others)
+    - Structured concurrency with `StructuredTaskScope` for coordinated shutdown
+  - **Virtual Thread Benefits**:
+    - Millions of virtual threads possible (vs ~1000 platform threads)
+    - No thread pool tuning required - JVM manages scheduling
+    - Perfect for I/O-bound file processing workload
+    - Simpler code than traditional ExecutorService patterns
+    - Automatic work-stealing via JVM's virtual thread scheduler
+  - **Features**:
+    - Configurable max concurrent files (`-t` flag)
+    - Real-time progress updates (files processed, remaining, throughput)
+    - Graceful shutdown on interruption (StructuredTaskScope automatic cleanup)
+    - Error aggregation across all processed files
+    - Memory-conscious: limit concurrent files if heap pressure detected
+  - **Integration**: Extends existing FileProcessorPipeline with parallel execution mode
+  - **Testing**: Thread safety tests, concurrent error handling, progress reporting accuracy
+  - **Estimated Effort**: 2-3 days
+  - **Requirements**: Java 21+ for stable virtual threads
+
+### System Validation (Essential Testing)
+- [ ] **TASK:** `add-performance-benchmarks` - Performance tests against large codebases
+  - **Purpose**: Validate system performance and scalability with real-world large Java codebases
+  - **Scope**: Benchmark suite testing against large open-source projects (Spring, Apache Commons, etc.)
+  - **Metrics**: Processing time, memory usage, throughput, error rates, resource utilization
+  - **Comparison**: Single-threaded vs virtual threads to quantify parallelism benefits
+  - **Integration**: Automated benchmark runs with performance regression detection and reporting
+  - **Estimated Effort**: 2-3 days
+- [ ] **TASK:** `add-regression-test-suite` - Regression tests with real-world Java projects
+  - **Purpose**: Prevent regressions by testing against real-world Java projects with known formatting expectations
+  - **Scope**: Test suite with curated Java projects, before/after formatting comparisons, golden file testing
+  - **Coverage**: Various Java versions, coding styles, edge cases, large files, complex constructs
+  - **Integration**: Automated regression testing in CI/CD pipeline with failure analysis and reporting
+  - **Estimated Effort**: 2-3 days
+- [ ] **TASK:** `add-cli-integration-tests` - End-to-end tests with real Java files
+  - **Purpose**: Validate complete CLI functionality with real Java files and realistic usage scenarios
+  - **Scope**: Integration tests covering CLI argument parsing, file processing, output generation, error handling
+  - **Scenarios**: Single files, directory processing, configuration variants, error conditions, edge cases
+  - **Integration**: Uses real Java files, temporary directories, process execution, output validation
+  - **Estimated Effort**: 1-2 days
+
+### Advanced Optimizations (Evidence-Based - Implement After Benchmarking)
+- [ ] **TASK:** `benchmark-concurrency-architectures` - Benchmark file-based vs block-based concurrency
+  - **Purpose**: Compare file-level vs method-level parallelism to determine optimal concurrency strategy
+  - **Scope**: Performance benchmarks comparing virtual thread file-based vs hybrid block-based concurrency
+  - **Methodology**: JMH benchmarks with various file sizes, thread counts, memory configurations
+  - **Comparison Points**:
+    - Virtual threads with file-level parallelism (current approach)
+    - Virtual threads with method-level parallelism (parallel rule application within files)
+    - Platform threads with work-stealing pool (traditional approach)
+  - **Evidence Needed**: Current data shows potential for 15%+ performance gains with block-based approach
+  - **Decision**: Only implement if benchmarks show >20% improvement to justify added complexity
+  - **Estimated Effort**: 2-3 days
+- [ ] **TASK:** `implement-memory-pressure-adaptation` - Dynamic file processing throttling
+  - **Purpose**: Reduce concurrent file processing when memory pressure detected
+  - **Trigger**: Only implement if profiling shows memory exhaustion on large codebases (>10,000 files)
+  - **Implementation**: Monitor heap usage, pause new virtual thread tasks when >80% heap used
+  - **Estimated Effort**: 1-2 days
+- [ ] **TASK:** `implement-file-size-based-scheduling` - Prioritize large files for load balancing
+  - **Purpose**: Improve throughput by scheduling large files first (reduces tail latency)
+  - **Trigger**: Only implement if profiling shows uneven processing time distribution
+  - **Implementation**: Sort files by size (largest first) before submitting to virtual thread executor
+  - **Estimated Effort**: 0.5-1 day
+
+## Phase E: Ecosystem Integration (External Tool Support)
+
+### Build Tool Integration
+- [ ] **TASK:** `create-gradle-plugin` - Gradle plugin for build system integration
+  - **Purpose**: Integrate styler formatting into Gradle build system for automated code formatting
+  - **Scope**: Gradle plugin with tasks for check, format, validate, configuration via build scripts
+  - **Features**: Incremental builds, build cache support, parallel execution, custom source sets
+  - **Integration**: Uses styler CLI as dependency with Gradle-specific configuration and task integration
+
+### CI/CD Integration (Automated Workflows)
+- [ ] **TASK:** `setup-ci-cd-pipeline` - GitHub Actions for automated testing and releases
+  - **Purpose**: Automated CI/CD pipeline for testing, building, and releasing styler components
+  - **Scope**: GitHub Actions workflows for PR validation, release building, artifact publishing
+  - **Features**: Multi-platform testing, performance regression detection, automated releases, security scanning
+  - **Integration**: Uses Maven/Gradle plugins, integrates with existing project infrastructure
+- [ ] **TASK:** `create-release-artifacts` - JAR distributions and installation scripts
+  - **Purpose**: Create distributable JAR files and installation scripts for easy styler deployment
+  - **Scope**: Executable JAR building, native executable creation, installation scripts, package management
+  - **Features**: Self-contained JARs, native images, package manager integration (brew, apt, etc.)
+  - **Integration**: Uses build system to create optimized distributions with dependency bundling
+
+### Security Unit Tests (Validate All Security Controls)
+- [ ] **TASK:** `add-security-unit-tests` - Unit tests for all security controls
+  - **Purpose**: Comprehensive security testing for all authentication, authorization, and validation controls
+  - **Scope**: Security test suite covering authorization framework, resource limits, input validation, audit logging
+  - **Coverage**: Attack scenarios, boundary testing, privilege escalation attempts, resource exhaustion
+  - **Integration**: Uses security testing framework with mock attacks, penetration testing scenarios
+
+## Deferred Tasks
+
+### Test Quality and Requirements API Migration
+- [x] **TASK:** `migrate-testng-to-requirements-api` - Replace TestNG assertions and if-throw with Requirements API (COMPLETED: 2025-10-04)
+  - **Purpose**: Improve test clarity and consistency by using Requirements API (requireThat()) instead of TestNG assertions
+  - **Scope**: Test files across all modules (parser, ast, formatter, cli)
+  - **Components**:
+    - Replace TestNG assertions: `assertTrue()` → `requireThat().isTrue()`, `assertEquals()` → `requireThat().isEqualTo()`, etc.
+    - Replace if-throw validation patterns with `requireThat()` for cleaner error messages
+    - Explore `requireThat().withContext()` to add helpful diagnostic context to test failures
+  - **Benefits**:
+    - Consistent validation API across production and test code
+    - Better error messages with `.withContext()` providing additional diagnostic information
+    - Reduces reliance on multiple assertion frameworks
+    - More expressive and fluent test assertions
+  - **Examples**:
+    - `assertTrue(list.isEmpty())` → `requireThat(list, "list").isEmpty()`
+    - `assertEquals(expected, actual)` → `requireThat(actual, "actual").isEqualTo(expected)`
+    - `if (x < 0) throw new IllegalArgumentException()` → `requireThat(x, "x").isGreaterThanOrEqualTo(0)`
+    - `requireThat(result, "parsing result").withContext("source", sourceCode).isNotNull()`
+  - **Priority**: MEDIUM (improves test quality and maintainability)
+  - **Dependencies**: None (can be done incrementally)
+
+### Incremental Parsing (SCOPE QUESTION - May Be Unnecessary)
+- [ ] **TASK:** `implement-incremental-parsing` - Support for parsing only changed sections (Tree-sitter inspired) (SCOPE QUESTION: May be unnecessary for CLI tool use case - incremental parsing primarily benefits interactive editors, not batch file processing)
+- [ ] **TASK:** `complete-incremental-parsing-tree-reconciliation` - Complete tree reconciliation logic for incremental parsing (DEPENDS ON: implement-incremental-parsing scope decision)
+
+### Configuration Extensions (MEDIUM PRIORITY)
+- [ ] **TASK:** `implement-rule-precedence` - Configuration inheritance and precedence rules
+- [ ] **TASK:** `implement-profile-management` - Pre-defined style profiles (Google, Oracle, etc.)
+- [ ] **TASK:** `implement-dynamic-rule-loading` - Runtime plugin loading and configuration
+- [ ] **TASK:** `add-config-unit-tests` - Unit tests for configuration parsing and validation
+
+### Deferred Infrastructure Tasks (YAGNI - Implement When Needed)
+- [ ] **TASK:** `evaluate-visitor-pattern-removal` - Evaluate removing unused ASTVisitor infrastructure
+  - **Purpose**: Assess whether to remove ASTVisitor pattern infrastructure that is unused by production code
+  - **Scope**: Evaluate ~1500+ lines of visitor pattern infrastructure (ASTVisitor interface with 116 methods, accept() methods in 59 AST node classes, test infrastructure)
+  - **Evidence**:
+    - Production code usage: 0 lines (LineLengthFormattingRule uses instanceof + manual recursion pattern)
+    - Test code usage: 3 test files validating visitor pattern works (VisitorPatternComplianceTest, ComprehensiveTest, ImmutabilityTest)
+    - Infrastructure cost: 116-method interface, accept() implementation in every ASTNode subclass, ~600 lines of test boilerplate per visitor
+  - **Architectural Questions**:
+    - What was the original design intent for visitor pattern support?
+    - Will future formatting rules need formal visitor pattern?
+    - Is instanceof + manual recursion the established production pattern?
+    - Should visitor infrastructure be removed as YAGNI violation or kept for future extensibility?
+  - **Investigation Steps**:
+    1. Consult technical-architect on original visitor pattern design intent
+    2. Review project scope for any future visitor pattern requirements
+    3. Assess breaking change impact to AST module API
+    4. Evaluate maintenance burden vs. potential future value
+    5. Make architectural decision: REMOVE vs KEEP with clear rationale
+  - **If REMOVE Decision**:
+    - Remove ASTVisitor interface and all 116 visit method declarations
+    - Remove accept() method from all 59 ASTNode subclasses
+    - Remove visitor pattern test infrastructure
+    - Update AST documentation to document instanceof + manual recursion as canonical pattern
+    - Create migration guide for any hypothetical external visitor implementations
+  - **If KEEP Decision**:
+    - Document visitor pattern as alternative to instanceof approach
+    - Consider creating BaseASTVisitor with default implementations if 3+ rules adopt pattern
+    - Add architectural guidelines for when to use visitor vs instanceof
+  - **Priority**: LOW (architectural cleanup, no functional impact)
+  - **Dependencies**: None (can be evaluated independently)
+  - **Estimated Effort**: 2-3 days (investigation + implementation if removal approved)
+- [ ] **TASK:** `implement-git-hooks` - Pre-commit hook scripts for CI/CD integration (DEFERRED: No immediate evidence of need)
+- [ ] **TASK:** `fix-meta-commentary-hook-batching` - Prevent meta commentary hook from running multiple times during batch operations
+  - **Purpose**: Fix hook script to detect batch operations and run only once instead of per-file
+  - **Scope**: Update meta commentary hook to accumulate files and run once after batch completion
+  - **Issue**: Currently triggers multiple times when editing many files sequentially (e.g., fixing violations)
+- [ ] **TASK:** `remove-all-deprecated-code` - Remove all @Deprecated classes, methods, and fields from codebase
+  - **Purpose**: Clean up deprecated code that was marked for removal
+  - **Scope**: Search for @Deprecated annotations and remove deprecated APIs
+  - **Components**: Deprecated classes, methods, fields, and any references to them
+  - **Note**: Includes legacy NodeRegistry and MemoryArena implementations deprecated in favor of Arena API
+
+## Documentation (When System is Complete)
+
+### Essential Documentation
+- [ ] **TASK:** `create-user-documentation` - User guide and configuration reference
+- [ ] **TASK:** `create-api-documentation` - Javadoc for public APIs and plugin interfaces
+
+### Deferred Documentation & Infrastructure (YAGNI - Create When Ecosystem Demand Exists)
+- [ ] **TASK:** `create-plugin-development-guide` - Guide for custom plugin development (DEFERRED: No evidence of third-party plugin demand)
+- [ ] **TASK:** `create-performance-guide` - Performance tuning and optimization guide (DEFERRED: Create after performance characteristics are established)
+- [ ] **TASK:** `create-docker-image` - Containerized deployment (DEFERRED: No evidence AI agents or build tools need containerization)
+- [ ] **TASK:** `setup-maven-central-publishing` - Publish artifacts to Maven Central (DEFERRED: Not needed for initial AI agent integration)
+
+## Completed Tasks ✅
 
 ### Parser Engine Module - MOSTLY COMPLETED ✅
 - [x] **MODULE:** `create-parser-module` - Create styler-parser Maven module with custom parser dependencies
@@ -129,8 +339,6 @@
   - **Quality**: Architecture approved, code quality 9.5/10, all tests passing (88/88), compilation successful
   - **Technical Debt**: 1,636 checkstyle violations in CLI module deferred to separate task (see fix-cli-checkstyle-violations below)
 
-## Phase B: Vertical Integration (Build Complete Minimal Pipeline)
-
 ### Single File Formatter (Depends on Config System)
 - [x] **TASK:** `define-formatter-plugin-interface` - Plugin interface for formatting rules (COMPLETED)
 - [x] **TASK:** `implement-line-length-formatter` - Line length auto-fixer with smart wrapping (FIRST FORMATTER - complete end-to-end) ✅ COMPLETED
@@ -163,8 +371,6 @@
     - ✅ 0 checkstyle violations, 0 PMD violations
     - ✅ Unanimous stakeholder approval (code-quality-auditor, build-validator after scope negotiation)
   - **Integration**: Tests use parallel-safe patterns (zero shared state), support all formatter-api interfaces, enable plugin developers to validate implementations
-
-## Phase C: Horizontal Expansion (Scale the Working Pipeline)
 
 ### Multiple Formatter Rules (Expand Formatter Capabilities)
 - [x] **MODULE:** `restructure-formatter-modules` - Restructure formatter into hierarchical parent/child module architecture ✅ COMPLETED (2025-10-04)
@@ -321,7 +527,7 @@
     - Additional resolution strategies (MergeResolutionStrategy, FailFastResolutionStrategy)
     - Comprehensive test suite (70-80 test methods, ≥95% line coverage, ≥90% branch coverage)
   - **Follow-up Tasks**: See `complete-conflict-resolution-implementation` below
-- [ ] **TASK:** `complete-conflict-resolution-implementation` - Complete conflict resolution system (11-16 hours)
+- [x] **TASK:** `complete-conflict-resolution-implementation` - Complete conflict resolution system (11-16 hours)
   - **Purpose**: Complete the conflict resolution system with resolver, integration, and comprehensive tests
   - **Scope**: Implement remaining 2 of 10 components + MutableFormattingContext integration + comprehensive test suite
   - **Foundation**: 8/10 components already implemented (ConflictSeverity, PendingModification, Conflict, ConflictReport, ResolutionDecision, ConflictResolutionException, ConflictDetector, DefaultConflictDetector, ResolutionStrategy, PriorityResolutionStrategy)
@@ -403,196 +609,6 @@
   - **Features**: Include/exclude patterns, symlink handling, performance optimization, large directory support
   - **Integration**: Provides file list to processing pipeline, respects configuration file settings
 
-### Structured Violation Output (AI Agent Feedback)
-- [ ] **TASK:** `implement-structured-violation-output` - Machine-readable violation reports for AI agent feedback
-  - **Purpose**: Generate structured violation reports enabling AI agents to learn from formatting feedback
-  - **Scope**: JSON/XML violation reports with rule IDs, severity, fix suggestions, source locations
-  - **Features**: Machine-readable format, priority scoring, fix strategy hints, learning feedback loops
-  - **Integration**: Used by rule engine to generate actionable feedback for AI agent training systems
-
-
-## Phase D: Parallel Processing (Optimize the Complete System)
-
-### Parallel File Processing (Multi-threading)
-- [ ] **MODULE:** `create-engine-module` - Create styler-engine Maven module
-- [ ] **TASK:** `implement-work-stealing-pool` - Parallel file processing orchestrator
-  - **Purpose**: Implement work-stealing thread pool for optimal parallel file processing performance
-  - **Scope**: Custom ExecutorService with work-stealing queues, dynamic thread scaling, NUMA awareness
-  - **Features**: Adaptive thread count, task stealing algorithms, exception isolation, graceful shutdown
-  - **Integration**: Core parallel processing engine used by file processing pipeline and rule execution
-- [ ] **TASK:** `implement-work-distribution` - Dynamic task distribution and load balancing
-  - **Purpose**: Distribute file processing tasks efficiently across available threads and cores
-  - **Scope**: WorkDistributor with file size analysis, dependency tracking, load balancing algorithms
-  - **Features**: File size weighting, dependency resolution, core affinity, memory pressure adaptation
-  - **Integration**: Used by work-stealing pool to optimally distribute files across worker threads
-- [ ] **TASK:** `implement-progress-reporting` - Real-time progress updates for large codebases
-  - **Purpose**: Provide real-time progress feedback for processing large codebases with thousands of files
-  - **Scope**: ProgressReporter with completion percentages, file counts, throughput metrics, ETA calculation
-  - **Features**: Real-time updates, human-readable output, JSON progress for tools, error tracking
-  - **Integration**: Integrated with file processing pipeline and work distribution for accurate progress
-- [ ] **TASK:** `implement-memory-management` - Memory-bounded processing with automatic cleanup
-  - **Purpose**: Prevent memory exhaustion during large codebase processing with automatic resource cleanup
-  - **Scope**: MemoryManager with heap monitoring, garbage collection tuning, cache eviction, memory limits
-  - **Features**: Adaptive memory limits, proactive GC triggering, cache size management, OOM prevention
-  - **Integration**: Monitors all processing stages and automatically adjusts resource usage and parallelism
-- [ ] **TASK:** `implement-resource-monitoring` - Lightweight resource monitoring service
-  - **Purpose**: Monitor memory, CPU, and thread usage for performance optimization and resource management
-  - **Scope**: ResourceMonitor service with metrics collection, threshold alerting, performance analytics
-  - **Features**: Low-overhead monitoring, configurable thresholds, metrics export, performance dashboards
-  - **Integration**: Used by memory management and work distribution to make resource-aware decisions
-- [ ] **TASK:** `add-engine-unit-tests` - Unit tests for parallel processing and error handling
-  - **Purpose**: Comprehensive unit test coverage for all parallel processing and concurrency components
-  - **Scope**: Thread safety tests, performance tests, error handling tests, resource limit tests
-  - **Coverage**: Concurrency edge cases, resource exhaustion scenarios, error propagation, graceful degradation
-  - **Integration**: Uses test framework with controlled threading, memory pressure simulation, error injection
-
-### Advanced Optimizations
-- [ ] **TASK:** `benchmark-concurrency-architectures` - Benchmark file-based vs block-based concurrency architectures
-  - **Purpose**: Compare file-level vs method-level parallelism to determine optimal concurrency strategy
-  - **Scope**: Performance benchmarks comparing file-based concurrency vs hybrid block-based concurrency
-  - **Methodology**: JMH benchmarks with various file sizes, thread counts, memory configurations
-  - **Evidence**: Current data shows potential for 15%+ performance gains with block-based approach for large files
-
-### System Validation
-- [ ] **TASK:** `add-performance-benchmarks` - Performance tests against large codebases
-  - **Purpose**: Validate system performance and scalability with real-world large Java codebases
-  - **Scope**: Benchmark suite testing against large open-source projects (Spring, Apache Commons, etc.)
-  - **Metrics**: Processing time, memory usage, throughput, error rates, resource utilization
-  - **Integration**: Automated benchmark runs with performance regression detection and reporting
-- [ ] **TASK:** `add-regression-test-suite` - Regression tests with real-world Java projects
-  - **Purpose**: Prevent regressions by testing against real-world Java projects with known formatting expectations
-  - **Scope**: Test suite with curated Java projects, before/after formatting comparisons, golden file testing
-  - **Coverage**: Various Java versions, coding styles, edge cases, large files, complex constructs
-  - **Integration**: Automated regression testing in CI/CD pipeline with failure analysis and reporting
-- [ ] **TASK:** `add-cli-integration-tests` - End-to-end tests with real Java files
-  - **Purpose**: Validate complete CLI functionality with real Java files and realistic usage scenarios
-  - **Scope**: Integration tests covering CLI argument parsing, file processing, output generation, error handling
-  - **Scenarios**: Single files, directory processing, configuration variants, error conditions, edge cases
-  - **Integration**: Uses real Java files, temporary directories, process execution, output validation
-
-## Phase E: Ecosystem Integration (External Tool Support)
-
-### Build Tool Integration (Depends on Complete CLI)
-- [ ] **TASK:** `create-maven-plugin` - Maven plugin for build system integration
-  - **Purpose**: Integrate styler formatting into Maven build lifecycle for automated code formatting
-  - **Scope**: Maven plugin with goals for check, format, validate phases, configuration inheritance
-  - **Features**: Multi-module support, incremental formatting, build failure on violations, IDE integration
-  - **Integration**: Uses styler CLI as dependency with Maven-specific configuration and reporting
-- [ ] **TASK:** `create-gradle-plugin` - Gradle plugin for build system integration
-  - **Purpose**: Integrate styler formatting into Gradle build system for automated code formatting
-  - **Scope**: Gradle plugin with tasks for check, format, validate, configuration via build scripts
-  - **Features**: Incremental builds, build cache support, parallel execution, custom source sets
-  - **Integration**: Uses styler CLI as dependency with Gradle-specific configuration and task integration
-
-### CI/CD Integration (Automated Workflows)
-- [ ] **TASK:** `setup-ci-cd-pipeline` - GitHub Actions for automated testing and releases
-  - **Purpose**: Automated CI/CD pipeline for testing, building, and releasing styler components
-  - **Scope**: GitHub Actions workflows for PR validation, release building, artifact publishing
-  - **Features**: Multi-platform testing, performance regression detection, automated releases, security scanning
-  - **Integration**: Uses Maven/Gradle plugins, integrates with existing project infrastructure
-- [ ] **TASK:** `create-release-artifacts` - JAR distributions and installation scripts
-  - **Purpose**: Create distributable JAR files and installation scripts for easy styler deployment
-  - **Scope**: Executable JAR building, native executable creation, installation scripts, package management
-  - **Features**: Self-contained JARs, native images, package manager integration (brew, apt, etc.)
-  - **Integration**: Uses build system to create optimized distributions with dependency bundling
-
-### Security Unit Tests (Validate All Security Controls)
-- [ ] **TASK:** `add-security-unit-tests` - Unit tests for all security controls
-  - **Purpose**: Comprehensive security testing for all authentication, authorization, and validation controls
-  - **Scope**: Security test suite covering authorization framework, resource limits, input validation, audit logging
-  - **Coverage**: Attack scenarios, boundary testing, privilege escalation attempts, resource exhaustion
-  - **Integration**: Uses security testing framework with mock attacks, penetration testing scenarios
-
-## Deferred Tasks
-
-### Test Quality and Requirements API Migration
-- [x] **TASK:** `migrate-testng-to-requirements-api` - Replace TestNG assertions and if-throw with Requirements API (COMPLETED: 2025-10-04)
-  - **Purpose**: Improve test clarity and consistency by using Requirements API (requireThat()) instead of TestNG assertions
-  - **Scope**: Test files across all modules (parser, ast, formatter, cli)
-  - **Components**:
-    - Replace TestNG assertions: `assertTrue()` → `requireThat().isTrue()`, `assertEquals()` → `requireThat().isEqualTo()`, etc.
-    - Replace if-throw validation patterns with `requireThat()` for cleaner error messages
-    - Explore `requireThat().withContext()` to add helpful diagnostic context to test failures
-  - **Benefits**:
-    - Consistent validation API across production and test code
-    - Better error messages with `.withContext()` providing additional diagnostic information
-    - Reduces reliance on multiple assertion frameworks
-    - More expressive and fluent test assertions
-  - **Examples**:
-    - `assertTrue(list.isEmpty())` → `requireThat(list, "list").isEmpty()`
-    - `assertEquals(expected, actual)` → `requireThat(actual, "actual").isEqualTo(expected)`
-    - `if (x < 0) throw new IllegalArgumentException()` → `requireThat(x, "x").isGreaterThanOrEqualTo(0)`
-    - `requireThat(result, "parsing result").withContext("source", sourceCode).isNotNull()`
-  - **Priority**: MEDIUM (improves test quality and maintainability)
-  - **Dependencies**: None (can be done incrementally)
-
-### Incremental Parsing (SCOPE QUESTION - May Be Unnecessary)
-- [ ] **TASK:** `implement-incremental-parsing` - Support for parsing only changed sections (Tree-sitter inspired) (SCOPE QUESTION: May be unnecessary for CLI tool use case - incremental parsing primarily benefits interactive editors, not batch file processing)
-- [ ] **TASK:** `complete-incremental-parsing-tree-reconciliation` - Complete tree reconciliation logic for incremental parsing (DEPENDS ON: implement-incremental-parsing scope decision)
-
-### Configuration Extensions (MEDIUM PRIORITY)
-- [ ] **TASK:** `implement-rule-precedence` - Configuration inheritance and precedence rules
-- [ ] **TASK:** `implement-profile-management` - Pre-defined style profiles (Google, Oracle, etc.)
-- [ ] **TASK:** `implement-dynamic-rule-loading` - Runtime plugin loading and configuration
-- [ ] **TASK:** `add-config-unit-tests` - Unit tests for configuration parsing and validation
-
-### Deferred Infrastructure Tasks (YAGNI - Implement When Needed)
-- [ ] **TASK:** `evaluate-visitor-pattern-removal` - Evaluate removing unused ASTVisitor infrastructure
-  - **Purpose**: Assess whether to remove ASTVisitor pattern infrastructure that is unused by production code
-  - **Scope**: Evaluate ~1500+ lines of visitor pattern infrastructure (ASTVisitor interface with 116 methods, accept() methods in 59 AST node classes, test infrastructure)
-  - **Evidence**:
-    - Production code usage: 0 lines (LineLengthFormattingRule uses instanceof + manual recursion pattern)
-    - Test code usage: 3 test files validating visitor pattern works (VisitorPatternComplianceTest, ComprehensiveTest, ImmutabilityTest)
-    - Infrastructure cost: 116-method interface, accept() implementation in every ASTNode subclass, ~600 lines of test boilerplate per visitor
-  - **Architectural Questions**:
-    - What was the original design intent for visitor pattern support?
-    - Will future formatting rules need formal visitor pattern?
-    - Is instanceof + manual recursion the established production pattern?
-    - Should visitor infrastructure be removed as YAGNI violation or kept for future extensibility?
-  - **Investigation Steps**:
-    1. Consult technical-architect on original visitor pattern design intent
-    2. Review project scope for any future visitor pattern requirements
-    3. Assess breaking change impact to AST module API
-    4. Evaluate maintenance burden vs. potential future value
-    5. Make architectural decision: REMOVE vs KEEP with clear rationale
-  - **If REMOVE Decision**:
-    - Remove ASTVisitor interface and all 116 visit method declarations
-    - Remove accept() method from all 59 ASTNode subclasses
-    - Remove visitor pattern test infrastructure
-    - Update AST documentation to document instanceof + manual recursion as canonical pattern
-    - Create migration guide for any hypothetical external visitor implementations
-  - **If KEEP Decision**:
-    - Document visitor pattern as alternative to instanceof approach
-    - Consider creating BaseASTVisitor with default implementations if 3+ rules adopt pattern
-    - Add architectural guidelines for when to use visitor vs instanceof
-  - **Priority**: LOW (architectural cleanup, no functional impact)
-  - **Dependencies**: None (can be evaluated independently)
-  - **Estimated Effort**: 2-3 days (investigation + implementation if removal approved)
-- [ ] **TASK:** `implement-git-hooks` - Pre-commit hook scripts for CI/CD integration (DEFERRED: No immediate evidence of need)
-- [ ] **TASK:** `fix-meta-commentary-hook-batching` - Prevent meta commentary hook from running multiple times during batch operations
-  - **Purpose**: Fix hook script to detect batch operations and run only once instead of per-file
-  - **Scope**: Update meta commentary hook to accumulate files and run once after batch completion
-  - **Issue**: Currently triggers multiple times when editing many files sequentially (e.g., fixing violations)
-- [ ] **TASK:** `remove-all-deprecated-code` - Remove all @Deprecated classes, methods, and fields from codebase
-  - **Purpose**: Clean up deprecated code that was marked for removal
-  - **Scope**: Search for @Deprecated annotations and remove deprecated APIs
-  - **Components**: Deprecated classes, methods, fields, and any references to them
-  - **Note**: Includes legacy NodeRegistry and MemoryArena implementations deprecated in favor of Arena API
-
-## Documentation (When System is Complete)
-
-### Essential Documentation
-- [ ] **TASK:** `create-user-documentation` - User guide and configuration reference
-- [ ] **TASK:** `create-api-documentation` - Javadoc for public APIs and plugin interfaces
-
-### Deferred Documentation & Infrastructure (YAGNI - Create When Ecosystem Demand Exists)
-- [ ] **TASK:** `create-plugin-development-guide` - Guide for custom plugin development (DEFERRED: No evidence of third-party plugin demand)
-- [ ] **TASK:** `create-performance-guide` - Performance tuning and optimization guide (DEFERRED: Create after performance characteristics are established)
-- [ ] **TASK:** `create-docker-image` - Containerized deployment (DEFERRED: No evidence AI agents or build tools need containerization)
-- [ ] **TASK:** `setup-maven-central-publishing` - Publish artifacts to Maven Central (DEFERRED: Not needed for initial AI agent integration)
-
-## Completed Tasks ✅
-
 ### AST Core Module - COMPLETED ✅
 - [x] **MODULE:** `create-ast-core-module` - Create styler-ast-core Maven module with AST node hierarchy
 - [x] **TASK:** `implement-ast-node-base` - Base AST node with visitor pattern and metadata preservation
@@ -663,24 +679,34 @@
 
 ### `benchmark-concurrency-architectures` Task Details
 
-**Objective:** Compare file-based concurrency vs block-based concurrency to determine optimal parallelization strategy.
+**Objective:** Compare concurrency strategies to determine optimal parallelization approach for styler.
 
 **Background:**
-Current evidence shows file-level parallelism (like Checkstyle/PMD) eliminates 16-99x synchronization overhead. However, post-parse AST becomes read-only and immutable, potentially enabling method-level parallelism within files after parsing completes.
+- File I/O and parsing are the primary bottlenecks (I/O-bound workload)
+- Virtual threads (Java 21+) designed specifically for high-throughput I/O operations
+- Post-parse AST becomes read-only and immutable, potentially enabling method-level parallelism
+- Checkstyle/PMD use platform threads with file-level parallelism successfully
 
 **Architectures to Compare:**
 
-1. **File-Based Concurrency (Baseline)**
-   - One thread per file (current industry standard)
+1. **Virtual Threads - File-Level Parallelism (Recommended Baseline)**
+   - One virtual thread per file (lightweight, millions possible)
    - Single-threaded parsing and formatting per file
-   - Multiple files processed concurrently
-   - AST instance reused per worker thread via reset()
+   - Unlimited concurrent files (JVM manages scheduling)
+   - No thread pool tuning required
+   - Automatic work-stealing via JVM scheduler
 
-2. **Hybrid Block-Based Concurrency (Innovation)**
-   - Phase 1: Single-threaded parsing per file (creates read-only AST)
-   - Phase 2: Multi-threaded method-level formatting from read-only AST
-   - File-level parallelism + method-level parallelism
+2. **Virtual Threads - Method-Level Parallelism (Hybrid)**
+   - Phase 1: Virtual thread per file for parsing (creates read-only AST)
+   - Phase 2: Multiple virtual threads per file for parallel rule application
+   - File-level + method-level parallelism
    - Requires thread-safe read operations from Index-Overlay AST
+
+3. **Platform Threads - Work-Stealing Pool (Traditional)**
+   - Limited thread pool (1x-2x CPU cores)
+   - File-level parallelism
+   - Requires thread pool configuration
+   - Manual tuning for optimal performance
 
 **Benchmarking Requirements:**
 
@@ -690,44 +716,52 @@ Current evidence shows file-level parallelism (like Checkstyle/PMD) eliminates 1
    - Large files: 100+ methods, 1000+ LOC
    - Very large files: 500+ methods, 5000+ LOC
 
-2. **Thread Pool Configurations:**
-   - File workers: 1, 2, 4, 8, 16 threads
-   - Method workers (hybrid): 2, 4, 8, 16 threads per file
-   - Measure optimal ratios for different file sizes
+2. **Concurrency Configurations:**
+   - Virtual threads: Unlimited (baseline), capped at 100/500/1000 max concurrent
+   - Platform threads: 1x, 2x, 4x CPU cores
+   - Method-level: 2, 4, 8 threads per large file
 
 3. **Metrics to Measure:**
-   - Total processing time (end-to-end)
-   - CPU utilization and core efficiency
-   - Memory usage and GC pressure
-   - Thread coordination overhead
-   - Context switching costs
+   - Total processing time (end-to-end wall clock)
+   - Throughput (files/second)
+   - Memory usage (heap pressure, GC frequency)
+   - CPU utilization (actual vs theoretical max)
+   - I/O wait time vs CPU time breakdown
+   - Thread coordination overhead (context switches)
 
 4. **Test Scenarios:**
    - Homogeneous workloads (all small, all medium, all large files)
-   - Mixed workloads (realistic distribution of file sizes)
-   - Memory-constrained environments
-   - CPU-bound vs I/O-bound scenarios
+   - Mixed workloads (realistic distribution: 70% small, 20% medium, 10% large)
+   - Memory-constrained environments (512MB, 1GB, 2GB heap)
+   - I/O-bound (SSD vs HDD) vs CPU-bound (slow parser vs fast parser)
 
 5. **Complexity Analysis:**
-   - Implementation complexity comparison
-   - Maintenance overhead assessment
-   - Bug surface area evaluation
+   - Lines of code for each implementation
+   - Maintenance burden (thread pool tuning, configuration)
+   - Bug surface area (race conditions, deadlocks)
    - Thread-safety validation requirements
 
 **Success Criteria:**
-- Hybrid approach shows >15% improvement for files with 20+ methods
-- Overhead complexity justified by performance gains
-- Thread-safety validated through concurrent stress testing
-- Memory usage remains acceptable (no more than 2x increase)
+- Architecture must show >20% improvement over virtual threads (file-level) to justify added complexity
+- Memory usage must remain <2x baseline
+- Implementation complexity must be <1.5x baseline LOC
+- Thread-safety must be validated through stress testing (100,000+ files, race detection tools)
 
 **Evidence Base:**
-- Current benchmarks show Index-Overlay read operations: 87.9 ns/op (thread-safe when read-only)
-- AST visitor pattern supports independent method processing
+- Virtual threads excel at I/O-bound workloads (file parsing is primarily I/O)
+- Index-Overlay read operations: 87.9 ns/op (thread-safe when read-only)
 - Post-parse AST immutability enables safe concurrent reads
-- JavaParser research confirms "method independence" for formatting rules
+- Checkstyle/PMD succeed with simple file-level parallelism
+
+**Decision Framework:**
+- If virtual threads (file-level) meet performance goals → ship it (simplest)
+- If platform threads show >20% improvement → implement platform thread option
+- If method-level shows >20% improvement → implement hybrid approach
+- Otherwise → keep simple virtual thread file-level parallelism
 
 **Implementation Notes:**
-- Use JMH for precise microbenchmarks
-- Test with real Java codebases (Spring, Apache Commons, etc.)
-- Validate thread-safety through race condition detection
-- Measure at different JVM heap sizes and GC algorithms
+- Use JMH for precise microbenchmarks (minimize JIT warm-up noise)
+- Test with real Java codebases (Spring Framework, Apache Commons, Guava)
+- Validate thread-safety through JCStress race detection
+- Measure at different heap sizes (512MB, 1GB, 2GB, 4GB)
+- Profile with async-profiler to identify actual bottlenecks
