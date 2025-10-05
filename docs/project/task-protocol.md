@@ -495,31 +495,54 @@ crashed session. Should I:
 # IMPORTANT: Replace {TASK_NAME} with actual task name (e.g., "refactor-line-wrapping-architecture")
 # IMPORTANT: Replace {SESSION_ID} with current session ID (from system environment)
 
-# Step 1: Create atomic lock with state tracking (single bash execution required)
+# Step 1: ATOMIC lock creation - WILL NOT overwrite existing locks
 export SESSION_ID="{SESSION_ID}" && mkdir -p /workspace/locks && (set -C; echo "{\"session_id\": \"${SESSION_ID}\", \"task_name\": \"{TASK_NAME}\", \"state\": \"INIT\", \"created_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > /workspace/locks/{TASK_NAME}.json) && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
 
-# Step 2: Create worktree (must execute from main branch directory)
+# CRITICAL: If LOCK_FAILED, STOP IMMEDIATELY - another instance owns this task
+# MANDATORY: Select alternative task, DO NOT proceed to Step 2
+
+# Step 2: Check for existing worktree BEFORE creating new one
+if [ -d "/workspace/branches/{TASK_NAME}/code" ]; then
+    echo "❌ ERROR: Worktree already exists - another instance is working on this task"
+    echo "CLEANUP REQUIRED: Release lock acquired in Step 1"
+    rm /workspace/locks/{TASK_NAME}.json
+    echo "SELECT ALTERNATIVE TASK"
+    exit 1
+fi
+
+# Step 3: Create worktree (must execute from main branch directory)
 cd /workspace/branches/main/code && mkdir -p /workspace/branches/{TASK_NAME} && git worktree add /workspace/branches/{TASK_NAME}/code -b {TASK_NAME} && echo "Worktree created"
 
-# Step 3: CRITICAL - Change to task worktree (separate execution)
+# Step 4: CRITICAL - Change to task worktree (separate execution)
 cd /workspace/branches/{TASK_NAME}/code
 
-# Step 4: MANDATORY - Verify working directory (separate execution)
+# Step 5: MANDATORY - Verify working directory (separate execution)
 pwd | grep -q "/workspace/branches/{TASK_NAME}/code$" && echo "✅ INIT complete - Working in: $(pwd)" || echo "❌ ERROR: Not in task worktree! Currently in: $(pwd)"
 ```
 
 **Example for task "refactor-line-wrapping-architecture" with session ID "6cca10f2-3c44-49ba-8c90-6dfaeda8f20f"**:
 ```bash
-# Step 1: Create atomic lock with state tracking (replace session ID with your actual session ID)
+# Step 1: ATOMIC lock creation (replace session ID with your actual session ID)
 export SESSION_ID="6cca10f2-3c44-49ba-8c90-6dfaeda8f20f" && mkdir -p /workspace/locks && (set -C; echo "{\"session_id\": \"${SESSION_ID}\", \"task_name\": \"refactor-line-wrapping-architecture\", \"state\": \"INIT\", \"created_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > /workspace/locks/refactor-line-wrapping-architecture.json) && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
 
-# Step 2: Create worktree (from main branch)
+# VERIFY: Output must be "LOCK_SUCCESS" to proceed
+# If "LOCK_FAILED", another instance owns this task - select alternative task immediately
+
+# Step 2: Check for existing worktree BEFORE creating
+if [ -d "/workspace/branches/refactor-line-wrapping-architecture/code" ]; then
+    echo "❌ ERROR: Worktree exists - lock acquired improperly"
+    rm /workspace/locks/refactor-line-wrapping-architecture.json
+    echo "SELECT ALTERNATIVE TASK"
+    exit 1
+fi
+
+# Step 3: Create worktree (from main branch)
 cd /workspace/branches/main/code && mkdir -p /workspace/branches/refactor-line-wrapping-architecture && git worktree add /workspace/branches/refactor-line-wrapping-architecture/code -b refactor-line-wrapping-architecture && echo "Worktree created"
 
-# Step 3: Change to task worktree
+# Step 4: Change to task worktree
 cd /workspace/branches/refactor-line-wrapping-architecture/code
 
-# Step 4: Verify working directory
+# Step 5: Verify working directory
 pwd | grep -q "/workspace/branches/refactor-line-wrapping-architecture/code$" && echo "✅ INIT complete - Working in: $(pwd)" || echo "❌ ERROR: Not in task worktree! Currently in: $(pwd)"
 ```
 
@@ -1100,6 +1123,87 @@ NOT this (merge commit creates non-linear history):
 |/
 * 6a2b1c3 Previous commit on main
 ```
+
+### IMPROPER LOCK ACQUISITION RECOVERY
+
+**CRITICAL SCENARIO**: Instance discovers it acquired a lock but another instance was already working on the task.
+
+**Detection Criteria:**
+- Lock acquisition succeeded (LOCK_SUCCESS)
+- BUT worktree already exists at `/workspace/branches/{TASK_NAME}/code`
+- Indicates race condition or improper lock override
+
+**MANDATORY RECOVERY PROTOCOL:**
+
+```bash
+# Step 1: IMMEDIATELY stop all work on this task
+# DO NOT proceed with any task protocol states
+
+# Step 2: Verify worktree ownership (check if you created it)
+WORKTREE_EXISTS=$([ -d "/workspace/branches/{TASK_NAME}/code" ] && echo "YES" || echo "NO")
+
+if [ "$WORKTREE_EXISTS" = "YES" ]; then
+    echo "⚠️ WARNING: Worktree exists - checking creation timeline"
+
+    # Step 3: Check if YOU created the worktree (compare with lock timestamp)
+    LOCK_CREATED=$(grep -oP '"created_at":\s*"\K[^"]+' /workspace/locks/{TASK_NAME}.json)
+    WORKTREE_CREATED=$(stat -c %y /workspace/branches/{TASK_NAME}/code | cut -d' ' -f1,2)
+
+    # If worktree created BEFORE your lock acquisition → NOT YOUR WORKTREE
+    # Step 4: Release improperly acquired lock
+    echo "❌ IMPROPER LOCK: Releasing lock - worktree belongs to another instance"
+    rm /workspace/locks/{TASK_NAME}.json
+
+    # Step 5: FORBIDDEN - DO NOT remove worktree
+    # Another instance's work is in that directory
+    echo "⚠️ PRESERVED: Worktree left intact (belongs to another instance)"
+
+    # Step 6: Select alternative task
+    echo "SELECT ALTERNATIVE TASK"
+fi
+```
+
+**PROHIBITED ACTIONS:**
+❌ **NEVER** remove a worktree that existed before your lock acquisition
+❌ **NEVER** continue working after detecting improper lock acquisition
+❌ **NEVER** override lock state updates if you don't own the lock
+❌ **NEVER** assume worktree is abandoned without verification
+
+**REQUIRED ACTIONS:**
+✅ **IMMEDIATELY** release improperly acquired lock
+✅ **PRESERVE** existing worktree (another instance's work)
+✅ **SELECT** alternative task from todo.md
+✅ **DOCUMENT** incident (lock race condition detected)
+
+**Example Recovery Sequence:**
+```bash
+# Detected: LOCK_SUCCESS but worktree exists
+TASK_NAME="implement-feature-x"
+
+# Check worktree existence
+if [ -d "/workspace/branches/${TASK_NAME}/code" ]; then
+    echo "❌ IMPROPER LOCK ACQUISITION DETECTED"
+
+    # Release lock immediately
+    rm "/workspace/locks/${TASK_NAME}.json"
+    echo "✅ Lock released"
+
+    # Preserve worktree (DO NOT DELETE)
+    echo "⚠️ Worktree preserved at /workspace/branches/${TASK_NAME}/code"
+
+    # Select next available task
+    echo "Selecting alternative task..."
+    # [Continue with task selection logic]
+fi
+```
+
+**Rationale:**
+- Protects another instance's work from accidental deletion
+- Prevents data loss from concurrent task execution
+- Maintains multi-instance coordination integrity
+- Enables graceful recovery from lock race conditions
+
+---
 
 ### CLEANUP (Final State)
 **Mandatory Conditions:**
