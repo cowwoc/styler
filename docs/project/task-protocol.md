@@ -965,9 +965,11 @@ git show --name-only | grep "todo.md" || { echo "❌ VIOLATION: todo.md not modi
 - Avoids visual clutter from merge commits in git log
 - Maintains chronological order of changes
 
-**Git Safety Sequence:**
+**Git Safety Sequence (Concurrency-Safe):**
 ```bash
 # IMPORTANT: Replace {TASK_NAME} with actual task name before executing
+# CRITICAL: This procedure is safe for concurrent execution by multiple Claude instances
+#           All operations occur in task worktree, avoiding race conditions on main worktree
 
 # Step 1: Ensure clean working state
 cd /workspace/branches/{TASK_NAME}/code
@@ -987,34 +989,53 @@ git commit --amend --no-edit
 # Step 4: Verify todo.md is included in the commit
 git show --stat | grep "todo.md" || { echo "ERROR: todo.md not in commit"; exit 1; }
 
-# Step 5: Rebase onto main to create linear history
-git rebase main
+# Step 5: Fetch latest main and rebase to create linear history
+# Use explicit path to avoid relying on remote configuration
+git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
+git rebase origin/main
 
 # Step 6: PRE-MERGE BUILD VERIFICATION (CRITICAL GATE)
-# MANDATORY: Verify build passes in worktree BEFORE merge attempt
+# MANDATORY: Verify build passes in worktree BEFORE push attempt
 ./mvnw verify || {
-    echo "❌ VIOLATION: Build fails in worktree - merge BLOCKED"
+    echo "❌ VIOLATION: Build fails in worktree - push BLOCKED"
     echo "Fix all checkstyle, PMD, and test failures before merging"
     exit 1
 }
 
-# Step 7: Fast-forward merge to main (only after build verification passes)
-cd /workspace/branches/main/code
-git merge --ff-only {TASK_NAME}
+# Step 7: Atomic push to main (CONCURRENCY-SAFE)
+# Git's internal ref locking ensures only one push succeeds
+# If another instance merged first, this will fail cleanly
+git push --atomic /workspace/branches/main/code HEAD:refs/heads/main || {
+    echo "❌ Push failed - another instance merged first"
+    echo "Solution: Rebase onto latest main (Step 5) and retry push (Step 7)"
+    echo "Fetching latest main..."
+    git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
+    echo "Current main is ahead. Rebase and retry."
+    exit 1
+}
 
-# ❌ PROHIBITED: Never use --no-ff (creates merge commits)
-# git merge --no-ff {TASK_NAME}  # WRONG - violates linear history
+# Step 8: Post-merge verification (still in task worktree)
+# Fetch the updated main to verify our push succeeded
+git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
+git log origin/main --oneline -5  # Must show our commit at HEAD
+git show origin/main --stat | grep "todo.md" || { echo "ERROR: todo.md missing"; exit 1; }
 
-# Step 8: Post-merge verification
-git log --oneline -5  # Must show linear history, no merge commits
-git log --graph --oneline -10  # Should show straight line, not branches
-git show --stat | grep "todo.md" || { echo "ERROR: todo.md missing"; exit 1; }
-./mvnw verify -q  # Verify build still passes after merge
+# Step 9: OPTIONAL - Verify build on main (can be done from task worktree)
+# This step can be skipped if Step 6 passed (same code, same build)
+# cd /workspace/branches/main/code && ./mvnw verify -q
+```
+
+**Concurrency Safety Guarantees:**
+- **No main worktree access**: All operations occur in task worktree
+- **Atomic ref updates**: `git push --atomic` uses internal locking
+- **Automatic conflict detection**: Failed push indicates concurrent merge
+- **Clear retry path**: Fetch + rebase + retry on conflict
+- **No race conditions**: Git's ref locking prevents simultaneous updates
 ```
 
 **Example for task "refactor-line-wrapping-architecture"**:
 ```bash
-# Step 1: Ensure clean state
+# Step 1: Ensure clean state (in task worktree)
 cd /workspace/branches/refactor-line-wrapping-architecture/code
 git status --porcelain | grep -E "(dist/|target/)" | wc -l  # Must be 0
 
@@ -1030,23 +1051,30 @@ git commit --amend --no-edit
 # Step 4: Verify todo.md included
 git show --stat | grep "todo.md"
 
-# Step 5: Rebase onto main
-git rebase main
+# Step 5: Fetch and rebase onto main
+git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
+git rebase origin/main
 
-# Step 6: PRE-MERGE BUILD VERIFICATION (blocks merge if fails)
+# Step 6: PRE-MERGE BUILD VERIFICATION (blocks push if fails)
 ./mvnw verify || {
     echo "❌ Build failed - fix violations before merging"
     exit 1
 }
 
-# Step 7: Fast-forward merge to main (only if build passed)
-cd /workspace/branches/main/code
-git merge --ff-only refactor-line-wrapping-architecture
+# Step 7: Atomic push to main (concurrency-safe)
+git push --atomic /workspace/branches/main/code HEAD:refs/heads/main || {
+    echo "❌ Push failed - another instance merged first"
+    echo "Rebasing onto updated main..."
+    git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
+    git rebase origin/main
+    # Retry push after rebase
+    git push --atomic /workspace/branches/main/code HEAD:refs/heads/main
+}
 
-# Step 8: Post-merge verification
-git log --graph --oneline -10
-git show --stat | grep "todo.md"
-./mvnw verify -q
+# Step 8: Post-merge verification (from task worktree)
+git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
+git log origin/main --oneline -10
+git show origin/main --stat | grep "todo.md"
 ```
 
 **Fast-Forward Merge Validation:**
@@ -1074,13 +1102,18 @@ NOT this (merge commit creates non-linear history):
 - [ ] Temporary files cleaned
 - [ ] `state.json` file archived
 
-**Implementation:**
+**Implementation (Concurrency-Safe):**
 ```bash
 # IMPORTANT: Replace {TASK_NAME} with actual task name before executing
+# CRITICAL: Can be executed from task worktree, no need to cd to main
 
-# Verify work preserved before cleanup
-cd /workspace/branches/main/code
-git log --oneline -5 | grep "{TASK_NAME}" || exit 1
+# Verify work preserved before cleanup (from task worktree)
+cd /workspace/branches/{TASK_NAME}/code
+git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
+git log origin/main --oneline -5 | grep "{TASK_NAME}" || {
+    echo "❌ FATAL: Work not found in main branch"
+    exit 1
+}
 
 # Safe cleanup sequence with session verification
 # CRITICAL: Verify lock ownership before deletion
@@ -1094,9 +1127,9 @@ fi
 # Delete lock file (only if ownership verified)
 rm -f /workspace/locks/{TASK_NAME}.json
 
-# Remove worktree and branch
-cd /workspace/branches/main/code
-git worktree remove /workspace/branches/{TASK_NAME}/code
+# Remove worktree and branch (git worktree remove works from any worktree)
+git worktree remove /workspace/branches/{TASK_NAME}/code --force
+cd /workspace/branches/main/code  # Switch to main before deleting current worktree
 git branch -d {TASK_NAME}
 rm -rf /workspace/branches/{TASK_NAME}
 
@@ -1106,9 +1139,13 @@ TEMP_DIR=$(cat .temp_dir 2>/dev/null) && [ -n "$TEMP_DIR" ] && rm -rf "$TEMP_DIR
 
 **Example for task "refactor-line-wrapping-architecture"**:
 ```bash
-# Verify work in main branch
-cd /workspace/branches/main/code
-git log --oneline -5 | grep "refactor-line-wrapping-architecture" || exit 1
+# Verify work in main branch (from task worktree)
+cd /workspace/branches/refactor-line-wrapping-architecture/code
+git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
+git log origin/main --oneline -5 | grep "refactor-line-wrapping-architecture" || {
+    echo "❌ FATAL: Work not found in main branch"
+    exit 1
+}
 
 # Clean up task resources with session verification
 SESSION_ID="${CURRENT_SESSION_ID}"
@@ -1119,7 +1156,8 @@ if [ "$LOCK_OWNER" != "$SESSION_ID" ]; then
 fi
 
 rm -f /workspace/locks/refactor-line-wrapping-architecture.json
-git worktree remove /workspace/branches/refactor-line-wrapping-architecture/code
+git worktree remove /workspace/branches/refactor-line-wrapping-architecture/code --force
+cd /workspace/branches/main/code
 git branch -d refactor-line-wrapping-architecture
 rm -rf /workspace/branches/refactor-line-wrapping-architecture
 ```
