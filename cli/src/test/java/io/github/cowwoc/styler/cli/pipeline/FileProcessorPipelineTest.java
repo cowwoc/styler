@@ -94,7 +94,6 @@ public final class FileProcessorPipelineTest
 	 * Verifies that closing a pipeline is idempotent.
 	 */
 	@Test
-	@SuppressWarnings("PMD.CloseResource") // Test explicitly tests close() behavior
 	public void closePipeline_calledMultipleTimes_isIdempotent()
 	{
 		FileProcessorPipeline<String> pipeline = FileProcessorPipeline.<String>builder().
@@ -110,7 +109,6 @@ public final class FileProcessorPipelineTest
 	 * Verifies that using a closed pipeline throws IllegalStateException.
 	 */
 	@Test(expectedExceptions = IllegalStateException.class)
-	@SuppressWarnings("PMD.CloseResource") // Test explicitly tests close() behavior
 	public void closedPipeline_processFile_throwsIllegalStateException()
 	{
 		Path testFile = Paths.get("test.java");

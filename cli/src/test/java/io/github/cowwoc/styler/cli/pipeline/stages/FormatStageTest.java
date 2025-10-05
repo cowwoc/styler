@@ -14,9 +14,8 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 /**
  * Tests for {@link FormatStage}.
  */
-@SuppressWarnings({"PMD.MethodNamingConventions", "PMD.CloseResource"})
+@SuppressWarnings("PMD.MethodNamingConventions")
 // Test methods use descriptive_scenario_outcome pattern
-// FormatStage closes the parser, so tests intentionally don't use try-with-resources
 public final class FormatStageTest
 {
 	/**

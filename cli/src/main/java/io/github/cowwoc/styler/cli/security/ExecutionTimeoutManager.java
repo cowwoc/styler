@@ -81,7 +81,6 @@ public final class ExecutionTimeoutManager
 		Objects.requireNonNull(operation, "operation must not be null");
 		Objects.requireNonNull(operationName, "operationName must not be null");
 
-		@SuppressWarnings("PMD.CloseResource") // ExecutorService is properly shut down in finally block
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		Future<T> future = executor.submit(operation);
 

@@ -226,7 +226,6 @@ public class ErrorCollectorTest
 	 * Verifies that adding errors after closing the collector throws IllegalStateException.
 	 */
 	@Test
-	@SuppressWarnings("PMD.CloseResource")
 	public void addAfterClose()
 	{
 		try
@@ -248,7 +247,6 @@ public class ErrorCollectorTest
 	 * Verifies that close() is idempotent and can be called multiple times safely.
 	 */
 	@Test
-	@SuppressWarnings("PMD.CloseResource")
 	public void closeIdempotent()
 	{
 		ErrorCollector collector = ErrorCollector.createSimple();

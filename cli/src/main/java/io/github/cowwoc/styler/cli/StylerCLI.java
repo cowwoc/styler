@@ -89,7 +89,6 @@ public class StylerCLI implements Callable<Integer>
 	@Override
 	public Integer call()
 	{
-		@SuppressWarnings("PMD.CloseResource")
 		PrintStream stream;
 		if (out == null)
 			stream = System.out;
