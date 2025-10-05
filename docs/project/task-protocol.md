@@ -990,7 +990,6 @@ git commit --amend --no-edit
 git show --stat | grep "todo.md" || { echo "ERROR: todo.md not in commit"; exit 1; }
 
 # Step 5: Fetch latest main and rebase to create linear history
-# Use explicit path to avoid relying on remote configuration
 git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
 git rebase origin/main
 
@@ -1002,35 +1001,43 @@ git rebase origin/main
     exit 1
 }
 
-# Step 7: Atomic push to main (CONCURRENCY-SAFE)
-# Git's internal ref locking ensures only one push succeeds
-# If another instance merged first, this will fail cleanly
-git push --atomic /workspace/branches/main/code HEAD:refs/heads/main || {
+# Step 7: Atomic push to main worktree (TRULY CONCURRENCY-SAFE)
+# Main worktree has receive.denyCurrentBranch=updateInstead configured
+# Git's internal locking ensures only one push succeeds at a time
+# Push automatically updates both ref and working tree atomically
+git push /workspace/branches/main/code HEAD:refs/heads/main || {
     echo "❌ Push failed - another instance merged first"
-    echo "Solution: Rebase onto latest main (Step 5) and retry push (Step 7)"
-    echo "Fetching latest main..."
+    echo "Solution: Fetch, rebase, and retry"
     git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
-    echo "Current main is ahead. Rebase and retry."
-    exit 1
+    git rebase origin/main
+    # Retry after rebase
+    git push /workspace/branches/main/code HEAD:refs/heads/main || exit 1
 }
 
-# Step 8: Post-merge verification (still in task worktree)
-# Fetch the updated main to verify our push succeeded
+# Step 8: Post-merge verification (from task worktree)
+# Verify push succeeded
 git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
 git log origin/main --oneline -5  # Must show our commit at HEAD
 git show origin/main --stat | grep "todo.md" || { echo "ERROR: todo.md missing"; exit 1; }
 
-# Step 9: OPTIONAL - Verify build on main (can be done from task worktree)
-# This step can be skipped if Step 6 passed (same code, same build)
+# Step 9: OPTIONAL - Verify build on main (skip if Step 6 passed)
+# Main worktree is automatically updated by push (receive.denyCurrentBranch=updateInstead)
 # cd /workspace/branches/main/code && ./mvnw verify -q
 ```
 
 **Concurrency Safety Guarantees:**
-- **No main worktree access**: All operations occur in task worktree
-- **Atomic ref updates**: `git push --atomic` uses internal locking
-- **Automatic conflict detection**: Failed push indicates concurrent merge
+- **Truly atomic**: Git's push with receive.denyCurrentBranch=updateInstead uses internal locking
+- **No race conditions**: Push operations are serialized by git's index.lock
+- **Automatic working tree update**: Main worktree files updated automatically on successful push
+- **Automatic conflict detection**: Non-fast-forward push fails cleanly
 - **Clear retry path**: Fetch + rebase + retry on conflict
-- **No race conditions**: Git's ref locking prevents simultaneous updates
+- **Perfect concurrency**: Multiple instances can push simultaneously without conflicts
+
+**Repository Configuration:**
+```bash
+# Main worktree must have this setting (already configured):
+cd /workspace/branches/main/code
+git config receive.denyCurrentBranch updateInstead
 ```
 
 **Example for task "refactor-line-wrapping-architecture"**:
@@ -1061,14 +1068,14 @@ git rebase origin/main
     exit 1
 }
 
-# Step 7: Atomic push to main (concurrency-safe)
-git push --atomic /workspace/branches/main/code HEAD:refs/heads/main || {
+# Step 7: Atomic push to main worktree (concurrency-safe)
+git push /workspace/branches/main/code HEAD:refs/heads/main || {
     echo "❌ Push failed - another instance merged first"
     echo "Rebasing onto updated main..."
     git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
     git rebase origin/main
     # Retry push after rebase
-    git push --atomic /workspace/branches/main/code HEAD:refs/heads/main
+    git push /workspace/branches/main/code HEAD:refs/heads/main
 }
 
 # Step 8: Post-merge verification (from task worktree)

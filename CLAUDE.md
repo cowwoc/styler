@@ -260,9 +260,14 @@ When evaluating whether to defer work via scope negotiation:
 ## Repository Structure
 
 **⚠️ NEVER** initialize new repositories
-**Repository Location**: `/workspace/branches/main/code/` (git repository and main development branch)
-**Tasks**: Task-specific worktrees (isolated per task-protocol.md)
+**Main Repository**: `/workspace/branches/main/code/` (git repository and main development branch)
+**Task Worktrees**: `/workspace/branches/{task-name}/code/` (isolated per task-protocol.md)
 **Locks**: Multi-instance coordination via lock files in `/workspace/locks/`
+
+**Git Configuration**:
+- Main worktree has `receive.denyCurrentBranch=updateInstead` (allows atomic pushes)
+- Task worktrees fetch from and push to main worktree
+- All pushes are atomic and concurrency-safe via git's internal locking
 
 ## 🔧 CONTINUOUS WORKFLOW MODE
 
