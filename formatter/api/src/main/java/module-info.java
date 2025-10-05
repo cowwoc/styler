@@ -1,6 +1,6 @@
 module io.github.cowwoc.styler.formatter.api
 {
-	requires transitive io.github.cowwoc.styler.ast;
+	requires transitive io.github.cowwoc.styler.ast.core;
 	requires io.github.cowwoc.requirements12.java;
 	requires transitive org.slf4j;
 	requires com.fasterxml.jackson.databind;

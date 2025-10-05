@@ -1,7 +1,7 @@
 module io.github.cowwoc.styler.formatter.api.test
 {
 	requires transitive io.github.cowwoc.styler.formatter.api;
-	requires transitive io.github.cowwoc.styler.ast;
+	requires transitive io.github.cowwoc.styler.ast.core;
 	requires org.testng;
 	requires org.assertj.core;
 	requires io.github.cowwoc.requirements12.java;

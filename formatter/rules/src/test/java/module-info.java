@@ -1,9 +1,9 @@
-module io.github.cowwoc.styler.formatter.impl.test
+module io.github.cowwoc.styler.formatter.rules.test
 {
-	requires io.github.cowwoc.styler.formatter.impl;
+	requires io.github.cowwoc.styler.formatter.rules;
 	requires io.github.cowwoc.styler.formatter.api;
 	requires io.github.cowwoc.styler.formatter.api.test;
-	requires io.github.cowwoc.styler.ast;
+	requires io.github.cowwoc.styler.ast.core;
 	requires org.testng;
 	requires org.assertj.core;
 	requires io.github.cowwoc.requirements12.java;

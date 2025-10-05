@@ -1,4 +1,4 @@
-module io.github.cowwoc.styler.ast
+module io.github.cowwoc.styler.ast.core
 {
 	requires io.github.cowwoc.requirements12.java;
 	requires com.fasterxml.jackson.annotation;

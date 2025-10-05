@@ -1,7 +1,7 @@
-module io.github.cowwoc.styler.formatter.impl
+module io.github.cowwoc.styler.formatter.rules
 {
 	requires transitive io.github.cowwoc.styler.formatter.api;
-	requires io.github.cowwoc.styler.ast;
+	requires io.github.cowwoc.styler.ast.core;
 	requires org.slf4j;
 	requires io.github.cowwoc.requirements12.java;
 
@@ -9,5 +9,5 @@ module io.github.cowwoc.styler.formatter.impl
 	exports io.github.cowwoc.styler.formatter.impl;
 
 	// Qualified export for testing - prevents external API exposure
-	exports io.github.cowwoc.styler.formatter.impl.wrap to io.github.cowwoc.styler.formatter.impl.test;
+	exports io.github.cowwoc.styler.formatter.impl.wrap to io.github.cowwoc.styler.formatter.rules.test;
 }
