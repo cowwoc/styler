@@ -501,17 +501,14 @@ export SESSION_ID="{SESSION_ID}" && mkdir -p /workspace/locks && (set -C; echo "
 # CRITICAL: If LOCK_FAILED, STOP IMMEDIATELY - another instance owns this task
 # MANDATORY: Select alternative task, DO NOT proceed to Step 2
 
-# Step 2: Check for existing worktree BEFORE creating new one
-if [ -d "/workspace/branches/{TASK_NAME}/code" ]; then
-    echo "❌ ERROR: Worktree already exists - another instance is working on this task"
-    echo "CLEANUP REQUIRED: Release lock acquired in Step 1"
-    rm /workspace/locks/{TASK_NAME}.json
-    echo "SELECT ALTERNATIVE TASK"
-    exit 1
-fi
+# Step 2: ATOMIC worktree directory creation - fails if directory exists
+cd /workspace/branches/main/code && mkdir /workspace/branches/{TASK_NAME} && echo "DIRECTORY_CREATED" || { echo "DIRECTORY_FAILED"; rm /workspace/locks/{TASK_NAME}.json 2>/dev/null; echo "SELECT ALTERNATIVE TASK"; exit 1; }
 
-# Step 3: Create worktree (must execute from main branch directory)
-cd /workspace/branches/main/code && mkdir -p /workspace/branches/{TASK_NAME} && git worktree add /workspace/branches/{TASK_NAME}/code -b {TASK_NAME} && echo "Worktree created"
+# CRITICAL: If DIRECTORY_FAILED, lock is released and alternative task must be selected
+# Directory creation failure indicates another instance is working on this task
+
+# Step 3: Create git worktree in the atomically created directory
+git worktree add /workspace/branches/{TASK_NAME}/code -b {TASK_NAME} && echo "WORKTREE_SUCCESS" || { echo "WORKTREE_FAILED"; rmdir /workspace/branches/{TASK_NAME} 2>/dev/null; rm /workspace/locks/{TASK_NAME}.json 2>/dev/null; echo "SELECT ALTERNATIVE TASK"; exit 1; }
 
 # Step 4: CRITICAL - Change to task worktree (separate execution)
 cd /workspace/branches/{TASK_NAME}/code
@@ -528,16 +525,14 @@ export SESSION_ID="6cca10f2-3c44-49ba-8c90-6dfaeda8f20f" && mkdir -p /workspace/
 # VERIFY: Output must be "LOCK_SUCCESS" to proceed
 # If "LOCK_FAILED", another instance owns this task - select alternative task immediately
 
-# Step 2: Check for existing worktree BEFORE creating
-if [ -d "/workspace/branches/refactor-line-wrapping-architecture/code" ]; then
-    echo "❌ ERROR: Worktree exists - lock acquired improperly"
-    rm /workspace/locks/refactor-line-wrapping-architecture.json
-    echo "SELECT ALTERNATIVE TASK"
-    exit 1
-fi
+# Step 2: ATOMIC directory creation - fails if directory exists
+cd /workspace/branches/main/code && mkdir /workspace/branches/refactor-line-wrapping-architecture && echo "DIRECTORY_CREATED" || { echo "DIRECTORY_FAILED"; rm /workspace/locks/refactor-line-wrapping-architecture.json 2>/dev/null; echo "SELECT ALTERNATIVE TASK"; exit 1; }
 
-# Step 3: Create worktree (from main branch)
-cd /workspace/branches/main/code && mkdir -p /workspace/branches/refactor-line-wrapping-architecture && git worktree add /workspace/branches/refactor-line-wrapping-architecture/code -b refactor-line-wrapping-architecture && echo "Worktree created"
+# CRITICAL: If DIRECTORY_FAILED, directory already exists (another instance working)
+# Lock is automatically released and alternative task must be selected
+
+# Step 3: Create git worktree in the atomically created directory
+git worktree add /workspace/branches/refactor-line-wrapping-architecture/code -b refactor-line-wrapping-architecture && echo "WORKTREE_SUCCESS" || { echo "WORKTREE_FAILED"; rmdir /workspace/branches/refactor-line-wrapping-architecture 2>/dev/null; rm /workspace/locks/refactor-line-wrapping-architecture.json 2>/dev/null; echo "SELECT ALTERNATIVE TASK"; exit 1; }
 
 # Step 4: Change to task worktree
 cd /workspace/branches/refactor-line-wrapping-architecture/code
@@ -1124,84 +1119,44 @@ NOT this (merge commit creates non-linear history):
 * 6a2b1c3 Previous commit on main
 ```
 
-### IMPROPER LOCK ACQUISITION RECOVERY
+### AUTOMATIC CONFLICT RESOLUTION VIA ATOMIC OPERATIONS
 
-**CRITICAL SCENARIO**: Instance discovers it acquired a lock but another instance was already working on the task.
+**DESIGN PRINCIPLE**: Race conditions are prevented automatically through atomic operations - no manual recovery needed.
 
-**Detection Criteria:**
-- Lock acquisition succeeded (LOCK_SUCCESS)
-- BUT worktree already exists at `/workspace/branches/{TASK_NAME}/code`
-- Indicates race condition or improper lock override
+**How Atomic Operations Prevent Conflicts:**
 
-**MANDATORY RECOVERY PROTOCOL:**
+**Scenario 1: Both instances attempt same task simultaneously**
+- **Instance A**: Executes `mkdir /workspace/branches/task-x` → **SUCCESS** (directory created)
+- **Instance B**: Executes `mkdir /workspace/branches/task-x` → **FAILS** (directory exists)
+- **Instance B**: Automatically releases lock and selects alternative task
+- **Instance A**: Continues work uninterrupted
 
-```bash
-# Step 1: IMMEDIATELY stop all work on this task
-# DO NOT proceed with any task protocol states
+**Scenario 2: Instance A working, Instance B attempts same task**
+- **Instance A**: Has lock, has worktree directory
+- **Instance B**: Lock creation fails (`set -C` prevents overwrite) → **LOCK_FAILED**
+- **Instance B**: Selects alternative task immediately (never attempts directory creation)
+- **Instance A**: Unaffected, continues work
 
-# Step 2: Verify worktree ownership (check if you created it)
-WORKTREE_EXISTS=$([ -d "/workspace/branches/{TASK_NAME}/code" ] && echo "YES" || echo "NO")
+**Scenario 3: Lock acquired but directory creation fails**
+- **Instance**: Lock created successfully
+- **Instance**: Directory creation fails (another instance's directory exists)
+- **Instance**: Automatically releases lock via error handler: `rm /workspace/locks/{TASK_NAME}.json`
+- **Instance**: Selects alternative task
+- **Other instance's work**: Preserved (directory and worktree untouched)
 
-if [ "$WORKTREE_EXISTS" = "YES" ]; then
-    echo "⚠️ WARNING: Worktree exists - checking creation timeline"
+**Key Safety Features:**
 
-    # Step 3: Check if YOU created the worktree (compare with lock timestamp)
-    LOCK_CREATED=$(grep -oP '"created_at":\s*"\K[^"]+' /workspace/locks/{TASK_NAME}.json)
-    WORKTREE_CREATED=$(stat -c %y /workspace/branches/{TASK_NAME}/code | cut -d' ' -f1,2)
+1. **Lock Creation**: `set -C` flag prevents overwriting existing locks
+2. **Directory Creation**: `mkdir` (not `mkdir -p`) fails atomically if directory exists
+3. **Automatic Cleanup**: Error handlers release locks when conflicts detected
+4. **Work Preservation**: Existing worktrees never deleted by conflicting instance
+5. **Clear Signals**: LOCK_FAILED / DIRECTORY_FAILED / WORKTREE_FAILED indicate next action
 
-    # If worktree created BEFORE your lock acquisition → NOT YOUR WORKTREE
-    # Step 4: Release improperly acquired lock
-    echo "❌ IMPROPER LOCK: Releasing lock - worktree belongs to another instance"
-    rm /workspace/locks/{TASK_NAME}.json
-
-    # Step 5: FORBIDDEN - DO NOT remove worktree
-    # Another instance's work is in that directory
-    echo "⚠️ PRESERVED: Worktree left intact (belongs to another instance)"
-
-    # Step 6: Select alternative task
-    echo "SELECT ALTERNATIVE TASK"
-fi
-```
-
-**PROHIBITED ACTIONS:**
-❌ **NEVER** remove a worktree that existed before your lock acquisition
-❌ **NEVER** continue working after detecting improper lock acquisition
-❌ **NEVER** override lock state updates if you don't own the lock
-❌ **NEVER** assume worktree is abandoned without verification
-
-**REQUIRED ACTIONS:**
-✅ **IMMEDIATELY** release improperly acquired lock
-✅ **PRESERVE** existing worktree (another instance's work)
-✅ **SELECT** alternative task from todo.md
-✅ **DOCUMENT** incident (lock race condition detected)
-
-**Example Recovery Sequence:**
-```bash
-# Detected: LOCK_SUCCESS but worktree exists
-TASK_NAME="implement-feature-x"
-
-# Check worktree existence
-if [ -d "/workspace/branches/${TASK_NAME}/code" ]; then
-    echo "❌ IMPROPER LOCK ACQUISITION DETECTED"
-
-    # Release lock immediately
-    rm "/workspace/locks/${TASK_NAME}.json"
-    echo "✅ Lock released"
-
-    # Preserve worktree (DO NOT DELETE)
-    echo "⚠️ Worktree preserved at /workspace/branches/${TASK_NAME}/code"
-
-    # Select next available task
-    echo "Selecting alternative task..."
-    # [Continue with task selection logic]
-fi
-```
-
-**Rationale:**
-- Protects another instance's work from accidental deletion
-- Prevents data loss from concurrent task execution
-- Maintains multi-instance coordination integrity
-- Enables graceful recovery from lock race conditions
+**No Manual Recovery Required:**
+- ✅ Atomic operations handle all race conditions automatically
+- ✅ Error handlers ensure proper cleanup on conflict
+- ✅ Clear failure signals direct instance to select alternative task
+- ✅ Other instance's work always preserved
 
 ---
 
