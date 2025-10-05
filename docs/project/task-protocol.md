@@ -495,8 +495,8 @@ crashed session. Should I:
 # IMPORTANT: Replace {TASK_NAME} with actual task name (e.g., "refactor-line-wrapping-architecture")
 # IMPORTANT: Replace {SESSION_ID} with current session ID (from system environment)
 
-# Step 1: Create atomic lock (single bash execution required)
-export SESSION_ID="{SESSION_ID}" && mkdir -p /workspace/locks && (set -C; echo "{\"session_id\": \"${SESSION_ID}\", \"start_time\": \"$(date '+%Y-%m-%d %H:%M:%S %Z')\", \"task_name\": \"{TASK_NAME}\"}" > /workspace/locks/{TASK_NAME}.json) && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
+# Step 1: Create atomic lock with state tracking (single bash execution required)
+export SESSION_ID="{SESSION_ID}" && mkdir -p /workspace/locks && (set -C; echo "{\"session_id\": \"${SESSION_ID}\", \"task_name\": \"{TASK_NAME}\", \"state\": \"INIT\", \"created_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > /workspace/locks/{TASK_NAME}.json) && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
 
 # Step 2: Create worktree (must execute from main branch directory)
 cd /workspace/branches/main/code && mkdir -p /workspace/branches/{TASK_NAME} && git worktree add /workspace/branches/{TASK_NAME}/code -b {TASK_NAME} && echo "Worktree created"
@@ -510,8 +510,8 @@ pwd | grep -q "/workspace/branches/{TASK_NAME}/code$" && echo "✅ INIT complete
 
 **Example for task "refactor-line-wrapping-architecture" with session ID "6cca10f2-3c44-49ba-8c90-6dfaeda8f20f"**:
 ```bash
-# Step 1: Create atomic lock (replace session ID with your actual session ID)
-export SESSION_ID="6cca10f2-3c44-49ba-8c90-6dfaeda8f20f" && mkdir -p /workspace/locks && (set -C; echo "{\"session_id\": \"${SESSION_ID}\", \"start_time\": \"$(date '+%Y-%m-%d %H:%M:%S %Z')\", \"task_name\": \"refactor-line-wrapping-architecture\"}" > /workspace/locks/refactor-line-wrapping-architecture.json) && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
+# Step 1: Create atomic lock with state tracking (replace session ID with your actual session ID)
+export SESSION_ID="6cca10f2-3c44-49ba-8c90-6dfaeda8f20f" && mkdir -p /workspace/locks && (set -C; echo "{\"session_id\": \"${SESSION_ID}\", \"task_name\": \"refactor-line-wrapping-architecture\", \"state\": \"INIT\", \"created_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > /workspace/locks/refactor-line-wrapping-architecture.json) && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
 
 # Step 2: Create worktree (from main branch)
 cd /workspace/branches/main/code && mkdir -p /workspace/branches/refactor-line-wrapping-architecture && git worktree add /workspace/branches/refactor-line-wrapping-architecture/code -b refactor-line-wrapping-architecture && echo "Worktree created"
@@ -524,6 +524,57 @@ pwd | grep -q "/workspace/branches/refactor-line-wrapping-architecture/code$" &&
 ```
 
 **🚨 CRITICAL**: State 0 is NOT complete until you have executed `cd` to the task worktree and verified `pwd` shows the correct directory. NEVER proceed to State 1 while still in main branch.
+
+### Lock State Update Helper
+
+**Purpose**: Update lock file state as task progresses through protocol phases
+
+**Function**:
+```bash
+update_lock_state() {
+  local TASK_NAME=$1
+  local NEW_STATE=$2
+  local LOCK_FILE="/workspace/locks/${TASK_NAME}.json"
+
+  # Verify lock exists and ownership
+  if [ ! -f "$LOCK_FILE" ]; then
+    echo "❌ ERROR: Lock file not found: $LOCK_FILE"
+    return 1
+  fi
+
+  local LOCK_OWNER=$(grep -oP '"session_id":\s*"\K[^"]+' "$LOCK_FILE")
+  local SESSION_ID="${CURRENT_SESSION_ID}"
+
+  if [ "$LOCK_OWNER" != "$SESSION_ID" ]; then
+    echo "❌ FATAL: Cannot update lock owned by $LOCK_OWNER"
+    return 1
+  fi
+
+  # Update state field
+  sed -i "s/\"state\":\s*\"[^\"]*\"/\"state\": \"$NEW_STATE\"/" "$LOCK_FILE"
+  echo "✅ Lock state updated: $NEW_STATE"
+}
+
+# Usage example - update when transitioning to REQUIREMENTS phase:
+update_lock_state "create-maven-plugin" "REQUIREMENTS"
+
+# Usage example - update when transitioning to SYNTHESIS phase:
+update_lock_state "create-maven-plugin" "SYNTHESIS"
+```
+
+**Valid State Values**:
+- `INIT` - Initial lock creation
+- `CLASSIFIED` - Risk classification complete
+- `REQUIREMENTS` - Gathering stakeholder requirements
+- `SYNTHESIS` - Consolidating requirements into architecture
+- `IMPLEMENTATION` - Writing code
+- `VALIDATION` - Build verification
+- `REVIEW` - Stakeholder reviews
+- `SCOPE_NEGOTIATION` - Resolving scope issues
+- `COMPLETE` - Merging to main
+- `CLEANUP` - Final cleanup (lock will be deleted)
+
+**IMPORTANT**: Update lock state at the START of each phase transition to maintain accurate recovery state.
 
 ### CLASSIFIED → REQUIREMENTS
 **Mandatory Conditions:**
@@ -1031,8 +1082,19 @@ NOT this (merge commit creates non-linear history):
 cd /workspace/branches/main/code
 git log --oneline -5 | grep "{TASK_NAME}" || exit 1
 
-# Safe cleanup sequence
+# Safe cleanup sequence with session verification
+# CRITICAL: Verify lock ownership before deletion
+SESSION_ID="${CURRENT_SESSION_ID}"
+LOCK_OWNER=$(grep -oP '"session_id":\s*"\K[^"]+' "/workspace/locks/{TASK_NAME}.json")
+if [ "$LOCK_OWNER" != "$SESSION_ID" ]; then
+  echo "❌ FATAL: Cannot delete lock owned by $LOCK_OWNER"
+  exit 1
+fi
+
+# Delete lock file (only if ownership verified)
 rm -f /workspace/locks/{TASK_NAME}.json
+
+# Remove worktree and branch
 cd /workspace/branches/main/code
 git worktree remove /workspace/branches/{TASK_NAME}/code
 git branch -d {TASK_NAME}
@@ -1048,7 +1110,14 @@ TEMP_DIR=$(cat .temp_dir 2>/dev/null) && [ -n "$TEMP_DIR" ] && rm -rf "$TEMP_DIR
 cd /workspace/branches/main/code
 git log --oneline -5 | grep "refactor-line-wrapping-architecture" || exit 1
 
-# Clean up task resources
+# Clean up task resources with session verification
+SESSION_ID="${CURRENT_SESSION_ID}"
+LOCK_OWNER=$(grep -oP '"session_id":\s*"\K[^"]+' "/workspace/locks/refactor-line-wrapping-architecture.json")
+if [ "$LOCK_OWNER" != "$SESSION_ID" ]; then
+  echo "❌ FATAL: Cannot delete lock owned by $LOCK_OWNER"
+  exit 1
+fi
+
 rm -f /workspace/locks/refactor-line-wrapping-architecture.json
 git worktree remove /workspace/branches/refactor-line-wrapping-architecture/code
 git branch -d refactor-line-wrapping-architecture

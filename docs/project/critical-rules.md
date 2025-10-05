@@ -175,6 +175,49 @@ After creating worktree, you MUST:
 - Respect other instances' active task areas
 - Use proper merge protocols when integrating changes
 
+### Lock File Format and Ownership
+
+**Location**: `/workspace/locks/{task-name}.json`
+
+**Required Fields**:
+```json
+{
+  "session_id": "unique-session-identifier",
+  "task_name": "task-name-matching-filename",
+  "state": "current-protocol-phase",
+  "created_at": "ISO-8601-timestamp"
+}
+```
+
+**Field Descriptions**:
+- `session_id`: Unique identifier for the Claude session owning this task (CRITICAL for ownership verification)
+- `task_name`: Task identifier matching the lock filename
+- `state`: Current protocol phase (INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS, IMPLEMENTATION, VALIDATION, REVIEW, SCOPE_NEGOTIATION, COMPLETE, CLEANUP)
+- `created_at`: ISO 8601 timestamp when lock was created
+
+**Ownership Rules**:
+1. **NEVER delete or modify a lock file unless `session_id` matches YOUR session ID**
+2. **ALWAYS verify lock ownership before ANY lock operation (read state, update, delete)**
+3. **ALWAYS update `state` field when transitioning between protocol phases**
+4. **NEVER assume task ownership based on worktree existence alone - ONLY lock file ownership matters**
+
+**Example Lock File**:
+```json
+{
+  "session_id": "f450ff60-c235-4928-a7f2-b30f4413788b",
+  "task_name": "create-maven-plugin",
+  "state": "IMPLEMENTATION",
+  "created_at": "2025-10-05T00:30:00Z"
+}
+```
+
+**Post-Compaction Recovery**:
+After context compaction, the ONLY way to determine task ownership is by checking lock files:
+1. Scan `/workspace/locks/*.json` for files containing YOUR `session_id`
+2. If found: Read `state` field and resume from that phase
+3. If not found: No active task for this session - select new task from todo.md
+4. NEVER assume ownership from worktree existence, uncommitted changes, or stakeholder reports
+
 ### Git Safety Standards
 - NEVER delete worktrees, branches, or task directories
 - Always verify branch status before making changes
