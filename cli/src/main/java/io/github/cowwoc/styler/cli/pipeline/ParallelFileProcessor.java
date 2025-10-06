@@ -53,6 +53,15 @@ public final class ParallelFileProcessor<OUTPUT> implements AutoCloseable
 	@SuppressWarnings("PMD.FieldNamingConventions")
 	private static final Logger logger = LoggerFactory.getLogger(ParallelFileProcessor.class);
 
+	/** Default maximum concurrent files for builder (balances parallelism with resource usage). */
+	private static final int DEFAULT_MAX_CONCURRENT_FILES = 100;
+
+	/** Default memory limit in bytes (512MB - appropriate for typical code formatting workloads). */
+	private static final long DEFAULT_MEMORY_LIMIT_BYTES = 512L * 1024 * 1024;
+
+	/** Delay in milliseconds when memory pressure is detected (allows GC to reclaim memory). */
+	private static final long MEMORY_PRESSURE_DELAY_MS = 100;
+
 	private final int maxConcurrentFiles;
 	private final ProgressObserver progressObserver;
 	private final Supplier<FileProcessorPipeline<OUTPUT>> pipelineFactory;
@@ -119,7 +128,7 @@ public final class ParallelFileProcessor<OUTPUT> implements AutoCloseable
 				if (memoryMonitor.isMemoryPressureHigh())
 				{
 					logger.warn("Memory pressure detected, pausing task submission");
-					Thread.sleep(100);
+					Thread.sleep(MEMORY_PRESSURE_DELAY_MS);
 				}
 
 				// Acquire concurrency permit
@@ -238,10 +247,10 @@ public final class ParallelFileProcessor<OUTPUT> implements AutoCloseable
 	@SuppressWarnings("PMD.TypeParameterNamingConventions")
 	public static final class Builder<OUTPUT>
 	{
-		private int maxConcurrentFiles = 100;
+		private int maxConcurrentFiles = DEFAULT_MAX_CONCURRENT_FILES;
 		private ProgressObserver progressObserver = ProgressObserver.noOp();
 		private Supplier<FileProcessorPipeline<OUTPUT>> pipelineFactory;
-		private MemoryMonitor memoryMonitor = new MemoryMonitor(512 * 1024 * 1024);
+		private MemoryMonitor memoryMonitor = new MemoryMonitor(DEFAULT_MEMORY_LIMIT_BYTES);
 
 		private Builder()
 		{
@@ -315,8 +324,7 @@ public final class ParallelFileProcessor<OUTPUT> implements AutoCloseable
 			{
 				throw new IllegalStateException("Pipeline factory must be set");
 			}
-			return new ParallelFileProcessor<>(maxConcurrentFiles, progressObserver, pipelineFactory,
-				memoryMonitor);
+			return new ParallelFileProcessor<>(maxConcurrentFiles, progressObserver, pipelineFactory, memoryMonitor);
 		}
 	}
 }

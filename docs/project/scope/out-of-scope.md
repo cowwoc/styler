@@ -107,6 +107,13 @@
 - **Binary compatibility** - Source code formatting only, no bytecode manipulation
 - **Class file analysis** - Source code only, no .class file inspection or modification
 
+## Java Preview Features
+- **Preview APIs** - No use of Java preview features (e.g., StructuredTaskScope in Java 25)
+- **Incubating APIs** - No use of incubating APIs that require `--enable-preview` flags
+- **Experimental features** - Only stable, finalized Java APIs may be used in production code
+- **Rationale**: Preview features can change between Java versions and require special compiler/runtime flags, making them unsuitable for production use
+- **Alternative**: Use stable equivalents (e.g., ExecutorService with virtual threads instead of StructuredTaskScope)
+
 ## Enforcement
 
 **CRITICAL**: OUT OF SCOPE FEATURES MUST NEVER BE ADDED TO TODO.MD OR IMPLEMENTED. If a requested feature involves any of the above areas, **REJECT** it completely and suggest alternatives within scope.

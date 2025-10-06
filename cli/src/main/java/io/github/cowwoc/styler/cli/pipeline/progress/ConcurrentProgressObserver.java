@@ -38,6 +38,18 @@ public final class ConcurrentProgressObserver implements ProgressObserver
 	@SuppressWarnings("PMD.FieldNamingConventions")
 	private static final Logger logger = LoggerFactory.getLogger(ConcurrentProgressObserver.class);
 
+	/** Progress reporting interval as percentage of total files (every 10%). */
+	private static final int PROGRESS_REPORT_PERCENTAGE = 10;
+
+	/** Progress reporting interval in milliseconds (every 5 seconds). */
+	private static final long PROGRESS_REPORT_INTERVAL_MS = 5000;
+
+	/** Milliseconds per second (for time calculations). */
+	private static final long MS_PER_SECOND = 1000;
+
+	/** Percentage multiplier (for percentage calculations). */
+	private static final double PERCENTAGE_MULTIPLIER = 100.0;
+
 	private final ProgressObserver delegate;
 	private final int totalFiles;
 	private final AtomicInteger completedCount;
@@ -124,15 +136,15 @@ public final class ConcurrentProgressObserver implements ProgressObserver
 
 		long now = System.currentTimeMillis();
 		long lastReport = lastReportTimeMillis.get();
-		double progressPercent = (completed * 100.0) / totalFiles;
+		double progressPercent = (completed * PERCENTAGE_MULTIPLIER) / totalFiles;
 
 		// Report every 10% or every 5 seconds
-		boolean shouldReport = completed % Math.max(1, totalFiles / 10) == 0 ||
-			now - lastReport >= 5000;
+		boolean shouldReport = completed % Math.max(1, totalFiles / PROGRESS_REPORT_PERCENTAGE) == 0 ||
+			now - lastReport >= PROGRESS_REPORT_INTERVAL_MS;
 
 		if (shouldReport && lastReportTimeMillis.compareAndSet(lastReport, now))
 		{
-			long elapsedSeconds = (now - startTimeMillis.get()) / 1000;
+			long elapsedSeconds = (now - startTimeMillis.get()) / MS_PER_SECOND;
 			int remaining = totalFiles - completed;
 			double filesPerSecond;
 			if (elapsedSeconds > 0)
@@ -166,7 +178,7 @@ public final class ConcurrentProgressObserver implements ProgressObserver
 	private void logFinalStatistics()
 	{
 		long elapsedMillis = System.currentTimeMillis() - startTimeMillis.get();
-		double elapsedSeconds = elapsedMillis / 1000.0;
+		double elapsedSeconds = elapsedMillis / (double) MS_PER_SECOND;
 		int completed = completedCount.get();
 		int errors = errorCount.get();
 		int succeeded = completed - errors;
@@ -237,7 +249,7 @@ public final class ConcurrentProgressObserver implements ProgressObserver
 	public double getThroughput()
 	{
 		long elapsedMillis = System.currentTimeMillis() - startTimeMillis.get();
-		double elapsedSeconds = elapsedMillis / 1000.0;
+		double elapsedSeconds = elapsedMillis / (double) MS_PER_SECOND;
 		if (elapsedSeconds > 0)
 		{
 			return completedCount.get() / elapsedSeconds;

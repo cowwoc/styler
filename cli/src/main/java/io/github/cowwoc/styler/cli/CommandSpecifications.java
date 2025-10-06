@@ -33,6 +33,8 @@ public final class CommandSpecifications
 	public static final String OPT_EXCLUDE = "--exclude";
 	public static final String OPT_JSON = "--json";
 	public static final String OPT_FAIL_ON_CHANGES = "--fail-on-changes";
+	public static final String OPT_MAX_CONCURRENT_SHORT = "-t";
+	public static final String OPT_MAX_CONCURRENT_LONG = "--max-concurrent-files";
 	public static final String OPT_FIX = "--fix";
 	public static final String OPT_REPORT = "--report";
 
@@ -83,6 +85,7 @@ public final class CommandSpecifications
 		spec.addOption(createExcludeOption());
 		spec.addOption(createJsonOption());
 		spec.addOption(createFailOnChangesOption());
+		spec.addOption(createMaxConcurrentFilesOption());
 		spec.mixinStandardHelpOptions(true);
 		return spec;
 	}
@@ -232,6 +235,21 @@ public final class CommandSpecifications
 	{
 		return OptionSpec.builder(OPT_FAIL_ON_CHANGES).
 			type(boolean.class).description("Exit with non-zero code if any files would be changed").build();
+	}
+
+	/**
+	 * Creates the max-concurrent-files option specification for format command.
+	 *
+	 * @return configured max-concurrent-files option
+	 */
+	private static OptionSpec createMaxConcurrentFilesOption()
+	{
+		return OptionSpec.builder(OPT_MAX_CONCURRENT_SHORT, OPT_MAX_CONCURRENT_LONG).
+			type(int.class).
+			paramLabel("<N>").
+			defaultValue("1").
+			description("Maximum concurrent files to process (default: 1 for sequential processing)").
+			build();
 	}
 
 	/**

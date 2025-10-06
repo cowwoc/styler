@@ -76,7 +76,7 @@ public final class ParseStage extends AbstractPipelineStage<Path, ParsedFile>
 			// Parse source into AST
 			int rootNodeId = parser.parse();
 
-			// Return parsed representation (parser remains open for FormatStage)
+			// Parser remains open for FormatStage
 			return new ParsedFile(input, parser, rootNodeId, sourceText);
 		}
 		catch (IOException e)
