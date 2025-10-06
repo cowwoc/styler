@@ -544,4 +544,231 @@ public interface ASTVisitor<R, A>
 	 * @return visitor-specific result
 	 */
 	R visitModifier(ModifierNode node, A arg);
+
+	// Java 21-25 Features
+
+	/**
+	 * Visits an annotation declaration node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitAnnotationDeclaration(io.github.cowwoc.styler.ast.node.AnnotationDeclarationNode node, A arg);
+
+	/**
+	 * Visits an enum constant node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitEnumConstant(io.github.cowwoc.styler.ast.node.EnumConstantNode node, A arg);
+
+	/**
+	 * Visits a switch expression node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitSwitchExpression(io.github.cowwoc.styler.ast.node.SwitchExpressionNode node, A arg);
+
+	/**
+	 * Visits a yield statement node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitYieldStatement(io.github.cowwoc.styler.ast.node.YieldStatementNode node, A arg);
+
+	/**
+	 * Visits an expression node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitExpression(io.github.cowwoc.styler.ast.node.ExpressionNode node, A arg);
+
+	/**
+	 * Visits an assignment expression node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitAssignmentExpression(io.github.cowwoc.styler.ast.node.AssignmentExpressionNode node, A arg);
+
+	/**
+	 * Visits a string template expression node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitStringTemplateExpression(io.github.cowwoc.styler.ast.node.StringTemplateExpressionNode node, A arg);
+
+	/**
+	 * Visits a template processor expression node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitTemplateProcessorExpression(io.github.cowwoc.styler.ast.node.TemplateProcessorExpressionNode node, A arg);
+
+	/**
+	 * Visits a union type node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitUnionType(io.github.cowwoc.styler.ast.node.UnionTypeNode node, A arg);
+
+	/**
+	 * Visits an intersection type node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitIntersectionType(io.github.cowwoc.styler.ast.node.IntersectionTypeNode node, A arg);
+
+	/**
+	 * Visits a var type node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitVarType(io.github.cowwoc.styler.ast.node.VarTypeNode node, A arg);
+
+	/**
+	 * Visits an unnamed class node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitUnnamedClass(io.github.cowwoc.styler.ast.node.UnnamedClassNode node, A arg);
+
+	/**
+	 * Visits an unnamed variable node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitUnnamedVariable(io.github.cowwoc.styler.ast.node.UnnamedVariableNode node, A arg);
+
+	/**
+	 * Visits a module import declaration node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitModuleImportDeclaration(io.github.cowwoc.styler.ast.node.ModuleImportDeclarationNode node, A arg);
+
+	/**
+	 * Visits a flexible constructor body node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitFlexibleConstructorBody(io.github.cowwoc.styler.ast.node.FlexibleConstructorBodyNode node, A arg);
+
+	/**
+	 * Visits a primitive pattern node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitPrimitivePattern(io.github.cowwoc.styler.ast.node.PrimitivePatternNode node, A arg);
+
+	/**
+	 * Visits a compact main method node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitCompactMainMethod(io.github.cowwoc.styler.ast.node.CompactMainMethodNode node, A arg);
+
+	/**
+	 * Visits an instance main method node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitInstanceMainMethod(io.github.cowwoc.styler.ast.node.InstanceMainMethodNode node, A arg);
+
+	/**
+	 * Visits a module declaration node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitModuleDeclaration(io.github.cowwoc.styler.ast.node.ModuleDeclarationNode node, A arg);
+
+	/**
+	 * Visits a module requires directive node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitModuleRequiresDirective(io.github.cowwoc.styler.ast.node.ModuleRequiresDirectiveNode node, A arg);
+
+	/**
+	 * Visits a module exports directive node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitModuleExportsDirective(io.github.cowwoc.styler.ast.node.ModuleExportsDirectiveNode node, A arg);
+
+	/**
+	 * Visits a module opens directive node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitModuleOpensDirective(io.github.cowwoc.styler.ast.node.ModuleOpensDirectiveNode node, A arg);
+
+	/**
+	 * Visits a module provides directive node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitModuleProvidesDirective(io.github.cowwoc.styler.ast.node.ModuleProvidesDirectiveNode node, A arg);
+
+	/**
+	 * Visits a module uses directive node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitModuleUsesDirective(io.github.cowwoc.styler.ast.node.ModuleUsesDirectiveNode node, A arg);
+
+	/**
+	 * Visits a module qualifier node.
+	 *
+	 * @param node the node to visit
+	 * @param arg  additional argument
+	 * @return the result of visiting the node
+	 */
+	R visitModuleQualifier(io.github.cowwoc.styler.ast.node.ModuleQualifierNode node, A arg);
 }

@@ -200,9 +200,9 @@ public final class FieldDeclarationNode extends ASTNode
 			if (range == null)
 				errors.add("range is required");
 			if (type == null)
-				errors.add("type final is required");
+				errors.add("type is required");
 			if (variables.isEmpty())
-				errors.add("variables cannot final be empty");
+				errors.add("variables cannot be empty");
 			return errors;
 			}
 	}

@@ -179,7 +179,7 @@ public final class AnnotationNode extends ASTNode
 			if (range == null)
 				errors.add("range is required");
 			if (name == null)
-				errors.add("name final is required");
+				errors.add("name is required");
 			return errors;
 			}
 	}

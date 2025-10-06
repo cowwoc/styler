@@ -480,4 +480,180 @@ public final class UsageDetector implements ASTVisitor<Void, Void>
 	{
 		return null;
 	}
+
+	// Java 21-25 features and module system
+	@Override
+	public Void visitAnnotationDeclaration(AnnotationDeclarationNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitEnumConstant(EnumConstantNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitSwitchExpression(SwitchExpressionNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitYieldStatement(YieldStatementNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitExpression(ExpressionNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitAssignmentExpression(AssignmentExpressionNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitStringTemplateExpression(StringTemplateExpressionNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitTemplateProcessorExpression(TemplateProcessorExpressionNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitUnionType(UnionTypeNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitIntersectionType(IntersectionTypeNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitVarType(VarTypeNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitUnnamedClass(UnnamedClassNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitUnnamedVariable(UnnamedVariableNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleImportDeclaration(ModuleImportDeclarationNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitFlexibleConstructorBody(FlexibleConstructorBodyNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitPrimitivePattern(PrimitivePatternNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitCompactMainMethod(CompactMainMethodNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitInstanceMainMethod(InstanceMainMethodNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleDeclaration(ModuleDeclarationNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleRequiresDirective(ModuleRequiresDirectiveNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleExportsDirective(ModuleExportsDirectiveNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleOpensDirective(ModuleOpensDirectiveNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleProvidesDirective(ModuleProvidesDirectiveNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleUsesDirective(ModuleUsesDirectiveNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleQualifier(ModuleQualifierNode node, Void arg)
+	{
+		visitChildren(node);
+		return null;
+	}
 }

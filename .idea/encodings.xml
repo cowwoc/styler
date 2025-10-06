@@ -5,12 +5,16 @@
     <file url="file://$PROJECT_DIR$/ast/core/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ast/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ast/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/benchmark/cli/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/benchmark/cli/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/benchmark/formatter/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/benchmark/formatter/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/benchmark/parser/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/benchmark/parser/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/benchmark/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/benchmark/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/benchmark/system/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/benchmark/system/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/checkstyle-custom/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/checkstyle-custom/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/checkstyle-fixer/src/main/java" charset="UTF-8" />

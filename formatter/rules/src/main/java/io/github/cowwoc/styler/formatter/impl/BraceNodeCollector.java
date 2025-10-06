@@ -464,6 +464,188 @@ public final class BraceNodeCollector implements ASTVisitor<Void, List<BraceCont
 		return null;
 	}
 
+	// Java 21-25 features and module system
+	@Override
+	public Void visitAnnotationDeclaration(AnnotationDeclarationNode node, List<BraceContext> arg)
+	{
+		collectBraceContext(node, arg);
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitEnumConstant(EnumConstantNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitSwitchExpression(SwitchExpressionNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitYieldStatement(YieldStatementNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitExpression(ExpressionNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitAssignmentExpression(AssignmentExpressionNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitStringTemplateExpression(StringTemplateExpressionNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitTemplateProcessorExpression(TemplateProcessorExpressionNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitUnionType(UnionTypeNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitIntersectionType(IntersectionTypeNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitVarType(VarTypeNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitUnnamedClass(UnnamedClassNode node, List<BraceContext> arg)
+	{
+		collectBraceContext(node, arg);
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitUnnamedVariable(UnnamedVariableNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleImportDeclaration(ModuleImportDeclarationNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitFlexibleConstructorBody(FlexibleConstructorBodyNode node, List<BraceContext> arg)
+	{
+		collectBraceContext(node, arg);
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitPrimitivePattern(PrimitivePatternNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitCompactMainMethod(CompactMainMethodNode node, List<BraceContext> arg)
+	{
+		collectBraceContext(node, arg);
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitInstanceMainMethod(InstanceMainMethodNode node, List<BraceContext> arg)
+	{
+		collectBraceContext(node, arg);
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleDeclaration(ModuleDeclarationNode node, List<BraceContext> arg)
+	{
+		collectBraceContext(node, arg);
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleRequiresDirective(ModuleRequiresDirectiveNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleExportsDirective(ModuleExportsDirectiveNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleOpensDirective(ModuleOpensDirectiveNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleProvidesDirective(ModuleProvidesDirectiveNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleUsesDirective(ModuleUsesDirectiveNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
+	@Override
+	public Void visitModuleQualifier(ModuleQualifierNode node, List<BraceContext> arg)
+	{
+		visitChildren(node, arg);
+		return null;
+	}
+
 	/**
 	 * Collects brace context information from an AST node if it contains braces.
 	 *

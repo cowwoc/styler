@@ -265,9 +265,9 @@ public final class ConstructorDeclarationNode extends ASTNode
 			if (range == null)
 				errors.add("range is required");
 			if (name == null || name.isBlank())
-				errors.add("name is required and cannot final be blank");
+				errors.add("name is required and cannot be blank");
 			if (body == null)
-				errors.add("body final is required");
+				errors.add("body is required");
 			return errors;
 			}
 	}

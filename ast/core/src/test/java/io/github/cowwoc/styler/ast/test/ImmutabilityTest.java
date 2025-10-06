@@ -561,5 +561,154 @@ public class ImmutabilityTest
 			{
 			return "";
 			}
+		@Override
+		public String visitAnnotationDeclaration(
+			io.github.cowwoc.styler.ast.node.AnnotationDeclarationNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitEnumConstant(io.github.cowwoc.styler.ast.node.EnumConstantNode node,
+			String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitSwitchExpression(
+			io.github.cowwoc.styler.ast.node.SwitchExpressionNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitYieldStatement(
+			io.github.cowwoc.styler.ast.node.YieldStatementNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitExpression(io.github.cowwoc.styler.ast.node.ExpressionNode node,
+			String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitAssignmentExpression(
+			io.github.cowwoc.styler.ast.node.AssignmentExpressionNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitStringTemplateExpression(
+			io.github.cowwoc.styler.ast.node.StringTemplateExpressionNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitTemplateProcessorExpression(
+			io.github.cowwoc.styler.ast.node.TemplateProcessorExpressionNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitUnionType(io.github.cowwoc.styler.ast.node.UnionTypeNode node,
+			String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitIntersectionType(
+			io.github.cowwoc.styler.ast.node.IntersectionTypeNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitVarType(io.github.cowwoc.styler.ast.node.VarTypeNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitUnnamedClass(io.github.cowwoc.styler.ast.node.UnnamedClassNode node,
+			String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitUnnamedVariable(
+			io.github.cowwoc.styler.ast.node.UnnamedVariableNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitModuleImportDeclaration(
+			io.github.cowwoc.styler.ast.node.ModuleImportDeclarationNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitFlexibleConstructorBody(
+			io.github.cowwoc.styler.ast.node.FlexibleConstructorBodyNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitPrimitivePattern(
+			io.github.cowwoc.styler.ast.node.PrimitivePatternNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitCompactMainMethod(
+			io.github.cowwoc.styler.ast.node.CompactMainMethodNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitInstanceMainMethod(
+			io.github.cowwoc.styler.ast.node.InstanceMainMethodNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitModuleDeclaration(
+			io.github.cowwoc.styler.ast.node.ModuleDeclarationNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitModuleRequiresDirective(
+			io.github.cowwoc.styler.ast.node.ModuleRequiresDirectiveNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitModuleExportsDirective(
+			io.github.cowwoc.styler.ast.node.ModuleExportsDirectiveNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitModuleOpensDirective(
+			io.github.cowwoc.styler.ast.node.ModuleOpensDirectiveNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitModuleProvidesDirective(
+			io.github.cowwoc.styler.ast.node.ModuleProvidesDirectiveNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitModuleUsesDirective(
+			io.github.cowwoc.styler.ast.node.ModuleUsesDirectiveNode node, String arg)
+			{
+			return "";
+			}
+		@Override
+		public String visitModuleQualifier(
+			io.github.cowwoc.styler.ast.node.ModuleQualifierNode node, String arg)
+			{
+			return "";
+			}
 	}
 }

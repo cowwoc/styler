@@ -298,6 +298,17 @@ When evaluating whether to defer work via scope negotiation:
 
 **Lock Ownership Rule**: ONLY work on tasks whose lock file contains YOUR session_id.
 
+**🚨 LOCK FILE VERIFICATION REQUIREMENTS**:
+
+1. **NEVER manually search for lock files** - The SessionStart hook performs this check automatically
+2. **TRUST the hook output** - If it says "No Active Tasks", you have NO tasks regardless of other files
+3. **ONLY `.json` files are valid** - Lock files MUST be `/workspace/locks/{task-name}.json`
+4. **Invalid extensions are NEVER valid**:
+   - ❌ `/workspace/locks/task-name.lock` - INVALID, will be ignored
+   - ❌ `/workspace/locks/task-name.txt` - INVALID, will be ignored
+   - ❌ Any extension other than `.json` - INVALID, will be ignored
+5. **If you see your session_id in a non-.json file**: Delete it immediately, it's incorrect
+
 **Reference**: See [critical-rules.md](docs/project/critical-rules.md) for lock file format and ownership rules.
 
 ## Repository Structure

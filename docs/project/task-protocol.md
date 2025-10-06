@@ -533,9 +533,12 @@ export SESSION_ID="{SESSION_ID}" && mkdir -p /workspace/locks && (set -C; echo "
 
 # 🚨 CRITICAL LOCK FILE FORMAT REQUIREMENTS:
 # - Extension MUST be .json (NOT .lock or any other extension)
+# - Files with .lock, .txt, or any other extension are COMPLETELY INVALID and have NEVER been valid
+# - ALL protocol scripts ONLY check *.json files - other extensions are silently ignored
 # - Field names MUST be: "session_id", "task_name", "state", "created_at" (NOT "phase", "acquired_at", or variations)
 # - created_at MUST be actual ISO-8601 timestamp, NOT literal bash command string
 # - NEVER manually create lock files - ALWAYS use the command above with command substitution
+# - NEVER manually search for locks - SessionStart hook does this automatically
 # - NEVER use echo with single quotes around the JSON - use double quotes to enable variable/command substitution
 # ❌ WRONG: echo '{"created_at": "$(date ...)"}' → Creates literal string "$(date ...)"
 # ✅ CORRECT: echo "{\"created_at\": \"$(date ...)\"}" → Creates actual timestamp "2025-10-05T21:07:00Z"

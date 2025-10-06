@@ -2,23 +2,48 @@ package io.github.cowwoc.styler.formatter.impl;
 
 import io.github.cowwoc.styler.ast.ASTNode;
 import io.github.cowwoc.styler.ast.SourcePosition;
+import io.github.cowwoc.styler.ast.node.AnnotationDeclarationNode;
+import io.github.cowwoc.styler.ast.node.AssignmentExpressionNode;
 import io.github.cowwoc.styler.ast.node.BlockStatementNode;
 import io.github.cowwoc.styler.ast.node.ClassDeclarationNode;
+import io.github.cowwoc.styler.ast.node.CompactMainMethodNode;
 import io.github.cowwoc.styler.ast.node.CompilationUnitNode;
 import io.github.cowwoc.styler.ast.node.ConstructorDeclarationNode;
 import io.github.cowwoc.styler.ast.node.DoWhileStatementNode;
 import io.github.cowwoc.styler.ast.node.EnhancedForStatementNode;
+import io.github.cowwoc.styler.ast.node.EnumConstantNode;
 import io.github.cowwoc.styler.ast.node.EnumDeclarationNode;
+import io.github.cowwoc.styler.ast.node.ExpressionNode;
 import io.github.cowwoc.styler.ast.node.FieldDeclarationNode;
+import io.github.cowwoc.styler.ast.node.FlexibleConstructorBodyNode;
 import io.github.cowwoc.styler.ast.node.ForStatementNode;
 import io.github.cowwoc.styler.ast.node.IfStatementNode;
+import io.github.cowwoc.styler.ast.node.InstanceMainMethodNode;
 import io.github.cowwoc.styler.ast.node.InterfaceDeclarationNode;
+import io.github.cowwoc.styler.ast.node.IntersectionTypeNode;
 import io.github.cowwoc.styler.ast.node.MethodDeclarationNode;
+import io.github.cowwoc.styler.ast.node.ModuleDeclarationNode;
+import io.github.cowwoc.styler.ast.node.ModuleExportsDirectiveNode;
+import io.github.cowwoc.styler.ast.node.ModuleImportDeclarationNode;
+import io.github.cowwoc.styler.ast.node.ModuleOpensDirectiveNode;
+import io.github.cowwoc.styler.ast.node.ModuleProvidesDirectiveNode;
+import io.github.cowwoc.styler.ast.node.ModuleQualifierNode;
+import io.github.cowwoc.styler.ast.node.ModuleRequiresDirectiveNode;
+import io.github.cowwoc.styler.ast.node.ModuleUsesDirectiveNode;
+import io.github.cowwoc.styler.ast.node.PrimitivePatternNode;
 import io.github.cowwoc.styler.ast.node.RecordDeclarationNode;
+import io.github.cowwoc.styler.ast.node.StringTemplateExpressionNode;
+import io.github.cowwoc.styler.ast.node.SwitchExpressionNode;
 import io.github.cowwoc.styler.ast.node.SwitchStatementNode;
 import io.github.cowwoc.styler.ast.node.SynchronizedStatementNode;
+import io.github.cowwoc.styler.ast.node.TemplateProcessorExpressionNode;
 import io.github.cowwoc.styler.ast.node.TryStatementNode;
+import io.github.cowwoc.styler.ast.node.UnionTypeNode;
+import io.github.cowwoc.styler.ast.node.UnnamedClassNode;
+import io.github.cowwoc.styler.ast.node.UnnamedVariableNode;
+import io.github.cowwoc.styler.ast.node.VarTypeNode;
 import io.github.cowwoc.styler.ast.node.WhileStatementNode;
+import io.github.cowwoc.styler.ast.node.YieldStatementNode;
 import io.github.cowwoc.styler.ast.visitor.ASTVisitor;
 import io.github.cowwoc.styler.formatter.api.FormattingContext;
 
@@ -594,6 +619,172 @@ public final class IndentationAnalyzer
 
 		@Override
 		public Void visitModifier(io.github.cowwoc.styler.ast.node.ModifierNode node, Integer depth)
+		{
+			return null;
+		}
+
+		// Java 21-25 features and module system
+		@Override
+		public Void visitAnnotationDeclaration(AnnotationDeclarationNode node, Integer depth)
+		{
+			visitAndIncrementDepth(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitEnumConstant(EnumConstantNode node, Integer depth)
+		{
+			visitAndRecordOnly(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitSwitchExpression(SwitchExpressionNode node, Integer depth)
+		{
+			return null;
+		}
+
+		@Override
+		public Void visitYieldStatement(YieldStatementNode node, Integer depth)
+		{
+			visitAndRecordOnly(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitExpression(ExpressionNode node, Integer depth)
+		{
+			return null;
+		}
+
+		@Override
+		public Void visitAssignmentExpression(AssignmentExpressionNode node, Integer depth)
+		{
+			return null;
+		}
+
+		@Override
+		public Void visitStringTemplateExpression(StringTemplateExpressionNode node, Integer depth)
+		{
+			return null;
+		}
+
+		@Override
+		public Void visitTemplateProcessorExpression(TemplateProcessorExpressionNode node, Integer depth)
+		{
+			return null;
+		}
+
+		@Override
+		public Void visitUnionType(UnionTypeNode node, Integer depth)
+		{
+			return null;
+		}
+
+		@Override
+		public Void visitIntersectionType(IntersectionTypeNode node, Integer depth)
+		{
+			return null;
+		}
+
+		@Override
+		public Void visitVarType(VarTypeNode node, Integer depth)
+		{
+			return null;
+		}
+
+		@Override
+		public Void visitUnnamedClass(UnnamedClassNode node, Integer depth)
+		{
+			visitAndIncrementDepth(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitUnnamedVariable(UnnamedVariableNode node, Integer depth)
+		{
+			visitAndRecordOnly(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitModuleImportDeclaration(ModuleImportDeclarationNode node, Integer depth)
+		{
+			visitAndRecordOnly(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitFlexibleConstructorBody(FlexibleConstructorBodyNode node, Integer depth)
+		{
+			visitAndIncrementDepth(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitPrimitivePattern(PrimitivePatternNode node, Integer depth)
+		{
+			return null;
+		}
+
+		@Override
+		public Void visitCompactMainMethod(CompactMainMethodNode node, Integer depth)
+		{
+			visitAndIncrementDepth(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitInstanceMainMethod(InstanceMainMethodNode node, Integer depth)
+		{
+			visitAndIncrementDepth(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitModuleDeclaration(ModuleDeclarationNode node, Integer depth)
+		{
+			visitAndIncrementDepth(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitModuleRequiresDirective(ModuleRequiresDirectiveNode node, Integer depth)
+		{
+			visitAndRecordOnly(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitModuleExportsDirective(ModuleExportsDirectiveNode node, Integer depth)
+		{
+			visitAndRecordOnly(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitModuleOpensDirective(ModuleOpensDirectiveNode node, Integer depth)
+		{
+			visitAndRecordOnly(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitModuleProvidesDirective(ModuleProvidesDirectiveNode node, Integer depth)
+		{
+			visitAndRecordOnly(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitModuleUsesDirective(ModuleUsesDirectiveNode node, Integer depth)
+		{
+			visitAndRecordOnly(node, depth);
+			return null;
+		}
+
+		@Override
+		public Void visitModuleQualifier(ModuleQualifierNode node, Integer depth)
 		{
 			return null;
 		}

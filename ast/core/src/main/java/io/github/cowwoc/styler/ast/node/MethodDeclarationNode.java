@@ -285,9 +285,9 @@ public final class MethodDeclarationNode extends ASTNode
 			if (range == null)
 				errors.add("range is required");
 			if (returnType == null)
-				errors.add("returnType final is required");
+				errors.add("returnType is required");
 			if (name == null || name.isBlank())
-				errors.add("name is required and cannot final be blank");
+				errors.add("name is required and cannot be blank");
 			return errors;
 			}
 	}

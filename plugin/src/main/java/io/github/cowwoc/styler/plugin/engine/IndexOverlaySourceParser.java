@@ -2,7 +2,8 @@ package io.github.cowwoc.styler.plugin.engine;
 
 import io.github.cowwoc.styler.ast.node.CompilationUnitNode;
 import io.github.cowwoc.styler.parser.ArenaNodeStorage;
-import io.github.cowwoc.styler.parser.ArenaToAstConverter;
+import io.github.cowwoc.styler.parser.converter.ArenaToAstConverter;
+import io.github.cowwoc.styler.parser.converter.DefaultStrategyRegistry;
 import io.github.cowwoc.styler.parser.IndexOverlayParser;
 import io.github.cowwoc.styler.parser.JavaVersion;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -42,8 +43,9 @@ public final class IndexOverlaySourceParser implements SourceParser
 			int rootNodeId = parser.parse();
 			ArenaNodeStorage storage = parser.getNodeStorage();
 
-			ArenaToAstConverter converter = new ArenaToAstConverter();
-			return converter.convert(rootNodeId, storage, sourceText);
+			ArenaToAstConverter converter = ArenaToAstConverter.create(sourceText,
+				DefaultStrategyRegistry.create());
+			return (CompilationUnitNode) converter.convert(rootNodeId, storage);
 		}
 		catch (UnsupportedOperationException e)
 		{

@@ -196,11 +196,11 @@ public final class BinaryExpressionNode extends ASTNode
 			if (range == null)
 				errors.add("range is required");
 			if (left == null)
-				errors.add("left operand final is required");
+				errors.add("left operand is required");
 			if (operator == null || operator.isBlank())
-				errors.add("operator is required and cannot final be blank");
+				errors.add("operator is required and cannot be blank");
 			if (right == null)
-				errors.add("right operand final is required");
+				errors.add("right operand is required");
 			return errors;
 			}
 	}

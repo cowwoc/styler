@@ -177,7 +177,13 @@ After creating worktree, you MUST:
 
 ### Lock File Format and Ownership
 
+**🚨 CRITICAL: ONLY `.json` FILES ARE VALID LOCK FILES**
+
+Files with ANY other extension (`.lock`, `.txt`, etc.) are COMPLETELY INVALID and will be IGNORED by ALL protocol scripts.
+
 **Location**: `/workspace/locks/{task-name}.json`
+
+**Verification**: The `check-lock-ownership.sh` SessionStart hook automatically validates ownership. See [CLAUDE.md § POST-COMPACTION TASK OWNERSHIP](../../CLAUDE.md#-post-compaction-task-ownership) for behavioral requirements.
 
 **🚨 CRITICAL FORMAT REQUIREMENTS**:
 - **Extension**: MUST be `.json` (NOT `.lock`, `.txt`, or any other extension)
@@ -202,7 +208,9 @@ After creating worktree, you MUST:
 - `created_at`: ISO 8601 timestamp when lock was created (e.g., "2025-10-05T21:07:00Z")
 
 **🚨 COMMON MISTAKES TO AVOID**:
-❌ Using `.lock` extension instead of `.json`
+❌ Using `.lock` extension instead of `.json` - **THIS IS NEVER VALID, NOT EVEN LEGACY**
+❌ Manually searching lock files instead of trusting SessionStart hook output
+❌ Assuming ownership from finding session_id in ANY non-.json file
 ❌ Using field name "phase" instead of "state"
 ❌ Using field name "acquired_at" or "start_time" instead of "created_at"
 ❌ Literal bash command in JSON: `"created_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"`

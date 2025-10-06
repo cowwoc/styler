@@ -288,6 +288,155 @@ public class VisitorPatternComplianceTest
 			{
 			return "Modifier";
 			}
+		@Override
+		public String visitAnnotationDeclaration(
+			io.github.cowwoc.styler.ast.node.AnnotationDeclarationNode node, Void arg)
+			{
+			return "AnnotationDeclaration";
+			}
+		@Override
+		public String visitEnumConstant(
+			io.github.cowwoc.styler.ast.node.EnumConstantNode node, Void arg)
+			{
+			return "EnumConstant";
+			}
+		@Override
+		public String visitSwitchExpression(
+			io.github.cowwoc.styler.ast.node.SwitchExpressionNode node, Void arg)
+			{
+			return "SwitchExpression";
+			}
+		@Override
+		public String visitYieldStatement(
+			io.github.cowwoc.styler.ast.node.YieldStatementNode node, Void arg)
+			{
+			return "YieldStatement";
+			}
+		@Override
+		public String visitExpression(
+			io.github.cowwoc.styler.ast.node.ExpressionNode node, Void arg)
+			{
+			return "Expression";
+			}
+		@Override
+		public String visitAssignmentExpression(
+			io.github.cowwoc.styler.ast.node.AssignmentExpressionNode node, Void arg)
+			{
+			return "AssignmentExpression";
+			}
+		@Override
+		public String visitStringTemplateExpression(
+			io.github.cowwoc.styler.ast.node.StringTemplateExpressionNode node, Void arg)
+			{
+			return "StringTemplateExpression";
+			}
+		@Override
+		public String visitTemplateProcessorExpression(
+			io.github.cowwoc.styler.ast.node.TemplateProcessorExpressionNode node, Void arg)
+			{
+			return "TemplateProcessorExpression";
+			}
+		@Override
+		public String visitUnionType(
+			io.github.cowwoc.styler.ast.node.UnionTypeNode node, Void arg)
+			{
+			return "UnionType";
+			}
+		@Override
+		public String visitIntersectionType(
+			io.github.cowwoc.styler.ast.node.IntersectionTypeNode node, Void arg)
+			{
+			return "IntersectionType";
+			}
+		@Override
+		public String visitVarType(io.github.cowwoc.styler.ast.node.VarTypeNode node, Void arg)
+			{
+			return "VarType";
+			}
+		@Override
+		public String visitUnnamedClass(
+			io.github.cowwoc.styler.ast.node.UnnamedClassNode node, Void arg)
+			{
+			return "UnnamedClass";
+			}
+		@Override
+		public String visitUnnamedVariable(
+			io.github.cowwoc.styler.ast.node.UnnamedVariableNode node, Void arg)
+			{
+			return "UnnamedVariable";
+			}
+		@Override
+		public String visitModuleImportDeclaration(
+			io.github.cowwoc.styler.ast.node.ModuleImportDeclarationNode node, Void arg)
+			{
+			return "ModuleImportDeclaration";
+			}
+		@Override
+		public String visitFlexibleConstructorBody(
+			io.github.cowwoc.styler.ast.node.FlexibleConstructorBodyNode node, Void arg)
+			{
+			return "FlexibleConstructorBody";
+			}
+		@Override
+		public String visitPrimitivePattern(
+			io.github.cowwoc.styler.ast.node.PrimitivePatternNode node, Void arg)
+			{
+			return "PrimitivePattern";
+			}
+		@Override
+		public String visitCompactMainMethod(
+			io.github.cowwoc.styler.ast.node.CompactMainMethodNode node, Void arg)
+			{
+			return "CompactMainMethod";
+			}
+		@Override
+		public String visitInstanceMainMethod(
+			io.github.cowwoc.styler.ast.node.InstanceMainMethodNode node, Void arg)
+			{
+			return "InstanceMainMethod";
+			}
+		@Override
+		public String visitModuleDeclaration(
+			io.github.cowwoc.styler.ast.node.ModuleDeclarationNode node, Void arg)
+			{
+			return "ModuleDeclaration";
+			}
+		@Override
+		public String visitModuleRequiresDirective(
+			io.github.cowwoc.styler.ast.node.ModuleRequiresDirectiveNode node, Void arg)
+			{
+			return "ModuleRequiresDirective";
+			}
+		@Override
+		public String visitModuleExportsDirective(
+			io.github.cowwoc.styler.ast.node.ModuleExportsDirectiveNode node, Void arg)
+			{
+			return "ModuleExportsDirective";
+			}
+		@Override
+		public String visitModuleOpensDirective(
+			io.github.cowwoc.styler.ast.node.ModuleOpensDirectiveNode node, Void arg)
+			{
+			return "ModuleOpensDirective";
+			}
+		@Override
+		public String visitModuleProvidesDirective(
+			io.github.cowwoc.styler.ast.node.ModuleProvidesDirectiveNode node, Void arg)
+			{
+			return "ModuleProvidesDirective";
+			}
+		@Override
+		public String visitModuleUsesDirective(
+			io.github.cowwoc.styler.ast.node.ModuleUsesDirectiveNode node, Void arg)
+			{
+			return "ModuleUsesDirective";
+			}
+		@Override
+		public String visitModuleQualifier(
+			io.github.cowwoc.styler.ast.node.ModuleQualifierNode node, Void arg)
+			{
+			return "ModuleQualifier";
+			}
 	}
 
 	/**
@@ -608,6 +757,155 @@ public class VisitorPatternComplianceTest
 				return 1;
 				}
 			@Override public Integer visitModifier(io.github.cowwoc.styler.ast.node.ModifierNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitAnnotationDeclaration(
+				io.github.cowwoc.styler.ast.node.AnnotationDeclarationNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitEnumConstant(
+				io.github.cowwoc.styler.ast.node.EnumConstantNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitSwitchExpression(
+				io.github.cowwoc.styler.ast.node.SwitchExpressionNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitYieldStatement(
+				io.github.cowwoc.styler.ast.node.YieldStatementNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitExpression(
+				io.github.cowwoc.styler.ast.node.ExpressionNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitAssignmentExpression(
+				io.github.cowwoc.styler.ast.node.AssignmentExpressionNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitStringTemplateExpression(
+				io.github.cowwoc.styler.ast.node.StringTemplateExpressionNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitTemplateProcessorExpression(
+				io.github.cowwoc.styler.ast.node.TemplateProcessorExpressionNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitUnionType(
+				io.github.cowwoc.styler.ast.node.UnionTypeNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitIntersectionType(
+				io.github.cowwoc.styler.ast.node.IntersectionTypeNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override public Integer visitVarType(
+				io.github.cowwoc.styler.ast.node.VarTypeNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitUnnamedClass(
+				io.github.cowwoc.styler.ast.node.UnnamedClassNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitUnnamedVariable(
+				io.github.cowwoc.styler.ast.node.UnnamedVariableNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitModuleImportDeclaration(
+				io.github.cowwoc.styler.ast.node.ModuleImportDeclarationNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitFlexibleConstructorBody(
+				io.github.cowwoc.styler.ast.node.FlexibleConstructorBodyNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitPrimitivePattern(
+				io.github.cowwoc.styler.ast.node.PrimitivePatternNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitCompactMainMethod(
+				io.github.cowwoc.styler.ast.node.CompactMainMethodNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitInstanceMainMethod(
+				io.github.cowwoc.styler.ast.node.InstanceMainMethodNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitModuleDeclaration(
+				io.github.cowwoc.styler.ast.node.ModuleDeclarationNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitModuleRequiresDirective(
+				io.github.cowwoc.styler.ast.node.ModuleRequiresDirectiveNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitModuleExportsDirective(
+				io.github.cowwoc.styler.ast.node.ModuleExportsDirectiveNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitModuleOpensDirective(
+				io.github.cowwoc.styler.ast.node.ModuleOpensDirectiveNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitModuleProvidesDirective(
+				io.github.cowwoc.styler.ast.node.ModuleProvidesDirectiveNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitModuleUsesDirective(
+				io.github.cowwoc.styler.ast.node.ModuleUsesDirectiveNode node, Void arg)
+				{
+				return 1;
+				}
+			@Override
+			public Integer visitModuleQualifier(
+				io.github.cowwoc.styler.ast.node.ModuleQualifierNode node, Void arg)
 				{
 				return 1;
 				}

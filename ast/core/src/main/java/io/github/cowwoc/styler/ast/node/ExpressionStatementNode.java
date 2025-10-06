@@ -157,7 +157,7 @@ public final class ExpressionStatementNode extends ASTNode
 			if (range == null)
 				errors.add("range is required");
 			if (expression == null)
-				errors.add("expression final is required");
+				errors.add("expression is required");
 			return errors;
 			}
 	}

@@ -36,19 +36,20 @@ public final class NodeType
 	public static final byte EXPRESSION_STATEMENT = 31;
 	public static final byte IF_STATEMENT = 32;
 	public static final byte WHILE_STATEMENT = 33;
-	public static final byte FOR_STATEMENT = 34;
-	public static final byte ENHANCED_FOR_STATEMENT = 35;
-	public static final byte SWITCH_STATEMENT = 36;
-	public static final byte TRY_STATEMENT = 37;
-	public static final byte RETURN_STATEMENT = 38;
-	public static final byte THROW_STATEMENT = 39;
-	public static final byte BREAK_STATEMENT = 40;
-	public static final byte CONTINUE_STATEMENT = 41;
-	public static final byte SYNCHRONIZED_STATEMENT = 42;
+	public static final byte DO_WHILE_STATEMENT = 34;
+	public static final byte FOR_STATEMENT = 35;
+	public static final byte ENHANCED_FOR_STATEMENT = 36;
+	public static final byte SWITCH_STATEMENT = 37;
+	public static final byte TRY_STATEMENT = 38;
+	public static final byte RETURN_STATEMENT = 39;
+	public static final byte THROW_STATEMENT = 40;
+	public static final byte BREAK_STATEMENT = 41;
+	public static final byte CONTINUE_STATEMENT = 42;
+	public static final byte SYNCHRONIZED_STATEMENT = 43;
 
 	// JDK 17+ Switch expressions and patterns
-	public static final byte SWITCH_EXPRESSION = 43;
-	public static final byte YIELD_STATEMENT = 44;
+	public static final byte SWITCH_EXPRESSION = 44;
+	public static final byte YIELD_STATEMENT = 45;
 
 	// Expressions
 	public static final byte EXPRESSION = 49;
@@ -149,6 +150,7 @@ public final class NodeType
 			case EXPRESSION_STATEMENT -> "ExpressionStatement";
 			case IF_STATEMENT -> "IfStatement";
 			case WHILE_STATEMENT -> "WhileStatement";
+			case DO_WHILE_STATEMENT -> "DoWhileStatement";
 			case FOR_STATEMENT -> "ForStatement";
 			case ENHANCED_FOR_STATEMENT -> "EnhancedForStatement";
 			case SWITCH_STATEMENT -> "SwitchStatement";

@@ -241,7 +241,7 @@ public final class EnumDeclarationNode extends ASTNode
 			if (range == null)
 				errors.add("range is required");
 			if (name == null || name.isBlank())
-				errors.add("name is required and cannot final be blank");
+				errors.add("name is required and cannot be blank");
 			return errors;
 			}
 	}
