@@ -225,32 +225,33 @@
     - Comprehensive test suite (3 test classes, 43 tests)
 
 ### Parallel File Processing (Virtual Threads)
-- [ ] **TASK:** `implement-parallel-file-processing` - Multi-threaded file processing with virtual threads
+- [x] **TASK:** `implement-parallel-file-processing` - Multi-threaded file processing with virtual threads ✅ COMPLETED (2025-10-06)
   - **Purpose**: Process multiple files concurrently using Java 21+ virtual threads for high-throughput I/O
   - **Scope**: Virtual thread executor configuration, file distribution, progress reporting, error isolation
   - **Implementation**:
-    - Use `Executors.newVirtualThreadPerTaskExecutor()` for lightweight concurrency
-    - Thread count configuration via CLI: `-t N` (max concurrent files), default: unlimited virtual threads
+    - Uses `Executors.newVirtualThreadPerTaskExecutor()` for lightweight concurrency (stable Java 21+ API, not preview StructuredTaskScope)
+    - CLI option: `--max-concurrent-files N` or `-t N` (default: 1 sequential, max: configurable)
     - File-level task granularity (entire file per task, following Checkstyle/PMD pattern)
-    - Integration with existing ProgressObserver for real-time updates
-    - Per-file error isolation (one file failure doesn't stop others)
-    - Structured concurrency with `StructuredTaskScope` for coordinated shutdown
+    - Integration with ProgressObserver for real-time batch tracking
+    - Per-file error isolation (continue-on-error semantics)
+    - Adaptive memory throttling at 80% heap usage
   - **Virtual Thread Benefits**:
     - Millions of virtual threads possible (vs ~1000 platform threads)
     - No thread pool tuning required - JVM manages scheduling
     - Perfect for I/O-bound file processing workload
-    - Simpler code than traditional ExecutorService patterns
-    - Automatic work-stealing via JVM's virtual thread scheduler
-  - **Features**:
-    - Configurable max concurrent files (`-t` flag)
-    - Real-time progress updates (files processed, remaining, throughput)
-    - Graceful shutdown on interruption (StructuredTaskScope automatic cleanup)
-    - Error aggregation across all processed files
-    - Memory-conscious: limit concurrent files if heap pressure detected
-  - **Integration**: Extends existing FileProcessorPipeline with parallel execution mode
-  - **Testing**: Thread safety tests, concurrent error handling, progress reporting accuracy
-  - **Estimated Effort**: 2-3 days
-  - **Requirements**: Java 21+ for stable virtual threads
+    - Simpler code than traditional ExecutorService patterns with try-with-resources
+  - **Deliverables**:
+    - ✅ ParallelFileProcessor with virtual thread executor and semaphore concurrency control
+    - ✅ ConcurrentProgressObserver with atomic counters and thread-safe batch tracking
+    - ✅ CLI integration via CommandSpecifications (--max-concurrent-files option)
+    - ✅ Comprehensive test coverage (ParallelFileProcessorTest, ConcurrentProgressObserverTest)
+    - ✅ Performance benchmarks (ParallelFileProcessorBenchmark with JMH)
+    - ✅ Security controls (MemoryMonitor adaptive throttling, resource limits)
+    - ✅ Documentation update (out-of-scope.md - preview API restriction)
+    - ✅ 0 checkstyle violations, 0 PMD violations, 0 manual style violations
+    - ✅ Unanimous stakeholder approval (7/7: technical-architect, security-auditor, code-quality-auditor, style-auditor, test-coverage, performance-analyzer, code-tester)
+  - **Quality Gates**: All tests passing, all stakeholder reviews approved
+  - **Actual Effort**: 3 days (within estimate)
 
 ### System Validation (Essential Testing)
 - [x] **TASK:** `add-performance-benchmarks` - Performance benchmark infrastructure ✅ COMPLETED (2025-10-06)
@@ -560,7 +561,7 @@
   - **Quality**: Architecture approved, code quality 9.5/10, all tests passing (88/88), compilation successful
   - **Technical Debt**: 1,636 checkstyle violations in CLI module deferred to separate task (see fix-cli-checkstyle-violations below)
 
-- [ ] **TASK:** `migrate-picocli-to-programmatic-api` - Migrate CLI from picocli reflection API to programmatic API
+- [x] **TASK:** `migrate-picocli-to-programmatic-api` - Migrate CLI from picocli reflection API to programmatic API
   - **Purpose**: Eliminate reflection-based command parsing for better GraalVM native-image compatibility, startup performance, and compile-time safety
   - **Scope**: Replace all picocli annotation-based parsing (@Command, @Option, @Parameters) with programmatic CommandLine builder API
   - **Current Architecture**:
