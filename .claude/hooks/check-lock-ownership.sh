@@ -11,7 +11,7 @@ if [ -z "$SESSION_ID" ]; then
   exit 0
 fi
 
-# Check for lock files owned by this session
+# Check for lock files owned by this session (only .json files, per task-protocol.md)
 OWNED_LOCK=$(grep -l "\"session_id\":\s*\"$SESSION_ID\"" /workspace/locks/*.json 2>/dev/null | head -1)
 
 if [ -n "$OWNED_LOCK" ]; then

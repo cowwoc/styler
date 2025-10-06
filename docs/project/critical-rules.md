@@ -179,6 +179,12 @@ After creating worktree, you MUST:
 
 **Location**: `/workspace/locks/{task-name}.json`
 
+**🚨 CRITICAL FORMAT REQUIREMENTS**:
+- **Extension**: MUST be `.json` (NOT `.lock`, `.txt`, or any other extension)
+- **Field Names**: MUST exactly match the spec below (NOT variations like "phase", "acquired_at", "start_time")
+- **Timestamp Format**: MUST be actual ISO-8601 timestamp (NOT literal bash command strings)
+- **Creation Method**: MUST use bash command substitution with double quotes (NOT manual creation or single quotes)
+
 **Required Fields**:
 ```json
 {
@@ -193,7 +199,29 @@ After creating worktree, you MUST:
 - `session_id`: Unique identifier for the Claude session owning this task (CRITICAL for ownership verification)
 - `task_name`: Task identifier matching the lock filename
 - `state`: Current protocol phase (INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS, IMPLEMENTATION, VALIDATION, REVIEW, SCOPE_NEGOTIATION, COMPLETE, CLEANUP)
-- `created_at`: ISO 8601 timestamp when lock was created
+- `created_at`: ISO 8601 timestamp when lock was created (e.g., "2025-10-05T21:07:00Z")
+
+**🚨 COMMON MISTAKES TO AVOID**:
+❌ Using `.lock` extension instead of `.json`
+❌ Using field name "phase" instead of "state"
+❌ Using field name "acquired_at" or "start_time" instead of "created_at"
+❌ Literal bash command in JSON: `"created_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"`
+❌ Using single quotes which prevent command substitution: `echo '{"created_at": "$(date ...)"}'`
+
+**✅ CORRECT LOCK FILE CREATION**:
+```bash
+echo "{\"session_id\": \"${SESSION_ID}\", \"task_name\": \"${TASK_NAME}\", \"state\": \"INIT\", \"created_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > /workspace/locks/${TASK_NAME}.json
+```
+
+**✅ CORRECT RESULT**:
+```json
+{
+  "session_id": "f450ff60-c235-4928-a7f2-b30f4413788b",
+  "task_name": "create-maven-plugin",
+  "state": "IMPLEMENTATION",
+  "created_at": "2025-10-05T21:07:00Z"
+}
+```
 
 **Ownership Rules**:
 1. **NEVER delete or modify a lock file unless `session_id` matches YOUR session ID**

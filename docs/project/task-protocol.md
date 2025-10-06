@@ -367,7 +367,40 @@ Every task MUST maintain a `state.json` file in the task directory containing:
 
 ## PRE-INIT VERIFICATION: Task Selection and Lock Validation
 
-**CRITICAL**: Before executing INIT phase, you MUST verify that the selected task is available for work by checking existing locks and worktrees.
+**CRITICAL**: Before executing INIT phase, you MUST verify that the selected task is available for work by checking existing locks and worktrees, AND verify you can complete the task autonomously.
+
+### Autonomous Completion Feasibility Check
+
+Before acquiring lock and starting INIT, verify the task can be completed without user intervention:
+
+**MANDATORY PRE-TASK CHECKLIST**:
+
+```bash
+# 1. Task has clear deliverables
+grep -A 20 "TASK.*${TASK_NAME}" /workspace/branches/main/code/todo.md
+# Verify: Purpose, Scope, Components are defined
+
+# 2. No external blockers exist
+# ✅ PROCEED if: All dependencies available, no missing APIs, no ambiguous requirements
+# ❌ SELECT ALTERNATIVE if: Requires unavailable external API, missing credentials, undefined requirements
+
+# 3. Implementation is within capabilities
+# ✅ PROCEED if: Technical approach is clear, no user design decisions needed
+# ❌ SELECT ALTERNATIVE if: Requires user to choose between architectural options
+```
+
+**PROHIBITED STOPPING REASONS** (these are NOT blockers):
+❌ "This might take a long time" - TIME ESTIMATES ARE NOT BLOCKERS
+❌ "This is complex" - COMPLEXITY IS NOT A BLOCKER unless genuinely impossible
+❌ "Token usage is high" - TOKENS NEVER JUSTIFY STOPPING
+❌ "Should I ask the user first?" - NO, protocol is AUTONOMOUS
+
+**LEGITIMATE STOPPING REASONS** (these ARE blockers):
+✅ Genuine technical blocker (missing external API, undefined requirement)
+✅ Ambiguity requiring user clarification (conflicting requirements with no resolution)
+✅ Task scope changed externally (user modified todo.md indicating change)
+
+**COMMITMENT**: If all checks pass, you MUST complete entire protocol (States 0-8) without asking user permission.
 
 ### Decision Logic: Can I Work on This Task?
 
@@ -497,6 +530,15 @@ crashed session. Should I:
 
 # Step 1: ATOMIC lock creation - WILL NOT overwrite existing locks
 export SESSION_ID="{SESSION_ID}" && mkdir -p /workspace/locks && (set -C; echo "{\"session_id\": \"${SESSION_ID}\", \"task_name\": \"{TASK_NAME}\", \"state\": \"INIT\", \"created_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > /workspace/locks/{TASK_NAME}.json) && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
+
+# 🚨 CRITICAL LOCK FILE FORMAT REQUIREMENTS:
+# - Extension MUST be .json (NOT .lock or any other extension)
+# - Field names MUST be: "session_id", "task_name", "state", "created_at" (NOT "phase", "acquired_at", or variations)
+# - created_at MUST be actual ISO-8601 timestamp, NOT literal bash command string
+# - NEVER manually create lock files - ALWAYS use the command above with command substitution
+# - NEVER use echo with single quotes around the JSON - use double quotes to enable variable/command substitution
+# ❌ WRONG: echo '{"created_at": "$(date ...)"}' → Creates literal string "$(date ...)"
+# ✅ CORRECT: echo "{\"created_at\": \"$(date ...)\"}" → Creates actual timestamp "2025-10-05T21:07:00Z"
 
 # CRITICAL: If LOCK_FAILED, STOP IMMEDIATELY - another instance owns this task
 # MANDATORY: Select alternative task, DO NOT proceed to Step 2

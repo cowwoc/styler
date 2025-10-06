@@ -101,6 +101,38 @@ detect_giving_up_pattern()
     return 1  # No pattern detected
 }
 
+# Detect mid-protocol abandonment patterns
+detect_protocol_abandonment()
+{
+    local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+
+    # Check for asking permission mid-protocol
+    if [[ "$text_lower" == *"would you like me to"* ]]; then
+        # Check if we have active locks (indicating task in progress)
+        if ls /workspace/locks/*.json &>/dev/null; then
+            # Pattern: asking what to do mid-task
+            [[ "$text_lower" == *"continue with implementation"* ]] && return 0
+            [[ "$text_lower" == *"select a different task"* ]] && return 0
+            [[ "$text_lower" == *"proceed with"* ]] && return 0
+            [[ "$text_lower" == *"or would you"* ]] && return 0
+        fi
+    fi
+
+    # Pattern: using time/effort as justification to stop
+    [[ "$text_lower" == *"2-3 days"*"implementation"* ]] && return 0
+    [[ "$text_lower" == *"requires extended work session"* ]] && return 0
+    [[ "$text_lower" == *"multi-day implementation"* ]] && return 0
+    [[ "$text_lower" == *"this is a complex"*"multi-day"* ]] && return 0
+
+    # Pattern: stopping at synthesis/requirements and asking
+    if [[ "$text_lower" == *"state 3"* ]] || [[ "$text_lower" == *"synthesis"* ]]; then
+        [[ "$text_lower" == *"ready for implementation"* ]] && return 0
+        [[ "$text_lower" == *"would you like"* ]] && return 0
+    fi
+
+    return 1  # No protocol abandonment detected
+}
+
 # Detect giving up patterns and inject persistence reminder
 if detect_giving_up_pattern "$WORKING_TEXT"; then
     cat <<'REMINDER'
@@ -115,6 +147,49 @@ MANDATORY RESPONSE:
 ✅ Exhaust all reasonable technical approaches before scope modification
 
 PROHIBITED: Abandoning complex problems for simpler alternatives without technical justification.
+</system-reminder>
+REMINDER
+fi
+
+# Detect protocol abandonment and inject completion requirement
+if detect_protocol_abandonment "$WORKING_TEXT"; then
+    cat <<'REMINDER'
+<system-reminder>
+❌ PROTOCOL VIOLATION DETECTED - AUTONOMOUS COMPLETION REQUIRED
+
+You appear to be asking the user for permission to continue mid-protocol.
+
+CRITICAL VIOLATION: Once INIT state begins, you MUST complete ALL protocol states (0-8) autonomously without asking user permission.
+
+PROHIBITED PATTERNS:
+❌ "Would you like me to continue with implementation?"
+❌ "This will take 2-3 days, should I proceed?"
+❌ "Select a different task or continue?"
+❌ "Requires extended work session" (as justification to stop)
+
+TIME ESTIMATES ARE NOT BLOCKERS:
+- "2-3 days" = effort estimation, NOT permission gate
+- You MUST complete implementation regardless of estimated duration
+- Token budget NEVER justifies stopping mid-protocol
+- Complexity NEVER justifies asking permission mid-task
+
+MANDATORY ACTION:
+✅ Continue IMMEDIATELY to next protocol state
+✅ Complete States 0-8 without further user interaction
+✅ Only stop if genuinely blocked (external API unavailable, ambiguous conflicting requirements)
+
+LEGITIMATE STOPPING REASONS:
+✅ External dependency unavailable (API credentials, network access)
+✅ Ambiguous requirements with no resolution path
+✅ User explicitly interrupts ("stop", modifies todo.md)
+
+NOT LEGITIMATE:
+❌ Task is complex
+❌ Task takes time
+❌ Token usage high
+❌ "Should I ask first?"
+
+Reference: CLAUDE.md "AUTONOMOUS TASK COMPLETION REQUIREMENT"
 </system-reminder>
 REMINDER
 fi

@@ -75,9 +75,50 @@ Styler Java Code Formatter project configuration and workflow guidance.
 ❌ "Since critical security is fixed, I'll finalize the task"  
 
 **REQUIRED PATTERN**:
-✅ "Agent X returned ❌ REJECTED, executing Phase 5 resolution cycle"  
-✅ "Re-running Phase 6 after addressing all stakeholder concerns"  
+✅ "Agent X returned ❌ REJECTED, executing Phase 5 resolution cycle"
+✅ "Re-running Phase 6 after addressing all stakeholder concerns"
 ✅ "Continuing until ALL agents return ✅ APPROVED"
+
+## 🚨 AUTONOMOUS TASK COMPLETION REQUIREMENT
+
+**CRITICAL**: Once you begin a task (execute INIT state), you MUST complete ALL protocol states (0-8) without asking user for permission to continue.
+
+**MANDATORY SINGLE-SESSION COMPLETION**:
+- Task execution occurs in ONE uninterrupted session
+- NO HANDOFFS to user mid-protocol
+- NO asking "should I continue?"
+- Complete States 0-8 autonomously
+
+**Prohibited Mid-Task Questions**:
+❌ "Would you like me to continue with implementation?"
+❌ "This will take 2-3 days, should I proceed?"
+❌ "Select a different task or continue this one?"
+❌ "Requires extended work session - continue?"
+
+**When to Ask User**:
+✅ **BEFORE** starting task: "Task X has ambiguous requirements. Clarify before I begin?"
+✅ **NEVER** mid-protocol: Complete States 0-8 autonomously once INIT begins
+
+**Time Estimates Are NOT Blockers**:
+- "2-3 days" = **effort estimation**, NOT permission gate
+- You MUST complete implementation regardless of estimated duration
+- Token budget NEVER justifies incomplete work (per CRITICAL TOKEN USAGE above)
+- Complexity NEVER justifies asking permission mid-task
+- "Multi-day effort" is NORMAL for implementation tasks
+
+**Only Stop Mid-Protocol If**:
+1. **Genuine External Blocker**: API unavailable, missing credentials, network failure
+2. **Ambiguous Conflicting Requirements**: No resolution path exists between stakeholder requirements
+3. **User Explicit Interruption**: User says "stop" or modifies todo.md mid-execution
+
+**NOT Legitimate Stopping Reasons**:
+❌ Task is complex
+❌ Task takes time
+❌ Token usage high
+❌ "This might be too much work"
+❌ "Should I ask the user first?"
+
+**Enforcement**: The `detect-giving-up.sh` hook detects mid-protocol abandonment patterns and injects completion reminders.
 
 ## 🎯 COMPLETE STYLE VALIDATION
 
@@ -648,3 +689,45 @@ diff file.java.backup file.java  # Review changes
 See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [docs/project/task-protocol.md](docs/project/task-protocol.md) for exact agent report naming conventions by phase.
 
 **Note**: The `../` path writes reports to `/workspace/branches/{task-name}/` (task root), not inside the code directory.
+
+## 📝 RETROSPECTIVE DOCUMENTATION POLICY
+
+**CRITICAL**: Do NOT create retrospective documentation files that chronicle fixes, problems, or development process.
+
+**PROHIBITED DOCUMENTATION PATTERNS**:
+❌ Post-implementation analysis reports (e.g., `protocol-violation-prevention.md`)
+❌ "Lessons learned" documents chronicling what went wrong and how it was fixed
+❌ Debugging chronicles or problem-solving narratives
+❌ Development process retrospectives or meta-documentation
+❌ Fix documentation that duplicates information already in code/commits
+
+**RATIONALE**:
+- Code and commit messages are the primary record of changes
+- Git history provides the full development timeline
+- Retrospective documents create maintenance burden without user value
+- Documentation should serve future developers, not chronicle past problems
+
+**PERMITTED DOCUMENTATION** (only when explicitly required):
+✅ Task explicitly requires documentation creation
+✅ User explicitly requests specific documentation
+✅ Forward-looking architecture documentation
+✅ API documentation and user guides
+✅ Technical design documents for upcoming features
+
+**EXAMPLES**:
+
+**PROHIBITED**:
+```
+docs/project/protocol-violation-prevention.md - "Analysis of violations and fixes"
+docs/debugging/parallel-processing-issues.md - "How we debugged concurrency"
+docs/lessons/picocli-reflection-removal.md - "Story of migrating to programmatic API"
+```
+
+**PERMITTED** (with explicit requirement):
+```
+docs/project/architecture.md - Forward-looking system design
+docs/api/file-processor.md - API documentation for users
+README.md - User-facing project documentation
+```
+
+**ENFORCEMENT**: Before creating any `.md` file in `/docs/`, verify it serves future users/developers rather than documenting the past.
