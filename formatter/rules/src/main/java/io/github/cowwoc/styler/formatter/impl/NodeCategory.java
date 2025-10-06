@@ -1,20 +1,26 @@
 package io.github.cowwoc.styler.formatter.impl;
 
 import io.github.cowwoc.styler.ast.ASTNode;
+import io.github.cowwoc.styler.ast.node.AnnotationDeclarationNode;
 import io.github.cowwoc.styler.ast.node.BlockStatementNode;
 import io.github.cowwoc.styler.ast.node.ClassDeclarationNode;
+import io.github.cowwoc.styler.ast.node.CompactMainMethodNode;
 import io.github.cowwoc.styler.ast.node.ConstructorDeclarationNode;
 import io.github.cowwoc.styler.ast.node.DoWhileStatementNode;
 import io.github.cowwoc.styler.ast.node.EnumDeclarationNode;
+import io.github.cowwoc.styler.ast.node.FlexibleConstructorBodyNode;
 import io.github.cowwoc.styler.ast.node.ForStatementNode;
 import io.github.cowwoc.styler.ast.node.IfStatementNode;
+import io.github.cowwoc.styler.ast.node.InstanceMainMethodNode;
 import io.github.cowwoc.styler.ast.node.InterfaceDeclarationNode;
 import io.github.cowwoc.styler.ast.node.LambdaExpressionNode;
 import io.github.cowwoc.styler.ast.node.MethodDeclarationNode;
+import io.github.cowwoc.styler.ast.node.ModuleDeclarationNode;
 import io.github.cowwoc.styler.ast.node.NewExpressionNode;
 import io.github.cowwoc.styler.ast.node.RecordDeclarationNode;
 import io.github.cowwoc.styler.ast.node.SynchronizedStatementNode;
 import io.github.cowwoc.styler.ast.node.TryStatementNode;
+import io.github.cowwoc.styler.ast.node.UnnamedClassNode;
 import io.github.cowwoc.styler.ast.node.WhileStatementNode;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
@@ -39,17 +45,17 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 public enum NodeCategory
 {
 	/**
-	 * Class, interface, enum, or record declaration.
+	 * Class, interface, enum, record, annotation, module, or unnamed class declaration.
 	 */
 	CLASS_DECLARATION,
 
 	/**
-	 * Method declaration (non-constructor).
+	 * Method, compact main method, or instance main method declaration.
 	 */
 	METHOD_DECLARATION,
 
 	/**
-	 * Constructor declaration.
+	 * Constructor or flexible constructor body declaration.
 	 */
 	CONSTRUCTOR_DECLARATION,
 
@@ -87,19 +93,25 @@ public enum NodeCategory
 
 		return switch (node)
 		{
-			case ClassDeclarationNode n -> CLASS_DECLARATION;
-			case InterfaceDeclarationNode n -> CLASS_DECLARATION;
-			case EnumDeclarationNode n -> CLASS_DECLARATION;
-			case RecordDeclarationNode n -> CLASS_DECLARATION;
-			case MethodDeclarationNode n -> METHOD_DECLARATION;
-			case ConstructorDeclarationNode n -> CONSTRUCTOR_DECLARATION;
-			case IfStatementNode n -> CONTROL_STRUCTURE;
-			case ForStatementNode n -> CONTROL_STRUCTURE;
-			case WhileStatementNode n -> CONTROL_STRUCTURE;
-			case DoWhileStatementNode n -> CONTROL_STRUCTURE;
-			case TryStatementNode n -> CONTROL_STRUCTURE;
-			case SynchronizedStatementNode n -> CONTROL_STRUCTURE;
-			case LambdaExpressionNode n -> LAMBDA_EXPRESSION;
+			case ClassDeclarationNode _ -> CLASS_DECLARATION;
+			case InterfaceDeclarationNode _ -> CLASS_DECLARATION;
+			case EnumDeclarationNode _ -> CLASS_DECLARATION;
+			case RecordDeclarationNode _ -> CLASS_DECLARATION;
+			case AnnotationDeclarationNode _ -> CLASS_DECLARATION;
+			case ModuleDeclarationNode _ -> CLASS_DECLARATION;
+			case UnnamedClassNode _ -> CLASS_DECLARATION;
+			case MethodDeclarationNode _ -> METHOD_DECLARATION;
+			case CompactMainMethodNode _ -> METHOD_DECLARATION;
+			case InstanceMainMethodNode _ -> METHOD_DECLARATION;
+			case ConstructorDeclarationNode _ -> CONSTRUCTOR_DECLARATION;
+			case FlexibleConstructorBodyNode _ -> CONSTRUCTOR_DECLARATION;
+			case IfStatementNode _ -> CONTROL_STRUCTURE;
+			case ForStatementNode _ -> CONTROL_STRUCTURE;
+			case WhileStatementNode _ -> CONTROL_STRUCTURE;
+			case DoWhileStatementNode _ -> CONTROL_STRUCTURE;
+			case TryStatementNode _ -> CONTROL_STRUCTURE;
+			case SynchronizedStatementNode _ -> CONTROL_STRUCTURE;
+			case LambdaExpressionNode _ -> LAMBDA_EXPRESSION;
 			case NewExpressionNode n when hasAnonymousClassBody(n) -> ANONYMOUS_CLASS;
 			case BlockStatementNode n when n.getStatements().isEmpty() -> EMPTY_BLOCK;
 			default -> throw new IllegalArgumentException(
