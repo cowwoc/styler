@@ -19,21 +19,22 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Benchmarks parser throughput (tokens per second).
- * Measures how fast the lexer can tokenize Java source files.
+ * Benchmarks memory usage for parser operations.
+ * Measures heap consumption while processing multiple files.
  */
-@BenchmarkMode(Mode.Throughput)
-@OutputTimeUnit(TimeUnit.SECONDS)
-@Warmup(iterations = 5)
-@Measurement(iterations = 10)
-@Fork(5)
+@BenchmarkMode(Mode.SingleShotTime)
+@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@Warmup(iterations = 3)
+@Measurement(iterations = 5)
+@Fork(1)
 @State(Scope.Thread)
-public class ParsingThroughputBenchmark
+public class MemoryUsageBenchmark
 {
 	private List<Path> testFiles;
+	private Runtime runtime;
 
 	/**
-	 * Sets up test data before the benchmark trial.
+	 * Sets up test data and runtime for memory measurements.
 	 *
 	 * @throws IOException if test files cannot be loaded
 	 */
@@ -41,28 +42,34 @@ public class ParsingThroughputBenchmark
 	public void setup() throws IOException
 	{
 		TestDataProvider provider = new TestDataProvider();
-		testFiles = provider.loadTestFiles(10);
+		testFiles = provider.loadTestFiles(100);
+		runtime = Runtime.getRuntime();
 	}
 
 	/**
-	 * Benchmarks parsing throughput on small files.
-	 * Measures tokens processed per second.
+	 * Benchmarks memory usage for parsing multiple files.
+	 * Tracks heap usage before and after parsing.
 	 *
-	 * @return the number of tokens processed
+	 * @return memory delta in bytes
 	 * @throws IOException if file reading fails
 	 */
 	@Benchmark
-	public long parseSmallFiles() throws IOException
+	public long measureParsingMemory() throws IOException
 	{
-		long totalTokens = 0;
+		// Force GC and measure baseline
+		runtime.gc();
+		long beforeMemory = runtime.totalMemory() - runtime.freeMemory();
 
+		// Parse all files
 		for (Path file : testFiles)
 		{
 			String content = Files.readString(file);
-			int tokens = TokenCountingUtil.countTokens(content);
-			totalTokens += tokens;
+			TokenCountingUtil.countTokens(content);
 		}
 
-		return totalTokens;
+		// Measure memory after parsing
+		long afterMemory = runtime.totalMemory() - runtime.freeMemory();
+
+		return afterMemory - beforeMemory;
 	}
 }
