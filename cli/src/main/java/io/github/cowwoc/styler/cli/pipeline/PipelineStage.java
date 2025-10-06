@@ -17,7 +17,8 @@ package io.github.cowwoc.styler.cli.pipeline;
  * @see StageResult
  */
 @FunctionalInterface
-@SuppressWarnings("PMD.TypeParameterNamingConventions") // Descriptive names improve pipeline readability
+// Descriptive names improve pipeline readability
+@SuppressWarnings("PMD.TypeParameterNamingConventions")
 public interface PipelineStage<INPUT, OUTPUT>
 {
 	/**

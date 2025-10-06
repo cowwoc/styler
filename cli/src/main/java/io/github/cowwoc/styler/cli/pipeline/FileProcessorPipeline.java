@@ -31,10 +31,12 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  *
  * @param <FINAL_OUTPUT> the final output type produced by the pipeline
  */
-@SuppressWarnings("PMD.TypeParameterNamingConventions") // Descriptive names improve pipeline readability
+// Descriptive names improve pipeline readability
+@SuppressWarnings("PMD.TypeParameterNamingConventions")
 public final class FileProcessorPipeline<FINAL_OUTPUT> implements AutoCloseable
 {
-	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+	// Standard SLF4J logger naming convention
+	@SuppressWarnings("PMD.FieldNamingConventions")
 	private static final Logger logger = LoggerFactory.getLogger(FileProcessorPipeline.class);
 
 	private final List<StageExecutor<?, ?>> stages;
@@ -139,7 +141,8 @@ public final class FileProcessorPipeline<FINAL_OUTPUT> implements AutoCloseable
 	 *
 	 * @param <FINAL_OUTPUT> the final output type produced by the pipeline
 	 */
-	@SuppressWarnings("PMD.TypeParameterNamingConventions") // Descriptive names improve pipeline readability
+	// Descriptive names improve pipeline readability
+	@SuppressWarnings("PMD.TypeParameterNamingConventions")
 	public static final class Builder<FINAL_OUTPUT>
 	{
 		private final List<StageExecutor<?, ?>> stages = new ArrayList<>();
@@ -205,7 +208,8 @@ public final class FileProcessorPipeline<FINAL_OUTPUT> implements AutoCloseable
 	 * @param <IN>  the input type
 	 * @param <OUT> the output type
 	 */
-	@SuppressWarnings("PMD.TypeParameterNamingConventions") // Descriptive names improve pipeline readability
+	// Descriptive names improve pipeline readability
+	@SuppressWarnings("PMD.TypeParameterNamingConventions")
 	private record StageExecutor<IN, OUT>(PipelineStage<IN, OUT> stage)
 	{
 		@SuppressWarnings("unchecked")

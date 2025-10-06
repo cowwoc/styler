@@ -134,10 +134,8 @@ public final class CommandSpecifications
 	 */
 	private static OptionSpec createVerboseOption()
 	{
-		return OptionSpec.builder(OPT_VERBOSE_SHORT, OPT_VERBOSE_LONG)
-			.type(boolean.class)
-			.description("Enable verbose logging")
-			.build();
+		return OptionSpec.builder(OPT_VERBOSE_SHORT, OPT_VERBOSE_LONG).
+			type(boolean.class).description("Enable verbose logging").build();
 	}
 
 	/**
@@ -147,10 +145,8 @@ public final class CommandSpecifications
 	 */
 	private static OptionSpec createQuietOption()
 	{
-		return OptionSpec.builder(OPT_QUIET_SHORT, OPT_QUIET_LONG)
-			.type(boolean.class)
-			.description("Suppress all output except errors")
-			.build();
+		return OptionSpec.builder(OPT_QUIET_SHORT, OPT_QUIET_LONG).
+			type(boolean.class).description("Suppress all output except errors").build();
 	}
 
 	/**
@@ -160,10 +156,8 @@ public final class CommandSpecifications
 	 */
 	private static OptionSpec createConfigOption()
 	{
-		return OptionSpec.builder(OPT_CONFIG_SHORT, OPT_CONFIG_LONG)
-			.type(Path.class)
-			.description("Configuration file path (default: auto-discover)")
-			.build();
+		return OptionSpec.builder(OPT_CONFIG_SHORT, OPT_CONFIG_LONG).
+			type(Path.class).description("Configuration file path (default: auto-discover)").build();
 	}
 
 	/**
@@ -173,10 +167,8 @@ public final class CommandSpecifications
 	 */
 	private static OptionSpec createOutputOption()
 	{
-		return OptionSpec.builder(OPT_OUTPUT_SHORT, OPT_OUTPUT_LONG)
-			.type(Path.class)
-			.description("Output directory (default: format in-place)")
-			.build();
+		return OptionSpec.builder(OPT_OUTPUT_SHORT, OPT_OUTPUT_LONG).
+			type(Path.class).description("Output directory (default: format in-place)").build();
 	}
 
 	/**
@@ -186,10 +178,8 @@ public final class CommandSpecifications
 	 */
 	private static OptionSpec createDryRunOption()
 	{
-		return OptionSpec.builder(OPT_DRY_RUN)
-			.type(boolean.class)
-			.description("Show what would be formatted without making changes")
-			.build();
+		return OptionSpec.builder(OPT_DRY_RUN).
+			type(boolean.class).description("Show what would be formatted without making changes").build();
 	}
 
 	/**
@@ -199,12 +189,12 @@ public final class CommandSpecifications
 	 */
 	private static OptionSpec createIncludeOption()
 	{
-		return OptionSpec.builder(OPT_INCLUDE)
-			.type(List.class)
-			.auxiliaryTypes(String.class)
-			.paramLabel("<pattern>")
-			.description("File patterns to include (default: **/*.java)")
-			.build();
+		return OptionSpec.builder(OPT_INCLUDE).
+			type(List.class).
+			auxiliaryTypes(String.class).
+			paramLabel("<pattern>").
+			description("File patterns to include (default: **/*.java)").
+			build();
 	}
 
 	/**
@@ -214,12 +204,12 @@ public final class CommandSpecifications
 	 */
 	private static OptionSpec createExcludeOption()
 	{
-		return OptionSpec.builder(OPT_EXCLUDE)
-			.type(List.class)
-			.auxiliaryTypes(String.class)
-			.paramLabel("<pattern>")
-			.description("File patterns to exclude")
-			.build();
+		return OptionSpec.builder(OPT_EXCLUDE).
+			type(List.class).
+			auxiliaryTypes(String.class).
+			paramLabel("<pattern>").
+			description("File patterns to exclude").
+			build();
 	}
 
 	/**
@@ -229,10 +219,8 @@ public final class CommandSpecifications
 	 */
 	private static OptionSpec createJsonOption()
 	{
-		return OptionSpec.builder(OPT_JSON)
-			.type(boolean.class)
-			.description("Output results in JSON format for machine processing")
-			.build();
+		return OptionSpec.builder(OPT_JSON).
+			type(boolean.class).description("Output results in JSON format for machine processing").build();
 	}
 
 	/**
@@ -242,10 +230,8 @@ public final class CommandSpecifications
 	 */
 	private static OptionSpec createFailOnChangesOption()
 	{
-		return OptionSpec.builder(OPT_FAIL_ON_CHANGES)
-			.type(boolean.class)
-			.description("Exit with non-zero code if any files would be changed")
-			.build();
+		return OptionSpec.builder(OPT_FAIL_ON_CHANGES).
+			type(boolean.class).description("Exit with non-zero code if any files would be changed").build();
 	}
 
 	/**
@@ -255,10 +241,8 @@ public final class CommandSpecifications
 	 */
 	private static OptionSpec createFixOption()
 	{
-		return OptionSpec.builder(OPT_FIX)
-			.type(boolean.class)
-			.description("Automatically fix violations where possible")
-			.build();
+		return OptionSpec.builder(OPT_FIX).
+			type(boolean.class).description("Automatically fix violations where possible").build();
 	}
 
 	/**
@@ -268,11 +252,8 @@ public final class CommandSpecifications
 	 */
 	private static OptionSpec createReportOption()
 	{
-		return OptionSpec.builder(OPT_REPORT)
-			.type(Path.class)
-			.paramLabel("<file>")
-			.description("Write report to specified file")
-			.build();
+		return OptionSpec.builder(OPT_REPORT).
+			type(Path.class).paramLabel("<file>").description("Write report to specified file").build();
 	}
 
 	/**
@@ -284,13 +265,13 @@ public final class CommandSpecifications
 	 */
 	private static PositionalParamSpec createFileParametersSpec()
 	{
-		return PositionalParamSpec.builder()
-			.index("0..*")
-			.type(List.class)
-			.auxiliaryTypes(Path.class)
-			.paramLabel("<files>")
-			.description("Java source files or directories to format")
-			.arity("1..*")
-			.build();
+		return PositionalParamSpec.builder().
+			index("0..*").
+			type(List.class).
+			auxiliaryTypes(Path.class).
+			paramLabel("<files>").
+			description("Java source files or directories to format").
+			arity("1..*").
+			build();
 	}
 }

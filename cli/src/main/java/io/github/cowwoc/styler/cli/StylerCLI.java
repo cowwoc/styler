@@ -29,7 +29,8 @@ import java.util.concurrent.Callable;
  * Note: Annotations are retained for backward compatibility with tests, but main() uses
  * programmatic API. CommandLineParser uses fully programmatic API with no reflection.
  */
-@SuppressWarnings("PMD.SystemPrintln") // CLI app: System.out/err required for user output
+// CLI app: System.out/err required for user output
+@SuppressWarnings("PMD.SystemPrintln")
 @Command(
 	name = "styler",
 	description = "Java Code Formatter with AI-friendly output",
@@ -43,7 +44,8 @@ import java.util.concurrent.Callable;
 	})
 public class StylerCLI implements Callable<Integer>
 {
-	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+	// Standard SLF4J logger naming convention
+	@SuppressWarnings("PMD.FieldNamingConventions")
 	private static final Logger logger = LoggerFactory.getLogger(StylerCLI.class);
 
 	@Option(names = {"-v", "--verbose"}, description = "Enable verbose logging")
@@ -124,7 +126,7 @@ public class StylerCLI implements Callable<Integer>
 					// Handle config command and its subcommands
 					if (args.parseResult().hasSubcommand())
 					{
-						picocli.CommandLine.ParseResult configSubcommand = args.parseResult().subcommand();
+						CommandLine.ParseResult configSubcommand = args.parseResult().subcommand();
 						String subcommandName = configSubcommand.commandSpec().name();
 
 						yield switch (subcommandName)

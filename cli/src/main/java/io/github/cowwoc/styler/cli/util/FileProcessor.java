@@ -13,7 +13,8 @@ import java.util.List;
  * applying include/exclude patterns, and traversing directory structures
  * safely and efficiently.
  */
-@SuppressWarnings("PMD.SystemPrintln") // CLI utility: System.out/err required for user output
+// CLI utility: System.out/err required for user output
+@SuppressWarnings("PMD.SystemPrintln")
 public final class FileProcessor
 {
 	private static final String DEFAULT_JAVA_PATTERN = "**/*.java";

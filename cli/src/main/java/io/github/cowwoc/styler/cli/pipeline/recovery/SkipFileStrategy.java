@@ -23,7 +23,8 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  */
 public final class SkipFileStrategy implements ErrorRecoveryStrategy
 {
-	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+	// Standard SLF4J logger naming convention
+	@SuppressWarnings("PMD.FieldNamingConventions")
 	private static final Logger logger = LoggerFactory.getLogger(SkipFileStrategy.class);
 
 	@Override

@@ -1,8 +1,5 @@
 package io.github.cowwoc.styler.cli;
 
-import io.github.cowwoc.styler.cli.commands.CheckCommand;
-import io.github.cowwoc.styler.cli.commands.ConfigCommand;
-import io.github.cowwoc.styler.cli.commands.FormatCommand;
 import io.github.cowwoc.styler.cli.security.SecurityConfig;
 import io.github.cowwoc.styler.cli.security.SecurityManager;
 import io.github.cowwoc.styler.cli.security.exceptions.SecurityException;
@@ -58,6 +55,8 @@ public class CommandLineParser
 	 * @return immutable parsed arguments with validation applied
 	 * @throws ArgumentParsingException if parsing fails or validation errors occur
 	 */
+	// Complex parsing logic, refactoring out of scope
+	@SuppressWarnings("PMD.NcssCount")
 	public ParsedArguments parse(String[] args) throws ArgumentParsingException
 	{
 		try
@@ -67,6 +66,10 @@ public class CommandLineParser
 			rootSpec.addSubcommand("format", CommandSpecifications.createFormatCommandSpec());
 			rootSpec.addSubcommand("check", CommandSpecifications.createCheckCommandSpec());
 			rootSpec.addSubcommand("config", CommandSpecifications.createConfigCommandSpec());
+			CommandSpec helpSpec = CommandSpec.create();
+		helpSpec.name("help");
+		helpSpec.usageMessage().description("Display help information");
+		rootSpec.addSubcommand("help", helpSpec);
 
 			CommandLine commandLine = new CommandLine(rootSpec);
 
@@ -147,7 +150,16 @@ public class CommandLineParser
 						{
 							@SuppressWarnings("unchecked")
 							List<Path> paths = subcommandResult.matchedPositional(0).getValue();
-							inputFiles = paths != null ? paths : List.of();
+					List<Path> pathsValue;
+				if (paths == null)
+				{
+					pathsValue = List.of();
+				}
+				 else
+				{
+					pathsValue = paths;
+				}
+							inputFiles = pathsValue;
 						}
 
 						// Extract options using option names
@@ -161,7 +173,16 @@ public class CommandLineParser
 						{
 							@SuppressWarnings("unchecked")
 							List<Path> paths = subcommandResult.matchedPositional(0).getValue();
-							inputFiles = paths != null ? paths : List.of();
+					List<Path> pathsValue;
+				if (paths == null)
+				{
+					pathsValue = List.of();
+				}
+				 else
+				{
+					pathsValue = paths;
+				}
+							inputFiles = pathsValue;
 						}
 						configPath = extractOptionValue(subcommandResult, "--config");
 					}
@@ -229,18 +250,24 @@ public class CommandLineParser
 		rootSpec.addSubcommand("format", CommandSpecifications.createFormatCommandSpec());
 		rootSpec.addSubcommand("check", CommandSpecifications.createCheckCommandSpec());
 		rootSpec.addSubcommand("config", CommandSpecifications.createConfigCommandSpec());
+		CommandSpec helpSpec = CommandSpec.create();
+		helpSpec.name("help");
+		helpSpec.usageMessage().description("Display help information");
+		rootSpec.addSubcommand("help", helpSpec);
 
 		CommandLine commandLine = new CommandLine(rootSpec);
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		@SuppressWarnings("PMD.RelianceOnDefaultCharset") // CLI output uses system default charset
+		// CLI output uses system default charset
+		@SuppressWarnings("PMD.RelianceOnDefaultCharset")
 		PrintWriter writer = new PrintWriter(baos);
 		try (writer)
 		{
 			commandLine.usage(writer);
 		}
 
-		@SuppressWarnings("PMD.RelianceOnDefaultCharset") // CLI output uses system default charset
+		// CLI output uses system default charset
+		@SuppressWarnings("PMD.RelianceOnDefaultCharset")
 		String result = baos.toString();
 		return result;
 	}

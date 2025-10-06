@@ -2,9 +2,6 @@ package io.github.cowwoc.styler.cli.commands;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -17,10 +14,12 @@ import java.util.concurrent.Callable;
  * formatting rules, modifying files in-place or outputting to specified
  * locations based on user options.
  */
-@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
-public class FormatCommand implements Callable<Integer>
+// CLI command: System.out/err required for user output
+@SuppressWarnings("PMD.SystemPrintln")
+public final class FormatCommand implements Callable<Integer>
 {
-	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+	// Standard SLF4J logger naming convention
+	@SuppressWarnings("PMD.FieldNamingConventions")
 	private static final Logger logger = LoggerFactory.getLogger(FormatCommand.class);
 
 	private final List<Path> inputPaths;
@@ -30,6 +29,8 @@ public class FormatCommand implements Callable<Integer>
 	private final List<String> includePatterns;
 	private final List<String> excludePatterns;
 	private final boolean jsonOutput;
+	// Placeholder for fail-on-changes logic
+	@SuppressWarnings("PMD.UnusedPrivateField")
 	private final boolean failOnChanges;
 
 	/**
@@ -47,12 +48,33 @@ public class FormatCommand implements Callable<Integer>
 	private FormatCommand(List<Path> inputPaths, Path configFile, Path outputDirectory, boolean dryRun,
 		List<String> includePatterns, List<String> excludePatterns, boolean jsonOutput, boolean failOnChanges)
 	{
-		this.inputPaths = inputPaths != null ? List.copyOf(inputPaths) : List.of();
+		if (inputPaths == null)
+		{
+			this.inputPaths = List.of();
+		}
+		else
+		{
+			this.inputPaths = List.copyOf(inputPaths);
+		}
 		this.configFile = configFile;
 		this.outputDirectory = outputDirectory;
 		this.dryRun = dryRun;
-		this.includePatterns = includePatterns != null ? List.copyOf(includePatterns) : List.of();
-		this.excludePatterns = excludePatterns != null ? List.copyOf(excludePatterns) : List.of();
+		if (includePatterns == null)
+		{
+			this.includePatterns = List.of();
+		}
+		else
+		{
+			this.includePatterns = List.copyOf(includePatterns);
+		}
+		if (excludePatterns == null)
+		{
+			this.excludePatterns = List.of();
+		}
+		else
+		{
+			this.excludePatterns = List.copyOf(excludePatterns);
+		}
 		this.jsonOutput = jsonOutput;
 		this.failOnChanges = failOnChanges;
 	}
@@ -66,24 +88,59 @@ public class FormatCommand implements Callable<Integer>
 	public static FormatCommand fromParseResult(picocli.CommandLine.ParseResult parseResult)
 	{
 		@SuppressWarnings("unchecked")
-		List<Path> inputPaths = parseResult.hasMatchedPositional(0) ?
-			parseResult.matchedPositional(0).getValue() : List.of();
+		List<Path> inputPaths;
+		if (parseResult.hasMatchedPositional(0))
+		{
+			inputPaths = parseResult.matchedPositional(0).getValue();
+		}
+		else
+		{
+			inputPaths = List.of();
+		}
 
-		Path configFile = parseResult.hasMatchedOption("--config") ?
-			parseResult.matchedOptionValue("--config", null) : null;
+		Path configFile;
+		if (parseResult.hasMatchedOption("--config"))
+		{
+			configFile = parseResult.matchedOptionValue("--config", null);
+		}
+		else
+		{
+			configFile = null;
+		}
 
-		Path outputDirectory = parseResult.hasMatchedOption("--output") ?
-			parseResult.matchedOptionValue("--output", null) : null;
+		Path outputDirectory;
+		if (parseResult.hasMatchedOption("--output"))
+		{
+			outputDirectory = parseResult.matchedOptionValue("--output", null);
+		}
+		else
+		{
+			outputDirectory = null;
+		}
 
 		boolean dryRun = parseResult.hasMatchedOption("--dry-run");
 
 		@SuppressWarnings("unchecked")
-		List<String> includePatterns = parseResult.hasMatchedOption("--include") ?
-			parseResult.matchedOptionValue("--include", List.of()) : List.of();
+		List<String> includePatterns;
+		if (parseResult.hasMatchedOption("--include"))
+		{
+			includePatterns = parseResult.matchedOptionValue("--include", List.of());
+		}
+		else
+		{
+			includePatterns = List.of();
+		}
 
 		@SuppressWarnings("unchecked")
-		List<String> excludePatterns = parseResult.hasMatchedOption("--exclude") ?
-			parseResult.matchedOptionValue("--exclude", List.of()) : List.of();
+		List<String> excludePatterns;
+		if (parseResult.hasMatchedOption("--exclude"))
+		{
+			excludePatterns = parseResult.matchedOptionValue("--exclude", List.of());
+		}
+		else
+		{
+			excludePatterns = List.of();
+		}
 
 		boolean jsonOutput = parseResult.hasMatchedOption("--json");
 		boolean failOnChanges = parseResult.hasMatchedOption("--fail-on-changes");

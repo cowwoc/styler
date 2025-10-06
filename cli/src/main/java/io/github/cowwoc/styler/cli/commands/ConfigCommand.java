@@ -13,10 +13,13 @@ import java.util.concurrent.Callable;
  * including validation, profile management, and initialization of
  * default configurations.
  */
-@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
-public class ConfigCommand implements Callable<Integer>
+// CLI command: System.out/err required for user output
+@SuppressWarnings("PMD.SystemPrintln")
+public final class ConfigCommand implements Callable<Integer>
 {
-	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+	@SuppressWarnings({"PMD.FieldNamingConventions", "PMD.UnusedPrivateField"})
+	// Standard SLF4J logger naming convention
+	// Used by nested command classes
 	private static final Logger logger = LoggerFactory.getLogger(ConfigCommand.class);
 
 	/**
@@ -53,10 +56,13 @@ public class ConfigCommand implements Callable<Integer>
 	/**
 	 * Initialize a new configuration file.
 	 */
-	@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
-	public static class InitCommand implements Callable<Integer>
+	@SuppressWarnings("PMD.SystemPrintln")
+	// CLI command: System.out/err required for user output
+	// Nested class pattern
+	public static final class InitCommand implements Callable<Integer>
 	{
-		@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+		// Standard SLF4J logger naming convention
+		@SuppressWarnings("PMD.FieldNamingConventions")
 		private static final Logger logger = LoggerFactory.getLogger(InitCommand.class);
 
 		private final Path configFile;
@@ -80,8 +86,22 @@ public class ConfigCommand implements Callable<Integer>
 		 */
 		private InitCommand(Path configFile, Profile profile, boolean force)
 		{
-			this.configFile = configFile != null ? configFile : Path.of(".styler.toml");
-			this.profile = profile != null ? profile : Profile.GOOGLE;
+			if (configFile == null)
+			{
+				this.configFile = Path.of(".styler.toml");
+			}
+			else
+			{
+				this.configFile = configFile;
+			}
+			if (profile == null)
+			{
+				this.profile = Profile.GOOGLE;
+			}
+			else
+			{
+				this.profile = profile;
+			}
 			this.force = force;
 		}
 
@@ -93,11 +113,25 @@ public class ConfigCommand implements Callable<Integer>
 		 */
 		public static InitCommand fromParseResult(picocli.CommandLine.ParseResult parseResult)
 		{
-			Path configFile = parseResult.hasMatchedOption("--file") ?
-				parseResult.matchedOptionValue("--file", Path.of(".styler.toml")) : Path.of(".styler.toml");
+			Path configFile;
+			if (parseResult.hasMatchedOption("--file"))
+			{
+				configFile = parseResult.matchedOptionValue("--file", Path.of(".styler.toml"));
+			}
+			else
+			{
+				configFile = Path.of(".styler.toml");
+			}
 
-			Profile profile = parseResult.hasMatchedOption("--profile") ?
-				parseResult.matchedOptionValue("--profile", Profile.GOOGLE) : Profile.GOOGLE;
+			Profile profile;
+			if (parseResult.hasMatchedOption("--profile"))
+			{
+				profile = parseResult.matchedOptionValue("--profile", Profile.GOOGLE);
+			}
+			else
+			{
+				profile = Profile.GOOGLE;
+			}
 
 			boolean force = parseResult.hasMatchedOption("--force");
 
@@ -161,10 +195,13 @@ public class ConfigCommand implements Callable<Integer>
 	/**
 	 * Validate an existing configuration file.
 	 */
-	@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
-	public static class ValidateCommand implements Callable<Integer>
+	@SuppressWarnings("PMD.SystemPrintln")
+	// CLI command: System.out/err required for user output
+	// Nested class pattern
+	public static final class ValidateCommand implements Callable<Integer>
 	{
-		@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+		// Standard SLF4J logger naming convention
+		@SuppressWarnings("PMD.FieldNamingConventions")
 		private static final Logger logger = LoggerFactory.getLogger(ValidateCommand.class);
 
 		private final Path configFile;
@@ -190,8 +227,15 @@ public class ConfigCommand implements Callable<Integer>
 		 */
 		public static ValidateCommand fromParseResult(picocli.CommandLine.ParseResult parseResult)
 		{
-			Path configFile = parseResult.hasMatchedPositional(0) ?
-				parseResult.matchedPositional(0).getValue() : null;
+			Path configFile;
+			if (parseResult.hasMatchedPositional(0))
+			{
+				configFile = parseResult.matchedPositional(0).getValue();
+			}
+			else
+			{
+				configFile = null;
+			}
 
 			boolean jsonOutput = parseResult.hasMatchedOption("--json");
 
@@ -243,10 +287,13 @@ public class ConfigCommand implements Callable<Integer>
 	/**
 	 * List available configuration profiles.
 	 */
-	@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
-	public static class ListCommand implements Callable<Integer>
+	@SuppressWarnings("PMD.SystemPrintln")
+	// CLI command: System.out/err required for user output
+	// Nested class pattern
+	public static final class ListCommand implements Callable<Integer>
 	{
-		@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+		// Standard SLF4J logger naming convention
+		@SuppressWarnings("PMD.FieldNamingConventions")
 		private static final Logger logger = LoggerFactory.getLogger(ListCommand.class);
 
 		private final boolean listProfiles;

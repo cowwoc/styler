@@ -393,7 +393,8 @@ public final class ErrorReporter
 	 * @param exception the exception to extract location from
 	 * @return the source range extracted from the exception, or a default range if extraction fails
 	 */
-	@SuppressWarnings("PMD.EmptyCatchBlock") // Intentional fallback to default location
+	// Intentional fallback to default location
+	@SuppressWarnings("PMD.EmptyCatchBlock")
 	private SourceRange extractLocationFromException(Exception exception)
 	{
 		// Try to extract line/column information from exception message

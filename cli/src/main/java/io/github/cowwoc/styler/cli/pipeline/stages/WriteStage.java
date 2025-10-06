@@ -42,7 +42,8 @@ import java.util.Set;
 public final class WriteStage extends AbstractPipelineStage<String, Path>
 {
 	private final PathSanitizer pathSanitizer;
-	@SuppressWarnings("PMD.UnusedPrivateField") // Reserved for future file size validation
+	// Reserved for future file size validation
+	@SuppressWarnings("PMD.UnusedPrivateField")
 	private final FileValidator fileValidator;
 
 	/**

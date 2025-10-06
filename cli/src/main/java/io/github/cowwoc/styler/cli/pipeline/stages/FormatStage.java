@@ -41,7 +41,8 @@ public final class FormatStage extends AbstractPipelineStage<ParsedFile, String>
 	}
 
 	@Override
-	@SuppressWarnings("PMD.UseTryWithResources") // Parser is owned by ParsedFile, manual close required
+	// Parser is owned by ParsedFile, manual close required
+	@SuppressWarnings("PMD.UseTryWithResources")
 	protected String process(ParsedFile input, ProcessingContext context) throws PipelineException
 	{
 		try

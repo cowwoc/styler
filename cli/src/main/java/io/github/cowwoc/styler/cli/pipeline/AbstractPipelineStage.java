@@ -42,13 +42,15 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * @param <INPUT>  the input type consumed by this stage
  * @param <OUTPUT> the output type produced by this stage
  */
-@SuppressWarnings("PMD.TypeParameterNamingConventions") // Descriptive names improve pipeline readability
+// Descriptive names improve pipeline readability
+@SuppressWarnings("PMD.TypeParameterNamingConventions")
 public abstract class AbstractPipelineStage<INPUT, OUTPUT> implements PipelineStage<INPUT, OUTPUT>
 {
 	/**
 	 * Logger instance for subclass access.
 	 */
-	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+	// Standard SLF4J logger naming convention
+	@SuppressWarnings("PMD.FieldNamingConventions")
 	protected static final Logger logger = LoggerFactory.getLogger(AbstractPipelineStage.class);
 
 	private final ErrorRecoveryStrategy recoveryStrategy;

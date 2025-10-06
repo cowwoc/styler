@@ -12,7 +12,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * completion time, and throughput metrics. Supports both human-readable
  * output and machine-readable JSON format.
  */
-@SuppressWarnings("PMD.SystemPrintln") // CLI utility: System.out/err required for user output
+// CLI utility: System.out/err required for user output
+@SuppressWarnings("PMD.SystemPrintln")
 public class ProgressReporter
 {
 	private final int totalItems;

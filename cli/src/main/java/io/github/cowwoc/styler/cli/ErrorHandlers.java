@@ -19,10 +19,12 @@ import picocli.CommandLine.ParseResult;
  *   <li>{@code 2}: Error occurred during processing</li>
  * </ul>
  */
-@SuppressWarnings("PMD.SystemPrintln") // CLI utility: System.out/err required for user output
+// CLI utility: System.out/err required for user output
+@SuppressWarnings("PMD.SystemPrintln")
 public final class ErrorHandlers
 {
-	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+	// Standard SLF4J logger naming convention
+	@SuppressWarnings("PMD.FieldNamingConventions")
 	private static final Logger logger = LoggerFactory.getLogger(ErrorHandlers.class);
 
 	/**
@@ -44,7 +46,6 @@ public final class ErrorHandlers
 	 * @param parseResult the parse result containing parsed options and parameters
 	 * @return exit code ({@code 2} for error)
 	 */
-	@SuppressWarnings("PMD.UnusedFormalParameter") // Required by Picocli handler signature
 	public static int handleExecutionException(Exception exception, CommandLine commandLine,
 		ParseResult parseResult)
 	{
@@ -77,7 +78,6 @@ public final class ErrorHandlers
 	 * @param args      the command line arguments that were being parsed
 	 * @return exit code ({@code 2} for error)
 	 */
-	@SuppressWarnings("PMD.UnusedFormalParameter") // Required by Picocli handler signature
 	public static int handleParameterException(CommandLine.ParameterException exception, String[] args)
 	{
 		CommandLine commandLine = exception.getCommandLine();

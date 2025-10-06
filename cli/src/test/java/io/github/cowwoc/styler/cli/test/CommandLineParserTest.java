@@ -282,7 +282,7 @@ public class CommandLineParserTest
 
 		assertThatThrownBy(() -> parser.parse(args)).
 			isInstanceOf(ArgumentParsingException.class).
-			hasMessageContaining("Missing required parameter");
+			hasMessageContaining("Input files are required");
 	}
 
 	/**
@@ -295,7 +295,7 @@ public class CommandLineParserTest
 
 		assertThatThrownBy(() -> parser.parse(args)).
 			isInstanceOf(ArgumentParsingException.class).
-			hasMessageContaining("Missing required parameter");
+			hasMessageContaining("Input files are required");
 	}
 
 	/**
@@ -427,6 +427,7 @@ public class CommandLineParserTest
 			false,
 			false,
 			ParsedArguments.Command.FORMAT,
+			null,
 			null)).
 		isInstanceOf(IllegalArgumentException.class).
 		  hasMessageContaining("Cannot enable both verbose and quiet modes");
@@ -450,6 +451,7 @@ public class CommandLineParserTest
 			false,
 			false,
 			ParsedArguments.Command.FORMAT,
+			null,
 			null);
 
 		// Verify defensive copying worked - lists should be immutable
@@ -477,7 +479,7 @@ public class CommandLineParserTest
 			true,
 			false,
 			ParsedArguments.Command.HELP,
-			null);
+			null, null);
 
 		assertThat(helpArgs.isInformationalRequest()).isTrue();
 		assertThat(helpArgs.requiresInputFiles()).isFalse();
@@ -493,7 +495,7 @@ public class CommandLineParserTest
 			false,
 			false,
 			ParsedArguments.Command.FORMAT,
-			null);
+			null, null);
 
 		assertThat(formatArgs.isInformationalRequest()).isFalse();
 		assertThat(formatArgs.requiresInputFiles()).isTrue();
@@ -509,7 +511,7 @@ public class CommandLineParserTest
 			false,
 			false,
 			ParsedArguments.Command.FORMAT,
-			null);
+			null, null);
 
 		assertThat(quietArgs.getLogLevel()).isEqualTo(ParsedArguments.LogLevel.QUIET);
 	}
@@ -530,7 +532,7 @@ public class CommandLineParserTest
 			false,
 			false,
 			ParsedArguments.Command.HELP,
-			null);
+			null, null);
 
 		assertThat(args.rulesFilter()).isEmpty();
 
@@ -544,7 +546,7 @@ public class CommandLineParserTest
 			false,
 			false,
 			ParsedArguments.Command.HELP,
-			null);
+			null, null);
 
 		assertThat(args.rulesFilter()).isEmpty();
 	}
@@ -565,7 +567,7 @@ public class CommandLineParserTest
 			false,
 			false,
 			null,  // null command
-			null);
+			null, null);
 
 		assertThat(args.command()).isEqualTo(ParsedArguments.Command.HELP);
 	}

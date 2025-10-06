@@ -18,7 +18,8 @@ import java.util.function.Consumer;
  * files with potentially many errors. It supports both synchronous and asynchronous
  * error collection with configurable batch sizes and processing strategies.
  */
-@SuppressWarnings("PMD.SystemPrintln") // CLI utility: System.out/err required for user output
+// CLI utility: System.out/err required for user output
+@SuppressWarnings("PMD.SystemPrintln")
 public final class ErrorCollector implements AutoCloseable
 {
 	private final Queue<ErrorContext> pendingErrors;

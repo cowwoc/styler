@@ -25,7 +25,8 @@ public final class ConfigDiscovery
 	private final ConfigMerger merger;
 
 	// Simple cache for configuration discovery results (thread-safe)
-	@SuppressWarnings("PMD.FieldNamingConventions") // Standard naming for collections
+	// Standard naming for collections
+	@SuppressWarnings("PMD.FieldNamingConventions")
 	private static final Map<String, GlobalConfiguration> configCache = new ConcurrentHashMap<>();
 
 	/**
