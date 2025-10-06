@@ -124,6 +124,33 @@
   - **Quality Gates**: All hooks execute without errors, pattern detection accuracy >95%, no false positives
   - **Estimated Effort**: 7-10 hours total (2-3h Phase 1 + 3-4h Phase 2 + 2-3h Phase 3)
 
+- [ ] **TASK:** `fix-formattingcontextbuilder-configuration-type-mismatch` - Fix FormattingContextBuilder configuration architecture
+  - **Purpose**: Eliminate type safety violations from hardcoded LineLengthRuleConfiguration being passed to all formatting rules
+  - **Scope**: Update FormattingContextBuilder.createRuleConfiguration() to provide rule-specific configurations
+  - **Bug**: FormattingContextBuilder hardcodes `new LineLengthRuleConfiguration()` which is passed to ALL FormattingRule implementations, causing ClassCastException risk when rules expect their specific configuration types
+  - **Affected Rules**:
+    - BraceFormatterFormattingRule expects BraceFormatterRuleConfiguration (unsafe cast with null check)
+    - ImportOrganizerFormattingRule expects ImportOrganizerRuleConfiguration (unsafe cast without null check)
+    - IndentationFormattingRule expects IndentationConfiguration (safe instanceof pattern - GOOD EXAMPLE)
+    - LineLengthFormattingRule expects LineLengthRuleConfiguration (currently matches builder output)
+  - **Current Behavior**: Tests pass (484/484) due to fallback mechanisms and safe instanceof patterns in some rules
+  - **Required Solution**:
+    - Design rule-specific configuration resolution mechanism (call rule.getDefaultConfiguration())
+    - Update FormattingContextBuilder to provide correct configuration per rule
+    - Standardize configuration fallback pattern across all rules (use instanceof pattern from IndentationFormattingRule)
+    - Add integration tests for configuration type mismatches
+  - **Components**:
+    - FormattingContextBuilder.createRuleConfiguration() - make rule-aware
+    - All *FormattingRule.apply() methods - standardize configuration handling
+    - Integration tests for multi-rule configuration scenarios
+  - **Integration**: Ensure FormattingContext constructor accepts rule-specific configurations
+  - **Module**: plugin (FormattingContextBuilder), formatter-rules (all FormattingRule implementations)
+  - **Priority**: Medium (functional bug, not security vulnerability per parser security model)
+  - **Risk**: LOW (tests passing, system functional with current fallback patterns)
+  - **Estimated Effort**: 4-6 hours (configuration resolution design + multi-rule refactoring)
+  - **Follow-Up From**: fix-linelength-configuration-duplicate task (security-auditor identified during Phase 6 review)
+  - **Status**: ⏸️ PENDING
+
 ### Structured Violation Output (AI Agent Feedback)
 - [x] **TASK:** `implement-structured-violation-output` - Machine-readable violation reports for AI agent feedback ✅ COMPLETED (2025-10-05)
   - **Purpose**: Generate structured violation reports enabling AI agents to learn from formatting feedback
