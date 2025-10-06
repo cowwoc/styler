@@ -22,5 +22,6 @@
 	<modules>
 		<module>parser</module>
 		<module>system</module>
+		<module>cli</module>
 	</modules>
 </project>

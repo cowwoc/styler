@@ -14,6 +14,7 @@ module io.github.cowwoc.styler.cli.test
 	opens io.github.cowwoc.styler.cli.test.config.exceptions to org.testng;
 	opens io.github.cowwoc.styler.cli.test.error to org.testng;
 	opens io.github.cowwoc.styler.cli.test.pipeline to org.testng;
+	opens io.github.cowwoc.styler.cli.test.pipeline.progress to org.testng;
 	opens io.github.cowwoc.styler.cli.test.pipeline.recovery to org.testng;
 	opens io.github.cowwoc.styler.cli.test.pipeline.stages to org.testng;
 }

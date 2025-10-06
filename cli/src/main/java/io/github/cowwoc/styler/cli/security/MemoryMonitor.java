@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  *
  * @see MemoryLimitExceededException
  */
-public final class MemoryMonitor
+public class MemoryMonitor
 {
 	private final Logger log = LoggerFactory.getLogger(MemoryMonitor.class);
 
@@ -119,5 +119,17 @@ public final class MemoryMonitor
 	{
 		long usedMemory = getCurrentHeapUsage();
 		return (usedMemory * 100.0) / maxMemoryBytes;
+	}
+
+	/**
+	 * Returns whether memory pressure is currently high.
+	 * <p>
+	 * Memory pressure is considered high when heap usage exceeds the warning threshold (80%).
+	 *
+	 * @return {@code true} if memory usage exceeds warning threshold, {@code false} otherwise
+	 */
+	public boolean isMemoryPressureHigh()
+	{
+		return getMemoryUsagePercentage() > (WARNING_THRESHOLD * 100.0);
 	}
 }

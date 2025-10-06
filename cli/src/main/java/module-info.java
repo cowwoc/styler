@@ -27,14 +27,14 @@ module io.github.cowwoc.styler.cli
 	exports io.github.cowwoc.styler.cli.security;
 	exports io.github.cowwoc.styler.cli.security.exceptions;
 
-	// Export internal packages to test module
+	// Export internal packages to test module and benchmark module
 	exports io.github.cowwoc.styler.cli.commands to io.github.cowwoc.styler.cli.test;
 	exports io.github.cowwoc.styler.cli.config to io.github.cowwoc.styler.cli.test;
 	exports io.github.cowwoc.styler.cli.config.exceptions to io.github.cowwoc.styler.cli.test;
 	exports io.github.cowwoc.styler.cli.error to io.github.cowwoc.styler.cli.test;
 	exports io.github.cowwoc.styler.cli.output to io.github.cowwoc.styler.cli.test;
-	exports io.github.cowwoc.styler.cli.pipeline to io.github.cowwoc.styler.cli.test;
-	exports io.github.cowwoc.styler.cli.pipeline.progress to io.github.cowwoc.styler.cli.test;
+	exports io.github.cowwoc.styler.cli.pipeline to io.github.cowwoc.styler.cli.test, io.github.cowwoc.styler.cli.benchmark;
+	exports io.github.cowwoc.styler.cli.pipeline.progress to io.github.cowwoc.styler.cli.test, io.github.cowwoc.styler.cli.benchmark;
 	exports io.github.cowwoc.styler.cli.pipeline.recovery to io.github.cowwoc.styler.cli.test;
 	exports io.github.cowwoc.styler.cli.pipeline.stages to io.github.cowwoc.styler.cli.test;
 	exports io.github.cowwoc.styler.cli.util to io.github.cowwoc.styler.cli.test;
