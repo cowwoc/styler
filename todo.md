@@ -56,6 +56,17 @@
   - **Estimated Effort**: 2-3 days
   - **Status**: ✅ COMPLETED (2025-10-05) - Parser now handles module-info.java with 10 passing tests
 
+- [x] **TASK:** `fix-linelength-configuration-duplicate` - Fix ClassCastException from duplicate LineLengthConfiguration classes ✅ COMPLETED (2025-10-06)
+  - **Purpose**: Eliminate ClassCastException when Maven plugin passes LineLengthRuleConfiguration to LineLengthFormattingRule
+  - **Scope**: Delete duplicate LineLengthConfiguration class in formatter-rules, update all references to use API configuration
+  - **Bug**: Duplicate LineLengthConfiguration class in formatter-rules caused ClassCastException when plugin passed LineLengthRuleConfiguration (API) to rule expecting impl version
+  - **Solution**: Deleted duplicate impl class, updated LineAnalyzer/LineLengthFormattingRule to use LineLengthRuleConfiguration from formatter-api
+  - **Architecture**: Single source of truth (LineLengthRuleConfiguration in API), null-safe WrapConfiguration handling for tabWidth derivation
+  - **Build Verification**: 484 tests passed, 0 checkstyle violations, 0 PMD violations
+  - **Follow-Up**: Created task for FormattingContextBuilder configuration architecture improvement (security-auditor identified broader pattern during review)
+  - **Estimated Effort**: 2.1 hours
+  - **Status**: ✅ COMPLETED (2025-10-06) - Original ClassCastException eliminated, all quality gates passed
+
 - [x] **TASK:** `implement-arena-to-ast-converter` - Implement complete Arena-to-AST converter for all 58 node types ✅ COMPLETED (2025-10-06)
   - **Purpose**: Bridge memory-efficient Arena node storage with high-level AST objects required by formatting rules
   - **Scope**: Complete ArenaToAstConverter implementation supporting ALL 58 AST node types, not just minimal subset
