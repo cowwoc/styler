@@ -15,7 +15,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  */
 public class StylerCLITest
 {
-
 	/**
 	 * Verifies that the main StylerCLI class can be instantiated.
 	 */
