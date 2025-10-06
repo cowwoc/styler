@@ -162,6 +162,48 @@
   - **Follow-Up From**: fix-linelength-configuration-duplicate task (security-auditor identified during Phase 6 review)
   - **Status**: ⏸️ PENDING
 
+- [ ] **TASK:** `remove-mock-context-use-real-formattingcontext` - Eliminate mock FormattingContext objects from tests
+  - **Purpose**: Ensure tests exercise real plugin integration paths to catch configuration type mismatches
+  - **Scope**: Replace all createMockContext() helper methods with real FormattingContextBuilder usage
+  - **Problem**: Mock contexts bypass FormattingContextBuilder.createRuleConfiguration(), allowing tests to pass while plugin fails with ClassCastException
+  - **Current Pattern** (INCORRECT):
+    ```java
+    private FormattingContext createMockContext(String sourceText) {
+        LineLengthRuleConfiguration config = new LineLengthRuleConfiguration();
+        return new FormattingContext(mockRoot, sourceText, path, config, rules, metadata);
+    }
+    ```
+  - **Required Pattern** (CORRECT):
+    ```java
+    private FormattingContext createRealContext(String sourceText) {
+        FormattingContextBuilder builder = new FormattingContextBuilder();
+        return builder.createContext(config, rule, ast, sourceText, sourcePath);
+        // This will expose configuration type mismatch bugs
+    }
+    ```
+  - **Affected Test Files**:
+    - LineLengthFormattingRuleTest.java (uses createMockContext)
+    - BraceFormatterFormattingRuleTest.java (likely uses mocks)
+    - IndentationFormattingRuleTest.java (likely uses mocks)
+    - ImportOrganizerFormattingRuleTest.java (likely uses mocks)
+    - All other *FormattingRuleTest.java files
+  - **Benefits**:
+    - Tests exercise real plugin code paths
+    - Configuration type mismatches caught by unit tests (not just integration tests)
+    - Tests validate actual FormattingContextBuilder behavior
+    - Prevents regressions in builder logic
+  - **Testing Strategy**:
+    - Update each test file one at a time
+    - Verify tests still pass after switching to real context
+    - Add tests for configuration type validation if missing
+  - **Integration**: Depends on fix-formattingcontextbuilder-configuration-type-mismatch (builder must provide correct configs first)
+  - **Module**: formatter-rules (test files)
+  - **Priority**: Medium (testing quality improvement)
+  - **Risk**: LOW (tests only, no production code changes)
+  - **Estimated Effort**: 3-4 hours (survey all test files + update mock patterns + verify coverage)
+  - **Discovered By**: User observation that tests passed while plugin failed with ClassCastException
+  - **Status**: ⏸️ PENDING (blocked by fix-formattingcontextbuilder-configuration-type-mismatch)
+
 ### Structured Violation Output (AI Agent Feedback)
 - [x] **TASK:** `implement-structured-violation-output` - Machine-readable violation reports for AI agent feedback ✅ COMPLETED (2025-10-05)
   - **Purpose**: Generate structured violation reports enabling AI agents to learn from formatting feedback
