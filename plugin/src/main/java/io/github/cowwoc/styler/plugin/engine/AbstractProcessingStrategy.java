@@ -74,7 +74,7 @@ public abstract class AbstractProcessingStrategy implements FileProcessingStrate
 
 			for (FormattingRule rule : rules)
 			{
-				FormattingContext context = contextBuilder.createContext(config, ast, sourceText, sourcePath);
+				FormattingContext context = contextBuilder.createContext(config, ast, sourceText, sourcePath, rule);
 
 				// Run rule and collect results
 				FormattingResult result = rule.apply(context);
