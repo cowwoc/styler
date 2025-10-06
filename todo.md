@@ -525,6 +525,59 @@
   - **Quality**: Architecture approved, code quality 9.5/10, all tests passing (88/88), compilation successful
   - **Technical Debt**: 1,636 checkstyle violations in CLI module deferred to separate task (see fix-cli-checkstyle-violations below)
 
+- [ ] **TASK:** `migrate-picocli-to-programmatic-api` - Migrate CLI from picocli reflection API to programmatic API
+  - **Purpose**: Eliminate reflection-based command parsing for better GraalVM native-image compatibility, startup performance, and compile-time safety
+  - **Scope**: Replace all picocli annotation-based parsing (@Command, @Option, @Parameters) with programmatic CommandLine builder API
+  - **Current Architecture**:
+    - Reflection-based: Uses @Command, @Option, @Parameters annotations on StylerCLI and command classes
+    - Files affected: StylerCLI.java, CheckCommand.java, FormatCommand.java, ConfigCommand.java, CommandLineParser.java
+    - Dependencies: picocli 4.7.6 with annotation processing
+  - **Target Architecture**:
+    - Programmatic API: Use CommandLine.Builder and CommandSpec for command definition
+    - No annotation processing required
+    - Fully compile-time safe with explicit command structure
+    - GraalVM native-image compatible without reflection configuration
+  - **Migration Strategy**:
+    1. Replace @Command annotations with CommandSpec.forAnnotatedObject() or manual CommandSpec creation
+    2. Replace @Option/@Parameters with OptionSpec/PositionalParamSpec builders
+    3. Convert command hierarchy from annotation-based to programmatic builder chain
+    4. Update CommandLineParser facade to use programmatic API
+    5. Remove annotation processing from build configuration
+    6. Add compile-time validation for command structure
+  - **Benefits**:
+    - **Native Image**: Full GraalVM native-image support without reflection hints
+    - **Performance**: Faster startup (no reflection scanning/proxy generation)
+    - **Type Safety**: Compile-time command structure validation
+    - **Maintainability**: Explicit command definitions easier to understand
+    - **Debuggability**: No annotation processing magic, clearer stack traces
+  - **Files to Modify**:
+    - cli/src/main/java/io/github/cowwoc/styler/cli/StylerCLI.java (main command)
+    - cli/src/main/java/io/github/cowwoc/styler/cli/commands/CheckCommand.java
+    - cli/src/main/java/io/github/cowwoc/styler/cli/commands/FormatCommand.java
+    - cli/src/main/java/io/github/cowwoc/styler/cli/commands/ConfigCommand.java
+    - cli/src/main/java/io/github/cowwoc/styler/cli/CommandLineParser.java
+    - cli/pom.xml (remove annotation processing configuration)
+    - cli/src/main/java/module-info.java (update requires directives if needed)
+  - **Testing Requirements**:
+    - All existing CLI tests must pass unchanged
+    - Add tests validating programmatic command structure
+    - Verify argument parsing behavior identical to annotation-based approach
+    - Test error messages and help text generation
+    - Validate GraalVM native-image compilation (if infrastructure available)
+  - **Quality Gates**:
+    - ✅ All CLI tests pass (no behavior changes)
+    - ✅ No reflection usage in picocli integration
+    - ✅ Checkstyle PASS, PMD PASS
+    - ✅ Help text and error messages unchanged
+    - ✅ Unanimous stakeholder approval
+  - **Documentation Updates**:
+    - Update CLI module documentation to reflect programmatic API usage
+    - Add examples of programmatic command definition
+    - Document migration rationale and benefits
+  - **Estimated Effort**: 2-3 days
+  - **Dependencies**: None (self-contained CLI module refactoring)
+  - **Follow-up**: Consider GraalVM native-image build task after migration complete
+
 ### Single File Formatter (Depends on Config System)
 - [x] **TASK:** `define-formatter-plugin-interface` - Plugin interface for formatting rules (COMPLETED)
 - [x] **TASK:** `implement-line-length-formatter` - Line length auto-fixer with smart wrapping (FIRST FORMATTER - complete end-to-end) ✅ COMPLETED
