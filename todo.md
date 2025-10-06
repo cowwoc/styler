@@ -56,6 +56,61 @@
   - **Estimated Effort**: 2-3 days
   - **Status**: ✅ COMPLETED (2025-10-05) - Parser now handles module-info.java with 10 passing tests
 
+- [ ] **TASK:** `implement-arena-to-ast-converter` - Implement complete Arena-to-AST converter for all 58 node types
+  - **Purpose**: Bridge memory-efficient Arena node storage with high-level AST objects required by formatting rules
+  - **Scope**: Complete ArenaToAstConverter implementation supporting ALL 58 AST node types, not just minimal subset
+  - **Current Error**: `Arena-to-AST conversion not implemented. Requires ArenaNodeConverter to convert Arena node ID 1 to CompilationUnitNode`
+  - **Root Cause**: Previous incomplete "MVP" implementation only supported 4 node types (CompilationUnit, Package, Import, Class), was committed without stakeholder review or task protocol compliance, and has been reverted
+  - **Architecture Requirements**:
+    - Stateless, thread-safe converter design
+    - O(log n) source position mapping via binary search
+    - Strategy pattern dispatch for 58 node types
+    - Comprehensive validation and error handling
+    - Integration with IndexOverlaySourceParser
+  - **Node Type Coverage** (58 total):
+    - **Top-level**: CompilationUnit, PackageDeclaration, ImportDeclaration, ModuleDeclaration
+    - **Type declarations**: ClassDeclaration, InterfaceDeclaration, EnumDeclaration, RecordDeclaration, AnnotationDeclaration
+    - **Members**: MethodDeclaration, FieldDeclaration, ConstructorDeclaration, InitializerBlock
+    - **Statements**: Block, IfStatement, ForStatement, WhileStatement, DoWhileStatement, SwitchStatement, TryStatement, ThrowStatement, ReturnStatement, BreakStatement, ContinueStatement, SynchronizedStatement, AssertStatement, YieldStatement
+    - **Expressions**: Assignment, BinaryExpression, UnaryExpression, MethodInvocation, FieldAccess, ArrayAccess, LambdaExpression, MethodReference, ConditionalExpression, InstanceofExpression, CastExpression, NewExpression, ArrayInitializer, SwitchExpression, TextBlock
+    - **Literals**: IntegerLiteral, FloatingPointLiteral, BooleanLiteral, CharacterLiteral, StringLiteral, NullLiteral
+    - **Types**: PrimitiveType, ReferenceType, ArrayType, TypeParameter, WildcardType
+    - **Other**: Identifier, Modifier, Annotation, Parameter, TypeArgument
+  - **Implementation Strategy**:
+    1. Create base converter infrastructure with SourcePositionMapper
+    2. Implement dispatch mechanism for all 58 node types
+    3. Add conversion methods for each node category (top-level, types, members, statements, expressions, literals)
+    4. Comprehensive error handling with descriptive messages
+    5. Thread-safe stateless design
+  - **Quality Requirements**:
+    - **NO partial implementations** - all 58 node types must be supported
+    - **NO "MVP" or "minimal subset"** approaches - complete coverage required
+    - **NO shortcuts or workarounds** - proper implementation for every node type
+    - **Comprehensive test coverage** - unit tests for each node type
+    - **Performance**: <100ms conversion for typical Java files
+  - **Testing**:
+    - ArenaToAstConverterDirectTest: Manual Arena node creation tests
+    - ArenaToAstConverterTest: Integration tests with actual parser
+    - Coverage for all 58 node types with edge cases
+  - **Integration Points**:
+    - IndexOverlaySourceParser.parse() calls converter
+    - Maven plugin uses converter for all source files
+    - Must handle all valid Java syntax (including module-info.java)
+  - **Deliverables**:
+    - ArenaToAstConverter.java with 58 node type handlers
+    - SourcePositionMapper for offset-to-line/column conversion
+    - Comprehensive test suite (100% node type coverage)
+    - Module configuration updates
+    - Documentation of conversion strategy
+  - **Success Criteria**:
+    - ✅ Maven plugin successfully processes all project files including module-info.java
+    - ✅ All 58 AST node types supported
+    - ✅ All tests pass (no partial implementation failures)
+    - ✅ Checkstyle PASS, PMD PASS
+    - ✅ Unanimous stakeholder approval
+  - **Estimated Effort**: 5-7 days (complete implementation for all node types)
+  - **CRITICAL**: This task MUST follow the full 7-phase task protocol with stakeholder reviews. NO shortcuts, NO incomplete implementations, NO "MVP" scope reductions.
+
 ## Phase C: Horizontal Expansion (Scale the Working Pipeline)
 
 ### CLAUDE.md Hook Migration (Configuration Enforcement Automation)
