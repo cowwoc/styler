@@ -2,6 +2,8 @@ package io.github.cowwoc.styler.formatter.impl;
 
 import io.github.cowwoc.styler.ast.SourcePosition;
 import io.github.cowwoc.styler.ast.SourceRange;
+import io.github.cowwoc.styler.formatter.api.LineLengthRuleConfiguration;
+import io.github.cowwoc.styler.formatter.api.WrapConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,24 +23,40 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 final class LineAnalyzer
 {
 	private static final char TAB = '\t';
+	private static final int DEFAULT_TAB_WIDTH = 4;
 
 	private final String sourceText;
-	private final LineLengthConfiguration config;
+	private final LineLengthRuleConfiguration config;
+	private final int tabWidth;
 
 	/**
 	 * Creates a new line analyzer for the specified source code.
+	 * <p>
+	 * The tab width for line length calculation is derived from the wrap configuration
+	 * when available. If no wrap configuration is provided, the default tab width of
+	 * {@value DEFAULT_TAB_WIDTH} spaces is used.
 	 *
 	 * @param sourceText the source code to analyze, never {@code null}
-	 * @param config the line length configuration, never {@code null}
+	 * @param config the line length rule configuration, never {@code null}
+	 * @param wrapConfig the wrap configuration for tab width derivation, may be {@code null}
 	 * @throws NullPointerException if {@code sourceText} or {@code config} is {@code null}
 	 */
-	LineAnalyzer(String sourceText, LineLengthConfiguration config)
+	LineAnalyzer(String sourceText, LineLengthRuleConfiguration config, WrapConfiguration wrapConfig)
 	{
 		requireThat(sourceText, "sourceText").isNotNull();
 		requireThat(config, "config").isNotNull();
+		// wrapConfig CAN be null
 
 		this.sourceText = sourceText;
 		this.config = config;
+		if (wrapConfig != null)
+		{
+			this.tabWidth = wrapConfig.getTabWidth();
+		}
+		else
+		{
+			this.tabWidth = DEFAULT_TAB_WIDTH;
+		}
 	}
 
 	/**
@@ -94,8 +112,7 @@ final class LineAnalyzer
 			char c = line.charAt(i);
 			if (c == TAB)
 			{
-				int spacesToNextTabStop = config.getTabWidth() -
-					(effectiveLength % config.getTabWidth());
+				int spacesToNextTabStop = tabWidth - (effectiveLength % tabWidth);
 				effectiveLength += spacesToNextTabStop;
 			}
 			else

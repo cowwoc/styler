@@ -1,8 +1,9 @@
 package io.github.cowwoc.styler.formatter.impl;
 
-import io.github.cowwoc.styler.formatter.api.FormattingRule;
 import io.github.cowwoc.styler.formatter.api.FormattingContext;
 import io.github.cowwoc.styler.formatter.api.FormattingResult;
+import io.github.cowwoc.styler.formatter.api.FormattingRule;
+import io.github.cowwoc.styler.formatter.api.LineLengthRuleConfiguration;
 import io.github.cowwoc.styler.formatter.api.RuleConfiguration;
 import io.github.cowwoc.styler.formatter.api.ValidationResult;
 import io.github.cowwoc.styler.formatter.api.WrapConfiguration;
@@ -40,7 +41,7 @@ public final class LineLengthFormattingRule implements FormattingRule
 	@Override
 	public RuleConfiguration getDefaultConfiguration()
 	{
-		return LineLengthConfiguration.createDefault();
+		return new LineLengthRuleConfiguration();
 	}
 
 	@Override
@@ -70,11 +71,11 @@ public final class LineLengthFormattingRule implements FormattingRule
 			return FormattingResult.empty();
 		}
 
-		LineLengthConfiguration config = (LineLengthConfiguration) context.getConfiguration();
+		LineLengthRuleConfiguration config = (LineLengthRuleConfiguration) context.getConfiguration();
 		WrapConfiguration wrapConfig = context.getWrapConfiguration();
 		String sourceText = context.getSourceText();
 
-		LineAnalyzer analyzer = new LineAnalyzer(sourceText, config);
+		LineAnalyzer analyzer = new LineAnalyzer(sourceText, config, wrapConfig);
 		List<io.github.cowwoc.styler.ast.SourceRange> violatingLines = analyzer.findViolatingLines();
 
 		if (violatingLines.isEmpty())

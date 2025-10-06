@@ -5,9 +5,9 @@ import io.github.cowwoc.styler.ast.SourceRange;
 import io.github.cowwoc.styler.ast.node.CompilationUnitNode;
 import io.github.cowwoc.styler.formatter.api.FormattingContext;
 import io.github.cowwoc.styler.formatter.api.FormattingResult;
+import io.github.cowwoc.styler.formatter.api.LineLengthRuleConfiguration;
 import io.github.cowwoc.styler.formatter.api.RuleConfiguration;
 import io.github.cowwoc.styler.formatter.api.ValidationResult;
-import io.github.cowwoc.styler.formatter.impl.LineLengthConfiguration;
 import io.github.cowwoc.styler.formatter.impl.LineLengthFormattingRule;
 import org.testng.annotations.Test;
 
@@ -54,8 +54,8 @@ public class LineLengthFormattingRuleTest
 		RuleConfiguration config = rule.getDefaultConfiguration();
 
 		assertThat(config).isNotNull();
-		assertThat(config).isInstanceOf(LineLengthConfiguration.class);
-		LineLengthConfiguration lineConfig = (LineLengthConfiguration) config;
+		assertThat(config).isInstanceOf(LineLengthRuleConfiguration.class);
+		LineLengthRuleConfiguration lineConfig = (LineLengthRuleConfiguration) config;
 		assertThat(lineConfig.getMaxLineLength()).isEqualTo(120);
 	}
 
@@ -123,7 +123,7 @@ public class LineLengthFormattingRuleTest
 			setRange(new SourceRange(new SourcePosition(1, 1),
 				new SourcePosition(1, sourceText.length() + 1))).build();
 
-		LineLengthConfiguration config = LineLengthConfiguration.createDefault();
+		LineLengthRuleConfiguration config = new LineLengthRuleConfiguration();
 
 		return new FormattingContext(mockRoot, sourceText, Path.of("/tmp/Test.java"),
 			config, Set.of("io.github.cowwoc.styler.rules.LineLength"), Map.of());
