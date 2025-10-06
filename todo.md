@@ -155,6 +155,30 @@
   - **Completed**: 2025-10-06 (commit: 59603ae)
   - **Status**: ✅ COMPLETE
 
+- [ ] **TASK:** `add-moduledeclarationnode-to-nodecategory` - Add ModuleDeclarationNode support to NodeCategory
+  - **Purpose**: Fix "Node type does not have brace formatting category: ModuleDeclarationNode" error when processing module-info.java files
+  - **Scope**: Add ModuleDeclarationNode to NodeCategory.categorize() switch statement
+  - **Bug**: BraceFormatterFormattingRule fails when processing module-info.java files because NodeCategory.categorize() doesn't recognize ModuleDeclarationNode
+  - **Error Message**: `Node type does not have brace formatting category: ModuleDeclarationNode`
+  - **Reproduction**: `mvn io.github.cowwoc.styler:styler-maven-plugin:1.0-SNAPSHOT:check` on project with module-info.java
+  - **Solution**:
+    - Add `import io.github.cowwoc.styler.ast.node.ModuleDeclarationNode` to NodeCategory.java
+    - Add case `ModuleDeclarationNode n -> CLASS_DECLARATION` to categorize() switch (modules are top-level structural declarations)
+    - Update JavaDoc comment to include "module" in CLASS_DECLARATION description
+  - **Files to Modify**:
+    - formatter/rules/src/main/java/io/github/cowwoc/styler/formatter/impl/NodeCategory.java
+  - **Test Requirements**:
+    - Add unit test `NodeCategoryTest.testModuleDeclarationNodeCategorization()` verifying ModuleDeclarationNode returns CLASS_DECLARATION
+    - Add integration test with real module-info.java file to verify BraceFormatterFormattingRule processes it without error
+    - Test should verify complete pipeline: parse module-info.java → BraceNodeCollector → NodeCategory.categorize() → no exception
+  - **Why Tests Didn't Catch This**: BraceFormatterFormattingRuleTest uses mock contexts that bypass real module-info.java parsing
+  - **Module**: formatter-rules (BraceFormatterFormattingRule, NodeCategory)
+  - **Priority**: Medium (blocks Maven plugin usage on projects with module-info.java)
+  - **Risk**: LOW (simple switch case addition, well-understood fix)
+  - **Estimated Effort**: 1 hour (implementation + test cases)
+  - **Discovered**: 2025-10-06 (testing fix-formattingcontextbuilder-configuration-type-mismatch task)
+  - **Status**: ⏸️ PENDING
+
 - [ ] **TASK:** `remove-mock-context-use-real-formattingcontext` - Eliminate mock FormattingContext objects from tests
   - **Purpose**: Ensure tests exercise real plugin integration paths to catch configuration type mismatches
   - **Scope**: Replace all createMockContext() helper methods with real FormattingContextBuilder usage
