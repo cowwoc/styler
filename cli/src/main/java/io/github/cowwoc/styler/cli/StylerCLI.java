@@ -25,6 +25,9 @@ import java.util.concurrent.Callable;
  *   <li>{@code 1}: Violations found (in check mode) or formatting changes applied</li>
  *   <li>2: Error occurred during processing</li>
  * </ul>
+ * <p>
+ * Note: Annotations are retained for backward compatibility with tests, but main() uses
+ * programmatic API. CommandLineParser uses fully programmatic API with no reflection.
  */
 @SuppressWarnings("PMD.SystemPrintln") // CLI app: System.out/err required for user output
 @Command(
@@ -61,14 +64,111 @@ public class StylerCLI implements Callable<Integer>
 		// Configure logging level based on environment
 		configureLogging();
 
-		// Create command line with custom configuration
-		CommandLine commandLine = new CommandLine(new StylerCLI());
-		commandLine.setExecutionExceptionHandler(StylerCLI::handleExecutionException);
-		commandLine.setParameterExceptionHandler(StylerCLI::handleParameterException);
+		// Parse arguments using CommandLineParser (reflection-free)
+		CommandLineParser parser = new CommandLineParser();
+		try
+		{
+			ParsedArguments parsedArgs = parser.parse(args);
 
-		// Execute command and exit with appropriate code
-		int exitCode = commandLine.execute(args);
-		System.exit(exitCode);
+			// Handle help/version commands
+			if (parsedArgs.helpRequested())
+			{
+				System.out.println(parser.getUsageText());
+				System.exit(0);
+				return;
+			}
+			if (parsedArgs.versionRequested())
+			{
+				System.out.println(parser.getVersionText());
+				System.exit(0);
+				return;
+			}
+
+			// Execute the parsed command
+			int exitCode = executeCommand(parsedArgs);
+			System.exit(exitCode);
+		}
+		catch (ArgumentParsingException e)
+		{
+			System.err.println("Error: " + e.getMessage());
+			System.err.println();
+			System.err.println(parser.getUsageText());
+			System.exit(2);
+		}
+	}
+
+	/**
+	 * Executes the specified command.
+	 *
+	 * @param args parsed arguments
+	 * @return exit code
+	 */
+	private static int executeCommand(ParsedArguments args)
+	{
+		try
+		{
+			return switch (args.command())
+			{
+				case FORMAT ->
+				{
+					FormatCommand command = FormatCommand.fromParseResult(args.parseResult());
+					yield command.call();
+				}
+				case CHECK ->
+				{
+					CheckCommand command = CheckCommand.fromParseResult(args.parseResult());
+					yield command.call();
+				}
+				case CONFIG ->
+				{
+					// Handle config command and its subcommands
+					if (args.parseResult().hasSubcommand())
+					{
+						picocli.CommandLine.ParseResult configSubcommand = args.parseResult().subcommand();
+						String subcommandName = configSubcommand.commandSpec().name();
+
+						yield switch (subcommandName)
+						{
+							case "init" ->
+							{
+								ConfigCommand.InitCommand initCmd =
+									ConfigCommand.InitCommand.fromParseResult(configSubcommand);
+								yield initCmd.call();
+							}
+							case "validate" ->
+							{
+								ConfigCommand.ValidateCommand validateCmd =
+									ConfigCommand.ValidateCommand.fromParseResult(configSubcommand);
+								yield validateCmd.call();
+							}
+							case "list" ->
+							{
+								ConfigCommand.ListCommand listCmd =
+									ConfigCommand.ListCommand.fromParseResult(configSubcommand);
+								yield listCmd.call();
+							}
+							default ->
+							{
+								ConfigCommand command = ConfigCommand.fromParseResult(args.parseResult());
+								yield command.call();
+							}
+						};
+					}
+					else
+					{
+						ConfigCommand command = ConfigCommand.fromParseResult(args.parseResult());
+						yield command.call();
+					}
+				}
+				case HELP, VERSION -> 0; // Already handled in main()
+			};
+		}
+		catch (Exception e)
+		{
+			logger.error("Command execution failed", e);
+			System.err.println("Error: " + e.getMessage());
+			return 2;
+		}
 	}
 
 	/**
@@ -113,59 +213,6 @@ public class StylerCLI implements Callable<Integer>
 				(ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 			rootLogger.setLevel(ch.qos.logback.classic.Level.WARN);
 		}
-	}
-
-	/**
-	 * Handles execution exceptions with user-friendly error messages.
-	 *
-	 * @param exception   the exception that occurred
-	 * @param commandLine the command line instance
-	 * @param parseResult the parse result
-	 * @return exit code
-	 */
-	@SuppressWarnings("PMD.UnusedFormalParameter") // Required by Picocli handler signature
-	private static int handleExecutionException(Exception exception, CommandLine commandLine,
-		CommandLine.ParseResult parseResult)
-	{
-		logger.error("Command execution failed", exception);
-
-		// Print user-friendly error message
-		System.err.println("Error: " + exception.getMessage());
-
-		// Show stack trace only in verbose mode
-		if (parseResult.hasMatchedOption("--verbose"))
-		{
-			exception.printStackTrace(System.err);
-		}
-		else
-		{
-			System.err.println("Use --verbose flag for detailed error information");
-		}
-
-		return 2; // Error exit code
-	}
-
-	/**
-	 * Handles parameter parsing exceptions with helpful suggestions.
-	 *
-	 * @param exception the parameter exception
-	 * @param args      the command line arguments
-	 * @return exit code
-	 */
-	@SuppressWarnings("PMD.UnusedFormalParameter") // Required by Picocli handler signature
-	private static int handleParameterException(CommandLine.ParameterException exception, String[] args)
-	{
-		CommandLine commandLine = exception.getCommandLine();
-
-		// Print the error message
-		System.err.println("Error: " + exception.getMessage());
-
-		// Show usage for the failing command
-		System.err.println();
-		System.err.println("Usage:");
-		commandLine.usage(System.err);
-
-		return 2; // Error exit code
 	}
 
 	/**

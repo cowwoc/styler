@@ -2,9 +2,6 @@ package io.github.cowwoc.styler.cli.commands;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
@@ -17,19 +14,28 @@ import java.util.concurrent.Callable;
  * default configurations.
  */
 @SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
-@Command(
-	name = "config",
-	description = "Manage formatter configuration files and profiles",
-	mixinStandardHelpOptions = true,
-	subcommands = {
-		ConfigCommand.InitCommand.class,
-		ConfigCommand.ValidateCommand.class,
-		ConfigCommand.ListCommand.class
-	})
 public class ConfigCommand implements Callable<Integer>
 {
 	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
 	private static final Logger logger = LoggerFactory.getLogger(ConfigCommand.class);
+
+	/**
+	 * Private constructor - use fromParseResult() factory method.
+	 */
+	private ConfigCommand()
+	{
+	}
+
+	/**
+	 * Creates ConfigCommand from ParseResult (reflection-free extraction).
+	 *
+	 * @param parseResult picocli parse result
+	 * @return configured ConfigCommand instance
+	 */
+	public static ConfigCommand fromParseResult(picocli.CommandLine.ParseResult parseResult)
+	{
+		return new ConfigCommand();
+	}
 
 	@Override
 	public Integer call()
@@ -47,33 +53,55 @@ public class ConfigCommand implements Callable<Integer>
 	/**
 	 * Initialize a new configuration file.
 	 */
-@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
-	@Command(
-		name = "init",
-		description = "Initialize a new configuration file with default settings")
-	static class InitCommand implements Callable<Integer>
+	@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
+	public static class InitCommand implements Callable<Integer>
 	{
-		@SuppressWarnings("PMD.ImmutableField") // Picocli sets this via reflection
-		@Option(
-			names = {"-f", "--file"},
-			description = "Configuration file path (default: .styler.toml)")
-		private Path configFile = Path.of(".styler.toml");
+		@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+		private static final Logger logger = LoggerFactory.getLogger(InitCommand.class);
 
-		@SuppressWarnings("PMD.ImmutableField") // Picocli sets this via reflection
-		@Option(
-			names = {"-p", "--profile"},
-			description = "Base profile to use: ${COMPLETION-CANDIDATES} (default: GOOGLE)",
-			paramLabel = "<profile>")
-		private Profile profile = Profile.GOOGLE;
+		private final Path configFile;
+		private final Profile profile;
+		private final boolean force;
 
-		@Option(
-			names = {"--force"},
-			description = "Overwrite existing configuration file")
-		private boolean force;
-
+		/**
+		 * Profile types for configuration initialization.
+		 */
 		public enum Profile
 		{
 			GOOGLE, ORACLE, CUSTOM
+		}
+
+		/**
+		 * Private constructor - use fromParseResult() factory method.
+		 *
+		 * @param configFile configuration file path
+		 * @param profile    base profile to use
+		 * @param force      overwrite existing file
+		 */
+		private InitCommand(Path configFile, Profile profile, boolean force)
+		{
+			this.configFile = configFile != null ? configFile : Path.of(".styler.toml");
+			this.profile = profile != null ? profile : Profile.GOOGLE;
+			this.force = force;
+		}
+
+		/**
+		 * Creates InitCommand from ParseResult (reflection-free extraction).
+		 *
+		 * @param parseResult picocli parse result
+		 * @return configured InitCommand instance
+		 */
+		public static InitCommand fromParseResult(picocli.CommandLine.ParseResult parseResult)
+		{
+			Path configFile = parseResult.hasMatchedOption("--file") ?
+				parseResult.matchedOptionValue("--file", Path.of(".styler.toml")) : Path.of(".styler.toml");
+
+			Profile profile = parseResult.hasMatchedOption("--profile") ?
+				parseResult.matchedOptionValue("--profile", Profile.GOOGLE) : Profile.GOOGLE;
+
+			boolean force = parseResult.hasMatchedOption("--force");
+
+			return new InitCommand(configFile, profile, force);
 		}
 
 		@Override
@@ -81,9 +109,7 @@ public class ConfigCommand implements Callable<Integer>
 		{
 			try
 			{
-				// TODO Implement configuration file initialization
-				// This will be implemented when the configuration API is integrated
-
+				// Log configuration for now - full implementation pending configuration API integration
 				logger.info("Initializing configuration file: {}", configFile);
 				logger.info("Using profile: {}", profile);
 				logger.info("Force overwrite: {}", force);
@@ -100,35 +126,84 @@ public class ConfigCommand implements Callable<Integer>
 				return 2;
 			}
 		}
+
+		/**
+		 * Returns the configuration file path.
+		 *
+		 * @return the config file path
+		 */
+		public Path getConfigFile()
+		{
+			return configFile;
+		}
+
+		/**
+		 * Returns the profile type.
+		 *
+		 * @return the profile
+		 */
+		public Profile getProfile()
+		{
+			return profile;
+		}
+
+		/**
+		 * Returns whether force overwrite is enabled.
+		 *
+		 * @return {@code true} if force is enabled
+		 */
+		public boolean isForce()
+		{
+			return force;
+		}
 	}
 
 	/**
 	 * Validate an existing configuration file.
 	 */
-@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
-	@Command(
-		name = "validate",
-		description = "Validate configuration file syntax and rules")
-	static class ValidateCommand implements Callable<Integer>
+	@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
+	public static class ValidateCommand implements Callable<Integer>
 	{
-		@Parameters(
-			paramLabel = "<config-file>",
-			description = "Configuration file to validate")
-		private Path configFile;
+		@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+		private static final Logger logger = LoggerFactory.getLogger(ValidateCommand.class);
 
-		@Option(
-			names = {"--json"},
-			description = "Output validation results in JSON format")
-		private boolean jsonOutput;
+		private final Path configFile;
+		private final boolean jsonOutput;
+
+		/**
+		 * Private constructor - use fromParseResult() factory method.
+		 *
+		 * @param configFile configuration file path
+		 * @param jsonOutput JSON output mode
+		 */
+		private ValidateCommand(Path configFile, boolean jsonOutput)
+		{
+			this.configFile = configFile;
+			this.jsonOutput = jsonOutput;
+		}
+
+		/**
+		 * Creates ValidateCommand from ParseResult (reflection-free extraction).
+		 *
+		 * @param parseResult picocli parse result
+		 * @return configured ValidateCommand instance
+		 */
+		public static ValidateCommand fromParseResult(picocli.CommandLine.ParseResult parseResult)
+		{
+			Path configFile = parseResult.hasMatchedPositional(0) ?
+				parseResult.matchedPositional(0).getValue() : null;
+
+			boolean jsonOutput = parseResult.hasMatchedOption("--json");
+
+			return new ValidateCommand(configFile, jsonOutput);
+		}
 
 		@Override
 		public Integer call()
 		{
 			try
 			{
-				// TODO Implement configuration validation
-				// This will be implemented when the configuration API is integrated
-
+				// Log configuration for now - full implementation pending configuration API integration
 				logger.info("Validating configuration file: {}", configFile);
 				logger.info("JSON output: {}", jsonOutput);
 
@@ -143,48 +218,87 @@ public class ConfigCommand implements Callable<Integer>
 				return 1; // Validation error
 			}
 		}
+
+		/**
+		 * Returns the configuration file path.
+		 *
+		 * @return the config file path
+		 */
+		public Path getConfigFile()
+		{
+			return configFile;
+		}
+
+		/**
+		 * Returns whether JSON output format is requested.
+		 *
+		 * @return {@code true} if JSON output is enabled
+		 */
+		public boolean isJsonOutput()
+		{
+			return jsonOutput;
+		}
 	}
 
 	/**
 	 * List available configuration profiles.
 	 */
-@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
-	@Command(
-		name = "list",
-		description = "List available configuration profiles and rules")
-	static class ListCommand implements Callable<Integer>
+	@SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
+	public static class ListCommand implements Callable<Integer>
 	{
-		@Option(
-			names = {"--profiles"},
-			description = "List available profiles")
-		private boolean listProfiles;
+		@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
+		private static final Logger logger = LoggerFactory.getLogger(ListCommand.class);
 
-		@Option(
-			names = {"--rules"},
-			description = "List available formatting rules")
-		private boolean listRules;
+		private final boolean listProfiles;
+		private final boolean listRules;
+		private final boolean jsonOutput;
 
-		@Option(
-			names = {"--json"},
-			description = "Output results in JSON format")
-		private boolean jsonOutput;
+		/**
+		 * Private constructor - use fromParseResult() factory method.
+		 *
+		 * @param listProfiles list available profiles
+		 * @param listRules    list available rules
+		 * @param jsonOutput   JSON output mode
+		 */
+		private ListCommand(boolean listProfiles, boolean listRules, boolean jsonOutput)
+		{
+			this.listProfiles = listProfiles;
+			this.listRules = listRules;
+			this.jsonOutput = jsonOutput;
+		}
+
+		/**
+		 * Creates ListCommand from ParseResult (reflection-free extraction).
+		 *
+		 * @param parseResult picocli parse result
+		 * @return configured ListCommand instance
+		 */
+		public static ListCommand fromParseResult(picocli.CommandLine.ParseResult parseResult)
+		{
+			boolean listProfiles = parseResult.hasMatchedOption("--profiles");
+			boolean listRules = parseResult.hasMatchedOption("--rules");
+			boolean jsonOutput = parseResult.hasMatchedOption("--json");
+
+			return new ListCommand(listProfiles, listRules, jsonOutput);
+		}
 
 		@Override
 		public Integer call()
 		{
 			try
 			{
-				// TODO Implement profile and rule listing
-				// This will be implemented when the configuration API is integrated
+				// Log configuration for now - full implementation pending configuration API integration
+				boolean effectiveListProfiles = listProfiles;
+				boolean effectiveListRules = listRules;
 
-				if (!listProfiles && !listRules)
+				if (!effectiveListProfiles && !effectiveListRules)
 				{
 					// Default: list both
-					listProfiles = true;
-					listRules = true;
+					effectiveListProfiles = true;
+					effectiveListRules = true;
 				}
 
-				if (listProfiles)
+				if (effectiveListProfiles)
 				{
 					System.out.println("Available profiles:");
 					System.out.println("  google  - Google Java Style Guide");
@@ -192,7 +306,7 @@ public class ConfigCommand implements Callable<Integer>
 					System.out.println("  custom  - User-defined configuration");
 				}
 
-				if (listRules)
+				if (effectiveListRules)
 				{
 					System.out.println("Available formatting rules:");
 					System.out.println("  line-length     - Line length enforcement");
@@ -210,6 +324,36 @@ public class ConfigCommand implements Callable<Integer>
 				System.err.println("List operation failed: " + e.getMessage());
 				return 2;
 			}
+		}
+
+		/**
+		 * Returns whether profile listing is requested.
+		 *
+		 * @return {@code true} if profiles should be listed
+		 */
+		public boolean isListProfiles()
+		{
+			return listProfiles;
+		}
+
+		/**
+		 * Returns whether rule listing is requested.
+		 *
+		 * @return {@code true} if rules should be listed
+		 */
+		public boolean isListRules()
+		{
+			return listRules;
+		}
+
+		/**
+		 * Returns whether JSON output format is requested.
+		 *
+		 * @return {@code true} if JSON output is enabled
+		 */
+		public boolean isJsonOutput()
+		{
+			return jsonOutput;
 		}
 	}
 }

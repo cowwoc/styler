@@ -7,18 +7,15 @@ import io.github.cowwoc.styler.cli.security.SecurityConfig;
 import io.github.cowwoc.styler.cli.security.SecurityManager;
 import io.github.cowwoc.styler.cli.security.exceptions.SecurityException;
 import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.HelpCommand;
-import picocli.CommandLine.Option;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.ParseResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Callable;
 
 /**
  * Facade for command-line argument parsing using Picocli.
@@ -65,12 +62,16 @@ public class CommandLineParser
 	{
 		try
 		{
-			// Create a capture command to intercept parsed values
-			CaptureCommand captureCommand = new CaptureCommand();
-			CommandLine commandLine = new CommandLine(captureCommand);
+			// Create command specification programmatically (no reflection)
+			CommandSpec rootSpec = CommandSpecifications.createRootCommandSpec();
+			rootSpec.addSubcommand("format", CommandSpecifications.createFormatCommandSpec());
+			rootSpec.addSubcommand("check", CommandSpecifications.createCheckCommandSpec());
+			rootSpec.addSubcommand("config", CommandSpecifications.createConfigCommandSpec());
 
-			// Configure error handling to capture exceptions
-			CommandLine.ParseResult parseResult;
+			CommandLine commandLine = new CommandLine(rootSpec);
+
+			// Parse arguments using programmatic API
+			ParseResult parseResult;
 			try
 			{
 				parseResult = commandLine.parseArgs(args);
@@ -96,7 +97,8 @@ public class CommandLineParser
 					false,
 					true,
 					ParsedArguments.Command.VERSION,
-					null);
+				null,
+					parseResult);
 			}
 
 			if (parseResult.isUsageHelpRequested())
@@ -111,17 +113,20 @@ public class CommandLineParser
 					true,
 					false,
 					ParsedArguments.Command.HELP,
-					null);
+				null,
+					parseResult);
 			}
 
 			// Determine which subcommand was invoked
 			ParsedArguments.Command command = determineCommand(parseResult);
 
-			// Extract global options
-			boolean verbose = captureCommand.verbose;
-			boolean quiet = captureCommand.quiet;
+			// Extract global options from ParseResult (no reflection needed)
+			boolean verbose = parseResult.hasMatchedOption("--verbose") ||
+				parseResult.hasMatchedOption("-v");
+			boolean quiet = parseResult.hasMatchedOption("--quiet") ||
+				parseResult.hasMatchedOption("-q");
 
-			// Extract command-specific arguments based on the command
+			// Extract command-specific arguments using ParseResult API
 			List<Path> inputFiles = List.of();
 			Optional<Path> configPath = Optional.empty();
 			Optional<String> rulesFilter = Optional.empty();
@@ -130,24 +135,44 @@ public class CommandLineParser
 
 			if (parseResult.hasSubcommand())
 			{
-				CommandLine.ParseResult subcommandResult = parseResult.subcommand();
-				Object subcommandObject = subcommandResult.commandSpec().userObject();
+				ParseResult subcommandResult = parseResult.subcommand();
 
-				if (subcommandObject instanceof FormatCommand formatCmd)
+				// Extract values from ParseResult instead of using reflection
+				switch (command)
 				{
-					inputFiles = extractInputFiles(formatCmd);
-					configPath = extractConfigPath(formatCmd);
-					dryRun = extractDryRun(formatCmd);
-					outputDirectory = extractOutputDirectory(formatCmd);
-				}
-				else if (subcommandObject instanceof CheckCommand checkCmd)
-				{
-					inputFiles = extractInputFiles(checkCmd);
-					configPath = extractConfigPath(checkCmd);
-				}
-				else if (subcommandObject instanceof ConfigCommand configCmd)
-				{
-					configPath = extractConfigPath(configCmd);
+					case FORMAT ->
+					{
+						// Extract positional parameter (files)
+						if (subcommandResult.hasMatchedPositional(0))
+						{
+							@SuppressWarnings("unchecked")
+							List<Path> paths = subcommandResult.matchedPositional(0).getValue();
+							inputFiles = paths != null ? paths : List.of();
+						}
+
+						// Extract options using option names
+						configPath = extractOptionValue(subcommandResult, "--config");
+						outputDirectory = extractOptionValue(subcommandResult, "--output");
+						dryRun = subcommandResult.hasMatchedOption("--dry-run");
+					}
+					case CHECK ->
+					{
+						if (subcommandResult.hasMatchedPositional(0))
+						{
+							@SuppressWarnings("unchecked")
+							List<Path> paths = subcommandResult.matchedPositional(0).getValue();
+							inputFiles = paths != null ? paths : List.of();
+						}
+						configPath = extractOptionValue(subcommandResult, "--config");
+					}
+					case CONFIG ->
+					{
+						configPath = extractOptionValue(subcommandResult, "--config");
+					}
+					default ->
+					{
+						// HELP and VERSION commands don't need additional extraction
+					}
 				}
 			}
 
@@ -180,7 +205,8 @@ public class CommandLineParser
 				false,
 				false,
 				command,
-				outputDirectory.orElse(null));
+				outputDirectory.orElse(null),
+				parseResult);
 		}
 		catch (IllegalArgumentException e)
 		{
@@ -198,8 +224,13 @@ public class CommandLineParser
 	 */
 	public String getUsageText()
 	{
-		CaptureCommand captureCommand = new CaptureCommand();
-		CommandLine commandLine = new CommandLine(captureCommand);
+		// Create command specification programmatically (no reflection)
+		CommandSpec rootSpec = CommandSpecifications.createRootCommandSpec();
+		rootSpec.addSubcommand("format", CommandSpecifications.createFormatCommandSpec());
+		rootSpec.addSubcommand("check", CommandSpecifications.createCheckCommandSpec());
+		rootSpec.addSubcommand("config", CommandSpecifications.createConfigCommandSpec());
+
+		CommandLine commandLine = new CommandLine(rootSpec);
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		@SuppressWarnings("PMD.RelianceOnDefaultCharset") // CLI output uses system default charset
@@ -277,124 +308,25 @@ public class CommandLineParser
 	}
 
 	/**
-	 * Extracts input files using reflection from command objects.
+	 * Extracts an option value from ParseResult using the option name.
+	 * <p>
+	 * This method uses the ParseResult API to extract values without reflection,
+	 * providing compile-time type safety and better performance.
 	 *
-	 * @param command the command object to extract files from
-	 * @return the list of input file paths, or empty list if none found
+	 * @param parseResult the parse result containing parsed options
+	 * @param optionName  the name of the option to extract (e.g., "--config")
+	 * @return optional containing the value if present, empty otherwise
 	 */
-	@SuppressWarnings("PMD.AvoidAccessibilityAlteration") // Reflection-based field extraction requires setAccessible
-	private List<Path> extractInputFiles(Object command)
+	private Optional<Path> extractOptionValue(ParseResult parseResult, String optionName)
 	{
-		try
+		if (parseResult.hasMatchedOption(optionName))
 		{
-			Field field = command.getClass().getDeclaredField("inputPaths");
-			field.setAccessible(true);
-			@SuppressWarnings("unchecked")
-			List<Path> paths = (List<Path>) field.get(command);
-			if (paths != null)
-				{
-				return paths;
-				}
-			return List.of();
+			Object value = parseResult.matchedOptionValue(optionName, null);
+			if (value instanceof Path path)
+			{
+				return Optional.of(path);
+			}
 		}
-		catch (NoSuchFieldException | IllegalAccessException e)
-		{
-			return List.of();
-		}
-	}
-
-	/**
-	 * Extracts config path using reflection from command objects.
-	 *
-	 * @param command the command object to extract config path from
-	 * @return the config file path, or empty if none found
-	 */
-	@SuppressWarnings("PMD.AvoidAccessibilityAlteration") // Reflection-based field extraction requires setAccessible
-	private Optional<Path> extractConfigPath(Object command)
-	{
-		try
-		{
-			Field field = command.getClass().getDeclaredField("configFile");
-			field.setAccessible(true);
-			Path path = (Path) field.get(command);
-			return Optional.ofNullable(path);
-		}
-		catch (NoSuchFieldException | IllegalAccessException e)
-		{
-			return Optional.empty();
-		}
-	}
-
-	/**
-	 * Extracts dry run flag using reflection from FormatCommand.
-	 *
-	 * @param command the format command to extract dry run flag from
-	 * @return {@code true} if dry run is enabled, {@code false} otherwise
-	 */
-	@SuppressWarnings("PMD.AvoidAccessibilityAlteration") // Reflection-based field extraction requires setAccessible
-	private boolean extractDryRun(FormatCommand command)
-	{
-		try
-		{
-			Field field = command.getClass().getDeclaredField("dryRun");
-			field.setAccessible(true);
-			Boolean dryRun = (Boolean) field.get(command);
-			return dryRun != null && dryRun;
-		}
-		catch (NoSuchFieldException | IllegalAccessException e)
-		{
-			return false;
-		}
-	}
-
-	/**
-	 * Extracts output directory using reflection from FormatCommand.
-	 *
-	 * @param command the format command to extract output directory from
-	 * @return the output directory path, or empty if none specified
-	 */
-	@SuppressWarnings("PMD.AvoidAccessibilityAlteration") // Reflection-based field extraction requires setAccessible
-	private Optional<Path> extractOutputDirectory(FormatCommand command)
-	{
-		try
-		{
-			Field field = command.getClass().getDeclaredField("outputDirectory");
-			field.setAccessible(true);
-			Path path = (Path) field.get(command);
-			return Optional.ofNullable(path);
-		}
-		catch (NoSuchFieldException | IllegalAccessException e)
-		{
-			return Optional.empty();
-		}
-	}
-
-	/**
-	 * Internal command class used to capture global options.
-	 */
-	@Command(
-		name = "styler",
-		description = "Java Code Formatter with AI-friendly output",
-		version = VERSION,
-		mixinStandardHelpOptions = true,
-		subcommands = {
-			FormatCommand.class,
-			CheckCommand.class,
-			ConfigCommand.class,
-			HelpCommand.class
-		})
-	private static final class CaptureCommand implements Callable<Integer>
-	{
-		@Option(names = {"-v", "--verbose"}, description = "Enable verbose logging")
-		private boolean verbose;
-
-		@Option(names = {"-q", "--quiet"}, description = "Suppress all output except errors")
-		private boolean quiet;
-
-		@Override
-		public Integer call()
-		{
-			return 0;
-		}
+		return Optional.empty();
 	}
 }

@@ -21,6 +21,7 @@ import java.util.Optional;
  * @param versionRequested whether version information was requested
  * @param command the specific command to execute (format, check, config)
  * @param outputDirectory optional output directory for formatted files
+ * @param parseResult the picocli ParseResult for command extraction
  */
 public record ParsedArguments(
 	List<Path> inputFiles,
@@ -32,7 +33,8 @@ public record ParsedArguments(
 	boolean helpRequested,
 	boolean versionRequested,
 	Command command,
-	Optional<Path> outputDirectory)
+	Optional<Path> outputDirectory,
+	picocli.CommandLine.ParseResult parseResult)
 {
 	/**
 	 * Static factory method for creating ParsedArguments with raw parameter types.
@@ -47,7 +49,8 @@ public record ParsedArguments(
 		boolean helpRequested,
 		boolean versionRequested,
 		Command command,
-		Path outputDirectory)
+		Path outputDirectory,
+		picocli.CommandLine.ParseResult parseResult)
 	{
 		// Convert raw parameters to Optional types
 		Optional<Path> configPathOpt = Optional.ofNullable(configPath);
@@ -94,7 +97,8 @@ public record ParsedArguments(
 			helpRequested,
 			versionRequested,
 			commandSafe,
-			outputDirectoryOpt);
+			outputDirectoryOpt,
+			parseResult);
 	}
 	/**
 	 * Enumeration of available commands.

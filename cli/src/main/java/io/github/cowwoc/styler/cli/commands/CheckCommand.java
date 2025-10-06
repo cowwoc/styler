@@ -2,9 +2,6 @@ package io.github.cowwoc.styler.cli.commands;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Option;
-import picocli.CommandLine.Parameters;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -18,60 +15,19 @@ import java.util.concurrent.Callable;
  * to validate code style compliance.
  */
 @SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
-@Command(
-	name = "check",
-	description = "Check Java source files for formatting violations",
-	mixinStandardHelpOptions = true)
 public class CheckCommand implements Callable<Integer>
 {
 	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
 	private static final Logger logger = LoggerFactory.getLogger(CheckCommand.class);
 
-	@Parameters(
-		paramLabel = "<files>",
-		description = "Java source files or directories to check",
-		arity = "1..*")
-	private List<Path> inputPaths;
-
-	@Option(
-		names = {"-c", "--config"},
-		description = "Configuration file path (default: auto-discover)")
-	private Path configFile;
-
-	@Option(
-		names = {"--include"},
-		description = "File patterns to include (default: **/*.java)",
-		paramLabel = "<pattern>")
-	private List<String> includePatterns;
-
-	@Option(
-		names = {"--exclude"},
-		description = "File patterns to exclude",
-		paramLabel = "<pattern>")
-	private List<String> excludePatterns;
-
-	@Option(
-		names = {"--json"},
-		description = "Output results in JSON format for machine processing")
-	private boolean jsonOutput;
-
-	@Option(
-		names = {"--fail-fast"},
-		description = "Stop checking on first violation found")
-	private boolean failFast;
-
-	@Option(
-		names = {"--max-violations"},
-		description = "Maximum number of violations to report (default: unlimited)",
-		paramLabel = "<count>")
-	private Integer maxViolations;
-
-	@SuppressWarnings("PMD.ImmutableField") // Picocli sets this via reflection
-	@Option(
-		names = {"--severity"},
-		description = "Minimum severity level to report: ${COMPLETION-CANDIDATES} (default: INFO)",
-		paramLabel = "<level>")
-	private SeverityLevel severityLevel = SeverityLevel.INFO;
+	private final List<Path> inputPaths;
+	private final Path configFile;
+	private final List<String> includePatterns;
+	private final List<String> excludePatterns;
+	private final boolean jsonOutput;
+	private final boolean failFast;
+	private final Integer maxViolations;
+	private final SeverityLevel severityLevel;
 
 	/**
 	 * Severity levels for violation reporting.
@@ -81,6 +37,68 @@ public class CheckCommand implements Callable<Integer>
 		ERROR, WARN, INFO, DEBUG
 	}
 
+	/**
+	 * Private constructor - use fromParseResult() factory method.
+	 *
+	 * @param inputPaths      input files or directories
+	 * @param configFile      configuration file path
+	 * @param includePatterns file patterns to include
+	 * @param excludePatterns file patterns to exclude
+	 * @param jsonOutput      JSON output mode
+	 * @param failFast        fail-fast mode
+	 * @param maxViolations   maximum violations to report
+	 * @param severityLevel   minimum severity level
+	 */
+	private CheckCommand(List<Path> inputPaths, Path configFile, List<String> includePatterns,
+		List<String> excludePatterns, boolean jsonOutput, boolean failFast, Integer maxViolations,
+		SeverityLevel severityLevel)
+	{
+		this.inputPaths = inputPaths != null ? List.copyOf(inputPaths) : List.of();
+		this.configFile = configFile;
+		this.includePatterns = includePatterns != null ? List.copyOf(includePatterns) : List.of();
+		this.excludePatterns = excludePatterns != null ? List.copyOf(excludePatterns) : List.of();
+		this.jsonOutput = jsonOutput;
+		this.failFast = failFast;
+		this.maxViolations = maxViolations;
+		this.severityLevel = severityLevel != null ? severityLevel : SeverityLevel.INFO;
+	}
+
+	/**
+	 * Creates CheckCommand from ParseResult (reflection-free extraction).
+	 *
+	 * @param parseResult picocli parse result
+	 * @return configured CheckCommand instance
+	 */
+	public static CheckCommand fromParseResult(picocli.CommandLine.ParseResult parseResult)
+	{
+		@SuppressWarnings("unchecked")
+		List<Path> inputPaths = parseResult.hasMatchedPositional(0) ?
+			parseResult.matchedPositional(0).getValue() : List.of();
+
+		Path configFile = parseResult.hasMatchedOption("--config") ?
+			parseResult.matchedOptionValue("--config", null) : null;
+
+		@SuppressWarnings("unchecked")
+		List<String> includePatterns = parseResult.hasMatchedOption("--include") ?
+			parseResult.matchedOptionValue("--include", List.of()) : List.of();
+
+		@SuppressWarnings("unchecked")
+		List<String> excludePatterns = parseResult.hasMatchedOption("--exclude") ?
+			parseResult.matchedOptionValue("--exclude", List.of()) : List.of();
+
+		boolean jsonOutput = parseResult.hasMatchedOption("--json");
+		boolean failFast = parseResult.hasMatchedOption("--fail-fast");
+
+		Integer maxViolations = parseResult.hasMatchedOption("--max-violations") ?
+			parseResult.matchedOptionValue("--max-violations", null) : null;
+
+		SeverityLevel severityLevel = parseResult.hasMatchedOption("--severity") ?
+			parseResult.matchedOptionValue("--severity", SeverityLevel.INFO) : SeverityLevel.INFO;
+
+		return new CheckCommand(inputPaths, configFile, includePatterns, excludePatterns,
+			jsonOutput, failFast, maxViolations, severityLevel);
+	}
+
 	@Override
 	public Integer call()
 	{
@@ -88,34 +106,13 @@ public class CheckCommand implements Callable<Integer>
 
 		try
 		{
-			// TODO Implement check logic
-			// This will be implemented when the formatter API is integrated
-
-			// For now, just log the configuration
-			String configFileDisplay;
-			if (configFile != null)
-				{
-				configFileDisplay = configFile.toString();
-				}
-			else
-				{
-				configFileDisplay = "auto-discover";
-				}
-			logger.info("Configuration file: {}", configFileDisplay);
+			// Log configuration for now - full implementation pending formatter API integration
+			logger.info("Configuration file: {}", configFile != null ? configFile : "auto-discover");
 			logger.info("Include patterns: {}", includePatterns);
 			logger.info("Exclude patterns: {}", excludePatterns);
 			logger.info("JSON output: {}", jsonOutput);
 			logger.info("Fail fast: {}", failFast);
-			String maxViolationsDisplay;
-			if (maxViolations != null)
-				{
-				maxViolationsDisplay = maxViolations.toString();
-				}
-			else
-				{
-				maxViolationsDisplay = "unlimited";
-				}
-			logger.info("Max violations: {}", maxViolationsDisplay);
+			logger.info("Max violations: {}", maxViolations != null ? maxViolations : "unlimited");
 			logger.info("Severity level: {}", severityLevel);
 
 			System.out.println("Check command executed successfully");

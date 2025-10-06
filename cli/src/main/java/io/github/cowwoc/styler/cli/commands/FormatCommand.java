@@ -18,57 +18,79 @@ import java.util.concurrent.Callable;
  * locations based on user options.
  */
 @SuppressWarnings("PMD.SystemPrintln") // CLI command: System.out/err required for user output
-@Command(
-	name = "format",
-	description = "Format Java source files according to configured rules",
-	mixinStandardHelpOptions = true)
 public class FormatCommand implements Callable<Integer>
 {
 	@SuppressWarnings("PMD.FieldNamingConventions") // Standard SLF4J logger naming convention
 	private static final Logger logger = LoggerFactory.getLogger(FormatCommand.class);
 
-	@Parameters(
-		paramLabel = "<files>",
-		description = "Java source files or directories to format",
-		arity = "1..*")
-	private List<Path> inputPaths;
+	private final List<Path> inputPaths;
+	private final Path configFile;
+	private final Path outputDirectory;
+	private final boolean dryRun;
+	private final List<String> includePatterns;
+	private final List<String> excludePatterns;
+	private final boolean jsonOutput;
+	private final boolean failOnChanges;
 
-	@Option(
-		names = {"-c", "--config"},
-		description = "Configuration file path (default: auto-discover)")
-	private Path configFile;
+	/**
+	 * Private constructor - use fromParseResult() factory method.
+	 *
+	 * @param inputPaths      input files or directories
+	 * @param configFile      configuration file path
+	 * @param outputDirectory output directory
+	 * @param dryRun          dry run mode
+	 * @param includePatterns file patterns to include
+	 * @param excludePatterns file patterns to exclude
+	 * @param jsonOutput      JSON output mode
+	 * @param failOnChanges   fail if changes detected
+	 */
+	private FormatCommand(List<Path> inputPaths, Path configFile, Path outputDirectory, boolean dryRun,
+		List<String> includePatterns, List<String> excludePatterns, boolean jsonOutput, boolean failOnChanges)
+	{
+		this.inputPaths = inputPaths != null ? List.copyOf(inputPaths) : List.of();
+		this.configFile = configFile;
+		this.outputDirectory = outputDirectory;
+		this.dryRun = dryRun;
+		this.includePatterns = includePatterns != null ? List.copyOf(includePatterns) : List.of();
+		this.excludePatterns = excludePatterns != null ? List.copyOf(excludePatterns) : List.of();
+		this.jsonOutput = jsonOutput;
+		this.failOnChanges = failOnChanges;
+	}
 
-	@Option(
-		names = {"-o", "--output"},
-		description = "Output directory (default: format in-place)")
-	private Path outputDirectory;
+	/**
+	 * Creates FormatCommand from ParseResult (reflection-free extraction).
+	 *
+	 * @param parseResult picocli parse result
+	 * @return configured FormatCommand instance
+	 */
+	public static FormatCommand fromParseResult(picocli.CommandLine.ParseResult parseResult)
+	{
+		@SuppressWarnings("unchecked")
+		List<Path> inputPaths = parseResult.hasMatchedPositional(0) ?
+			parseResult.matchedPositional(0).getValue() : List.of();
 
-	@Option(
-		names = {"--dry-run"},
-		description = "Show what would be formatted without making changes")
-	private boolean dryRun;
+		Path configFile = parseResult.hasMatchedOption("--config") ?
+			parseResult.matchedOptionValue("--config", null) : null;
 
-	@Option(
-		names = {"--include"},
-		description = "File patterns to include (default: **/*.java)",
-		paramLabel = "<pattern>")
-	private List<String> includePatterns;
+		Path outputDirectory = parseResult.hasMatchedOption("--output") ?
+			parseResult.matchedOptionValue("--output", null) : null;
 
-	@Option(
-		names = {"--exclude"},
-		description = "File patterns to exclude",
-		paramLabel = "<pattern>")
-	private List<String> excludePatterns;
+		boolean dryRun = parseResult.hasMatchedOption("--dry-run");
 
-	@Option(
-		names = {"--json"},
-		description = "Output results in JSON format for machine processing")
-	private boolean jsonOutput;
+		@SuppressWarnings("unchecked")
+		List<String> includePatterns = parseResult.hasMatchedOption("--include") ?
+			parseResult.matchedOptionValue("--include", List.of()) : List.of();
 
-	@Option(
-		names = {"--fail-on-changes"},
-		description = "Exit with non-zero code if any files would be changed")
-	private boolean failOnChanges;
+		@SuppressWarnings("unchecked")
+		List<String> excludePatterns = parseResult.hasMatchedOption("--exclude") ?
+			parseResult.matchedOptionValue("--exclude", List.of()) : List.of();
+
+		boolean jsonOutput = parseResult.hasMatchedOption("--json");
+		boolean failOnChanges = parseResult.hasMatchedOption("--fail-on-changes");
+
+		return new FormatCommand(inputPaths, configFile, outputDirectory, dryRun,
+			includePatterns, excludePatterns, jsonOutput, failOnChanges);
+	}
 
 	@Override
 	public Integer call()

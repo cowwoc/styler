@@ -38,8 +38,4 @@ module io.github.cowwoc.styler.cli
 	exports io.github.cowwoc.styler.cli.pipeline.recovery to io.github.cowwoc.styler.cli.test;
 	exports io.github.cowwoc.styler.cli.pipeline.stages to io.github.cowwoc.styler.cli.test;
 	exports io.github.cowwoc.styler.cli.util to io.github.cowwoc.styler.cli.test;
-
-	// Open packages for picocli reflection access
-	opens io.github.cowwoc.styler.cli to info.picocli;
-	opens io.github.cowwoc.styler.cli.commands to info.picocli;
 }

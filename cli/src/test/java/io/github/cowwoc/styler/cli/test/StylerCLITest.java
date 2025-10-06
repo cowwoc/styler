@@ -1,23 +1,21 @@
 package io.github.cowwoc.styler.cli.test;
 
+import io.github.cowwoc.styler.cli.ArgumentParsingException;
+import io.github.cowwoc.styler.cli.CommandLineParser;
+import io.github.cowwoc.styler.cli.ParsedArguments;
 import io.github.cowwoc.styler.cli.StylerCLI;
 
 import org.testng.annotations.Test;
-import picocli.CommandLine;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for the StylerCLI main class.
  */
 public class StylerCLITest
 {
+
 	/**
 	 * Verifies that the main StylerCLI class can be instantiated.
 	 */
@@ -30,86 +28,68 @@ public class StylerCLITest
 	}
 
 	/**
-	 * Verifies that the help command executes and returns the expected exit code.
+	 * Verifies that the help command is recognized.
 	 */
 	@Test
-	public void helpCommand()
+	public void helpCommand() throws ArgumentParsingException
 	{
-		// Test that help command executes and prints help
-		// Note: picocli returns 0 for help requests when using mixinStandardHelpOptions
-		StylerCLI cli = new StylerCLI();
-		CommandLine commandLine = new CommandLine(cli);
+		CommandLineParser parser = new CommandLineParser();
+		ParsedArguments args = parser.parse(new String[]{"--help"});
 
-		// Redirect output to suppress test output
-		StringWriter sw = new StringWriter();
-		commandLine.setOut(new PrintWriter(sw));
-
-		int exitCode = commandLine.execute("--help");
-		assertThat(exitCode).isEqualTo(0); // picocli help exit code with mixin
+		assertThat(args.helpRequested()).isTrue();
+		assertThat(args.versionRequested()).isFalse();
+		assertThat(args.command()).isEqualTo(ParsedArguments.Command.HELP);
 	}
 
 	/**
-	 * Verifies that the version command executes and returns the expected exit code.
+	 * Verifies that the version command is recognized.
 	 */
 	@Test
-	public void versionCommand()
+	public void versionCommand() throws ArgumentParsingException
 	{
-		// Test that version command executes and prints version
-		// Note: picocli returns 0 for version requests when using mixinStandardHelpOptions
-		StylerCLI cli = new StylerCLI();
-		CommandLine commandLine = new CommandLine(cli);
+		CommandLineParser parser = new CommandLineParser();
+		ParsedArguments args = parser.parse(new String[]{"--version"});
 
-		// Redirect output to suppress test output
-		StringWriter sw = new StringWriter();
-		commandLine.setOut(new PrintWriter(sw));
-
-		int exitCode = commandLine.execute("--version");
-		assertThat(exitCode).isEqualTo(0); // picocli version exit code with mixin
+		assertThat(args.versionRequested()).isTrue();
+		assertThat(args.helpRequested()).isFalse();
+		assertThat(args.command()).isEqualTo(ParsedArguments.Command.VERSION);
 	}
 
 	/**
-	 * Verifies that calling CLI without subcommand returns successful exit code.
+	 * Verifies that calling without subcommand shows help.
 	 */
 	@Test
-	public void callWithoutSubcommand()
+	public void callWithoutSubcommand() throws ArgumentParsingException
 	{
-		// Test that calling without subcommand shows help
-		StylerCLI cli = new StylerCLI();
-		CommandLine commandLine = new CommandLine(cli);
+		CommandLineParser parser = new CommandLineParser();
+		ParsedArguments args = parser.parse(new String[]{});
 
-		// Redirect output to suppress test output (thread-safe per-instance)
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		cli.setOut(new PrintStream(baos, true, StandardCharsets.UTF_8));
-
-		int exitCode = commandLine.execute(); // No args - triggers default behavior
-		assertThat(exitCode).isEqualTo(0);
+		assertThat(args.command()).isEqualTo(ParsedArguments.Command.HELP);
 	}
 
 	/**
-	 * Verifies that the verbose flag is correctly recognized and parsed.
+	 * Verifies that the verbose flag is correctly parsed.
 	 */
 	@Test
-	public void verboseFlag()
+	public void verboseFlag() throws ArgumentParsingException
 	{
-		// Test that verbose flag is recognized
-		StylerCLI cli = new StylerCLI();
-		CommandLine commandLine = new CommandLine(cli);
+		CommandLineParser parser = new CommandLineParser();
+		ParsedArguments args = parser.parse(new String[]{"--verbose"});
 
-		commandLine.parseArgs("--verbose");
-		assertThat(cli.isVerbose()).isTrue();
+		assertThat(args.verbose()).isTrue();
+		assertThat(args.quiet()).isFalse();
 	}
 
 	/**
-	 * Verifies that the quiet flag is correctly recognized and parsed.
+	 * Verifies that the quiet flag is correctly parsed.
 	 */
 	@Test
-	public void quietFlag()
+	public void quietFlag() throws ArgumentParsingException
 	{
-		// Test that quiet flag is recognized
-		StylerCLI cli = new StylerCLI();
-		CommandLine commandLine = new CommandLine(cli);
+		CommandLineParser parser = new CommandLineParser();
+		ParsedArguments args = parser.parse(new String[]{"--quiet"});
 
-		commandLine.parseArgs("--quiet");
-		assertThat(cli.isQuiet()).isTrue();
+		assertThat(args.quiet()).isTrue();
+		assertThat(args.verbose()).isFalse();
 	}
 }
