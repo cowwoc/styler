@@ -68,8 +68,9 @@ public final class EnumDeclarationStrategy extends BaseConversionStrategy<EnumDe
 
 		if (enumName == null)
 		{
-			throw new IllegalStateException(
-				"Enum declaration must have a name at node " + nodeId);
+			throw new AssertionError(buildMissingChildError(nodeInfo, nodeStorage,
+				new String[]{"IDENTIFIER_EXPRESSION"},
+				"enum name"));
 		}
 
 		return new EnumDeclarationNode(

@@ -71,8 +71,9 @@ public final class ForStatementStrategy extends BaseConversionStrategy<ForStatem
 
 		if (body == null)
 		{
-			throw new IllegalStateException(
-				"For statement must have a body at node " + nodeId);
+			throw new AssertionError(buildMissingChildError(nodeInfo, nodeStorage,
+				new String[]{"BLOCK_STATEMENT", "EXPRESSION_STATEMENT"},
+				"for statement body"));
 		}
 
 		return new ForStatementNode(

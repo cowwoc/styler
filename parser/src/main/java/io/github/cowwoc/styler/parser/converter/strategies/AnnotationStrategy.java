@@ -49,8 +49,9 @@ public final class AnnotationStrategy extends BaseConversionStrategy<AnnotationN
 
 		if (name == null)
 		{
-			throw new IllegalStateException(
-				"Annotation must have a name at node " + nodeId);
+			throw new AssertionError(buildMissingChildError(nodeInfo, nodeStorage,
+				new String[]{"IDENTIFIER_EXPRESSION"},
+				"annotation name"));
 		}
 
 		return new AnnotationNode(

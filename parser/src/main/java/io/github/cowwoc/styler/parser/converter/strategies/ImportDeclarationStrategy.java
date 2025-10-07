@@ -56,8 +56,9 @@ public final class ImportDeclarationStrategy extends BaseConversionStrategy<Impo
 
 		if (importName == null)
 		{
-			throw new IllegalStateException(
-				"Import declaration must have an import name at node " + nodeId);
+			throw new AssertionError(buildMissingChildError(nodeInfo, nodeStorage,
+				new String[]{"IDENTIFIER_EXPRESSION"},
+				"import name"));
 		}
 
 		return new ImportDeclarationNode(

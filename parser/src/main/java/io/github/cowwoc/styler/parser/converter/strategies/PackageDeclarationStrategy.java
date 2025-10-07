@@ -59,8 +59,9 @@ public final class PackageDeclarationStrategy extends BaseConversionStrategy<Pac
 		// Package name is required
 		if (packageName == null)
 		{
-			throw new IllegalStateException(
-				"Package declaration must have a package name at node " + nodeId);
+			throw new AssertionError(buildMissingChildError(nodeInfo, nodeStorage,
+				new String[]{"IDENTIFIER_EXPRESSION", "FIELD_ACCESS_EXPRESSION"},
+				"package name"));
 		}
 
 		return new PackageDeclarationNode(

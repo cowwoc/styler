@@ -78,8 +78,9 @@ public final class ClassDeclarationStrategy extends BaseConversionStrategy<Class
 
 		if (className == null)
 		{
-			throw new IllegalStateException(
-				"Class declaration must have a name at node " + nodeId);
+			throw new AssertionError(buildMissingChildError(nodeInfo, nodeStorage,
+				new String[]{"IDENTIFIER_EXPRESSION"},
+				"class name"));
 		}
 
 		return new ClassDeclarationNode(

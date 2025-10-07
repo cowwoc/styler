@@ -74,8 +74,9 @@ public final class ConstructorDeclarationStrategy
 
 		if (constructorName == null)
 		{
-			throw new IllegalStateException(
-				"Constructor declaration requires a name at node " + nodeId);
+			throw new AssertionError(buildMissingChildError(nodeInfo, nodeStorage,
+				new String[]{"IDENTIFIER_EXPRESSION"},
+				"constructor name"));
 		}
 
 		ASTNode bodyNode = body.orElse(new BlockStatementNode(

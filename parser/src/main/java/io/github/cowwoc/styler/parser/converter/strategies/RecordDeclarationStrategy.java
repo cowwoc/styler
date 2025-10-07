@@ -70,8 +70,9 @@ public final class RecordDeclarationStrategy extends BaseConversionStrategy<Reco
 
 		if (recordName == null)
 		{
-			throw new IllegalStateException(
-				"Record declaration must have a name at node " + nodeId);
+			throw new AssertionError(buildMissingChildError(nodeInfo, nodeStorage,
+				new String[]{"IDENTIFIER_EXPRESSION"},
+				"record name"));
 		}
 
 		return new RecordDeclarationNode(

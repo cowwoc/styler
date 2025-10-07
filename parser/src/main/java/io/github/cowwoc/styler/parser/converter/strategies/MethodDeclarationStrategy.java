@@ -80,8 +80,9 @@ public final class MethodDeclarationStrategy extends BaseConversionStrategy<Meth
 
 		if (returnType == null || methodName == null)
 		{
-			throw new IllegalStateException(
-				"Method declaration requires return type and name at node " + nodeId);
+			throw new AssertionError(buildMissingChildError(nodeInfo, nodeStorage,
+				new String[]{"IDENTIFIER_EXPRESSION"},
+				"return type and method name"));
 		}
 
 		return new MethodDeclarationNode(

@@ -68,8 +68,9 @@ public final class InterfaceDeclarationStrategy
 
 		if (interfaceName == null)
 		{
-			throw new IllegalStateException(
-				"Interface declaration must have a name at node " + nodeId);
+			throw new AssertionError(buildMissingChildError(nodeInfo, nodeStorage,
+				new String[]{"IDENTIFIER_EXPRESSION"},
+				"interface name"));
 		}
 
 		return new InterfaceDeclarationNode(
