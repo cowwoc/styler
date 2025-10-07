@@ -83,6 +83,92 @@
   - **JLS Compliance**: Tests validate JLS §15.27 (Lambda Expressions) compliance
   - **Actual Effort**: 4 hours (investigation + comprehensive test suite creation + stakeholder review cycles)
 
+- [ ] **TASK:** `fix-package-declaration-missing-children` - Fix parser bug where parsePackageDeclaration doesn't create child nodes
+  - **Purpose**: Fix ArenaToAstConverter error "Package declaration must have a package name at node X"
+  - **Scope**: Update IndexOverlayParser.parsePackageDeclaration() to create and attach child nodes for package name
+  - **Bug**: parsePackageDeclaration() calls parseQualifiedName() but doesn't capture/store the returned node ID as a child
+  - **Root Cause**: parseQualifiedName() returns void instead of int - it only consumes tokens without creating AST nodes
+  - **Error Symptom**: Maven plugin fails with "Package declaration must have a package name at node 1" on valid Java files
+  - **Files Affected**:
+    - parser/src/main/java/io/github/cowwoc/styler/parser/IndexOverlayParser.java (parsePackageDeclaration, parseQualifiedName)
+  - **Solution**:
+    - Change parseQualifiedName() signature from `void` to `int` (return node ID)
+    - Create AST nodes (IDENTIFIER_EXPRESSION or FIELD_ACCESS_EXPRESSION chain) for qualified name
+    - Store returned node ID and add as child to PACKAGE_DECLARATION node via addChild()
+    - Update all 20 callers of parseQualifiedName() to handle int return value
+  - **Test Coverage**: Add test case parsing files with package declarations (io.github.cowwoc.styler.ast.visitor)
+  - **Integration**: Enables ArenaToAstConverter PackageDeclarationStrategy to successfully convert package nodes
+  - **Estimated Effort**: 2-3 hours (signature change + AST node creation + update 20 call sites + testing)
+  - **Priority**: HIGH (blocks Maven plugin usage on all files with package declarations)
+
+- [ ] **TASK:** `improve-converter-validation-error-messages` - Enhance ArenaToAstConverter validation error messages for faster debugging
+  - **Purpose**: Make converter validation errors immediately identify parser bugs and pinpoint exact location/cause
+  - **Scope**: Improve all validation error messages in 84 conversion strategy classes
+  - **Current Problem**: Generic errors like "Package declaration must have a package name at node X" don't indicate:
+    - Whether it's a parser bug or converter bug
+    - What child nodes were expected vs found
+    - Which parser method failed to create nodes
+    - What the actual Arena node structure looks like
+  - **Solution Pattern**:
+    - Prefix with "Parser bug:" when missing required children (parser didn't create nodes)
+    - Show expected child node types (e.g., "Expected IDENTIFIER_EXPRESSION or FIELD_ACCESS_EXPRESSION")
+    - Show actual children list from Arena (e.g., "Actual children: []" or "Actual children: [5, 8, 12]")
+    - Reference specific parser method (e.g., "parsePackageDeclaration() in IndexOverlayParser")
+    - Explain what went wrong (e.g., "didn't create/attach child nodes")
+  - **Example Improvement**:
+    - Before: "Package declaration must have a package name at node 1"
+    - After: "Parser bug: PACKAGE_DECLARATION node 1 has no child nodes for package name. Expected IDENTIFIER_EXPRESSION or FIELD_ACCESS_EXPRESSION child. Actual children: []. This indicates parsePackageDeclaration() in IndexOverlayParser didn't create/attach child nodes."
+  - **Files Affected**: All 84 strategy files in parser/src/main/java/io/github/cowwoc/styler/parser/converter/strategies/
+  - **Validation Types to Improve**:
+    - Missing required children (like package name example)
+    - Wrong child node types (expected X, found Y)
+    - Child count mismatches (expected N children, found M)
+    - Invalid child ordering (expected A before B, found B before A)
+  - **Benefits**:
+    - Instantly identify parser bugs vs converter bugs
+    - Immediately see what parser method needs fixing
+    - Understand exact mismatch (expected vs actual)
+    - Reduce debugging time from hours to minutes
+  - **Testing**: Verify improved messages appear in actual error scenarios (intentionally break parser to test)
+  - **Estimated Effort**: 4-6 hours (pattern across 84 strategies, identify all validation points, comprehensive testing)
+  - **Priority**: MEDIUM (quality-of-life improvement for parser development)
+
+- [ ] **TASK:** `fix-exception-types-illegalstateexception-to-assertionerror` - Replace IllegalStateException with AssertionError for internal bugs
+  - **Purpose**: Correct exception types to distinguish internal bugs (valid input reaches impossible state) from invalid user state
+  - **Scope**: Review entire codebase and replace IllegalStateException with AssertionError where valid input reaches impossible state
+  - **Policy**: AssertionError = valid input + correct API usage → impossible state (our bug), IllegalStateException = wrong API usage, IllegalArgumentException = invalid input
+  - **Key Criterion**: If user provided valid input and followed API correctly, but code reached impossible state → AssertionError
+  - **Current Problem**: Many internal bug checks (parser bugs, converter bugs, algorithm bugs) incorrectly throw IllegalStateException
+  - **Categories to Fix**:
+    - **Parser bugs**: Valid Java source reaches impossible state (missing child nodes, incorrect AST structure, unreachable code)
+    - **Converter bugs**: Valid Arena nodes reach impossible state (unexpected node types, validation failures)
+    - **Algorithm bugs**: Valid input produces impossible result (postcondition violations, invariant violations)
+    - **Impossible states**: Valid operations reach unreachable code or corrupt internal state
+  - **Search Patterns**:
+    - `throw new IllegalStateException` with messages containing "bug", "should never", "impossible", "unreachable"
+    - Validation failures in converter strategy classes (84 files in parser/converter/strategies/)
+    - Postcondition checks in algorithms that can only fail with valid inputs
+    - Defensive null checks that should never fail with valid inputs
+    - Unreachable default cases in switch statements on valid enum values
+  - **Keep IllegalStateException For**:
+    - Object already closed/disposed (user violated lifecycle)
+    - Method called in wrong order (user violated API contract: calling next() before hasNext())
+    - Invalid object state from user interaction (user called methods in wrong sequence)
+  - **Example Changes**:
+    - Before: `throw new IllegalStateException("Package declaration must have a package name")`
+    - After: `throw new AssertionError("Parser bug: PACKAGE_DECLARATION node has no child nodes for valid package declaration")`
+  - **Decision Rule**: Ask "Could valid input + correct API usage reach this state?" → YES = AssertionError, NO = IllegalStateException
+  - **Files to Review**:
+    - parser/src/main/java/io/github/cowwoc/styler/parser/ (all .java files)
+    - parser/src/main/java/io/github/cowwoc/styler/parser/converter/ (all strategy files)
+    - ast/core/src/main/java/ (algorithm validation)
+    - formatter/api/src/main/java/ (API contracts)
+    - formatter/rules/src/main/java/ (rule implementation validation)
+  - **Testing**: Verify all tests still pass, ensure error messages remain clear
+  - **Documentation**: Reference docs/optional-modules/code-policies.md § EXCEPTION TYPE SELECTION
+  - **Estimated Effort**: 6-8 hours (grep patterns, review each instance, update exception type and message, test)
+  - **Priority**: MEDIUM (code quality improvement, helps developers distinguish bugs from API misuse)
+
 - [x] **TASK:** `add-line-column-to-parser-errors` - Replace absolute position with line/column in parser error messages ✅ COMPLETED (2025-10-07)
   - **Purpose**: Improve parser error usability by showing line:column instead of absolute offset
   - **Scope**: Update ParseContext error messages to show human-readable line/column using SourcePositionMapper
@@ -377,6 +463,35 @@
     - Documentation in docs/performance/benchmark-execution.md
   - **Note**: Requires parser integration to become functional (see follow-up task below)
   - **Deliverables Verified**: Module compiles, checkstyle/PMD properly skipped, follows benchmark/parser pattern
+- [ ] **TASK:** `refactor-tests-for-thread-safety` - Review and refactor all tests for thread-safe parallel execution
+  - **Purpose**: Enable parallel test execution to reduce build time while ensuring test reliability
+  - **Scope**: Review and refactor entire test suite across all modules (parser, ast, formatter, cli, plugin)
+  - **Problem**: Tests pass when run sequentially but fail when `<parallel>methods</parallel>` is added to Surefire configuration
+  - **Root Causes**:
+    - Shared mutable state between tests (static fields, class-level instance variables)
+    - Non-thread-safe test setup/teardown (@BeforeMethod/@AfterMethod with shared resources)
+    - File system operations without proper isolation (temp files, shared directories)
+    - Global state modifications (system properties, SecurityManager, static caches)
+  - **Required Changes**:
+    - Eliminate shared mutable state (convert to method-local variables or ThreadLocal)
+    - Replace @BeforeMethod/@AfterMethod with per-test setup (inline or factory methods)
+    - Isolate file system operations (unique temp directories per test)
+    - Remove or isolate global state modifications (system property restoration, SecurityManager cleanup)
+    - Ensure proper resource cleanup in finally blocks
+  - **Testing Strategy**:
+    - Phase 1: Identify all test failures under parallel execution (baseline)
+    - Phase 2: Module-by-module refactoring (parser → ast → formatter → cli → plugin)
+    - Phase 3: Verify each module passes with `<parallel>methods</parallel>`
+    - Phase 4: Enable parallel execution across entire project
+  - **Benefits**:
+    - Faster build times (parallel test execution can reduce test phase time by 50-70%)
+    - More reliable tests (thread-safe tests are generally better isolated)
+    - Better test quality (forces proper resource management and cleanup)
+    - CI/CD efficiency (faster feedback loops)
+  - **Module**: All test modules (parser, ast, formatter, cli, plugin)
+  - **Priority**: MEDIUM (quality improvement, build performance optimization)
+  - **Risk**: MEDIUM (test refactoring must preserve test coverage and behavior)
+  - **Estimated Effort**: 3-5 days (systematic review and refactoring of all test files)
 - [ ] **TASK:** `complete-performance-benchmark-implementation` - Functional benchmark suite
   - **Purpose**: Convert benchmark template to functional performance validation suite
   - **Dependencies**: Requires `add-performance-benchmarks` (architectural foundation)
@@ -760,20 +875,18 @@
   - **Integration**: Tests use parallel-safe patterns (zero shared state), support all formatter-api interfaces, enable plugin developers to validate implementations
 
 ### Multiple Formatter Rules (Expand Formatter Capabilities)
-- [ ] **TASK:** `fix-brace-style-violations` - Fix brace style violation error and consolidate duplicate JavaDoc @throws tags
+- [x] **TASK:** `fix-brace-style-violations` - Fix brace style violation error and consolidate duplicate JavaDoc @throws tags ✅ ALREADY IMPLEMENTED
   - **Purpose**: Fix "Unknown style: same line as declaration" error in BraceEditGenerator and eliminate duplicate @throws tags across codebase
-  - **Scope**: Fix BraceViolation to store style name, centralize style descriptions in strategy pattern, consolidate duplicate @throws JavaDoc tags
-  - **Bug**: BraceEditGenerator receives human-readable description ("same line as declaration") instead of style name ("K&R", "Allman", "GNU")
-  - **Components**:
-    - Add styleName field to BraceViolation record to store actual style name
-    - Add getOpeningBraceDescription() and getClosingBraceDescription() to BraceStyleStrategy interface
-    - Implement description methods in KAndRStrategy, AllmanStrategy, GnuStrategy
-    - Update BraceStyleAnalyzer to use strategy.getStyleName() and strategy description methods
-    - Update BraceEditGenerator to use violation.styleName() instead of violation.expectedStyle()
-    - Consolidate duplicate @throws tags in 17 files (FormattingHints, ASTNode, ConstructorDeclarationNode, RecordDeclarationNode, PluginDescriptor, FileValidator, StrategyRegistry, BraceViolation)
-  - **Files Modified**: 14 files in formatter/rules, formatter/api, ast/core, cli, parser modules
-  - **Testing**: Verify maven plugin no longer throws "Unknown style" error, verify no duplicate @throws tags remain
-  - **Quality**: Full checkstyle compliance, PMD compliance, build success
+  - **Status**: ARCHITECTURE ALREADY CORRECT - No changes needed
+  - **Investigation**: Technical-architect verification (2025-10-07) confirmed:
+    - BraceViolation already has `styleName` field (line 25 in BraceViolation.java)
+    - BraceStyleStrategy already has `getOpeningBraceDescription()` and `getClosingBraceDescription()` methods
+    - All strategy implementations (K&R, Allman, GNU) already implement description methods correctly
+    - BraceStyleAnalyzer already uses `strategy.getStyleName()` for styleName field
+    - BraceEditGenerator already uses `violation.styleName()` correctly (line 84)
+    - Switch statement in BraceEditGenerator correctly matches against "K&R", "Allman", "GNU"
+  - **Finding**: The bug described in this task does NOT exist in the current codebase. Architecture is already correctly implemented with proper separation of machine-readable `styleName` from human-readable `expectedStyle`.
+  - **Completed**: Architecture review confirms implementation already complete (2025-10-07)
 - [x] **MODULE:** `restructure-formatter-modules` - Restructure formatter into hierarchical parent/child module architecture ✅ COMPLETED (2025-10-04)
   - **Completed**: Converted formatter into parent POM, moved code to formatter/api/, moved formatter-impl to formatter/rules/
   - **Structure**: formatter/ (parent POM) → formatter/api/ (API interfaces) + formatter/rules/ (rule implementations)
