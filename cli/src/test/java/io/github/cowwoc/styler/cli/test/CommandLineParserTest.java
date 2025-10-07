@@ -4,8 +4,6 @@ import io.github.cowwoc.styler.cli.CommandLineParser;
 import io.github.cowwoc.styler.cli.ParsedArguments;
 import io.github.cowwoc.styler.cli.ArgumentParsingException;
 
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -13,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -22,61 +21,57 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * <p>
  * Tests cover argument parsing, validation, error handling, and edge cases
  * to ensure the parser correctly handles all supported CLI patterns.
+ * <p>
+ * Thread-safe: All tests use method-local variables and UUID-based temp directories.
  */
 public class CommandLineParserTest
 {
-	private CommandLineParser parser;
-	private Path tempDir;
-	private Path testFile1;
-	private Path testFile2;
-
 	/**
-	 * Sets up a fresh CommandLineParser instance and temporary test files before each test method.
+	 * Helper class to hold test directory structure for tests that need temp files.
 	 */
-	@BeforeMethod
-	public void setUp() throws IOException
+	private static class TestDirectory
 	{
-		parser = new CommandLineParser();
+		final Path tempDir;
+		final Path testFile1;
+		final Path testFile2;
 
-		// Create temporary directory structure
-		tempDir = Files.createTempDirectory("parser-test");
-		Path srcMain = tempDir.resolve("src/main/java");
-		Path srcTest = tempDir.resolve("src/test/java");
-		Files.createDirectories(srcMain);
-		Files.createDirectories(srcTest);
-
-		// Create test files
-		testFile1 = srcMain.resolve("Test.java");
-		testFile2 = srcTest.resolve("TestTest.java");
-		Files.writeString(testFile1, "public class Test {}");
-		Files.writeString(testFile2, "public class TestTest {}");
-	}
-
-	/**
-	 * Cleans up temporary test files and directories after each test method.
-	 */
-	// Test cleanup should not fail the test
-	@SuppressWarnings("PMD.EmptyCatchBlock")
-	@AfterMethod
-	public void tearDown() throws IOException
-	{
-		if (tempDir != null && Files.exists(tempDir))
+		TestDirectory() throws IOException
 		{
-			// Delete test files and directories
-			Files.walk(tempDir).
-				// Reverse order for directory deletion
-				sorted((a, b) -> -a.compareTo(b)).
-				forEach(path ->
-				{
-					try
+			// Use UUID for parallel test isolation
+			this.tempDir = Files.createTempDirectory("parser-test-" + UUID.randomUUID());
+			Path srcMain = tempDir.resolve("src/main/java");
+			Path srcTest = tempDir.resolve("src/test/java");
+			Files.createDirectories(srcMain);
+			Files.createDirectories(srcTest);
+
+			this.testFile1 = srcMain.resolve("Test.java");
+			this.testFile2 = srcTest.resolve("TestTest.java");
+			Files.writeString(testFile1, "public class Test {}");
+			Files.writeString(testFile2, "public class TestTest {}");
+		}
+
+		void cleanup() throws IOException
+		{
+			if (tempDir != null && Files.exists(tempDir))
+			{
+				// Delete test files and directories
+				Files.walk(tempDir).
+					// Reverse order for directory deletion
+					sorted((a, b) -> -a.compareTo(b)).
+					forEach(path ->
 					{
-						Files.delete(path);
-					}
-					catch (IOException e)
-					{
-						// Ignore cleanup errors
-					}
-				});
+						try
+						{
+							Files.delete(path);
+						}
+						catch (IOException e)
+						{
+							// Ignore cleanup errors
+							@SuppressWarnings("unused")
+							String ignored = e.getMessage();
+						}
+					});
+			}
 		}
 	}
 
@@ -84,19 +79,28 @@ public class CommandLineParserTest
 	 * Verifies that the parser correctly handles a basic format command with a single input file.
 	 */
 	@Test
-	public void parseFormatCommand() throws ArgumentParsingException
+	public void parseFormatCommand() throws ArgumentParsingException, IOException
 	{
-		String[] args = {"format", testFile1.toString()};
-		ParsedArguments result = parser.parse(args);
+		CommandLineParser parser = new CommandLineParser();
+		TestDirectory testDir = new TestDirectory();
+		try
+		{
+			String[] args = {"format", testDir.testFile1.toString()};
+			ParsedArguments result = parser.parse(args);
 
-		assertThat(result.command()).isEqualTo(ParsedArguments.Command.FORMAT);
-		assertThat(result.inputFiles()).hasSize(1);
-		assertThat(result.inputFiles().get(0).getFileName()).isEqualTo(testFile1.getFileName());
-		assertThat(result.verbose()).isFalse();
-		assertThat(result.quiet()).isFalse();
-		assertThat(result.dryRun()).isFalse();
-		assertThat(result.configPath()).isEmpty();
-		assertThat(result.outputDirectory()).isEmpty();
+			assertThat(result.command()).isEqualTo(ParsedArguments.Command.FORMAT);
+			assertThat(result.inputFiles()).hasSize(1);
+			assertThat(result.inputFiles().get(0).getFileName()).isEqualTo(testDir.testFile1.getFileName());
+			assertThat(result.verbose()).isFalse();
+			assertThat(result.quiet()).isFalse();
+			assertThat(result.dryRun()).isFalse();
+			assertThat(result.configPath()).isEmpty();
+			assertThat(result.outputDirectory()).isEmpty();
+		}
+		finally
+		{
+			testDir.cleanup();
+		}
 	}
 
 	/**
@@ -105,50 +109,68 @@ public class CommandLineParserTest
 	@Test
 	public void parseFormatCommandWithOptions() throws ArgumentParsingException, IOException
 	{
-		// Create config and output directory
-		Path customConfig = tempDir.resolve("custom.toml");
-		Path outputDir = tempDir.resolve("target/formatted");
-		Files.writeString(customConfig, "# test config");
-		Files.createDirectories(outputDir);
+		CommandLineParser parser = new CommandLineParser();
+		TestDirectory testDir = new TestDirectory();
+		try
+		{
+			// Create config and output directory
+			Path customConfig = testDir.tempDir.resolve("custom.toml");
+			Path outputDir = testDir.tempDir.resolve("target/formatted");
+			Files.writeString(customConfig, "# test config");
+			Files.createDirectories(outputDir);
 
-		String[] args = {
-			"--verbose",
-			"format",
-			"--config", customConfig.toString(),
-			"--dry-run",
-			"--output", outputDir.toString(),
-			testFile1.toString(),
-			testFile2.toString()
-		};
-		ParsedArguments result = parser.parse(args);
+			String[] args = {
+				"--verbose",
+				"format",
+				"--config", customConfig.toString(),
+				"--dry-run",
+				"--output", outputDir.toString(),
+				testDir.testFile1.toString(),
+				testDir.testFile2.toString()
+			};
+			ParsedArguments result = parser.parse(args);
 
-		assertThat(result.command()).isEqualTo(ParsedArguments.Command.FORMAT);
-		assertThat(result.inputFiles()).hasSize(2);
-		assertThat(result.inputFiles().get(0).getFileName()).isEqualTo(testFile1.getFileName());
-		assertThat(result.inputFiles().get(1).getFileName()).isEqualTo(testFile2.getFileName());
-		assertThat(result.verbose()).isTrue();
-		assertThat(result.quiet()).isFalse();
-		assertThat(result.dryRun()).isTrue();
-		assertThat(result.configPath()).isPresent();
-		assertThat(result.configPath().get().getFileName()).isEqualTo(customConfig.getFileName());
-		assertThat(result.outputDirectory()).isPresent();
-		assertThat(result.outputDirectory().get().getFileName()).isEqualTo(outputDir.getFileName());
+			assertThat(result.command()).isEqualTo(ParsedArguments.Command.FORMAT);
+			assertThat(result.inputFiles()).hasSize(2);
+			assertThat(result.inputFiles().get(0).getFileName()).isEqualTo(testDir.testFile1.getFileName());
+			assertThat(result.inputFiles().get(1).getFileName()).isEqualTo(testDir.testFile2.getFileName());
+			assertThat(result.verbose()).isTrue();
+			assertThat(result.quiet()).isFalse();
+			assertThat(result.dryRun()).isTrue();
+			assertThat(result.configPath()).isPresent();
+			assertThat(result.configPath().get().getFileName()).isEqualTo(customConfig.getFileName());
+			assertThat(result.outputDirectory()).isPresent();
+			assertThat(result.outputDirectory().get().getFileName()).isEqualTo(outputDir.getFileName());
+		}
+		finally
+		{
+			testDir.cleanup();
+		}
 	}
 
 	/**
 	 * Verifies that the parser correctly handles a basic check command with a single file.
 	 */
 	@Test
-	public void parseCheckCommand() throws ArgumentParsingException
+	public void parseCheckCommand() throws ArgumentParsingException, IOException
 	{
-		String[] args = {"check", testFile1.toString()};
-		ParsedArguments result = parser.parse(args);
+		CommandLineParser parser = new CommandLineParser();
+		TestDirectory testDir = new TestDirectory();
+		try
+		{
+			String[] args = {"check", testDir.testFile1.toString()};
+			ParsedArguments result = parser.parse(args);
 
-		assertThat(result.command()).isEqualTo(ParsedArguments.Command.CHECK);
-		assertThat(result.inputFiles()).hasSize(1);
-		assertThat(result.inputFiles().get(0).getFileName()).isEqualTo(testFile1.getFileName());
-		assertThat(result.verbose()).isFalse();
-		assertThat(result.dryRun()).isFalse();
+			assertThat(result.command()).isEqualTo(ParsedArguments.Command.CHECK);
+			assertThat(result.inputFiles()).hasSize(1);
+			assertThat(result.inputFiles().get(0).getFileName()).isEqualTo(testDir.testFile1.getFileName());
+			assertThat(result.verbose()).isFalse();
+			assertThat(result.dryRun()).isFalse();
+		}
+		finally
+		{
+			testDir.cleanup();
+		}
 	}
 
 	/**
@@ -157,25 +179,34 @@ public class CommandLineParserTest
 	@Test
 	public void parseCheckCommandWithConfig() throws ArgumentParsingException, IOException
 	{
-		// Create config file
-		Path configFile = tempDir.resolve(".styler.toml");
-		Files.writeString(configFile, "# test config");
+		CommandLineParser parser = new CommandLineParser();
+		TestDirectory testDir = new TestDirectory();
+		try
+		{
+			// Create config file
+			Path configFile = testDir.tempDir.resolve(".styler.toml");
+			Files.writeString(configFile, "# test config");
 
-		String[] args = {
-			"--quiet",
-			"check",
-			"--config", configFile.toString(),
-			testFile1.toString()
-		};
-		ParsedArguments result = parser.parse(args);
+			String[] args = {
+				"--quiet",
+				"check",
+				"--config", configFile.toString(),
+				testDir.testFile1.toString()
+			};
+			ParsedArguments result = parser.parse(args);
 
-		assertThat(result.command()).isEqualTo(ParsedArguments.Command.CHECK);
-		assertThat(result.inputFiles()).hasSize(1);
-		assertThat(result.inputFiles().get(0).getFileName()).isEqualTo(testFile1.getFileName());
-		assertThat(result.verbose()).isFalse();
-		assertThat(result.quiet()).isTrue();
-		assertThat(result.configPath()).isPresent();
-		assertThat(result.configPath().get().getFileName()).isEqualTo(configFile.getFileName());
+			assertThat(result.command()).isEqualTo(ParsedArguments.Command.CHECK);
+			assertThat(result.inputFiles()).hasSize(1);
+			assertThat(result.inputFiles().get(0).getFileName()).isEqualTo(testDir.testFile1.getFileName());
+			assertThat(result.verbose()).isFalse();
+			assertThat(result.quiet()).isTrue();
+			assertThat(result.configPath()).isPresent();
+			assertThat(result.configPath().get().getFileName()).isEqualTo(configFile.getFileName());
+		}
+		finally
+		{
+			testDir.cleanup();
+		}
 	}
 
 	/**
@@ -184,6 +215,7 @@ public class CommandLineParserTest
 	@Test
 	public void parseConfigCommand() throws ArgumentParsingException
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String[] args = {"config"};
 		ParsedArguments result = parser.parse(args);
 
@@ -198,6 +230,7 @@ public class CommandLineParserTest
 	@Test
 	public void parseHelpCommand() throws ArgumentParsingException
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String[] args = {"help"};
 		ParsedArguments result = parser.parse(args);
 
@@ -213,6 +246,7 @@ public class CommandLineParserTest
 	@Test
 	public void parseHelpFlag() throws ArgumentParsingException
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String[] args = {"--help"};
 		ParsedArguments result = parser.parse(args);
 
@@ -227,6 +261,7 @@ public class CommandLineParserTest
 	@Test
 	public void parseVersionFlag() throws ArgumentParsingException
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String[] args = {"--version"};
 		ParsedArguments result = parser.parse(args);
 
@@ -241,6 +276,7 @@ public class CommandLineParserTest
 	@Test
 	public void parseNoArgs() throws ArgumentParsingException
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String[] args = {};
 		ParsedArguments result = parser.parse(args);
 
@@ -253,26 +289,44 @@ public class CommandLineParserTest
 	 * Verifies that the parser correctly handles the -v short flag for verbose mode.
 	 */
 	@Test
-	public void parseVerboseShortFlag() throws ArgumentParsingException
+	public void parseVerboseShortFlag() throws ArgumentParsingException, IOException
 	{
-		String[] args = {"-v", "format", testFile1.toString()};
-		ParsedArguments result = parser.parse(args);
+		CommandLineParser parser = new CommandLineParser();
+		TestDirectory testDir = new TestDirectory();
+		try
+		{
+			String[] args = {"-v", "format", testDir.testFile1.toString()};
+			ParsedArguments result = parser.parse(args);
 
-		assertThat(result.verbose()).isTrue();
-		assertThat(result.quiet()).isFalse();
+			assertThat(result.verbose()).isTrue();
+			assertThat(result.quiet()).isFalse();
+		}
+		finally
+		{
+			testDir.cleanup();
+		}
 	}
 
 	/**
 	 * Verifies that the parser correctly handles the -q short flag for quiet mode.
 	 */
 	@Test
-	public void parseQuietShortFlag() throws ArgumentParsingException
+	public void parseQuietShortFlag() throws ArgumentParsingException, IOException
 	{
-		String[] args = {"-q", "format", testFile1.toString()};
-		ParsedArguments result = parser.parse(args);
+		CommandLineParser parser = new CommandLineParser();
+		TestDirectory testDir = new TestDirectory();
+		try
+		{
+			String[] args = {"-q", "format", testDir.testFile1.toString()};
+			ParsedArguments result = parser.parse(args);
 
-		assertThat(result.verbose()).isFalse();
-		assertThat(result.quiet()).isTrue();
+			assertThat(result.verbose()).isFalse();
+			assertThat(result.quiet()).isTrue();
+		}
+		finally
+		{
+			testDir.cleanup();
+		}
 	}
 
 	/**
@@ -281,6 +335,7 @@ public class CommandLineParserTest
 	@Test
 	public void errorOnMissingInputFiles()
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String[] args = {"format"};
 
 		assertThatThrownBy(() -> parser.parse(args)).
@@ -294,6 +349,7 @@ public class CommandLineParserTest
 	@Test
 	public void errorOnMissingInputFilesForCheck()
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String[] args = {"check"};
 
 		assertThatThrownBy(() -> parser.parse(args)).
@@ -307,6 +363,7 @@ public class CommandLineParserTest
 	@Test
 	public void errorOnConflictingVerboseQuiet()
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String[] args = {"--verbose", "--quiet", "format", "Test.java"};
 
 		assertThatThrownBy(() -> parser.parse(args)).
@@ -320,6 +377,7 @@ public class CommandLineParserTest
 	@Test
 	public void errorOnConflictingVerboseQuietShortFlags()
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String[] args = {"-v", "-q", "format", "Test.java"};
 
 		assertThatThrownBy(() -> parser.parse(args)).
@@ -333,6 +391,7 @@ public class CommandLineParserTest
 	@Test
 	public void errorOnInvalidOption()
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String[] args = {"--invalid-option", "format", "Test.java"};
 
 		assertThatThrownBy(() -> parser.parse(args)).
@@ -346,6 +405,7 @@ public class CommandLineParserTest
 	@Test
 	public void errorOnInvalidCommand()
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String[] args = {"invalid-command", "Test.java"};
 
 		assertThatThrownBy(() -> parser.parse(args)).
@@ -358,6 +418,7 @@ public class CommandLineParserTest
 	@Test
 	public void getUsageText()
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String usage = parser.getUsageText();
 
 		assertThat(usage).contains("styler");
@@ -374,6 +435,7 @@ public class CommandLineParserTest
 	@Test
 	public void getVersionText()
 	{
+		CommandLineParser parser = new CommandLineParser();
 		String version = parser.getVersionText();
 
 		assertThat(version).contains("styler");

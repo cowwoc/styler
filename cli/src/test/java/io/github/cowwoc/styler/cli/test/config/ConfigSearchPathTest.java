@@ -2,7 +2,6 @@ package io.github.cowwoc.styler.cli.test.config;
 
 import io.github.cowwoc.styler.cli.config.ConfigSearchPath;
 
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -10,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -17,29 +17,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Unit tests for ConfigSearchPath class.
  * Tests search path building, platform-specific path resolution, and file discovery with thread-safe design.
+ * <p>
+ * Thread-safe: All tests use method-local variables and UUID-based temp directories.
  */
 public class ConfigSearchPathTest
 {
-	private ConfigSearchPath searchPath;
-	private Path tempDir;
-
-	/**
-	 * Sets up fresh ConfigSearchPath instance and temp directory for each test.
-	 */
-	@BeforeMethod
-	public void setUp() throws IOException
-	{
-		// Create fresh instance and temp directory for each test (thread-safe)
-		searchPath = new ConfigSearchPath();
-		tempDir = Files.createTempDirectory("styler-search-test-");
-	}
-
 	/**
 	 * Verifies that search path from single directory includes the directory and platform-specific paths.
 	 */
 	@Test
-	public void buildSearchPathFromSingleDirectoryIncludesDirectoryAndPlatformPaths()
+	public void buildSearchPathFromSingleDirectoryIncludesDirectoryAndPlatformPaths() throws IOException
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+		Path tempDir = Files.createTempDirectory("styler-search-test-" + UUID.randomUUID());
+
 		// When: building search path from single directory
 		List<Path> result = searchPath.buildSearchPath(tempDir);
 
@@ -54,6 +45,9 @@ public class ConfigSearchPathTest
 	@Test
 	public void buildSearchPathTraversesParentDirectories() throws IOException
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+		Path tempDir = Files.createTempDirectory("styler-search-test-" + UUID.randomUUID());
+
 		// Given: nested directory structure with git repository boundary
 		Path gitDir = tempDir.resolve(".git");
 		Files.createDirectories(gitDir);
@@ -77,6 +71,9 @@ public class ConfigSearchPathTest
 	@Test
 	public void buildSearchPathStopsAtGitBoundary() throws IOException
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+		Path tempDir = Files.createTempDirectory("styler-search-test-" + UUID.randomUUID());
+
 		// Given: git repository structure
 		Path gitDir = tempDir.resolve(".git");
 		Path srcDir = tempDir.resolve("src");
@@ -98,6 +95,8 @@ public class ConfigSearchPathTest
 	@Test
 	public void buildSearchPathWithNullStartDirThrowsNullPointerException()
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+
 		// When/Then: null start directory throws exception
 		assertThatThrownBy(() -> searchPath.buildSearchPath(null)).
 			isInstanceOf(NullPointerException.class).
@@ -110,6 +109,8 @@ public class ConfigSearchPathTest
 	@Test
 	public void getUserConfigPathReturnsOptionalPath()
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+
 		// When: getting user config path
 		Optional<Path> result = searchPath.getUserConfigPath();
 
@@ -124,6 +125,8 @@ public class ConfigSearchPathTest
 	@Test
 	public void getGlobalConfigPathReturnsOptionalPath()
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+
 		// When: getting global config path
 		Optional<Path> result = searchPath.getGlobalConfigPath();
 
@@ -138,6 +141,9 @@ public class ConfigSearchPathTest
 	@Test
 	public void discoverConfigFilesWithTomlFileFindsTomlFile() throws IOException
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+		Path tempDir = Files.createTempDirectory("styler-search-test-" + UUID.randomUUID());
+
 		// Given: directory with TOML config file
 		Path configFile = tempDir.resolve(".styler.toml");
 		Files.writeString(configFile, "verbose = true");
@@ -158,6 +164,9 @@ public class ConfigSearchPathTest
 	@Test
 	public void discoverConfigFilesWithYamlFileFindsYamlFile() throws IOException
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+		Path tempDir = Files.createTempDirectory("styler-search-test-" + UUID.randomUUID());
+
 		// Given: directory with YAML config file
 		Path configFile = tempDir.resolve(".styler.yaml");
 		Files.writeString(configFile, "verbose: true");
@@ -178,6 +187,9 @@ public class ConfigSearchPathTest
 	@Test
 	public void discoverConfigFilesWithBothFormatsPrefersToml() throws IOException
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+		Path tempDir = Files.createTempDirectory("styler-search-test-" + UUID.randomUUID());
+
 		// Given: directory with both TOML and YAML files
 		Path tomlFile = tempDir.resolve(".styler.toml");
 		Path yamlFile = tempDir.resolve(".styler.yaml");
@@ -200,6 +212,9 @@ public class ConfigSearchPathTest
 	@Test
 	public void discoverConfigFilesInMultipleDirectoriesRespectsPrecedence() throws IOException
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+		Path tempDir = Files.createTempDirectory("styler-search-test-" + UUID.randomUUID());
+
 		// Given: config files in multiple directories
 		Path dir1 = tempDir.resolve("dir1");
 		Path dir2 = tempDir.resolve("dir2");
@@ -226,8 +241,11 @@ public class ConfigSearchPathTest
 	 * Verifies that config discovery returns empty list when no config files exist.
 	 */
 	@Test
-	public void discoverConfigFilesWithNoConfigFilesReturnsEmptyList()
+	public void discoverConfigFilesWithNoConfigFilesReturnsEmptyList() throws IOException
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+		Path tempDir = Files.createTempDirectory("styler-search-test-" + UUID.randomUUID());
+
 		// Given: directory with no config files
 		List<Path> searchPaths = List.of(tempDir);
 
@@ -244,6 +262,9 @@ public class ConfigSearchPathTest
 	@Test
 	public void discoverConfigFilesWithUnreadableFileIgnoresFile() throws IOException
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+		Path tempDir = Files.createTempDirectory("styler-search-test-" + UUID.randomUUID());
+
 		// Given: unreadable config file
 		Path configFile = tempDir.resolve(".styler.toml");
 		Files.writeString(configFile, "verbose = true");
@@ -266,6 +287,8 @@ public class ConfigSearchPathTest
 	@Test
 	public void discoverConfigFilesWithNullSearchPathsThrowsNullPointerException()
 	{
+		ConfigSearchPath searchPath = new ConfigSearchPath();
+
 		// When/Then: null search paths throws exception
 		assertThatThrownBy(() -> searchPath.discoverConfigFiles(null)).
 			isInstanceOf(NullPointerException.class).

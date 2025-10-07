@@ -463,7 +463,7 @@
     - Documentation in docs/performance/benchmark-execution.md
   - **Note**: Requires parser integration to become functional (see follow-up task below)
   - **Deliverables Verified**: Module compiles, checkstyle/PMD properly skipped, follows benchmark/parser pattern
-- [ ] **TASK:** `refactor-tests-for-thread-safety` - Review and refactor all tests for thread-safe parallel execution
+- [x] **TASK:** `refactor-tests-for-thread-safety` - Review and refactor all tests for thread-safe parallel execution
   - **Purpose**: Enable parallel test execution to reduce build time while ensuring test reliability
   - **Scope**: Review and refactor entire test suite across all modules (parser, ast, formatter, cli, plugin)
   - **Problem**: Tests pass when run sequentially but fail when `<parallel>methods</parallel>` is added to Surefire configuration

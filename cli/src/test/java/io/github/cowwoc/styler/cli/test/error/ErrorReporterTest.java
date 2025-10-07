@@ -11,7 +11,6 @@ import io.github.cowwoc.styler.ast.SourcePosition;
 import io.github.cowwoc.styler.ast.SourceRange;
 import io.github.cowwoc.styler.formatter.api.FormattingViolation;
 import io.github.cowwoc.styler.formatter.api.ViolationSeverity;
-import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.nio.file.Path;
@@ -22,28 +21,32 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 /**
  * Unit tests for ErrorReporter functionality.
  * Validates error collection, formatting, and reporting capabilities.
+ * <p>
+ * Thread-safe: All tests use method-local variables for reporters and test data.
  */
 public class ErrorReporterTest
 {
-	private ErrorReporter humanReporter;
-	private ErrorReporter machineReporter;
-	private Path testFile;
-	private String testSource;
-
 	/**
-	 * Sets up test fixtures with human and machine error reporters and sample test data.
+	 * Creates test fixtures for use in test methods.
 	 */
-	@BeforeMethod
-	public void setUp()
+	private static class TestFixtures
 	{
-		humanReporter = new ErrorReporter(new HumanErrorFormatter(false)); // No colors for tests
-		machineReporter = new ErrorReporter(new MachineErrorFormatter());
-		testFile = Paths.get("TestFile.java");
-		testSource = "public class TestFile {\n" +
-		             "    public void method() {\n" +
-		             "        System.out.println(\"test\");\n" +
-		             "    }\n" +
-		             "}";
+		final ErrorReporter humanReporter;
+		final ErrorReporter machineReporter;
+		final Path testFile;
+		final String testSource;
+
+		TestFixtures()
+		{
+			this.humanReporter = new ErrorReporter(new HumanErrorFormatter(false)); // No colors for tests
+			this.machineReporter = new ErrorReporter(new MachineErrorFormatter());
+			this.testFile = Paths.get("TestFile.java");
+			this.testSource = "public class TestFile {\n" +
+			                  "    public void method() {\n" +
+			                  "        System.out.println(\"test\");\n" +
+			                  "    }\n" +
+			                  "}";
+		}
 	}
 
 	/**
@@ -52,17 +55,18 @@ public class ErrorReporterTest
 	@Test
 	public void reportParseError()
 	{
+		TestFixtures fixtures = new TestFixtures();
 		Exception parseException = new RuntimeException("Syntax error at line 2, column 5");
 
-		humanReporter.reportParseError(parseException, testFile, testSource);
+		fixtures.humanReporter.reportParseError(parseException, fixtures.testFile, fixtures.testSource);
 
-		requireThat(humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
-		requireThat(humanReporter.hasErrors(), "hasErrors").isTrue();
+		requireThat(fixtures.humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
+		requireThat(fixtures.humanReporter.hasErrors(), "hasErrors").isTrue();
 
-		ErrorContext error = humanReporter.getErrors().get(0);
+		ErrorContext error = fixtures.humanReporter.getErrors().get(0);
 		requireThat(error.category(), "errorCategory").isEqualTo(ErrorCategory.PARSE);
 		requireThat(error.severity(), "errorSeverity").isEqualTo(ErrorSeverity.ERROR);
-		requireThat(error.filePath(), "errorFilePath").isEqualTo(testFile);
+		requireThat(error.filePath(), "errorFilePath").isEqualTo(fixtures.testFile);
 	}
 
 	/**
@@ -71,13 +75,14 @@ public class ErrorReporterTest
 	@Test
 	public void reportConfigError()
 	{
+		TestFixtures fixtures = new TestFixtures();
 		String configText = "invalid_key = \"value\"\n[section]\nkey = value";
 		Exception configException = new RuntimeException("Unknown configuration key 'invalid_key' at line 1");
 
-		humanReporter.reportConfigError(configException, testFile, configText);
+		fixtures.humanReporter.reportConfigError(configException, fixtures.testFile, configText);
 
-		requireThat(humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
-		ErrorContext error = humanReporter.getErrors().get(0);
+		requireThat(fixtures.humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
+		ErrorContext error = fixtures.humanReporter.getErrors().get(0);
 		requireThat(error.category(), "errorCategory").isEqualTo(ErrorCategory.CONFIG);
 		requireThat(error.severity(), "errorSeverity").isEqualTo(ErrorSeverity.ERROR);
 	}
@@ -88,6 +93,7 @@ public class ErrorReporterTest
 	@Test
 	public void reportFormattingViolation()
 	{
+		TestFixtures fixtures = new TestFixtures();
 		SourceRange location = new SourceRange(
 			new SourcePosition(2, 5),
 			new SourcePosition(2, 20));
@@ -99,10 +105,10 @@ public class ErrorReporterTest
 			ViolationSeverity.WARNING,
 			"Break line at method call");
 
-		humanReporter.reportViolation(violation, testFile, testSource);
+		fixtures.humanReporter.reportViolation(violation, fixtures.testFile, fixtures.testSource);
 
-		requireThat(humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
-		ErrorContext error = humanReporter.getErrors().get(0);
+		requireThat(fixtures.humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
+		ErrorContext error = fixtures.humanReporter.getErrors().get(0);
 		requireThat(error.category(), "errorCategory").isEqualTo(ErrorCategory.FORMAT);
 		requireThat(error.severity(), "errorSeverity").isEqualTo(ErrorSeverity.WARNING);
 		requireThat(error.getLineNumber(), "errorLineNumber").isEqualTo(2);
@@ -116,12 +122,13 @@ public class ErrorReporterTest
 	@Test
 	public void reportSystemError()
 	{
+		TestFixtures fixtures = new TestFixtures();
 		Exception systemException = new RuntimeException("Permission denied accessing file");
 
-		humanReporter.reportSystemError(systemException, testFile);
+		fixtures.humanReporter.reportSystemError(systemException, fixtures.testFile);
 
-		requireThat(humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
-		ErrorContext error = humanReporter.getErrors().get(0);
+		requireThat(fixtures.humanReporter.getErrorCount(), "errorCount").isEqualTo(1);
+		ErrorContext error = fixtures.humanReporter.getErrors().get(0);
 		requireThat(error.category(), "errorCategory").isEqualTo(ErrorCategory.SYSTEM);
 		requireThat(error.severity(), "errorSeverity").isEqualTo(ErrorSeverity.ERROR);
 	}
@@ -132,17 +139,18 @@ public class ErrorReporterTest
 	@Test
 	public void maxErrorsLimit()
 	{
-		humanReporter.setMaxErrors(2);
+		TestFixtures fixtures = new TestFixtures();
+		fixtures.humanReporter.setMaxErrors(2);
 
 		// Report 3 errors
 		Exception exception = new RuntimeException("Test error");
-		humanReporter.reportSystemError(exception, testFile);
-		humanReporter.reportSystemError(exception, testFile);
-		humanReporter.reportSystemError(exception, testFile);
+		fixtures.humanReporter.reportSystemError(exception, fixtures.testFile);
+		fixtures.humanReporter.reportSystemError(exception, fixtures.testFile);
+		fixtures.humanReporter.reportSystemError(exception, fixtures.testFile);
 
 		// Should stop at max limit
-		requireThat(humanReporter.shouldHaltProcessing(), "shouldHaltProcessing").isTrue();
-		requireThat(humanReporter.getErrorCount(), "errorCount").isEqualTo(2);
+		requireThat(fixtures.humanReporter.shouldHaltProcessing(), "shouldHaltProcessing").isTrue();
+		requireThat(fixtures.humanReporter.getErrorCount(), "errorCount").isEqualTo(2);
 	}
 
 	/**
@@ -151,16 +159,17 @@ public class ErrorReporterTest
 	@Test
 	public void clearErrors()
 	{
+		TestFixtures fixtures = new TestFixtures();
 		Exception exception = new RuntimeException("Test error");
-		humanReporter.reportSystemError(exception, testFile);
+		fixtures.humanReporter.reportSystemError(exception, fixtures.testFile);
 
-		requireThat(humanReporter.hasErrors(), "hasErrors").isTrue();
+		requireThat(fixtures.humanReporter.hasErrors(), "hasErrors").isTrue();
 
-		humanReporter.clearErrors();
+		fixtures.humanReporter.clearErrors();
 
-		requireThat(humanReporter.hasErrors(), "hasErrorsAfterClear").isFalse();
-		requireThat(humanReporter.getErrorCount(), "errorCountAfterClear").isEqualTo(0);
-		requireThat(humanReporter.shouldHaltProcessing(), "shouldHaltProcessingAfterClear").isFalse();
+		requireThat(fixtures.humanReporter.hasErrors(), "hasErrorsAfterClear").isFalse();
+		requireThat(fixtures.humanReporter.getErrorCount(), "errorCountAfterClear").isEqualTo(0);
+		requireThat(fixtures.humanReporter.shouldHaltProcessing(), "shouldHaltProcessingAfterClear").isFalse();
 	}
 
 	/**
@@ -169,10 +178,11 @@ public class ErrorReporterTest
 	@Test
 	public void formatErrorReport()
 	{
+		TestFixtures fixtures = new TestFixtures();
 		Exception parseException = new RuntimeException("Parse error at line 1");
-		humanReporter.reportParseError(parseException, testFile, testSource);
+		fixtures.humanReporter.reportParseError(parseException, fixtures.testFile, fixtures.testSource);
 
-		String report = humanReporter.formatErrorReport();
+		String report = fixtures.humanReporter.formatErrorReport();
 
 		requireThat(report, "report").isNotNull();
 		requireThat(report.isBlank(), "reportIsBlank").isFalse();
@@ -186,10 +196,11 @@ public class ErrorReporterTest
 	@Test
 	public void formatSummary()
 	{
+		TestFixtures fixtures = new TestFixtures();
 		Exception parseException = new RuntimeException("Parse error");
-		humanReporter.reportParseError(parseException, testFile, testSource);
+		fixtures.humanReporter.reportParseError(parseException, fixtures.testFile, fixtures.testSource);
 
-		String summary = humanReporter.formatSummary("format");
+		String summary = fixtures.humanReporter.formatSummary("format");
 
 		requireThat(summary, "summary").isNotNull();
 		requireThat(summary.isBlank(), "summaryIsBlank").isFalse();
@@ -203,17 +214,18 @@ public class ErrorReporterTest
 	@Test
 	public void machineReadableOutput()
 	{
+		TestFixtures fixtures = new TestFixtures();
 		Exception parseException = new RuntimeException("Parse error at line 1");
-		machineReporter.reportParseError(parseException, testFile, testSource);
+		fixtures.machineReporter.reportParseError(parseException, fixtures.testFile, fixtures.testSource);
 
-		String report = machineReporter.formatErrorReport();
+		String report = fixtures.machineReporter.formatErrorReport();
 
 		requireThat(report, "report").isNotNull();
 		requireThat(report.contains("{"), "reportContainsOpenBrace").isTrue();
 		requireThat(report.contains("\"type\":"), "reportContainsTypeField").isTrue();
 		requireThat(report.contains("\"error-report\""), "reportContainsErrorReport").isTrue();
-		requireThat(machineReporter.getMimeType(), "mimeType").isEqualTo("application/json");
-		requireThat(machineReporter.supportsColors(), "supportsColors").isFalse();
+		requireThat(fixtures.machineReporter.getMimeType(), "mimeType").isEqualTo("application/json");
+		requireThat(fixtures.machineReporter.supportsColors(), "supportsColors").isFalse();
 	}
 
 	/**
@@ -222,9 +234,10 @@ public class ErrorReporterTest
 	@Test
 	public void humanReadableOutput()
 	{
-		requireThat(humanReporter.getMimeType(), "mimeType").isEqualTo("text/plain");
+		TestFixtures fixtures = new TestFixtures();
+		requireThat(fixtures.humanReporter.getMimeType(), "mimeType").isEqualTo("text/plain");
 		// Color support depends on constructor parameter
-		requireThat(humanReporter.supportsColors(), "supportsColors").isFalse(); // Disabled in test setup
+		requireThat(fixtures.humanReporter.supportsColors(), "supportsColors").isFalse(); // Disabled in test setup
 	}
 
 	/**
@@ -233,10 +246,11 @@ public class ErrorReporterTest
 	@Test
 	public void locationExtractionFromException()
 	{
+		TestFixtures fixtures = new TestFixtures();
 		Exception exceptionWithLocation = new RuntimeException("Syntax error at line 15, column 23");
-		humanReporter.reportParseError(exceptionWithLocation, testFile, testSource);
+		fixtures.humanReporter.reportParseError(exceptionWithLocation, fixtures.testFile, fixtures.testSource);
 
-		ErrorContext error = humanReporter.getErrors().get(0);
+		ErrorContext error = fixtures.humanReporter.getErrors().get(0);
 		requireThat(error.getLineNumber(), "errorLineNumber").isEqualTo(15);
 		requireThat(error.getColumnNumber(), "errorColumnNumber").isEqualTo(23);
 	}
@@ -247,10 +261,11 @@ public class ErrorReporterTest
 	@Test
 	public void locationExtractionFallback()
 	{
+		TestFixtures fixtures = new TestFixtures();
 		Exception exceptionWithoutLocation = new RuntimeException("Generic parse error");
-		humanReporter.reportParseError(exceptionWithoutLocation, testFile, testSource);
+		fixtures.humanReporter.reportParseError(exceptionWithoutLocation, fixtures.testFile, fixtures.testSource);
 
-		ErrorContext error = humanReporter.getErrors().get(0);
+		ErrorContext error = fixtures.humanReporter.getErrors().get(0);
 		requireThat(error.getLineNumber(), "errorLineNumber").isEqualTo(1);
 		requireThat(error.getColumnNumber(), "errorColumnNumber").isEqualTo(1);
 	}
@@ -288,7 +303,8 @@ public class ErrorReporterTest
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void invalidMaxErrorsThrows()
 	{
-		humanReporter.setMaxErrors(0);
+		TestFixtures fixtures = new TestFixtures();
+		fixtures.humanReporter.setMaxErrors(0);
 	}
 
 	/**
@@ -297,7 +313,8 @@ public class ErrorReporterTest
 	@Test(expectedExceptions = NullPointerException.class)
 	public void nullParseExceptionThrows()
 	{
-		humanReporter.reportParseError(null, testFile, testSource);
+		TestFixtures fixtures = new TestFixtures();
+		fixtures.humanReporter.reportParseError(null, fixtures.testFile, fixtures.testSource);
 	}
 
 	/**
@@ -306,7 +323,8 @@ public class ErrorReporterTest
 	@Test(expectedExceptions = NullPointerException.class)
 	public void nullViolationThrows()
 	{
-		humanReporter.reportViolation(null, testFile, testSource);
+		TestFixtures fixtures = new TestFixtures();
+		fixtures.humanReporter.reportViolation(null, fixtures.testFile, fixtures.testSource);
 	}
 
 	/**
@@ -315,6 +333,7 @@ public class ErrorReporterTest
 	@Test(expectedExceptions = NullPointerException.class)
 	public void nullOperationTypeThrows()
 	{
-		humanReporter.formatSummary(null);
+		TestFixtures fixtures = new TestFixtures();
+		fixtures.humanReporter.formatSummary(null);
 	}
 }

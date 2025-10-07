@@ -211,9 +211,17 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>3.5.4</version>
+<<<<<<< HEAD
 					<!--					<configuration>-->
 					<!--						<parallel>methods</parallel>-->
 					<!--					</configuration>-->
+=======
+					<configuration>
+						<parallel>methods</parallel>
+						<threadCount>2</threadCount>
+						<perCoreThreadCount>true</perCoreThreadCount>
+					</configuration>
+>>>>>>> 588995a (Enable parallel test execution in CLI module)
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
