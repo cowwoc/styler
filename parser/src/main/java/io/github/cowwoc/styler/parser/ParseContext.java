@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.parser;
 
+import io.github.cowwoc.styler.ast.SourcePosition;
+import io.github.cowwoc.styler.parser.converter.SourcePositionMapper;
 import java.util.List;
 
 /**
@@ -11,6 +13,14 @@ public class ParseContext
 	private final List<TokenInfo> tokens;
 	private final ArenaNodeStorage nodeStorage;
 	private final String sourceText;
+
+	/**
+	 * Maps absolute character offsets to line:column positions for error messages.
+	 * Initialized once at construction and reused for all error reporting in this parsing context.
+	 * Uses O(log n) binary search for efficient position lookups.
+	 */
+	private final SourcePositionMapper positionMapper;
+
 	private int currentTokenIndex;
 	private TokenInfo pendingToken; // For injected tokens (e.g., splitting >> into > >)
 	private StatementParser statementParser; // Callback for parsing statements from strategies
@@ -35,6 +45,7 @@ public class ParseContext
 		this.tokens = tokens;
 		this.nodeStorage = nodeStorage;
 		this.sourceText = sourceText;
+		this.positionMapper = SourcePositionMapper.create(sourceText);
 	}
 
 	/**
@@ -103,20 +114,26 @@ public class ParseContext
 
 	/**
 	 * Expects a specific token type and advances if found.
-	 * Throws ParseException if not found.
+	 * Throws ParseException with line:column position if not found.
+	 *
+	 * <p>Error messages use line:column format (e.g., "at line 5, column 12") instead of
+	 * absolute character offsets to match IDE and compiler conventions. This makes errors
+	 * easier for developers to locate in source files using "Go to Line" features.
 	 *
 	 * @param expectedType the type of token expected at current position
 	 * @return the matched token after advancing
+	 * @throws IndexOverlayParser.ParseException if current token does not match expected type,
+	 *         with error message showing human-readable line and column position
 	 */
 	public TokenInfo expect(TokenType expectedType)
 {
 		TokenInfo current = getCurrentToken();
 		if (current.type() != expectedType)
 {
-			// Usability: Provide helpful error message with source position
+			SourcePosition pos = positionMapper.getPosition(current.startOffset());
 			throw new IndexOverlayParser.ParseException(
-				String.format("Expected %s but found %s at position %d",
-					expectedType, current.type(), current.startOffset()));
+				String.format("Expected %s but found %s at line %d, column %d",
+					expectedType, current.type(), pos.line(), pos.column()));
 		}
 		return advance();
 	}
