@@ -84,8 +84,8 @@ public final class ImportOrganizerFormattingRuleTest
 		ImportOrganizerFormattingRule rule = createRule();
 		String sourceText = "package io.github.cowwoc.styler.test;\n\npublic class Example " +
 			"{\n\tprivate int value;\n}\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -107,8 +107,8 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.List;\n" +
 			"import static java.util.Collections.emptyList;\n\n" +
 			"public class Example { }\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -127,8 +127,8 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.List;\n" +
 			"import java.util.ArrayList;\n\n" +
 			"public class Example { }\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -146,8 +146,8 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.List;\n" +
 			"import org.testng.annotations.Test;\n\n" +
 			"public class Example { }\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -167,8 +167,8 @@ public final class ImportOrganizerFormattingRuleTest
 			"import org.testng.annotations.Test;\n\n" +
 			"import io.github.cowwoc.styler.formatter.api.FormattingRule;\n\n" +
 			"public class Example { }\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -186,8 +186,8 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.List;\n" +
 			"import java.util.Map;\n\n" +
 			"public class Example {\n\tprivate List<String> items;\n}\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -204,8 +204,8 @@ public final class ImportOrganizerFormattingRuleTest
 		String sourceText = "package io.github.cowwoc.styler.test;\n\n" +
 			"import java.util.List;\n\n" +
 			"public class Example {\n\tprivate List<String> items;\n}\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -223,8 +223,8 @@ public final class ImportOrganizerFormattingRuleTest
 			"import static org.assertj.core.api.Assertions.assertThat;\n" +
 			"import java.util.List;\n\n" +
 			"public class Example { }\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -243,7 +243,14 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.List;\n\n" +
 			"public class Example { }\n";
 		ImportOrganizerRuleConfiguration config = createCustomGroupConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+		CompilationUnitNode ast = TestUtilities.createTestAST();
+		FormattingContext context = new FormattingContext(
+			ast,
+			sourceText,
+			Path.of("/test/Example.java"),
+			config,
+			Set.of(rule.getRuleId()),
+			Map.of());
 
 		FormattingResult result = rule.apply(context);
 
@@ -262,7 +269,14 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.List;\n\n" +
 			"public class Example { }\n";
 		ImportOrganizerRuleConfiguration config = createStaticBottomConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+		CompilationUnitNode ast = TestUtilities.createTestAST();
+		FormattingContext context = new FormattingContext(
+			ast,
+			sourceText,
+			Path.of("/test/Example.java"),
+			config,
+			Set.of(rule.getRuleId()),
+			Map.of());
 
 		FormattingResult result = rule.apply(context);
 
@@ -280,7 +294,14 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.*;\n\n" +
 			"public class Example { }\n";
 		ImportOrganizerRuleConfiguration config = createWildcardExpansionConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+		CompilationUnitNode ast = TestUtilities.createTestAST();
+		FormattingContext context = new FormattingContext(
+			ast,
+			sourceText,
+			Path.of("/test/Example.java"),
+			config,
+			Set.of(rule.getRuleId()),
+			Map.of());
 
 		FormattingResult result = rule.apply(context);
 
@@ -299,7 +320,14 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.Map;\n\n" +
 			"public class Example { }\n";
 		ImportOrganizerRuleConfiguration config = createPreserveSpacingConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+		CompilationUnitNode ast = TestUtilities.createTestAST();
+		FormattingContext context = new FormattingContext(
+			ast,
+			sourceText,
+			Path.of("/test/Example.java"),
+			config,
+			Set.of(rule.getRuleId()),
+			Map.of());
 
 		FormattingResult result = rule.apply(context);
 
@@ -317,8 +345,7 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.Map;\n" +
 			"import java.util.List;\n\n" +
 			"public class Example { }\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -336,8 +363,8 @@ public final class ImportOrganizerFormattingRuleTest
 			"import static org.assertj.core.api.Assertions.assertThat;\n" +
 			"import static java.util.Collections.emptyList;\n\n" +
 			"public class Example { }\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -355,8 +382,8 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.*;\n" +
 			"import java.io.*;\n\n" +
 			"public class Example { }\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -374,8 +401,8 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.List;\n" +
 			"import java.util.List;\n\n" +
 			"public class Example { }\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -393,8 +420,8 @@ public final class ImportOrganizerFormattingRuleTest
 			"import io.github.cowwoc.styler.test.Helper;\n" +
 			"import java.util.List;\n\n" +
 			"public class Example { }\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -413,8 +440,8 @@ public final class ImportOrganizerFormattingRuleTest
 			"import java.util.List;\n" +
 			"import java.util.Map; // Used for caching\n\n" +
 			"public class Example { }\n";
-		ImportOrganizerRuleConfiguration config = createDefaultConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -435,29 +462,20 @@ public final class ImportOrganizerFormattingRuleTest
 	 * Creates a FormattingContext for testing import organizer rule.
 	 *
 	 * @param sourceText the Java source code
-	 * @param config     the import organizer configuration
+	 * @param rule       the import organizer rule
 	 * @return test FormattingContext with minimal AST
 	 */
-	private static FormattingContext createTestContext(String sourceText, RuleConfiguration config)
+	private static FormattingContext createTestContext(String sourceText,
+		ImportOrganizerFormattingRule rule)
 	{
 		CompilationUnitNode ast = TestUtilities.createTestAST();
 		return new FormattingContext(
 			ast,
 			sourceText,
 			Path.of("/test/Example.java"),
-			config,
-			Set.of("io.github.cowwoc.styler.rules.ImportOrganizer"),
+			rule.getDefaultConfiguration(),
+			Set.of(rule.getRuleId()),
 			Map.of());
-	}
-
-	/**
-	 * Creates default import organizer configuration for testing.
-	 *
-	 * @return default configuration
-	 */
-	private static ImportOrganizerRuleConfiguration createDefaultConfiguration()
-	{
-		return new ImportOrganizerRuleConfiguration();
 	}
 
 	/**

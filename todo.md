@@ -185,10 +185,11 @@
   - **Discovered**: 2025-10-06 (testing fix-formattingcontextbuilder-configuration-type-mismatch task)
   - **Status**: ✅ COMPLETED
 
-- [ ] **TASK:** `remove-mock-context-use-real-formattingcontext` - Eliminate mock FormattingContext objects from tests
+- [x] **TASK:** `remove-mock-context-use-real-formattingcontext` - Eliminate mock FormattingContext objects from tests (COMPLETED)
   - **Purpose**: Ensure tests exercise real plugin integration paths to catch configuration type mismatches
   - **Scope**: Replace all createMockContext() helper methods with real FormattingContextBuilder usage
   - **Problem**: Mock contexts bypass FormattingContextBuilder.createRuleConfiguration(), allowing tests to pass while plugin fails with ClassCastException
+  - **Solution**: Updated 5 test files to call rule.getDefaultConfiguration() - same pattern as production FormattingContextBuilder
   - **Current Pattern** (INCORRECT):
     ```java
     private FormattingContext createMockContext(String sourceText) {

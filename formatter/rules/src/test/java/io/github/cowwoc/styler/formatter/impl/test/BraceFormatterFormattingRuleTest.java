@@ -81,7 +81,7 @@ public final class BraceFormatterFormattingRuleTest
 	{
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example { }";
-		FormattingContext context = createTestContext(sourceText, new BraceFormatterRuleConfiguration());
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		ValidationResult result = rule.validate(context);
 
@@ -99,8 +99,8 @@ public final class BraceFormatterFormattingRuleTest
 	{
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example\n{\n\tprivate int value;\n}\n";
-		BraceFormatterRuleConfiguration config = createKAndRConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -118,8 +118,8 @@ public final class BraceFormatterFormattingRuleTest
 	{
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example {\n\tpublic void method()\n\t{\n\t\treturn;\n\t}\n}\n";
-		BraceFormatterRuleConfiguration config = createKAndRConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -138,8 +138,8 @@ public final class BraceFormatterFormattingRuleTest
 	{
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example {\n\tprivate int value;\n}\n";
-		BraceFormatterRuleConfiguration config = createAllmanConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -157,8 +157,8 @@ public final class BraceFormatterFormattingRuleTest
 	{
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example\n{\n\tpublic void method() {\n\t\treturn;\n\t}\n}\n";
-		BraceFormatterRuleConfiguration config = createAllmanConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -178,8 +178,8 @@ public final class BraceFormatterFormattingRuleTest
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example\n{\n\tpublic void method()\n\t{\n\t\tif (true) " +
 			"{\n\t\t\treturn;\n\t\t}\n\t}\n}\n";
-		BraceFormatterRuleConfiguration config = createGnuConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -197,8 +197,8 @@ public final class BraceFormatterFormattingRuleTest
 	{
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example\n{\n\tpublic void emptyMethod() {}\n}\n";
-		BraceFormatterRuleConfiguration config = createKAndRConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -214,8 +214,8 @@ public final class BraceFormatterFormattingRuleTest
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example {\n\tprivate int value;\n\n\tpublic void method() " +
 			"{\n\t\treturn;\n\t}\n}\n";
-		BraceFormatterRuleConfiguration config = createKAndRConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -231,7 +231,14 @@ public final class BraceFormatterFormattingRuleTest
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example\n{\n\tprivate int value;\n}\n";
 		BraceFormatterRuleConfiguration config = createConfigWithClassOverride();
-		FormattingContext context = createTestContext(sourceText, config);
+		CompilationUnitNode ast = TestUtilities.createTestAST();
+		FormattingContext context = new FormattingContext(
+			ast,
+			sourceText,
+			Path.of("/test/Example.java"),
+			config,
+			Set.of(rule.getRuleId()),
+			Map.of());
 
 		FormattingResult result = rule.apply(context);
 
@@ -247,7 +254,14 @@ public final class BraceFormatterFormattingRuleTest
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example {\n\tpublic void method()\n\t{\n\t\treturn;\n\t}\n}\n";
 		BraceFormatterRuleConfiguration config = createConfigWithMethodOverride();
-		FormattingContext context = createTestContext(sourceText, config);
+		CompilationUnitNode ast = TestUtilities.createTestAST();
+		FormattingContext context = new FormattingContext(
+			ast,
+			sourceText,
+			Path.of("/test/Example.java"),
+			config,
+			Set.of(rule.getRuleId()),
+			Map.of());
 
 		FormattingResult result = rule.apply(context);
 
@@ -264,7 +278,14 @@ public final class BraceFormatterFormattingRuleTest
 		String sourceText = "public class Example {\n\tpublic void method() " +
 			"{\n\t\tif (true)\n\t\t{\n\t\t\treturn;\n\t\t}\n\t}\n}\n";
 		BraceFormatterRuleConfiguration config = createConfigWithControlOverride();
-		FormattingContext context = createTestContext(sourceText, config);
+		CompilationUnitNode ast = TestUtilities.createTestAST();
+		FormattingContext context = new FormattingContext(
+			ast,
+			sourceText,
+			Path.of("/test/Example.java"),
+			config,
+			Set.of(rule.getRuleId()),
+			Map.of());
 
 		FormattingResult result = rule.apply(context);
 
@@ -280,8 +301,8 @@ public final class BraceFormatterFormattingRuleTest
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example\n{\n\tpublic void method()\n\t{\n\t\tif (true)\n\t\t" +
 			"{\n\t\t\twhile (false) {\n\t\t\t\treturn;\n\t\t\t}\n\t\t}\n\t}\n}\n";
-		BraceFormatterRuleConfiguration config = createAllmanConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -296,8 +317,8 @@ public final class BraceFormatterFormattingRuleTest
 	{
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example {\n\tpublic void method() { return; }\n}\n";
-		BraceFormatterRuleConfiguration config = createKAndRConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -313,8 +334,8 @@ public final class BraceFormatterFormattingRuleTest
 		BraceFormatterFormattingRule rule = createRule();
 		String sourceText = "public class Example\n{\n\tpublic void method1()\n\t{\n\t\treturn;\n\t}\n\n" +
 			"\tpublic void method2()\n\t{\n\t\treturn;\n\t}\n}\n";
-		BraceFormatterRuleConfiguration config = createKAndRConfiguration();
-		FormattingContext context = createTestContext(sourceText, config);
+
+		FormattingContext context = createTestContext(sourceText, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -335,70 +356,19 @@ public final class BraceFormatterFormattingRuleTest
 	 * Creates a FormattingContext for testing brace formatter rule.
 	 *
 	 * @param sourceText the Java source code
-	 * @param config     the brace formatter configuration
+	 * @param rule     the brace formatter rule
 	 * @return test FormattingContext with minimal AST
 	 */
-	private static FormattingContext createTestContext(String sourceText, RuleConfiguration config)
+	private static FormattingContext createTestContext(String sourceText, BraceFormatterFormattingRule rule)
 	{
 		CompilationUnitNode ast = TestUtilities.createTestAST();
 		return new FormattingContext(
 			ast,
 			sourceText,
 			Path.of("/test/Example.java"),
-			config,
-			Set.of("io.github.cowwoc.styler.rules.BraceFormatter"),
+			rule.getDefaultConfiguration(),
+			Set.of(rule.getRuleId()),
 			Map.of());
-	}
-
-	/**
-	 * Creates a K&R brace style configuration for testing.
-	 *
-	 * @return K&R brace style configuration
-	 */
-	private static BraceFormatterRuleConfiguration createKAndRConfiguration()
-	{
-		return new BraceFormatterRuleConfiguration(
-			BraceStyle.K_AND_R, // general style
-			null,               // classBraceStyle (use default)
-			null,               // methodBraceStyle (use default)
-			null,               // controlBraceStyle (use default)
-			null,               // emptyBlockStyle (use default)
-			false,              // requireBracesForSingleStatements
-			true);              // allowSingleLineBlocks
-	}
-
-	/**
-	 * Creates an Allman brace style configuration for testing.
-	 *
-	 * @return Allman brace style configuration
-	 */
-	private static BraceFormatterRuleConfiguration createAllmanConfiguration()
-	{
-		return new BraceFormatterRuleConfiguration(
-			BraceStyle.ALLMAN,  // general style
-			null,               // classBraceStyle (use default)
-			null,               // methodBraceStyle (use default)
-			null,               // controlBraceStyle (use default)
-			null,               // emptyBlockStyle (use default)
-			false,              // requireBracesForSingleStatements
-			true);              // allowSingleLineBlocks
-	}
-
-	/**
-	 * Creates a GNU brace style configuration for testing.
-	 *
-	 * @return GNU brace style configuration
-	 */
-	private static BraceFormatterRuleConfiguration createGnuConfiguration()
-	{
-		return new BraceFormatterRuleConfiguration(
-			BraceStyle.GNU,     // general style
-			null,               // classBraceStyle (use default)
-			null,               // methodBraceStyle (use default)
-			null,               // controlBraceStyle (use default)
-			null,               // emptyBlockStyle (use default)
-			false,              // requireBracesForSingleStatements
-			true);              // allowSingleLineBlocks
 	}
 
 	/**

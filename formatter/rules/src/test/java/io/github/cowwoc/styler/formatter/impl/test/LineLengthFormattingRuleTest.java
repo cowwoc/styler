@@ -80,7 +80,7 @@ public class LineLengthFormattingRuleTest
 	public void validateWithValidContextReturnsSuccess()
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
-		FormattingContext context = createMockContext("test");
+		FormattingContext context = createTestContext("test", rule);
 
 		ValidationResult result = rule.validate(context);
 
@@ -96,7 +96,7 @@ public class LineLengthFormattingRuleTest
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
 		String source = "public class Test\n{\n}\n";
-		FormattingContext context = createMockContext(source);
+		FormattingContext context = createTestContext(source, rule);
 
 		FormattingResult result = rule.apply(context);
 
@@ -117,15 +117,15 @@ public class LineLengthFormattingRuleTest
 		assertThat(result.getEdits()).isEmpty();
 	}
 
-	private FormattingContext createMockContext(String sourceText)
+	private FormattingContext createTestContext(String sourceText, LineLengthFormattingRule rule)
 	{
-		CompilationUnitNode mockRoot = new CompilationUnitNode.Builder().
+		CompilationUnitNode ast = new CompilationUnitNode.Builder().
 			setRange(new SourceRange(new SourcePosition(1, 1),
 				new SourcePosition(1, sourceText.length() + 1))).build();
 
-		LineLengthRuleConfiguration config = new LineLengthRuleConfiguration();
-
-		return new FormattingContext(mockRoot, sourceText, Path.of("/tmp/Test.java"),
-			config, Set.of("io.github.cowwoc.styler.rules.LineLength"), Map.of());
+		return new FormattingContext(ast, sourceText, Path.of("/tmp/Test.java"),
+			rule.getDefaultConfiguration(),
+			Set.of(rule.getRuleId()),
+			Map.of());
 	}
 }

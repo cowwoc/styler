@@ -90,15 +90,14 @@ public final class IndentationFormattingRuleTest
 	@Test
 	public void validateRejectsNullRootNode()
 	{
-		IndentationConfiguration config = IndentationConfiguration.createDefault();
+		IndentationFormattingRule rule = new IndentationFormattingRule();
 		FormattingContext context = new FormattingContext(
 			null,
 			"source",
 			Path.of("/test/Example.java"),
-			config,
-			Set.of(),
+			rule.getDefaultConfiguration(),
+			Set.of(rule.getRuleId()),
 			Map.of());
-		IndentationFormattingRule rule = new IndentationFormattingRule();
 
 		ValidationResult result = rule.validate(context);
 
@@ -113,15 +112,14 @@ public final class IndentationFormattingRuleTest
 	public void validateRejectsEmptySourceText()
 	{
 		CompilationUnitNode ast = TestUtilities.createTestAST();
-		IndentationConfiguration config = IndentationConfiguration.createDefault();
+		IndentationFormattingRule rule = new IndentationFormattingRule();
 		FormattingContext context = new FormattingContext(
 			ast,
 			"",
 			Path.of("/test/Example.java"),
-			config,
-			Set.of(),
+			rule.getDefaultConfiguration(),
+			Set.of(rule.getRuleId()),
 			Map.of());
-		IndentationFormattingRule rule = new IndentationFormattingRule();
 
 		ValidationResult result = rule.validate(context);
 
@@ -136,15 +134,14 @@ public final class IndentationFormattingRuleTest
 	public void applyReturnsEmptyResultWhenNoIndentableNodes()
 	{
 		CompilationUnitNode ast = TestUtilities.createTestAST();
-		IndentationConfiguration config = IndentationConfiguration.createDefault();
+		IndentationFormattingRule rule = new IndentationFormattingRule();
 		FormattingContext context = new FormattingContext(
 			ast,
 			"public class Example {}",
 			Path.of("/test/Example.java"),
-			config,
-			Set.of(),
+			rule.getDefaultConfiguration(),
+			Set.of(rule.getRuleId()),
 			Map.of());
-		IndentationFormattingRule rule = new IndentationFormattingRule();
 
 		FormattingResult result = rule.apply(context);
 

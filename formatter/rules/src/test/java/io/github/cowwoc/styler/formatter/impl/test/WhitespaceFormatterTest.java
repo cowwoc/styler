@@ -92,9 +92,9 @@ public final class WhitespaceFormatterTest
 		String sourceText = "1+2";
 		CompilationUnitNode root = createASTWithBinaryExpression(
 			sourceText, 0, 1, "+", 2, 3);
-		FormattingContext context = createContext(root, sourceText);
-
 		WhitespaceFormatter formatter = new WhitespaceFormatter();
+		FormattingContext context = createContext(root, sourceText, formatter);
+
 		FormattingResult result = formatter.apply(context);
 
 		// Should generate edits to add spacing (expected: "1 + 2")
@@ -111,9 +111,9 @@ public final class WhitespaceFormatterTest
 		String sourceText = "1 + 2";
 		CompilationUnitNode root = createASTWithBinaryExpression(
 			sourceText, 0, 1, "+", 4, 5);
-		FormattingContext context = createContext(root, sourceText);
-
 		WhitespaceFormatter formatter = new WhitespaceFormatter();
+		FormattingContext context = createContext(root, sourceText, formatter);
+
 		FormattingResult result = formatter.apply(context);
 
 		// Should not generate edits for correctly spaced code
@@ -153,10 +153,12 @@ public final class WhitespaceFormatterTest
 			List.of(binaryExpr));
 	}
 
-	private static FormattingContext createContext(CompilationUnitNode root, String sourceText)
+	private static FormattingContext createContext(CompilationUnitNode root, String sourceText,
+		WhitespaceFormatter rule)
 	{
 		return new FormattingContext(root, sourceText, java.nio.file.Path.of("test.java"),
-			WhitespaceConfiguration.createDefault(),
-			Set.of("io.github.cowwoc.styler.rules.Whitespace"), Map.of());
+			rule.getDefaultConfiguration(),
+			Set.of(rule.getRuleId()),
+			Map.of());
 	}
 }
