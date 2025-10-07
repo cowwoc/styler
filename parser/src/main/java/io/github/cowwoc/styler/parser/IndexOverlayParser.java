@@ -215,7 +215,7 @@ public class IndexOverlayParser implements AutoCloseable
      * @throws ParseException if the source contains syntax errors
      */
 	public int parse()
-{
+	{
 		long startTime = System.nanoTime();
 
 		// Phase 1: Tokenization
@@ -280,7 +280,7 @@ public class IndexOverlayParser implements AutoCloseable
      * @return the compilation unit node ID
      */
 	private int parseCompilationUnit(ParseContext context)
-{
+	{
 		int startPos = context.getCurrentPosition();
 		int compilationUnitId = nodeStorage.allocateNode(startPos, 0, NodeType.COMPILATION_UNIT, -1);
 
@@ -333,11 +333,10 @@ public class IndexOverlayParser implements AutoCloseable
      * @param context the parse context
      */
 	private void parseOptionalPackageDeclaration(ParseContext context)
-{
+	{
 		if (context.currentTokenIs(TokenType.PACKAGE))
-{
+		{
 			parsePackageDeclaration(context);
-			// In a full implementation, we'd track child relationships
 		}
 	}
 
@@ -379,31 +378,45 @@ public class IndexOverlayParser implements AutoCloseable
 		// Look ahead to see if we have method declarations without class wrapper
 		int savedPos = context.getCurrentTokenIndex();
 		try
-{
+		{
 			// Skip any package/import declarations
 			if (context.currentTokenIs(TokenType.PACKAGE))
-{
+			{
 				// Skip package declaration
 				context.advance(); // package
-				parseQualifiedName(context);
+				// Skip qualified name manually (don't create nodes in lookahead!)
+				context.expect(TokenType.IDENTIFIER);
+				while (context.currentTokenIs(TokenType.DOT) &&
+					context.peekToken(1).type() == TokenType.IDENTIFIER)
+				{
+					context.advance(); // consume dot
+					context.advance(); // consume identifier
+				}
 				context.expect(TokenType.SEMICOLON);
 			}
 
 			while (context.currentTokenIs(TokenType.IMPORT))
-{
+			{
 				// Skip import declarations
 				context.advance(); // import
 				if (context.currentTokenIs(TokenType.MODULE))
-{
+				{
 					context.advance(); // module
 				}
 				if (context.currentTokenIs(TokenType.STATIC))
-{
+				{
 					context.advance(); // static
 				}
-				parseQualifiedName(context);
+				// Skip qualified name manually (don't create nodes in lookahead!)
+				context.expect(TokenType.IDENTIFIER);
+				while (context.currentTokenIs(TokenType.DOT) &&
+					context.peekToken(1).type() == TokenType.IDENTIFIER)
+				{
+					context.advance(); // consume dot
+					context.advance(); // consume identifier
+				}
 				if (context.currentTokenIs(TokenType.DOT))
-{
+				{
 					context.advance();
 					context.expect(TokenType.STAR);
 				}
@@ -613,17 +626,46 @@ public class IndexOverlayParser implements AutoCloseable
 			   type == TokenType.SEALED || type == TokenType.NON_SEALED; // JDK 17+
 	}
 
+	/**
+	 * Parses a package declaration statement.
+	 * <p>
+	 * Grammar: {@code package QualifiedName ;}
+	 * <p>
+	 * Creates a {@link NodeType#PACKAGE_DECLARATION} node with a child node containing the package name
+	 * (represented as {@link NodeType#FIELD_ACCESS_EXPRESSION}).
+	 *
+	 * @param context the parse context
+	 * @return the node ID of the created PACKAGE_DECLARATION node
+	 */
 	private int parsePackageDeclaration(ParseContext context)
-{
+	{
 		int startPos = context.getCurrentPosition();
 		context.expect(TokenType.PACKAGE);
 
-		// Parse qualified name
-		parseQualifiedName(context);
-		context.expect(TokenType.SEMICOLON);
+		// Create PACKAGE_DECLARATION node first (with length=0, will update after parsing)
+		int packageDeclId = nodeStorage.allocateNode(startPos, 0, NodeType.PACKAGE_DECLARATION,
+			context.getCurrentParent());
 
-		int endPos = context.getCurrentPosition();
-		return allocateNodeWithParent(context, startPos, endPos - startPos, NodeType.PACKAGE_DECLARATION);
+		// Set package declaration as parent for qualified name child
+		context.pushParent(packageDeclId);
+		try
+		{
+			// Parse qualified name - this will create child node attached to packageDeclId
+			int qualifiedNameId = parseQualifiedName(context);
+
+			context.expect(TokenType.SEMICOLON);
+
+			int endPos = context.getCurrentPosition();
+
+			// Update package declaration node length
+			nodeStorage.updateNodeLength(packageDeclId, endPos - startPos);
+
+			return packageDeclId;
+		}
+		finally
+		{
+			context.popParent();
+		}
 	}
 
 	private int parseImportDeclaration(ParseContext context)
@@ -676,19 +718,32 @@ public class IndexOverlayParser implements AutoCloseable
 	}
 
 	/**
-	 * Parses a qualified name (e.g., {@code java.util.List}).
+	 * Parses a qualified name (e.g., {@code java.util.List}) and creates a FIELD_ACCESS_EXPRESSION node for it.
 	 *
 	 * @param context the parse context
+	 * @return the node ID of the created FIELD_ACCESS_EXPRESSION node
 	 */
-	private void parseQualifiedName(ParseContext context)
-{
+	private int parseQualifiedName(ParseContext context)
+	{
+		int startPos = context.getCurrentPosition();
+
+		// Parse first identifier
 		context.expect(TokenType.IDENTIFIER);
+
+		// Parse additional segments (dot + identifier)
 		while (context.currentTokenIs(TokenType.DOT) &&
-			   context.peekToken(1).type() == TokenType.IDENTIFIER)
-{
+			context.peekToken(1).type() == TokenType.IDENTIFIER)
+		{
 			context.advance(); // consume dot
 			context.advance(); // consume identifier
 		}
+
+		int endPos = context.getCurrentPosition();
+
+		// Create FIELD_ACCESS_EXPRESSION node spanning entire qualified name
+		int nodeId = allocateNodeWithParent(context, startPos, endPos - startPos,
+			NodeType.FIELD_ACCESS_EXPRESSION);
+		return nodeId;
 	}
 
 	/**
