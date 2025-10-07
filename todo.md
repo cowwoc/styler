@@ -67,6 +67,33 @@
   - **Estimated Effort**: 2.1 hours
   - **Status**: ✅ COMPLETED (2025-10-06) - Original ClassCastException eliminated, all quality gates passed
 
+- [ ] **TASK:** `fix-threadlocal-lambda-parsing` - Fix parser error on ThreadLocal.withInitial lambda expression
+  - **Purpose**: Fix parser to correctly handle lambda expressions passed to static method calls like ThreadLocal.withInitial
+  - **Scope**: Fix IndexOverlayParser to parse method reference/lambda arguments in static method invocations
+  - **Bug**: Parser fails with "Expected SEMICOLON but found IDENTIFIER at position 374" when parsing Strings.java
+  - **Error Location**: Line 13: `private static final ThreadLocal<DecimalFormat> FORMATTER = ThreadLocal.withInitial(() -> { ... });`
+  - **Root Cause**: Parser fails to recognize lambda expression `() -> { ... }` as valid argument to static method call
+  - **Test Case**: core/src/main/java/io/github/cowwoc/styler/core/util/Strings.java (ThreadLocal.withInitial with lambda body)
+  - **Components**:
+    - Lambda expression parsing in method argument context
+    - Static method invocation with generic type arguments
+    - Lambda body with multiple statements and return value
+  - **Integration**: Ensure parser correctly handles lambda expressions as method arguments in field initializers
+  - **Estimated Effort**: 3-6 hours (investigate parser state machine, add lambda argument support, create comprehensive tests)
+
+- [ ] **TASK:** `add-line-column-to-parser-errors` - Replace absolute position with line/column in parser error messages
+  - **Purpose**: Improve parser error usability by showing line:column instead of absolute offset
+  - **Scope**: Update ParseContext error messages to show human-readable line/column using SourcePositionMapper
+  - **Current**: "Expected SEMICOLON but found IDENTIFIER at position 374"
+  - **Desired**: "Expected SEMICOLON but found IDENTIFIER at line 13, column 78"
+  - **Implementation**:
+    - Add SourcePositionMapper field to ParseContext (initialized from sourceText)
+    - Update error message format in ParseContext.expect() to use line/column instead of position
+    - Remove absolute position entirely (not used by anyone)
+  - **Files Modified**: parser/src/main/java/io/github/cowwoc/styler/parser/ParseContext.java
+  - **Testing**: Verify error messages show correct line/column for various parse failures
+  - **Estimated Effort**: 1-2 hours (simple enhancement)
+
 - [x] **TASK:** `implement-arena-to-ast-converter` - Implement complete Arena-to-AST converter for all 58 node types ✅ COMPLETED (2025-10-06)
   - **Purpose**: Bridge memory-efficient Arena node storage with high-level AST objects required by formatting rules
   - **Scope**: Complete ArenaToAstConverter implementation supporting ALL 58 AST node types, not just minimal subset

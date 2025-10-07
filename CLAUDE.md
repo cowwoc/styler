@@ -8,6 +8,7 @@ Styler Java Code Formatter project configuration and workflow guidance.
 **CRITICAL SAFETY**: [docs/project/critical-rules.md](docs/project/critical-rules.md) - Build integrity and multi-instance coordination.
 **CRITICAL LOCK OWNERSHIP**: NEVER remove lock files unless you own them (session_id matches). If lock acquisition fails, select alternative task - do NOT delete the lock unless explicitly instructed by user.
 **CRITICAL WORKTREE ISOLATION**: After creating worktree, IMMEDIATELY `cd` to worktree directory BEFORE any other operations. Pattern: `git worktree add /workspace/branches/{task}/code -b {task} && cd /workspace/branches/{task}/code` - ALL subsequent work must occur inside worktree, NEVER in main branch.
+**CRITICAL WORKTREE CLEANUP**: BEFORE removing worktree, MUST `cd` to main worktree first. Pattern: `cd /workspace/branches/main/code && git worktree remove /workspace/branches/{task}/code` - NEVER remove a worktree while inside it (shell loses working directory). This is MANDATORY in Phase 8 (CLEANUP).
 **CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See task-protocol.md
 **CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
 **CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL 7 phases of task protocol are finished. Implementation completion does NOT equal task completion. Only mark tasks as complete after Phase 7 cleanup and finalization.

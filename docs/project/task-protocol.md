@@ -1216,9 +1216,8 @@ NOT this (merge commit creates non-linear history):
 **Implementation (Concurrency-Safe):**
 ```bash
 # IMPORTANT: Replace {TASK_NAME} with actual task name before executing
-# CRITICAL: Can be executed from task worktree, no need to cd to main
 
-# Verify work preserved before cleanup (from task worktree)
+# Step 1: Verify work preserved (can check from task worktree)
 cd /workspace/branches/{TASK_NAME}/code
 git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
 git log origin/main --oneline -5 | grep "{TASK_NAME}" || {
@@ -1238,9 +1237,13 @@ fi
 # Delete lock file (only if ownership verified)
 rm -f /workspace/locks/{TASK_NAME}.json
 
-# CRITICAL: Switch to main worktree BEFORE removing task worktree
-# Attempting to remove a worktree while inside it will fail
-cd /workspace/branches/main/code
+# ╔═══════════════════════════════════════════════════════════════════════╗
+# ║ CRITICAL: MUST CHANGE TO MAIN WORKTREE BEFORE REMOVING TASK WORKTREE ║
+# ║ The command below will FAIL if you are inside the worktree           ║
+# ╚═══════════════════════════════════════════════════════════════════════╝
+
+# Change to main worktree (fails if already inside task worktree being removed)
+[[ "$(pwd)" == "/workspace/branches/{TASK_NAME}/code"* ]] && { echo "❌ FATAL: Cannot remove worktree while inside it (pwd=$(pwd))"; exit 1; } || cd /workspace/branches/main/code
 
 # Remove worktree and branch
 git worktree remove /workspace/branches/{TASK_NAME}/code --force
@@ -1271,8 +1274,8 @@ fi
 
 rm -f /workspace/locks/refactor-line-wrapping-architecture.json
 
-# CRITICAL: Switch to main worktree BEFORE removing task worktree
-cd /workspace/branches/main/code
+# Change to main worktree (fails if already inside task worktree being removed)
+[[ "$(pwd)" == "/workspace/branches/refactor-line-wrapping-architecture/code"* ]] && { echo "❌ FATAL: Cannot remove worktree while inside it (pwd=$(pwd))"; exit 1; } || cd /workspace/branches/main/code
 
 # Remove worktree and branch
 git worktree remove /workspace/branches/refactor-line-wrapping-architecture/code --force
