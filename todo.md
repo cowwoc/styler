@@ -587,6 +587,24 @@
   - **Scope**: Gradle plugin with tasks for check, format, validate, configuration via build scripts
   - **Features**: Incremental builds, build cache support, parallel execution, custom source sets
   - **Integration**: Uses styler CLI as dependency with Gradle-specific configuration and task integration
+- [ ] **TASK:** `debug-maven-build-cache-stale-instances` - Investigate and fix Maven build cache extension issues
+  - **Purpose**: Resolve issues where Maven build cache extension restores stale code instances when caching is enabled
+  - **Problem**: Running `mvnw verify` with build cache enabled doesn't always update code properly - stale instances appear to be restored from cache
+  - **Scope**: Investigate Maven build cache extension configuration and behavior
+  - **Investigation Areas**:
+    - Review current build cache extension configuration in project POM files
+    - Analyze cache invalidation triggers (source changes, dependency changes, configuration changes)
+    - Test various configuration options for cache key calculation
+    - Identify which files/artifacts are being cached inappropriately
+    - Review Maven build cache extension documentation for known issues and best practices
+  - **Potential Solutions**:
+    - Add explicit exclusions for problematic artifacts in cache configuration
+    - Adjust cache key calculation to include additional inputs (timestamps, checksums)
+    - Configure more aggressive cache invalidation policies
+    - Disable caching for specific modules or phases that exhibit issues
+  - **Success Criteria**: `mvnw verify` consistently produces up-to-date code with caching enabled
+  - **Priority**: HIGH (impacts development workflow reliability)
+  - **Estimated Effort**: 1-2 days
 
 ### CI/CD Integration (Automated Workflows)
 - [ ] **TASK:** `setup-ci-cd-pipeline` - GitHub Actions for automated testing and releases
