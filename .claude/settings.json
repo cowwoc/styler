@@ -73,6 +73,15 @@
         ]
       },
       {
+        "matcher": "tool:Bash && command:*cd*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/detect-worktree-violation.sh"
+          }
+        ]
+      },
+      {
         "hooks": [
           {
             "type": "command",
