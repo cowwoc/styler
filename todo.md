@@ -101,7 +101,7 @@
   - **Estimated Effort**: 2-3 hours (signature change + AST node creation + update 20 call sites + testing)
   - **Priority**: HIGH (blocks Maven plugin usage on all files with package declarations)
 
-- [ ] **TASK:** `improve-converter-validation-error-messages` - Enhance ArenaToAstConverter validation error messages for faster debugging
+- [x] **TASK:** `improve-converter-validation-error-messages` - Enhance ArenaToAstConverter validation error messages for faster debugging ✅ COMPLETED (2025-10-07)
   - **Purpose**: Make converter validation errors immediately identify parser bugs and pinpoint exact location/cause
   - **Scope**: Improve all validation error messages in 84 conversion strategy classes
   - **Current Problem**: Generic errors like "Package declaration must have a package name at node X" don't indicate:
@@ -534,6 +534,33 @@
   - **Scope**: Integration tests covering CLI argument parsing, file processing, output generation, error handling
   - **Scenarios**: Single files, directory processing, configuration variants, error conditions, edge cases
   - **Integration**: Uses real Java files, temporary directories, process execution, output validation
+  - **Estimated Effort**: 1-2 days
+- [ ] **TASK:** `create-test-thread-safety-validation-rule` - Create PMD/checkstyle-style rule to detect test thread-safety violations
+  - **Purpose**: Automatically detect parallel test execution violations to prevent test failures and race conditions
+  - **Scope**: Custom validation rule detecting @BeforeMethod/@AfterMethod usage, shared mutable fields, and missing UUID isolation
+  - **Detection Patterns**:
+    - @BeforeMethod/@AfterMethod annotations in test classes (critical violation)
+    - Mutable instance fields in test classes (private non-final fields)
+    - Mutable static fields modified by tests
+    - Files.createTempDirectory() calls without UUID.randomUUID() for parallel safety
+  - **Implementation**: PMD custom rule or checkstyle module with clear violation messages and fix suggestions
+  - **Integration**: Add to build verification pipeline (mvn verify) to catch violations before merge
+  - **Documentation**: Link to docs/code-style/testing-claude.md and testing-human.md for remediation patterns
+  - **Estimated Effort**: 1-2 days
+- [ ] **TASK:** `create-pom-redundant-property-validation-rule` - Create validation rule to detect redundant default properties in pom.xml
+  - **Purpose**: Eliminate unnecessary configuration by detecting Maven properties whose values match defaults
+  - **Scope**: Custom validation rule analyzing pom.xml files for properties with default values
+  - **Detection Patterns**:
+    - Properties that duplicate Maven plugin default values
+    - Configuration elements set to their default values
+    - Redundant plugin version specifications when inherited from parent POM
+  - **Examples of Redundant Properties**:
+    - <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding> (Maven 3+ default)
+    - <maven.compiler.source>21</maven.compiler.source> when already set via toolchain
+    - Surefire plugin default configuration values
+  - **Implementation**: Custom Maven Enforcer rule or build validation script
+  - **Benefits**: Cleaner pom.xml files, reduced maintenance burden, clearer intent (only non-default values present)
+  - **Integration**: Add to build verification or pre-commit hook
   - **Estimated Effort**: 1-2 days
 
 ### Advanced Optimizations (Evidence-Based - Implement After Benchmarking)
