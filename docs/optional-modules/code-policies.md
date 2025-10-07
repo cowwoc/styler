@@ -163,3 +163,105 @@ public class MyTest {
 ```
 
 **RATIONALE**: TestNG runs tests in parallel by default. Using `@BeforeMethod` or mutable instance fields creates race conditions and non-deterministic test failures. Each test method must be completely independent.
+
+## 🚨 EXCEPTION TYPE SELECTION
+
+**CRITICAL DISTINCTION**: Choose exception types based on whether valid input reached an impossible state (internal bug) or the user violated the API contract.
+
+**INTERNAL BUGS** - Use `AssertionError`:
+- **Definition**: Valid input leads to impossible/unreachable state - indicates bug in our implementation
+- Parser bugs (missing child nodes when parsing valid Java syntax)
+- Converter bugs (unexpected node types after valid parsing)
+- Algorithm bugs (postcondition violations with valid inputs)
+- Impossible state reached (unreachable code executed, invalid enum value)
+- Invariant violations (data structure corruption with valid operations)
+- **Key principle**: If the user provided valid input and followed the API correctly, but the code reached an impossible state, it's our bug → AssertionError
+
+**INVALID USER STATE** - Use `IllegalStateException`:
+- **Definition**: User violated API contract by using object in wrong state/order - not an internal bug
+- Object used after being closed/disposed
+- Method called in wrong order (e.g., calling next() before hasNext())
+- Operation attempted on object in invalid lifecycle state
+- User interaction that violates object state machine
+- **Key principle**: User provided valid input but called methods in wrong sequence → IllegalStateException
+
+**INVALID USER INPUT** - Use `IllegalArgumentException`:
+- **Definition**: User provided invalid parameter values - not an internal bug
+- Invalid method parameters from user code
+- Configuration values out of acceptable range
+- User-provided data fails validation
+- **Key principle**: User provided invalid data/parameters → IllegalArgumentException
+
+**EXAMPLES - INTERNAL BUGS (AssertionError)**:
+```java
+// Parser bug - valid Java source reaches impossible state (missing child nodes)
+if (packageName == null) {
+    throw new AssertionError(
+        "Parser bug: PACKAGE_DECLARATION node " + nodeId + " has no child nodes for valid package declaration");
+}
+
+// Algorithm bug - valid input produces impossible result (postcondition violated)
+if (result < 0) {
+    throw new AssertionError("Algorithm bug: distance calculation returned negative value for valid coordinates");
+}
+
+// Unreachable code - valid enum value reaches impossible default case
+default:
+    throw new AssertionError("Unreachable: all TokenType enum values handled, got: " + tokenType);
+}
+
+// Invariant violation - valid operations corrupted internal state
+if (childCount != children.size()) {
+    throw new AssertionError("Invariant violated: childCount=" + childCount +
+        " but children.size()=" + children.size() + " after valid addChild() operation");
+}
+```
+
+**EXAMPLES - INVALID USER STATE (IllegalStateException)**:
+```java
+// Object already closed
+if (closed) {
+    throw new IllegalStateException("Cannot parse: parser has been closed");
+}
+
+// Wrong method call order
+if (!initialized) {
+    throw new IllegalStateException("Must call initialize() before parse()");
+}
+
+// Invalid lifecycle state
+if (state != State.READY) {
+    throw new IllegalStateException("Cannot execute in state: " + state);
+}
+```
+
+**EXAMPLES - INVALID USER INPUT (IllegalArgumentException)**:
+```java
+// Invalid parameter
+if (maxLength <= 0) {
+    throw new IllegalArgumentException("maxLength must be positive, was: " + maxLength);
+}
+
+// Invalid configuration
+if (tabWidth < 1 || tabWidth > 8) {
+    throw new IllegalArgumentException("tabWidth must be 1-8, was: " + tabWidth);
+}
+```
+
+**PRINCIPLE**:
+- **AssertionError**: Valid input + correct API usage → impossible state reached = **our bug**
+- **IllegalStateException**: Valid input + incorrect API usage (wrong method order/lifecycle) = **user's API misuse**
+- **IllegalArgumentException**: Invalid input = **user's bad data**
+
+This distinction helps developers immediately identify whether they need to fix their code (IllegalStateException/IllegalArgumentException) or file a bug report against our implementation (AssertionError).
+
+**DECISION FLOWCHART**:
+1. Did the user provide valid input/parameters?
+   - NO → `IllegalArgumentException`
+   - YES → Continue to 2
+2. Did the user follow the API contract (correct method order, valid lifecycle state)?
+   - NO → `IllegalStateException`
+   - YES → Continue to 3
+3. Did the code reach an impossible/unreachable state?
+   - YES → `AssertionError` (this is our bug)
+   - NO → Use appropriate checked/unchecked exception for the specific error case

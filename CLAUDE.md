@@ -401,6 +401,7 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 - **TODO Comments**: Implement, remove, or document - never superficially rename
 - **JavaDoc**: Manual process required, no automated scripts
 - **TestNG Tests**: Thread-safe patterns only, no @BeforeMethod
+- **Exception Types**: AssertionError = valid input reaches impossible state (our bug), IllegalStateException = wrong API usage, IllegalArgumentException = invalid input
 
 ## 🛠️ TOOL USAGE BEST PRACTICES
 

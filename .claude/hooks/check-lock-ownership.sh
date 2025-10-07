@@ -105,11 +105,24 @@ MESSAGE="## ⚠️ ACTIVE TASK DETECTED
 2. Complete all remaining protocol phases
 3. Only after Phase 7 (CLEANUP) may you select a new task
 
+**CRITICAL - AUTONOMOUS COMPLETION REQUIREMENT**:
+⚠️  **DO NOT** pause mid-protocol to provide status updates
+⚠️  **DO NOT** ask user for permission to continue
+⚠️  **DO NOT** summarize progress instead of working
+
+**REQUIRED BEHAVIOR**:
+✅ Use tools IMMEDIATELY to make progress
+✅ Continue working autonomously through all phases
+✅ Only stop for genuine external blockers (API down, missing credentials)
+
 **DO NOT**:
 - ❌ Select a new task from todo.md
 - ❌ Work on any other task
 - ❌ Delete or modify the lock file
-- ❌ Assume this task is abandoned"
+- ❌ Assume this task is abandoned
+- ❌ Provide status summaries without tool calls
+- ❌ Ask \"would you like me to continue?\"
+- ❌ Use task complexity/duration as excuse to pause"
 
 # Output as hook response
 jq -n \
