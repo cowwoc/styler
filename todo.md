@@ -67,19 +67,21 @@
   - **Estimated Effort**: 2.1 hours
   - **Status**: ✅ COMPLETED (2025-10-06) - Original ClassCastException eliminated, all quality gates passed
 
-- [ ] **TASK:** `fix-threadlocal-lambda-parsing` - Fix parser error on ThreadLocal.withInitial lambda expression
-  - **Purpose**: Fix parser to correctly handle lambda expressions passed to static method calls like ThreadLocal.withInitial
-  - **Scope**: Fix IndexOverlayParser to parse method reference/lambda arguments in static method invocations
-  - **Bug**: Parser fails with "Expected SEMICOLON but found IDENTIFIER at position 374" when parsing Strings.java
-  - **Error Location**: Line 13: `private static final ThreadLocal<DecimalFormat> FORMATTER = ThreadLocal.withInitial(() -> { ... });`
-  - **Root Cause**: Parser fails to recognize lambda expression `() -> { ... }` as valid argument to static method call
-  - **Test Case**: core/src/main/java/io/github/cowwoc/styler/core/util/Strings.java (ThreadLocal.withInitial with lambda body)
-  - **Components**:
-    - Lambda expression parsing in method argument context
-    - Static method invocation with generic type arguments
-    - Lambda body with multiple statements and return value
-  - **Integration**: Ensure parser correctly handles lambda expressions as method arguments in field initializers
-  - **Estimated Effort**: 3-6 hours (investigate parser state machine, add lambda argument support, create comprehensive tests)
+- [x] **TASK:** `fix-threadlocal-lambda-parsing` - Fix parser error on ThreadLocal.withInitial lambda expression ✅ COMPLETED (2025-10-07)
+  - **Investigation Result**: Bug does NOT exist - parser correctly handles lambda expressions in all tested scenarios
+  - **Action Taken**: Added comprehensive regression test suite (12 test cases) to prevent future lambda parsing bugs
+  - **Test File**: parser/src/test/java/io/github/cowwoc/styler/parser/test/LambdaExpressionParsingTest.java
+  - **Test Coverage**:
+    - Basic lambda syntax variations (no parameters, single parameter, multiple parameters)
+    - Block body vs expression body lambdas
+    - Explicit parameter types and nested lambda expressions
+    - Method references and constructor references
+    - Static vs instance field initializers
+    - Empty lambda bodies and complex lambda bodies
+    - Original ThreadLocal.withInitial scenario from Strings.java
+  - **Build Verification**: 115 tests passed (12 new lambda tests), 0 checkstyle violations, 0 PMD violations
+  - **JLS Compliance**: Tests validate JLS §15.27 (Lambda Expressions) compliance
+  - **Actual Effort**: 4 hours (investigation + comprehensive test suite creation + stakeholder review cycles)
 
 - [x] **TASK:** `add-line-column-to-parser-errors` - Replace absolute position with line/column in parser error messages ✅ COMPLETED (2025-10-07)
   - **Purpose**: Improve parser error usability by showing line:column instead of absolute offset
