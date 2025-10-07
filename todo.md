@@ -186,6 +186,31 @@
   - **Estimated Effort**: 6-8 hours (grep patterns, review each instance, update exception type and message, test)
   - **Priority**: MEDIUM (code quality improvement, helps developers distinguish bugs from API misuse)
 
+- [ ] **TASK:** `add-github-issues-url-to-error-messages` - Include GitHub issues URL in user-facing error messages for bug reports
+  - **Purpose**: Provide users with clear instructions on where to report bugs when they encounter parser/internal errors
+  - **Scope**: Add GitHub issues URL to all user-facing error messages that indicate internal bugs
+  - **Current Problem**: Error messages say "please report with source file" but don't tell users WHERE to report
+  - **Examples of Messages to Update**:
+    - "This indicates a parser bug - please report with source file"
+    - "Arena is full. Allocated: X, Capacity: Y. This indicates a parser bug - please report with source file"
+    - Any AssertionError/internal error messages that reach users
+  - **GitHub URL**: https://github.com/cowwoc/styler/issues
+  - **Desired Format**: "This indicates a parser bug - please report at https://github.com/cowwoc/styler/issues with source file"
+  - **Files to Search**:
+    - parser/src/main/java/ (parser error messages)
+    - cli/src/main/java/ (CLI error handling)
+    - plugin/src/main/java/ (Maven plugin error handling)
+    - formatter/api/src/main/java/ (formatter error messages)
+  - **Search Patterns**:
+    - "please report"
+    - "parser bug"
+    - "internal error"
+    - "This indicates.*bug"
+  - **Centralized Solution**: Consider creating a constant ERROR_REPORTING_URL or helper method for consistent messaging
+  - **Testing**: Trigger parser errors to verify URL appears in output, test CLI and Maven plugin error paths
+  - **Estimated Effort**: 1-2 hours (grep patterns, update messages, add constant/helper, test error paths)
+  - **Priority**: MEDIUM (UX improvement, helps users report bugs correctly)
+
 - [x] **TASK:** `add-line-column-to-parser-errors` - Replace absolute position with line/column in parser error messages ✅ COMPLETED (2025-10-07)
   - **Purpose**: Improve parser error usability by showing line:column instead of absolute offset
   - **Scope**: Update ParseContext error messages to show human-readable line/column using SourcePositionMapper
