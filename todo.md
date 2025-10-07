@@ -83,23 +83,20 @@
   - **JLS Compliance**: Tests validate JLS §15.27 (Lambda Expressions) compliance
   - **Actual Effort**: 4 hours (investigation + comprehensive test suite creation + stakeholder review cycles)
 
-- [ ] **TASK:** `fix-package-declaration-missing-children` - Fix parser bug where parsePackageDeclaration doesn't create child nodes
+- [x] **TASK:** `fix-package-declaration-missing-children` - Fix parser bug where parsePackageDeclaration doesn't create child nodes ✅ COMPLETED (2025-10-07)
   - **Purpose**: Fix ArenaToAstConverter error "Package declaration must have a package name at node X"
   - **Scope**: Update IndexOverlayParser.parsePackageDeclaration() to create and attach child nodes for package name
   - **Bug**: parsePackageDeclaration() calls parseQualifiedName() but doesn't capture/store the returned node ID as a child
   - **Root Cause**: parseQualifiedName() returns void instead of int - it only consumes tokens without creating AST nodes
-  - **Error Symptom**: Maven plugin fails with "Package declaration must have a package name at node 1" on valid Java files
-  - **Files Affected**:
-    - parser/src/main/java/io/github/cowwoc/styler/parser/IndexOverlayParser.java (parsePackageDeclaration, parseQualifiedName)
-  - **Solution**:
-    - Change parseQualifiedName() signature from `void` to `int` (return node ID)
-    - Create AST nodes (IDENTIFIER_EXPRESSION or FIELD_ACCESS_EXPRESSION chain) for qualified name
-    - Store returned node ID and add as child to PACKAGE_DECLARATION node via addChild()
-    - Update all 20 callers of parseQualifiedName() to handle int return value
-  - **Test Coverage**: Add test case parsing files with package declarations (io.github.cowwoc.styler.ast.visitor)
-  - **Integration**: Enables ArenaToAstConverter PackageDeclarationStrategy to successfully convert package nodes
-  - **Estimated Effort**: 2-3 hours (signature change + AST node creation + update 20 call sites + testing)
-  - **Priority**: HIGH (blocks Maven plugin usage on all files with package declarations)
+  - **Solution Implemented**:
+    - Changed parseQualifiedName() to return int (FIELD_ACCESS_EXPRESSION node ID)
+    - Implemented parent-child pattern in parsePackageDeclaration() using pushParent()/popParent()
+    - Fixed isCompactSourceFile() lookahead to prevent unintended node creation
+    - Updated all call sites to handle int return value
+  - **Test Coverage**: PackageDeclarationParsingTest with 6 comprehensive test cases
+  - **Build Verification**: All tests passed, unanimous stakeholder approval
+  - **Actual Effort**: 6 hours (implementation + debugging lookahead issue + stakeholder review cycles)
+  - **Status**: ✅ COMPLETED (2025-10-07) - Parser creates proper child nodes, ArenaToAstConverter succeeds
 
 - [x] **TASK:** `improve-converter-validation-error-messages` - Enhance ArenaToAstConverter validation error messages for faster debugging ✅ COMPLETED (2025-10-07)
   - **Purpose**: Make converter validation errors immediately identify parser bugs and pinpoint exact location/cause
@@ -132,6 +129,26 @@
   - **Testing**: Verify improved messages appear in actual error scenarios (intentionally break parser to test)
   - **Estimated Effort**: 4-6 hours (pattern across 84 strategies, identify all validation points, comprehensive testing)
   - **Priority**: MEDIUM (quality-of-life improvement for parser development)
+
+- [ ] **TASK:** `fix-arena-capacity-overflow` - Fix parser Arena capacity overflow when parsing large/complex files
+  - **Purpose**: Allow parser to handle files that generate more than 511 AST nodes
+  - **Scope**: Fix ArenaNodeStorage capacity limit or implement dynamic growth strategy
+  - **Bug**: Parser fails with "Arena is full. Allocated: 511, Capacity: 511" on complex files like ASTVisitor.java
+  - **Error Message**: "Parser generated invalid Arena data for: /workspace/branches/main/code/ast/core/src/main/java/io/github/cowwoc/styler/ast/visitor/ASTVisitor.java"
+  - **Root Cause**: Fixed capacity limit of 511 nodes in ArenaNodeStorage insufficient for large source files
+  - **Reproduction**: Run `mvn io.github.cowwoc.styler:styler-maven-plugin:1.0-SNAPSHOT:check` on project
+  - **Test File**: ast/core/src/main/java/io/github/cowwoc/styler/ast/visitor/ASTVisitor.java (triggers capacity overflow)
+  - **Solution Options**:
+    - Increase fixed capacity limit (simple but may hit limit again)
+    - Implement dynamic arena growth (resize when approaching capacity)
+    - Use chunked/paged arena allocation (multiple fixed-size chunks)
+    - Profile typical file sizes to determine appropriate capacity
+  - **Files Affected**:
+    - parser/src/main/java/io/github/cowwoc/styler/parser/ArenaNodeStorage.java (capacity management)
+    - parser/src/main/java/io/github/cowwoc/styler/parser/IndexOverlayParser.java (arena allocation)
+  - **Testing**: Verify ASTVisitor.java parses successfully, test with even larger files, measure memory/performance impact
+  - **Estimated Effort**: 3-4 hours (analyze capacity model, implement growth strategy, test with large files)
+  - **Priority**: HIGH (blocks Maven plugin usage on production codebases with complex files)
 
 - [ ] **TASK:** `fix-exception-types-illegalstateexception-to-assertionerror` - Replace IllegalStateException with AssertionError for internal bugs
   - **Purpose**: Correct exception types to distinguish internal bugs (valid input reaches impossible state) from invalid user state
