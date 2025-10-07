@@ -61,6 +61,37 @@ public class BadTest
 	// ❌ Shared mutable state
 	private static List<String> testData = new ArrayList<>();
 }
+
+// ❌ Real violation example from refactoring: Shared test fixtures
+public class BadConfigSearchPathTest
+{
+	// ❌ Shared mutable instance field
+	private ConfigSearchPath searchPath;
+
+	@BeforeMethod  // ❌ Creates shared state
+	public void setUp()
+	{
+		searchPath = new ConfigSearchPath();
+	}
+
+	@Test
+	public void test1() { /* Uses shared searchPath */ }
+
+	@Test
+	public void test2() { /* Uses shared searchPath - race condition! */ }
+}
+
+// ❌ Real violation: Temp files without UUID isolation
+public class BadTestWithTempFiles
+{
+	@Test
+	public void testWithTempDir() throws IOException
+	{
+		// ❌ Multiple parallel tests create conflicting temp directories
+		Path tempDir = Files.createTempDirectory("test-prefix");
+		// Tests can interfere with each other!
+	}
+}
 ```
 
 #### ✅ **REQUIRED Pattern - Isolated Test Setup:**
@@ -94,6 +125,65 @@ public class JavaParserTest
 		ParseResult result = parser.parseMethod(complexSource, options);
 
 		requireThat(result.getAst(), "ast").isNotNull();
+	}
+}
+
+// ✅ Real solution from refactoring: Helper class for test fixtures
+public class ConfigSearchPathTest
+{
+	/**
+	 * Helper class for test fixtures (no @BeforeMethod needed).
+	 */
+	private static class TestFixtures
+	{
+		final ConfigSearchPath searchPath;
+
+		TestFixtures()
+		{
+			this.searchPath = new ConfigSearchPath();
+		}
+	}
+
+	@Test
+	public void buildSearchPathFromSingleDirectory() throws IOException
+	{
+		// ✅ Each test creates its own fixtures instance
+		TestFixtures fixtures = new TestFixtures();
+		Path tempDir = Files.createTempDirectory("test-" + UUID.randomUUID());
+
+		List<Path> result = fixtures.searchPath.buildSearchPath(tempDir);
+
+		requireThat(result, "result").isNotEmpty();
+	}
+
+	@Test
+	public void buildSearchPathTraversesParents() throws IOException
+	{
+		// ✅ Completely isolated from other test
+		TestFixtures fixtures = new TestFixtures();
+		Path tempDir = Files.createTempDirectory("test-" + UUID.randomUUID());
+
+		// Test implementation...
+	}
+}
+
+// ✅ Real solution: UUID-based temp file isolation
+public class ConfigDiscoveryTest
+{
+	@Test
+	public void discoverConfigWithTomlFile() throws IOException
+	{
+		// ✅ UUID ensures unique temp directory per test execution
+		Path tempProjectDir = Files.createTempDirectory("styler-config-test-" + UUID.randomUUID());
+		ConfigDiscovery configDiscovery = new ConfigDiscovery();
+
+		// Test can run in parallel without conflicts
+		Path configFile = tempProjectDir.resolve(".styler.toml");
+		Files.writeString(configFile, "maxLineLength = 120");
+
+		ConfigDiscovery.DiscoveryResult result = configDiscovery.discoverWithLocations(tempProjectDir, null);
+
+		requireThat(result.getConfiguration(), "configuration").isNotNull();
 	}
 }
 ```

@@ -18,6 +18,8 @@ This document contains testing patterns and detection rules optimized for Claude
 - `@AfterTest|@AfterMethod|@AfterClass` (violations)
 - `private\s+(?:static\s+)?(?!final)\w+.*=` (mutable fields)
 - `private\s+\w+.*calculator.*=` (shared instances)
+- `private\s+(?:ConfigSearchPath|ErrorReporter|ConfigDiscovery)\s+\w+;` (shared test fixtures)
+- `Files\.createTempDirectory\("(?!.*UUID\.randomUUID)` (temp files without UUID isolation)
 
 ### Parallel Test Safety Rules
 - `@Test.*public\s+void.*\{[^}]*new\s+\w+Calculator\(\)`
