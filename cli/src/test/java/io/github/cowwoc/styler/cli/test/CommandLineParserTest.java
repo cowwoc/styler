@@ -55,7 +55,8 @@ public class CommandLineParserTest
 	/**
 	 * Cleans up temporary test files and directories after each test method.
 	 */
-	@SuppressWarnings("PMD.EmptyCatchBlock") // Test cleanup should not fail the test
+	// Test cleanup should not fail the test
+	@SuppressWarnings("PMD.EmptyCatchBlock")
 	@AfterMethod
 	public void tearDown() throws IOException
 	{
@@ -63,7 +64,8 @@ public class CommandLineParserTest
 		{
 			// Delete test files and directories
 			Files.walk(tempDir).
-				sorted((a, b) -> -a.compareTo(b)). // Reverse order for directory deletion
+				// Reverse order for directory deletion
+				sorted((a, b) -> -a.compareTo(b)).
 				forEach(path ->
 				{
 					try
@@ -200,7 +202,8 @@ public class CommandLineParserTest
 		ParsedArguments result = parser.parse(args);
 
 		assertThat(result.command()).isEqualTo(ParsedArguments.Command.HELP);
-		assertThat(result.helpRequested()).isFalse(); // help subcommand, not --help flag
+		// help subcommand, not --help flag
+		assertThat(result.helpRequested()).isFalse();
 		assertThat(result.inputFiles()).isEmpty();
 	}
 
@@ -421,8 +424,10 @@ public class CommandLineParserTest
 			List.of(Paths.get("test.java")),
 			null,
 			null,
-			true,  // verbose
-			true,  // quiet - conflict!
+			// verbose
+			true,
+			// quiet - conflict!
+			true,
 			false,
 			false,
 			false,
@@ -525,7 +530,8 @@ public class CommandLineParserTest
 		ParsedArguments args = ParsedArguments.of(
 			List.of(),
 			null,
-			"",  // empty string
+			// empty string
+			"",
 			false,
 			false,
 			false,
@@ -539,7 +545,8 @@ public class CommandLineParserTest
 		args = ParsedArguments.of(
 			List.of(),
 			null,
-			"   ",  // whitespace only
+			// whitespace only
+			"   ",
 			false,
 			false,
 			false,
@@ -566,7 +573,8 @@ public class CommandLineParserTest
 			false,
 			false,
 			false,
-			null,  // null command
+			// null command
+			null,
 			null, null);
 
 		assertThat(args.command()).isEqualTo(ParsedArguments.Command.HELP);

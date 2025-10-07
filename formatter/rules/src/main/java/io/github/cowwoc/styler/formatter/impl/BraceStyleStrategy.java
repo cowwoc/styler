@@ -59,4 +59,18 @@ public interface BraceStyleStrategy
 	 * @return style name (e.g., {@code "K&R"}, {@code "Allman"}, {@code "GNU"})
 	 */
 	String getStyleName();
+
+	/**
+	 * Returns a human-readable description of the expected opening brace placement.
+	 *
+	 * @return description of opening brace placement (e.g., {@code "same line as declaration"})
+	 */
+	String getOpeningBraceDescription();
+
+	/**
+	 * Returns a human-readable description of the expected closing brace placement.
+	 *
+	 * @return description of closing brace placement (e.g., {@code "aligned with declaration"})
+	 */
+	String getClosingBraceDescription();
 }

@@ -39,12 +39,8 @@ public final class ConstructorDeclarationNode extends ASTNode
 	 * @param parameters constructor parameters
 	 * @param thrownExceptions exceptions thrown by this constructor
 	 * @param body the constructor body
-	  * @throws NullPointerException if {@code typeParameters} is null
-	  * @throws NullPointerException if {@code thrownExceptions} is null
-	  * @throws NullPointerException if {@code parameters} is null
-	  * @throws NullPointerException if {@code name} is null
-	  * @throws NullPointerException if {@code modifiers} is null
-	  * @throws NullPointerException if {@code body} is null
+	 * @throws NullPointerException if {@code modifiers}, {@code typeParameters}, {@code name},
+	 *                              {@code parameters}, {@code thrownExceptions}, or {@code body} is null
 	 */
 	public ConstructorDeclarationNode(SourceRange range, List<Comment> leadingComments,
 		List<Comment> trailingComments, WhitespaceInfo whitespace, FormattingHints hints,

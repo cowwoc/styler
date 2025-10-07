@@ -100,4 +100,16 @@ public final class GnuStrategy implements BraceStyleStrategy
 	{
 		return "GNU";
 	}
+
+	@Override
+	public String getOpeningBraceDescription()
+	{
+		return "new line, indented from declaration";
+	}
+
+	@Override
+	public String getClosingBraceDescription()
+	{
+		return "aligned with declaration";
+	}
 }

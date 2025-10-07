@@ -82,6 +82,7 @@ public final class BraceStyleAnalyzer
 			BraceViolation violation = new BraceViolation(
 				context,
 				"opening",
+				strategy.getStyleName(),
 				describeExpectedOpeningBrace(strategy, context),
 				describeActualOpeningBrace(context),
 				context.openingBraceRange());
@@ -94,6 +95,7 @@ public final class BraceStyleAnalyzer
 			BraceViolation violation = new BraceViolation(
 				context,
 				"closing",
+				strategy.getStyleName(),
 				describeExpectedClosingBrace(strategy, context),
 				describeActualClosingBrace(context),
 				context.closingBraceRange());
@@ -114,14 +116,7 @@ public final class BraceStyleAnalyzer
 	@SuppressWarnings("PMD.UnusedFormalParameter")
 	private String describeExpectedOpeningBrace(BraceStyleStrategy strategy, BraceContext context)
 	{
-		String styleName = strategy.getStyleName();
-		return switch (styleName)
-		{
-			case "K&R" -> "same line as declaration";
-			case "Allman" -> "new line, aligned with declaration";
-			case "GNU" -> "new line, indented from declaration";
-			default -> styleName + " style";
-		};
+		return strategy.getOpeningBraceDescription();
 	}
 
 	/**
@@ -135,7 +130,7 @@ public final class BraceStyleAnalyzer
 	@SuppressWarnings("PMD.UnusedFormalParameter")
 	private String describeExpectedClosingBrace(BraceStyleStrategy strategy, BraceContext context)
 	{
-		return "aligned with declaration";
+		return strategy.getClosingBraceDescription();
 	}
 
 	/**

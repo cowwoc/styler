@@ -725,6 +725,20 @@
   - **Integration**: Tests use parallel-safe patterns (zero shared state), support all formatter-api interfaces, enable plugin developers to validate implementations
 
 ### Multiple Formatter Rules (Expand Formatter Capabilities)
+- [ ] **TASK:** `fix-brace-style-violations` - Fix brace style violation error and consolidate duplicate JavaDoc @throws tags
+  - **Purpose**: Fix "Unknown style: same line as declaration" error in BraceEditGenerator and eliminate duplicate @throws tags across codebase
+  - **Scope**: Fix BraceViolation to store style name, centralize style descriptions in strategy pattern, consolidate duplicate @throws JavaDoc tags
+  - **Bug**: BraceEditGenerator receives human-readable description ("same line as declaration") instead of style name ("K&R", "Allman", "GNU")
+  - **Components**:
+    - Add styleName field to BraceViolation record to store actual style name
+    - Add getOpeningBraceDescription() and getClosingBraceDescription() to BraceStyleStrategy interface
+    - Implement description methods in KAndRStrategy, AllmanStrategy, GnuStrategy
+    - Update BraceStyleAnalyzer to use strategy.getStyleName() and strategy description methods
+    - Update BraceEditGenerator to use violation.styleName() instead of violation.expectedStyle()
+    - Consolidate duplicate @throws tags in 17 files (FormattingHints, ASTNode, ConstructorDeclarationNode, RecordDeclarationNode, PluginDescriptor, FileValidator, StrategyRegistry, BraceViolation)
+  - **Files Modified**: 14 files in formatter/rules, formatter/api, ast/core, cli, parser modules
+  - **Testing**: Verify maven plugin no longer throws "Unknown style" error, verify no duplicate @throws tags remain
+  - **Quality**: Full checkstyle compliance, PMD compliance, build success
 - [x] **MODULE:** `restructure-formatter-modules` - Restructure formatter into hierarchical parent/child module architecture ✅ COMPLETED (2025-10-04)
   - **Completed**: Converted formatter into parent POM, moved code to formatter/api/, moved formatter-impl to formatter/rules/
   - **Structure**: formatter/ (parent POM) → formatter/api/ (API interfaces) + formatter/rules/ (rule implementations)

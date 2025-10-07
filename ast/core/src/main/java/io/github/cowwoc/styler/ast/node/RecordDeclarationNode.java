@@ -39,12 +39,8 @@ public final class RecordDeclarationNode extends ASTNode
 	 * @param parameters record components
 	 * @param interfaces implemented interfaces
 	 * @param members record members (methods, nested classes)
-	  * @throws NullPointerException if {@code typeParameters} is null
-	  * @throws NullPointerException if {@code parameters} is null
-	  * @throws NullPointerException if {@code name} is null
-	  * @throws NullPointerException if {@code modifiers} is null
-	  * @throws NullPointerException if {@code members} is null
-	  * @throws NullPointerException if {@code interfaces} is null
+	 * @throws NullPointerException if {@code modifiers}, {@code name}, {@code typeParameters},
+	 *                              {@code parameters}, {@code interfaces}, or {@code members} is null
 	 */
 	public RecordDeclarationNode(SourceRange range, List<Comment> leadingComments,
 		List<Comment> trailingComments, WhitespaceInfo whitespace, FormattingHints hints,

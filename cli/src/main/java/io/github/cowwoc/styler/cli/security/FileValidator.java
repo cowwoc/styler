@@ -49,9 +49,8 @@ public final class FileValidator
 	 *
 	 * @param maxFileSizeBytes maximum file size in bytes, must be positive
 	 * @param allowedExtensions set of allowed file extensions (e.g., ".java"), must not be {@code null} or empty
-	 * @throws IllegalArgumentException if maxFileSizeBytes is not positive
+	 * @throws IllegalArgumentException if maxFileSizeBytes is not positive or if allowedExtensions is empty
 	 * @throws NullPointerException if allowedExtensions is {@code null}
-	 * @throws IllegalArgumentException if allowedExtensions is empty
 	 */
 	public FileValidator(long maxFileSizeBytes, Set<String> allowedExtensions)
 	{

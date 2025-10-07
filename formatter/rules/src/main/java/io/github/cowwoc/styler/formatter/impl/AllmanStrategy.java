@@ -95,4 +95,16 @@ public final class AllmanStrategy implements BraceStyleStrategy
 	{
 		return "Allman";
 	}
+
+	@Override
+	public String getOpeningBraceDescription()
+	{
+		return "new line, aligned with declaration";
+	}
+
+	@Override
+	public String getClosingBraceDescription()
+	{
+		return "aligned with declaration";
+	}
 }

@@ -142,8 +142,6 @@ public final class PluginDescriptor
 	 * plugin categories, or custom configuration options.
 	 *
 	 * @return the metadata map, never {@code null} but may be empty
-	  * @throws NullPointerException if {@code version} is null
-	  * @throws NullPointerException if {@code pluginId} is null
 	 */
 	public Map<String, String> getMetadata()
 	{
@@ -154,9 +152,6 @@ public final class PluginDescriptor
 	 * Returns whether this plugin has any dependencies.
 	 *
 	 * @return {@code true} if the plugin has dependencies, {@code false} otherwise
-	  * @throws NullPointerException if {@code version} is null
-	  * @throws NullPointerException if {@code pluginId} is null
-	  * @throws NullPointerException if {@code name} is null
 	 */
 	public boolean hasDependencies()
 	{
@@ -168,9 +163,7 @@ public final class PluginDescriptor
 	 *
 	 * @param pluginId the plugin ID to check, never {@code null}
 	 * @return {@code true} if this plugin depends on the specified plugin
-	  * @throws NullPointerException if {@code version} is null
-	  * @throws NullPointerException if {@code pluginId} is null
-	  * @throws NullPointerException if {@code name} is null
+	 * @throws NullPointerException if {@code pluginId} is null
 	 */
 	public boolean dependsOn(String pluginId)
 	{
@@ -185,10 +178,7 @@ public final class PluginDescriptor
 	 * @return the validated plugin ID
 	 * @throws IllegalArgumentException if the plugin ID is invalid
 	 * @throws PluginSecurityException  if the plugin ID contains dangerous content
-	  * @throws NullPointerException if {@code version} is null
-	  * @throws NullPointerException if {@code vendor} is null
-	  * @throws NullPointerException if {@code pluginId} is null
-	  * @throws NullPointerException if {@code name} is null
+	 * @throws NullPointerException if {@code pluginId} is null
 	 */
 	private static String validatePluginId(String pluginId)
 	{
@@ -221,10 +211,7 @@ public final class PluginDescriptor
 	 * @param version the version to validate
 	 * @return the validated version
 	 * @throws IllegalArgumentException if the version is invalid
-	  * @throws NullPointerException if {@code version} is null
-	  * @throws NullPointerException if {@code vendor} is null
-	  * @throws NullPointerException if {@code name} is null
-	  * @throws NullPointerException if {@code metadataKey} is null
+	 * @throws NullPointerException if {@code version} is null
 	 */
 	private static String validateVersion(String version)
 	{
@@ -246,10 +233,7 @@ public final class PluginDescriptor
 	 * @param name the name to validate
 	 * @return the validated name
 	 * @throws PluginSecurityException if the name contains dangerous content
-	  * @throws NullPointerException if {@code vendor} is null
-	  * @throws NullPointerException if {@code name} is null
-	  * @throws NullPointerException if {@code metadataValue} is null
-	  * @throws NullPointerException if {@code metadataKey} is null
+	 * @throws NullPointerException if {@code name} is null
 	 */
 	private static String validateName(String name)
 	{
@@ -270,9 +254,7 @@ public final class PluginDescriptor
 	 * @param vendor the vendor to validate
 	 * @return the validated vendor
 	 * @throws PluginSecurityException if the vendor contains dangerous content
-	  * @throws NullPointerException if {@code vendor} is null
-	  * @throws NullPointerException if {@code metadataValue} is null
-	  * @throws NullPointerException if {@code metadataKey} is null
+	 * @throws NullPointerException if {@code vendor} is null
 	 */
 	private static String validateVendor(String vendor)
 	{
@@ -292,8 +274,7 @@ public final class PluginDescriptor
 	 *
 	 * @param key the key to validate
 	 * @throws PluginSecurityException if the key contains dangerous content
-	  * @throws NullPointerException if {@code metadataValue} is null
-	  * @throws NullPointerException if {@code metadataKey} is null
+	 * @throws NullPointerException if {@code key} is null
 	 */
 	private static void validateMetadataKey(String key)
 	{

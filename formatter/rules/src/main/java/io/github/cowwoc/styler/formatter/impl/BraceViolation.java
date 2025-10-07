@@ -14,6 +14,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  *
  * @param context the brace context where violation occurred, never {@code null}
  * @param violationType the type of violation ({@code "opening"} or {@code "closing"}), never {@code null}
+ * @param styleName the name of the expected style ("K&R", "Allman", or "GNU"), never {@code null}
  * @param expectedStyle description of expected brace placement, never {@code null}
  * @param actualStyle description of actual brace placement, never {@code null}
  * @param violationRange the source range of the violating brace, never {@code null}
@@ -21,6 +22,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 public record BraceViolation(
 	BraceContext context,
 	String violationType,
+	String styleName,
 	String expectedStyle,
 	String actualStyle,
 	SourceRange violationRange)
@@ -29,12 +31,14 @@ public record BraceViolation(
 	 * Compact constructor with validation.
 	 *
 	 * @throws NullPointerException if any parameter is {@code null}
-	 * @throws IllegalArgumentException if {@code violationType} is not {@code "opening"} or {@code "closing"}
+	 * @throws IllegalArgumentException if {@code violationType} is not {@code "opening"} or {@code "closing"},
+	 *                                  or if {@code styleName} is not a valid style name
 	 */
 	public BraceViolation
 	{
 		requireThat(context, "context").isNotNull();
 		requireThat(violationType, "violationType").isNotNull();
+		requireThat(styleName, "styleName").isNotNull();
 		requireThat(expectedStyle, "expectedStyle").isNotNull();
 		requireThat(actualStyle, "actualStyle").isNotNull();
 		requireThat(violationRange, "violationRange").isNotNull();
@@ -43,6 +47,12 @@ public record BraceViolation(
 		{
 			throw new IllegalArgumentException(
 				"violationType must be 'opening' or 'closing', got: " + violationType);
+		}
+
+		if (!styleName.equals("K&R") && !styleName.equals("Allman") && !styleName.equals("GNU"))
+		{
+			throw new IllegalArgumentException(
+				"styleName must be 'K&R', 'Allman', or 'GNU', got: " + styleName);
 		}
 	}
 

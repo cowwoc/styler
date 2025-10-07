@@ -36,12 +36,8 @@ public abstract class ASTNode
 	 * @param hints formatting hints for this node
 	 *
 	 * @param parent the parent node (empty for final root nodes)
-	  * @throws NullPointerException if {@code whitespace} is null
-	  * @throws NullPointerException if {@code trailingComments} is null
-	  * @throws NullPointerException if {@code range} is null
-	  * @throws NullPointerException if {@code parent} is null
-	  * @throws NullPointerException if {@code leadingComments} is null
-	  * @throws NullPointerException if {@code hints} is null
+	 * @throws NullPointerException if {@code range}, {@code leadingComments}, {@code trailingComments},
+	 *                              {@code whitespace}, {@code hints}, or {@code parent} is null
 	 */
 	protected ASTNode(SourceRange range, List<Comment> leadingComments, List<Comment> trailingComments,
 		WhitespaceInfo whitespace, FormattingHints hints, Optional<ASTNode> parent)

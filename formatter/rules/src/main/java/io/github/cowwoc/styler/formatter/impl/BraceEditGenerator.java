@@ -81,7 +81,7 @@ public final class BraceEditGenerator
 	private TextEdit generateOpeningBraceEdit(BraceViolation violation)
 	{
 		BraceContext context = violation.context();
-		String expectedStyle = violation.expectedStyle();
+		String styleName = violation.styleName();
 
 		// Extract declaration line and brace line for analysis
 		int declarationLine = context.node().getRange().start().line();
@@ -90,18 +90,18 @@ public final class BraceEditGenerator
 
 		// Calculate new brace position based on style
 		String replacement;
-		if ("K&R".equals(expectedStyle))
+		if ("K&R".equals(styleName))
 		{
 			// K&R: Brace on same line - add space before brace
 			replacement = " {";
 		}
-		else if ("Allman".equals(expectedStyle))
+		else if ("Allman".equals(styleName))
 		{
 			// Allman: New line, same indentation as declaration
 			String indentStr = indentationCalculator.generateIndentation(declarationIndent);
 			replacement = "\n" + indentStr + "{";
 		}
-		else if ("GNU".equals(expectedStyle))
+		else if ("GNU".equals(styleName))
 		{
 			// GNU: New line, indented 2 spaces from declaration
 			String indentStr = indentationCalculator.generateIndentation(declarationIndent + GNU_INDENT_OFFSET);
@@ -109,7 +109,7 @@ public final class BraceEditGenerator
 		}
 		else
 		{
-			throw new IllegalStateException("Unknown style: " + expectedStyle);
+			throw new IllegalStateException("Unknown style: " + styleName);
 		}
 
 		// Create edit that replaces the incorrectly positioned brace

@@ -16,9 +16,7 @@ import java.util.Optional;
  * @param indentStyle the preferred indentation style
  *
  * @param customHints additional custom formatting hints as key-value pairs
- * @throws NullPointerException if {@code preferredLineLength} is null
- * @throws NullPointerException if {@code indentStyle} is null
- * @throws NullPointerException if {@code customHints} is null
+ * @throws NullPointerException if {@code preferredLineLength}, {@code indentStyle}, or {@code customHints} is null
  * @throws IllegalArgumentException if {@code preferredLineLength.value} is invalid
  */
 public record FormattingHints(boolean noFormat, Optional<Integer> preferredLineLength,
@@ -117,8 +115,7 @@ public record FormattingHints(boolean noFormat, Optional<Integer> preferredLineL
 	 * @param key the hint key
 	 * @param value the hint value
 	 * @return a new {@code FormattingHints} with the additional custom hint
-	 * @throws NullPointerException if {@code key} is null
-	 * @throws NullPointerException if {@code value} is null
+	 * @throws NullPointerException if {@code key} or {@code value} is null
 	 * @throws IllegalArgumentException if {@code key} is invalid
 	 */
 	public FormattingHints withCustomHint(String key, String value)

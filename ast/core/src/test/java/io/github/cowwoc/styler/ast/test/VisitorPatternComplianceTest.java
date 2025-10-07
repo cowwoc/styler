@@ -481,7 +481,8 @@ public class VisitorPatternComplianceTest
 	 * node types.
 	 */
 	@Test
-	@SuppressWarnings("PMD.NcssCount") // Test creates comprehensive visitor implementation
+	// Test creates comprehensive visitor implementation
+	@SuppressWarnings("PMD.NcssCount")
 	public void multipleVisitorImplementations()
 		{
 		// EVIDENCE: Demonstrate different visitors can be created

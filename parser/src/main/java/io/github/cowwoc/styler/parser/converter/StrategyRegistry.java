@@ -36,8 +36,7 @@ public final class StrategyRegistry
 	 * Creates a StrategyRegistry and validates complete node type coverage.
 	 *
 	 * @param strategies map of node type constants to conversion strategies
-	 * @throws IllegalArgumentException if any node types are missing strategies
-	 * @throws IllegalArgumentException if strategies is {@code null}
+	 * @throws IllegalArgumentException if any node types are missing strategies or if strategies is {@code null}
 	 */
 	private StrategyRegistry(Map<Byte, ConversionStrategy<?>> strategies)
 {
@@ -234,8 +233,8 @@ public final class StrategyRegistry
 		 * @param <T> the AST node type produced by this strategy
 		 * @param strategy the conversion strategy to register
 		 * @return this builder for method chaining
-		 * @throws IllegalArgumentException if strategy is {@code null}
-		 * @throws IllegalArgumentException if a strategy is already registered for this node type
+		 * @throws IllegalArgumentException if strategy is {@code null} or if a strategy is already
+		 *                                  registered for this node type
 		 */
 		public <T extends ASTNode> Builder register(ConversionStrategy<T> strategy)
 {

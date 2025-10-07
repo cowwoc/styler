@@ -89,4 +89,16 @@ public final class KAndRStrategy implements BraceStyleStrategy
 	{
 		return "K&R";
 	}
+
+	@Override
+	public String getOpeningBraceDescription()
+	{
+		return "same line as declaration";
+	}
+
+	@Override
+	public String getClosingBraceDescription()
+	{
+		return "aligned with declaration";
+	}
 }
