@@ -169,7 +169,7 @@ handle_user_prompt_submit()
 	    fi
 	elif echo "$user_message_lower" | grep -qE "critical.rule|build.integrity|compliance|violation|mandatory"; then
 	    if check_and_mark_prompt "project-critical-rules"; then
-	        echo "🚨 CRITICAL RULES TASK: Before proceeding, read ./docs/project/critical-rules.md for build integrity requirements and compliance standards."
+	        echo "🚨 CRITICAL RULES TASK: Before proceeding, read CLAUDE.md (§ Lock Ownership, § Worktree Isolation, § Task Protocol Summary) for build integrity requirements and compliance standards."
 	    fi
 	elif echo "$user_message_lower" | grep -qE "prohibited|forbidden|not.allowed|out.of.scope|restricted"; then
 	    if check_and_mark_prompt "project-out-of-scope"; then

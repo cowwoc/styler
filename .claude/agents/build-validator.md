@@ -104,7 +104,7 @@ Before beginning analysis, you MUST:
 1. **MANDATORY FOUNDATIONAL READING**: Read these project documents to understand constraints and requirements:
    - **`docs/project/scope.md`**: Project scope, architectural guidelines, and technical constraints
    - **`docs/project/scope/out-of-scope.md`**: Explicitly prohibited technologies and approaches
-   - **`docs/project/critical-rules.md`**: Critical safety protocols and build integrity requirements  
+   - **`CLAUDE.md`** (§ Lock Ownership, § Worktree Isolation, § Task Protocol Summary): Critical safety protocols and build integrity requirements  
    - **`docs/code-style-human.md`**: Code formatting and development standards
 2. **MANDATORY FIRST STEP**: Read the task's context.md file at `../context.md` to understand the task objectives and EXACT scope boundaries
 2. **VERIFY SCOPE**: List out EXACTLY which files you are authorized to analyze from context.md

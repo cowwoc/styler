@@ -5,10 +5,8 @@ Styler Java Code Formatter project configuration and workflow guidance.
 ## 🚨 MANDATORY COMPLIANCE
 
 **CRITICAL WORKFLOW**: [docs/project/task-protocol.md](docs/project/task-protocol.md) - MANDATORY risk-based protocol selection - Apply appropriate workflow based on file risk classification.
-**CRITICAL SAFETY**: [docs/project/critical-rules.md](docs/project/critical-rules.md) - Build integrity and multi-instance coordination.
-**CRITICAL LOCK OWNERSHIP**: NEVER remove lock files unless you own them (session_id matches). If lock acquisition fails, select alternative task - do NOT delete the lock unless explicitly instructed by user.
-**CRITICAL WORKTREE ISOLATION**: After creating worktree, IMMEDIATELY `cd` to worktree directory BEFORE any other operations. Pattern: `git worktree add /workspace/branches/{task}/code -b {task} && cd /workspace/branches/{task}/code` - ALL subsequent work must occur inside worktree, NEVER in main branch.
-**CRITICAL WORKTREE CLEANUP**: BEFORE removing worktree, MUST `cd` to main worktree first. Pattern: `cd /workspace/branches/main/code && git worktree remove /workspace/branches/{task}/code` - NEVER remove a worktree while inside it (shell loses working directory). This is MANDATORY in Phase 8 (CLEANUP).
+**CRITICAL LOCK OWNERSHIP**: See [§ Lock Ownership & Task Recovery](#-lock-ownership--task-recovery) for complete lock file requirements and ownership rules.
+**CRITICAL WORKTREE ISOLATION**: See [§ Worktree Isolation & Cleanup](#-worktree-isolation--cleanup) for complete worktree management requirements.
 **CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See task-protocol.md
 **CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
 **CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL 7 phases of task protocol are finished. Implementation completion does NOT equal task completion. Only mark tasks as complete after Phase 7 cleanup and finalization.
@@ -36,10 +34,91 @@ Styler Java Code Formatter project configuration and workflow guidance.
 **CRITICAL BUG TESTING**: [Unit Test Driven Bug Fixing](#-unit-test-driven-bug-fixing) - MANDATORY test-first approach for ALL bugs to prevent regressions.
 **🚨 VIOLATION = IMMEDIATE TASK RESTART REQUIRED**
 
+## 🚨 LOCK OWNERSHIP & TASK RECOVERY {#lock-ownership}
+
+**CRITICAL**: After context compaction, the `check-lock-ownership.sh` SessionStart hook automatically checks for active tasks owned by this session and provides specific instructions.
+
+**Lock Ownership Rule**: ONLY work on tasks whose lock file contains YOUR session_id.
+
+**🚨 LOCK FILE VERIFICATION REQUIREMENTS**:
+
+1. **NEVER manually search for lock files** - The SessionStart hook performs this check automatically
+2. **TRUST the hook output** - If it says "No Active Tasks", you have NO tasks regardless of other files
+3. **ONLY `.json` files are valid** - Lock files MUST be `/workspace/locks/{task-name}.json`
+4. **Invalid extensions are NEVER valid**:
+   - ❌ `/workspace/locks/task-name.lock` - INVALID, will be ignored
+   - ❌ `/workspace/locks/task-name.txt` - INVALID, will be ignored
+   - ❌ Any extension other than `.json` - INVALID, will be ignored
+5. **If you see your session_id in a non-.json file**: Delete it immediately, it's incorrect
+6. **NEVER remove lock files unless you own them** - session_id must match
+7. **If lock acquisition fails** - Select alternative task, do NOT delete the lock
+
+**Lock File Format**:
+```json
+{
+  "session_id": "unique-session-identifier",
+  "task_name": "task-name-matching-filename",
+  "state": "current-protocol-phase",
+  "created_at": "ISO-8601-timestamp"
+}
+```
+
+## 🚨 WORKTREE ISOLATION & CLEANUP {#worktree-isolation}
+
+### During Task Execution
+
+**CRITICAL WORKTREE ISOLATION**: After creating worktree, IMMEDIATELY `cd` to worktree directory BEFORE any other operations.
+
+**Required Pattern**:
+```bash
+git worktree add /workspace/branches/{task}/code -b {task} && cd /workspace/branches/{task}/code
+```
+
+**ALL subsequent work must occur inside worktree, NEVER in main branch.**
+
+**Verification Before Proceeding**:
+```bash
+pwd | grep -q "/workspace/branches/{task}/code$" && echo "✅ In worktree" || echo "❌ ERROR: Not in worktree!"
+```
+
+### During Cleanup (Phase 7/8)
+
+**CRITICAL WORKTREE CLEANUP**: BEFORE removing worktree, MUST `cd` to main worktree first.
+
+**Required Pattern**:
+```bash
+cd /workspace/branches/main/code && git worktree remove /workspace/branches/{task}/code
+```
+
+**NEVER remove a worktree while inside it** - shell loses working directory. This is MANDATORY in Phase 8 (CLEANUP).
+
+**Prohibited Pattern**: ❌ Being inside `/workspace/branches/{task}/code` and running `git worktree remove /workspace/branches/{task}/code`
+**Required Pattern**: ✅ Change to main worktree first, then remove task worktree
+
+## 🚨 TASK PROTOCOL SUMMARY {#task-protocol}
+
+**Full Protocol Details**: See [task-protocol.md](docs/project/task-protocol.md) for complete state machine and transition requirements.
+
+**State Machine**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
+
+**Critical Requirements for All Tasks**:
+- Lock acquisition (see [§ Lock Ownership](#lock-ownership))
+- Worktree isolation (see [§ Worktree Isolation](#worktree-isolation))
+- Build verification before merge
+- Unanimous stakeholder approval (Phase 6/REVIEW)
+- Complete all phases before selecting new task
+
+**Risk-Based Variants**:
+- **HIGH-RISK** (src/\*\*, pom.xml, security/\*\*): Full 7-phase protocol with all agents
+- **MEDIUM-RISK** (tests, docs): Abbreviated protocol, domain-specific agents
+- **LOW-RISK** (general docs): Streamlined protocol, minimal validation
+
+**Post-Compaction Note**: This summary plus lock ownership and worktree isolation rules above are sufficient for basic protocol compliance when task-protocol.md is not accessible.
+
 ## 🚨 RISK-BASED PROTOCOL SELECTION
 
 **PROTOCOL SELECTION BASED ON FILE RISK:**
-- **HIGH-RISK**: Full 7-phase protocol (src/**, pom.xml, .github/**, security/**, CLAUDE.md)
+- **HIGH-RISK**: Full 7-phase protocol (src/\*\*, pom.xml, .github/\*\*, security/\*\*, CLAUDE.md)
 - **MEDIUM-RISK**: Abbreviated protocol (test files, code-style docs, configuration)
 - **LOW-RISK**: Streamlined protocol (general docs, todo.md, README files)
 
@@ -55,25 +134,25 @@ Styler Java Code Formatter project configuration and workflow guidance.
 ✅ Backward compatible: Existing workflows unchanged
 
 **BATCH PROCESSING - AUTOMATIC CONTINUOUS MODE:**
-✅ "Work on multiple tasks until done" - Auto-translates to continuous workflow mode  
-✅ "Complete all Phase 1 tasks" - Auto-translates to continuous mode with phase filtering  
-✅ "Work on study-claude-cli-interface task" - Single task with proper isolation  
+✅ "Work on multiple tasks until done" - Auto-translates to continuous workflow mode
+✅ "Complete all Phase 1 tasks" - Auto-translates to continuous mode with phase filtering
+✅ "Work on study-claude-cli-interface task" - Single task with proper isolation
 ❌ Manual batch processing within single protocol execution - PROHIBITED
 
 ## 🚨 STAKEHOLDER CONSENSUS ENFORCEMENT
 
 **CRITICAL PROTOCOL VIOLATION PREVENTION**: Phase 6 requires UNANIMOUS stakeholder approval
 
-**MANDATORY DECISION LOGIC**: 
-- ALL agents must respond with "FINAL DECISION: ✅ APPROVED"  
-- ANY agent with "❌ REJECTED" → MANDATORY Phase 5 execution + Phase 6 re-run  
-- NO human override permitted - agent decisions are ATOMIC and BINDING  
-- NO subjective "MVP scope" or "enhancement-level" assessments allowed  
+**MANDATORY DECISION LOGIC**:
+- ALL agents must respond with "FINAL DECISION: ✅ APPROVED"
+- ANY agent with "❌ REJECTED" → MANDATORY Phase 5 execution + Phase 6 re-run
+- NO human override permitted - agent decisions are ATOMIC and BINDING
+- NO subjective "MVP scope" or "enhancement-level" assessments allowed
 
 **PROHIBITED PATTERNS**:
-❌ "Considering the MVP nature, I'll proceed despite rejections"  
-❌ "Privacy issues are enhancement-level, not blocking"  
-❌ "Since critical security is fixed, I'll finalize the task"  
+❌ "Considering the MVP nature, I'll proceed despite rejections"
+❌ "Privacy issues are enhancement-level, not blocking"
+❌ "Since critical security is fixed, I'll finalize the task"
 
 **REQUIRED PATTERN**:
 ✅ "Agent X returned ❌ REJECTED, executing Phase 5 resolution cycle"
@@ -129,7 +208,7 @@ Styler Java Code Formatter project configuration and workflow guidance.
 
 1. **NEVER assume checkstyle-only** - Style guide consists of THREE components
 2. **FOLLOW PROTOCOL**: task-protocol.md "Complete Style Validation Gate" pattern
-3. **MANUAL VERIFICATION**: Check docs/code-style/*-claude.md detection patterns
+3. **MANUAL VERIFICATION**: Check docs/code-style/\*-claude.md detection patterns
 4. **ALL THREE REQUIRED**: checkstyle + PMD + manual rules must ALL pass
 
 **CRITICAL ERROR PATTERN**: Checking only checkstyle and declaring "no violations found" when PMD/manual violations exist
@@ -293,25 +372,6 @@ When evaluating whether to defer work via scope negotiation:
 - [ ] Created follow-up tasks for any deferred improvements
 - [ ] Achieved solution that will remain viable long-term
 
-## 🚨 POST-COMPACTION TASK OWNERSHIP
-
-**CRITICAL**: After context compaction, the `check-lock-ownership.sh` SessionStart hook automatically checks for active tasks owned by this session and provides specific instructions.
-
-**Lock Ownership Rule**: ONLY work on tasks whose lock file contains YOUR session_id.
-
-**🚨 LOCK FILE VERIFICATION REQUIREMENTS**:
-
-1. **NEVER manually search for lock files** - The SessionStart hook performs this check automatically
-2. **TRUST the hook output** - If it says "No Active Tasks", you have NO tasks regardless of other files
-3. **ONLY `.json` files are valid** - Lock files MUST be `/workspace/locks/{task-name}.json`
-4. **Invalid extensions are NEVER valid**:
-   - ❌ `/workspace/locks/task-name.lock` - INVALID, will be ignored
-   - ❌ `/workspace/locks/task-name.txt` - INVALID, will be ignored
-   - ❌ Any extension other than `.json` - INVALID, will be ignored
-5. **If you see your session_id in a non-.json file**: Delete it immediately, it's incorrect
-
-**Reference**: See [critical-rules.md](docs/project/critical-rules.md) for lock file format and ownership rules.
-
 ## Repository Structure
 
 **⚠️ NEVER** initialize new repositories
@@ -332,342 +392,24 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 **Auto-Detection**: "todo list", "all tasks", "continuously", "CONTINUOUS WORKFLOW MODE"
 **Effects**: Detailed output, automatic task progression, full stakeholder analysis, comprehensive TodoWrite tracking
 
-## 📝 CODE COMMENTS POLICY
+## 📝 CODE POLICIES
 
-**OUTDATED CONTENT HANDLING**:
-🔄 **UPDATE PRINCIPLE**: When encountering outdated code or comments, update them to reflect current functionality rather than removing them **only if there is long-term interest in keeping them**, even if this requires significant effort. If they're not used/needed, remove them entirely.
+**For complete code policies, see**: [docs/optional-modules/code-policies.md](docs/optional-modules/code-policies.md)
 
-**PROHIBITED COMMENT PATTERNS**:
-❌ References to past changes: "Note: Removed skipping of getters/setters as tests expect them to be documented"
-❌ Implementation history: "Previously this used X, now it uses Y"
-❌ Change rationale: "Updated to fix issue with Z"
-❌ Refactoring notes: "Changed from approach A to approach B because..."
-❌ Superficial linter avoidance: Replacing "TODO" with "Future" or "Note" to avoid checkstyle violations
-
-**REQUIRED COMMENT PATTERNS**:
-✅ Current functionality: "Skip constructors and overridden methods"
-✅ Business logic: "Javadoc is complete when all parameters and return values are documented"
-✅ Technical rationale: "Expression context prevents statement-level transformation"
-✅ Domain constraints: "Source position tracking requires precise integer arithmetic"
-
-**PRINCIPLE**: Comments should describe WHAT the code does and WHY it works that way, never WHAT it used to do or HOW it changed. When comments become outdated, update them to accurately reflect current behavior.
-
-## 🔧 TODO COMMENT HANDLING
-
-**CRITICAL**: Never superficially modify TODO comments or use temporal language to avoid linter checks.
-
-**PROHIBITED APPROACH**:
-❌ Changing "TODO" to "Future" or "Note" to bypass checkstyle
-❌ Rewording TODOs without addressing the underlying issue
-❌ Using temporal terms: "For now", "Currently unused", "Temporarily", "Will be replaced"
-❌ Apologetic comments: "This is a hack", "Quick fix", "Not ideal but works"
-
-**REQUIRED APPROACH**:
-✅ **Implement the TODO**: If it's critical for the current task, implement it now
-✅ **Remove the comment**: If the TODO isn't needed, delete it entirely
-✅ **Fix the code**: If something is "temporary", fix the underlying problem; otherwise, make it permanent or document why it must be temporary
-✅ **Move to task tracker**: Add genuine TODOs to todo.md and remove inline comment
-✅ **Accept the violation**: If the TODO is legitimately needed for documentation, keep it as-is and accept the checkstyle violation (or suppress with @SuppressWarnings if project policy allows)
-
-**EXAMPLE - BAD**:
-```java
-// TODO: Extract configuration from Maven project properties
-// Changed to:
-// Future: Extract configuration from Maven project properties  ❌ Superficial change
-// For now, use default configuration  ❌ Temporal language
-// Currently unused, defaults applied  ❌ Temporal language
-```
-
-**EXAMPLE - GOOD**:
-```java
-// Option 1: Implement it
-RuleConfiguration config = extractConfigFromMavenProperties(mavenProject);  ✅
-
-// Option 2: Remove if not needed
-return new LineLengthRuleConfiguration();  ✅ (no comment)
-
-// Option 3: Remove unused parameter or use it
-private RuleConfiguration createRuleConfiguration()  ✅ (removed unused param)
-
-// Option 4: Move to todo.md
-// Added task to todo.md: "Extract Maven config to RuleConfiguration"  ✅
-return new LineLengthRuleConfiguration();
-
-// Option 5: Keep TODO if genuinely needed for code understanding
-// TODO: Extract configuration from Maven project properties when ConfigurationExtractor is implemented  ✅
-```
-
-## 📚 JAVADOC COMMENT REQUIREMENTS
-
-**CRITICAL MANUAL PROCESS**: JavaDoc comments must NEVER be populated using automated scripts or template-based tools.
-
-**MANDATORY APPROACH**:
-✅ Read and understand the actual business logic being implemented
-✅ Write JavaDoc that explains WHAT is being validated/implemented based on context
-✅ Use meaningful descriptions that add value beyond the method name
-✅ Each JavaDoc must be crafted individually based on the specific code's purpose
-
-**PROHIBITED APPROACH**:
-❌ Using scripts to bulk-add generic JavaDoc like "Test method" or "Validates X"
-❌ Template-based JavaDoc generation without understanding business context
-❌ Copy-paste JavaDoc patterns without adapting to specific use case
-❌ Generic descriptions that could apply to any method
-
-**EXAMPLE - BAD**:
-```java
-/**
- * Test method.
- */
-@Test
-public void canHandleWithJava25ReturnsTrue()
-```
-
-**EXAMPLE - GOOD**:
-```java
-/**
- * Verifies that FlexibleConstructorBodiesStrategy handles constructor bodies in Java 25 with LBRACE token.
- */
-@Test
-public void canHandleWithJava25ReturnsTrue()
-```
-
-**RATIONALE**: JavaDoc comments require understanding the business domain and technical context. Automated scripts cannot comprehend what a method actually does or why it matters, leading to meaningless documentation that provides no value to developers.
-
-## 🧪 TESTNG TEST REQUIREMENTS
-
-**CRITICAL THREAD SAFETY**: All tests must be thread-safe to support parallel execution.
-
-**PROHIBITED PATTERNS**:
-❌ `@BeforeMethod` - Creates mutable shared state between test methods
-❌ `@AfterMethod` - Cleanup methods that assume sequential execution
-❌ Mutable instance fields shared across test methods
-❌ `assertThatThrownBy()` - Use TestNG's native exception handling instead
-
-**REQUIRED PATTERNS**:
-✅ `@Test(expectedExceptions = ExceptionType.class)` - For exception testing
-✅ Local variables within each test method
-✅ Static helper methods for test data creation
-✅ Each test method is completely independent and self-contained
-
-**LOOP INCREMENT STYLE**:
-✅ Use `++i` for pre-increment (standard style)
-❌ Do NOT use `i++` or `i += 1`
-
-**EXAMPLE - BAD**:
-```java
-public class MyTest {
-    private Configuration config;  // Shared mutable state
-
-    @BeforeMethod
-    public void setUp() {
-        config = new Configuration();  // Not thread-safe
-    }
-
-    @Test
-    public void testFeature() {
-        assertThatThrownBy(() -> config.validate())
-            .isInstanceOf(ValidationException.class);
-    }
-}
-```
-
-**EXAMPLE - GOOD**:
-```java
-public class MyTest {
-    @Test(expectedExceptions = ValidationException.class)
-    public void testFeatureThrowsValidationException() {
-        Configuration config = new Configuration();  // Local state
-        config.validate();
-    }
-
-    @Test
-    public void testAnotherFeature() {
-        Configuration config = createTestConfig();  // Independent
-        assertThat(config.isValid()).isTrue();
-    }
-
-    private static Configuration createTestConfig() {
-        return new Configuration();
-    }
-}
-```
-
-**RATIONALE**: TestNG runs tests in parallel by default. Using `@BeforeMethod` or mutable instance fields creates race conditions and non-deterministic test failures. Each test method must be completely independent.
+**Quick Reference**:
+- **Code Comments**: Update outdated comments, avoid implementation history
+- **TODO Comments**: Implement, remove, or document - never superficially rename
+- **JavaDoc**: Manual process required, no automated scripts
+- **TestNG Tests**: Thread-safe patterns only, no @BeforeMethod
 
 ## 🛠️ TOOL USAGE BEST PRACTICES
 
-**CRITICAL ERROR PREVENTION**: Common tool usage patterns that cause failures and how to prevent them.
+**For complete tool usage guide, see**: [docs/optional-modules/tool-usage.md](docs/optional-modules/tool-usage.md)
 
-### File Editing with the Edit Tool
-
-**PROBLEM**: "String to replace not found in file" errors due to whitespace character mismatches.
-
-**ROOT CAUSE**: The Read tool displays output visually but doesn't distinguish between tabs and spaces. Copying text from Read output may preserve visual formatting but not actual characters.
-
-**PREVENTION STRATEGIES**:
-
-1. **Verify whitespace before editing**:
-```bash
-# Show exact whitespace characters (^I = tab, spaces shown as-is)
-cat -A file.java | grep -A 2 "methodName"
-
-# Show character codes (\t = tab)
-od -c file.java | grep methodName
-
-# Quick check for file's indentation style
-head -20 file.java | cat -A | grep "^[[:space:]]" | head -3
-```
-
-2. **Use smallest unique strings**:
-```java
-// ❌ BAD: Include indentation (tabs vs spaces mismatch risk)
-old_string: "\tpublic void methodName()"
-
-// ✅ GOOD: Exclude leading whitespace
-old_string: "public void methodName()"
-```
-
-3. **Alternative tools for whitespace-heavy edits**:
-```bash
-# Use sed for bulk replacements
-sed -i 's/oldPattern/newPattern/g' file.java
-
-# Use awk for complex transformations
-awk '{gsub(/pattern/, "replacement")}1' file.java > temp && mv temp file.java
-```
-
-4. **Preview before editing**:
-```bash
-# Test regex patterns before applying
-grep -n "pattern" file.java  # See what matches
-sed -n 's/old/new/p' file.java  # Preview replacements without modifying
-```
-
-**CHECKLIST BEFORE USING EDIT TOOL**:
-- [ ] Is the old_string unique in the file? (Use grep to verify)
-- [ ] Does old_string contain leading/trailing whitespace? (Minimize if possible)
-- [ ] Have I verified the actual whitespace characters? (Use cat -A if uncertain)
-- [ ] Would sed/awk be safer for this edit? (Consider for bulk changes)
-
-### Bash Command Execution
-
-**PROBLEM**: "No such file or directory" errors when running executables like `./mvnw`.
-
-**ROOT CAUSE**: Bash tool maintains working directory between invocations. Commands may be executed from unexpected directories.
-
-**PREVENTION STRATEGIES**:
-
-1. **Always use absolute paths for executables**:
-```bash
-# ❌ BAD: Relative path depends on current directory
-./mvnw verify
-
-# ✅ GOOD: Absolute path works from anywhere
-/workspace/branches/task-name/code/mvnw verify
-```
-
-2. **Include directory change in same command**:
-```bash
-# ✅ GOOD: Change directory and run command atomically
-cd /workspace/branches/task-name/code && ./mvnw verify
-
-# ✅ GOOD: Multiple dependent commands
-cd /workspace && ls -la && cat file.txt
-```
-
-3. **Verify location when uncertain**:
-```bash
-# Check current directory before running command
-pwd && ./mvnw verify
-
-# Or combine verification with execution
-pwd && ls -la mvnw && ./mvnw verify
-```
-
-4. **Use full paths for files**:
-```bash
-# ❌ BAD: Relative path may fail if directory changed
-cat README.md
-
-# ✅ GOOD: Absolute path always works
-cat /workspace/branches/task-name/code/README.md
-```
-
-**CHECKLIST BEFORE RUNNING BASH COMMANDS**:
-- [ ] Am I using an absolute path OR including `cd` in the command?
-- [ ] If using relative paths, do I know the current working directory?
-- [ ] For multi-step commands, are they chained with `&&` (not separate invocations)?
-- [ ] For path-dependent operations, have I verified the path exists?
-
-### Pattern Matching and Replacement
-
-**PROBLEM**: Over-broad pattern matching causes unintended replacements (e.g., replacing inside helper methods that use the same pattern).
-
-**ROOT CAUSE**: Global search-and-replace without considering all possible match locations.
-
-**PREVENTION STRATEGIES**:
-
-1. **Preview all matches before replacing**:
-```bash
-# See all lines that would be affected
-grep -n "pattern" file.java
-
-# Preview replacements without modifying file
-sed -n 's/old/new/p' file.java
-
-# Count matches to verify expected number
-grep -c "pattern" file.java
-```
-
-2. **Use line number ranges for targeted changes**:
-```bash
-# Only replace in specific line range
-sed -i '100,200s/old/new/g' file.java
-
-# Multiple specific lines
-sed -i '50s/old/new/; 75s/old/new/; 120s/old/new/' file.java
-```
-
-3. **Use context-aware patterns**:
-```bash
-# Only replace in specific context
-sed -i '/visitVariableDeclaration/,/^[[:space:]]*}/ s/recordIndentation/visitAndRecordOnly/' file.java
-
-# Only replace when pattern appears with specific context
-sed -i '/public.*visitMethod/s/recordIndentation/visitAndRecordOnly/' file.java
-```
-
-4. **Make patterns more specific**:
-```bash
-# ❌ BAD: Too broad, matches everywhere
-sed -i 's/recordIndentation/visitAndRecordOnly/g' file.java
-
-# ✅ GOOD: More specific pattern
-sed -i 's/recordIndentation(node, depth);$/visitAndRecordOnly(node, depth);/g' file.java
-```
-
-5. **Test on copy first**:
-```bash
-# Test replacement on a copy
-cp file.java file.java.backup
-sed -i 's/pattern/replacement/g' file.java
-diff file.java.backup file.java  # Review changes
-```
-
-**CHECKLIST BEFORE PATTERN REPLACEMENT**:
-- [ ] Have I previewed all matches? (`grep -n` or `sed -n ...p`)
-- [ ] Is the pattern specific enough to avoid unintended matches?
-- [ ] Should I use line ranges to limit scope?
-- [ ] Have I considered context-aware matching?
-- [ ] For critical files, should I test on a copy first?
-
-### General Tool Usage Principles
-
-1. **READ FIRST, EDIT SECOND**: Always read a file before editing to understand its structure and whitespace style
-2. **VERIFY BEFORE EXECUTING**: Use preview/dry-run options when available
-3. **ABSOLUTE OVER RELATIVE**: Prefer absolute paths to eliminate directory confusion
-4. **SPECIFIC OVER BROAD**: Make patterns as specific as possible to avoid unintended matches
-5. **TEST BEFORE COMMIT**: For bulk operations, test on a subset or copy first
+**Critical Patterns**:
+- **Edit Tool**: Verify whitespace before editing (tabs vs spaces)
+- **Bash Tool**: Use absolute paths or combine `cd` with command
+- **Pattern Matching**: Preview before replacing, use specific patterns
 
 ## Essential References
 
@@ -676,13 +418,13 @@ diff file.java.backup file.java  # Review changes
 [docs/project/build-system.md](docs/project/build-system.md) - Build configuration and commands
 [docs/project/git-workflow.md](docs/project/git-workflow.md) - Git workflows and commit squashing procedures
 [docs/code-style-human.md](docs/code-style-human.md) - Code style master guide
-[docs/code-style/](docs/code-style/) - Code style files (*-claude.md detection patterns, *-human.md explanations)
+[docs/code-style/](docs/code-style/) - Code style files (\*-claude.md detection patterns, \*-human.md explanations)
 
 ## File Organization
 
 ### Report Types and Lifecycle
 
-**Stakeholder Reports** (`../` from code directory): 
+**Stakeholder Reports** (`../` from code directory):
 - Temporary workflow artifacts for 7-phase task protocol
 - Examples: `{task-name}-technical-architect-requirements.md`, `{task-name}-style-auditor-review.md`
 - **Lifecycle**: Created during task execution, cleaned up with worktree in Phase 7
@@ -690,7 +432,7 @@ diff file.java.backup file.java  # Review changes
 
 **Empirical Studies** (`docs/studies/{topic}.md`):
 - Temporary research cache for pending implementation tasks
-- Examples: `docs/studies/claude-cli-interface.md`, `docs/studies/claude-startup-sequence.md`  
+- Examples: `docs/studies/claude-cli-interface.md`, `docs/studies/claude-startup-sequence.md`
 - **Lifecycle**: Persist until ALL dependent todo.md tasks consume them as input
 - **Purpose**: Behavioral analysis and research studies based on empirical testing
 - **Cleanup Rule**: Remove after all dependent tasks complete implementation
