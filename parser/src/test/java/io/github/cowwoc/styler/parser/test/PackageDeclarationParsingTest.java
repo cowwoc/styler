@@ -58,8 +58,7 @@ public class PackageDeclarationParsingTest
 		// Verify source text extraction
 		String qualifiedNameText = source.substring(
 			qualifiedNameInfo.startOffset(),
-			qualifiedNameInfo.startOffset() + qualifiedNameInfo.length()
-		);
+			qualifiedNameInfo.startOffset() + qualifiedNameInfo.length());
 		assertEquals(qualifiedNameText, "com.example");
 	}
 
@@ -96,8 +95,7 @@ public class PackageDeclarationParsingTest
 		// Verify source text
 		String qualifiedNameText = source.substring(
 			qualifiedNameInfo.startOffset(),
-			qualifiedNameInfo.startOffset() + qualifiedNameInfo.length()
-		);
+			qualifiedNameInfo.startOffset() + qualifiedNameInfo.length());
 		assertEquals(qualifiedNameText, "io.github.cowwoc.styler.ast.visitor");
 	}
 
@@ -135,8 +133,7 @@ public class PackageDeclarationParsingTest
 		// Verify source text
 		String qualifiedNameText = source.substring(
 			qualifiedNameInfo.startOffset(),
-			qualifiedNameInfo.startOffset() + qualifiedNameInfo.length()
-		);
+			qualifiedNameInfo.startOffset() + qualifiedNameInfo.length());
 		assertEquals(qualifiedNameText, "util");
 	}
 
@@ -160,7 +157,7 @@ public class PackageDeclarationParsingTest
 		List<Integer> children = rootInfo.childIds();
 
 		// Should have 2 children: package declaration and class declaration
-		assertTrue(children.size() >= 1, "Expected at least 1 child (package declaration)");
+		assertTrue(!children.isEmpty(), "Expected at least 1 child (package declaration)");
 
 		// First child should be package declaration
 		int packageDeclId = children.get(0);
@@ -179,8 +176,7 @@ public class PackageDeclarationParsingTest
 		// Verify source text
 		String qualifiedNameText = source.substring(
 			qualifiedNameInfo.startOffset(),
-			qualifiedNameInfo.startOffset() + qualifiedNameInfo.length()
-		);
+			qualifiedNameInfo.startOffset() + qualifiedNameInfo.length());
 		assertEquals(qualifiedNameText, "io.github.cowwoc.styler");
 	}
 
@@ -206,7 +202,7 @@ public class PackageDeclarationParsingTest
 		List<Integer> children = rootInfo.childIds();
 
 		// Verify that first child (if any) is not a package declaration
-		if (children.size() > 0)
+		if (!children.isEmpty())
 		{
 			int childId = children.get(0);
 			ArenaNodeStorage.NodeInfo childInfo = storage.getNode(childId);
@@ -234,7 +230,7 @@ public class PackageDeclarationParsingTest
 		List<Integer> children = rootInfo.childIds();
 
 		// Should have at least the package declaration
-		assertTrue(children.size() >= 1, "Expected at least 1 child (package declaration)");
+		assertTrue(!children.isEmpty(), "Expected at least 1 child (package declaration)");
 
 		// First child should be package declaration
 		int packageDeclId = children.get(0);

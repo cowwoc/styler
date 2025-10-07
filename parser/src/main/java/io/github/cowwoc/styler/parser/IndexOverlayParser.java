@@ -651,7 +651,7 @@ public class IndexOverlayParser implements AutoCloseable
 		try
 		{
 			// Parse qualified name - this will create child node attached to packageDeclId
-			int qualifiedNameId = parseQualifiedName(context);
+			parseQualifiedName(context);
 
 			context.expect(TokenType.SEMICOLON);
 
@@ -741,9 +741,8 @@ public class IndexOverlayParser implements AutoCloseable
 		int endPos = context.getCurrentPosition();
 
 		// Create FIELD_ACCESS_EXPRESSION node spanning entire qualified name
-		int nodeId = allocateNodeWithParent(context, startPos, endPos - startPos,
+		return allocateNodeWithParent(context, startPos, endPos - startPos,
 			NodeType.FIELD_ACCESS_EXPRESSION);
-		return nodeId;
 	}
 
 	/**
