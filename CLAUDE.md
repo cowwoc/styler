@@ -277,6 +277,138 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 
 **Enforcement**: The `detect-giving-up.sh` hook detects mid-protocol abandonment patterns and injects completion reminders.
 
+## 🚨 TASK UNAVAILABILITY HANDLING
+
+**CRITICAL**: When user requests "work on the next task" or similar, you MUST verify task availability before attempting to start any work.
+
+### Mandatory Availability Check
+
+**BEFORE attempting to select or start ANY task:**
+1. Check todo.md for available tasks with `READY` status
+2. Verify task dependencies are met (check for `BLOCKED` status)
+3. Check `/workspace/locks/` for existing locks on available tasks
+4. Confirm at least ONE task is available AND accessible
+
+### Required Response When No Tasks Available
+
+**If ALL tasks are unavailable, you MUST:**
+1. **STOP immediately** - Do NOT attempt to start any work
+2. **EXPLAIN clearly** why no tasks are available
+3. **PROVIDE specifics** about what's blocking progress
+
+**Required Explanation Format:**
+```
+I cannot proceed with any tasks because:
+
+**Task Availability Analysis:**
+- Total tasks in todo.md: X
+- Tasks with READY status: Y
+- Tasks currently locked by other sessions: Z
+- Tasks blocked by dependencies: W
+
+**Specific Blockers:**
+1. [Task Name]: BLOCKED - Dependencies: [list dependencies]
+2. [Task Name]: LOCKED - Owned by session [session-id]
+3. [Task Name]: BLOCKED - Dependencies: [list dependencies]
+
+**Next Steps:**
+- Wait for [specific task] to complete, OR
+- Wait for locks held by other sessions to be released, OR
+- No tasks remain in todo.md (all work complete)
+
+I will stop here and await further instructions.
+```
+
+### Prohibited Patterns
+
+**NEVER do any of the following when all tasks are unavailable:**
+❌ Select a blocked task and attempt to start work
+❌ Try to work around missing dependencies
+❌ Attempt to create new tasks not in todo.md
+❌ Ask user vague questions like "What should I work on?"
+❌ Proceed with any work when clear blockers exist
+❌ Suggest working on tasks that violate dependency requirements
+
+### Required Patterns
+
+**ALWAYS do the following when all tasks are unavailable:**
+✅ Stop immediately after determining no tasks available
+✅ Provide detailed analysis of why each task is unavailable
+✅ Explain specific conditions needed for tasks to become available
+✅ Wait for user to resolve blockers or provide new instructions
+✅ Check both BLOCKED status AND lock files AND dependencies
+
+### Example Scenarios
+
+**Scenario 1: All tasks blocked by dependencies**
+```
+I cannot proceed with any tasks because:
+
+**Task Availability Analysis:**
+- Total tasks in todo.md: 15
+- Tasks with READY status: 0
+- All remaining tasks: BLOCKED
+
+**Specific Blockers:**
+1. A1-A4: BLOCKED - Dependencies: A0 (setup-maven-multi-module-build) must complete first
+2. B1-B5: BLOCKED - Dependencies: All Phase A tasks must complete first
+3. C1-C6: BLOCKED - Dependencies: Phase B tasks must complete first
+
+**Next Steps:**
+- Task A0 (setup-maven-multi-module-build) must be completed before any other tasks can begin
+- Once A0 completes, tasks A1-A4 will become available
+
+I will stop here and await further instructions.
+```
+
+**Scenario 2: All tasks locked by other sessions**
+```
+I cannot proceed with any tasks because:
+
+**Task Availability Analysis:**
+- Total tasks in todo.md: 5
+- Tasks with READY status: 5
+- Tasks currently locked by other sessions: 5
+
+**Specific Blockers:**
+1. implement-parser: LOCKED - Owned by session abc-123-def
+2. implement-config: LOCKED - Owned by session xyz-789-ghi
+3. implement-cli: LOCKED - Owned by session jkl-456-mno
+4. implement-security: LOCKED - Owned by session pqr-012-stu
+5. implement-formatter: LOCKED - Owned by session vwx-345-yza
+
+**Next Steps:**
+- Wait for other sessions to complete their work and release locks
+- Check back periodically to see if any tasks become available
+
+I will stop here and await further instructions.
+```
+
+**Scenario 3: No tasks remaining**
+```
+I cannot proceed with any tasks because:
+
+**Task Availability Analysis:**
+- Total tasks in todo.md: 0
+- All tasks have been completed and archived to changelog.md
+
+**Conclusion:**
+All planned work has been completed. The todo list is empty.
+
+**Next Steps:**
+- Review completed work in changelog.md
+- User may add new tasks to todo.md if additional work is needed
+
+I will stop here and await further instructions.
+```
+
+### Enforcement
+
+The behavior is MANDATORY and will be monitored through:
+- Hook validation of task selection patterns
+- Verification that blocked/locked tasks are never started
+- Confirmation that clear explanations are provided when stopping
+
 ## 🎯 COMPLETE STYLE VALIDATION
 
 **AUTOMATED GUIDANCE**: The `smart-doc-prompter.sh` hook automatically injects the 3-component checklist when style work is detected.
