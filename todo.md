@@ -1,5 +1,54 @@
 # TODO List - Styler Java Code Formatter (Main Branch)
 
+## 🚀 READY TO WORK NOW (Multi-Instance Coordination)
+
+**Current Status**: All tasks blocked until A0 completes
+
+**IMMEDIATE ACTION REQUIRED**:
+- **A0: Build System Setup** ← START HERE (no dependencies, blocks everything else)
+
+**After A0 Completes** (4 parallel instances possible):
+- A1: AST Parser Foundation
+- A2: TOML Configuration
+- A3: CLI Arguments
+- A4: Security Framework
+
+**Phase B/C/D**: Blocked until Phase A completes
+
+---
+
+## 🔒 Task Coordination (Multi-Instance Work)
+
+**Lock System**: Before starting ANY task, acquire lock per `docs/project/task-protocol.md`
+- Lock file: `/workspace/locks/{task-name}.json`
+- Lock contains: `session_id`, `task_name`, `state`, `created_at`
+- **ONLY work on tasks where lock contains YOUR session_id**
+
+**Task Status Indicators**:
+- `[ ] READY:` - No dependencies, can start immediately
+- `[ ] BLOCKED:` - Dependencies must complete first
+- `[ ] IN_PROGRESS:` - Someone is working on it (check `/workspace/locks/`)
+
+**Task Completion** (per CLAUDE.md task archival policy):
+- Completed tasks are REMOVED from todo.md (entire entry deleted)
+- Completed tasks are ADDED to changelog.md under completion date
+- When checking dependencies: search BOTH todo.md AND changelog.md
+
+**Before Starting a Task**:
+1. ✅ Verify task status is `READY` (not BLOCKED)
+2. ✅ Check `/workspace/locks/` - if lock exists with different session_id, task is taken
+3. ✅ Acquire lock via task-protocol.md INIT state
+4. ✅ Update task status to `IN_PROGRESS` in todo.md
+5. ✅ Create isolated worktree: `/workspace/branches/{task-name}/code`
+6. ✅ Begin work following full 7-phase task protocol
+
+**Parallel Work Opportunities**:
+- **Phase A** (after A0): 4 tasks can run in parallel (A1, A2, A3, A4)
+- **Phase B**: Limited parallelism (B1 must complete first, then B2-B5 have dependencies)
+- **Phase C**: Some parallelism (C1 independent, C3 independent of C1/C2, C4 depends on all)
+
+---
+
 ## 🎯 STREAMLINED IMPLEMENTATION STRATEGY
 
 **Philosophy**: Build a working AI-integrated Java formatter with proven architecture patterns:
@@ -17,8 +66,14 @@
 
 **Goal**: Build core parsing, configuration, and security infrastructure without depending on formatters or AI integration.
 
+**Coordination**: A0 must complete first. After A0, tasks A1-A4 can run in parallel (4 instances possible).
+
 ### A0. Build System Setup
-- [ ] **TASK:** `setup-maven-multi-module-build` - Create Maven parent POM and module structure
+- [ ] **READY:** `setup-maven-multi-module-build` - Create Maven parent POM and module structure
+  - **Dependencies**: None (START HERE FIRST)
+  - **Blocks**: A1, A2, A3, A4 (all Phase A tasks), entire Phase B/C/D
+  - **Parallelizable With**: None (must complete before anything else)
+  - **Estimated Effort**: 1 day
   - **Purpose**: Establish build infrastructure for all subsequent tasks
   - **Scope**: Parent POM with nested module structure for logical grouping
   - **Module Structure**:
@@ -37,7 +92,11 @@
   - **Estimated Effort**: 1 day
 
 ### A1. AST Parser Foundation
-- [ ] **TASK:** `implement-index-overlay-parser` - Index-Overlay AST parser for JDK 25
+- [ ] **BLOCKED:** `implement-index-overlay-parser` - Index-Overlay AST parser for JDK 25
+  - **Dependencies**: A0 (build system - need styler-parser, styler-ast-core modules)
+  - **Blocks**: B2 (pipeline), all formatters (B1, C3), C4 (concurrency benchmark)
+  - **Parallelizable With**: A2, A3, A4 (after A0 completes)
+  - **Estimated Effort**: 5-7 days
   - **Purpose**: Parse Java source files into immutable AST representation with memory-efficient index-based storage
   - **Scope**: Complete parser supporting JDK 25 features (pattern matching, records, sealed classes, string templates)
   - **Architecture**: Index-Overlay pattern with Arena API memory management
@@ -59,7 +118,11 @@
   - **Estimated Effort**: 5-7 days
 
 ### A2. Configuration System
-- [ ] **TASK:** `implement-toml-configuration` - TOML-based configuration with file discovery
+- [ ] **BLOCKED:** `implement-toml-configuration` - TOML-based configuration with file discovery
+  - **Dependencies**: A0 (build system - need styler-config module)
+  - **Blocks**: B2 (pipeline), B5 (CLI integration)
+  - **Parallelizable With**: A1, A3, A4 (after A0 completes)
+  - **Estimated Effort**: 2-3 days
   - **Purpose**: Load and merge formatting configuration from .styler.toml files
   - **Scope**: TOML parser, config discovery (current/parent/home dirs), merge logic
   - **Components**:
@@ -73,7 +136,11 @@
   - **Estimated Effort**: 2-3 days
 
 ### A3. CLI Argument Parsing
-- [ ] **TASK:** `implement-cli-arguments` - Command-line argument parsing without file processing
+- [ ] **BLOCKED:** `implement-cli-arguments` - Command-line argument parsing without file processing
+  - **Dependencies**: A0 (build system - need styler-cli module)
+  - **Blocks**: B5 (CLI integration)
+  - **Parallelizable With**: A1, A2, A4 (after A0 completes)
+  - **Estimated Effort**: 1-2 days
   - **Purpose**: Parse CLI arguments for file paths, config overrides, output options
   - **Scope**: Argument parser with --config, --check, --fix, --help, --version flags
   - **Components**:
@@ -86,7 +153,11 @@
   - **Estimated Effort**: 1-2 days
 
 ### A4. Security Framework
-- [ ] **TASK:** `implement-security-controls` - Essential security for CLI tool
+- [ ] **BLOCKED:** `implement-security-controls` - Essential security for CLI tool
+  - **Dependencies**: A0 (build system - need styler-security module)
+  - **Blocks**: B2 (pipeline), C1 (file discovery)
+  - **Parallelizable With**: A1, A2, A3 (after A0 completes)
+  - **Estimated Effort**: 2-3 days
   - **Purpose**: Protect against malicious inputs, resource exhaustion, path traversal
   - **Scope**: Input validation, file size limits, memory monitoring, execution timeouts
   - **Components**:
@@ -108,8 +179,14 @@
 
 **Goal**: Build complete end-to-end pipeline from CLI → parse → format → AI feedback output. This phase delivers working AI agent integration.
 
+**Coordination**: B1 tasks can run in parallel (2 instances). After B1 completes, B2-B5 have sequential dependencies.
+
 ### B1. Minimal Formatting Rules (MVP)
-- [ ] **TASK:** `implement-line-length-formatter` - Line length violations and auto-fixing
+- [ ] **BLOCKED:** `implement-line-length-formatter` - Line length violations and auto-fixing
+  - **Dependencies**: A0 (styler-formatter-api module), A1 (parser for AST)
+  - **Blocks**: B2 (pipeline needs formatters)
+  - **Parallelizable With**: `implement-import-organization` (other B1 task)
+  - **Estimated Effort**: 2-3 days
   - **Purpose**: Detect and optionally fix lines exceeding configured length
   - **Scope**: Line length validation with configurable limit (default 120 chars)
   - **Components**:
@@ -121,7 +198,11 @@
   - **Quality**: Comprehensive tests, respects code semantics
   - **Estimated Effort**: 2-3 days
 
-- [ ] **TASK:** `implement-import-organization` - Import grouping and unused import removal
+- [ ] **BLOCKED:** `implement-import-organization` - Import grouping and unused import removal
+  - **Dependencies**: A0 (styler-formatter-api module), A1 (parser for AST)
+  - **Blocks**: B2 (pipeline needs formatters)
+  - **Parallelizable With**: `implement-line-length-formatter` (other B1 task)
+  - **Estimated Effort**: 2-3 days
   - **Purpose**: Organize imports and remove unused ones
   - **Scope**: Import grouping (java/javax, third-party, project, static) with configurable patterns
   - **Components**:
@@ -135,7 +216,11 @@
   - **Estimated Effort**: 2-3 days
 
 ### B2. File Processing Pipeline
-- [ ] **TASK:** `implement-file-processing-pipeline` - Orchestrate parse → format → output
+- [ ] **BLOCKED:** `implement-file-processing-pipeline` - Orchestrate parse → format → output
+  - **Dependencies**: A1 (parser), A4 (security), B1 (both formatters: line length + imports)
+  - **Blocks**: B3 (AI output), B4 (error catalog), B5 (CLI integration), all of Phase C
+  - **Parallelizable With**: None (depends on B1, blocks B3/B4/B5)
+  - **Estimated Effort**: 3-4 days
   - **Purpose**: Coordinate complete file processing workflow with error recovery
   - **Scope**: Pipeline coordinator handling parse → format → validate → output stages
   - **Architecture**:
@@ -154,7 +239,11 @@
   - **Estimated Effort**: 3-4 days
 
 ### B3. Structured Violation Output (AI Agent Integration)
-- [ ] **TASK:** `implement-ai-violation-output` - Structured violation feedback for AI agents
+- [ ] **BLOCKED:** `implement-ai-violation-output` - Structured violation feedback for AI agents
+  - **Dependencies**: B2 (pipeline - violation collection), B1 (formatters - violation types)
+  - **Blocks**: B5 (CLI integration needs output formatter)
+  - **Parallelizable With**: B4 (error catalog - independent concerns)
+  - **Estimated Effort**: 3-4 days
   - **Purpose**: Generate machine-readable violation reports with actionable fix strategies
   - **Scope**: JSON/XML output with rule IDs, severity, fix strategies, priority scores
   - **Architecture**:
@@ -173,7 +262,11 @@
   - **Estimated Effort**: 3-4 days
 
 ### B4. Error Message Catalog
-- [ ] **TASK:** `create-error-message-catalog` - Comprehensive error messages for AI and human users
+- [ ] **BLOCKED:** `create-error-message-catalog` - Comprehensive error messages for AI and human users
+  - **Dependencies**: B2 (pipeline - error types), A1 (parser - parse errors)
+  - **Blocks**: B5 (CLI integration needs error formatting)
+  - **Parallelizable With**: B3 (AI output - independent concerns)
+  - **Estimated Effort**: 2 days
   - **Purpose**: Provide clear, actionable error messages for all failure scenarios
   - **Scope**: Error code catalog, context-specific messages, fix suggestions
   - **Components**:
@@ -189,7 +282,11 @@
   - **Estimated Effort**: 2 days
 
 ### B5. CLI Integration
-- [ ] **TASK:** `implement-cli-formatter-integration` - Wire CLI → pipeline → output
+- [ ] **BLOCKED:** `implement-cli-formatter-integration` - Wire CLI → pipeline → output
+  - **Dependencies**: A2 (config), A3 (CLI args), B2 (pipeline), B3 (AI output), B4 (errors)
+  - **Blocks**: All of Phase C (C1-C6 need working CLI)
+  - **Parallelizable With**: None (depends on all other Phase B tasks)
+  - **Estimated Effort**: 2-3 days
   - **Purpose**: Complete end-to-end CLI workflow for single files
   - **Scope**: CLI invokes pipeline, handles output, reports errors
   - **Components**:
@@ -209,7 +306,11 @@
 **Goal**: Scale to large codebases with parallel processing, build to 5 formatting rules for realistic benchmarking, and validate with Maven plugin integration.
 
 ### C1. File Discovery
-- [ ] **TASK:** `implement-file-discovery` - Recursive Java file discovery with filtering
+- [ ] **BLOCKED:** `implement-file-discovery` - Recursive Java file discovery with filtering
+  - **Dependencies**: B5 (CLI integration complete), A4 (security for file validation)
+  - **Blocks**: C2 (parallel processing needs file list), C5 (Maven plugin needs discovery)
+  - **Parallelizable With**: C3 (formatting rules development)
+  - **Estimated Effort**: 1-2 days
   - **Purpose**: Find Java source files in directories with include/exclude patterns
   - **Scope**: Recursive directory traversal, glob patterns, .gitignore integration
   - **Components**:
@@ -219,10 +320,13 @@
   - **Features**: Include/exclude patterns, symlink handling, large directory support
   - **Integration**: Provides file list to parallel processor
   - **Quality**: Efficient traversal, security validation
-  - **Estimated Effort**: 1-2 days
 
 ### C2. Virtual Thread Processing (Thread-per-File Baseline)
-- [ ] **TASK:** `implement-virtual-thread-processing` - Multi-threaded file processing with virtual threads
+- [ ] **BLOCKED:** `implement-virtual-thread-processing` - Multi-threaded file processing with virtual threads
+  - **Dependencies**: B5 (CLI integration), C1 (file discovery for file list), B2 (pipeline to wrap)
+  - **Blocks**: C4 (concurrency benchmark needs baseline), C5 (Maven plugin needs parallel processing)
+  - **Parallelizable With**: C3 (formatting rules development)
+  - **Estimated Effort**: 3-4 days
   - **Purpose**: Process large codebases efficiently using Java 25 virtual threads
   - **Scope**: Virtual thread pool for file-level parallelism with unlimited concurrency
   - **Architecture**:
@@ -234,10 +338,13 @@
   - **Performance Targets**: 100+ files/sec, linear scalability to 32 cores
   - **Integration**: Wraps file processing pipeline from B2, uses file list from C1
   - **Quality**: Thread-safe design, comprehensive concurrency tests
-  - **Estimated Effort**: 3-4 days
 
 ### C3. Additional Formatting Rules (Build to 5 Total Rules)
-- [ ] **TASK:** `implement-brace-formatting` - Brace style formatting (K&R, Allman, GNU)
+- [ ] **BLOCKED:** `implement-brace-formatting` - Brace style formatting (K&R, Allman, GNU)
+  - **Dependencies**: B1 (formatter infrastructure), A1 (AST nodes)
+  - **Blocks**: C4 (concurrency benchmark needs 5 rules total)
+  - **Parallelizable With**: C1 (file discovery), C2 (parallel processing), other C3 tasks (whitespace, indentation)
+  - **Estimated Effort**: 2-3 days
   - **Purpose**: Enforce consistent brace placement across Java constructs
   - **Scope**: Configurable brace styles (K&R, Allman, GNU) with construct-specific overrides
   - **Components**:
@@ -248,9 +355,12 @@
   - **Features**: Multiple brace styles, control structure overrides, empty block handling
   - **Integration**: Uses AST structure nodes, transformation context API
   - **Quality**: Comprehensive tests covering all Java constructs
-  - **Estimated Effort**: 2-3 days
 
-- [ ] **TASK:** `implement-whitespace-formatting` - Whitespace around operators and keywords
+- [ ] **BLOCKED:** `implement-whitespace-formatting` - Whitespace around operators and keywords
+  - **Dependencies**: B1 (formatter infrastructure), A1 (AST nodes)
+  - **Blocks**: C4 (concurrency benchmark needs 5 rules total)
+  - **Parallelizable With**: C1 (file discovery), C2 (parallel processing), other C3 tasks (brace, indentation)
+  - **Estimated Effort**: 2-3 days
   - **Purpose**: Ensure consistent spacing around operators, keywords, punctuation
   - **Scope**: Configurable whitespace rules for operators, keywords, commas, semicolons
   - **Components**:
@@ -261,9 +371,12 @@
   - **Features**: Operator spacing, keyword spacing, comma/semicolon handling
   - **Integration**: Uses AST expression nodes, transformation context API
   - **Quality**: Comprehensive tests, performance optimizations
-  - **Estimated Effort**: 2-3 days
 
-- [ ] **TASK:** `implement-indentation-formatting` - Indentation formatting (tabs/spaces/mixed)
+- [ ] **BLOCKED:** `implement-indentation-formatting` - Indentation formatting (tabs/spaces/mixed)
+  - **Dependencies**: B1 (formatter infrastructure), A1 (AST nodes)
+  - **Blocks**: C4 (concurrency benchmark needs 5 rules total)
+  - **Parallelizable With**: C1 (file discovery), C2 (parallel processing), other C3 tasks (brace, whitespace)
+  - **Estimated Effort**: 2-3 days
   - **Purpose**: Enforce consistent indentation across all code constructs
   - **Scope**: Configurable indentation (tabs, spaces, mixed) with continuation indent
   - **Components**:
@@ -274,10 +387,13 @@
   - **Features**: Tab/space/mixed modes, configurable depth, continuation lines
   - **Integration**: Uses AST block structure, transformation context API
   - **Quality**: Comprehensive tests covering nested structures
-  - **Estimated Effort**: 2-3 days
 
 ### C4. Concurrency Model Benchmark
-- [ ] **TASK:** `benchmark-concurrency-models` - Compare thread-per-file vs thread-per-block parallelism
+- [ ] **BLOCKED:** `benchmark-concurrency-models` - Compare thread-per-file vs thread-per-block parallelism
+  - **Dependencies**: C2 (thread-per-file baseline), all C3 tasks (brace + whitespace + indentation = 3 rules), B1 (line length + imports = 2 rules), total 5 rules
+  - **Blocks**: C5 (Maven plugin should use optimal concurrency model if thread-per-block wins)
+  - **Parallelizable With**: None (needs C2 and all C3 tasks complete first)
+  - **Estimated Effort**: 2-3 days
   - **Purpose**: Determine optimal concurrency strategy for styler through empirical testing
   - **Scope**: Benchmark thread-per-file (baseline from C2) vs thread-per-block concurrency with 5 formatting rules
   - **Prerequisites**: 5 formatting rules implemented (B1: 2 rules, C3: 3 rules)
@@ -300,10 +416,13 @@
   - **Output**: Benchmark report with recommendation for production concurrency model
   - **Integration**: Uses C2 (thread-per-file), all formatters (B1 + C3), real-world projects
   - **Quality**: Statistical rigor, JMH methodology, 95% confidence intervals
-  - **Estimated Effort**: 2-3 days
 
 ### C5. Maven Plugin (Early Real-World Testing)
-- [ ] **TASK:** `create-maven-plugin` - Maven plugin for build system integration
+- [ ] **BLOCKED:** `create-maven-plugin` - Maven plugin for build system integration
+  - **Dependencies**: C1 (file discovery), C2 (parallel processing), B5 (CLI integration)
+  - **Blocks**: C6 (performance benchmarking uses Maven plugin), D1 (regression tests use Maven plugin), D2 (CI/CD uses Maven plugin)
+  - **Parallelizable With**: C4 (concurrency benchmark can run independently)
+  - **Estimated Effort**: 2-3 days
   - **Purpose**: Integrate styler into Maven builds for automated formatting
   - **Scope**: Maven plugin with check/format goals, configuration integration
   - **Components**:
@@ -315,10 +434,13 @@
   - **Integration**: Uses CLI as dependency, Maven lifecycle integration
   - **Real-World Testing**: Validate on actual Java projects (Spring, Guava, Commons)
   - **Quality**: Incremental builds, build cache support, clear error reporting
-  - **Estimated Effort**: 2-3 days
 
 ### C6. Performance Benchmarking
-- [ ] **TASK:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
+- [ ] **BLOCKED:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
+  - **Dependencies**: C5 (Maven plugin for running benchmarks), C2 (parallel processing), all formatters (B1 + C3)
+  - **Blocks**: D1 (testing uses benchmarks for performance regression detection), D2 (CI/CD runs benchmark comparisons)
+  - **Parallelizable With**: C4 (concurrency benchmark is separate empirical study)
+  - **Estimated Effort**: 3-4 days
   - **Purpose**: Measure and validate parsing throughput, memory usage, scalability
   - **Scope**: JMH benchmark suite covering all scope.md performance targets
   - **Benchmarks**:
@@ -331,7 +453,6 @@
   - **Configuration**: Fork=3, proper warmup/measurement, 95% confidence intervals
   - **Integration**: Separate benchmark module, uses production code
   - **Quality**: Statistical rigor, comprehensive coverage
-  - **Estimated Effort**: 3-4 days
 
 ---
 
@@ -340,25 +461,35 @@
 **Goal**: Production-ready release with testing, CI/CD, and documentation.
 
 ### D1. Comprehensive Testing
-- [ ] **TASK:** `add-regression-test-suite` - Real-world Java project regression tests
+- [ ] **BLOCKED:** `add-regression-test-suite` - Real-world Java project regression tests
+  - **Dependencies**: C5 (Maven plugin for running styler), all formatters (B1 + C3)
+  - **Blocks**: D2 (CI/CD needs complete test suite)
+  - **Parallelizable With**: D3 (documentation can be written in parallel)
+  - **Estimated Effort**: 2-3 days (for regression suite)
   - **Purpose**: Prevent regressions by testing against real-world Java projects
   - **Scope**: Curated Java projects with before/after formatting comparisons
   - **Projects**: Spring Framework, Apache Commons, Guava, JUnit5, Mockito
   - **Coverage**: Various Java versions, coding styles, edge cases, large files
   - **Integration**: Automated regression testing in CI/CD pipeline
   - **Quality**: Golden file testing, failure analysis
-  - **Estimated Effort**: 2-3 days
 
-- [ ] **TASK:** `add-cli-integration-tests` - End-to-end CLI integration tests
+- [ ] **BLOCKED:** `add-cli-integration-tests` - End-to-end CLI integration tests
+  - **Dependencies**: B5 (CLI integration), C1 (file discovery), C2 (parallel processing)
+  - **Blocks**: D2 (CI/CD needs complete test suite)
+  - **Parallelizable With**: D1 (regression suite), D3 (documentation)
+  - **Estimated Effort**: 1-2 days
   - **Purpose**: Validate complete CLI functionality with real Java files
   - **Scope**: Integration tests covering CLI arguments, file processing, output
   - **Scenarios**: Single files, directories, config variants, error conditions
   - **Integration**: Uses real Java files, temporary directories, process execution
   - **Quality**: Comprehensive scenario coverage, clear assertions
-  - **Estimated Effort**: 1-2 days
 
 ### D2. CI/CD Pipeline
-- [ ] **TASK:** `setup-github-actions-ci` - Automated testing and release pipeline
+- [ ] **BLOCKED:** `setup-github-actions-ci` - Automated testing and release pipeline
+  - **Dependencies**: D1 (all tests: regression + CLI integration), C6 (performance benchmarks), C5 (Maven plugin)
+  - **Blocks**: Production releases
+  - **Parallelizable With**: D3 (documentation)
+  - **Estimated Effort**: 1-2 days
   - **Purpose**: Automated CI/CD for testing, building, releasing
   - **Scope**: GitHub Actions workflows for PR validation, releases, artifact publishing
   - **Workflows**:
@@ -367,10 +498,13 @@
     - Performance regression: Benchmark comparison against baseline
   - **Integration**: Uses Maven build, integrates with existing infrastructure
   - **Quality**: Multi-platform testing, automated releases, security scanning
-  - **Estimated Effort**: 1-2 days
 
 ### D3. Essential Documentation
-- [ ] **TASK:** `create-user-documentation` - User guide and configuration reference
+- [ ] **BLOCKED:** `create-user-documentation` - User guide and configuration reference
+  - **Dependencies**: B5 (CLI working), A2 (config system), C5 (Maven plugin)
+  - **Blocks**: Production release (documentation required for users)
+  - **Parallelizable With**: D1 (testing), D2 (CI/CD)
+  - **Estimated Effort**: 2-3 days (for user docs)
   - **Purpose**: Help users install, configure, and use styler
   - **Scope**: Installation guide, configuration reference, CLI usage, examples
   - **Sections**:
@@ -380,15 +514,17 @@
     - Examples: Real-world configuration examples, before/after samples
   - **Integration**: Link to scope.md and architecture.md
   - **Quality**: Clear examples, troubleshooting section
-  - **Estimated Effort**: 2-3 days
 
-- [ ] **TASK:** `create-api-documentation` - Javadoc for public APIs
+- [ ] **BLOCKED:** `create-api-documentation` - Javadoc for public APIs
+  - **Dependencies**: B1 (FormattingRule API), A2 (config APIs), C5 (Maven plugin APIs)
+  - **Blocks**: Production release (API docs required for integration)
+  - **Parallelizable With**: D1 (testing), D2 (CI/CD), other D3 task (user docs)
+  - **Estimated Effort**: 1-2 days
   - **Purpose**: Document public APIs for library and plugin integration
   - **Scope**: Comprehensive Javadoc for public classes, interfaces, methods
   - **Coverage**: FormattingRule interface, configuration APIs, plugin extension points
   - **Integration**: Generated during Maven build, published with releases
   - **Quality**: Complete coverage, code examples, clear descriptions
-  - **Estimated Effort**: 1-2 days
 
 ---
 
