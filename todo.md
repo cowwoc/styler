@@ -108,26 +108,7 @@
 
 **Goal**: Build complete end-to-end pipeline from CLI → parse → format → AI feedback output. This phase delivers working AI agent integration.
 
-### B1. File Processing Pipeline
-- [ ] **TASK:** `implement-file-processing-pipeline` - Orchestrate parse → format → output
-  - **Purpose**: Coordinate complete file processing workflow with error recovery
-  - **Scope**: Pipeline coordinator handling parse → format → validate → output stages
-  - **Architecture** (proven in v1):
-    - FileProcessorPipeline: Chain of Responsibility orchestrator
-    - AbstractPipelineStage: Template Method pattern for stage lifecycle
-    - ProcessingContext: Immutable context with builder pattern
-    - StageResult/PipelineResult: Sealed interfaces for Railway-Oriented Programming
-  - **Stages**:
-    - ParseStage: IndexOverlayParser integration with Arena memory management
-    - FormatStage: Apply formatting rules (initially identity transformation)
-    - ValidationStage: Security validation, build verification
-    - OutputStage: Generate structured violation reports
-  - **Error Recovery**: File-level isolation, retry strategies, fail-fast for fatal errors
-  - **Integration**: Uses parser (A1), security (A4), outputs to AI agents
-  - **Quality**: Comprehensive test coverage, progress tracking, clear error boundaries
-  - **Estimated Effort**: 3-4 days
-
-### B2. Minimal Formatting Rules (MVP)
+### B1. Minimal Formatting Rules (MVP)
 - [ ] **TASK:** `implement-line-length-formatter` - Line length violations and auto-fixing
   - **Purpose**: Detect and optionally fix lines exceeding configured length
   - **Scope**: Line length validation with configurable limit (default 120 chars)
@@ -143,15 +124,34 @@
 - [ ] **TASK:** `implement-import-organization` - Import grouping and unused import removal
   - **Purpose**: Organize imports and remove unused ones
   - **Scope**: Import grouping (java/javax, third-party, project, static) with configurable patterns
-  - **Components** (proven in v1):
+  - **Components**:
     - ImportOrganizerFormattingRule: FormattingRule implementation
     - ImportOrganizerConfiguration: Group patterns, ordering rules
     - ImportAnalyzer: Detect unused imports
     - ImportGrouper: Group and sort imports
   - **Features**: Configurable group ordering, unused import detection, auto-removal
   - **Integration**: Uses AST import nodes, transformation context API
-  - **Quality**: Comprehensive tests (18 tests in v1), security constraints (ReDoS prevention)
+  - **Quality**: Comprehensive tests, security constraints (ReDoS prevention)
   - **Estimated Effort**: 2-3 days
+
+### B2. File Processing Pipeline
+- [ ] **TASK:** `implement-file-processing-pipeline` - Orchestrate parse → format → output
+  - **Purpose**: Coordinate complete file processing workflow with error recovery
+  - **Scope**: Pipeline coordinator handling parse → format → validate → output stages
+  - **Architecture**:
+    - FileProcessorPipeline: Chain of Responsibility orchestrator
+    - AbstractPipelineStage: Template Method pattern for stage lifecycle
+    - ProcessingContext: Immutable context with builder pattern
+    - StageResult/PipelineResult: Sealed interfaces for Railway-Oriented Programming
+  - **Stages**:
+    - ParseStage: IndexOverlayParser integration with Arena memory management
+    - FormatStage: Apply formatting rules from B1 (line length, import organization)
+    - ValidationStage: Security validation, build verification
+    - OutputStage: Generate structured violation reports
+  - **Error Recovery**: File-level isolation, retry strategies, fail-fast for fatal errors
+  - **Integration**: Uses parser (A1), security (A4), formatters (B1), outputs to AI agents
+  - **Quality**: Comprehensive test coverage, progress tracking, clear error boundaries
+  - **Estimated Effort**: 3-4 days
 
 ### B3. Structured Violation Output (AI Agent Integration)
 - [ ] **TASK:** `implement-ai-violation-output` - Structured violation feedback for AI agents
@@ -172,7 +172,23 @@
   - **Quality**: Well-structured output, comprehensive fix guidance
   - **Estimated Effort**: 3-4 days
 
-### B4. Basic CLI Integration
+### B4. Error Message Catalog
+- [ ] **TASK:** `create-error-message-catalog` - Comprehensive error messages for AI and human users
+  - **Purpose**: Provide clear, actionable error messages for all failure scenarios
+  - **Scope**: Error code catalog, context-specific messages, fix suggestions
+  - **Components**:
+    - ErrorCatalog: Central registry of error codes and messages
+    - ContextualErrorFormatter: Generate AI vs human-appropriate error output
+    - ParseErrorMessages: Parser-specific error messages with source locations
+    - FormattingErrorMessages: Formatter-specific error guidance
+  - **Dual-Audience Design**:
+    - AI Format: Structured error codes with programmatic fix strategies
+    - Human Format: Narrative descriptions with examples
+  - **Integration**: Used by all error handling in pipeline (B2)
+  - **Quality**: Comprehensive coverage, clear fix guidance, internationalization-ready
+  - **Estimated Effort**: 2 days
+
+### B5. CLI Integration
 - [ ] **TASK:** `implement-cli-formatter-integration` - Wire CLI → pipeline → output
   - **Purpose**: Complete end-to-end CLI workflow for single files
   - **Scope**: CLI invokes pipeline, handles output, reports errors
@@ -180,9 +196,9 @@
     - CLIMain: Entry point, argument processing
     - PipelineOrchestrator: Execute pipeline for input files
     - OutputHandler: Format and display results
-    - ErrorReporter: Clear error messages with file locations
+    - ErrorReporter: Clear error messages with file locations (uses B4 error catalog)
   - **Flow**: CLI args → config loading → pipeline execution → structured output
-  - **Integration**: Connects all Phase A and Phase B components
+  - **Integration**: Connects all Phase A and Phase B components (A3 CLI args, B2 pipeline, B3 output, B4 errors)
   - **Quality**: Clear error messages, proper exit codes, progress reporting
   - **Estimated Effort**: 2-3 days
 
@@ -190,25 +206,9 @@
 
 ## Phase C: Scale & Real-World Testing
 
-**Goal**: Scale to large codebases with parallel processing and validate with Maven plugin integration.
+**Goal**: Scale to large codebases with parallel processing, build to 5 formatting rules for realistic benchmarking, and validate with Maven plugin integration.
 
-### C1. Parallel File Processing
-- [ ] **TASK:** `implement-virtual-thread-processing` - Multi-threaded file processing with virtual threads
-  - **Purpose**: Process large codebases efficiently using Java 21 virtual threads
-  - **Scope**: Virtual thread pool for file-level parallelism with unlimited concurrency
-  - **Architecture**:
-    - VirtualThreadExecutor: Virtual thread-based executor service
-    - FileDiscovery: Recursive Java file discovery with filtering
-    - BatchProcessor: Distribute files across virtual threads
-    - ResultAggregator: Collect and merge processing results
-  - **Strategy**: File-level parallelism (one virtual thread per file, JVM manages scheduling)
-  - **Error Handling**: File-level isolation, partial failure support
-  - **Performance Targets**: 100+ files/sec, linear scalability to 32 cores
-  - **Integration**: Wraps file processing pipeline from B1
-  - **Quality**: Thread-safe design, comprehensive concurrency tests
-  - **Estimated Effort**: 3-4 days
-
-### C2. File Discovery
+### C1. File Discovery
 - [ ] **TASK:** `implement-file-discovery` - Recursive Java file discovery with filtering
   - **Purpose**: Find Java source files in directories with include/exclude patterns
   - **Scope**: Recursive directory traversal, glob patterns, .gitignore integration
@@ -221,7 +221,88 @@
   - **Quality**: Efficient traversal, security validation
   - **Estimated Effort**: 1-2 days
 
-### C3. Maven Plugin (Early Real-World Testing)
+### C2. Virtual Thread Processing (Thread-per-File Baseline)
+- [ ] **TASK:** `implement-virtual-thread-processing` - Multi-threaded file processing with virtual threads
+  - **Purpose**: Process large codebases efficiently using Java 25 virtual threads
+  - **Scope**: Virtual thread pool for file-level parallelism with unlimited concurrency
+  - **Architecture**:
+    - VirtualThreadExecutor: Virtual thread-based executor service
+    - BatchProcessor: Distribute files across virtual threads
+    - ResultAggregator: Collect and merge processing results
+  - **Strategy**: File-level parallelism (one virtual thread per file, JVM manages scheduling)
+  - **Error Handling**: File-level isolation, partial failure support
+  - **Performance Targets**: 100+ files/sec, linear scalability to 32 cores
+  - **Integration**: Wraps file processing pipeline from B2, uses file list from C1
+  - **Quality**: Thread-safe design, comprehensive concurrency tests
+  - **Estimated Effort**: 3-4 days
+
+### C3. Additional Formatting Rules (Build to 5 Total Rules)
+- [ ] **TASK:** `implement-brace-formatting` - Brace style formatting (K&R, Allman, GNU)
+  - **Purpose**: Enforce consistent brace placement across Java constructs
+  - **Scope**: Configurable brace styles (K&R, Allman, GNU) with construct-specific overrides
+  - **Components**:
+    - BraceFormattingRule: FormattingRule implementation
+    - BraceConfiguration: Style settings, empty block handling, overrides
+    - BraceAnalyzer: Detect brace violations
+    - BraceFormatter: Apply configured brace style
+  - **Features**: Multiple brace styles, control structure overrides, empty block handling
+  - **Integration**: Uses AST structure nodes, transformation context API
+  - **Quality**: Comprehensive tests covering all Java constructs
+  - **Estimated Effort**: 2-3 days
+
+- [ ] **TASK:** `implement-whitespace-formatting` - Whitespace around operators and keywords
+  - **Purpose**: Ensure consistent spacing around operators, keywords, punctuation
+  - **Scope**: Configurable whitespace rules for operators, keywords, commas, semicolons
+  - **Components**:
+    - WhitespaceFormattingRule: FormattingRule implementation
+    - WhitespaceConfiguration: Operator/keyword spacing settings
+    - WhitespaceAnalyzer: Detect spacing violations
+    - WhitespaceFormatter: Apply whitespace corrections
+  - **Features**: Operator spacing, keyword spacing, comma/semicolon handling
+  - **Integration**: Uses AST expression nodes, transformation context API
+  - **Quality**: Comprehensive tests, performance optimizations
+  - **Estimated Effort**: 2-3 days
+
+- [ ] **TASK:** `implement-indentation-formatting` - Indentation formatting (tabs/spaces/mixed)
+  - **Purpose**: Enforce consistent indentation across all code constructs
+  - **Scope**: Configurable indentation (tabs, spaces, mixed) with continuation indent
+  - **Components**:
+    - IndentationFormattingRule: FormattingRule implementation
+    - IndentationConfiguration: Tab/space settings, depth, continuation indent
+    - IndentationAnalyzer: Detect indentation violations
+    - IndentationFormatter: Apply indentation corrections
+  - **Features**: Tab/space/mixed modes, configurable depth, continuation lines
+  - **Integration**: Uses AST block structure, transformation context API
+  - **Quality**: Comprehensive tests covering nested structures
+  - **Estimated Effort**: 2-3 days
+
+### C4. Concurrency Model Benchmark
+- [ ] **TASK:** `benchmark-concurrency-models` - Compare thread-per-file vs thread-per-block parallelism
+  - **Purpose**: Determine optimal concurrency strategy for styler through empirical testing
+  - **Scope**: Benchmark thread-per-file (baseline from C2) vs thread-per-block concurrency with 5 formatting rules
+  - **Prerequisites**: 5 formatting rules implemented (B1: 2 rules, C3: 3 rules)
+  - **Comparison Approaches**:
+    - **Thread-per-file (baseline)**: One virtual thread per file (current C2 implementation)
+    - **Thread-per-block**: Virtual threads for method-level parallelism within files
+    - **Platform threads**: Work-stealing pool for reference comparison
+  - **Test Workload**: Real codebases (Spring Framework, Guava, Apache Commons) with all 5 formatting rules
+  - **Benchmark Metrics**:
+    - Total processing time (wall clock end-to-end)
+    - Throughput (files/second)
+    - Memory usage (heap pressure, GC frequency)
+    - CPU utilization (actual vs theoretical max)
+    - Thread coordination overhead
+  - **Test Scenarios**:
+    - File size variations (small <200 LOC, medium 200-1000 LOC, large >1000 LOC)
+    - Concurrency levels (unlimited, capped at 100/500/1000)
+    - Memory constraints (512MB, 1GB, 2GB heap)
+  - **Decision Criteria**: Implement thread-per-block only if >20% improvement over thread-per-file baseline
+  - **Output**: Benchmark report with recommendation for production concurrency model
+  - **Integration**: Uses C2 (thread-per-file), all formatters (B1 + C3), real-world projects
+  - **Quality**: Statistical rigor, JMH methodology, 95% confidence intervals
+  - **Estimated Effort**: 2-3 days
+
+### C5. Maven Plugin (Early Real-World Testing)
 - [ ] **TASK:** `create-maven-plugin` - Maven plugin for build system integration
   - **Purpose**: Integrate styler into Maven builds for automated formatting
   - **Scope**: Maven plugin with check/format goals, configuration integration
@@ -236,11 +317,11 @@
   - **Quality**: Incremental builds, build cache support, clear error reporting
   - **Estimated Effort**: 2-3 days
 
-### C4. Performance Benchmarking
+### C6. Performance Benchmarking
 - [ ] **TASK:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
   - **Purpose**: Measure and validate parsing throughput, memory usage, scalability
   - **Scope**: JMH benchmark suite covering all scope.md performance targets
-  - **Benchmarks** (proven in v1):
+  - **Benchmarks**:
     - ParsingThroughputBenchmark: ≥10,000 tokens/sec
     - MemoryUsageBenchmark: ≤512MB per 1000 files
     - FormattingThroughputBenchmark: ≥100 files/sec
@@ -315,18 +396,11 @@
 
 **Rationale**: These features are not essential for the MVP AI-integrated formatter. Implement only when demand is proven.
 
-### Additional Formatting Rules (Defer Until After MVP)
-- **Brace Formatting** (K&R, Allman, GNU styles) - v1 implementation exists, defer until AI feedback needs it
-- **Whitespace Formatting** (operators, keywords) - v1 implementation exists, defer until needed
-- **Indentation Formatting** (tabs/spaces/mixed) - v1 partial implementation, defer until needed
-
 ### Advanced Features (Implement When Demand Exists)
 - **Gradle Plugin** - Build after Maven plugin proves valuable
 - **Incremental Parsing** - May be YAGNI for CLI tool (primarily benefits interactive editors)
 - **LSP Integration** - IDE integration deferred until CLI proves valuable
 - **Configuration Profiles** - Pre-defined styles (Google, Oracle) deferred until demand proven
-- **Advanced Concurrency** - Method-level parallelism only if benchmarks show >20% improvement
-- **Visitor Pattern Cleanup** - v1 identified as potential YAGNI, evaluate after MVP complete
 
 ### Infrastructure (Not Needed for MVP)
 - **Docker Images** - No evidence AI agents need containerization
@@ -346,6 +420,8 @@
 - ✅ All tests passing, zero violations
 
 **Production Ready** (End of Phase D):
+- ✅ 5 formatting rules implemented and tested (line length, imports, braces, whitespace, indentation)
+- ✅ Concurrency model validated (thread-per-file vs thread-per-block benchmark complete)
 - ✅ Parallel processing for large codebases (100+ files/sec)
 - ✅ Maven plugin for build integration
 - ✅ Performance benchmarks validate all claims
@@ -357,9 +433,9 @@
 
 ## Implementation Notes
 
-**From V1 Lessons Learned:**
+**Architecture Patterns:**
 
-1. **Proven Architecture Patterns** (Keep These):
+1. **Proven Patterns to Apply**:
    - Index-Overlay AST with Arena API memory management
    - Immutable config objects with builder pattern
    - Security framework with comprehensive validation
@@ -367,30 +443,28 @@
    - Railway-Oriented Programming for error handling
    - Thread-safe stateless formatting rules
 
-2. **Process Improvements** (Apply These):
-   - Simpler initial scope (2 formatting rules, not 5+)
-   - Prioritize AI integration early (Phase B, not Phase D)
-   - Maven plugin earlier for real-world validation (Phase C, not Phase D)
-   - Parallel processing earlier (core value prop, Phase C)
+2. **Strategic Priorities**:
+   - Build to 5 formatting rules for realistic concurrency benchmarking
+   - Prioritize AI integration early (Phase B)
+   - Maven plugin earlier for real-world validation (Phase C)
+   - Empirical concurrency model selection via benchmarking (Phase C)
 
-3. **Quality Standards** (Maintain These):
+3. **Quality Standards**:
    - No stubbing, no TODO comments in production code
    - Unanimous stakeholder approval before merge
    - Comprehensive test coverage (unit + integration)
    - Zero checkstyle/PMD violations
    - Complete what we start or mark explicitly unsupported
 
-4. **YAGNI Discipline** (Continue These):
+4. **YAGNI Discipline**:
    - Defer features until demand proven
    - Don't build extensible frameworks for hypothetical needs
-   - Focus on core value (AI agent integration, not architectural elegance)
+   - Focus on core value (AI agent integration)
    - Each phase delivers working end-to-end functionality
 
 **Estimated Total Effort:**
-- Phase A (Foundation): 10-15 days
-- Phase B (AI Integration): 12-17 days
-- Phase C (Scale): 9-13 days
+- Phase A (Foundation): 11-16 days (includes A0 build setup)
+- Phase B (AI Integration): 14-20 days (includes B4 error catalog)
+- Phase C (Scale & Benchmarking): 20-30 days (includes 3 additional rules + concurrency benchmark)
 - Phase D (Polish): 6-10 days
-- **Total: 37-55 days** (compared to v1's longer timeline)
-
-**Key Improvement**: 40%+ faster to production-ready by focusing on AI integration and deferring non-essential formatting rules.
+- **Total: 51-75 days**
