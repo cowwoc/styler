@@ -512,6 +512,126 @@ crashed session. Should I:
 
 ---
 
+## MAIN WORKTREE OPERATIONS LOCK REQUIREMENT
+
+**CRITICAL**: Any operations executed directly on the main worktree (`/workspace/branches/main/code/`) require acquiring a special lock at `/workspace/locks/main.json`.
+
+### Operations Requiring Main Worktree Lock
+
+**MANDATORY LOCK ACQUISITION** for:
+- Modifying files directly in main worktree working directory
+- Running git operations on main branch (e.g., `git checkout`, `git merge`, `git pull`)
+- Updating main branch configuration files
+- Any direct edits to main worktree files outside of task-specific worktrees
+- Emergency fixes or hotfixes applied directly to main
+
+### Main Worktree Lock Format
+
+```json
+{
+  "session_id": "unique-session-identifier",
+  "task_name": "main-worktree-operation",
+  "operation_type": "git-operation|file-modification|configuration-update",
+  "state": "IN_PROGRESS",
+  "created_at": "ISO-8601-timestamp"
+}
+```
+
+### Acquiring Main Worktree Lock
+
+**Step 1: Attempt atomic lock creation**
+```bash
+# Replace {SESSION_ID} with current session ID
+# Replace {OPERATION_TYPE} with one of: git-operation, file-modification, configuration-update
+
+export SESSION_ID="{SESSION_ID}" && mkdir -p /workspace/locks && (set -C; echo "{\"session_id\": \"${SESSION_ID}\", \"task_name\": \"main-worktree-operation\", \"operation_type\": \"{OPERATION_TYPE}\", \"state\": \"IN_PROGRESS\", \"created_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > /workspace/locks/main.json) && echo "MAIN_LOCK_SUCCESS" || echo "MAIN_LOCK_FAILED"
+```
+
+**Step 2: Check lock ownership if MAIN_LOCK_FAILED**
+```bash
+# If lock acquisition failed, check who owns it
+LOCK_OWNER=$(jq -r '.session_id' /workspace/locks/main.json 2>/dev/null)
+CURRENT_SESSION="{SESSION_ID}"
+
+if [ "$LOCK_OWNER" = "$CURRENT_SESSION" ]; then
+    echo "✅ Main lock already owned by current session"
+elif [ -n "$LOCK_OWNER" ]; then
+    echo "❌ Main worktree locked by different session ($LOCK_OWNER)"
+    echo "ABORT: Cannot perform main worktree operations - wait or select different task"
+    exit 1
+else
+    echo "✅ No main lock exists - retry lock acquisition"
+fi
+```
+
+### Releasing Main Worktree Lock
+
+**After completing main worktree operations:**
+```bash
+# CRITICAL: Verify lock ownership before deletion
+SESSION_ID="${CURRENT_SESSION_ID}"
+LOCK_OWNER=$(grep -oP '"session_id":\s*"\K[^"]+' "/workspace/locks/main.json")
+
+if [ "$LOCK_OWNER" != "$SESSION_ID" ]; then
+  echo "❌ FATAL: Cannot delete main lock owned by $LOCK_OWNER"
+  exit 1
+fi
+
+# Delete main lock file (only if ownership verified)
+rm -f /workspace/locks/main.json
+echo "✅ Main worktree lock released"
+```
+
+### Main Worktree Lock vs Task-Specific Locks
+
+**Key Differences:**
+- **Task locks** (`/workspace/locks/{task-name}.json`): Used for task-specific worktrees during normal protocol execution
+- **Main lock** (`/workspace/locks/main.json`): Used ONLY for direct operations on main worktree
+
+**When to use each:**
+- **Normal task work**: Use task-specific lock (`{task-name}.json`) and work in task worktree (`/workspace/branches/{task-name}/code/`)
+- **Direct main operations**: Use main lock (`main.json`) when working directly in main worktree (`/workspace/branches/main/code/`)
+
+**Prohibited Patterns:**
+❌ Modifying main worktree files without acquiring main lock
+❌ Running git operations on main branch without main lock
+❌ Assuming main worktree is always available
+
+**Required Patterns:**
+✅ Acquire main lock before ANY main worktree operations
+✅ Release main lock immediately after operations complete
+✅ Verify lock ownership before release
+✅ Wait or select alternative task if main lock is owned by different session
+
+### Example: Git Operation on Main Branch
+
+```bash
+# User requests: "Checkout main branch to verify something"
+
+# Step 1: Acquire main worktree lock
+export SESSION_ID="057ceaa9-533b-4beb-80c3-30d510971bdc" && mkdir -p /workspace/locks && (set -C; echo "{\"session_id\": \"${SESSION_ID}\", \"task_name\": \"main-worktree-operation\", \"operation_type\": \"git-operation\", \"state\": \"IN_PROGRESS\", \"created_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" > /workspace/locks/main.json) && echo "MAIN_LOCK_SUCCESS" || echo "MAIN_LOCK_FAILED"
+
+# If MAIN_LOCK_FAILED, check ownership and abort if owned by different session
+
+# Step 2: Perform git operation on main
+cd /workspace/branches/main/code
+git checkout main
+# ... perform operation ...
+
+# Step 3: Release main lock
+SESSION_ID="057ceaa9-533b-4beb-80c3-30d510971bdc"
+LOCK_OWNER=$(grep -oP '"session_id":\s*"\K[^"]+' "/workspace/locks/main.json")
+if [ "$LOCK_OWNER" = "$SESSION_ID" ]; then
+    rm -f /workspace/locks/main.json
+    echo "✅ Main worktree lock released"
+else
+    echo "❌ FATAL: Cannot delete main lock owned by $LOCK_OWNER"
+    exit 1
+fi
+```
+
+---
+
 ### INIT → CLASSIFIED
 **Mandatory Conditions:**
 - [ ] Session ID validated and unique
