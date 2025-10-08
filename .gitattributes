@@ -1,0 +1,23 @@
+# Default to LF line endings for all text files
+* text=auto eol=lf
+
+# Override for Windows batch files that need CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Ensure Unix shell scripts use LF
+*.sh text eol=lf
+mvnw text eol=lf
+.claude/hooks/* text eol=lf
+
+# Binary files should not be modified
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.jar binary
+*.war binary
+*.class binary
