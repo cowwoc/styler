@@ -4,10 +4,10 @@ Styler Java Code Formatter project configuration and workflow guidance.
 
 ## 🚨 MANDATORY COMPLIANCE
 
-**CRITICAL WORKFLOW**: [docs/project/task-protocol.md](docs/project/task-protocol.md) - MANDATORY risk-based protocol selection - Apply appropriate workflow based on file risk classification.
+**CRITICAL WORKFLOW**: Task Protocol ([core](docs/project/task-protocol-core.md) + [operations](docs/project/task-protocol-operations.md)) - MANDATORY risk-based protocol selection - Apply appropriate workflow based on file risk classification.
 **CRITICAL LOCK OWNERSHIP**: See [§ Lock Ownership & Task Recovery](#-lock-ownership--task-recovery) for complete lock file requirements and ownership rules.
 **CRITICAL WORKTREE ISOLATION**: See [§ Worktree Isolation & Cleanup](#-worktree-isolation--cleanup) for complete worktree management requirements.
-**CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See task-protocol.md
+**CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See task-protocol-core.md
 **CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
 **CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL 7 phases of task protocol are finished. Implementation completion does NOT equal task completion. Only mark tasks as complete after Phase 7 cleanup and finalization.
 **IMPLEMENTATION COMPLETION TRIGGER**: When you have finished implementation work (code changes, fixes, features complete), you MUST complete ALL remaining protocol phases before selecting a new task. The SessionStart hook indicates if you own an active task requiring completion.
@@ -16,8 +16,8 @@ Styler Java Code Formatter project configuration and workflow guidance.
 **Required Pattern**: ✅ "Implementation is done. Continuing with Phase 6 reviews and Phase 7 cleanup."
 
 **PHASE COMPLETION VERIFICATION**: Before declaring ANY phase complete, you MUST:
-1. **READ**: Execute `grep -A 20 "^## State [N]:" docs/project/task-protocol.md` to read ACTUAL phase requirements
-2. **CHECKLIST**: Create explicit checklist of all phase requirements from task-protocol.md
+1. **READ**: Execute `grep -A 20 "^## State [N]:" docs/project/task-protocol-*.md` to read ACTUAL phase requirements
+2. **CHECKLIST**: Create explicit checklist of all phase requirements from task-protocol files
 3. **VERIFY**: Confirm EACH requirement is met with evidence (command output, file checks, etc.)
 4. **DECLARE**: Only after ALL requirements verified, declare phase complete
 
@@ -170,7 +170,7 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 
 ## 🚨 TASK PROTOCOL SUMMARY {#task-protocol}
 
-**Full Protocol Details**: See [task-protocol.md](docs/project/task-protocol.md) for complete state machine and transition requirements.
+**Full Protocol Details**: See [task-protocol-core.md](docs/project/task-protocol-core.md) and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for complete state machine and transition requirements.
 
 **State Machine**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
 
@@ -186,7 +186,7 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 - **MEDIUM-RISK** (tests, docs): Abbreviated protocol, domain-specific agents
 - **LOW-RISK** (general docs): Streamlined protocol, minimal validation
 
-**Post-Compaction Note**: This summary plus lock ownership and worktree isolation rules above are sufficient for basic protocol compliance when task-protocol.md is not accessible.
+**Post-Compaction Note**: This summary plus lock ownership and worktree isolation rules above are sufficient for basic protocol compliance when task-protocol files are not accessible.
 
 ## 🚨 RISK-BASED PROTOCOL SELECTION
 
@@ -416,7 +416,7 @@ The behavior is MANDATORY and will be monitored through:
 **MANDATORY PROCESS**: When user requests "apply style guide" or similar:
 
 1. **NEVER assume checkstyle-only** - Style guide consists of THREE components
-2. **FOLLOW PROTOCOL**: task-protocol.md "Complete Style Validation Gate" pattern
+2. **FOLLOW PROTOCOL**: task-protocol-core.md "Complete Style Validation Gate" pattern
 3. **MANUAL VERIFICATION**: Check docs/code-style/\*-claude.md detection patterns
 4. **ALL THREE REQUIRED**: checkstyle + PMD + manual rules must ALL pass
 
@@ -541,7 +541,7 @@ The behavior is MANDATORY and will be monitored through:
 
 ### 🚨 SCOPE NEGOTIATION PERSISTENCE INTEGRATION
 
-**ENHANCED SCOPE ASSESSMENT** (extends task-protocol.md Phase 5):
+**ENHANCED SCOPE ASSESSMENT** (extends task-protocol-core.md Phase 5):
 When evaluating whether to defer work via scope negotiation:
 
 **MANDATORY PERSISTENCE EVALUATION**:
@@ -585,7 +585,7 @@ When evaluating whether to defer work via scope negotiation:
 
 **⚠️ NEVER** initialize new repositories
 **Main Repository**: `/workspace/branches/main/code/` (git repository and main development branch)
-**Task Worktrees**: `/workspace/branches/{task-name}/code/` (isolated per task-protocol.md)
+**Task Worktrees**: `/workspace/branches/{task-name}/code/` (isolated per task protocol)
 **Locks**: Multi-instance coordination via lock files in `/workspace/locks/`
 
 **Git Configuration**:
@@ -650,7 +650,7 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 **Project Code**: Task code directory (`src/`, `pom.xml`, etc.)
 
 ### Report File Naming Convention
-See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [docs/project/task-protocol.md](docs/project/task-protocol.md) for exact agent report naming conventions by phase.
+See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/project/task-protocol-core.md) and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for exact agent report naming conventions by phase.
 
 **Note**: The `../` path writes reports to `/workspace/branches/{task-name}/` (task root), not inside the code directory.
 
