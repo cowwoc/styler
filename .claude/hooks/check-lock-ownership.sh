@@ -28,14 +28,14 @@ if [ -n "$INVALID_LOCKS" ]; then
 **Your session_id found in INCORRECTLY-NAMED lock file(s)**:
 $INVALID_LOCKS
 
-**Problem**: Lock files MUST use \`.json\` extension (per task-protocol.md)
+**Problem**: Lock files MUST use \`.json\` extension (per task-protocol-core.md)
 
 **⚠️ THIS FILE IS INVALID AND WILL BE IGNORED BY ALL PROTOCOL SCRIPTS**
 
 **Action Required**:
 1. You do NOT own any valid task locks
 2. Remove the invalid file: \`rm $INVALID_LOCKS\`
-3. If you need to claim this task, follow proper protocol in task-protocol.md
+3. If you need to claim this task, follow proper protocol in task-protocol-core.md
 
 **Why this matters**:
 - The \`check-lock-ownership.sh\` hook ONLY checks \`*.json\` files

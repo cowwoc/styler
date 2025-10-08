@@ -10,7 +10,8 @@ This directory contains all project documentation organized hierarchically for e
 ├── README.md                              # This file
 ├── project/                               # Core project documentation
 │   ├── scope.md                           # Project scope & constraints
-│   ├── task-protocol.md                   # State machine protocol (9 states)
+│   ├── task-protocol-core.md              # State machine protocol (states & agents)
+│   ├── task-protocol-operations.md        # Protocol procedures & operations
 │   ├── build-system.md                    # Build configuration
 │   ├── architecture.md                    # Application architecture
 │   ├── critical-rules.md                  # Build integrity rules

@@ -116,7 +116,7 @@ handle_user_prompt_submit()
 	        echo "  2. PMD: ./mvnw pmd:check"
 	        echo "  3. Manual rules: docs/code-style/*-claude.md detection patterns"
 	        echo ""
-	        echo "📋 CRITICAL: Never assume checkstyle-only. See task-protocol.md 'Complete Style Validation Gate'"
+	        echo "📋 CRITICAL: Never assume checkstyle-only. See task-protocol-core.md 'Complete Style Validation Gate'"
 	    fi
 	elif echo "$user_message_lower" | grep -qE "(create|add|update).*test|(test|testing)"; then
 	    if check_and_mark_prompt "test-work"; then
@@ -137,7 +137,7 @@ handle_user_prompt_submit()
 	    fi
 	elif echo "$user_message_lower" | grep -qE "workflow|process|stage|stakeholder|agent|task.protocol|worktree|isolation"; then
 	    if check_and_mark_prompt "project-workflow"; then
-	        echo "⚡ WORKFLOW TASK: Before proceeding, read ./docs/project/task-protocol.md to understand the mandatory 10-stage development process and task protocol."
+	        echo "⚡ WORKFLOW TASK: Before proceeding, read ./docs/project/task-protocol-core.md to understand the mandatory 10-stage development process and task protocol."
 	    fi
 	elif echo "$user_message_lower" | grep -qE "ast|parsing|formatting|token|trivia|syntax.tree"; then
 	    if check_and_mark_prompt "project-parser"; then

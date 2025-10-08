@@ -19,7 +19,7 @@
 
 ## 🔒 Task Coordination (Multi-Instance Work)
 
-**Lock System**: Before starting ANY task, acquire lock per `docs/project/task-protocol.md`
+**Lock System**: Before starting ANY task, acquire lock per `docs/project/task-protocol-core.md`
 - Lock file: `/workspace/locks/{task-name}.json`
 - Lock contains: `session_id`, `task_name`, `state`, `created_at`
 - **ONLY work on tasks where lock contains YOUR session_id**
@@ -37,7 +37,7 @@
 **Before Starting a Task**:
 1. ✅ Verify task status is `READY` (not BLOCKED)
 2. ✅ Check `/workspace/locks/` - if lock exists with different session_id, task is taken
-3. ✅ Acquire lock via task-protocol.md INIT state
+3. ✅ Acquire lock via task-protocol-core.md INIT state
 4. ✅ Update task status to `IN_PROGRESS` in todo.md
 5. ✅ Create isolated worktree: `/workspace/branches/{task-name}/code`
 6. ✅ Begin work following full 7-phase task protocol
