@@ -4,9 +4,6 @@
 # Handles all context-aware documentation prompting with session tracking
 # Combines UserPromptSubmit and PreToolUse logic into one efficient hook
 
-# Source metrics functions for documentation tracking
-source /workspace/branches/main/code/.claude/hooks/metrics-capture.sh 2>/dev/null || true
-
 HOOK_EVENT="$1"
 HOOK_DATA="$2"
 TOOL_ARGS="$3"
@@ -87,51 +84,33 @@ handle_user_prompt_submit()
 	esac
 	
 	# Code style work patterns (skip for simple config agents)
-	if echo "$user_message_lower" | grep -qE "(update|fix|refactor).*(style|format|brace|indent|method.chain|dot)" && 
+	if echo "$user_message_lower" | grep -qE "(update|fix|refactor).*(style|format|brace|indent|method.chain|dot)" &&
 	   [[ ! "$CURRENT_AGENT_TYPE" =~ ^(statusline-setup|output-style-setup)$ ]]; then
 	    if check_and_mark_prompt "style-work"; then
-	        # Track traditional code style documentation access
-	        track_documentation_access "docs/code-style-human.md" "reference" "style-work" 1 2>/dev/null || true
-	        
 	        echo "📋 STYLE WORK: Choose documentation approach:"
-	        echo "  • CLAUDE: ./docs/code-style/common-claude.md + language-specific *-claude.md - Detection patterns"  
+	        echo "  • CLAUDE: ./docs/code-style/common-claude.md + language-specific *-claude.md - Detection patterns"
 	        echo "  • HUMAN: ./docs/code-style-human.md - Hub with explanations"
-	        
-	        # Track the new Claude-optimized documentation as an option
-	        track_documentation_access "docs/code-style/common-claude.md" "option" "style-work" 0 2>/dev/null || true
 	    fi
 	elif echo "$user_message_lower" | grep -qE "(add|implement|fix).*(validation|error.handling|exception|requirethat|checkif)"; then
 	    if check_and_mark_prompt "validation-work"; then
-	        # Track validation work
-	        track_documentation_access "docs/code-style/common-claude.md" "reference" "validation-work" 1 2>/dev/null || true
-	        
 	        echo "🚨 VALIDATION WORK: Use consolidated approach:"
 	        echo "  • CLAUDE: ./docs/code-style/common-claude.md - Validation detection patterns"
 	        echo "  • HUMAN: ./docs/code-style/common-human.md - Validation explanations"
 	    fi
 	elif echo "$user_message_lower" | grep -qE "(update|create|modify).*(\.mts|\.ts|typescript|enum|interface)"; then
 	    if check_and_mark_prompt "typescript-work"; then
-	        # Track TypeScript work
-	        track_documentation_access "docs/code-style/typescript-claude.md" "reference" "typescript-work" 1 2>/dev/null || true
-	        
 	        echo "📘 TYPESCRIPT WORK: Use consolidated approach:"
 	        echo "  • CLAUDE: ./docs/code-style/typescript-claude.md - TypeScript detection patterns"
 	        echo "  • HUMAN: ./docs/code-style/typescript-human.md - TypeScript explanations"
 	    fi
 	elif echo "$user_message_lower" | grep -qE "(update|create|modify).*(\.java|java.class)"; then
 	    if check_and_mark_prompt "java-work"; then
-	        # Track Java work
-	        track_documentation_access "docs/code-style/java-claude.md" "reference" "java-work" 1 2>/dev/null || true
-	        
 	        echo "☕ JAVA WORK: Use consolidated approach:"
 	        echo "  • CLAUDE: ./docs/code-style/java-claude.md - Java detection patterns"
 	        echo "  • HUMAN: ./docs/code-style/java-human.md - Java explanations"
 	    fi
 	elif echo "$user_message_lower" | grep -qE "(apply|check|validate|verify).*(style|format|guide|compliance)"; then
 	    if check_and_mark_prompt "complete-style-validation"; then
-	        # Track complete style validation work
-	        track_documentation_access "docs/project/task-protocol.md" "reference" "style-validation" 1 2>/dev/null || true
-
 	        echo "🎯 COMPLETE STYLE VALIDATION: ALL THREE components required:"
 	        echo "  1. checkstyle: ./mvnw checkstyle:check"
 	        echo "  2. PMD: ./mvnw pmd:check"
@@ -141,9 +120,6 @@ handle_user_prompt_submit()
 	    fi
 	elif echo "$user_message_lower" | grep -qE "(create|add|update).*test|(test|testing)"; then
 	    if check_and_mark_prompt "test-work"; then
-	        # Track testing work
-	        track_documentation_access "docs/code-style/testing-claude.md" "reference" "test-work" 1 2>/dev/null || true
-	        
 	        echo "🧪 TEST WORK: Use consolidated testing approach:"
 	        echo "  • CLAUDE: ./docs/code-style/testing-claude.md - Testing detection patterns"
 	        echo "  • HUMAN: ./docs/code-style/testing-human.md - Testing explanations and JPMS structure"
