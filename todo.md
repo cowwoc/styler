@@ -2,10 +2,10 @@
 
 ## 🎯 STREAMLINED IMPLEMENTATION STRATEGY
 
-**Philosophy**: Build a working AI-integrated Java formatter faster by learning from v1's experience:
-- ✅ Leverage proven v1 architecture patterns (Index-Overlay AST, TOML config, security framework)
+**Philosophy**: Build a working AI-integrated Java formatter with proven architecture patterns:
+- ✅ Index-Overlay AST with Arena API for memory efficiency
 - ✅ Prioritize AI agent integration (primary differentiator and use case)
-- ✅ Minimal viable formatting rules first (line length + imports = MVP)
+- ✅ Build to 5 formatting rules for realistic concurrency benchmarking
 - ✅ Earlier real-world validation (Maven plugin, parallel processing in Phase C)
 - ✅ Complete what we start (no stubbing, no TODOs)
 
@@ -17,16 +17,41 @@
 
 **Goal**: Build core parsing, configuration, and security infrastructure without depending on formatters or AI integration.
 
+### A0. Build System Setup
+- [ ] **TASK:** `setup-maven-multi-module-build` - Create Maven parent POM and module structure
+  - **Purpose**: Establish build infrastructure for all subsequent tasks
+  - **Scope**: Parent POM with nested module structure for logical grouping
+  - **Module Structure**:
+    - `styler-parent/` (root POM with dependency management, Java 25 runtime required, JPMS support, NO preview features per out-of-scope.md)
+      - `styler-ast/` (parent POM)
+        - `styler-ast-core/` (AST node hierarchy)
+      - `styler-parser/` (parser implementation)
+      - `styler-config/` (configuration system)
+      - `styler-security/` (security framework)
+      - `styler-formatter/` (parent POM)
+        - `styler-formatter-api/` (FormattingRule interfaces)
+        - `styler-formatter-impl/` (concrete rule implementations)
+      - `styler-cli/` (CLI entry point)
+  - **Integration**: All subsequent tasks output to appropriate modules
+  - **Quality**: Proper JPMS module structure, dependency isolation, checkstyle/PMD integration
+  - **Estimated Effort**: 1 day
+
 ### A1. AST Parser Foundation
 - [ ] **TASK:** `implement-index-overlay-parser` - Index-Overlay AST parser for JDK 25
   - **Purpose**: Parse Java source files into immutable AST representation with memory-efficient index-based storage
   - **Scope**: Complete parser supporting JDK 25 features (pattern matching, records, sealed classes, string templates)
-  - **Architecture**: Index-Overlay pattern (proven in v1) with Arena API memory management
+  - **Architecture**: Index-Overlay pattern with Arena API memory management
   - **Components**:
     - Lexer: Tokenize Java source with all JDK 25 tokens
     - Parser: Build AST from token stream using recursive descent
     - ArenaNodeStorage: Index-based node storage with capacity management
     - AST Node Types: Complete node hierarchy for all Java constructs
+  - **Memory Management Strategy**:
+    - Arena Lifecycle: One arena per file processing (thread-local)
+    - Automatic Cleanup: Try-with-resources pattern ensures arena release
+    - Memory Limits: MemoryMonitor enforces 512MB heap limit across all arenas
+    - Thread Safety: Thread-local arenas eliminate synchronization overhead
+    - Error Recovery: Finally blocks guarantee arena release on exceptions
   - **Error Handling**: Graceful error recovery with descriptive messages (no code execution)
   - **Performance Targets**: ≥10,000 tokens/sec, ≤512MB per 1000 files
   - **Integration**: Self-contained, no dependencies on config or formatters
@@ -64,7 +89,7 @@
 - [ ] **TASK:** `implement-security-controls` - Essential security for CLI tool
   - **Purpose**: Protect against malicious inputs, resource exhaustion, path traversal
   - **Scope**: Input validation, file size limits, memory monitoring, execution timeouts
-  - **Components** (proven in v1):
+  - **Components**:
     - SecurityConfig: Immutable config with builder (file size, memory, timeout limits)
     - FileValidator: File size, type, existence validation
     - PathSanitizer: Path normalization and traversal protection
