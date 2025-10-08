@@ -38,7 +38,7 @@
 ## Language Support Beyond Java
 - **Multi-language support** - Java only, no Kotlin, Scala, Groovy, or other JVM languages
 - **Mixed-language projects** - No JavaScript, TypeScript, Python, or other language formatting
-- **Configuration languages** - No XML, YAML, JSON, TOML formatting (except for styler config files)
+- **Configuration languages** - No XML, YAML formatting (TOML and JSON allowed for styler config files only)
 - **Template languages** - No JSP, Thymeleaf, or other template formatting
 - **Documentation formats** - No Markdown, AsciiDoc, or other documentation formatting
 
