@@ -146,7 +146,7 @@ main() {
     echo '{
         "hookSpecificOutput": {
             "hookEventName": "UserPromptSubmit",
-            "additionalContext": "🚨 TASK PROTOCOL PHASE GUARD ENFORCEMENT: Detected continue command while task protocol is active. MANDATORY PHASE VALIDATION REQUIRED:\n\n📍 CURRENT PHASE: Phase '$current_phase' - '$current_requirements'\n\n🔍 BEFORE CONTINUING: You MUST verify current phase is complete by checking for required files and deliverables.\n\n➡️ NEXT REQUIRED PHASE: '$next_phase' - '$next_requirements'\n\n⚠️ CRITICAL: Do NOT skip phases or proceed to implementation without completing all prior phases. Check docs/project/task-protocol.md for complete phase requirements.\n\n🔒 PHASE GUARD: Only proceed if current phase deliverables exist and are complete. If unsure, review existing files in ../directory to verify phase completion status."
+            "additionalContext": "🚨 TASK PROTOCOL PHASE GUARD ENFORCEMENT: Detected continue command while task protocol is active. MANDATORY PHASE VALIDATION REQUIRED:\n\n📍 CURRENT PHASE: Phase '$current_phase' - '$current_requirements'\n\n🔍 BEFORE CONTINUING: You MUST verify current phase is complete by checking for required files and deliverables.\n\n➡️ NEXT REQUIRED PHASE: '$next_phase' - '$next_requirements'\n\n⚠️ CRITICAL: Do NOT skip phases or proceed to implementation without completing all prior phases. Check docs/project/task-protocol-core.md and task-protocol-operations.md for complete phase requirements.\n\n🔒 PHASE GUARD: Only proceed if current phase deliverables exist and are complete. If unsure, review existing files in ../directory to verify phase completion status."
         }
     }'
 }

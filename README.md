@@ -5,7 +5,7 @@ An unopinionated Java code formatter that supports 100% of JDK 25's features wit
 ## 🚀 Quick Start
 
 - **Build & Run**: See [docs/project/build-system.md](docs/project/build-system.md)
-- **Development Workflow**: See [docs/project/task-protocol.md](docs/project/task-protocol.md)
+- **Development Workflow**: See [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md)
 - **Code Style**: See [docs/code-style-human.md](docs/code-style-human.md)
 
 ## 📁 Repository Structure
@@ -19,7 +19,8 @@ An unopinionated Java code formatter that supports 100% of JDK 25's features wit
 │   ├── code-style-human.md       # Master human style guide
 │   ├── project/                  # Core project documentation
 │   │   ├── scope.md              # Project scope & architecture
-│   │   ├── task-protocol.md      # Development workflow
+│   │   ├── task-protocol-core.md # Development workflow (states & agents)
+│   │   ├── task-protocol-operations.md # Protocol procedures
 │   │   ├── build-system.md       # Build configuration
 │   │   └── architecture.md       # Technical architecture
 │   └── code-style/               # Code style documentation
@@ -42,7 +43,7 @@ An unopinionated Java code formatter that supports 100% of JDK 25's features wit
 ### Essential Reading
 - [docs/project/scope.md](docs/project/scope.md) - Project objectives and architecture
 - [docs/code-style-human.md](docs/code-style-human.md) - Coding standards and best practices
-- [docs/project/task-protocol.md](docs/project/task-protocol.md) - Development process
+- [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md) - Development process
 
 ### Development Guides
 - [docs/code-style/java-human.md](docs/code-style/java-human.md) - Java best practices
@@ -138,13 +139,13 @@ plugins:
 ## 🚀 Getting Started
 
 1. **Read the scope**: [docs/project/scope.md](docs/project/scope.md)
-2. **Follow the workflow**: [docs/project/task-protocol.md](docs/project/task-protocol.md)
+2. **Follow the workflow**: [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md)
 3. **Setup your environment**: [docs/project/build-system.md](docs/project/build-system.md)
 4. **Review coding standards**: [docs/code-style-human.md](docs/code-style-human.md)
 
 ## 📋 Active Development
 
-Current tasks are tracked in [todo.md](todo.md). Development follows a strict 7-phase workflow process documented in [docs/project/task-protocol.md](docs/project/task-protocol.md).
+Current tasks are tracked in [todo.md](todo.md). Development follows a strict 7-phase workflow process documented in [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md).
 
 ## 🏗️ Architecture
 
