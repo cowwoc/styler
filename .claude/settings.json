@@ -1,0 +1,147 @@
+{
+  "env": {
+    "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "true",
+    "DISABLE_AUTOUPDATER": "true"
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/ensure-session-id.py"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/check-lock-ownership.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/task-protocol-reminder.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/todo-context-reminder.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/critical-thinking.sh"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/ensure-session-id.py"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/detect-giving-up.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/verify-destructive-operations.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/smart-doc-prompter.sh"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/critical-thinking.sh"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "tool:Bash && (command:*git* || command:*rm*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/block-data-loss.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:Bash && command:*cd*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/detect-worktree-violation.sh"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/load-todo.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "tool:Write && path:docs/",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/verify-doc-sync.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:Edit && path:docs/",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/verify-doc-sync.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:MultiEdit && path:docs/",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/verify-doc-sync.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:Write && path:docs/ || tool:Edit && path:docs/ || tool:MultiEdit && path:docs/",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/detect-meta-commentary.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "(tool:Edit && path:todo.md) || (tool:Edit && path:changelog.md)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/branches/main/code/.claude/hooks/verify-task-archival.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "model": "sonnet",
+  "statusLine": {
+    "type": "command",
+    "command": "/workspace/.claude/statusline-command.sh"
+  },
+  "cleanupPeriodDays": 7
+}
