@@ -102,7 +102,15 @@ git diff --cached --name-only | grep -q "todo.md" || echo "⚠️ todo.md not st
 git diff --cached --name-only | grep -q "changelog.md" || echo "⚠️ changelog.md not staged"
 ```
 
-**CRITICAL MID-TASK WORK CAPTURE**: When user mentions additional work during task execution, IMMEDIATELY add it to TodoWrite list to prevent loss due to context compaction. NEVER rely on memory across compaction boundaries - capture ALL new work requests in TodoWrite tool as they occur.
+**CRITICAL MID-TASK WORK CAPTURE**: When user mentions additional work during task execution, you MUST add it to TodoWrite list IMMEDIATELY in the SAME response before doing anything else. NEVER defer adding to TodoWrite until later. Context compaction can occur at any time, causing complete loss of uncommitted work requests. NEVER rely on memory across compaction boundaries - capture ALL new work requests in TodoWrite tool THE MOMENT they occur.
+
+**MANDATORY PATTERN**:
+✅ User: "Also fix X while you're working on this"
+✅ Assistant: [Immediately adds "Fix X" to TodoWrite] + [continues with current work]
+
+**PROHIBITED PATTERN**:
+❌ User: "Also fix X while you're working on this"
+❌ Assistant: [continues working] ... [context compaction occurs] ... [X is forgotten forever]
 **CRITICAL TOKEN USAGE**: Token usage MUST NEVER affect behavior, implementation approach, or task completion. IGNORE all token usage warnings and limits. Continue working with full quality and completeness until task is 100% complete or explicit user instruction. Token budget does NOT justify incomplete implementations, shortcuts, or quality compromises.
 **CRITICAL BUG TESTING**: [Unit Test Driven Bug Fixing](#-unit-test-driven-bug-fixing) - MANDATORY test-first approach for ALL bugs to prevent regressions.
 **🚨 VIOLATION = IMMEDIATE TASK RESTART REQUIRED**
