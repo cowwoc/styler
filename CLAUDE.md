@@ -234,23 +234,27 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 
 ## 🚨 AUTONOMOUS TASK COMPLETION REQUIREMENT
 
-**CRITICAL**: Once you begin a task (execute INIT state), you MUST complete ALL protocol states (0-8) without asking user for permission to continue.
+**CRITICAL**: Once you begin a task (execute INIT state), you MUST complete ALL protocol states (0-8) autonomously, WITH TWO MANDATORY USER APPROVAL CHECKPOINTS.
 
 **MANDATORY SINGLE-SESSION COMPLETION**:
 - Task execution occurs in ONE uninterrupted session
-- NO HANDOFFS to user mid-protocol
-- NO asking "should I continue?"
-- Complete States 0-8 autonomously
+- **EXPECTED USER APPROVAL CHECKPOINTS** (these are NOT violations):
+  1. **After SYNTHESIS**: Present implementation plan via ExitPlanMode, wait for user approval
+  2. **After REVIEW**: Present completed changes, wait for user approval to finalize
+- NO OTHER HANDOFFS to user mid-protocol
+- Complete all other states autonomously
 
-**Prohibited Mid-Task Questions**:
-❌ "Would you like me to continue with implementation?"
-❌ "This will take 2-3 days, should I proceed?"
-❌ "Select a different task or continue this one?"
-❌ "Requires extended work session - continue?"
+**Prohibited Mid-Task Questions** (other than the two mandatory checkpoints):
+❌ "Would you like me to continue with implementation?" (after user approved plan)
+❌ "This will take 2-3 days, should I proceed?" (ask before INIT, not during)
+❌ "Select a different task or continue this one?" (not during execution)
+❌ "Requires extended work session - continue?" (not during execution)
 
 **When to Ask User**:
 ✅ **BEFORE** starting task: "Task X has ambiguous requirements. Clarify before I begin?"
-✅ **NEVER** mid-protocol: Complete States 0-8 autonomously once INIT begins
+✅ **AFTER SYNTHESIS**: Present plan via ExitPlanMode, wait for approval before IMPLEMENTATION
+✅ **AFTER REVIEW**: Present changes, wait for approval before COMPLETE
+✅ **NEVER** at other points: Complete other states autonomously once INIT begins
 
 **Time Estimates Are NOT Blockers**:
 - "2-3 days" = **effort estimation**, NOT permission gate

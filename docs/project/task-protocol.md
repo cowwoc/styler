@@ -10,21 +10,25 @@
 
 ### Core States
 ```
-INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
-                                      ↑                                      ↓
-                                      └─────── SCOPE_NEGOTIATION ←──────────┘
+INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLEMENTATION → VALIDATION → REVIEW → [CHANGE REVIEW] → COMPLETE → CLEANUP
+                                      ↑                                                          ↓
+                                      └─────────────────── SCOPE_NEGOTIATION ←──────────────────┘
 ```
+
+**User Approval Checkpoints:**
+- **[PLAN APPROVAL]**: After SYNTHESIS, before IMPLEMENTATION - User reviews and approves implementation plan
+- **[CHANGE REVIEW]**: After REVIEW (unanimous stakeholder approval), before COMPLETE - User reviews actual changes
 
 ### State Definitions
 - **INIT**: Task selected, locks acquired, session validated
 - **CLASSIFIED**: Risk level determined, agents selected, isolation established
 - **REQUIREMENTS**: All stakeholder requirements collected and validated
-- **SYNTHESIS**: Requirements consolidated into unified architecture plan
-- **IMPLEMENTATION**: Code and tests created according to synthesis plan
+- **SYNTHESIS**: Requirements consolidated into unified architecture plan, **USER APPROVAL CHECKPOINT: Present plan via ExitPlanMode, wait for user approval**
+- **IMPLEMENTATION**: Code and tests created according to user-approved synthesis plan
 - **VALIDATION**: Build verification and automated quality gates passed
-- **REVIEW**: All stakeholder agents provide unanimous approval
+- **REVIEW**: All stakeholder agents provide unanimous approval, **USER REVIEW CHECKPOINT: Present changes to user, wait for review approval before proceeding**
 - **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns (ONLY when resolution effort > 2x task scope AND agent consensus permits deferral - NEVER ask user for permission)
-- **COMPLETE**: Work preserved to main branch, todo.md updated
+- **COMPLETE**: Work preserved to main branch, todo.md updated (only after user approves changes)
 - **CLEANUP**: Worktrees removed, locks released, temporary files cleaned
 
 ### State Transitions
@@ -762,12 +766,36 @@ def validate_requirements_complete(required_agents, task_dir):
 - [ ] Architecture plan addresses all stakeholder requirements
 - [ ] Conflict resolution documented for competing requirements
 - [ ] Implementation strategy defined with clear success criteria
+- [ ] **USER APPROVAL: Implementation plan presented via ExitPlanMode tool**
+- [ ] **USER CONFIRMATION: User has approved the proposed implementation approach**
 
 **Evidence Required:**
 - Synthesis document exists with all sections completed
 - Each agent requirement mapped to implementation approach
 - Trade-off decisions documented with rationale
 - Success criteria defined for each domain (architecture, security, performance, etc.)
+- ExitPlanMode tool invoked with comprehensive implementation plan
+- User approval message received
+
+**Plan Presentation Requirements:**
+```markdown
+MANDATORY BEFORE IMPLEMENTATION:
+1. Enter plan mode after SYNTHESIS complete
+2. Present implementation plan including:
+   - Architecture approach and key design decisions
+   - Files to be created/modified
+   - Implementation sequence and dependencies
+   - Testing strategy
+   - Risk mitigation approaches
+3. Use ExitPlanMode tool with complete plan
+4. Wait for user approval before proceeding to IMPLEMENTATION
+5. Only proceed to IMPLEMENTATION after receiving user confirmation
+
+PROHIBITED:
+❌ Starting implementation without user plan approval
+❌ Skipping plan presentation for "simple" tasks
+❌ Assuming user approval without explicit confirmation
+```
 
 ### IMPLEMENTATION → VALIDATION
 **Mandatory Conditions:**
@@ -815,6 +843,9 @@ ELSE:
 - [ ] NO agent returns: "FINAL DECISION: ❌ REJECTED - [issues]"
 - [ ] Review evidence documented in `state.json` file
 - [ ] **Build verification passes in worktree** (`./mvnw verify` must pass before merge attempt)
+- [ ] **COMMIT CHANGES: All changes committed to task branch for user review**
+- [ ] **USER REVIEW: Changes presented to user for review (with commit SHA)**
+- [ ] **USER APPROVAL: User has approved the implemented changes**
 
 **Enforcement Logic:**
 ```python
@@ -858,6 +889,47 @@ def handle_agent_rejections(rejecting_agents, rejection_feedback):
 ✅ IF (resolution effort ≤ 2x task scope): "Returning to SYNTHESIS state to address: [specific issues]"
 ✅ IF (resolution effort > 2x task scope): "Transitioning to SCOPE_NEGOTIATION state for scope assessment"
 ✅ "Cannot advance to COMPLETE until ALL agents return ✅ APPROVED"
+
+**User Review After Unanimous Approval:**
+```markdown
+MANDATORY AFTER UNANIMOUS STAKEHOLDER APPROVAL:
+1. Stop workflow after receiving ALL ✅ APPROVED responses
+2. Commit all changes to task branch:
+   - Stage all modified/created files
+   - Create commit with descriptive message
+   - Record commit SHA for user reference
+3. Present change summary to user including:
+   - Commit SHA for review
+   - Files modified/created/deleted (git diff --stat)
+   - Key implementation decisions made
+   - Test results and quality gate status
+   - Summary of how each stakeholder requirement was addressed
+4. Ask user: "All stakeholder agents have approved. Changes committed to task branch (SHA: <commit-sha>). Please review the changes. Would you like me to proceed with finalizing (COMPLETE → CLEANUP)?"
+5. Wait for user approval response
+6. Only proceed to COMPLETE state after user confirms approval
+
+COMMIT FORMAT BEFORE USER REVIEW:
+- Use descriptive commit message summarizing changes
+- Do NOT include todo.md in this commit (will be amended during COMPLETE state)
+- Commit message pattern: "<type>: <description>" (e.g., "feat: implement security validation framework")
+
+HANDLING USER-REQUESTED CHANGES:
+If user requests changes during review:
+1. Make requested modifications
+2. Stage changes: git add <modified-files>
+3. Amend the existing commit: git commit --amend --no-edit (or with updated message)
+4. Present updated changes with new commit SHA
+5. Wait for user approval again
+6. Repeat until user approves
+
+PROHIBITED:
+❌ Automatically proceeding to COMPLETE after stakeholder approval
+❌ Skipping user review for "minor" changes
+❌ Assuming user approval without explicit confirmation
+❌ Proceeding to CLEANUP without user review
+❌ Asking user to review uncommitted changes
+❌ Creating multiple commits instead of amending (maintain single commit for task)
+```
 
 ### REVIEW → SCOPE_NEGOTIATION (Conditional Transition)
 **Trigger Conditions:**
@@ -981,10 +1053,11 @@ If RESOLVE_NOW: Confirm all issues must be resolved in current task
 
 ### COMPLETE → CLEANUP
 **Mandatory Conditions:**
-- [ ] All work committed to task branch with descriptive commit message
+- [ ] All work already committed to task branch (from USER REVIEW checkpoint)
+- [ ] todo.md removed from todo list and added to changelog.md
+- [ ] todo.md and changelog.md changes amended to existing commit
 - [ ] **Build verification passes in task worktree BEFORE merge** (`./mvnw verify` in worktree)
 - [ ] Task branch merged to main branch with **LINEAR COMMIT HISTORY** (fast-forward only, NO merge commits)
-- [ ] todo.md updated to mark task complete (in same commit as deliverables)
 - [ ] Full build verification passes on main branch after merge (`./mvnw verify`)
 
 **Evidence Required:**
@@ -1109,13 +1182,13 @@ git config receive.denyCurrentBranch updateInstead
 cd /workspace/branches/refactor-line-wrapping-architecture/code
 git status --porcelain | grep -E "(dist/|target/)" | wc -l  # Must be 0
 
-# Step 2: Commit task changes
-git add src/ pom.xml
-git commit -m "refactor: restructure line-wrapping architecture for reusability"
+# Step 2: Changes already committed during USER REVIEW checkpoint
+# Verify commit exists
+git log -1 --oneline
 
-# Step 3: Update todo.md and amend commit
-# (Edit todo.md to mark task complete)
-git add todo.md
+# Step 3: Update todo.md and changelog.md, then amend commit
+# (Remove task from todo.md, add to changelog.md)
+git add todo.md changelog.md
 git commit --amend --no-edit
 
 # Step 4: Verify todo.md included
@@ -1774,8 +1847,16 @@ update_todo_with_violation_report()
 ### Single Session Continuity
 **Requirements:**
 - All task execution in single Claude session
-- NO HANDOFFS: Complete task without waiting for user input
+- **EXPECTED USER INTERACTION**: Wait for user approval at two mandatory checkpoints:
+  1. After SYNTHESIS: Plan approval before implementation
+  2. After REVIEW: Change review before finalization
+- NO OTHER HANDOFFS: Complete all other phases without waiting for user input
 - IF session interrupted: Restart task from beginning with new session
+
+**User Approval Checkpoints Are NOT Violations:**
+- These are expected interaction points in the workflow
+- These do NOT violate the "autonomous completion" principle
+- These ensure user oversight at critical decision points
 
 ### Tool Call Batching
 **Optimization patterns:**
@@ -1951,6 +2032,9 @@ execute_task_protocol() {
                 execute_requirements_to_synthesis_transition
                 ;;
             "SYNTHESIS")
+                # Present implementation plan and wait for user approval
+                present_implementation_plan_and_wait_for_approval
+
                 # Conditional path selection based on risk level and change type
                 if should_skip_implementation "$risk_level" "$change_type"; then
                     execute_synthesis_to_complete_transition
@@ -1966,6 +2050,11 @@ execute_task_protocol() {
                 ;;
             "REVIEW")
                 execute_review_to_complete_or_scope_negotiation_transition
+
+                # If unanimous approval achieved, present changes and wait for user review
+                if all_agents_approved; then
+                    present_changes_and_wait_for_user_approval
+                fi
                 ;;
             "SCOPE_NEGOTIATION")
                 execute_scope_negotiation_to_synthesis_or_complete_transition
@@ -2011,6 +2100,51 @@ should_skip_implementation() {
     # Final audit
     final_compliance_audit
     echo "=== TASK PROTOCOL COMPLETED SUCCESSFULLY ==="
+}
+
+# Helper functions for user approval checkpoints
+present_implementation_plan_and_wait_for_approval() {
+    echo "=== USER APPROVAL CHECKPOINT: PLAN REVIEW ==="
+    echo "Synthesis complete. Presenting implementation plan to user..."
+
+    # Present plan via ExitPlanMode tool including:
+    # - Architecture approach and key design decisions
+    # - Files to be created/modified
+    # - Implementation sequence and dependencies
+    # - Testing strategy
+    # - Risk mitigation approaches
+
+    # Wait for user approval message
+    # Only proceed after receiving explicit confirmation
+}
+
+present_changes_and_wait_for_user_approval() {
+    echo "=== USER APPROVAL CHECKPOINT: CHANGE REVIEW ==="
+    echo "All stakeholder agents have approved. Committing changes for user review..."
+
+    # Step 1: Commit all changes to task branch
+    git add <changed-files>
+    git commit -m "<descriptive-commit-message>"
+    COMMIT_SHA=$(git rev-parse HEAD)
+    echo "Changes committed: $COMMIT_SHA"
+
+    # Step 2: Present change summary including:
+    # - Commit SHA for reference
+    # - Files modified/created/deleted (git diff --stat)
+    # - Key implementation decisions made
+    # - Test results and quality gate status
+    # - Summary of how each stakeholder requirement was addressed
+
+    # Step 3: Ask user for approval
+    # Ask: "All stakeholder agents have approved. Changes committed to task branch (SHA: $COMMIT_SHA). Please review the changes. Would you like me to proceed with finalizing (COMPLETE → CLEANUP)?"
+
+    # Step 4: Wait for user response
+    # If user requests changes:
+    #   - Make requested modifications
+    #   - Amend commit: git add <files> && git commit --amend --no-edit
+    #   - Return to Step 2 with new commit SHA
+    # If user approves:
+    #   - Proceed to COMPLETE state
 }
 ```
 
