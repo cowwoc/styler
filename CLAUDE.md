@@ -285,6 +285,85 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 
 **Enforcement**: The `detect-giving-up.sh` hook detects mid-protocol abandonment patterns and injects completion reminders.
 
+## 🚨 USER APPROVAL CHECKPOINT ENFORCEMENT
+
+**HOOK-ENFORCED REQUIREMENT**: The `enforce-user-approval.sh` hook will BLOCK transitions to COMPLETE state if user approval checkpoint is not satisfied.
+
+**Approval Marker System**:
+- **File**: `/workspace/branches/{task-name}/user-approval-obtained.flag`
+- **Created**: When user provides explicit approval after REVIEW state
+- **Required**: Before COMPLETE state transition is allowed
+- **Removed**: Automatically during CLEANUP state
+
+**Automatic Approval Detection** (hook recognizes these patterns):
+✅ User message contains approval keywords: "yes", "approved", "approve", "proceed", "looks good", "LGTM"
+✅ AND message references review context: "review", "changes", "commit", "finalize"
+
+**User Instructions DO NOT Override Checkpoints**:
+❌ "Continue without asking questions" - DOES NOT skip checkpoint
+❌ "Just finish the task" - DOES NOT skip checkpoint
+❌ "I trust you, proceed" - DOES NOT skip checkpoint (unless includes review context)
+❌ Bypass mode enabled - DOES NOT skip checkpoint
+❌ Automation mode active - DOES NOT skip checkpoint
+
+**How Enforcement Works**:
+1. Hook monitors all UserPromptSubmit events
+2. When task is in REVIEW state and user says "continue/proceed/finalize"
+3. Hook checks for approval marker file existence
+4. If marker missing AND message is not explicit approval → **BLOCKED with checkpoint reminder**
+5. If message IS explicit approval → Create marker, allow continuation
+6. If marker exists → Allow COMPLETE state transition
+
+**Required Pattern for Approval**:
+✅ "All changes look good, please proceed with finalization"
+✅ "Yes, approved - you can merge this"
+✅ "LGTM, proceed with cleanup"
+✅ "Approved, finalize the task"
+
+**Prohibited Assumption Patterns**:
+❌ Interpreting "continue" as approval
+❌ Assuming silence means approval
+❌ Treating stakeholder consensus as user approval
+❌ Proceeding without explicit approval words
+
+**Why This Matters**:
+- Protocol line 36: "MANDATORY REGARDLESS of bypass mode or automation mode"
+- Checkpoints are quality gates, not permission gates
+- User reviews committed code, ensures nothing unexpected merged
+- Prevents accidental merges of unreviewed changes
+- Protects against misinterpreted user instructions
+
+### TodoWrite Checkpoint Task Requirement
+
+**MANDATORY PATTERN**: After REVIEW state completes with unanimous stakeholder approval, you MUST:
+
+1. **ADD** explicit "Wait for user approval" task to TodoWrite list
+2. **MARK** it as `in_progress` immediately
+3. **PRESENT** change summary to user
+4. **WAIT** for explicit user approval
+5. **ONLY THEN** mark approval task as `completed`
+6. **THEN** proceed to COMPLETE phase
+
+**Required TodoWrite Pattern:**
+```
+✅ Execute REVIEW phase - Stakeholder approval (completed)
+⏸️ **Wait for user review and approval of changes** (in_progress) ← EXPLICIT TASK
+⏸️ Execute COMPLETE phase - Merge to main (pending, blocked until above completes)
+⏸️ Execute CLEANUP phase (pending)
+```
+
+**Prohibited TodoWrite Pattern:**
+```
+✅ Execute REVIEW phase - Stakeholder approval
+⏩ Execute COMPLETE phase - Merge to main  ← MISSING checkpoint task
+```
+
+**Why This Works**:
+- Makes checkpoint explicit and visible in task tracking
+- Prevents autonomous skip from REVIEW → COMPLETE
+- Creates clear pause point requiring user interaction
+- Blocks subsequent phases until approval obtained
+
 ## 🚨 TASK UNAVAILABILITY HANDLING
 
 **CRITICAL**: When user requests "work on the next task" or similar, you MUST verify task availability before attempting to start any work.
