@@ -60,6 +60,47 @@ Before REVIEW → COMPLETE:
 - [ ] Did the user explicitly approve proceeding to finalization?
 - [ ] Did I assume approval from agent consensus alone? (VIOLATION if yes)
 
+### 🛑 MANDATORY STOP POINT - USER APPROVAL CHECKPOINT #2
+
+**YOU MUST STOP HERE** after completing REVIEW state and receiving unanimous stakeholder approval.
+
+**DO NOT PROCEED TO COMPLETE STATE** until you have:
+
+1. ✅ **COMMITTED** all changes to task branch
+2. ✅ **RECORDED** commit SHA for user reference
+3. ✅ **PRESENTED** change summary to user including:
+   - Commit SHA
+   - Files modified (git show --stat)
+   - Key implementation decisions
+   - Test results (all passing)
+   - Quality gates status (checkstyle, PMD, build)
+4. ✅ **WAITED** for explicit user approval message
+5. ✅ **RECEIVED** approval keywords: "approved", "LGTM", "looks good", "proceed"
+
+**PROHIBITED ACTIONS AT THIS CHECKPOINT:**
+❌ Proceeding to COMPLETE state autonomously
+❌ Assuming approval from stakeholder consensus
+❌ Interpreting silence as approval
+❌ Skipping checkpoint due to bypass mode
+❌ Treating "continue" without approval context as approval
+
+**REQUIRED PATTERN:**
+```
+All stakeholder agents have approved the implementation.
+
+**Commit SHA**: [commit-sha]
+**Files changed**: [list]
+**Implementation summary**: [key decisions]
+**Test results**: [all passing]
+**Quality gates**: [checkstyle: PASS, PMD: PASS, build: SUCCESS]
+
+Please review these changes. Would you like me to proceed with finalizing (COMPLETE → CLEANUP)?
+```
+
+**WAIT** for user response before ANY further action.
+
+**ENFORCEMENT**: The `enforce-user-approval.sh` hook will block COMPLETE state transition if approval marker file does not exist.
+
 ### Automated Checkpoint Enforcement
 
 **HOOK-BASED ENFORCEMENT**: The `enforce-user-approval.sh` hook actively prevents transitioning to COMPLETE state without user approval.
