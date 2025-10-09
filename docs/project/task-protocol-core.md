@@ -1003,7 +1003,9 @@ ELSE:
 - [ ] NO agent returns: "FINAL DECISION: ❌ REJECTED - [issues]"
 - [ ] Review evidence documented in `state.json` file
 - [ ] **Build verification passes in worktree** (`./mvnw verify` must pass before merge attempt)
-- [ ] **COMMIT CHANGES: All changes committed to task branch for user review**
+- [ ] **COMMIT CHANGES: BEFORE presenting to user, create review commit with all changes**
+  - **Rationale**: User reviews commits, not working directory. Commit SHA enables git-based review.
+  - **Timing**: This commit happens AFTER stakeholder approval, BEFORE user approval checkpoint.
 - [ ] **USER REVIEW: Changes presented to user for review (with commit SHA)**
 - [ ] **USER APPROVAL: User has approved the implemented changes**
 
