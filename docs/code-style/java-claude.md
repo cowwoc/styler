@@ -91,6 +91,94 @@ grep -rn -E "\w+\([^,)]+,[^,)]+,[^,)]+,[^,)]+,\s*\n\s+[^,)]+\);" --include="*.ja
 **Rationale**: Classes not designed for extension should be declared final to prevent unintended subclassing and make design intent explicit
 **Exception**: Abstract classes, base classes explicitly designed for extension, or classes with protected methods intended for overriding
 
+### JavaDoc - Thread-Safety Documentation Format and Usage
+**Required Format**: Use `<b>Thread-safety</b>:` (bolded with HTML tags) followed by brief description
+**Violation**: Incorrect format, documenting non-thread-safe classes, or negative assertions
+**Correct**: Only document thread-safety for classes that ARE thread-safe, using proper bold HTML format
+
+**Detection Commands**:
+```bash
+# Find incorrect "Thread-safe" (should be "Thread-safety")
+grep -rn -E '\* Thread-safe:' --include="*.java" .
+
+# Find missing bold tags (plain text thread-safety documentation)
+grep -rn -E '\* Thread-safety:' --include="*.java" . | grep -v '<b>Thread-safety</b>'
+
+# Find negative thread-safety documentation
+grep -rn -E '\* <b>Thread-safety</b>:.*not thread-safe' --include="*.java" .
+grep -rn -E '\* <b>Thread-safety</b>:.*No\.' --include="*.java" .
+```
+
+**Examples**:
+```java
+// ✅ CORRECT - Thread-safe class with proper bold format
+/**
+ * Cache for parsed configurations.
+ * <p>
+ * <b>Thread-safety</b>: This class is thread-safe.
+ */
+public final class ConfigurationCache { ... }
+
+// ✅ CORRECT - Immutable class with proper bold format
+/**
+ * Immutable configuration record.
+ * <p>
+ * <b>Thread-safety</b>: This class is immutable.
+ */
+public final class Config { ... }
+
+// ✅ CORRECT - Non-thread-safe class omits thread-safety section
+/**
+ * Builder for Config instances.
+ * <p>
+ * Provides a fluent API for configuration.
+ */
+public final class ConfigBuilder { ... }
+
+// ❌ VIOLATION - Not using bold format
+/**
+ * Cache for parsed configurations.
+ * <p>
+ * Thread-safety: This class is thread-safe.
+ */
+public final class ConfigurationCache { ... }
+
+// ❌ VIOLATION - Using "Thread-safe" instead of "Thread-safety"
+/**
+ * Cache for parsed configurations.
+ * <p>
+ * <b>Thread-safe</b>: This class is thread-safe.
+ */
+public final class ConfigurationCache { ... }
+
+// ❌ VIOLATION - Documenting non-thread-safety
+/**
+ * Builder for Config instances.
+ * <p>
+ * <b>Thread-safety</b>: This class is not thread-safe.
+ */
+public final class ConfigBuilder { ... }
+```
+
+**Format specification**:
+- Use `<b>Thread-safety</b>:` (HTML bold tags with "Thread-safety" spelling)
+- Follow with either "This class is thread-safe." or "This class is immutable."
+- Do NOT use "This class is immutable and thread-safe." - immutability implies thread-safety
+- For test classes, use same concise format - no verbose explanations
+- Only document for classes that ARE thread-safe
+
+**Additional Detection Patterns**:
+```bash
+# Find redundant "immutable and thread-safe" documentation
+grep -rn '<b>Thread-safety</b>:.*immutable and thread-safe' --include="*.java" .
+
+# Find verbose test-specific explanations
+grep -rn '<b>Thread-safety</b>:.*test method.*local variables' --include="*.java" .
+grep -rn '<b>Thread-safety</b>:.*try-finally cleanup' --include="*.java" .
+```
+
+**Rationale**: Thread-safety documentation should be a positive assertion with consistent formatting. Absence of thread-safety documentation implies the class is not thread-safe.
+
 ## TIER 3 QUALITY - Best Practices
 
 ### Error Handling - Default Return Values
@@ -123,6 +211,39 @@ public ASTNode parseExpression(TokenStream tokens) {
 **Rationale**: Parser operations must fail visibly when errors occur. Returning default values (empty nodes, null results) can hide serious parsing errors and lead to incorrect AST construction.
 
 **Manual Analysis Required**: For Pattern 2 matches, examine the called method to verify if it returns default/ZERO values. Methods named `handle.*Error`, `.*ErrorHandler`, `default.*` are particularly suspect.
+
+### Error Handling - Checked Exception Wrapping with RuntimeException
+**Detection Pattern**: Look for `throw new RuntimeException` wrapping checked exceptions
+**Violation**: Using generic `RuntimeException` to wrap checked exceptions in lambdas or streams
+**Correct**: Use `WrappedCheckedException.wrap()` for explicit checked exception wrapping
+**Detection Commands**:
+```bash
+# Find RuntimeException wrapping checked exceptions
+grep -rn -A2 'throw new RuntimeException' --include="*.java" . | grep -B2 'catch.*Exception'
+grep -rn 'throw new RuntimeException.*\(' --include="*.java" .
+```
+**Example**:
+```java
+// VIOLATION - Generic RuntimeException for checked exception
+return cache.computeIfAbsent(path, p -> {
+    try {
+        return parser.parse(p);
+    } catch (ConfigurationSyntaxException e) {
+        throw new RuntimeException(e);
+    }
+});
+
+// CORRECT - Explicit wrapped checked exception
+return cache.computeIfAbsent(path, p -> {
+    try {
+        return parser.parse(p);
+    } catch (ConfigurationSyntaxException e) {
+        throw WrappedCheckedException.wrap(e);
+    }
+});
+```
+**Rationale**: `WrappedCheckedException` makes it explicit that this is a wrapped checked exception, provides better stack trace handling, and helps distinguish between true programming errors and wrapped I/O exceptions.
+**Manual Analysis**: Review each `RuntimeException` usage to determine if it's wrapping a checked exception. Not all `RuntimeException` uses are violations - only those wrapping checked exceptions in lambda/stream contexts.
 
 ### Concurrency - Virtual Thread Preference
 **Detection Pattern**: `CompletableFuture\.supplyAsync\(\s*\(\)\s*->\s*.*\.(read|write|process)\(`
@@ -182,6 +303,57 @@ public RuleConfiguration merge(RuleConfiguration override) {
 ```
 
 **Rationale**: `IllegalStateException` signals recoverable API usage errors. `AssertionError` signals programming bugs indicating broken implementation invariants.
+
+### Method Naming - Clarity Over Brevity
+**Detection Pattern**: Look for method names with unclear abbreviations
+**Common Abbreviations to Flag**:
+- `*Nr` → prefer `*Number` (e.g., `getLineNr()` → `getLineNumber()`)
+- `*Pos` → prefer `*Position` (e.g., `getTokenPos()` → `getTokenPosition()`)
+- `*Len` → prefer `*Length` (e.g., `getStrLen()` → `getStringLength()`)
+- `*Cnt` → prefer `*Count` (e.g., `getItemCnt()` → `getItemCount()`)
+- `*Msg` → prefer `*Message` (e.g., `getErrMsg()` → `getErrorMessage()`)
+- `*Src` → prefer `*Source` (e.g., `fmtSrc()` → `formatSource()`)
+- `calc*` → prefer `calculate*` (e.g., `calcDepth()` → `calculateDepth()`)
+- `fmt*` → prefer `format*` (e.g., `fmtCode()` → `formatCode()`)
+
+**Detection Commands**:
+```bash
+# Find methods with common unclear abbreviations
+grep -rn -E '(public|protected|private)\s+\w+\s+\w+Nr\(' --include="*.java" .
+grep -rn -E '(public|protected|private)\s+\w+\s+\w+Pos\(' --include="*.java" .
+grep -rn -E '(public|protected|private)\s+\w+\s+\w+Len\(' --include="*.java" .
+grep -rn -E '(public|protected|private)\s+\w+\s+\w+Cnt\(' --include="*.java" .
+grep -rn -E '(public|protected|private)\s+\w+\s+\w+Msg\(' --include="*.java" .
+grep -rn -E '(public|protected|private)\s+\w+\s+\w+Src\(' --include="*.java" .
+grep -rn -E '(public|protected|private)\s+\w+\s+calc[A-Z]' --include="*.java" .
+grep -rn -E '(public|protected|private)\s+\w+\s+fmt[A-Z]' --include="*.java" .
+
+# Find field accessors with abbreviated names
+grep -rn -E 'get\w+Nr\(\)' --include="*.java" .
+grep -rn -E 'get\w+Pos\(\)' --include="*.java" .
+grep -rn -E 'get\w+Len\(\)' --include="*.java" .
+```
+
+**Exceptions** (do NOT flag these):
+- Universal acronyms: `getURL()`, `parseHTML()`, `toJSON()`, `getHTTPResponse()`
+- Java conventions: `toString()`, `hashCode()`, `equals()`
+- Domain terms: `parseAST()`, `getJLSReference()`, `buildDOM()`
+- Math conventions: `min()`, `max()`, `abs()`
+
+**Example Violations**:
+```java
+// VIOLATION
+public int getLineNr() { return lineNumber; }
+public void calcMaxDepth() { ... }
+public String fmtSrc(SourceFile file) { ... }
+
+// CORRECT
+public int getLineNumber() { return lineNumber; }
+public void calculateMaximumDepth() { ... }
+public String formatSource(SourceFile file) { ... }
+```
+
+**Rationale**: Clear method names improve code comprehension. Abbreviated names require mental translation and reduce readability, especially during code review and debugging.
 
 ## Optimized Detection Commands
 

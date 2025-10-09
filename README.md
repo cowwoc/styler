@@ -32,10 +32,10 @@ An unopinionated Java code formatter that supports 100% of JDK 25's features wit
 ├── styler-parser/         # Custom recursive descent parser for JDK 25
 ├── styler-formatter-api/  # Formatter plugin interfaces
 ├── styler-formatter-impl/ # Built-in formatter implementations
-├── styler-config/         # YAML configuration system
+├── config/                # TOML configuration system
 ├── styler-engine/         # Parallel processing engine
 ├── styler-security/       # Security controls and validation
-└── styler-cli/            # Command-line interface
+└── cli/                   # Command-line interface
 ```
 
 ## 📖 Documentation
@@ -103,38 +103,22 @@ styler format --profile google src/
 ```
 
 ### Configuration
-Create a `.styler.yml` file in your project root:
 
-```yaml
-# Core settings
-language_version: JDK_25
-thread_pool_size: auto  # Auto-detect CPU cores
-memory_limit: 512MB     # Per 1000 files
+Styler uses [TOML](https://toml.io/) configuration files for formatting rules. Create a `.styler.toml` file in your project root:
 
-# Formatting rules
-line_length: 120
-indentation:
-  type: spaces
-  size: 4
-braces:
-  classes: next_line
-  methods: next_line
-  control: same_line
-
-# Auto-fixer settings
-auto_fixes:
-  enabled: true
-  line_length: true
-  import_organization: true
-  whitespace: true
-
-# Plugin system
-plugins:
-  - name: line-length-formatter
-    enabled: true
-  - name: import-organizer
-    enabled: true
+```toml
+# Maximum line length before wrapping
+maxLineLength = 120
 ```
+
+Configuration files are discovered hierarchically:
+1. Current directory and parents (up to .git boundary)
+2. User home directory (`~/.styler.toml`)
+3. System-wide (`/etc/.styler.toml`)
+
+Multiple config files are merged with **field-level precedence** - each field uses the value from the nearest config file that specifies it.
+
+**For complete configuration documentation**, see [docs/configuration.md](docs/configuration.md).
 
 ## 🚀 Getting Started
 
@@ -155,9 +139,9 @@ Styler uses a modular architecture with the following components:
 - **styler-parser**: Custom recursive descent parser with JDK 25 support
 - **styler-formatter-api**: Plugin interfaces and configuration schema
 - **styler-formatter-impl**: Built-in formatter implementations
-- **styler-config**: YAML configuration system with inheritance
+- **config**: TOML configuration system with hierarchical discovery
 - **styler-engine**: Multi-threaded processing with work-stealing
 - **styler-security**: Comprehensive security controls and input validation
-- **styler-cli**: Command-line interface and main entry point
+- **cli**: Command-line interface and main entry point
 
 For detailed technical architecture, see [docs/project/architecture.md](docs/project/architecture.md).

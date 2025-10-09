@@ -91,24 +91,6 @@
   - **Quality**: 100% JDK 25 feature coverage, comprehensive test suite
   - **Estimated Effort**: 5-7 days
 
-### A2. Configuration System
-- [ ] **READY:** `implement-toml-configuration` - TOML-based configuration with file discovery
-  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-config module)
-  - **Blocks**: B2 (pipeline), B5 (CLI integration)
-  - **Parallelizable With**: A1, A3, A4 (after A0 completes)
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Load and merge formatting configuration from .styler.toml files
-  - **Scope**: TOML parser, config discovery (current/parent/home dirs), merge logic
-  - **Components**:
-    - ConfigParser: Parse .styler.toml files (Jackson TOML or toml4j)
-    - ConfigDiscovery: Search current → parent → home → global with git boundary detection
-    - ConfigMerger: Field-level merge with precedence rules
-    - ConfigSchema: Immutable config objects with builder pattern
-  - **Search Strategy**: Current dir → parent dirs (stop at .git) → ~/.styler.toml → /etc/styler.toml
-  - **Integration**: Used by CLI and file processor, no dependencies on parser
-  - **Quality**: Thread-safe caching, comprehensive validation, clear error messages
-  - **Estimated Effort**: 2-3 days
-
 ### A4. Security Framework
 - [ ] **READY:** `implement-security-controls` - Essential security for CLI tool
   - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-security module)
