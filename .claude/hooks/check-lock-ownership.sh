@@ -67,6 +67,17 @@ TASK_NAME=$(basename "$LOCK_FILE" .json)
 TASK_STATE=$(grep -oP '"state":\s*"\K[^"]+' "$LOCK_FILE")
 TASK_WORKTREE="/workspace/branches/$TASK_NAME/code"
 
+# Check for user approval marker if in REVIEW state
+APPROVAL_STATUS=""
+APPROVAL_MARKER="/workspace/branches/$TASK_NAME/user-approval-obtained.flag"
+if [[ "$TASK_STATE" == "REVIEW" ]]; then
+  if [ -f "$APPROVAL_MARKER" ]; then
+    APPROVAL_STATUS="✅ User Approval: OBTAINED"
+  else
+    APPROVAL_STATUS="❌ User Approval: NOT OBTAINED - CHECKPOINT REQUIRED"
+  fi
+fi
+
 # Check if worktree exists
 if [ ! -d "$TASK_WORKTREE" ]; then
   MESSAGE="## 🚨 ERROR: Lock exists but worktree missing
@@ -98,6 +109,7 @@ MESSAGE="## ⚠️ ACTIVE TASK DETECTED
 **Current State**: \`$TASK_STATE\`
 **Lock File**: \`$LOCK_FILE\`
 **Worktree**: \`$TASK_WORKTREE\`
+${APPROVAL_STATUS:+**Checkpoint Status**: \`$APPROVAL_STATUS\`}
 
 🚨 **YOU MUST RESUME THIS TASK** before starting any new work.
 
@@ -128,6 +140,19 @@ git status
 1. Continue from state: \`$TASK_STATE\`
 2. Complete all remaining protocol phases
 3. Only after Phase 8 (CLEANUP) may you select a new task
+
+${APPROVAL_STATUS:+${APPROVAL_STATUS/NOT OBTAINED/## 🚨 USER APPROVAL CHECKPOINT REQUIRED:
+
+**BEFORE proceeding to COMPLETE state, you MUST**:
+1. Present completed changes with commit SHA to user
+2. Show: Files changed, test results, quality gates
+3. Ask: \"Would you like me to proceed with finalizing?\"
+4. Wait for explicit user approval (\"yes\", \"approved\", \"proceed\", \"LGTM\")
+
+**DO NOT** assume approval from:
+- \"Continue without asking\" instructions
+- Bypass mode settings
+- Lack of objection}}
 
 ## CRITICAL - AUTONOMOUS COMPLETION REQUIREMENT:
 
