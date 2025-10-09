@@ -8,6 +8,7 @@ import io.github.cowwoc.styler.cli.UsageException;
 import org.testng.annotations.Test;
 
 import java.nio.file.Path;
+import java.util.Locale;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -301,7 +302,7 @@ public class ArgumentParserTest
 		}
 		catch (UsageException e)
 		{
-			String message = e.getMessage().toLowerCase();
+			String message = e.getMessage().toLowerCase(Locale.ROOT);
 			requireThat(message.contains("no input") || message.contains("input files") ||
 				message.contains("missing"), "value").isTrue();
 		}
