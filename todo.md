@@ -109,23 +109,6 @@
   - **Quality**: Thread-safe caching, comprehensive validation, clear error messages
   - **Estimated Effort**: 2-3 days
 
-### A3. CLI Argument Parsing
-- [ ] **READY:** `implement-cli-arguments` - Command-line argument parsing without file processing
-  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-cli module)
-  - **Blocks**: B5 (CLI integration)
-  - **Parallelizable With**: A1, A2, A4 (after A0 completes)
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Parse CLI arguments for file paths, config overrides, output options
-  - **Scope**: Argument parser with --config, --check, --fix, --help, --version flags
-  - **Components**:
-    - ArgumentParser: Parse command-line arguments (picocli or jcommander)
-    - CLIOptions: Immutable options object
-    - HelpFormatter: Generate usage help text
-  - **Arguments**: file/directory paths, --config <path>, --check (validate only), --fix (auto-fix), output format
-  - **Integration**: Self-contained, no dependencies on parser or config loading
-  - **Quality**: Clear help text, validation errors, exit codes
-  - **Estimated Effort**: 1-2 days
-
 ### A4. Security Framework
 - [ ] **READY:** `implement-security-controls` - Essential security for CLI tool
   - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-security module)
