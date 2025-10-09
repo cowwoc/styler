@@ -141,18 +141,38 @@ git status
 2. Complete all remaining protocol phases
 3. Only after Phase 8 (CLEANUP) may you select a new task
 
-${APPROVAL_STATUS:+${APPROVAL_STATUS/NOT OBTAINED/## 🚨 USER APPROVAL CHECKPOINT REQUIRED:
+${APPROVAL_STATUS:+${APPROVAL_STATUS/NOT OBTAINED/## 🛑 MANDATORY USER APPROVAL CHECKPOINT #2
 
-**BEFORE proceeding to COMPLETE state, you MUST**:
-1. Present completed changes with commit SHA to user
-2. Show: Files changed, test results, quality gates
-3. Ask: \"Would you like me to proceed with finalizing?\"
-4. Wait for explicit user approval (\"yes\", \"approved\", \"proceed\", \"LGTM\")
+**YOU MUST STOP AFTER REVIEW** and present changes for user approval.
 
-**DO NOT** assume approval from:
-- \"Continue without asking\" instructions
-- Bypass mode settings
-- Lack of objection}}
+**CRITICAL**: Proceeding to COMPLETE state without user approval is a PROTOCOL VIOLATION.
+
+**REQUIRED STEPS BEFORE COMPLETE**:
+1. ✅ Commit all changes to task branch (if not already committed)
+2. ✅ Record commit SHA: \`git rev-parse HEAD\`
+3. ✅ Present to user:
+   - Commit SHA for review
+   - Files changed: \`git show --stat HEAD\`
+   - Key implementation decisions
+   - Test results (all passing)
+   - Quality gates (checkstyle: PASS, PMD: PASS, build: SUCCESS)
+4. ✅ Ask: \"Please review these changes. Would you like me to proceed with finalizing (COMPLETE → CLEANUP)?\"
+5. ✅ WAIT for explicit approval keywords: \"yes\", \"approved\", \"LGTM\", \"proceed\", \"looks good\"
+
+**ADD TODOWRITE CHECKPOINT TASK**:
+\`\`\`
+✅ Execute REVIEW phase - Stakeholder approval (completed)
+⏸️ **Wait for user review and approval of changes** (in_progress) ← ADD THIS
+⏸️ Execute COMPLETE phase - Merge to main (pending)
+\`\`\`
+
+**PROHIBITED ASSUMPTIONS**:
+❌ \"Continue without asking\" instructions - DOES NOT skip checkpoint
+❌ Bypass mode settings - DOES NOT skip checkpoint
+❌ Stakeholder approval alone - DOES NOT equal user approval
+❌ Silence or lack of objection - DOES NOT mean approval
+
+**ENFORCEMENT**: \`enforce-user-approval.sh\` hook will BLOCK COMPLETE transition without approval marker}}
 
 ## CRITICAL - AUTONOMOUS COMPLETION REQUIREMENT:
 

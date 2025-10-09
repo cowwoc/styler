@@ -101,6 +101,41 @@ detect_giving_up_pattern()
     return 1  # No pattern detected
 }
 
+# Detect code disabling/removal instead of debugging
+detect_code_disabling_pattern()
+{
+    local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+
+    # Pattern: Disabling/removing broken code
+    [[ "$text_lower" == *"broken"*"remove"* ]] && return 0
+    [[ "$text_lower" == *"broken"*"disable"* ]] && return 0
+    [[ "$text_lower" == *"broken"*"skip"* ]] && return 0
+    [[ "$text_lower" == *"broken"*"comment out"* ]] && return 0
+
+    # Pattern: Simplifying to avoid debugging
+    [[ "$text_lower" == *"simplifying the implementation"*"remove"* ]] && return 0
+    [[ "$text_lower" == *"simpler approach"*"remove"* ]] && return 0
+    [[ "$text_lower" == *"simplify by removing"* ]] && return 0
+
+    # Pattern: Temporary disabling
+    [[ "$text_lower" == *"temporarily disable"* ]] && return 0
+    [[ "$text_lower" == *"disable for now"* ]] && return 0
+    [[ "$text_lower" == *"skip for now"* ]] && return 0
+    [[ "$text_lower" == *"comment out"*"temporarily"* ]] && return 0
+
+    # Pattern: Removing exception handlers to "fix" compilation
+    [[ "$text_lower" == *"removing the broad exception handler"* ]] && return 0
+    [[ "$text_lower" == *"remove the exception handler"* ]] && return 0
+    [[ "$text_lower" == *"removing the try-catch"* ]] && return 0
+
+    # Pattern: Test passes without code = remove the code
+    [[ "$text_lower" == *"test passes without"*"remove"* ]] && return 0
+    [[ "$text_lower" == *"works without"*"disable"* ]] && return 0
+    [[ "$text_lower" == *"passes without"*"skip"* ]] && return 0
+
+    return 1  # No code disabling pattern detected
+}
+
 # Detect mid-protocol abandonment patterns
 detect_protocol_abandonment()
 {
@@ -190,6 +225,57 @@ NOT LEGITIMATE:
 ❌ "Should I ask first?"
 
 Reference: CLAUDE.md "AUTONOMOUS TASK COMPLETION REQUIREMENT"
+</system-reminder>
+REMINDER
+fi
+
+# Detect code disabling/removal patterns and inject debugging requirement
+if detect_code_disabling_pattern "$WORKING_TEXT"; then
+    cat <<'REMINDER'
+<system-reminder>
+🚨 CODE DISABLING ANTI-PATTERN DETECTED - DEBUGGING REQUIRED
+
+You appear to be disabling, removing, or skipping broken code instead of debugging it.
+
+CRITICAL VIOLATION: When code is broken or failing, you MUST debug and fix the root cause, NOT remove/disable the code.
+
+PROHIBITED PATTERNS:
+❌ "The test passes without the custom deserializer, so let me remove it"
+❌ "Let me simplify by removing the broken code"
+❌ "I'll disable this for now"
+❌ "Let me skip this broken feature"
+❌ "Comment out the failing code temporarily"
+❌ "Remove the exception handler to fix compilation"
+❌ "Try a simpler approach" (when debugging should continue)
+
+MANDATORY RESPONSE:
+✅ IMMEDIATELY debug the broken code to find the root cause
+✅ Apply systematic troubleshooting approach (add logging, test isolation, step-by-step analysis)
+✅ Fix the underlying problem, don't remove functionality
+✅ If code appears unused, verify with evidence before removal
+✅ Use incremental debugging rather than wholesale removal
+
+ACCEPTABLE PATTERNS:
+✅ "Let me add debug logging to understand why this fails"
+✅ "I'll create a minimal test case to isolate the issue"
+✅ "Let me verify the API contract to ensure correct usage"
+✅ "I'll check the compilation error details to find the exact problem"
+
+WHY THIS MATTERS:
+- Removing broken code hides problems instead of solving them
+- "Simplifying" often means abandoning requirements
+- Features exist for a reason - debug first, remove only with justification
+- Test passing without code suggests the code may be working but test is wrong
+
+CORRECT APPROACH:
+1. Identify the specific error/failure
+2. Add targeted debug output to understand behavior
+3. Form hypothesis about root cause
+4. Test hypothesis with minimal changes
+5. Fix the actual problem
+6. Verify fix with tests
+
+Reference: CLAUDE.md "LONG-TERM SOLUTION PERSISTENCE" and "GIVING UP DETECTION PATTERNS"
 </system-reminder>
 REMINDER
 fi
