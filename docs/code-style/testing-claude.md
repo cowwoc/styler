@@ -27,9 +27,9 @@ This document contains testing patterns and detection rules optimized for Claude
 - Test method creating instances locally
 
 ### Test Naming and Structure
-- `@Test\s*public\s+void\s+\w+_\w+_\w+\(\)`
-- `parseExpression_withInvalidToken_throwsParseException`
-- `method_condition_expectedResult` pattern
+- `@Test\s*public\s+void\s+[a-z][a-zA-Z0-9]*\(\)`
+- `parseExpressionWithInvalidTokenThrowsParseException`
+- `methodConditionExpectedResult` pattern
 
 ### Test Categories and Organization
 - `@Test\s*\(.*groups\s*=\s*\{.*"(unit|integration|performance|fast|slow)".*\}`
@@ -62,24 +62,24 @@ This document contains testing patterns and detection rules optimized for Claude
 - `// BUG RISK:` (bug probability assessment)
 
 ### Priority 1: Business Logic Scenarios
-- `mergeConfigs.*_.*_.*\(\)` (config merge business logic)
-- `parseToml_withInvalidBusinessRule_rejectsClearly`
+- `mergeConfigs[A-Z][a-zA-Z0-9]*\(\)` (config merge business logic)
+- `parseTomlWithInvalidBusinessRuleRejectsClearly`
 - Business rule validation tests
 - User workflow validation
 
 ### Priority 2: Happy Path Validation
-- `parseToml_withValidConfig_returnsCorrectObject`
+- `parseTomlWithValidConfigReturnsCorrectObject`
 - Standard use case validation
 - Core feature validation
 
 ### Priority 3: Edge Cases
-- `parseToml_withMaxBoundaryValue_`
-- `loadConfig_withConcurrentAccess_`
+- `parseTomlWithMaxBoundaryValue[A-Z]`
+- `loadConfigWithConcurrentAccess[A-Z]`
 - Boundary value tests
 - Concurrency tests
 
 ### Priority 4: Error Handling
-- `parseToml_withMalformedSyntax_providesActionableError`
+- `parseTomlWithMalformedSyntaxProvidesActionableError`
 - `try\s*\{[^}]*parser\.parse\([^)]*\);[^}]*fail\(.*Expected`
 - Error message validation
 - Actionable error patterns
@@ -90,7 +90,7 @@ This document contains testing patterns and detection rules optimized for Claude
 - Tests without business logic validation
 
 ### Risk-Driven Testing Best Practices
-- `discoverConfig_withGitBoundary_stopsAtRepositoryRoot`
+- `discoverConfigWithGitBoundaryStopsAtRepositoryRoot`
 - Repository boundary validation
 - Critical business rule tests
 - User workflow impact tests
