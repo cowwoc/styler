@@ -76,7 +76,56 @@
 
 ---
 
-## 2025-10-09
+### Task: `implement-toml-configuration` - TOML-based configuration system with hierarchical discovery ✅
+
+**Completion Date**: 2025-10-09
+**Commit**: b08feaf844420abf976a2fdf1e2d22b262ca9a61
+
+**Solution Implemented**:
+- Complete TOML configuration system with field-level merge precedence
+- Hierarchical file discovery: current dir → parents (stop at .git) → ~/.styler.toml → /etc/.styler.toml
+- Thread-safe caching using ConcurrentHashMap with canonical path keys
+- Immutable configuration objects with builder pattern for Optional tracking
+- Jackson TOML integration with fluent API (@JsonSetter/@JsonGetter annotations)
+- Security: 1MB file size limit, 100-level directory traversal depth limit
+- ConfigurationLoader public facade integrating discovery, parsing, merging, and caching
+
+**Components Created**:
+- Config (record): Immutable configuration with validation
+- ConfigBuilder: Builder with Optional field tracking for merge support
+- ConfigParser: Jackson TOML parser with file size validation
+- ConfigDiscovery: Hierarchical file search with git boundary detection
+- ConfigMerger: Field-level precedence merging (nearest config wins per field)
+- ConfigurationCache: Thread-safe caching with toRealPath() for symlink handling
+- ConfigurationLoader: Public API facade for complete load workflow
+
+**Files Created** (20 files):
+- config/pom.xml - Module definition with Jackson TOML dependency
+- config/src/main/java/io/github/cowwoc/styler/config/*.java (7 files)
+- config/src/main/java/module-info.java - JPMS module descriptor
+- config/src/test/java/io/github/cowwoc/styler/config/test/*.java (4 files)
+- config/src/test/java/module-info.java - Test module descriptor
+- docs/project/configuration-guide.md - User-facing configuration documentation
+- README.md - Updated with configuration reference
+
+**Test Results**:
+- ✅ 21 tests passing (ConfigParserTest: 9/9, ConfigMergerTest: 7/7, ConfigDiscoveryTest: 5/5)
+- ✅ BUILD SUCCESS
+- ✅ Checkstyle: 0 violations
+- ✅ PMD: 0 violations
+
+**Quality Reviews**:
+- ✅ technical-architect: APPROVED - Clean architecture, proper separation of concerns
+- ✅ security-auditor: APPROVED - Resource exhaustion protections in place
+- ✅ build-validator: APPROVED - All tests and quality gates passing
+- ✅ style-auditor: APPROVED - Style compliance verified
+- ✅ code-quality-auditor: APPROVED - No duplication, best practices followed
+
+**Scope**: Foundation module for configuration loading - used by CLI and file processor
+
+**Next Steps**: Task A2 complete, Phase A continues with A1, A3, A4
+
+---
 
 ### Task: `setup-maven-multi-module-build` - Create Maven parent POM and module structure ✅
 
