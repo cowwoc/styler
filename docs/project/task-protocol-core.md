@@ -60,6 +60,80 @@ Before REVIEW → COMPLETE:
 - [ ] Did the user explicitly approve proceeding to finalization?
 - [ ] Did I assume approval from agent consensus alone? (VIOLATION if yes)
 
+### 🛑 MANDATORY STOP POINT - USER APPROVAL CHECKPOINT #2
+
+**YOU MUST STOP HERE** after completing REVIEW state and receiving unanimous stakeholder approval.
+
+**DO NOT PROCEED TO COMPLETE STATE** until you have:
+
+1. ✅ **COMMITTED** all changes to task branch
+2. ✅ **RECORDED** commit SHA for user reference
+3. ✅ **PRESENTED** change summary to user including:
+   - Commit SHA
+   - Files modified (git show --stat)
+   - Key implementation decisions
+   - Test results (all passing)
+   - Quality gates status (checkstyle, PMD, build)
+4. ✅ **WAITED** for explicit user approval message
+5. ✅ **RECEIVED** approval keywords: "approved", "LGTM", "looks good", "proceed"
+
+**PROHIBITED ACTIONS AT THIS CHECKPOINT:**
+❌ Proceeding to COMPLETE state autonomously
+❌ Assuming approval from stakeholder consensus
+❌ Interpreting silence as approval
+❌ Skipping checkpoint due to bypass mode
+❌ Treating "continue" without approval context as approval
+
+**REQUIRED PATTERN:**
+```
+All stakeholder agents have approved the implementation.
+
+**Commit SHA**: [commit-sha]
+**Files changed**: [list]
+**Implementation summary**: [key decisions]
+**Test results**: [all passing]
+**Quality gates**: [checkstyle: PASS, PMD: PASS, build: SUCCESS]
+
+Please review these changes. Would you like me to proceed with finalizing (COMPLETE → CLEANUP)?
+```
+
+**WAIT** for user response before ANY further action.
+
+**ENFORCEMENT**: The `enforce-user-approval.sh` hook will block COMPLETE state transition if approval marker file does not exist.
+
+### Automated Checkpoint Enforcement
+
+**HOOK-BASED ENFORCEMENT**: The `enforce-user-approval.sh` hook actively prevents transitioning to COMPLETE state without user approval.
+
+**Approval Marker File**: `/workspace/branches/{task-name}/user-approval-obtained.flag`
+- Automatically created when user provides explicit approval
+- Required for COMPLETE state transition
+- Automatically removed during CLEANUP
+
+**Approval Detection Patterns** (hook recognizes these as approval):
+- User message contains approval keywords: "yes", "approved", "approve", "proceed", "looks good", "LGTM"
+- AND message references review context: "review", "changes", "commit", "finalize"
+
+**Blocked Transition Patterns** (hook prevents these):
+- Any "continue" instruction during REVIEW state without approval marker
+- Direct transition attempt to COMPLETE without approval marker
+- Interpretation of non-approval messages as implicit approval
+
+**How It Works**:
+1. Hook monitors UserPromptSubmit events
+2. When in REVIEW state and user says "continue/proceed/finalize"
+3. Hook checks for approval marker file
+4. If marker missing AND message is not explicit approval → Block with checkpoint reminder
+5. If message IS explicit approval → Create marker, allow continuation
+6. If marker exists → Allow COMPLETE state transition
+
+**Why User Instructions Don't Override**:
+The hook enforces protocol requirements regardless of user instructions because:
+- Protocol line 36: "MANDATORY REGARDLESS of bypass mode or automation mode"
+- Checkpoints protect against unintentional skipping
+- User approval is a quality gate, not a permission gate
+- Even "continue without asking" cannot bypass safety checkpoints
+
 ### State Transitions
 Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS.**
 
