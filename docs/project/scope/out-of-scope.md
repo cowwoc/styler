@@ -83,6 +83,7 @@
 - **Incremental builds** - No build system incremental compilation integration
 - **Multi-module coordination** - Process files independently, no cross-module formatting rules
 - **Custom build phases** - Standard formatting only, no custom build phase integration
+- **Non-standard Maven properties** - Avoid `${maven.multiModuleProjectDirectory}` and other non-standard properties subject to future removal
 
 ## Transformation Context API Simplifications
 - **Complex authorization frameworks** - Rules run sequentially and should transform freely

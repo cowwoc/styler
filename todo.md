@@ -2,18 +2,15 @@
 
 ## 🚀 READY TO WORK NOW (Multi-Instance Coordination)
 
-**Current Status**: All tasks blocked until A0 completes
+**Current Status**: A0 complete! Phase A tasks now available
 
-**IMMEDIATE ACTION REQUIRED**:
-- **A0: Build System Setup** ← START HERE (no dependencies, blocks everything else)
+**READY TO START** (4 parallel instances possible):
+- A1: AST Parser Foundation ← 5-7 days, implements Index-Overlay parser
+- A2: TOML Configuration ← 2-3 days, implements config system
+- A3: CLI Arguments ← 1-2 days, implements argument parsing
+- A4: Security Framework ← 2-3 days, implements security controls
 
-**After A0 Completes** (4 parallel instances possible):
-- A1: AST Parser Foundation
-- A2: TOML Configuration
-- A3: CLI Arguments
-- A4: Security Framework
-
-**Phase B/C/D**: Blocked until Phase A completes
+**Phase B/C/D**: Blocked until all Phase A tasks (A1-A4) complete
 
 ---
 
@@ -68,32 +65,9 @@
 
 **Coordination**: A0 must complete first. After A0, tasks A1-A4 can run in parallel (4 instances possible).
 
-### A0. Build System Setup
-- [ ] **READY:** `setup-maven-multi-module-build` - Create Maven parent POM and module structure
-  - **Dependencies**: None (START HERE FIRST)
-  - **Blocks**: A1, A2, A3, A4 (all Phase A tasks), entire Phase B/C/D
-  - **Parallelizable With**: None (must complete before anything else)
-  - **Estimated Effort**: 1 day
-  - **Purpose**: Establish build infrastructure for all subsequent tasks
-  - **Scope**: Parent POM with nested module structure for logical grouping
-  - **Module Structure**:
-    - `styler-parent/` (root POM with dependency management, Java 25 runtime required, JPMS support, NO preview features per out-of-scope.md)
-      - `styler-ast/` (parent POM)
-        - `styler-ast-core/` (AST node hierarchy)
-      - `styler-parser/` (parser implementation)
-      - `styler-config/` (configuration system)
-      - `styler-security/` (security framework)
-      - `styler-formatter/` (parent POM)
-        - `styler-formatter-api/` (FormattingRule interfaces)
-        - `styler-formatter-impl/` (concrete rule implementations)
-      - `styler-cli/` (CLI entry point)
-  - **Integration**: All subsequent tasks output to appropriate modules
-  - **Quality**: Proper JPMS module structure, dependency isolation, checkstyle/PMD integration
-  - **Estimated Effort**: 1 day
-
 ### A1. AST Parser Foundation
-- [ ] **BLOCKED:** `implement-index-overlay-parser` - Index-Overlay AST parser for JDK 25
-  - **Dependencies**: A0 (build system - need styler-parser, styler-ast-core modules)
+- [ ] **READY:** `implement-index-overlay-parser` - Index-Overlay AST parser for JDK 25
+  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-parser, styler-ast-core modules)
   - **Blocks**: B2 (pipeline), all formatters (B1, C3), C4 (concurrency benchmark)
   - **Parallelizable With**: A2, A3, A4 (after A0 completes)
   - **Estimated Effort**: 5-7 days
@@ -118,8 +92,8 @@
   - **Estimated Effort**: 5-7 days
 
 ### A2. Configuration System
-- [ ] **BLOCKED:** `implement-toml-configuration` - TOML-based configuration with file discovery
-  - **Dependencies**: A0 (build system - need styler-config module)
+- [ ] **READY:** `implement-toml-configuration` - TOML-based configuration with file discovery
+  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-config module)
   - **Blocks**: B2 (pipeline), B5 (CLI integration)
   - **Parallelizable With**: A1, A3, A4 (after A0 completes)
   - **Estimated Effort**: 2-3 days
@@ -136,8 +110,8 @@
   - **Estimated Effort**: 2-3 days
 
 ### A3. CLI Argument Parsing
-- [ ] **BLOCKED:** `implement-cli-arguments` - Command-line argument parsing without file processing
-  - **Dependencies**: A0 (build system - need styler-cli module)
+- [ ] **READY:** `implement-cli-arguments` - Command-line argument parsing without file processing
+  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-cli module)
   - **Blocks**: B5 (CLI integration)
   - **Parallelizable With**: A1, A2, A4 (after A0 completes)
   - **Estimated Effort**: 1-2 days
@@ -153,8 +127,8 @@
   - **Estimated Effort**: 1-2 days
 
 ### A4. Security Framework
-- [ ] **BLOCKED:** `implement-security-controls` - Essential security for CLI tool
-  - **Dependencies**: A0 (build system - need styler-security module)
+- [ ] **READY:** `implement-security-controls` - Essential security for CLI tool
+  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-security module)
   - **Blocks**: B2 (pipeline), C1 (file discovery)
   - **Parallelizable With**: A1, A2, A3 (after A0 completes)
   - **Estimated Effort**: 2-3 days
