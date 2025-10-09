@@ -54,6 +54,47 @@ This document contains testing patterns and detection rules optimized for Claude
 - `requireThat\(.*\)\.` assertions
 - Instance creation within test methods
 
+### Risk-Based Test Coverage Philosophy
+- `// RISK:.*→` (business risk documentation)
+- `// IMPACT:.*-` (impact assessment)
+- `// BUSINESS RULE:` (business rule validation)
+- `// USER IMPACT:` (user workflow impact)
+- `// BUG RISK:` (bug probability assessment)
+
+### Priority 1: Business Logic Scenarios
+- `mergeConfigs.*_.*_.*\(\)` (config merge business logic)
+- `parseToml_withInvalidBusinessRule_rejectsClearly`
+- Business rule validation tests
+- User workflow validation
+
+### Priority 2: Happy Path Validation
+- `parseToml_withValidConfig_returnsCorrectObject`
+- Standard use case validation
+- Core feature validation
+
+### Priority 3: Edge Cases
+- `parseToml_withMaxBoundaryValue_`
+- `loadConfig_withConcurrentAccess_`
+- Boundary value tests
+- Concurrency tests
+
+### Priority 4: Error Handling
+- `parseToml_withMalformedSyntax_providesActionableError`
+- `try\s*\{[^}]*parser\.parse\([^)]*\);[^}]*fail\(.*Expected`
+- Error message validation
+- Actionable error patterns
+
+### Metric-Driven Testing Anti-Patterns
+- `testGetterReturnsField\(\)` (coverage-only test)
+- `testPrivateHelperMethodLogic\(\)` (implementation detail test)
+- Tests without business logic validation
+
+### Risk-Driven Testing Best Practices
+- `discoverConfig_withGitBoundary_stopsAtRepositoryRoot`
+- Repository boundary validation
+- Critical business rule tests
+- User workflow impact tests
+
 ---
 
 ## 📋 VALIDATION RULES
@@ -63,17 +104,26 @@ This document contains testing patterns and detection rules optimized for Claude
 2. Parallel Safety - No shared mutable state
 3. Isolation - Instance creation per test method
 4. Thread Safety - Stateless utilities only
+5. Risk Documentation - Business risk, impact, and bug risk comments
 
-**Standard Requirements:**  
+**Standard Requirements:**
 1. Naming Convention - `method_condition_expectedResult`
 2. Test Organization - TestNG groups for categorization
 3. Builder Pattern - For complex test data creation
 4. Resource Management - Read-only external data
+5. Test Prioritization - Business logic > Happy path > Edge cases > Error handling
+
+**Risk-Based Testing Requirements:**
+1. Business Logic First - Critical workflows validated before edge cases
+2. Risk Documentation - All high-priority tests document RISK, IMPACT, BUSINESS RULE
+3. Bug Prevention Focus - Tests target real user-impacting bugs, not coverage metrics
+4. Regression Tests - Every discovered bug gets a dedicated regression test
+5. Actionable Errors - Error handling tests validate error message usefulness
 
 **Detection Priority:**
-- 🔴 CRITICAL: Parallel test violations, JPMS structure
-- 🟡 STANDARD: Naming conventions, organization patterns
-- 🟢 OPTIONAL: Advanced patterns, optimizations
+- 🔴 CRITICAL: Parallel test violations, JPMS structure, missing business logic tests
+- 🟡 STANDARD: Naming conventions, organization patterns, risk documentation
+- 🟢 OPTIONAL: Advanced patterns, optimizations, coverage-only tests
 
 ---
 
