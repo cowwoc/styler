@@ -68,29 +68,6 @@
 
 **Coordination**: A0 must complete first. After A0, tasks A1-A4 can run in parallel (4 instances possible).
 
-### A0. Build System Setup
-- [ ] **READY:** `setup-maven-multi-module-build` - Create Maven parent POM and module structure
-  - **Dependencies**: None (START HERE FIRST)
-  - **Blocks**: A1, A2, A3, A4 (all Phase A tasks), entire Phase B/C/D
-  - **Parallelizable With**: None (must complete before anything else)
-  - **Estimated Effort**: 1 day
-  - **Purpose**: Establish build infrastructure for all subsequent tasks
-  - **Scope**: Parent POM with nested module structure for logical grouping
-  - **Module Structure**:
-    - `styler-parent/` (root POM with dependency management, Java 25 runtime required, JPMS support, NO preview features per out-of-scope.md)
-      - `styler-ast/` (parent POM)
-        - `styler-ast-core/` (AST node hierarchy)
-      - `styler-parser/` (parser implementation)
-      - `styler-config/` (configuration system)
-      - `styler-security/` (security framework)
-      - `styler-formatter/` (parent POM)
-        - `styler-formatter-api/` (FormattingRule interfaces)
-        - `styler-formatter-impl/` (concrete rule implementations)
-      - `styler-cli/` (CLI entry point)
-  - **Integration**: All subsequent tasks output to appropriate modules
-  - **Quality**: Proper JPMS module structure, dependency isolation, checkstyle/PMD integration
-  - **Estimated Effort**: 1 day
-
 ### A1. AST Parser Foundation
 - [ ] **BLOCKED:** `implement-index-overlay-parser` - Index-Overlay AST parser for JDK 25
   - **Dependencies**: A0 (build system - need styler-parser, styler-ast-core modules)
