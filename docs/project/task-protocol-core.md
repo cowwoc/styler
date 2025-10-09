@@ -923,12 +923,23 @@ PROHIBITED:
 - [ ] Implementation follows synthesis architecture plan
 - [ ] Code adheres to project conventions and patterns
 - [ ] All requirements from synthesis addressed or deferred with justification
+- [ ] **🚨 CRITICAL: All implementation changes COMMITTED to task branch before validation**
 
 **Evidence Required:**
-- Git diff showing all implemented changes
-- File creation/modification timestamps
+- Git commit showing all implemented changes (with commit SHA)
 - Implementation matches synthesis plan
 - Any requirement deferrals properly documented in todo.md
+
+**COMMIT REQUIREMENT**:
+```bash
+# Commit all implementation changes BEFORE running validation
+git add [implementation files]
+git commit -m "Implementation message with Claude attribution"
+# Record commit SHA for user review
+git rev-parse HEAD
+```
+
+**RATIONALE**: Stakeholder agents in REVIEW state review COMMITTED code, not working directory changes. User approval checkpoint requires commit SHA for review. Committing after agent approval creates confusion about what was reviewed.
 
 ### VALIDATION → REVIEW (Conditional Path)
 **Path Selection Logic:**
