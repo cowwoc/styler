@@ -1,14 +1,18 @@
 #!/bin/bash
-# Verify task archival requirements before Phase 7 commit
+# Verify task archival requirements after COMPLETE state
 #
 # Usage: bash .claude/hooks/verify-task-archival.sh [task-name]
 #
-# If task-name is not provided, auto-detects from current worktree path.
-#
-# This script verifies that a completed task has been properly archived:
+# This script runs ONCE after COMPLETE state if archival was skipped.
+# It verifies that a completed task has been properly archived:
 # 1. Task REMOVED from todo.md (entire entry deleted)
 # 2. Task ADDED to changelog.md (under today's date)
 # 3. Both files staged for commit
+#
+# TRIGGER CONDITIONS:
+# - Lock file exists with state="CLEANUP" (transitioning from COMPLETE)
+# - Archival marker file does NOT exist
+# - Task still present in todo.md (archival was skipped)
 
 set -e
 
@@ -24,6 +28,31 @@ if [ -z "$TASK_NAME" ]; then
         # Exit silently (status 0) to avoid blocking non-archival edits to todo.md/changelog.md
         exit 0
     fi
+fi
+
+# Check if archival marker exists - if so, verification already ran
+MARKER_FILE="/tmp/.archival-verified-${TASK_NAME}"
+if [ -f "$MARKER_FILE" ]; then
+    # Already verified for this task - exit silently
+    exit 0
+fi
+
+# Check if we're in CLEANUP state (after COMPLETE)
+LOCK_FILE="/workspace/locks/${TASK_NAME}.json"
+if [ ! -f "$LOCK_FILE" ]; then
+    # No lock file - task may have already completed cleanup
+    # Exit silently - archival check not needed
+    exit 0
+fi
+
+# Extract current state from lock file
+LOCK_STATE=$(grep -oP '"state":\s*"\K[^"]+' "$LOCK_FILE" 2>/dev/null || echo "")
+
+# Only run verification if in CLEANUP state (after COMPLETE)
+if [ "$LOCK_STATE" != "CLEANUP" ]; then
+    # Not in CLEANUP state yet - archival happens during COMPLETE→CLEANUP transition
+    # Exit silently - archival check not needed yet
+    exit 0
 fi
 
 # Determine base directory (handle both worktree and main execution)
@@ -45,112 +74,56 @@ else
     exit 1
 fi
 
-# Check 1: Task REMOVED from todo.md
-if grep -q "$TASK_NAME" "$BASE_DIR/todo.md"; then
-    FOUND_AT=$(grep -n "$TASK_NAME" "$BASE_DIR/todo.md" | head -3 | sed 's/^/  Line /')
+# Check if task still exists in todo.md (archival was skipped)
+if ! grep -q "$TASK_NAME" "$BASE_DIR/todo.md"; then
+    # Task already removed from todo.md - archival was completed
+    # Create marker to prevent re-running and exit silently
+    touch "$MARKER_FILE"
+    exit 0
+fi
 
-    MESSAGE="## ❌ TASK ARCHIVAL VIOLATION
+# ARCHIVAL WAS SKIPPED - Run verification checks
+FOUND_AT=$(grep -n "$TASK_NAME" "$BASE_DIR/todo.md" | head -3 | sed 's/^/  Line /')
+
+MESSAGE="## ❌ TASK ARCHIVAL VIOLATION
 
 **Task**: \`$TASK_NAME\`
-**Problem**: Task still exists in todo.md
+**State**: CLEANUP (archival should have occurred during COMPLETE state)
+**Problem**: Task still exists in todo.md - archival was skipped
 
-**Requirement**: Tasks must be DELETED from todo.md, not marked complete
+**Requirement**: Tasks must be DELETED from todo.md and ADDED to changelog.md during COMPLETE state
 
 **Found at**:
 $FOUND_AT
 
-**Correct Archival Process**:
+**Correct Archival Process (COMPLETE State)**:
 1. DELETE entire task entry from todo.md
 2. ADD task to changelog.md under ## $(date +%Y-%m-%d)
-3. Commit both changes together
+3. Commit both changes together with implementation in single atomic commit
 
-See CLAUDE.md 'CRITICAL TASK ARCHIVAL' section for complete requirements."
-
-    echo "{
-      \"hookSpecificOutput\": {
-        \"hookEventName\": \"PostToolUse\",
-        \"additionalContext\": $(echo "$MESSAGE" | jq -Rs .)
-      }
-    }"
-    exit 1
-fi
-
-# Check 2: Task ADDED to changelog.md
-if [ ! -f "$BASE_DIR/changelog.md" ]; then
-    echo "# Changelog" > "$BASE_DIR/changelog.md"
-    echo "" >> "$BASE_DIR/changelog.md"
-    echo "## $(date +%Y-%m-%d)" >> "$BASE_DIR/changelog.md"
-fi
-
-if ! grep -q "$TASK_NAME" "$BASE_DIR/changelog.md"; then
-    MESSAGE="## ❌ TASK ARCHIVAL VIOLATION
-
-**Task**: \`$TASK_NAME\`
-**Problem**: Task not found in changelog.md
-
-**Requirement**: Tasks must be ADDED to changelog.md under today's date
-
-**Expected format**:
-\`\`\`markdown
-## $(date +%Y-%m-%d)
-- **\`$TASK_NAME\`** - Task description ✅ COMPLETED
-  - Solution: Brief description of what was implemented
-  - Files: List of key files modified
-  - Tests: Test results summary
-\`\`\`
-
-**Correct Archival Process**:
-1. DELETE entire task entry from todo.md
-2. ADD task to changelog.md under ## $(date +%Y-%m-%d)
-3. Commit both changes together
-
-See CLAUDE.md 'CRITICAL TASK ARCHIVAL' section for complete requirements."
-
-    echo "{
-      \"hookSpecificOutput\": {
-        \"hookEventName\": \"PostToolUse\",
-        \"additionalContext\": $(echo "$MESSAGE" | jq -Rs .)
-      }
-    }"
-    exit 1
-fi
-
-# Check 3: Both files staged in git (if in git repo)
-if [ -d "$BASE_DIR/.git" ] || git rev-parse --git-dir > /dev/null 2>&1; then
-    WARNINGS=""
-
-    if ! git diff --cached --name-only | grep -q "todo.md"; then
-        WARNINGS="${WARNINGS}\n⚠️  todo.md not staged - did you forget to git add it?"
-    fi
-
-    if ! git diff --cached --name-only | grep -q "changelog.md"; then
-        WARNINGS="${WARNINGS}\n⚠️  changelog.md not staged - did you forget to git add it?"
-    fi
-
-    if [ -n "$WARNINGS" ]; then
-        MESSAGE="## ⚠️  TASK ARCHIVAL WARNING
-
-**Task**: \`$TASK_NAME\`
-**Problem**: Files not staged for commit
-$WARNINGS
-
-**Action Required**:
+**Recovery Steps**:
 \`\`\`bash
+# 1. Remove task from todo.md (delete entire entry)
+# 2. Add task to changelog.md with completion details
+# 3. Stage both files
 git add todo.md changelog.md
-git commit -m \"Complete task: $TASK_NAME\"
+
+# 4. Amend the COMPLETE commit to include archival
+git commit --amend --no-edit
 \`\`\`
 
-**Both files must be committed together** to maintain archival integrity."
+See CLAUDE.md 'CRITICAL TASK ARCHIVAL' section for complete requirements.
 
-        echo "{
-          \"hookSpecificOutput\": {
-            \"hookEventName\": \"PostToolUse\",
-            \"additionalContext\": $(echo "$MESSAGE" | jq -Rs .)
-          }
-        }"
-        # Don't exit with error - this is just a warning
-    fi
-fi
+**Note**: This verification runs once during CLEANUP state to catch missed archival."
 
-# Success - exit silently
-exit 0
+echo "{
+  \"hookSpecificOutput\": {
+    \"hookEventName\": \"PostToolUse\",
+    \"additionalContext\": $(echo "$MESSAGE" | jq -Rs .)
+  }
+}"
+
+# Create marker to prevent re-running this verification
+touch "$MARKER_FILE"
+
+exit 1
