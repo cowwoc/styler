@@ -103,6 +103,77 @@ if [ ! -d "$TASK_WORKTREE" ]; then
   exit 0
 fi
 
+# Check for AWAITING_USER_APPROVAL checkpoint state
+if [ "$TASK_STATE" = "AWAITING_USER_APPROVAL" ]; then
+  # Extract checkpoint details
+  COMMIT_SHA=$(jq -r '.checkpoint.commit_sha // "unknown"' "$LOCK_FILE" 2>/dev/null)
+  CHECKPOINT_APPROVED=$(jq -r '.checkpoint.approved // false' "$LOCK_FILE" 2>/dev/null)
+
+  MESSAGE="## 🚨 CHECKPOINT ACTIVE - USER APPROVAL REQUIRED
+
+**Task**: \`$TASK_NAME\`
+**Current State**: \`AWAITING_USER_APPROVAL\` ⏸️
+**Lock File**: \`$LOCK_FILE\`
+**Worktree**: \`$TASK_WORKTREE\`
+**Commit Presented**: \`$COMMIT_SHA\`
+**Approval Status**: \`$CHECKPOINT_APPROVED\`
+
+## ⚠️ CRITICAL - MANDATORY USER APPROVAL CHECKPOINT
+
+The implementation has been completed and changes have been committed.
+**YOU ARE AT CHECKPOINT 2** - This state exists because:
+1. All stakeholder agents returned ✅ APPROVED
+2. Implementation commit was created with SHA: \`$COMMIT_SHA\`
+3. Changes were presented to user for review
+4. **WAITING FOR USER APPROVAL** before proceeding to merge
+
+## 🔴 REQUIRED ACTION - DO NOT BYPASS
+
+**You MUST:**
+1. Navigate to task worktree: \`cd $TASK_WORKTREE\`
+2. Show the commit to remind user: \`git show --stat $COMMIT_SHA\`
+3. Show the diff: \`git diff ${COMMIT_SHA}~1 $COMMIT_SHA\`
+4. Present implementation summary to user
+5. **WAIT for explicit user approval** (\"Approved\", \"LGTM\", \"Proceed\")
+
+**PROHIBITED:**
+❌ Proceeding to COMPLETE state without user approval
+❌ Assuming \"continue\" means approval
+❌ Bypassing checkpoint because agent approvals exist
+❌ Interpreting silence as approval
+❌ Treating bypass mode as checkpoint override
+
+## 🛑 ENFORCEMENT
+
+This checkpoint is **MANDATORY REGARDLESS** of:
+- Bypass mode settings
+- Automation mode
+- User instructions to \"continue\" or \"finish\"
+- Previous context or conversation
+
+**ONLY explicit approval words allow Phase 7 transition:**
+✅ \"Approved\" / \"LGTM\" / \"Looks good\" / \"Proceed\" / \"Yes, merge it\"
+
+## Navigation Commands
+
+\`\`\`bash
+cd $TASK_WORKTREE
+git show --stat $COMMIT_SHA
+git diff ${COMMIT_SHA}~1 $COMMIT_SHA
+\`\`\`"
+
+  jq -n \
+    --arg event "SessionStart" \
+    --arg context "$MESSAGE" \
+    '{
+      "hookSpecificOutput": {
+        "hookEventName": $event,
+        "additionalContext": $context
+      }
+    }'
+  exit 0
+fi
+
 MESSAGE="## ⚠️ ACTIVE TASK DETECTED
 
 **Task**: \`$TASK_NAME\`
