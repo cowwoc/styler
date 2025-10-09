@@ -99,7 +99,7 @@ public class BadTestWithTempFiles
 public class JavaParserTest
 {
 	@Test
-	public void parseClass_withValidInput_returnsExpectedAST()
+	public void parseClassWithValidInputReturnsExpectedAST()
 	{
 		// ✅ Create all required objects inside each test method
 		JavaParser parser = new JavaParser();
@@ -115,7 +115,7 @@ public class JavaParserTest
 	}
 
 	@Test
-	public void parseMethod_withComplexSyntax_handlesCorrectly()
+	public void parseMethodWithComplexSyntaxHandlesCorrectly()
 	{
 		// ✅ Each test creates its own isolated instances
 		JavaParser parser = new JavaParser();
@@ -225,19 +225,19 @@ public class BadTestConstants
 ### Test Naming and Structure
 
 ```java
-// ✅ Descriptive test method names using pattern: method_condition_expectedResult
+// ✅ Descriptive test method names using pattern: methodConditionExpectedResult
 @Test
-public void parseExpression_withInvalidToken_throwsParseException()
+public void parseExpressionWithInvalidTokenThrowsParseException()
 {
 }
 
 @Test
-public void parseExpression_withValidSyntax_returnsCorrectAST()
+public void parseExpressionWithValidSyntaxReturnsCorrectAST()
 {
 }
 
 @Test
-public void formatCode_withMaxLineLength_breaksAtCorrectPosition()
+public void formatCodeWithMaxLineLengthBreaksAtCorrectPosition()
 {
 }
 ```
@@ -249,7 +249,7 @@ public void formatCode_withMaxLineLength_breaksAtCorrectPosition()
 public class JavaParserTest
 {
 	@Test(groups = {"unit", "fast"})
-	public void parseBasicExpression_withValidInput_returnsCorrectAST()
+	public void parseBasicExpressionWithValidInputReturnsCorrectAST()
 	{
 		// ✅ Instance created per test
 		JavaParser parser = new JavaParser();
@@ -257,7 +257,7 @@ public class JavaParserTest
 	}
 
 	@Test(groups = {"integration", "slow"})
-	public void parseComplexFile_withRealCode_matchesExpectedStructure()
+	public void parseComplexFileWithRealCodeMatchesExpectedStructure()
 	{
 		// ✅ Isolated instance
 		JavaParser parser = new JavaParser();
@@ -265,7 +265,7 @@ public class JavaParserTest
 	}
 
 	@Test(groups = {"performance"})
-	public void parseFile_withLargeCodebase_completesWithinTimeLimit()
+	public void parseFileWithLargeCodebaseCompletesWithinTimeLimit()
 	{
 		// ✅ Isolated instance
 		JavaParser parser = new JavaParser();
@@ -309,7 +309,7 @@ public class PersonTestBuilder
 
 // ✅ Parallel-safe usage: Each test creates its own instances
 @Test
-public void parseClass_withComplexStructure_buildsCorrectAST()
+public void parseClassWithComplexStructureBuildsCorrectAST()
 {
 	// ✅ Each test method creates its own parser and data
 	JavaParser parser = new JavaParser();
@@ -324,7 +324,7 @@ public void parseClass_withComplexStructure_buildsCorrectAST()
 }
 
 @Test
-public void formatCode_withLongLines_breaksAtSemanticBoundaries()
+public void formatCodeWithLongLinesBreaksAtSemanticBoundaries()
 {
 	// ✅ Completely isolated from other tests
 	CodeFormatter formatter = new CodeFormatter();
@@ -375,7 +375,7 @@ public class TestUtils
 ```java
 // ✅ Resource files are parallel-safe (read-only operations)
 @Test
-public void parseClass_withTestDataFromFile_matchesExpectedResults() throws IOException
+public void parseClassWithTestDataFromFileMatchesExpectedResults() throws IOException
 {
 	// ✅ Each test creates its own parser instance
 	JavaParser parser = new JavaParser();
@@ -395,7 +395,7 @@ public void parseClass_withTestDataFromFile_matchesExpectedResults() throws IOEx
 
 // ✅ Example of parallel-safe parameterized-style testing
 @Test
-public void parseExpression_withVariousSyntax_parsesCorrectly()
+public void parseExpressionWithVariousSyntaxParsesCorrectly()
 {
 	// ✅ Create test data as local variables (no shared state)
 	JavaParser parser = new JavaParser();
@@ -431,6 +431,216 @@ Before submitting any test class, verify:
 - [ ] **All shared constants** are truly immutable (`static final` primitives/strings)
 - [ ] **Resource loading** uses only read-only operations
 - [ ] **External dependencies** (databases, files) use unique identifiers per test if needed
+
+---
+
+## 🎯 RISK-BASED TEST COVERAGE PHILOSOPHY
+
+### Red-Blue Team Testing Approach
+
+**CRITICAL PRINCIPLE**: Prioritize **business risk coverage** over metric-driven coverage targets (e.g., "95% line coverage"). The goal is **bug prevention effectiveness**, not coverage percentages.
+
+**Test Priority Hierarchy** (inspired by security Red-Blue team methodology):
+
+#### Priority 1: BUSINESS LOGIC SCENARIOS (Red Team - Attack Surface)
+**Focus**: What breaks critical user workflows and business rules?
+
+```java
+// ✅ HIGH PRIORITY: Tests critical business logic
+@Test
+public void mergeConfigsProjectOverridesUserNearestConfigWins()
+{
+	// RISK: Wrong precedence → user sets global config but project ignores it
+	// IMPACT: High - violates user's mental model, breaks configuration hierarchy
+	// BUSINESS RULE: Nearest config file always wins for conflicting fields
+
+	Config userConfig = parseConfig("~/.styler.toml", "maxLineLength = 100");
+	Config projectConfig = parseConfig("project/.styler.toml", "maxLineLength = 120");
+
+	Config merged = merger.merge(userConfig, projectConfig);
+
+	requireThat(merged.getMaxLineLength(), "maxLineLength").isEqualTo(120);
+}
+
+@Test
+public void parseTomlWithInvalidBusinessRuleRejectsClearly()
+{
+	// RISK: Silent acceptance of invalid config → user confusion when formatter behaves unexpectedly
+	// IMPACT: High - data corruption, incorrect formatting, user trust damage
+	// BUSINESS RULE: maxLineLength must be positive (1-500 range)
+
+	try
+	{
+		parser.parse("maxLineLength = -1");
+		fail("Expected IllegalArgumentException for negative maxLineLength");
+	}
+	catch (IllegalArgumentException e)
+	{
+		// Verify error message guides user to fix
+		requireThat(e.getMessage(), "errorMessage").contains("maxLineLength");
+		requireThat(e.getMessage(), "errorMessage").contains("must be positive");
+		requireThat(e.getMessage(), "errorMessage").contains("Received: -1");
+	}
+}
+```
+
+#### Priority 2: HAPPY PATH VALIDATION
+**Focus**: Core features work correctly for typical usage.
+
+```java
+// ✅ MEDIUM PRIORITY: Validates standard workflows
+@Test
+public void parseTomlWithValidConfigReturnsCorrectObject()
+{
+	// Standard use case: user provides valid TOML config
+	String toml = "maxLineLength = 120\nindentSize = 4";
+
+	Config result = parser.parse(toml);
+
+	requireThat(result.getMaxLineLength(), "maxLineLength").isEqualTo(120);
+	requireThat(result.getIndentSize(), "indentSize").isEqualTo(4);
+}
+```
+
+#### Priority 3: EDGE CASES (Blue Team - Defense)
+**Focus**: Boundary values, unusual inputs, concurrent access.
+
+```java
+// ✅ LOWER PRIORITY: Edge case validation (after business logic covered)
+@Test
+public void parseTomlWithMaxBoundaryValueAccepts()
+{
+	// Edge case: maximum allowed line length
+	Config result = parser.parse("maxLineLength = 500");
+	requireThat(result.getMaxLineLength(), "maxLineLength").isEqualTo(500);
+}
+
+@Test
+public void loadConfigWithConcurrentAccessMaintainsConsistency() throws Exception
+{
+	// Concurrency edge case: multiple threads loading same config
+	ExecutorService executor = Executors.newFixedThreadPool(100);
+	List<Future<Config>> futures = new ArrayList<>();
+
+	for (int i = 0; i < 100; i++)
+	{
+		futures.add(executor.submit(() -> configLoader.load(configPath)));
+	}
+
+	// All threads should get consistent results
+	Config expected = futures.get(0).get();
+	for (Future<Config> future : futures)
+	{
+		requireThat(future.get(), "config").isEqualTo(expected);
+	}
+}
+```
+
+#### Priority 4: ERROR HANDLING
+**Focus**: Fail-fast validation and actionable error messages.
+
+```java
+// ✅ ERROR PATH: After business logic tests
+@Test
+public void parseTomlWithMalformedSyntaxProvidesActionableError()
+{
+	String invalidToml = "maxLineLength = \n";  // Incomplete assignment
+
+	try
+	{
+		parser.parse(invalidToml);
+		fail("Expected TomlParseException");
+	}
+	catch (TomlParseException e)
+	{
+		// Error must help user fix the problem
+		requireThat(e.getMessage(), "errorMessage").contains("line 1");
+		requireThat(e.getMessage(), "errorMessage").matches(".*column \\d+.*");
+		requireThat(e.getMessage(), "errorMessage").contains("incomplete assignment");
+	}
+}
+```
+
+### Metrics De-Emphasis
+
+**De-Prioritized Metrics** (outcome, not goal):
+- ❌ "Must achieve 95% line coverage" - Coverage is a **side effect** of comprehensive business logic testing
+- ❌ "Need 67+ test methods" - Test **count** is irrelevant; **business risk coverage** matters
+- ❌ "Every branch must be tested" - Focus on **business-critical branches** first
+
+**Prioritized Metrics** (actual goals):
+- ✅ **Business risk coverage**: All critical workflows and business rules validated
+- ✅ **Bug prevention effectiveness**: Tests catch real bugs that would impact users
+- ✅ **Regression prevention**: Every discovered bug gets a test to prevent recurrence
+
+### Test Design Questions
+
+**Before writing any test, ask:**
+1. **What business rule does this validate?** (If none, de-prioritize)
+2. **What user workflow breaks if this fails?** (High impact = high priority)
+3. **How likely is this scenario to cause bugs?** (Common paths > rare edge cases)
+4. **Does this test prevent real bugs or just increase coverage?** (Bug prevention > metrics)
+
+### Anti-Pattern: Metric-Driven Testing
+
+```java
+// ❌ ANTI-PATTERN: Writing tests just to hit coverage targets
+@Test
+public void testGetterReturnsField()
+{
+	// This adds line coverage but provides zero bug prevention value
+	Config config = new Config(120, 4);
+	requireThat(config.getMaxLineLength(), "maxLineLength").isEqualTo(120);
+}
+
+// ❌ ANTI-PATTERN: Testing implementation details instead of business logic
+@Test
+public void testPrivateHelperMethodLogic()
+{
+	// Tests internal implementation, not user-visible behavior
+	// Breaks if refactoring changes implementation (even if behavior unchanged)
+}
+```
+
+### Best Practice: Risk-Driven Testing
+
+```java
+// ✅ BEST PRACTICE: Test critical business logic that users depend on
+@Test
+public void discoverConfigWithGitBoundaryStopsAtRepositoryRoot()
+{
+	// BUSINESS RULE: Config discovery must not cross repository boundaries
+	// USER IMPACT: Parent repo config should not affect nested projects
+	// BUG RISK: High - easy to accidentally traverse past .git directory
+
+	// Setup: root/.styler.toml, root/project/.git/, root/project/src/
+	Path rootConfig = createTempConfig(rootDir, "maxLineLength = 80");
+	Path gitDir = rootDir.resolve("project/.git");
+	Files.createDirectories(gitDir);
+	Path workingDir = rootDir.resolve("project/src");
+	Files.createDirectories(workingDir);
+
+	// Act: Search from working dir
+	Optional<Path> found = discovery.discover(workingDir);
+
+	// Assert: Should NOT find root config (stopped at .git boundary)
+	requireThat(found.isEmpty(), "foundConfig").isTrue();
+}
+```
+
+### Success Criteria
+
+**Implementation is adequately tested when:**
+- ✅ All **critical business rules** have dedicated tests
+- ✅ All **major user workflows** are validated end-to-end
+- ✅ All **discovered bugs** have regression tests
+- ✅ **Error messages** are validated for actionability
+- ✅ **Common failure scenarios** are tested
+
+**NOT when:**
+- ❌ Coverage percentage reaches arbitrary threshold
+- ❌ Test count exceeds some number
+- ❌ Every single branch is tested (regardless of business criticality)
 
 ---
 
