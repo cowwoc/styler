@@ -23,13 +23,42 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 - **INIT**: Task selected, locks acquired, session validated
 - **CLASSIFIED**: Risk level determined, agents selected, isolation established
 - **REQUIREMENTS**: All stakeholder requirements collected and validated
-- **SYNTHESIS**: Requirements consolidated into unified architecture plan, **USER APPROVAL CHECKPOINT: Present plan via ExitPlanMode, wait for user approval**
+- **SYNTHESIS**: Requirements consolidated into unified architecture plan, **USER APPROVAL CHECKPOINT: Present plan to user, wait for explicit user approval**
 - **IMPLEMENTATION**: Code and tests created according to user-approved synthesis plan
 - **VALIDATION**: Build verification and automated quality gates passed
 - **REVIEW**: All stakeholder agents provide unanimous approval, **USER REVIEW CHECKPOINT: Present changes to user, wait for review approval before proceeding**
 - **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns (ONLY when resolution effort > 2x task scope AND agent consensus permits deferral - NEVER ask user for permission)
 - **COMPLETE**: Work preserved to main branch, todo.md updated (only after user approves changes)
 - **CLEANUP**: Worktrees removed, locks released, temporary files cleaned
+
+### User Approval Checkpoints - MANDATORY REGARDLESS OF BYPASS MODE
+
+**CRITICAL**: The two user approval checkpoints are MANDATORY and MUST be respected REGARDLESS of whether the user is in "bypass permissions on" mode or any other automation mode.
+
+**🚨 BYPASS MODE DOES NOT BYPASS USER APPROVAL CHECKPOINTS**
+
+**Checkpoint 1: [PLAN APPROVAL] - After SYNTHESIS, Before IMPLEMENTATION**
+- MANDATORY: Present implementation plan to user in clear, readable format
+- MANDATORY: Wait for explicit user approval message
+- PROHIBITED: Assuming user approval from bypass mode or lack of response
+- PROHIBITED: Proceeding to IMPLEMENTATION without clear "yes", "approved", "proceed", or equivalent confirmation
+
+**Checkpoint 2: [CHANGE REVIEW] - After REVIEW, Before COMPLETE**
+- MANDATORY: Present completed changes with commit SHA to user
+- MANDATORY: Wait for explicit user review approval
+- PROHIBITED: Assuming user approval from unanimous agent approval alone
+- PROHIBITED: Proceeding to COMPLETE without clear user confirmation
+
+**Verification Questions Before Proceeding:**
+Before SYNTHESIS → IMPLEMENTATION:
+- [ ] Did I present the complete implementation plan to the user?
+- [ ] Did the user explicitly approve the plan with words like "yes", "approved", "proceed", "looks good"?
+- [ ] Did I assume approval from bypass mode? (VIOLATION if yes)
+
+Before REVIEW → COMPLETE:
+- [ ] Did I present the completed changes with commit SHA?
+- [ ] Did the user explicitly approve proceeding to finalization?
+- [ ] Did I assume approval from agent consensus alone? (VIOLATION if yes)
 
 ### State Transitions
 Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS.**
@@ -886,7 +915,7 @@ def validate_requirements_complete(required_agents, task_dir):
 - [ ] Architecture plan addresses all stakeholder requirements
 - [ ] Conflict resolution documented for competing requirements
 - [ ] Implementation strategy defined with clear success criteria
-- [ ] **USER APPROVAL: Implementation plan presented via ExitPlanMode tool**
+- [ ] **USER APPROVAL: Implementation plan presented to user**
 - [ ] **USER CONFIRMATION: User has approved the proposed implementation approach**
 
 **Evidence Required:**
@@ -894,27 +923,27 @@ def validate_requirements_complete(required_agents, task_dir):
 - Each agent requirement mapped to implementation approach
 - Trade-off decisions documented with rationale
 - Success criteria defined for each domain (architecture, security, performance, etc.)
-- ExitPlanMode tool invoked with comprehensive implementation plan
+- Implementation plan presented to user in clear, readable format
 - User approval message received
 
 **Plan Presentation Requirements:**
 ```markdown
 MANDATORY BEFORE IMPLEMENTATION:
-1. Enter plan mode after SYNTHESIS complete
-2. Present implementation plan including:
+1. After SYNTHESIS complete, stop and present implementation plan to user
+2. Plan must include:
    - Architecture approach and key design decisions
    - Files to be created/modified
    - Implementation sequence and dependencies
    - Testing strategy
    - Risk mitigation approaches
-3. Use ExitPlanMode tool with complete plan
-4. Wait for user approval before proceeding to IMPLEMENTATION
-5. Only proceed to IMPLEMENTATION after receiving user confirmation
+3. Wait for explicit user approval before proceeding to IMPLEMENTATION
+4. Only proceed to IMPLEMENTATION after receiving clear user confirmation (e.g., "yes", "approved", "proceed")
 
 PROHIBITED:
 ❌ Starting implementation without user plan approval
 ❌ Skipping plan presentation for "simple" tasks
 ❌ Assuming user approval without explicit confirmation
+❌ Assuming approval from bypass mode or lack of objection
 ```
 
 ### IMPLEMENTATION → VALIDATION

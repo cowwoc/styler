@@ -1076,7 +1076,7 @@ present_implementation_plan_and_wait_for_approval() {
     echo "=== USER APPROVAL CHECKPOINT: PLAN REVIEW ==="
     echo "Synthesis complete. Presenting implementation plan to user..."
 
-    # Present plan via ExitPlanMode tool including:
+    # Present plan to user in clear, readable format including:
     # - Architecture approach and key design decisions
     # - Files to be created/modified
     # - Implementation sequence and dependencies
@@ -1084,7 +1084,8 @@ present_implementation_plan_and_wait_for_approval() {
     # - Risk mitigation approaches
 
     # Wait for user approval message
-    # Only proceed after receiving explicit confirmation
+    # Only proceed after receiving explicit confirmation (e.g., "yes", "approved", "proceed")
+    # PROHIBITED: Assuming approval from bypass mode or lack of objection
 }
 
 present_changes_and_wait_for_user_approval() {
