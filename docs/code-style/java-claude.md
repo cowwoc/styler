@@ -84,6 +84,13 @@ grep -rn -E "\w+\([^,)]+,[^,)]+,[^,)]+,[^,)]+,\s*\n\s+[^,)]+\);" --include="*.ja
 **Violation**: `throw new IllegalArgumentException("Invalid amount");`
 **Correct**: `throw new IllegalArgumentException("Withdrawal amount must be positive for account " + accountId);`
 
+### Class Declaration - Missing final Modifier
+**Detection Pattern**: `public\s+class\s+\w+\s+(extends\s+\w+\s*)?\{` (non-final classes)
+**Violation**: `public class ArgumentParser {` (not extended anywhere)
+**Correct**: `public final class ArgumentParser {`
+**Rationale**: Classes not designed for extension should be declared final to prevent unintended subclassing and make design intent explicit
+**Exception**: Abstract classes, base classes explicitly designed for extension, or classes with protected methods intended for overriding
+
 ## TIER 3 QUALITY - Best Practices
 
 ### Error Handling - Default Return Values
