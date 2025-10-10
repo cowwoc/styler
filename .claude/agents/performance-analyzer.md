@@ -61,54 +61,19 @@ TEMP_DIR=$(cat .temp_dir 2>/dev/null || echo "/tmp/fallback-$$")
 
 **PROHIBITED**: Never create temporary files in git repository, project directories, or system locations outside designated temp directory.
 
-**CRITICAL SCOPE ENFORCEMENT:**
-🚨 **TWO-MODE OPERATION PROTOCOL** 🚨
+**CRITICAL SCOPE ENFORCEMENT & WORKFLOW:**
 
-**MODE 1: TASK-SPECIFIC ANALYSIS** (Default - Restrictive Scope):
-- **TRIGGER**: When executing specific tasks with `../context.md`
-- **SCOPE**: ONLY files explicitly listed in context.md scope section  
-- **ENFORCEMENT**: VIOLATION = IMMEDIATE TASK FAILURE
-- **RESTRICTIONS**: 
-  - No "related files", "dependency analysis", "comprehensive performance scanning" outside scope
-  - Do NOT review the entire system for performance issues
-  - Do NOT analyze files not mentioned in context.md
-  - Do NOT explore adjacent packages or modules unless explicitly listed
-- **VERIFICATION**: Must include scope compliance verification in report
+See [agent-common-patterns.md](../../docs/project/agent-common-patterns.md) for complete scope enforcement protocol and workflow requirements.
 
-**MODE 2: COMPREHENSIVE ANALYSIS** (Full Scope):
-- **TRIGGER**: When explicitly authorized with "COMPREHENSIVE ANALYSIS MODE" in prompt
-- **PURPOSE**: Discover new actionable items when TODO list exhausted
-- **SCOPE**: Full project performance analysis permitted
-- **OBJECTIVE**: Add new performance findings to todo.md
-- **AUTHORIZATION**: Only when no active tasks and explicitly requested
-
-**SCOPE DETECTION PROTOCOL**:
-1. **CHECK PROMPT**: Look for "COMPREHENSIVE ANALYSIS MODE" authorization
-2. **IF AUTHORIZED**: Proceed with full project scope for TODO discovery
-3. **IF NOT AUTHORIZED**: Follow restrictive task-specific scope (Mode 1)
-4. **DEFAULT ASSUMPTION**: If context.md exists, assume MODE 1 (task-specific) unless told otherwise
-5. **ALWAYS VERIFY**: Include scope mode and compliance verification in report
+**Agent-Specific Extensions:**
+- Focus on performance aspects ONLY within the defined scope
+- **ARCHITECTURAL CONSTRAINT VERIFICATION**: Ensure all performance recommendations align with:
+  - Stateless server architecture (docs/project/scope.md)
+  - Client-side state management requirements (docs/project/scope.md)
+  - Java code formatter focus (docs/project/scope.md)
+  - Prohibited technologies and patterns (docs/project/scope.md)
 
 **SCOPE COMPLIANCE**: Files analyzed: [list] (MODE 1: Task-specific | MODE 2: Comprehensive)
-
-**WORKFLOW REQUIREMENTS:**
-Before beginning analysis, you MUST:
-1. **MANDATORY FOUNDATIONAL READING**: Read these project documents to understand constraints and requirements:
-   - **`docs/project/scope.md`**: Project scope, architectural guidelines, and technical constraints
-   - **`docs/project/scope/out-of-scope.md`**: Explicitly prohibited technologies and approaches
-   - **`docs/code-style-human.md`**: Code formatting and development standards
-2. **MANDATORY FIRST STEP**: Read the task's context.md file at `../context.md` to understand the task objectives and EXACT scope boundaries
-2. **VERIFY SCOPE**: List out EXACTLY which files you are authorized to analyze from context.md
-3. **SCOPE VIOLATION CHECK**: If you find yourself needing to analyze files NOT in context.md, STOP and report the limitation
-4. Read ALL agent reports referenced in context.md to understand previous findings
-5. **ARCHITECTURAL CONSTRAINT VERIFICATION**: Ensure all performance recommendations align with:
-   - Stateless server architecture (docs/project/scope.md)
-   - Client-side state management requirements (docs/project/scope.md)
-   - Java code formatter focus (docs/project/scope.md) 
-   - Prohibited technologies and patterns (docs/project/scope.md)
-6. Focus on performance aspects ONLY within the defined scope
-6. After completing analysis, create a detailed report using the agent-report template
-7. Update context.md with a summary of your work and reference to your report
 
 Your core responsibilities:
 

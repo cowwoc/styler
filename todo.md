@@ -95,8 +95,8 @@
 **Coordination**: B1 tasks can run in parallel (2 instances). After B1 completes, B2-B5 have sequential dependencies.
 
 ### B1. Minimal Formatting Rules (MVP)
-- [ ] **BLOCKED:** `implement-line-length-formatter` - Line length violations and auto-fixing
-  - **Dependencies**: A0 (styler-formatter-api module), A1 (parser for AST)
+- [ ] **READY:** `implement-line-length-formatter` - Line length violations and auto-fixing
+  - **Dependencies**: A0 ✅ COMPLETE (styler-formatter-api module), A1 ✅ COMPLETE (parser for AST)
   - **Blocks**: B2 (pipeline needs formatters)
   - **Parallelizable With**: `implement-import-organization` (other B1 task)
   - **Estimated Effort**: 2-3 days
@@ -111,8 +111,8 @@
   - **Quality**: Comprehensive tests, respects code semantics
   - **Estimated Effort**: 2-3 days
 
-- [ ] **BLOCKED:** `implement-import-organization` - Import grouping and unused import removal
-  - **Dependencies**: A0 (styler-formatter-api module), A1 (parser for AST)
+- [ ] **READY:** `implement-import-organization` - Import grouping and unused import removal
+  - **Dependencies**: A0 ✅ COMPLETE (styler-formatter-api module), A1 ✅ COMPLETE (parser for AST)
   - **Blocks**: B2 (pipeline needs formatters)
   - **Parallelizable With**: `implement-line-length-formatter` (other B1 task)
   - **Estimated Effort**: 2-3 days
