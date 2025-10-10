@@ -3,8 +3,6 @@
 # Pre-commit hook to suggest improvements for potential meta-commentary
 # This suggests cleaner documentation focused on current state rather than changes
 
-echo "🔍 Checking for potential meta-commentary patterns..."
-
 # More specific patterns that are more likely to indicate meta-commentary
 POTENTIAL_ISSUES=""
 
@@ -28,9 +26,10 @@ COMMIT_MSG=$(git log --format=%B -n 1 HEAD 2>/dev/null || echo "")
 PROCEDURAL=$(echo "$COMMIT_MSG" | grep -iE "(updated|modified|changed|replaced)" | head -3 || true)
 
 if [ -n "$PROCEDURAL" ]; then
-	echo "💡 COMMIT MESSAGE SUGGESTION: Consider present-tense descriptions:"
+	echo "💡 COMMIT MESSAGE SUGGESTION: The diff shows what changed - describe the result instead:"
 	echo "   Current: $(echo "$PROCEDURAL" | head -1)"
-	echo "   Better:  Focus on what the code/docs DO now, not what changed"
+	echo "   Better:  Omit 'updated/modified/changed' - state what the code/docs DO now"
+	echo "   Example: 'Protocol uses delegated agents' not 'Updated protocol to use delegated agents'"
 	echo ""
 	POTENTIAL_ISSUES="yes"
 fi
@@ -65,5 +64,5 @@ if [ -n "$POTENTIAL_ISSUES" ]; then
 	echo ""
 fi
 
-echo "✅ GOOD - Meta-commentary check complete. Proceeding with commit."
+# No output if no issues detected
 exit 0
