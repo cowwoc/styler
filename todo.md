@@ -65,32 +65,6 @@
 
 **Coordination**: A0 must complete first. After A0, tasks A1-A4 can run in parallel (4 instances possible).
 
-### A1. AST Parser Foundation
-- [ ] **READY:** `implement-index-overlay-parser` - Index-Overlay AST parser for JDK 25
-  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-parser, styler-ast-core modules)
-  - **Blocks**: B2 (pipeline), all formatters (B1, C3), C4 (concurrency benchmark)
-  - **Parallelizable With**: A2, A3, A4 (after A0 completes)
-  - **Estimated Effort**: 5-7 days
-  - **Purpose**: Parse Java source files into immutable AST representation with memory-efficient index-based storage
-  - **Scope**: Complete parser supporting JDK 25 features (pattern matching, records, sealed classes, string templates)
-  - **Architecture**: Index-Overlay pattern with Arena API memory management
-  - **Components**:
-    - Lexer: Tokenize Java source with all JDK 25 tokens
-    - Parser: Build AST from token stream using recursive descent
-    - ArenaNodeStorage: Index-based node storage with capacity management
-    - AST Node Types: Complete node hierarchy for all Java constructs
-  - **Memory Management Strategy**:
-    - Arena Lifecycle: One arena per file processing (thread-local)
-    - Automatic Cleanup: Try-with-resources pattern ensures arena release
-    - Memory Limits: MemoryMonitor enforces 512MB heap limit across all arenas
-    - Thread Safety: Thread-local arenas eliminate synchronization overhead
-    - Error Recovery: Finally blocks guarantee arena release on exceptions
-  - **Error Handling**: Graceful error recovery with descriptive messages (no code execution)
-  - **Performance Targets**: ≥10,000 tokens/sec, ≤512MB per 1000 files
-  - **Integration**: Self-contained, no dependencies on config or formatters
-  - **Quality**: 100% JDK 25 feature coverage, comprehensive test suite
-  - **Estimated Effort**: 5-7 days
-
 ### A4. Security Framework
 - [ ] **READY:** `implement-security-controls` - Essential security for CLI tool
   - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-security module)
