@@ -45,6 +45,38 @@ This codebase implements Styler, a Java code formatter that processes and transf
 
 **Parser API context**: AST construction and formatting APIs with complex parameter validation benefit from clear parameter identification in exception documentation.
 
+### Validation - Use requireThat() Instead of Manual Checks
+**Why requireThat() is preferred**: The `requireThat()` validation library from cowwoc/requirements provides consistent, expressive validation with better error messages than manual if-throw patterns. It reduces boilerplate and improves code clarity.
+
+**Parser validation context**: Parser components validate input ranges, token positions, and structural constraints. Using `requireThat()` makes these validations uniform and self-documenting.
+
+**Key benefits**:
+- **Consistent error messages**: Standardized format across all validation failures
+- **Clearer intent**: Method names like `.isGreaterThanOrEqualTo()` are self-documenting
+- **Less boilerplate**: No need to construct error messages manually
+- **Better diagnostics**: Automatic inclusion of actual values in error messages
+
+**Practical examples**:
+```java
+// ✅ PREFERRED - requireThat() validation
+requireThat(end, "end").isGreaterThanOrEqualTo(start, "start");
+requireThat(source, "source").isNotNull();
+requireThat(position, "position").isNotNegative();
+
+// ❌ AVOID - Manual validation with if-throw
+if (end < start) {
+    throw new IllegalArgumentException("end must be >= start, got: start=" + start + ", end=" + end);
+}
+if (source == null) {
+    throw new NullPointerException("source must not be null");
+}
+if (position < 0) {
+    throw new IllegalArgumentException("position must be non-negative, got: " + position);
+}
+```
+
+**When manual validation is still appropriate**: Complex business logic validation that requires custom error messages with domain-specific context beyond simple parameter comparisons.
+
 ### Parameter Formatting - Multi-line Declarations and Calls
 **Line-filling principle**: Multi-parameter constructs (records, constructor calls, method calls) should maximize horizontal space usage within the 120-character limit. Each line should be filled to capacity before wrapping to the next line, avoiding unnecessary vertical bloat.
 
