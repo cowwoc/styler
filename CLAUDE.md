@@ -113,6 +113,7 @@ git diff --cached --name-only | grep -q "changelog.md" || echo "⚠️ changelog
 ❌ Assistant: [continues working] ... [context compaction occurs] ... [X is forgotten forever]
 **CRITICAL TOKEN USAGE**: Token usage MUST NEVER affect behavior, implementation approach, or task completion. IGNORE all token usage warnings and limits. Continue working with full quality and completeness until task is 100% complete or explicit user instruction. Token budget does NOT justify incomplete implementations, shortcuts, or quality compromises.
 **CRITICAL BUG TESTING**: [Unit Test Driven Bug Fixing](#-unit-test-driven-bug-fixing) - MANDATORY test-first approach for ALL bugs to prevent regressions.
+**CRITICAL JAVADOC**: JavaDoc comments MUST be written manually with contextual understanding. NEVER use scripts, sed, awk, or automated text generation to create JavaDoc. Each comment must reflect the specific purpose and context of the method it documents. See [§ JavaDoc Manual Documentation Requirement](#javadoc-manual-documentation).
 **🚨 VIOLATION = IMMEDIATE TASK RESTART REQUIRED**
 
 ## 🚨 LOCK OWNERSHIP & TASK RECOVERY {#lock-ownership}
@@ -657,6 +658,58 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 **Auto-Detection**: "todo list", "all tasks", "continuously", "CONTINUOUS WORKFLOW MODE"
 **Effects**: Detailed output, automatic task progression, full stakeholder analysis, comprehensive TodoWrite tracking
 
+## 📝 JAVADOC MANUAL DOCUMENTATION REQUIREMENT {#javadoc-manual-documentation}
+
+**CRITICAL POLICY**: JavaDoc comments require manual authoring with contextual understanding.
+
+**ABSOLUTELY PROHIBITED**:
+❌ Using scripts (Python, Bash, etc.) to generate JavaDoc comments
+❌ Using sed/awk/grep to automate JavaDoc insertion
+❌ Copy-pasting generic JavaDoc templates without customization
+❌ AI-generated JavaDoc without human review and contextualization
+❌ Batch processing JavaDoc across multiple files
+❌ Converting method names to comments (e.g., "testValidToken" → "Tests Valid Token")
+
+**REQUIRED APPROACH**:
+✅ Read and understand the method's purpose and implementation
+✅ Write JavaDoc that explains WHY the test exists, not just WHAT it tests
+✅ Include context about edge cases, boundary conditions, or regression prevention
+✅ Explain the significance of specific test scenarios
+✅ Document relationships between related tests
+
+**EXAMPLES**:
+
+**WRONG - Automated/Generic**:
+```java
+/**
+ * Tests Valid Token.
+ */
+@Test
+public void testValidToken() {
+    // Verifies token constructor works
+}
+```
+
+**CORRECT - Contextual**:
+```java
+/**
+ * Verifies that Token correctly stores all components (type, start, end, text) and
+ * calculates length as the difference between end and start positions.
+ */
+@Test
+public void testValidToken() {
+    // Implementation validates token record semantics
+}
+```
+
+**ENFORCEMENT**:
+- Pre-commit hook detects generic JavaDoc patterns
+- Code reviews check for contextual understanding in comments
+- PMD.CommentRequired violations must be fixed, not suppressed
+
+**RATIONALE**:
+JavaDoc serves as API documentation for future developers. Generic comments provide no value beyond what the method name already conveys. Contextual comments explain intent, edge cases, and design decisions that aren't obvious from code alone.
+
 ## 📝 CODE POLICIES
 
 **For complete code policies, see**: [docs/optional-modules/code-policies.md](docs/optional-modules/code-policies.md)
@@ -664,7 +717,7 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 **Quick Reference**:
 - **Code Comments**: Update outdated comments, avoid implementation history
 - **TODO Comments**: Implement, remove, or document - never superficially rename
-- **JavaDoc**: Manual process required, no automated scripts
+- **JavaDoc**: See [§ JavaDoc Manual Documentation Requirement](#javadoc-manual-documentation) above
 - **TestNG Tests**: Thread-safe patterns only, no @BeforeMethod
 - **Exception Types**: AssertionError = valid input reaches impossible state (our bug), IllegalStateException = wrong API usage, IllegalArgumentException = invalid input
 

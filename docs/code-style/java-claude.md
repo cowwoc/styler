@@ -22,6 +22,48 @@
 **Correct**: `@throws IllegalArgumentException if {@code sourceCode} or {@code parseOptions} are null`
 **Rationale**: {@code} markup provides semantic distinction and better documentation generation
 
+### Validation - Use requireThat() Instead of Manual Checks
+**Detection Pattern**: `if \(.+ [<>!=]=.+\)\s*\{\s*throw new IllegalArgumentException`
+**Violation**: `if (end < start) { throw new IllegalArgumentException("end must be >= start, got: start=" + start + ", end=" + end); }`
+**Correct**: `requireThat(end, "end").isGreaterThanOrEqualTo(start, "start");`
+**Detection Commands**:
+```bash
+# Find manual validation throws
+grep -rn -A1 -E 'if \(.+ [<>!=]=' --include="*.java" . | grep 'throw new IllegalArgumentException'
+
+# Common patterns to check
+grep -rn 'if (.*<.*) {' --include="*.java" . | grep -A1 'throw new IllegalArgumentException'
+grep -rn 'if (.*>.*) {' --include="*.java" . | grep -A1 'throw new IllegalArgumentException'
+grep -rn 'if (.*==.*) {' --include="*.java" . | grep -A1 'throw new IllegalArgumentException'
+```
+**Examples**:
+```java
+// VIOLATION - Manual validation
+if (end < start) {
+    throw new IllegalArgumentException("end must be >= start, got: start=" + start + ", end=" + end);
+}
+
+// CORRECT - requireThat() validation
+requireThat(end, "end").isGreaterThanOrEqualTo(start, "start");
+
+// VIOLATION - Manual null check
+if (source == null) {
+    throw new NullPointerException("source must not be null");
+}
+
+// CORRECT - requireThat() null check
+requireThat(source, "source").isNotNull();
+
+// VIOLATION - Manual range check
+if (position < 0) {
+    throw new IllegalArgumentException("position must be non-negative, got: " + position);
+}
+
+// CORRECT - requireThat() range check
+requireThat(position, "position").isNotNegative();
+```
+**Rationale**: requireThat() provides consistent validation with better error messages, standardized naming, and clearer intent. The validation library generates consistent error messages automatically and reduces boilerplate code.
+
 ### Parameter Formatting - Multi-line Declarations and Calls
 **Detection Pattern 1**: `(record|public\s+\w+).*\([^)]*\n.*,` (multi-line parameter declarations)
 **Detection Pattern 2**: `(new\s+\w+|[a-zA-Z_]\w*)\([^)]*\n` (multi-line parameter lists requiring efficiency analysis)
@@ -84,12 +126,121 @@ grep -rn -E "\w+\([^,)]+,[^,)]+,[^,)]+,[^,)]+,\s*\n\s+[^,)]+\);" --include="*.ja
 **Violation**: `throw new IllegalArgumentException("Invalid amount");`
 **Correct**: `throw new IllegalArgumentException("Withdrawal amount must be positive for account " + accountId);`
 
+### Field Initialization - Avoid Redundant Default Values
+**Detection Pattern**: `(private|protected|public)\s+(int|long|boolean|double|float)\s+\w+\s*=\s*0` or constructor assignments to default values
+**Violation**: `private int position = 0;` or `this.position = 0;` in constructor (when position is an int)
+**Correct**: `private int position;` (Java initializes to 0 automatically)
+**Detection Commands**:
+```bash
+# Find field declarations with explicit default values
+grep -rn -E '(private|protected|public)\s+int\s+\w+\s*=\s*0;' --include="*.java" .
+grep -rn -E '(private|protected|public)\s+long\s+\w+\s*=\s*0L?;' --include="*.java" .
+grep -rn -E '(private|protected|public)\s+boolean\s+\w+\s*=\s*false;' --include="*.java" .
+grep -rn -E '(private|protected|public)\s+double\s+\w+\s*=\s*0\.0;' --include="*.java" .
+grep -rn -E '(private|protected|public)\s+float\s+\w+\s*=\s*0\.0f;' --include="*.java" .
+
+# Find constructor assignments to default values (requires manual review)
+grep -rn 'this\.\w+\s*=\s*0;' --include="*.java" .
+grep -rn 'this\.\w+\s*=\s*false;' --include="*.java" .
+```
+**Examples**:
+```java
+// VIOLATION - Explicit default values in field declarations
+private int position = 0;
+private long count = 0L;
+private boolean initialized = false;
+private double value = 0.0;
+
+// CORRECT - Rely on Java's default initialization
+private int position;
+private long count;
+private boolean initialized;
+private double value;
+
+// VIOLATION - Redundant default assignments in constructor
+public Parser(String source) {
+    this.arena = new NodeArena();
+    this.position = 0;           // Redundant - int defaults to 0
+    this.depth = 0;              // Redundant
+    this.tokenCheckCounter = 0;  // Redundant
+}
+
+// CORRECT - Only assign non-default values
+public Parser(String source) {
+    this.arena = new NodeArena();
+    // position, depth, tokenCheckCounter automatically initialized to 0
+}
+```
+**Rationale**: Java automatically initializes primitive fields to their default values (0 for numeric types, false for boolean, null for objects). Explicit assignment to default values is redundant and adds unnecessary code. This reduces visual clutter and makes non-default initializations more prominent.
+**Note**: This rule applies only when the assigned value equals Java's default. Non-default initializations (e.g., `private int maxDepth = 100;`) are required and should not be removed.
+
 ### Class Declaration - Missing final Modifier
 **Detection Pattern**: `public\s+class\s+\w+\s+(extends\s+\w+\s*)?\{` (non-final classes)
 **Violation**: `public class ArgumentParser {` (not extended anywhere)
 **Correct**: `public final class ArgumentParser {`
 **Rationale**: Classes not designed for extension should be declared final to prevent unintended subclassing and make design intent explicit
 **Exception**: Abstract classes, base classes explicitly designed for extension, or classes with protected methods intended for overriding
+
+### Control Flow - Multiple OR Comparisons Should Use Switch
+**Detection Pattern**: `return .+ == .+ \|\|` (3 or more equality comparisons chained with OR)
+**Violation**: `return type == TokenType.ASSIGN || type == TokenType.PLUSASSIGN || type == TokenType.MINUSASSIGN;`
+**Correct**: `return switch (type) { case ASSIGN, PLUSASSIGN, MINUSASSIGN -> true; default -> false; };`
+**Detection Commands**:
+```bash
+# Find methods with 3+ OR comparisons
+grep -rn -E 'return .+ == .+ \|\|.+ == .+ \|\|' --include="*.java" .
+
+# Find if statements with 3+ OR comparisons
+grep -rn -E 'if \(.+ == .+ \|\|.+ == .+ \|\|' --include="*.java" .
+```
+**Examples**:
+```java
+// VIOLATION - Multiple OR comparisons (12 comparisons)
+private boolean isAssignmentOperator(TokenType type) {
+    return type == TokenType.ASSIGN ||
+        type == TokenType.PLUSASSIGN ||
+        type == TokenType.MINUSASSIGN ||
+        type == TokenType.STARASSIGN ||
+        type == TokenType.DIVASSIGN ||
+        type == TokenType.MODASSIGN ||
+        type == TokenType.BITANDASSIGN ||
+        type == TokenType.BITORASSIGN ||
+        type == TokenType.CARETASSIGN ||
+        type == TokenType.LSHIFTASSIGN ||
+        type == TokenType.RSHIFTASSIGN ||
+        type == TokenType.URSHIFTASSIGN;
+}
+
+// CORRECT - Switch statement
+private boolean isAssignmentOperator(TokenType type) {
+    return switch (type) {
+        case ASSIGN, PLUSASSIGN, MINUSASSIGN, STARASSIGN, DIVASSIGN, MODASSIGN, BITANDASSIGN, BITORASSIGN,
+            CARETASSIGN, LSHIFTASSIGN, RSHIFTASSIGN, URSHIFTASSIGN -> true;
+        default -> false;
+    };
+}
+
+// VIOLATION - Multiple OR comparisons in if statement (6 comparisons)
+if (currentToken().type() == TokenType.MINUS ||
+    currentToken().type() == TokenType.PLUS ||
+    currentToken().type() == TokenType.NOT ||
+    currentToken().type() == TokenType.TILDE ||
+    currentToken().type() == TokenType.INC ||
+    currentToken().type() == TokenType.DEC) {
+    // ...
+}
+
+// CORRECT - Switch-based check
+TokenType type = currentToken().type();
+boolean isUnaryOperator = switch (type) {
+    case MINUS, PLUS, NOT, TILDE, INC, DEC -> true;
+    default -> false;
+};
+if (isUnaryOperator) {
+    // ...
+}
+```
+**Rationale**: Switch statements with multiple case labels (comma-separated) are more concise, easier to maintain, and less error-prone than long chains of OR comparisons. The switch pattern makes it immediately clear that we're checking for membership in a set of values.
 
 ### JavaDoc - Thread-Safety Documentation Format and Usage
 **Required Format**: Use `<b>Thread-safety</b>:` (bolded with HTML tags) followed by brief description
