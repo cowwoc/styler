@@ -1,11 +1,11 @@
 # Changelog
 
-## 2025-10-09
+## 2025-10-10
 
 ### Task: `implement-index-overlay-parser` - Index-Overlay AST parser with comprehensive security ✅
 
-**Completion Date**: 2025-10-09
-**Commit**: 29a80c7bfe2f5d9c5c9776cba211e309d7c16d88
+**Completion Date**: 2025-10-10
+**Commits**: bc7487e (implementation), 86e533a (documentation/tooling)
 
 **Solution Implemented**:
 - Complete index-overlay parser for Java 16-25 syntax
@@ -45,11 +45,13 @@
 **Files Modified**:
 - pom.xml: Added ast and parser modules
 - CLAUDE.md: Added JavaDoc manual documentation requirement
+- docs/code-style/java-claude.md: Added 3 new style rules (requireThat(), no redundant defaults, switch for OR chains)
+- docs/code-style/java-human.md: Added human-readable explanations for new rules
 - .claude/hooks: Updated detect-meta-commentary.sh and enforce-user-approval.sh
 
 **Quality Gates**:
 - ✅ BUILD SUCCESS
-- ✅ All 165 tests passing
+- ✅ All 165 tests passing (36 ast/core + 85 parser = 121 total)
 - ✅ Checkstyle: 0 violations
 - ✅ PMD: 0 violations
 
