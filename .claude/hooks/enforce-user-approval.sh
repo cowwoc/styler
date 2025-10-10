@@ -33,7 +33,6 @@ done
 
 # Exit early if no trigger detected
 if [ "$TRIGGERED" = "false" ]; then
-  echo "$RESPONSE"
   exit 0
 fi
 
@@ -41,7 +40,6 @@ fi
 for skip_pattern in "${SKIP_IF_ALREADY_SHOWN[@]}"; do
   if echo "$RESPONSE" | grep -iE "$skip_pattern" > /dev/null 2>&1; then
     # Already showed commit workflow - don't inject again
-    echo "$RESPONSE"
     exit 0
   fi
 done
@@ -141,7 +139,8 @@ You have achieved unanimous stakeholder approval. Before proceeding, you MUST:
 **Pattern to follow:** See CLAUDE.md § "PHASE 6 → USER APPROVAL → PHASE 7 EXAMPLE" for the exact correct pattern.
 
 INJECTION
+  echo "$RESPONSE"
+  exit 0
 fi
 
-# Always output the original response
-echo "$RESPONSE"
+# No violations detected - don't output anything
