@@ -102,36 +102,15 @@ TEMP_DIR=$(cat .temp_dir 2>/dev/null || echo "/tmp/fallback-$$")
 }
 ```
 
-## SCOPE ENFORCEMENT PATTERNS
+**CRITICAL SCOPE ENFORCEMENT & WORKFLOW:**
 
-### Pattern: Task Scope Validation
-```
-MANDATORY FIRST EXECUTION:
-1. Read: ../context.md (extract authorized file list)
-2. Grep: "COMPREHENSIVE ANALYSIS MODE" in task prompt
-3. IF found: Execute comprehensive_analysis_pattern
-4. IF NOT found: Execute restricted_scope_pattern
+See [agent-common-patterns.md](../../docs/project/agent-common-patterns.md) for complete scope enforcement protocol and workflow requirements.
 
-VIOLATION CHECK: Never analyze files outside context.md scope
-ENFORCEMENT: TERMINATE analysis if scope violation detected
-```
+**Agent-Specific Extensions:**
+- Execute security scan patterns ONLY on files within authorized scope
+- **PROJECT-SPECIFIC SECURITY MODEL**: Before conducting ANY security analysis, MUST reference `docs/project/scope.md` for project-specific security model (single-user parser scenario)
 
-### Pattern: Restricted Scope Analysis (Default)
-```
-SCOPE_FILES = extract from context.md
-FOR EACH file in SCOPE_FILES:
-  Execute security_scan_sequence(file)
-VIOLATION_CHECK: Report must list exact files analyzed
-COMPLIANCE_STATEMENT: "Analysis limited to context.md files: [list]"
-```
-
-### Pattern: Comprehensive Analysis (Authorized Only)
-```
-TRIGGER: "COMPREHENSIVE ANALYSIS MODE" in prompt
-SCOPE: Full project security analysis
-OBJECTIVE: Generate new todo.md security tasks
-EXECUTION: Execute full_project_scan_pattern
-```
+**SCOPE COMPLIANCE**: Files analyzed: [list] (MODE 1: Task-specific | MODE 2: Comprehensive)
 
 ## VULNERABILITY DETECTION PATTERNS
 

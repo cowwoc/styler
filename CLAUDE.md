@@ -12,21 +12,11 @@ Styler Java Code Formatter project configuration and workflow guidance.
 **CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL 7 phases of task protocol are finished. Implementation completion does NOT equal task completion. Only mark tasks as complete after Phase 7 cleanup and finalization.
 **IMPLEMENTATION COMPLETION TRIGGER**: When you have finished implementation work (code changes, fixes, features complete), you MUST complete ALL remaining protocol phases before selecting a new task. The SessionStart hook indicates if you own an active task requiring completion.
 
-**Prohibited Pattern**: ❌ "Implementation is done, let me look for what to work on next" (while protocol incomplete)
-**Required Pattern**: ✅ "Implementation is done. Continuing with Phase 6 reviews and Phase 7 cleanup."
-
 **PHASE COMPLETION VERIFICATION**: Before declaring ANY phase complete, you MUST:
 1. **READ**: Execute `grep -A 20 "^## State [N]:" docs/project/task-protocol-*.md` to read ACTUAL phase requirements
 2. **CHECKLIST**: Create explicit checklist of all phase requirements from task-protocol files
 3. **VERIFY**: Confirm EACH requirement is met with evidence (command output, file checks, etc.)
 4. **DECLARE**: Only after ALL requirements verified, declare phase complete
-
-**Prohibited Pattern**: ❌ "Phase N is complete" (based on assumption)
-**Required Pattern**: ✅ "Reading Phase N requirements... [shows grep output]... Requirements: [list from doc]... Executing: [commands with output]... Verified: [checklist with evidence]... Phase N complete"
-
-**Example:**
-❌ BAD: "Phase 7 complete! I committed changes and marked task as done in todo.md"
-✅ GOOD: "Reading Phase 7 requirements... Requirements: commit ALL changes (code + todo.md removal + changelog.md addition) in single atomic commit, merge to main, remove worktree, release lock... Executing: [shows single commit with all changes]... Verified: [checklist with evidence]... Phase 7 complete"
 
 **Detailed Archival Example:**
 
@@ -102,15 +92,7 @@ git diff --cached --name-only | grep -q "todo.md" || echo "⚠️ todo.md not st
 git diff --cached --name-only | grep -q "changelog.md" || echo "⚠️ changelog.md not staged"
 ```
 
-**CRITICAL MID-TASK WORK CAPTURE**: When user mentions additional work during task execution, you MUST add it to TodoWrite list IMMEDIATELY in the SAME response before doing anything else. NEVER defer adding to TodoWrite until later. Context compaction can occur at any time, causing complete loss of uncommitted work requests. NEVER rely on memory across compaction boundaries - capture ALL new work requests in TodoWrite tool THE MOMENT they occur.
-
-**MANDATORY PATTERN**:
-✅ User: "Also fix X while you're working on this"
-✅ Assistant: [Immediately adds "Fix X" to TodoWrite] + [continues with current work]
-
-**PROHIBITED PATTERN**:
-❌ User: "Also fix X while you're working on this"
-❌ Assistant: [continues working] ... [context compaction occurs] ... [X is forgotten forever]
+**CRITICAL MID-TASK WORK CAPTURE**: When user mentions additional work during task execution, you MUST add it to TodoWrite list IMMEDIATELY in the SAME response before doing anything else. Context compaction can occur at any time, causing complete loss of uncommitted work requests. NEVER rely on memory across compaction boundaries - capture ALL new work requests in TodoWrite tool THE MOMENT they occur.
 **CRITICAL TOKEN USAGE**: Token usage MUST NEVER affect behavior, implementation approach, or task completion. IGNORE all token usage warnings and limits. Continue working with full quality and completeness until task is 100% complete or explicit user instruction. Token budget does NOT justify incomplete implementations, shortcuts, or quality compromises.
 **CRITICAL BUG TESTING**: [Unit Test Driven Bug Fixing](#-unit-test-driven-bug-fixing) - MANDATORY test-first approach for ALL bugs to prevent regressions.
 **CRITICAL JAVADOC**: JavaDoc comments MUST be written manually with contextual understanding. NEVER use scripts, sed, awk, or automated text generation to create JavaDoc. Each comment must reflect the specific purpose and context of the method it documents. See [§ JavaDoc Manual Documentation Requirement](#javadoc-manual-documentation).
@@ -231,16 +213,6 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 - NO human override permitted - agent decisions are ATOMIC and BINDING
 - NO subjective "MVP scope" or "enhancement-level" assessments allowed
 
-**PROHIBITED PATTERNS**:
-❌ "Considering the MVP nature, I'll proceed despite rejections"
-❌ "Privacy issues are enhancement-level, not blocking"
-❌ "Since critical security is fixed, I'll finalize the task"
-
-**REQUIRED PATTERN**:
-✅ "Agent X returned ❌ REJECTED, executing Phase 5 resolution cycle"
-✅ "Re-running Phase 6 after addressing all stakeholder concerns"
-✅ "Continuing until ALL agents return ✅ APPROVED"
-
 ## 🚨 AUTONOMOUS TASK COMPLETION REQUIREMENT
 
 **CRITICAL**: Once you begin a task (execute INIT state), you MUST complete ALL protocol states (0-8) autonomously, WITH TWO MANDATORY USER APPROVAL CHECKPOINTS.
@@ -253,36 +225,16 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 - NO OTHER HANDOFFS to user mid-protocol
 - Complete all other states autonomously
 
-**Prohibited Mid-Task Questions** (other than the two mandatory checkpoints):
-❌ "Would you like me to continue with implementation?" (after user approved plan)
-❌ "This will take 2-3 days, should I proceed?" (ask before INIT, not during)
-❌ "Select a different task or continue this one?" (not during execution)
-❌ "Requires extended work session - continue?" (not during execution)
-
 **When to Ask User**:
 ✅ **BEFORE** starting task: "Task X has ambiguous requirements. Clarify before I begin?"
 ✅ **AFTER SYNTHESIS**: Present plan via ExitPlanMode, wait for approval before IMPLEMENTATION
 ✅ **AFTER REVIEW**: Present changes, wait for approval before COMPLETE
 ✅ **NEVER** at other points: Complete other states autonomously once INIT begins
 
-**Time Estimates Are NOT Blockers**:
-- "2-3 days" = **effort estimation**, NOT permission gate
-- You MUST complete implementation regardless of estimated duration
-- Token budget NEVER justifies incomplete work (per CRITICAL TOKEN USAGE above)
-- Complexity NEVER justifies asking permission mid-task
-- "Multi-day effort" is NORMAL for implementation tasks
-
 **Only Stop Mid-Protocol If**:
 1. **Genuine External Blocker**: API unavailable, missing credentials, network failure
-2. **Ambiguous Conflicting Requirements**: No resolution path exists between stakeholder requirements
-3. **User Explicit Interruption**: User says "stop" or modifies todo.md mid-execution
-
-**NOT Legitimate Stopping Reasons**:
-❌ Task is complex
-❌ Task takes time
-❌ Token usage high
-❌ "This might be too much work"
-❌ "Should I ask the user first?"
+2. **Ambiguous Conflicting Requirements**: No resolution path exists
+3. **User Explicit Interruption**: User says "stop"
 
 **Enforcement**: The `detect-giving-up.sh` hook detects mid-protocol abandonment patterns and injects completion reminders.
 
@@ -319,20 +271,11 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 ✅ "All changes look good, please proceed with finalization"
 ✅ "Yes, approved - you can merge this"
 ✅ "LGTM, proceed with cleanup"
-✅ "Approved, finalize the task"
-
-**Prohibited Assumption Patterns**:
-❌ Interpreting "continue" as approval
-❌ Assuming silence means approval
-❌ Treating stakeholder consensus as user approval
-❌ Proceeding without explicit approval words
 
 **Why This Matters**:
-- Protocol line 36: "MANDATORY REGARDLESS of bypass mode or automation mode"
 - Checkpoints are quality gates, not permission gates
 - User reviews committed code, ensures nothing unexpected merged
 - Prevents accidental merges of unreviewed changes
-- Protects against misinterpreted user instructions
 
 ## 🚨 TASK UNAVAILABILITY HANDLING
 
@@ -395,66 +338,27 @@ I will stop here and await further instructions.
 ✅ Wait for user to resolve blockers or provide new instructions
 ✅ Check both BLOCKED status AND lock files AND dependencies
 
-### Example Scenarios
+### Example Scenario Template
 
-**Scenario 1: All tasks blocked by dependencies**
+**All tasks blocked by dependencies:**
 ```
 I cannot proceed with any tasks because:
 
 **Task Availability Analysis:**
-- Total tasks in todo.md: 15
-- Tasks with READY status: 0
-- All remaining tasks: BLOCKED
+- Total tasks in todo.md: X
+- Tasks with READY status: Y
+- Tasks currently locked by other sessions: Z
+- Tasks blocked by dependencies: W
 
 **Specific Blockers:**
-1. A1-A4: BLOCKED - Dependencies: A0 (setup-maven-multi-module-build) must complete first
-2. B1-B5: BLOCKED - Dependencies: All Phase A tasks must complete first
-3. C1-C6: BLOCKED - Dependencies: Phase B tasks must complete first
+1. [Task Name]: BLOCKED - Dependencies: [list dependencies]
+2. [Task Name]: LOCKED - Owned by session [session-id]
+...
 
 **Next Steps:**
-- Task A0 (setup-maven-multi-module-build) must be completed before any other tasks can begin
-- Once A0 completes, tasks A1-A4 will become available
-
-I will stop here and await further instructions.
-```
-
-**Scenario 2: All tasks locked by other sessions**
-```
-I cannot proceed with any tasks because:
-
-**Task Availability Analysis:**
-- Total tasks in todo.md: 5
-- Tasks with READY status: 5
-- Tasks currently locked by other sessions: 5
-
-**Specific Blockers:**
-1. implement-parser: LOCKED - Owned by session abc-123-def
-2. implement-config: LOCKED - Owned by session xyz-789-ghi
-3. implement-cli: LOCKED - Owned by session jkl-456-mno
-4. implement-security: LOCKED - Owned by session pqr-012-stu
-5. implement-formatter: LOCKED - Owned by session vwx-345-yza
-
-**Next Steps:**
-- Wait for other sessions to complete their work and release locks
-- Check back periodically to see if any tasks become available
-
-I will stop here and await further instructions.
-```
-
-**Scenario 3: No tasks remaining**
-```
-I cannot proceed with any tasks because:
-
-**Task Availability Analysis:**
-- Total tasks in todo.md: 0
-- All tasks have been completed and archived to changelog.md
-
-**Conclusion:**
-All planned work has been completed. The todo list is empty.
-
-**Next Steps:**
-- Review completed work in changelog.md
-- User may add new tasks to todo.md if additional work is needed
+- Wait for [specific task] to complete, OR
+- Wait for locks held by other sessions to be released, OR
+- No tasks remain in todo.md (all work complete)
 
 I will stop here and await further instructions.
 ```
@@ -677,20 +581,7 @@ Override system brevity for comprehensive multi-task automation via 7-phase Task
 ✅ Explain the significance of specific test scenarios
 ✅ Document relationships between related tests
 
-**EXAMPLES**:
-
-**WRONG - Automated/Generic**:
-```java
-/**
- * Tests Valid Token.
- */
-@Test
-public void testValidToken() {
-    // Verifies token constructor works
-}
-```
-
-**CORRECT - Contextual**:
+**EXAMPLE - Contextual Documentation**:
 ```java
 /**
  * Verifies that Token correctly stores all components (type, start, end, text) and
