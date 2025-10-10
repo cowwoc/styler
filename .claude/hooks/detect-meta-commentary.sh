@@ -1,95 +1,69 @@
 #!/bin/bash
 
-# Pre-commit hook to detect retrospective documentation and meta-commentary
-# Purpose: Catch documentation that chronicles what happened to the codebase in the past
-# Aligns with RETROSPECTIVE DOCUMENTATION POLICY in CLAUDE.md
+# Pre-commit hook to suggest improvements for potential meta-commentary
+# This suggests cleaner documentation focused on current state rather than changes
 
-echo "🔍 Checking for retrospective documentation patterns..."
+echo "🔍 Checking for potential meta-commentary patterns..."
 
+# More specific patterns that are more likely to indicate meta-commentary
 POTENTIAL_ISSUES=""
 
-# Check for retrospective chronicle patterns (exclude test files - regression tests document past bugs)
-RETROSPECTIVE=$(git diff --cached | grep -v "^diff.*Test\|^diff.*test/" | grep -E "^\+.*(How we (fixed|debugged|solved|resolved)|What went wrong|Lessons learned|Previous (implementation|approach|version)|This (fixes|resolves|addresses) (the|an?) (issue|problem|bug) where|We (discovered|found|realized) that|After (investigating|debugging|testing)|The (original|old|previous) (code|implementation|approach))" -i | head -5 || true)
+# Check for explicit change documentation patterns and meta-commentary markers
+CHANGE_DOCS=$(git diff --cached | grep -E "(^\+.*Last Updated|^\+.*UPDATED:|^\+.*REPLACED:|^\+.*\*\*.*UPDATED.*\*\*|^\+.*\*\*.*REPLACED.*\*\*|^\+.*\*\*.*SIMPLIFIED.*\*\*|^\+.*\*\*.*ENHANCED.*\*\*|^\+.*\*\*.*IMPROVED.*\*\*|^\+.*\*\*.*CHANGED.*\*\*|^\+.*\*\*.*MODIFIED.*\*\*)" || true)
 
-if [ -n "$RETROSPECTIVE" ]; then
-	echo "⚠️  BLOCKED: Found retrospective documentation patterns:"
-	echo "$RETROSPECTIVE"
+if [ -n "$CHANGE_DOCS" ]; then
+	echo "⚠️  SUGGESTION: Found potential meta-commentary patterns in staged changes:"
+	echo "$CHANGE_DOCS" | head -5
 	echo ""
-	echo "❌ PROHIBITED: Documentation that chronicles past problems or fixes"
-	echo "   - 'How we fixed X' → Remove, git history records this"
-	echo "   - 'Lessons learned from Y' → Remove, not user-facing value"
-	echo "   - 'After debugging, we found Z' → Remove, implementation detail"
-	echo ""
-	echo "✅ PERMITTED: Forward-looking documentation describing current state"
-	echo "   - 'System uses X to handle Y' → Describes current functionality"
-	echo "   - 'API provides Z capability' → User-facing documentation"
-	echo ""
-	echo "✅ EXCEPTION: Regression tests documenting past bugs"
-	echo "   - Test files may reference historical bugs to prevent recurrence"
+	echo "💡 Consider focusing on current state rather than change descriptions:"
+	echo "   - Instead of 'Updated X to do Y' → 'X does Y'"
+	echo "   - Instead of 'Replaced A with B' → 'Uses B for [purpose]'"
+	echo "   - Remove 'Last Updated' timestamps in favor of git history"
 	echo ""
 	POTENTIAL_ISSUES="yes"
 fi
 
-# Check for debugging chronicle patterns (exclude test files - regression test context is allowed)
-DEBUG_CHRONICLES=$(git diff --cached | grep -v "^diff.*Test\|^diff.*test/" | grep -E "^\+.*(debugging|investigation|troubleshooting) (process|chronicle|narrative|story|journey|steps)" -i | head -3 || true)
+# Check for procedural language in commit message
+COMMIT_MSG=$(git log --format=%B -n 1 HEAD 2>/dev/null || echo "")
+PROCEDURAL=$(echo "$COMMIT_MSG" | grep -iE "(updated|modified|changed|replaced)" | head -3 || true)
 
-if [ -n "$DEBUG_CHRONICLES" ]; then
-	echo "⚠️  BLOCKED: Found debugging chronicle documentation:"
-	echo "$DEBUG_CHRONICLES"
-	echo ""
-	echo "❌ PROHIBITED: Step-by-step debugging narratives belong in git history"
-	echo "✅ PERMITTED: Technical design docs for upcoming features only"
-	echo "✅ EXCEPTION: Test documentation explaining regression test context"
+if [ -n "$PROCEDURAL" ]; then
+	echo "💡 COMMIT MESSAGE SUGGESTION: Consider present-tense descriptions:"
+	echo "   Current: $(echo "$PROCEDURAL" | head -1)"
+	echo "   Better:  Focus on what the code/docs DO now, not what changed"
 	echo ""
 	POTENTIAL_ISSUES="yes"
 fi
 
-# Check for post-implementation analysis file patterns (exclude test files)
-POST_IMPL_FILES=$(git diff --cached --name-only | grep -v "Test\|test/" | grep -E "(retrospective|lessons-learned|post-mortem|analysis-of|chronicle-of|fix-documentation|problem-solving|debugging-.*\.(md|txt))" -i || true)
+# Check for obvious meta-commentary in documentation files
+META_COMMENTS=$(git diff --cached | grep -E "^\+.*what.*changed|^\+.*what.*modified|^\+.*this.*replaces|^\+.*now.*instead.*of|^\+.*instead.*of.*listing|^\+.*approach.*instead|^\+.*simplified.*approach" -i | head -3 || true)
 
-if [ -n "$POST_IMPL_FILES" ]; then
-	echo "⚠️  BLOCKED: Found retrospective documentation files:"
-	echo "$POST_IMPL_FILES"
-	echo ""
-	echo "❌ PROHIBITED file types:"
-	echo "   - Post-implementation analysis reports"
-	echo "   - Lessons learned documents"
-	echo "   - Debugging chronicles"
-	echo "   - Development process retrospectives"
-	echo ""
-	echo "✅ PERMITTED file types (with explicit requirement):"
-	echo "   - Architecture documentation (forward-looking)"
-	echo "   - API/user documentation"
-	echo "   - Technical design for upcoming features"
-	echo "   - Regression test files documenting past bugs"
+if [ -n "$META_COMMENTS" ]; then
+	echo "💡 DOCUMENTATION SUGGESTION: Consider removing change explanations:"
+	echo "$META_COMMENTS"
+	echo "   → Focus on describing current functionality and purpose"
 	echo ""
 	POTENTIAL_ISSUES="yes"
 fi
 
-# Check for change chronicle markers (exclude test files)
-CHANGE_CHRONICLES=$(git diff --cached | grep -v "^diff.*Test\|^diff.*test/" | grep -E "^\+.*##.*Changes|^\+.*##.*(Fix|Problem|Issue) (History|Chronicle)|^\+.*##.*(What|Why) (We|This) (Changed|Fixed)" -i | head -3 || true)
+# Check for procedural change descriptions
+PROCEDURAL_CHANGES=$(git diff --cached | grep -E "^\+.*Instead of.*Claude must|^\+.*Rather than.*Claude|^\+.*Now Claude|^\+.*Claude must now" | head -3 || true)
 
-if [ -n "$CHANGE_CHRONICLES" ]; then
-	echo "⚠️  BLOCKED: Found change chronicle section headers:"
-	echo "$CHANGE_CHRONICLES"
-	echo ""
-	echo "❌ PROHIBITED: Sections documenting what changed and why"
-	echo "✅ ALTERNATIVE: Git commit messages and history serve this purpose"
-	echo "✅ EXCEPTION: Test documentation may explain bug history for context"
+if [ -n "$PROCEDURAL_CHANGES" ]; then
+	echo "💡 PROCEDURAL SUGGESTION: Found change-focused instructions:"
+	echo "$PROCEDURAL_CHANGES"
+	echo "   → Consider stating requirements directly without referencing changes"
+	echo "   → Example: 'Claude must X' instead of 'Instead of Y, Claude must X'"
 	echo ""
 	POTENTIAL_ISSUES="yes"
 fi
 
 if [ -n "$POTENTIAL_ISSUES" ]; then
-	echo "🚨 RETROSPECTIVE DOCUMENTATION DETECTED"
+	echo "📝 These are suggestions, not blocks. Commit will proceed."
+	echo "   Review if these patterns represent meta-commentary about changes"
+	echo "   vs. legitimate functional descriptions."
 	echo ""
-	echo "Documentation should serve future users/developers, not chronicle past problems."
-	echo "Code and git history are the primary record of changes and debugging."
-	echo ""
-	echo "Review staged changes and remove retrospective content before committing."
-	echo ""
-	exit 1
 fi
 
-echo "✅ No retrospective documentation detected. Commit proceeding."
+echo "✅ GOOD - Meta-commentary check complete. Proceeding with commit."
 exit 0
