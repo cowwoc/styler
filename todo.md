@@ -2,15 +2,21 @@
 
 ## 🚀 READY TO WORK NOW (Multi-Instance Coordination)
 
-**Current Status**: A0 complete! Phase A tasks now available
+**Current Status**: Phase A complete! Phase B tasks now available
 
-**READY TO START** (4 parallel instances possible):
-- A1: AST Parser Foundation ← 5-7 days, implements Index-Overlay parser
-- A2: TOML Configuration ← 2-3 days, implements config system
-- A3: CLI Arguments ← 1-2 days, implements argument parsing
-- A4: Security Framework ← 2-3 days, implements security controls
+**READY TO START** (2 parallel instances possible for B1):
+- B1a: Line Length Formatter ← 2-3 days, implements line length validation
+- B1b: Import Organization ← 2-3 days, implements import grouping
 
-**Phase B/C/D**: Blocked until all Phase A tasks (A1-A4) complete
+**Phase B (B2-B5)**: Blocked until B1 tasks complete
+**Phase C/D**: Blocked until all Phase B tasks complete
+
+**Phase A - ✅ COMPLETE** (archived to changelog.md):
+- ✅ A0: styler-formatter-api module
+- ✅ A1: Index-Overlay AST Parser
+- ✅ A2: TOML Configuration
+- ✅ A3: CLI Arguments
+- ✅ A4: Security Framework
 
 ---
 
@@ -64,27 +70,6 @@
 **Goal**: Build core parsing, configuration, and security infrastructure without depending on formatters or AI integration.
 
 **Coordination**: A0 must complete first. After A0, tasks A1-A4 can run in parallel (4 instances possible).
-
-### A4. Security Framework
-- [ ] **READY:** `implement-security-controls` - Essential security for CLI tool
-  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-security module)
-  - **Blocks**: B2 (pipeline), C1 (file discovery)
-  - **Parallelizable With**: A1, A2, A3 (after A0 completes)
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Protect against malicious inputs, resource exhaustion, path traversal
-  - **Scope**: Input validation, file size limits, memory monitoring, execution timeouts
-  - **Components**:
-    - SecurityConfig: Immutable config with builder (file size, memory, timeout limits)
-    - FileValidator: File size, type, existence validation
-    - PathSanitizer: Path normalization and traversal protection
-    - MemoryMonitor: JVM heap usage tracking (512MB limit)
-    - ExecutionTimeoutManager: Thread-based timeout enforcement (30s per file)
-    - RecursionDepthTracker: Stack overflow protection (1000 max depth)
-  - **Limits**: 10MB max file size, 512MB heap, 30s timeout, .java files only
-  - **Security Model**: Single-user scenario (scope.md) - focus on resource exhaustion, not data exfiltration
-  - **Integration**: Used by CLI and file processor before any file operations
-  - **Quality**: Comprehensive exception hierarchy, actionable error messages
-  - **Estimated Effort**: 2-3 days
 
 ---
 

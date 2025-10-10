@@ -4,9 +4,10 @@ Styler Java Code Formatter project configuration and workflow guidance.
 
 ## 🚨 MANDATORY COMPLIANCE
 
-**CRITICAL WORKFLOW**: Task Protocol ([core](docs/project/task-protocol-core.md) + [operations](docs/project/task-protocol-operations.md)) - MANDATORY risk-based protocol selection - Apply appropriate workflow based on file risk classification.
+**CRITICAL WORKFLOW**: Task Protocol ([core](docs/project/task-protocol-core.md) + [operations](docs/project/task-protocol-operations.md) + [delegated](docs/project/delegated-implementation-protocol.md)) - MANDATORY risk-based protocol selection - Apply appropriate workflow based on file risk classification.
 **CRITICAL LOCK OWNERSHIP**: See [§ Lock Ownership & Task Recovery](#-lock-ownership--task-recovery) for complete lock file requirements and ownership rules.
 **CRITICAL WORKTREE ISOLATION**: See [§ Worktree Isolation & Cleanup](#-worktree-isolation--cleanup) for complete worktree management requirements.
+**CRITICAL GIT HISTORY VERIFICATION**: See [§ Git History Rewriting Verification](#-git-history-verification) for MANDATORY verification after ANY history rewriting operation.
 **CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See task-protocol-core.md
 **CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
 **CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL 7 phases of task protocol are finished. Implementation completion does NOT equal task completion. Only mark tasks as complete after Phase 7 cleanup and finalization.
@@ -92,15 +93,45 @@ git diff --cached --name-only | grep -q "todo.md" || echo "⚠️ todo.md not st
 git diff --cached --name-only | grep -q "changelog.md" || echo "⚠️ changelog.md not staged"
 ```
 
-**CRITICAL MID-TASK WORK CAPTURE**: When user mentions additional work during task execution, you MUST add it to TodoWrite list IMMEDIATELY in the SAME response before doing anything else. Context compaction can occur at any time, causing complete loss of uncommitted work requests. NEVER rely on memory across compaction boundaries - capture ALL new work requests in TodoWrite tool THE MOMENT they occur.
+**CRITICAL SYSTEM REMINDER PROCESSING**: Read and process ALL `<system-reminder>` blocks BEFORE responding. System reminders may contain user questions that MUST be answered immediately. Check EVERY system reminder for "The user sent the following message" and address it FIRST before continuing other work. Ignoring user questions is a CRITICAL VIOLATION.
+**CRITICAL MID-TASK WORK CAPTURE**: When user mentions additional work during task execution, add it to TodoWrite list IMMEDIATELY in the SAME response before doing anything else. Context compaction can occur at any time, causing complete loss of uncommitted work requests. NEVER rely on memory across compaction boundaries - capture ALL new work requests in TodoWrite tool THE MOMENT they occur.
 **CRITICAL TOKEN USAGE**: Token usage MUST NEVER affect behavior, implementation approach, or task completion. IGNORE all token usage warnings and limits. Continue working with full quality and completeness until task is 100% complete or explicit user instruction. Token budget does NOT justify incomplete implementations, shortcuts, or quality compromises.
 **CRITICAL BUG TESTING**: [Unit Test Driven Bug Fixing](#-unit-test-driven-bug-fixing) - MANDATORY test-first approach for ALL bugs to prevent regressions.
 **CRITICAL JAVADOC**: JavaDoc comments MUST be written manually with contextual understanding. NEVER use scripts, sed, awk, or automated text generation to create JavaDoc. Each comment must reflect the specific purpose and context of the method it documents. See [§ JavaDoc Manual Documentation Requirement](#javadoc-manual-documentation).
 **🚨 VIOLATION = IMMEDIATE TASK RESTART REQUIRED**
 
+## 🚨 SYSTEM REMINDER PROCESSING {#system-reminders}
+
+**CRITICAL REQUIREMENT**: Scan for and process ALL `<system-reminder>` blocks in EVERY response.
+
+**MANDATORY PROCESSING ORDER**:
+1. **FIRST**: Read ALL system reminders in the response
+2. **CHECK**: Look for "The user sent the following message" pattern
+3. **EXTRACT**: Identify any user questions or instructions
+4. **ANSWER**: Address user questions IMMEDIATELY before other work
+5. **THEN**: Continue with planned tasks
+
+**Common System Reminder Patterns**:
+- `<system-reminder>The user sent the following message:` - **USER QUESTION - MUST ANSWER FIRST**
+- `<system-reminder>The TodoWrite tool hasn't been used recently` - Optional suggestion
+- `<system-reminder>Note: /path/to/file was read before` - Informational context
+- `<system-reminder>Contents of /path/to/file:` - File content injection
+
+**PROHIBITED PATTERNS**:
+❌ Skipping system reminders and continuing with task
+❌ Assuming user will repeat questions
+❌ Treating system reminders as "optional" information
+❌ Reading only the first system reminder and ignoring others
+
+**REQUIRED PATTERNS**:
+✅ Scan entire response for ALL system reminders
+✅ Process user questions BEFORE continuing work
+✅ Acknowledge when system reminder contains user input
+✅ Answer questions directly and completely
+
 ## 🚨 LOCK OWNERSHIP & TASK RECOVERY {#lock-ownership}
 
-**CRITICAL**: After context compaction, the `check-lock-ownership.sh` SessionStart hook automatically checks for active tasks owned by this session and provides specific instructions.
+**CRITICAL**: The `check-lock-ownership.sh` SessionStart hook automatically checks for active tasks owned by this session and provides specific instructions.
 
 **Lock Ownership Rule**: ONLY work on tasks whose lock file contains YOUR session_id.
 
@@ -131,7 +162,7 @@ git diff --cached --name-only | grep -q "changelog.md" || echo "⚠️ changelog
 
 ### During Task Execution
 
-**CRITICAL WORKTREE ISOLATION**: After creating worktree, IMMEDIATELY `cd` to worktree directory BEFORE any other operations.
+**CRITICAL WORKTREE ISOLATION**: After creating worktree, IMMEDIATELY `cd` to worktree directory before any other operations.
 
 **Required Pattern**:
 ```bash
@@ -147,7 +178,7 @@ pwd | grep -q "/workspace/branches/{task}/code$" && echo "✅ In worktree" || ec
 
 ### During Cleanup (Phase 7/8)
 
-**CRITICAL WORKTREE CLEANUP**: BEFORE removing worktree, MUST `cd` to main worktree first.
+**CRITICAL WORKTREE CLEANUP**: Before removing worktree, MUST `cd` to main worktree first.
 
 **Required Pattern**:
 ```bash
@@ -156,14 +187,80 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 
 **NEVER remove a worktree while inside it** - shell loses working directory. This is MANDATORY in Phase 8 (CLEANUP).
 
-**Prohibited Pattern**: ❌ Being inside `/workspace/branches/{task}/code` and running `git worktree remove /workspace/branches/{task}/code`
-**Required Pattern**: ✅ Change to main worktree first, then remove task worktree
+## 🚨 GIT HISTORY REWRITING VERIFICATION {#git-history-verification}
+
+**CRITICAL**: ANY git history rewriting operation MUST be followed by mandatory verification to ensure no commits or changes were dropped.
+
+**History Rewriting Operations Include**:
+- `git rebase` (interactive or non-interactive)
+- `git rebase --onto`
+- `git commit --amend`
+- `git reset --hard` followed by new commits
+- `git filter-branch`
+- `git cherry-pick` with history modification
+- Any operation that changes commit SHAs
+
+**MANDATORY VERIFICATION PROCEDURE**:
+
+After ANY history rewriting operation, you MUST execute ALL of the following verification steps:
+
+```bash
+# 1. Verify commit count matches expectations
+# Before rewriting: git rev-list --count HEAD
+# After rewriting: git rev-list --count HEAD
+# Compare counts - should match unless you explicitly intended to drop commits
+
+# 2. Verify all expected commits are present
+git log --oneline --all --graph
+# Manually verify each expected commit appears in the history
+
+# 3. Verify no changes were lost - compare working tree states
+# Save state before rewriting: git diff-tree -r --no-commit-id --name-only <old-sha> | sort > /tmp/before-files.txt
+# Check state after rewriting: git diff-tree -r --no-commit-id --name-only HEAD | sort > /tmp/after-files.txt
+# Compare: diff /tmp/before-files.txt /tmp/after-files.txt
+
+# 4. Verify file contents match expectations
+git diff <old-sha> HEAD
+# Should show ONLY intentional changes, no accidental deletions or modifications
+
+# 5. For interactive rebase: verify no "pick" lines were accidentally deleted
+# Check reflog to see what was dropped: git reflog
+# Compare original and rebased histories
+```
+
+**VERIFICATION CHECKLIST** (ALL must pass):
+- [ ] Commit count matches expectations (or intentional delta explained)
+- [ ] All expected commit messages present in `git log`
+- [ ] No unexpected file additions/deletions in `git diff <before> <after>`
+- [ ] No unexpected content changes in modified files
+- [ ] Reflog shows expected operations only
+- [ ] Build still passes after rewriting (`mvn verify`)
+- [ ] All tests still pass after rewriting
+
+**PROHIBITED PATTERNS**:
+❌ Completing rebase without verification
+❌ Assuming "no conflicts" means "no data loss"
+❌ Trusting git rebase output without manual inspection
+❌ Skipping verification because operation "seemed simple"
+❌ Verifying only commit count without checking content
+
+**REQUIRED PATTERNS**:
+✅ Save original SHA before rewriting: `ORIG_SHA=$(git rev-parse HEAD)`
+✅ Compare before/after states explicitly
+✅ Check reflog for unexpected operations
+✅ Run build after history modifications
+✅ Document verification results before proceeding
+
+**ENFORCEMENT**:
+- Any history rewriting without verification is a CRITICAL VIOLATION
+- Failed verification requires immediate rollback to pre-rewriting state
+- If verification reveals data loss, recover via reflog: `git reset --hard <original-sha>`
 
 ## 🚨 TASK PROTOCOL SUMMARY {#task-protocol}
 
 **Full Protocol Details**: See [task-protocol-core.md](docs/project/task-protocol-core.md) and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for complete state machine and transition requirements.
 
-**State Machine**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
+**State Machine**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE → VALIDATION → REVIEW → COMPLETE → CLEANUP
 
 **Critical Requirements for All Tasks**:
 - Lock acquisition (see [§ Lock Ownership](#lock-ownership))
@@ -231,6 +328,23 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 ✅ **AFTER REVIEW**: Present changes, wait for approval before COMPLETE
 ✅ **NEVER** at other points: Complete other states autonomously once INIT begins
 
+**🚨 PROHIBITED MID-PROTOCOL STOPPING PATTERNS**:
+❌ **NEVER** stop after INIT state to provide progress summary - Continue immediately to CLASSIFIED
+❌ **NEVER** stop after CLASSIFIED state to report status - Continue immediately to REQUIREMENTS
+❌ **NEVER** provide "Summary of progress" mid-protocol - Work continues until checkpoint
+❌ **NEVER** say "Ready to continue with [next state]" and wait - Just continue to next state
+❌ **NEVER** inform user of current state completion - Only stop at mandatory checkpoints
+
+**CORRECT PATTERN - Continuous Execution**:
+```
+INIT (complete) → IMMEDIATELY proceed to CLASSIFIED
+CLASSIFIED (complete) → IMMEDIATELY proceed to REQUIREMENTS
+REQUIREMENTS (complete) → IMMEDIATELY proceed to SYNTHESIS
+SYNTHESIS (complete) → STOP - Present plan, wait for approval
+[After approval] → CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE → VALIDATION → REVIEW (all continuous)
+REVIEW (complete) → STOP - Present changes, wait for approval
+```
+
 **Only Stop Mid-Protocol If**:
 1. **Genuine External Blocker**: API unavailable, missing credentials, network failure
 2. **Ambiguous Conflicting Requirements**: No resolution path exists
@@ -240,42 +354,98 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 
 ## 🚨 USER APPROVAL CHECKPOINT ENFORCEMENT
 
-**HOOK-ENFORCED REQUIREMENT**: The `enforce-user-approval.sh` hook will BLOCK transitions to COMPLETE state if user approval checkpoint is not satisfied.
+**CRITICAL**: There are TWO MANDATORY user approval checkpoints enforced by `enforce-user-approval.sh` hook using **lock file state tracking**:
 
-**Approval Marker System**:
-- **File**: `/workspace/branches/{task-name}/user-approval-obtained.flag`
-- **Created**: When user provides explicit approval after REVIEW state
-- **Required**: Before COMPLETE state transition is allowed
-- **Removed**: Automatically during CLEANUP state
+### Checkpoint 1: After SYNTHESIS (Before Implementation)
 
-**Automatic Approval Detection** (hook recognizes these patterns):
-✅ User message contains approval keywords: "yes", "approved", "approve", "proceed", "looks good", "LGTM"
-✅ AND message references review context: "review", "changes", "commit", "finalize"
+**WHEN**: After consolidating stakeholder requirements into unified implementation plan
 
-**User Instructions DO NOT Override Checkpoints**:
-❌ "Continue without asking questions" - DOES NOT skip checkpoint
-❌ "Just finish the task" - DOES NOT skip checkpoint
-❌ "I trust you, proceed" - DOES NOT skip checkpoint (unless includes review context)
-❌ Bypass mode enabled - DOES NOT skip checkpoint
-❌ Automation mode active - DOES NOT skip checkpoint
+**MANDATORY STATE TRANSITIONS**:
+1. Complete SYNTHESIS (consolidate requirements)
+2. Present implementation plan to user
+3. **Update lock file state to `SYNTHESIS_AWAITING_APPROVAL`**
+4. **STOP and wait for user response**
+5. User approves → Update state to `CONTEXT` and proceed
+6. User rejects → Update state back to `SYNTHESIS` and revise
 
-**How Enforcement Works**:
-1. Hook monitors all UserPromptSubmit events
-2. When task is in REVIEW state and user says "continue/proceed/finalize"
-3. Hook checks for approval marker file existence
-4. If marker missing AND message is not explicit approval → **BLOCKED with checkpoint reminder**
-5. If message IS explicit approval → Create marker, allow continuation
-6. If marker exists → Allow COMPLETE state transition
+**CORRECT WORKFLOW**:
+```bash
+# 1. Present plan to user (text summary or ExitPlanMode in bypass mode)
+# 2. Update lock file state
+jq '.state = "SYNTHESIS_AWAITING_APPROVAL"' /workspace/locks/implement-security-controls.json > /tmp/lock.json && mv /tmp/lock.json /workspace/locks/implement-security-controls.json
 
-**Required Pattern for Approval**:
-✅ "All changes look good, please proceed with finalization"
-✅ "Yes, approved - you can merge this"
-✅ "LGTM, proceed with cleanup"
+# 3. STOP - await user approval
+```
 
-**Why This Matters**:
-- Checkpoints are quality gates, not permission gates
-- User reviews committed code, ensures nothing unexpected merged
-- Prevents accidental merges of unreviewed changes
+**PROHIBITED PATTERNS**:
+❌ "Proceeding to CONTEXT phase..." (without state = CONTEXT)
+❌ "Starting implementation..." (without state = CONTEXT)
+❌ Continuing any work after completing synthesis
+❌ Forgetting to update lock file state
+❌ **CRITICAL**: Manually implementing code yourself instead of using delegated protocol
+
+**HOOK ENFORCEMENT**:
+- Detects "synthesis complete" phrases
+- Checks lock file state
+- BLOCKS if state != SYNTHESIS_AWAITING_APPROVAL
+- BLOCKS proceeding to implementation if state != CONTEXT
+
+**AFTER USER APPROVES - MANDATORY NEXT STEPS**:
+1. ✅ User says "approved" or "I approve" → Update lock to `CONTEXT`
+2. ✅ Execute CONTEXT state: Generate context.md via `python3 .claude/protocol/generate-context.py`
+3. ✅ Execute AUTONOMOUS_IMPLEMENTATION: Launch parallel implementation agents via Task tool
+4. ✅ Execute CONVERGENCE: Agents implement code, you integrate diffs until unanimous approval
+5. ❌ **NEVER**: Manually write code yourself - delegated implementation agents do this
+6. ❌ **NEVER**: Skip CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE states
+
+**Why Delegated Implementation**:
+- 67% token savings through file-based diffs
+- Parallel agent execution (4x faster)
+- Unanimous approval through iterative convergence
+- Main agent NEVER writes code - only coordinates integration
+
+### Checkpoint 2: After REVIEW (Before Merge)
+
+**WHEN**: After achieving unanimous stakeholder approval in Phase 6
+
+**MANDATORY STATE TRANSITIONS**:
+1. Achieve unanimous stakeholder approval
+2. Create git commit with all implementation changes
+3. Show commit summary and diff to user
+4. **Update lock file state to `REVIEW_AWAITING_APPROVAL`**
+5. **STOP and wait for user response**
+6. User approves → Update state to `COMPLETE` and proceed
+7. User rejects → Update state back to `CONVERGENCE` and revise
+
+**CORRECT WORKFLOW**:
+```bash
+# 1. Create commit
+git add -A
+git commit -m "Implementation message..."
+git show --stat
+
+# 2. Update lock file state
+jq '.state = "REVIEW_AWAITING_APPROVAL"' /workspace/locks/implement-security-controls.json > /tmp/lock.json && mv /tmp/lock.json /workspace/locks/implement-security-controls.json
+
+# 3. STOP - await user approval
+```
+
+**PROHIBITED PATTERNS**:
+❌ "Proceeding to COMPLETE..." (without state = COMPLETE)
+❌ "Merging to main..." (without state = COMPLETE)
+❌ Forgetting to create commit before asking for approval
+❌ Forgetting to update lock file state
+
+**HOOK ENFORCEMENT**:
+- Detects "unanimous approval" phrases
+- Checks lock file state
+- BLOCKS if state != REVIEW_AWAITING_APPROVAL after approval
+- BLOCKS proceeding to COMPLETE if state != COMPLETE
+
+**User Approval Process**:
+When user responds with approval keywords ("approved", "LGTM", "yes"), they should also:
+- Update lock state: `jq '.state = "CONTEXT"'` (for SYNTHESIS checkpoint)
+- Update lock state: `jq '.state = "COMPLETE"'` (for REVIEW checkpoint)
 
 ## 🚨 TASK UNAVAILABILITY HANDLING
 
@@ -292,9 +462,9 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 ### Required Response When No Tasks Available
 
 **If ALL tasks are unavailable, you MUST:**
-1. **STOP immediately** - Do NOT attempt to start any work
-2. **EXPLAIN clearly** why no tasks are available
-3. **PROVIDE specifics** about what's blocking progress
+1. **STOP** - Do not attempt any work
+2. **RESPOND** with task availability analysis in required format below
+3. **WAIT** for user instructions to resolve blockers
 
 **Required Explanation Format:**
 ```
@@ -331,44 +501,13 @@ I will stop here and await further instructions.
 
 ### Required Patterns
 
-**ALWAYS do the following when all tasks are unavailable:**
+**When all tasks are unavailable:**
 ✅ Stop immediately after determining no tasks available
 ✅ Provide detailed analysis of why each task is unavailable
 ✅ Explain specific conditions needed for tasks to become available
 ✅ Wait for user to resolve blockers or provide new instructions
 ✅ Check both BLOCKED status AND lock files AND dependencies
 
-### Example Scenario Template
-
-**All tasks blocked by dependencies:**
-```
-I cannot proceed with any tasks because:
-
-**Task Availability Analysis:**
-- Total tasks in todo.md: X
-- Tasks with READY status: Y
-- Tasks currently locked by other sessions: Z
-- Tasks blocked by dependencies: W
-
-**Specific Blockers:**
-1. [Task Name]: BLOCKED - Dependencies: [list dependencies]
-2. [Task Name]: LOCKED - Owned by session [session-id]
-...
-
-**Next Steps:**
-- Wait for [specific task] to complete, OR
-- Wait for locks held by other sessions to be released, OR
-- No tasks remain in todo.md (all work complete)
-
-I will stop here and await further instructions.
-```
-
-### Enforcement
-
-The behavior is MANDATORY and will be monitored through:
-- Hook validation of task selection patterns
-- Verification that blocked/locked tasks are never started
-- Confirmation that clear explanations are provided when stopping
 
 ## 🎯 COMPLETE STYLE VALIDATION
 
@@ -408,15 +547,16 @@ The behavior is MANDATORY and will be monitored through:
 
 ### 🚨 PROHIBITED DOWNGRADE PATTERNS
 
-**ANTI-PATTERNS - ABSOLUTELY FORBIDDEN**:
-❌ "This is too complex, let me try a simpler approach" (without justification)
-❌ "The optimal solution would take too long" (without effort estimation)
-❌ "Let's use a quick workaround for now" (without technical debt assessment)
+**ANTI-PATTERNS - CATEGORICALLY FORBIDDEN**:
+These statements are PROHIBITED regardless of circumstances or justification:
+❌ "This is too complex, let me try a simpler approach"
+❌ "The optimal solution would take too long"
+❌ "Let's use a quick workaround for now"
 ❌ "I'll implement the minimum viable solution" (when requirements specify comprehensive solution)
-❌ "Due to complexity and token usage, I'll create a solid MVP implementation" (complexity/tokens never justify incomplete implementation)
-❌ "Given token constraints, I'll implement a basic version" (token budget does not override quality requirements)
-❌ "This edge case is too hard to handle properly" (without stakeholder consultation)
-❌ "The existing pattern is suboptimal but I'll follow it" (without improvement attempt)
+❌ "Due to complexity and token usage, I'll create a solid MVP implementation"
+❌ "Given token constraints, I'll implement a basic version"
+❌ "This edge case is too hard to handle properly"
+❌ "The existing pattern is suboptimal but I'll follow it"
 
 ### 🚨 GIVING UP DETECTION PATTERNS
 
@@ -447,14 +587,6 @@ The behavior is MANDATORY and will be monitored through:
 - **Descriptive**: Test method name clearly describes the bug scenario
 - **Isolated**: Independent of other tests and external dependencies
 - **Fast**: Execute quickly to enable frequent testing
-
-**EXAMPLES**:
-✅ `testScientificNotationLexing()` - for floating-point literal bugs
-✅ `testMethodReferenceInAssignment()` - for parser syntax bugs
-✅ `testEnumConstantWithArguments()` - for enum parsing bugs
-✅ `testGenericTypeVariableDeclaration()` - for generics bugs
-
-**INTEGRATION**: Unit tests become part of the development workflow, not separate documentation
 
 **REQUIRED JUSTIFICATION PROCESS** (when considering downgrade):
 1. **DOCUMENT EFFORT**: "Attempted optimal solution for X hours/attempts"
@@ -598,9 +730,6 @@ public void testValidToken() {
 - Code reviews check for contextual understanding in comments
 - PMD.CommentRequired violations must be fixed, not suppressed
 
-**RATIONALE**:
-JavaDoc serves as API documentation for future developers. Generic comments provide no value beyond what the method name already conveys. Contextual comments explain intent, edge cases, and design decisions that aren't obvious from code alone.
-
 ## 📝 CODE POLICIES
 
 **For complete code policies, see**: [docs/optional-modules/code-policies.md](docs/optional-modules/code-policies.md)
@@ -634,11 +763,11 @@ JavaDoc serves as API documentation for future developers. Generic comments prov
 
 ### Report Types and Lifecycle
 
-**Stakeholder Reports** (`../` from code directory):
-- Temporary workflow artifacts for 7-phase task protocol
-- Examples: `{task-name}-technical-architect-requirements.md`, `{task-name}-style-auditor-review.md`
-- **Lifecycle**: Created during task execution, cleaned up with worktree in Phase 7
-- **Purpose**: Process documentation for protocol compliance
+**Stakeholder Agent Analysis**:
+- Agents return analysis as TEXT in their response messages (NOT files)
+- Protocol explicitly states: "Do NOT write requirements to files - return analysis as response text"
+- **No report files created** during REQUIREMENTS or REVIEW phases
+- See task-protocol-operations.md "MANDATORY OUTPUT REQUIREMENT" for details
 
 **Empirical Studies** (`docs/studies/{topic}.md`):
 - Temporary research cache for pending implementation tasks
@@ -649,14 +778,21 @@ JavaDoc serves as API documentation for future developers. Generic comments prov
 
 **Project Code**: Task code directory (`src/`, `pom.xml`, etc.)
 
-### Report File Naming Convention
-See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/project/task-protocol-core.md) and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for exact agent report naming conventions by phase.
+### Agent Output Format
+**IMPORTANT**: Stakeholder agents do NOT write report files. See [task-protocol-operations.md](docs/project/task-protocol-operations.md) "MANDATORY OUTPUT REQUIREMENT" section:
 
-**Note**: The `../` path writes reports to `/workspace/branches/{task-name}/` (task root), not inside the code directory.
+> "Provide complete {agent_domain} requirements analysis IN YOUR RESPONSE.
+> **Do NOT write requirements to files** - return analysis as response text."
+
+Agents return their analysis directly in response messages for consolidation during SYNTHESIS phase.
 
 ## 📝 RETROSPECTIVE DOCUMENTATION POLICY
 
-**CRITICAL**: Do NOT create retrospective documentation files that chronicle fixes, problems, or development process.
+**CRITICAL**: Do NOT create documentation that explains past work. Documentation must serve FUTURE needs.
+
+**Decision Criterion**:
+- ❌ **Retrospective** (forbidden): Explains how past decisions were made, problems were solved, or bugs were fixed
+- ✅ **Forward-looking** (permitted): Explains how to use features, understand architecture, or extend functionality
 
 **PROHIBITED DOCUMENTATION PATTERNS**:
 ❌ Post-implementation analysis reports (e.g., `protocol-violation-prevention.md`)
@@ -664,12 +800,7 @@ See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/
 ❌ Debugging chronicles or problem-solving narratives
 ❌ Development process retrospectives or meta-documentation
 ❌ Fix documentation that duplicates information already in code/commits
-
-**RATIONALE**:
-- Code and commit messages are the primary record of changes
-- Git history provides the full development timeline
-- Retrospective documents create maintenance burden without user value
-- Documentation should serve future developers, not chronicle past problems
+❌ Analysis documents chronicling work performed (e.g., `CLAUDE-optimization-analysis.md`)
 
 **PERMITTED DOCUMENTATION** (only when explicitly required):
 ✅ Task explicitly requires documentation creation

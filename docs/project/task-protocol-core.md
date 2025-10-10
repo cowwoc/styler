@@ -10,13 +10,13 @@
 
 ### Core States
 ```
-INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLEMENTATION → VALIDATION → REVIEW → AWAITING_USER_APPROVAL → COMPLETE → CLEANUP
-                                      ↑                                                          ↓
-                                      └─────────────────── SCOPE_NEGOTIATION ←──────────────────┘
+INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE → VALIDATION → REVIEW → AWAITING_USER_APPROVAL → COMPLETE → CLEANUP
+                                                                                                              ↑                                    ↓
+                                                                                                              └────────── SCOPE_NEGOTIATION ←──────┘
 ```
 
 **User Approval Checkpoints:**
-- **[PLAN APPROVAL]**: After SYNTHESIS, before IMPLEMENTATION - User reviews and approves implementation plan
+- **[PLAN APPROVAL]**: After SYNTHESIS, before CONTEXT - User reviews and approves implementation plan
 - **[CHANGE REVIEW]**: After REVIEW (unanimous stakeholder approval) - Transition to AWAITING_USER_APPROVAL state
 
 ### State Definitions
@@ -24,7 +24,9 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 - **CLASSIFIED**: Risk level determined, agents selected, isolation established
 - **REQUIREMENTS**: All stakeholder requirements collected and validated
 - **SYNTHESIS**: Requirements consolidated into unified architecture plan, **USER APPROVAL CHECKPOINT: Present plan to user, wait for explicit user approval**
-- **IMPLEMENTATION**: Code and tests created according to user-approved synthesis plan
+- **CONTEXT**: Generate context.md for autonomous agent implementation
+- **AUTONOMOUS_IMPLEMENTATION**: Agents implement changes autonomously in parallel
+- **CONVERGENCE**: Iterative integration until unanimous approval
 - **VALIDATION**: Build verification and automated quality gates passed
 - **REVIEW**: All stakeholder agents provide unanimous approval
 - **AWAITING_USER_APPROVAL**: **CHECKPOINT STATE - Implementation commit created, changes presented to user, waiting for explicit approval before COMPLETE**
@@ -38,11 +40,11 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 
 **🚨 BYPASS MODE DOES NOT BYPASS USER APPROVAL CHECKPOINTS**
 
-**Checkpoint 1: [PLAN APPROVAL] - After SYNTHESIS, Before IMPLEMENTATION**
+**Checkpoint 1: [PLAN APPROVAL] - After SYNTHESIS, Before CONTEXT**
 - MANDATORY: Present implementation plan to user in clear, readable format
 - MANDATORY: Wait for explicit user approval message
 - PROHIBITED: Assuming user approval from bypass mode or lack of response
-- PROHIBITED: Proceeding to IMPLEMENTATION without clear "yes", "approved", "proceed", or equivalent confirmation
+- PROHIBITED: Proceeding to CONTEXT without clear "yes", "approved", "proceed", or equivalent confirmation
 
 **Checkpoint 2: [CHANGE REVIEW] - After REVIEW, Before COMPLETE**
 - MANDATORY: Present completed changes with commit SHA to user
@@ -51,7 +53,7 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 - PROHIBITED: Proceeding to COMPLETE without clear user confirmation
 
 **Verification Questions Before Proceeding:**
-Before SYNTHESIS → IMPLEMENTATION:
+Before SYNTHESIS → CONTEXT:
 - [ ] Did I present the complete implementation plan to the user?
 - [ ] Did the user explicitly approve the plan with words like "yes", "approved", "proceed", "looks good"?
 - [ ] Did I assume approval from bypass mode? (VIOLATION if yes)
@@ -162,7 +164,7 @@ Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS
 ## WORKFLOW VARIANTS BY RISK LEVEL
 
 ### HIGH_RISK_WORKFLOW (Complete Validation)
-**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
+**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE → VALIDATION → REVIEW → COMPLETE → CLEANUP
 **Stakeholder Agents**: All agents based on task requirements
 **Isolation**: Mandatory worktree isolation
 **Review**: Complete stakeholder validation
@@ -170,7 +172,7 @@ Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS
 **Conditional Skips**: None - all validation required
 
 ### MEDIUM_RISK_WORKFLOW (Domain Validation)
-**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
+**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE → VALIDATION → REVIEW → COMPLETE → CLEANUP
 **Stakeholder Agents**: Based on change characteristics
 - Base: technical-architect (always required)
 - +style-auditor: If style/formatting files modified
@@ -180,7 +182,7 @@ Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS
 **Isolation**: Worktree isolation for multi-file changes
 **Review**: Domain-appropriate stakeholder validation
 **Use Case**: Test files, style documentation, configuration files
-**Conditional Skips**: May skip IMPLEMENTATION/VALIDATION states if only documentation changes
+**Conditional Skips**: May skip CONTEXT/AUTONOMOUS_IMPLEMENTATION/CONVERGENCE/VALIDATION states if only documentation changes
 
 ### LOW_RISK_WORKFLOW (Streamlined Validation)
 **States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → COMPLETE → CLEANUP
@@ -192,7 +194,7 @@ Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS
 - Confirm no build configuration impact
 - Validate no security-sensitive content changes
 **Use Case**: Documentation updates, todo.md, README files
-**Conditional Skips**: Skip IMPLEMENTATION, VALIDATION, REVIEW states entirely
+**Conditional Skips**: Skip CONTEXT, AUTONOMOUS_IMPLEMENTATION, CONVERGENCE, VALIDATION, REVIEW states entirely
 
 ### Conditional State Transition Logic
 ```python
@@ -202,24 +204,24 @@ def determine_state_path(risk_level, change_type):
     base_states = ["INIT", "CLASSIFIED", "REQUIREMENTS", "SYNTHESIS"]
 
     if risk_level == "HIGH":
-        return base_states + ["IMPLEMENTATION", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
+        return base_states + ["CONTEXT", "AUTONOMOUS_IMPLEMENTATION", "CONVERGENCE", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
 
     elif risk_level == "MEDIUM":
         if change_type in ["documentation_only", "config_only"]:
             return base_states + ["COMPLETE", "CLEANUP"]
         else:
-            return base_states + ["IMPLEMENTATION", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
+            return base_states + ["CONTEXT", "AUTONOMOUS_IMPLEMENTATION", "CONVERGENCE", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
 
     elif risk_level == "LOW":
         return base_states + ["COMPLETE", "CLEANUP"]
 
     else:
         # Default to HIGH risk if uncertain
-        return base_states + ["IMPLEMENTATION", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
+        return base_states + ["CONTEXT", "AUTONOMOUS_IMPLEMENTATION", "CONVERGENCE", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
 ```
 
 ### Skip Condition Examples
-**IMPLEMENTATION/VALIDATION State Skip Conditions:**
+**CONTEXT/AUTONOMOUS_IMPLEMENTATION/CONVERGENCE/VALIDATION State Skip Conditions:**
 - Maven dependency additions (configuration only)
 - Build plugin configuration changes
 - Documentation updates without code references
@@ -248,7 +250,7 @@ def determine_state_path(risk_level, change_type):
 
 **🔍 FUNCTIONAL AGENTS (Code Implementation):**
 - IF NEW CODE created: add style-auditor, code-quality-auditor, build-validator
-- IF IMPLEMENTATION (not just config): add code-tester
+- IF CODE CHANGES (not just config): add code-tester
 - IF MAJOR FEATURES completed: add usability-reviewer (MANDATORY after completion)
 
 **🛡️ SECURITY AGENTS (Actual Security Concerns):**
@@ -360,6 +362,299 @@ validate_complete_style_compliance() {
 - **Conflict Resolution**: Automatic AST-based fixes when linter rules conflict
 - **Evidence Requirement**: All three validation components must pass for ✅ APPROVED
 
+## DELEGATED IMPLEMENTATION PROTOCOL
+
+**Standard Implementation Workflow:** Autonomous agent implementation with 67% token reduction
+
+### Overview
+
+The Delegated Implementation Protocol is the standard workflow where stakeholder agents implement their components autonomously in parallel, then iterate until consensus. This approach provides superior context efficiency and parallel execution compared to serial main-agent implementation.
+
+**When to Use:**
+- All HIGH-RISK and MEDIUM-RISK tasks requiring implementation
+- Tasks with multiple stakeholder domains
+- Complex tasks requiring parallel implementation
+- Tasks benefiting from specialized agent expertise
+
+**Infrastructure Location:** `.claude/protocol/`
+- `generate-context.py` - Context generation (Phase 3)
+- `convergence.py` - Iterative integration (Phase 5)
+- `differential-read.sh` - Efficient file reading
+- `incremental-validation.sh` - Changed-files-only validation
+- `README.md` - Complete protocol documentation
+
+### State Flow
+
+**Delegated Protocol (Standard):**
+```
+SYNTHESIS → CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE → VALIDATION → REVIEW
+```
+
+### New State Definitions
+
+**CONTEXT State:**
+- Generate comprehensive context.md file for autonomous agents
+- Extract task requirements from todo.md
+- Determine agent work assignments
+- Define scope boundaries and integration points
+- Specify file-based communication protocol
+
+**AUTONOMOUS_IMPLEMENTATION State:**
+- Implementation agents work in parallel
+- Each agent implements assigned components
+- Changes written to diff files (../agent-type.diff)
+- Metadata responses only (10-50 tokens vs 1000-2000)
+- No main agent context pollution
+
+**CONVERGENCE State:**
+- Iterative integration until unanimous approval
+- Conflict detection and resolution
+- Selective agent review (only changed files)
+- Implicit approval for unchanged files
+- Maximum 10 rounds (extendable by user checkpoint)
+
+### SYNTHESIS → CONTEXT Transition
+
+**Mandatory Conditions:**
+- [ ] User approval of implementation plan obtained
+- [ ] Task requirements clearly defined in synthesis
+- [ ] Agent assignments determined
+- [ ] Context infrastructure available (.claude/protocol/)
+
+**Implementation:**
+```bash
+# Generate context.md for autonomous implementation
+python3 .claude/protocol/generate-context.py \
+  --task-name ${TASK_NAME} \
+  --task-dir /workspace/branches/${TASK_NAME}
+
+# Verify context.md created
+test -f ../context.md && echo "✅ CONTEXT state complete"
+```
+
+**Context.md Sections:**
+1. Task Requirements Summary
+2. Technical Constraints
+3. Security Requirements
+4. Code Quality Standards
+5. File Structure and Expected Changes
+6. Agent Work Assignments
+7. File-Based Communication Protocol
+
+### CONTEXT → AUTONOMOUS_IMPLEMENTATION Transition
+
+**Mandatory Conditions:**
+- [ ] Context.md exists with all required sections
+- [ ] Agent assignments clearly defined
+- [ ] Implementation agents ready (technical-architect, security-auditor, code-quality-auditor, performance-analyzer, code-tester)
+- [ ] Review-only agents identified (style-auditor, usability-reviewer, build-validator)
+
+**Implementation:**
+```bash
+# Launch implementation agents in parallel
+# Each agent:
+# 1. Reads ../context.md
+# 2. Reads assigned files (full read initially)
+# 3. Implements changes
+# 4. Writes ../agent-type.diff
+# 5. Returns metadata only
+
+# Agents return format:
+{
+  "summary": "Implemented X (120 lines in 2 files)",
+  "files_changed": ["File1.java", "File2.java"],
+  "diff_file": "../agent-type.diff",
+  "diff_size_lines": 120,
+  "tests_added": true,
+  "build_status": "success"
+}
+```
+
+**Context Efficiency Benefits:**
+- Diffs written to files (not in main agent context)
+- Metadata responses (10-50 tokens per agent)
+- Parallel implementation (4x speedup)
+- Agents reconstruct file state mentally (baseline + diffs)
+
+### AUTONOMOUS_IMPLEMENTATION → CONVERGENCE Transition
+
+**Mandatory Conditions:**
+- [ ] ALL implementation agents completed their work
+- [ ] ALL agent diffs written to files
+- [ ] NO agent implementation failures
+- [ ] Ready for integration and review
+
+**Implementation:**
+```bash
+# Round 1: Initial Integration
+python3 .claude/protocol/convergence.py \
+  --task-dir /workspace/branches/${TASK_NAME} \
+  --integrate \
+  --round 1
+
+# Main agent integrates diffs using git apply
+# Detects conflicts, resolves or escalates
+# Commits integrated state
+# Notifies agents of changes
+```
+
+### CONVERGENCE Workflow
+
+**Round-Based Iteration (Max 10 rounds):**
+
+**Round 1:**
+1. Main agent integrates all agent diffs
+2. Detects conflicts (overlapping line ranges)
+3. Resolves conflicts or escalates
+4. Commits integrated state
+5. ALL agents review integrated changes:
+   - Receive diffs → reconstruct current state (baseline + diffs)
+   - Review for their domain concerns
+   - Read specific lines if more context needed
+   - Return APPROVED / REVISE / CONFLICT
+
+**Round 2-10:**
+1. Main agent applies revision diffs
+2. Selective agent review:
+   - If your files unchanged → Implicit approval
+   - If your files changed → Review modifications
+   - Always review other agents' changes for domain issues
+3. Iterate until unanimous APPROVED
+
+**Unanimous Approval:**
+- ALL agents return APPROVED
+- Proceed to VALIDATION state
+
+**Round Limit Exceeded:**
+- Escalate to user review checkpoint
+- User reviews partial consensus
+- If user requests changes → Extend limit by 10 rounds from current
+- If user approves → Override unanimous requirement
+
+**User Checkpoint Reset Example:**
+```
+Round 3: No consensus reached
+Main agent: "Escalating to user checkpoint..."
+User: "Please address security concern X"
+Result: max_rounds = 3 + 10 = 13 (agents have until round 13)
+```
+
+### Context Reconstruction Pattern
+
+**Efficiency Through Mental State Tracking:**
+
+1. **Phase 4 (Initial):** Agent reads full files → baseline in context
+2. **Phase 5 (Convergence):** Agent receives diffs → reconstructs state mentally (baseline + diff)
+3. **If context needed:** Read specific lines around diff (not entire file)
+4. **Only re-read full file:** If context lost (compaction) or unfamiliar file
+
+**Example:**
+```
+Initial Read: Token.java (150 lines) → baseline established
+Round 1 Diff: +20, -5 lines → agent applies mentally → current state known
+Round 2: Need style context → read lines 45-47 only
+Round 3: No changes to Token.java → implicit approval
+```
+
+**Token Efficiency:**
+- Agents use baseline + diffs (10,600 tokens vs 32,500 tokens for full file reads)
+- **67% reduction** through differential file operations
+
+### CONVERGENCE → VALIDATION Transition
+
+**Mandatory Conditions:**
+- [ ] Unanimous agent approval achieved
+- [ ] All changes integrated to task branch
+- [ ] Implementation commit created
+- [ ] Ready for build validation
+
+**User Experience (Option A: Summary-Only):**
+
+Console shows summary only, no diff clutter:
+```
+Phase 5 Round 1 Complete:
+  ✅ security-auditor: Implemented validation (120 lines in 2 files)
+  ✅ technical-architect: Implemented Token record (150 lines in 2 files)
+  ✅ code-quality-auditor: Refactored builder pattern (95 lines in 1 file)
+  ✅ code-tester: Added comprehensive tests (300 lines in 2 files)
+
+All changes integrated to working tree.
+Run 'git diff' to review changes.
+Waiting for agent convergence...
+```
+
+**User reviews manually:**
+```bash
+git diff
+git diff --stat
+# Review with familiar git tools, syntax highlighting
+```
+
+### Process Memory Separation
+
+**Three Separate Contexts:**
+
+1. **Python Script Memory (convergence.py):**
+   - Loads diffs from files
+   - Parses line ranges, detects conflicts
+   - Outputs metadata only
+
+2. **Git Process Memory:**
+   - Reads diffs directly from files
+   - Applies changes with `git apply`
+   - No involvement of Claude context
+
+3. **Main Claude Agent Context:**
+   - Receives metadata only (conflict reports, summaries)
+   - NEVER sees raw diff content
+   - Processes 10-50 tokens instead of 1000-2000
+
+**Why This Matters:**
+Context savings come from keeping diff content in external process memory (Python/git), passing only metadata to main Claude agent's token-limited context.
+
+### Delegated Protocol Benefits
+
+**Context Efficiency:**
+- 67% token reduction (baseline + diff reconstruction)
+- Diffs never in main agent's Claude context
+- Summary-only UX (metadata responses)
+- Selective agent review
+
+**Speed:**
+- Parallel implementation (4x faster for 4 agents)
+- Selective validation (5-10x faster for small changes)
+- File-based communication (fewer round trips)
+
+**Quality:**
+- Unanimous approval still required
+- Cross-domain review preserved
+- Iterative convergence ensures coherence
+- File-based artifacts for debugging
+
+**User Experience:**
+- Familiar workflow (review with `git diff`)
+- Better visibility (syntax highlighting, standard git tools)
+- Summary-only console (no diff clutter)
+- Manual control (user decides when to review)
+
+### Infrastructure Reference
+
+**Complete Documentation:** `.claude/protocol/README.md`
+
+**Scripts:**
+- `generate-context.py` - Phase 3 context generation
+- `convergence.py` - Phase 5 iterative integration
+- `differential-read.sh` - Read-once + diff updates
+- `incremental-validation.sh` - Changed-files-only validation
+
+**Agent Configurations:**
+All 8 agents support delegated protocol workflows.
+
+**Requirements Phase - No File Writing:**
+- Agents return requirements analysis in response text (not files)
+- Main agent mentally consolidates requirements during SYNTHESIS
+- No temporary requirement report files created
+
 ## BATCH PROCESSING AND CONTINUOUS MODE
 
 ### Batch Processing Restrictions
@@ -422,7 +717,9 @@ Every task MUST maintain a `state.json` file in the task directory containing:
   "required_agents": ["agent1", "agent2"],
   "evidence": {
     "REQUIREMENTS": ["file1.md", "file2.md"],
-    "IMPLEMENTATION": ["sha256hash"],
+    "CONTEXT": ["context.md"],
+    "AUTONOMOUS_IMPLEMENTATION": ["agent-diffs.json"],
+    "CONVERGENCE": ["convergence-metadata.json"],
     "VALIDATION": ["build_success_timestamp"],
     "REVIEW": {"agent1": "APPROVED", "agent2": "APPROVED"}
   },
@@ -951,19 +1248,17 @@ echo "✅ Directory verification PASSED: $(pwd)"
 ### REQUIREMENTS → SYNTHESIS
 **Mandatory Conditions:**
 - [ ] ALL required agents invoked in parallel
-- [ ] ALL agents provided complete requirement reports
-- [ ] ALL agent reports written to `../{agent-name}-requirements.md`
+- [ ] ALL agents provided complete requirement analysis in their responses
 - [ ] NO agent failures or incomplete responses
-- [ ] Requirements synthesis document created
+- [ ] Requirements synthesis consolidates all stakeholder input
 - [ ] Architecture plan addresses all stakeholder requirements
 - [ ] Conflict resolution documented for competing requirements
 - [ ] Implementation strategy defined with clear success criteria
 
 **Evidence Required:**
-- Agent report files exist and contain complete analysis
 - Each agent response includes domain-specific requirements
 - All conflicts between agent requirements identified
-- Synthesis document exists with all sections completed
+- Synthesis consolidates requirements from all agents
 - Each agent requirement mapped to implementation approach
 - Trade-off decisions documented with rationale
 - Success criteria defined for each domain (architecture, security, performance, etc.)
@@ -991,10 +1286,10 @@ MANDATORY AFTER REQUIREMENTS completion:
    - Record acceptable compromises with risk assessment
    - Define success criteria for each domain
 
-5. IMPLEMENTATION EXECUTION PLANNING:
-   - Write complete, functional code addressing all requirements
-   - Document design decisions and rationale
-   - Follow established project patterns
+5. AGENT WORK ASSIGNMENT PLANNING:
+   - Determine which agents will implement which components
+   - Define integration points and dependencies
+   - Specify file-based communication protocol
    - Edit: todo.md (mark task complete) - MUST be included in same commit as task deliverables
 
 VIOLATION CHECK: All REQUIREMENTS state agent feedback addressed or exceptions documented
@@ -1007,16 +1302,16 @@ CORRECT PATTERN: git add deliverables todo.md → git commit (single atomic comm
 
 **Validation Function:**
 ```python
-def validate_requirements_complete(required_agents, task_dir):
-    for agent in required_agents:
-        report_file = f"{task_dir}/../{agent}-requirements.md"
-        if not os.path.exists(report_file):
-            return False, f"Missing report: {report_file}"
-        # Additional validation: file is non-empty, contains analysis
+def validate_requirements_complete(agent_responses):
+    for agent, response in agent_responses.items():
+        if not response or len(response) < 100:
+            return False, f"Incomplete response from {agent}"
+        if "REQUIREMENTS COMPLETE" not in response:
+            return False, f"Agent {agent} did not complete requirements analysis"
     return True, "All requirements complete"
 ```
 
-### SYNTHESIS → IMPLEMENTATION
+### SYNTHESIS → CONTEXT
 **Mandatory Conditions:**
 - [ ] Requirements synthesis document created
 - [ ] Architecture plan addresses all stakeholder requirements
@@ -1024,58 +1319,37 @@ def validate_requirements_complete(required_agents, task_dir):
 - [ ] Implementation strategy defined with clear success criteria
 - [ ] **USER APPROVAL: Implementation plan presented to user**
 - [ ] **USER CONFIRMATION: User has approved the proposed implementation approach**
+- [ ] Agent work assignments determined
 
 **Evidence Required:**
-- Synthesis document exists with all sections completed
+- Synthesis consolidates all stakeholder requirements
 - Each agent requirement mapped to implementation approach
 - Trade-off decisions documented with rationale
 - Success criteria defined for each domain (architecture, security, performance, etc.)
 - Implementation plan presented to user in clear, readable format
 - User approval message received
+- Agent work assignments determined
 
 **Plan Presentation Requirements:**
 ```markdown
-MANDATORY BEFORE IMPLEMENTATION:
+MANDATORY BEFORE CONTEXT GENERATION:
 1. After SYNTHESIS complete, stop and present implementation plan to user
 2. Plan must include:
    - Architecture approach and key design decisions
    - Files to be created/modified
-   - Implementation sequence and dependencies
+   - Agent work assignments
+   - Integration strategy
    - Testing strategy
    - Risk mitigation approaches
-3. Wait for explicit user approval before proceeding to IMPLEMENTATION
-4. Only proceed to IMPLEMENTATION after receiving clear user confirmation (e.g., "yes", "approved", "proceed")
+3. Wait for explicit user approval before proceeding to CONTEXT
+4. Only proceed to CONTEXT after receiving clear user confirmation (e.g., "yes", "approved", "proceed")
 
 PROHIBITED:
-❌ Starting implementation without user plan approval
+❌ Starting context generation without user plan approval
 ❌ Skipping plan presentation for "simple" tasks
 ❌ Assuming user approval without explicit confirmation
 ❌ Assuming approval from bypass mode or lack of objection
 ```
-
-### IMPLEMENTATION → VALIDATION
-**Mandatory Conditions:**
-- [ ] All planned deliverables created
-- [ ] Implementation follows synthesis architecture plan
-- [ ] Code adheres to project conventions and patterns
-- [ ] All requirements from synthesis addressed or deferred with justification
-- [ ] **🚨 CRITICAL: All implementation changes COMMITTED to task branch before validation**
-
-**Evidence Required:**
-- Git commit showing all implemented changes (with commit SHA)
-- Implementation matches synthesis plan
-- Any requirement deferrals properly documented in todo.md
-
-**COMMIT REQUIREMENT**:
-```bash
-# Commit all implementation changes BEFORE running validation
-git add [implementation files]
-git commit -m "Implementation message with Claude attribution"
-# Record commit SHA for user review
-git rev-parse HEAD
-```
-
-**RATIONALE**: Stakeholder agents in REVIEW state review COMMITTED code, not working directory changes. User approval checkpoint requires commit SHA for review. Committing after agent approval creates confusion about what was reviewed.
 
 ### VALIDATION → REVIEW (Conditional Path)
 **Path Selection Logic:**

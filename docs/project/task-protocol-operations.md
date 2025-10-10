@@ -514,8 +514,8 @@ validate_state_transition() {
     local to_state=$2
 
     case "$from_state:$to_state" in
-        # Standard transitions
-        "INIT:CLASSIFIED"|"CLASSIFIED:REQUIREMENTS"|"REQUIREMENTS:SYNTHESIS"|"SYNTHESIS:IMPLEMENTATION"|"IMPLEMENTATION:VALIDATION"|"VALIDATION:REVIEW"|"REVIEW:COMPLETE"|"COMPLETE:CLEANUP")
+        # Core state transitions
+        "INIT:CLASSIFIED"|"CLASSIFIED:REQUIREMENTS"|"REQUIREMENTS:SYNTHESIS"|"SYNTHESIS:CONTEXT"|"CONTEXT:AUTONOMOUS_IMPLEMENTATION"|"AUTONOMOUS_IMPLEMENTATION:CONVERGENCE"|"CONVERGENCE:VALIDATION"|"VALIDATION:REVIEW"|"REVIEW:COMPLETE"|"COMPLETE:CLEANUP")
             return 0 ;;
         # Scope negotiation transitions
         "REVIEW:SCOPE_NEGOTIATION"|"SCOPE_NEGOTIATION:SYNTHESIS"|"SCOPE_NEGOTIATION:COMPLETE")
@@ -524,7 +524,7 @@ validate_state_transition() {
         "SYNTHESIS:COMPLETE"|"CLASSIFIED:COMPLETE"|"REQUIREMENTS:COMPLETE")
             return 0 ;;
         # Resolution cycle transitions
-        "SYNTHESIS:IMPLEMENTATION"|"IMPLEMENTATION:SYNTHESIS"|"VALIDATION:SYNTHESIS")
+        "VALIDATION:SYNTHESIS")
             return 0 ;;
         *)
             return 1 ;;
@@ -554,7 +554,8 @@ Reject incomplete solutions when optimal solutions are achievable.
 Use "Solution Quality Hierarchy" - prioritize OPTIMAL over EXPEDIENT.
 
 MANDATORY OUTPUT REQUIREMENT:
-Provide complete {agent_domain} requirements analysis.
+Provide complete {agent_domain} requirements analysis IN YOUR RESPONSE.
+Do NOT write requirements to files - return analysis as response text.
 End with: "REQUIREMENTS COMPLETE: {agent_domain} analysis provided"
 
 MANDATORY EVIDENCE REQUIREMENT:
@@ -728,11 +729,11 @@ final_compliance_audit() {
     state_sequence=$(jq -r '.transition_log[] | .to' state.json | tr '\n' ' ')
 
     # Valid sequences: support multiple workflow variants
-    high_risk_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS IMPLEMENTATION VALIDATION REVIEW COMPLETE"
-    medium_risk_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS IMPLEMENTATION VALIDATION REVIEW COMPLETE"
+    high_risk_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS CONTEXT AUTONOMOUS_IMPLEMENTATION CONVERGENCE VALIDATION REVIEW COMPLETE"
+    medium_risk_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS CONTEXT AUTONOMOUS_IMPLEMENTATION CONVERGENCE VALIDATION REVIEW COMPLETE"
     low_risk_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS COMPLETE"
-    scope_negotiation_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS IMPLEMENTATION VALIDATION REVIEW SCOPE_NEGOTIATION COMPLETE"
-    alternate_scope_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS IMPLEMENTATION VALIDATION REVIEW SCOPE_NEGOTIATION SYNTHESIS.*COMPLETE"
+    scope_negotiation_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS CONTEXT AUTONOMOUS_IMPLEMENTATION CONVERGENCE VALIDATION REVIEW SCOPE_NEGOTIATION COMPLETE"
+    alternate_scope_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS CONTEXT AUTONOMOUS_IMPLEMENTATION CONVERGENCE VALIDATION REVIEW SCOPE_NEGOTIATION SYNTHESIS.*COMPLETE"
     config_only_sequence="CLASSIFIED REQUIREMENTS SYNTHESIS COMPLETE"
 
     # Check against all valid sequences
@@ -819,7 +820,9 @@ export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && [ -n "$SESSION_ID" ]
 - [ ] CLASSIFIED: Risk assessment
 - [ ] REQUIREMENTS: Stakeholder analysis
 - [ ] SYNTHESIS: Architecture planning
-- [ ] IMPLEMENTATION: Code creation
+- [ ] CONTEXT: Implementation context generation
+- [ ] AUTONOMOUS_IMPLEMENTATION: Parallel agent implementation
+- [ ] CONVERGENCE: Integration and consensus
 - [ ] VALIDATION: Build verification
 - [ ] REVIEW: Final approval
 - [ ] COMPLETE: Work preservation
@@ -839,7 +842,7 @@ fi
 ```
 
 ### Temporary File Management Setup
-**BEFORE IMPLEMENTATION BEGINS (Mandatory for all tasks):**
+**BEFORE AUTONOMOUS IMPLEMENTATION BEGINS (Mandatory for all tasks):**
 ```bash
 # TEMP_DIRECTORY_CREATION: Set up isolated temporary file space
 TASK_NAME=$(basename $(dirname $(pwd)))
@@ -1130,11 +1133,20 @@ execute_task_protocol() {
                 if should_skip_implementation "$risk_level" "$change_type"; then
                     execute_synthesis_to_complete_transition
                 else
-                    execute_synthesis_to_implementation_transition
+                    execute_synthesis_to_context_transition
                 fi
                 ;;
-            "IMPLEMENTATION")
-                execute_implementation_to_validation_transition
+            "CONTEXT")
+                # Delegated Protocol: Generate context for autonomous implementation
+                execute_context_to_autonomous_implementation_transition
+                ;;
+            "AUTONOMOUS_IMPLEMENTATION")
+                # Delegated Protocol: Agents implement in parallel
+                execute_autonomous_implementation_to_convergence_transition
+                ;;
+            "CONVERGENCE")
+                # Delegated Protocol: Iterative integration until consensus
+                execute_convergence_to_validation_transition
                 ;;
             "VALIDATION")
                 execute_validation_to_review_transition
@@ -1246,20 +1258,21 @@ present_changes_and_wait_for_user_approval() {
 All existing CLAUDE.md references to "phases" map to states as follows:
 - Phase 1 = REQUIREMENTS state
 - Phase 2 = SYNTHESIS state
-- Phase 3 = IMPLEMENTATION state
+- Phase 3 = CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE states
 - Phase 4 = Part of VALIDATION state
-- Phase 5 = Resolution cycle (SYNTHESIS ↔ IMPLEMENTATION ↔ VALIDATION)
+- Phase 5 = Resolution cycle (SYNTHESIS ↔ CONTEXT ↔ AUTONOMOUS_IMPLEMENTATION ↔ CONVERGENCE ↔ VALIDATION)
 - Phase 6 = REVIEW state
 - Phase 7 = CLEANUP state
 
 ### Transition Period Support
 During migration, both terminologies are recognized:
 - "Execute Phase 1" → "Transition to REQUIREMENTS state"
+- "Phase 3" → "Transition to CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE states"
 - "Phase 6 rejection" → "REVIEW state rejection, return to SYNTHESIS"
 - "Phase guards" → "Transition conditions"
 
 ### Zero Tolerance Enforcement
-Unlike the previous phase-based system with optional "phase guards," this state machine implements **mandatory transition conditions**. There are no manual overrides, no "reasonable approximation" exceptions, and no human discretion in bypassing required validations.
+This state machine implements **mandatory transition conditions**. There are no manual overrides, no "reasonable approximation" exceptions, and no human discretion in bypassing required validations.
 
 **END OF STATE MACHINE PROTOCOL**
 
