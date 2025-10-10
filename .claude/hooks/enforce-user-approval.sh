@@ -1,129 +1,147 @@
 #!/bin/bash
-# User Approval Checkpoint Enforcement Hook
-# Runs on UserPromptSubmit to detect and enforce mandatory user approval checkpoints
-# Prevents transitioning to COMPLETE state without user approval
+# detect-review-completion.sh
+# Detects when Phase 6 REVIEW completes with unanimous approval
+# and injects reminder to create commit for user review
 
-# Parse hook input
-INPUT=$(cat)
-USER_PROMPT=$(echo "$INPUT" | jq -r '.user_prompt // empty')
-SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
+# Configuration
+TRIGGER_PATTERNS=(
+  "unanimous.*approval"
+  "all.*stakeholder.*approved"
+  "all.*agents.*approved"
+  "[5-9]/[5-9].*approved"
+  "stakeholder.*reviews.*approved"
+)
 
-# Check if we're in a task worktree
-CURRENT_DIR=$(pwd)
-if [[ ! "$CURRENT_DIR" =~ /workspace/branches/[^/]+/code$ ]]; then
+SKIP_IF_ALREADY_SHOWN=(
+  "git commit"
+  "git show --stat"
+  "implementation complete.*ready for review"
+  "please review the changes"
+)
+
+# Read assistant's last response from stdin
+RESPONSE=$(cat)
+
+# Check if response contains any trigger patterns
+TRIGGERED=false
+for pattern in "${TRIGGER_PATTERNS[@]}"; do
+  if echo "$RESPONSE" | grep -iE "$pattern" > /dev/null 2>&1; then
+    TRIGGERED=true
+    break
+  fi
+done
+
+# Exit early if no trigger detected
+if [ "$TRIGGERED" = "false" ]; then
+  echo "$RESPONSE"
   exit 0
 fi
 
-TASK_NAME=$(basename $(dirname "$CURRENT_DIR"))
-
-# Check if lock file exists and extract state
-LOCK_FILE="/workspace/locks/${TASK_NAME}.json"
-if [ ! -f "$LOCK_FILE" ]; then
-  exit 0
-fi
-
-TASK_STATE=$(grep -oP '"state":\s*"\K[^"]+' "$LOCK_FILE")
-
-# Check for user approval marker file
-APPROVAL_MARKER="/workspace/branches/${TASK_NAME}/user-approval-obtained.flag"
-
-# CRITICAL CHECK: Detect attempt to proceed to COMPLETE without user approval
-if [[ "$TASK_STATE" == "REVIEW" ]] && [[ ! -f "$APPROVAL_MARKER" ]]; then
-  # Check if user prompt contains finalization keywords
-  LOWER_PROMPT=$(echo "$USER_PROMPT" | tr '[:upper:]' '[:lower:]')
-
-  if [[ "$LOWER_PROMPT" =~ (continue|proceed|complete|finalize|merge|finish|cleanup) ]]; then
-
-    # Check if this IS the approval message
-    if [[ "$LOWER_PROMPT" =~ (yes|approved|approve|proceed|looks good|lgtm) ]] && \
-       [[ "$LOWER_PROMPT" =~ (review|changes|commit|finali) ]]; then
-      # User is providing approval - create approval marker
-      touch "$APPROVAL_MARKER"
-      exit 0
-    fi
-
-    MESSAGE="## 🚨 MANDATORY USER APPROVAL CHECKPOINT - BLOCKED
-
-**Current State**: REVIEW (unanimous stakeholder approval obtained)
-**Attempted Action**: Transition to COMPLETE state
-**VIOLATION DETECTED**: User approval checkpoint not satisfied
-
----
-
-## Protocol Requirement (task-protocol-core.md:46-50)
-
-**Checkpoint 2: [CHANGE REVIEW] - After REVIEW, Before COMPLETE**
-- ✅ **MANDATORY**: Present completed changes with commit SHA to user
-- ✅ **MANDATORY**: Wait for explicit user review approval
-- ❌ **PROHIBITED**: Assuming user approval from unanimous agent approval alone
-- ❌ **PROHIBITED**: Proceeding to COMPLETE without clear user confirmation
-
-## 🔒 CHECKPOINT IS MANDATORY REGARDLESS OF:
-- User instructions to \"continue without asking\"
-- Bypass mode settings
-- Automation mode
-- Session continuity
-- Time pressure
-
-**From protocol line 36**:
-> The two user approval checkpoints are MANDATORY and MUST be respected
-> REGARDLESS of whether the user is in \"bypass permissions on\" mode or
-> any other automation mode.
-
----
-
-## Required Action Before COMPLETE:
-
-\`\`\`bash
-# 1. Ensure all changes are committed
-git status
-
-# 2. Get commit SHA for user review
-git rev-parse HEAD
-
-# 3. Present changes to user
-git show --stat HEAD
-\`\`\`
-
-## Then present to user:
-
-\"All stakeholder agents have approved the implementation.
-
-**Commit SHA**: [commit-sha-here]
-**Files changed**: [list from git show --stat]
-**Key implementation decisions**: [summary]
-**Test results**: [summary]
-**Quality gates**: [checkstyle/PMD/build status]
-
-Please review the changes. Would you like me to proceed with finalizing (COMPLETE → CLEANUP)?\"
-
-## Wait for explicit user approval before proceeding to COMPLETE state.
-
-**Approval markers**: \"yes\", \"approved\", \"proceed\", \"looks good\", \"LGTM\"
-
----
-
-**🚫 TRANSITION TO COMPLETE STATE IS BLOCKED UNTIL USER APPROVAL IS OBTAINED**"
-
-    jq -n \
-      --arg event "UserPromptSubmit" \
-      --arg context "$MESSAGE" \
-      '{
-        "hookSpecificOutput": {
-          "hookEventName": $event,
-          "additionalContext": $context
-        }
-      }'
+# Check if commit workflow already shown
+for skip_pattern in "${SKIP_IF_ALREADY_SHOWN[@]}"; do
+  if echo "$RESPONSE" | grep -iE "$skip_pattern" > /dev/null 2>&1; then
+    # Already showed commit workflow - don't inject again
+    echo "$RESPONSE"
     exit 0
   fi
-fi
+done
 
-# If we're past REVIEW and approval marker exists, allow COMPLETE
-if [[ "$TASK_STATE" == "COMPLETE" ]] || [[ "$TASK_STATE" == "CLEANUP" ]]; then
-  # Clean up approval marker during cleanup
-  if [[ "$TASK_STATE" == "CLEANUP" ]]; then
-    rm -f "$APPROVAL_MARKER" 2>/dev/null
+# Check if asking for approval without showing commit
+ASKING_APPROVAL=false
+APPROVAL_PATTERNS=(
+  "awaiting.*approval"
+  "ready for.*phase 7"
+  "proceed.*phase 7"
+  "approval.*proceed"
+)
+
+for pattern in "${APPROVAL_PATTERNS[@]}"; do
+  if echo "$RESPONSE" | grep -iE "$pattern" > /dev/null 2>&1; then
+    ASKING_APPROVAL=true
+    break
   fi
+done
+
+# Only inject if asking for approval without creating commit
+if [ "$ASKING_APPROVAL" = "true" ]; then
+  cat <<'INJECTION'
+
+## 🚨 MANDATORY CHECKPOINT: Create Commit for User Review
+
+You have achieved unanimous stakeholder approval. Before proceeding, you MUST:
+
+1. **Create implementation commit** with all changes:
+   ```bash
+   # Stage all modified files
+   git add -A
+
+   # Create commit with comprehensive message (see CLAUDE.md § Checkpoint 2)
+   git commit -m "$(cat <<'EOF'
+   [Task name]: [Brief summary]
+
+   [Detailed implementation description]
+
+   Changes:
+   - [Major changes]
+   - [File modifications]
+   - [Test coverage]
+
+   Stakeholder Approvals:
+   - Technical Architect: ✅ APPROVED
+   - Security Auditor: ✅ APPROVED
+   - Code Quality Auditor: ✅ APPROVED
+   - Performance Analyzer: ✅ APPROVED
+   - Style Auditor: ✅ APPROVED
+
+   Test Results: [X/X passing]
+
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+   Co-Authored-By: Claude <noreply@anthropic.com>
+   EOF
+   )"
+
+   # Show commit summary
+   git show --stat
+
+   # Show detailed diff
+   git diff HEAD~1
+   ```
+
+2. **Present commit to user:**
+   ```
+   ## Implementation Complete - Ready for Review
+
+   I have completed the [task-name] implementation with unanimous stakeholder approval.
+
+   **Stakeholder Reviews:** [5/5 approved]
+   **Test Results:** [X tests passing]
+   **Files Modified:** [list key files]
+
+   **Commit Created:** [commit hash]
+
+   Please review the changes above. Reply with:
+   - "Approved" or "LGTM" to proceed with merge to main
+   - "Rejected" or specific feedback to make revisions
+   ```
+
+3. **Wait for explicit user approval** before Phase 7 (COMPLETE)
+
+**DO NOT:**
+- ❌ Say "awaiting approval" without showing what you're asking approval FOR
+- ❌ Proceed to Phase 7 without user approval message
+- ❌ Skip commit creation
+
+**CORRECT SEQUENCE:**
+1. Achieve unanimous stakeholder approval ✅ (you are here)
+2. Create commit and show changes ⏳ (DO THIS NOW)
+3. Present to user and wait for approval ⏳ (THEN THIS)
+4. Only after user approves: proceed to Phase 7 ⏳
+
+**Pattern to follow:** See CLAUDE.md § "PHASE 6 → USER APPROVAL → PHASE 7 EXAMPLE" for the exact correct pattern.
+
+INJECTION
 fi
 
-exit 0
+# Always output the original response
+echo "$RESPONSE"
