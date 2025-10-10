@@ -24,6 +24,7 @@ This document contains:
 **Mandatory Conditions:**
 - [ ] All work already committed to task branch (from USER REVIEW checkpoint)
 - [ ] todo.md removed from todo list and added to changelog.md
+- [ ] **Dependent tasks updated in todo.md** (BLOCKED → READY if all dependencies satisfied)
 - [ ] todo.md and changelog.md changes amended to existing commit
 - [ ] **Build verification passes in task worktree BEFORE merge** (`./mvnw verify` in worktree)
 - [ ] Task branch merged to main branch with **LINEAR COMMIT HISTORY** (fast-forward only, NO merge commits)
@@ -85,14 +86,27 @@ git status --porcelain | grep -E "(dist/|target/|\.temp_dir$)" | wc -l  # Must b
 git add <changed-files>
 git commit -m "Descriptive commit message for task changes"
 
-# Step 3: Update todo.md to mark task complete
-# Edit todo.md to change task status from [ ] to [x] and add completion details
-# Then amend the commit to include todo.md changes
-git add todo.md
+# Step 3: Archive completed task from todo.md to changelog.md
+# CRITICAL: Follow CLAUDE.md task archival policy
+# 3a. Remove completed task entry from todo.md (delete entire task section)
+# 3b. Add completed task to changelog.md under today's date (## YYYY-MM-DD)
+# 3c. Include completion details: solution, files modified, tests, quality gates
+# Edit todo.md and changelog.md accordingly
+
+# Step 3d: Update dependent tasks in todo.md
+# For each task marked as BLOCKED:
+#   - Check if the completed task was listed in its Dependencies
+#   - If ALL dependencies are now complete (check changelog.md), change status from BLOCKED to READY
+#   - Example: If task B1 depends on A0 and A1, and both A0 and A1 are now in changelog.md,
+#             change "- [ ] **BLOCKED:** `task-name`" to "- [ ] **READY:** `task-name`"
+
+# Step 3e: Amend the commit to include todo.md and changelog.md changes
+git add todo.md changelog.md
 git commit --amend --no-edit
 
-# Step 4: Verify todo.md is included in the commit
+# Step 4: Verify todo.md and changelog.md are included in the commit
 git show --stat | grep "todo.md" || { echo "ERROR: todo.md not in commit"; exit 1; }
+git show --stat | grep "changelog.md" || { echo "ERROR: changelog.md not in commit"; exit 1; }
 
 # Step 5: Fetch latest main and rebase to create linear history
 git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
@@ -155,13 +169,16 @@ git status --porcelain | grep -E "(dist/|target/)" | wc -l  # Must be 0
 # Verify commit exists
 git log -1 --oneline
 
-# Step 3: Update todo.md and changelog.md, then amend commit
-# (Remove task from todo.md, add to changelog.md)
+# Step 3: Archive completed task and update dependent tasks
+# 3a-c. Remove task from todo.md, add to changelog.md with completion details
+# 3d. Update dependent tasks: check each BLOCKED task, if all dependencies complete, change to READY
+# 3e. Amend commit with both files
 git add todo.md changelog.md
 git commit --amend --no-edit
 
-# Step 4: Verify todo.md included
+# Step 4: Verify todo.md and changelog.md included
 git show --stat | grep "todo.md"
+git show --stat | grep "changelog.md"
 
 # Step 5: Fetch and rebase onto main
 git fetch /workspace/branches/main/code refs/heads/main:refs/remotes/origin/main
@@ -204,6 +221,111 @@ NOT this (merge commit creates non-linear history):
 | * 7f8deba Implement CLI security basics
 |/
 * 6a2b1c3 Previous commit on main
+```
+
+### DEPENDENT TASK UPDATE PROCEDURE
+
+**Purpose**: Automatically unblock tasks when their dependencies are satisfied, preventing tasks from remaining unnecessarily blocked.
+
+**When to Execute**: During Step 3d of the COMPLETE → CLEANUP transition (after archiving the completed task to changelog.md).
+
+**Implementation Logic:**
+```bash
+# Helper function to update dependent tasks in todo.md
+update_dependent_tasks() {
+    local completed_task=$1
+    local todo_file="todo.md"
+    local changelog_file="changelog.md"
+
+    echo "=== UPDATING DEPENDENT TASKS ==="
+    echo "Completed task: $completed_task"
+
+    # Find all BLOCKED tasks in todo.md
+    grep -n "BLOCKED:" "$todo_file" | while IFS=: read line_num task_entry; do
+        # Extract task name from the entry
+        task_name=$(echo "$task_entry" | grep -oP '`\K[^`]+' | head -1)
+
+        # Find the dependencies for this task
+        # Dependencies are listed on a line like: "  - **Dependencies**: A0, A1, A2"
+        dependencies=$(sed -n "${line_num},/^$/p" "$todo_file" | grep "Dependencies:" | sed 's/.*Dependencies: *//' | sed 's/ *$//')
+
+        if [ -z "$dependencies" ]; then
+            continue
+        fi
+
+        echo "Checking task: $task_name"
+        echo "  Dependencies: $dependencies"
+
+        # Check if ALL dependencies are satisfied (in changelog.md)
+        all_satisfied=true
+        IFS=',' read -ra DEPS <<< "$dependencies"
+        for dep in "${DEPS[@]}"; do
+            # Trim whitespace
+            dep=$(echo "$dep" | xargs)
+
+            # Check if dependency is in changelog.md (completed)
+            if ! grep -q "$dep" "$changelog_file"; then
+                echo "  ❌ Dependency $dep not yet complete"
+                all_satisfied=false
+                break
+            else
+                echo "  ✅ Dependency $dep complete"
+            fi
+        done
+
+        # If all dependencies satisfied, update task status from BLOCKED to READY
+        if [ "$all_satisfied" = true ]; then
+            echo "  🔓 All dependencies satisfied - updating to READY"
+            # Use sed to change BLOCKED to READY on the specific line
+            sed -i "${line_num}s/BLOCKED:/READY:/" "$todo_file"
+            echo "  ✅ Task $task_name updated to READY"
+        else
+            echo "  ⏳ Task $task_name remains BLOCKED"
+        fi
+    done
+
+    echo "=== DEPENDENT TASK UPDATE COMPLETE ==="
+}
+
+# Usage in Step 3d:
+update_dependent_tasks "implement-index-overlay-parser"
+```
+
+**Example Scenario:**
+
+Initial state in todo.md:
+```markdown
+- [ ] **BLOCKED:** `implement-line-length-formatter`
+  - **Dependencies**: A0 (styler-formatter-api module), A1 (parser for AST)
+
+- [ ] **BLOCKED:** `implement-import-organization`
+  - **Dependencies**: A0 (styler-formatter-api module), A1 (parser for AST)
+```
+
+After completing task A1 (`implement-index-overlay-parser`):
+1. Check changelog.md for A0 → Found ✅
+2. Check changelog.md for A1 → Found ✅ (just completed)
+3. Both dependencies satisfied → Update both tasks to READY
+
+Result in todo.md:
+```markdown
+- [ ] **READY:** `implement-line-length-formatter`
+  - **Dependencies**: A0 ✅ COMPLETE, A1 ✅ COMPLETE
+
+- [ ] **READY:** `implement-import-organization`
+  - **Dependencies**: A0 ✅ COMPLETE, A1 ✅ COMPLETE
+```
+
+**Rationale:**
+- Prevents stale BLOCKED status when dependencies are complete
+- Enables parallel task execution by other instances
+- Reduces manual todo.md maintenance
+- Provides clear visibility of task readiness
+
+**Validation:**
+```bash
+# Verify dependent tasks were updated
+grep "implement-line-length-formatter" todo.md | grep -q "READY:" && echo "✅ Task unblocked" || echo "❌ Task still blocked"
 ```
 
 ### AUTOMATIC CONFLICT RESOLUTION VIA ATOMIC OPERATIONS
