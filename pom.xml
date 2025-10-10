@@ -12,8 +12,10 @@
 	<description>An unopinionated Java code formatter</description>
 
 	<modules>
+		<module>ast</module>
 		<module>cli</module>
 		<module>config</module>
+		<module>parser</module>
 	</modules>
 
 	<properties>
