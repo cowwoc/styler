@@ -1,133 +1,43 @@
 # Testing Code Style Detection Patterns
 
-**Claude Code optimization patterns for testing validation and detection**
-
-This document contains testing patterns and detection rules optimized for Claude Code analysis and validation.
-
----
+**Detection rules optimized for Claude Code testing validation**
 
 ## 🔍 DETECTION PATTERNS
 
 ### JPMS-Compliant Test Structure
-- `module.*\.test\s*\{`
-- `src/test/java/module-info\.java`
-- `io\.github\.styler\..*\.test`
+`module.*\.test\s*\{` | `src/test/java/module-info\.java` | `io\.github\.styler\..*\.test`
 
-### Parallel Test Execution Requirements
-- `@BeforeTest|@BeforeMethod|@BeforeClass` (violations)
-- `@AfterTest|@AfterMethod|@AfterClass` (violations)
-- `private\s+(?:static\s+)?(?!final)\w+.*=` (mutable fields)
-- `private\s+\w+.*calculator.*=` (shared instances)
-- `private\s+(?:ConfigSearchPath|ErrorReporter|ConfigDiscovery)\s+\w+;` (shared test fixtures)
-- `Files\.createTempDirectory\("(?!.*UUID\.randomUUID)` (temp files without UUID isolation)
+### Parallel Test Violations
+**Prohibited**: `@Before/AfterTest|Method|Class` | Mutable fields: `private\s+(?:static\s+)?(?!final)\w+.*=` | Shared instances | Temp files without UUID
+**Required**: Instance creation per test | `static final` immutable constants | UUID-isolated temp files
 
-### Parallel Test Safety Rules
-- `@Test.*public\s+void.*\{[^}]*new\s+\w+Calculator\(\)`
-- `static\s+final\s+` (immutable constants)
-- Test method creating instances locally
+### Test Naming
+`@Test\s*public\s+void\s+[a-z][a-zA-Z0-9]*\(\)` | Pattern: `methodConditionExpectedResult` | Example: `parseExpressionWithInvalidTokenThrowsParseException`
 
-### Test Naming and Structure
-- `@Test\s*public\s+void\s+[a-z][a-zA-Z0-9]*\(\)`
-- `parseExpressionWithInvalidTokenThrowsParseException`
-- `methodConditionExpectedResult` pattern
+### Test Organization
+Categories: `@Test\(.*groups\s*=\s*\{.*"(unit|integration|performance|fast|slow)".*\)` | Builder pattern: `\w+TestBuilder` with `.build()` | Stateless utilities: `public\s+static\s+void\s+assert\w+\(` | Read-only data: `loadTestCasesFromResource\(.*\.json.*\)`
 
-### Test Categories and Organization
-- `@Test\s*\(.*groups\s*=\s*\{.*"(unit|integration|performance|fast|slow)".*\}`
-- Test categorization patterns
+### Thread Safety Indicators
+`// ✅|❌` indicators | `requireThat\(.*\)\.` assertions | Instance creation within test methods
 
-### Parallel-Safe Test Data Creation
-- `public\s+class\s+\w+TestBuilder\s*\{`
-- `public\s+\w+TestBuilder\s+with\w+\(`
-- `.build\(\)` method calls
+### Risk-Based Testing Patterns
+**Documentation**: `// RISK:.*→` | `// IMPACT:.*-` | `// BUSINESS RULE:` | `// USER IMPACT:` | `// BUG RISK:`
+**Priority 1 (Business Logic)**: `mergeConfigs[A-Z][a-zA-Z0-9]*\(\)` | Business rule validation | User workflow tests
+**Priority 2 (Happy Path)**: `parseTomlWithValidConfigReturnsCorrectObject` | Standard use cases | Core features
+**Priority 3 (Edge Cases)**: `parseTomlWithMaxBoundaryValue[A-Z]` | Boundary values | Concurrency: `loadConfigWithConcurrentAccess[A-Z]`
+**Priority 4 (Error Handling)**: `parseTomlWithMalformedSyntaxProvidesActionableError` | Error message validation | Actionable errors
 
-### Parallel-Safe Test Utilities and Helpers
-- `public\s+static\s+void\s+assert\w+\(`
-- `TestUtils\.assert\w+\(`
-- Stateless utility methods
-
-### Parallel-Safe Test Data Management
-- `loadTestCasesFromResource\(.*\.json.*\)`
-- Read-only test data patterns
-
-### Thread Safety Checklist
-- `// ✅|❌` indicators
-- `requireThat\(.*\)\.` assertions
-- Instance creation within test methods
-
-### Risk-Based Test Coverage Philosophy
-- `// RISK:.*→` (business risk documentation)
-- `// IMPACT:.*-` (impact assessment)
-- `// BUSINESS RULE:` (business rule validation)
-- `// USER IMPACT:` (user workflow impact)
-- `// BUG RISK:` (bug probability assessment)
-
-### Priority 1: Business Logic Scenarios
-- `mergeConfigs[A-Z][a-zA-Z0-9]*\(\)` (config merge business logic)
-- `parseTomlWithInvalidBusinessRuleRejectsClearly`
-- Business rule validation tests
-- User workflow validation
-
-### Priority 2: Happy Path Validation
-- `parseTomlWithValidConfigReturnsCorrectObject`
-- Standard use case validation
-- Core feature validation
-
-### Priority 3: Edge Cases
-- `parseTomlWithMaxBoundaryValue[A-Z]`
-- `loadConfigWithConcurrentAccess[A-Z]`
-- Boundary value tests
-- Concurrency tests
-
-### Priority 4: Error Handling
-- `parseTomlWithMalformedSyntaxProvidesActionableError`
-- `try\s*\{[^}]*parser\.parse\([^)]*\);[^}]*fail\(.*Expected`
-- Error message validation
-- Actionable error patterns
-
-### Metric-Driven Testing Anti-Patterns
-- `testGetterReturnsField\(\)` (coverage-only test)
-- `testPrivateHelperMethodLogic\(\)` (implementation detail test)
-- Tests without business logic validation
-
-### Risk-Driven Testing Best Practices
-- `discoverConfigWithGitBoundaryStopsAtRepositoryRoot`
-- Repository boundary validation
-- Critical business rule tests
-- User workflow impact tests
-
----
+### Anti-Patterns
+`testGetterReturnsField\(\)` (coverage-only) | `testPrivateHelperMethodLogic\(\)` (implementation detail) | Tests without business logic validation
 
 ## 📋 VALIDATION RULES
 
-**Critical Requirements:**
-1. JPMS Compliance - Test module descriptors required
-2. Parallel Safety - No shared mutable state
-3. Isolation - Instance creation per test method
-4. Thread Safety - Stateless utilities only
-5. Risk Documentation - Business risk, impact, and bug risk comments
+**Critical**: JPMS compliance (test module descriptors) | Parallel safety (no shared mutable state) | Isolation (instance per test) | Thread safety (stateless utilities) | Risk documentation (RISK, IMPACT, BUSINESS RULE comments)
 
-**Standard Requirements:**
-1. Naming Convention - `method_condition_expectedResult`
-2. Test Organization - TestNG groups for categorization
-3. Builder Pattern - For complex test data creation
-4. Resource Management - Read-only external data
-5. Test Prioritization - Business logic > Happy path > Edge cases > Error handling
+**Standard**: Naming (`method_condition_expectedResult`) | TestNG groups | Builder pattern | Read-only data | Priority: Business logic > Happy path > Edge cases > Error handling
 
-**Risk-Based Testing Requirements:**
-1. Business Logic First - Critical workflows validated before edge cases
-2. Risk Documentation - All high-priority tests document RISK, IMPACT, BUSINESS RULE
-3. Bug Prevention Focus - Tests target real user-impacting bugs, not coverage metrics
-4. Regression Tests - Every discovered bug gets a dedicated regression test
-5. Actionable Errors - Error handling tests validate error message usefulness
+**Risk-Based Testing**: Business logic first | Risk docs for high-priority tests | Bug prevention focus (not coverage metrics) | Regression test per bug | Actionable error messages
 
-**Detection Priority:**
-- 🔴 CRITICAL: Parallel test violations, JPMS structure, missing business logic tests
-- 🟡 STANDARD: Naming conventions, organization patterns, risk documentation
-- 🟢 OPTIONAL: Advanced patterns, optimizations, coverage-only tests
+**Detection Priority**: 🔴 CRITICAL (parallel violations, JPMS, missing business logic) | 🟡 STANDARD (naming, organization, risk docs) | 🟢 OPTIONAL (advanced patterns, optimizations)
 
----
-
-**Related Documentation:**
-- `testing-human.md` - Human-readable testing explanations
-- `java-claude.md` - Java-specific Claude patterns
-- `common-claude.md` - Universal code style patterns
+**Related**: `testing-human.md` | `java-claude.md` | `common-claude.md`

@@ -1,10 +1,8 @@
 # Task State Machine Protocol
 
-**CRITICAL**: This protocol applies to ALL tasks that create, modify, or delete files, using MANDATORY STATE TRANSITIONS with zero-tolerance enforcement
+**CRITICAL**: This protocol applies to ALL file operations using MANDATORY STATE TRANSITIONS with zero-tolerance enforcement.
 
-**TARGET AUDIENCE**: Claude AI instances executing tasks
-**ARCHITECTURE**: State machine with atomic transitions and verifiable conditions
-**ENFORCEMENT**: No manual overrides - all transitions require documented evidence
+**State machine: atomic transitions, verifiable conditions, no manual overrides.**
 
 ## STATE MACHINE ARCHITECTURE
 
@@ -36,165 +34,83 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → CONTE
 
 ### User Approval Checkpoints - MANDATORY REGARDLESS OF BYPASS MODE
 
-**CRITICAL**: The two user approval checkpoints are MANDATORY and MUST be respected REGARDLESS of whether the user is in "bypass permissions on" mode or any other automation mode.
-
 **🚨 BYPASS MODE DOES NOT BYPASS USER APPROVAL CHECKPOINTS**
 
 **Checkpoint 1: [PLAN APPROVAL] - After SYNTHESIS, Before CONTEXT**
-- MANDATORY: Present implementation plan to user in clear, readable format
-- MANDATORY: Wait for explicit user approval message
-- PROHIBITED: Assuming user approval from bypass mode or lack of response
-- PROHIBITED: Proceeding to CONTEXT without clear "yes", "approved", "proceed", or equivalent confirmation
+- Present implementation plan in clear format
+- Wait for explicit approval message
+- PROHIBITED: Assuming approval from bypass mode, lack of response, or proceeding without "yes"/"approved"/"proceed"
 
 **Checkpoint 2: [CHANGE REVIEW] - After REVIEW, Before COMPLETE**
-- MANDATORY: Present completed changes with commit SHA to user
-- MANDATORY: Wait for explicit user review approval
-- PROHIBITED: Assuming user approval from unanimous agent approval alone
-- PROHIBITED: Proceeding to COMPLETE without clear user confirmation
+- Present completed changes with commit SHA
+- Wait for explicit review approval
+- PROHIBITED: Assuming approval from agent consensus alone or proceeding without clear confirmation
 
-**Verification Questions Before Proceeding:**
-Before SYNTHESIS → CONTEXT:
-- [ ] Did I present the complete implementation plan to the user?
-- [ ] Did the user explicitly approve the plan with words like "yes", "approved", "proceed", "looks good"?
-- [ ] Did I assume approval from bypass mode? (VIOLATION if yes)
-
-Before REVIEW → COMPLETE:
-- [ ] Did I present the completed changes with commit SHA?
-- [ ] Did the user explicitly approve proceeding to finalization?
-- [ ] Did I assume approval from agent consensus alone? (VIOLATION if yes)
+**Verification Before Proceeding:**
+SYNTHESIS → CONTEXT: Presented complete plan? User explicitly approved? Assumed approval from bypass? (VIOLATION if yes)
+REVIEW → COMPLETE: Presented changes with SHA? User explicitly approved finalization? Assumed approval from agents alone? (VIOLATION if yes)
 
 ### Automated Checkpoint Enforcement
 
-**HOOK-BASED ENFORCEMENT**: The `enforce-user-approval.sh` hook actively prevents transitioning to COMPLETE state without user approval.
+**HOOK**: `enforce-user-approval.sh` blocks COMPLETE without user approval
 
-**Approval Marker File**: `/workspace/branches/{task-name}/user-approval-obtained.flag`
-- Automatically created when user provides explicit approval
-- Required for COMPLETE state transition
-- Automatically removed during CLEANUP
+**Approval Marker**: `/workspace/branches/{task-name}/user-approval-obtained.flag` (created on approval, required for COMPLETE, removed during CLEANUP)
 
-**Approval Detection Patterns** (hook recognizes these as approval):
-- User message contains approval keywords: "yes", "approved", "approve", "proceed", "looks good", "LGTM"
-- AND message references review context: "review", "changes", "commit", "finalize"
+**Approval Keywords**: "yes", "approved", "approve", "proceed", "looks good", "LGTM" + review context
 
-**Blocked Transition Patterns** (hook prevents these):
-- Any "continue" instruction during REVIEW state without approval marker
-- Direct transition attempt to COMPLETE without approval marker
-- Interpretation of non-approval messages as implicit approval
-
-**How It Works**:
-1. Hook monitors UserPromptSubmit events
-2. When in REVIEW state and user says "continue/proceed/finalize"
-3. Hook checks for approval marker file
-4. If marker missing AND message is not explicit approval → Block with checkpoint reminder
-5. If message IS explicit approval → Create marker, allow continuation
-6. If marker exists → Allow COMPLETE state transition
-
-**Why User Instructions Don't Override**:
-The hook enforces protocol requirements regardless of user instructions because:
-- Protocol line 36: "MANDATORY REGARDLESS of bypass mode or automation mode"
-- Checkpoints protect against unintentional skipping
-- User approval is a quality gate, not a permission gate
-- Even "continue without asking" cannot bypass safety checkpoints
+**Hook Process**: Monitor UserPromptSubmit events → Check marker during REVIEW → Block if missing and no explicit approval → Create marker on approval, allow COMPLETE
 
 ### State Transitions
 Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS.**
 
 ## RISK-BASED AGENT SELECTION ENGINE
 
-### Automatic Risk Classification
-**Input**: File paths from modification request
-**Process**: Pattern matching → Escalation trigger analysis → Agent set determination
-**Output**: Risk level (HIGH/MEDIUM/LOW) + Required agent set
+**Risk Classification**: File patterns → Escalation triggers → Risk level (HIGH/MEDIUM/LOW) + Agent set
 
 ### HIGH-RISK FILES (Complete Validation Required)
-**Patterns:**
-- `src/**/*.java` (core implementation)
-- `pom.xml`, `**/pom.xml` (build configuration)
-- `.github/**` (CI/CD workflows)
-- `**/security/**` (security components)
-- `checkstyle.xml`, `**/checkstyle*.xml` (style enforcement)
-- `CLAUDE.md` (critical configuration)
-- `docs/project/task-protocol.md` (protocol configuration)
-- `docs/project/critical-rules.md` (safety rules)
+**Patterns**: `src/**/*.java`, `pom.xml`, `**/pom.xml`, `.github/**`, `**/security/**`, `checkstyle.xml`, `**/checkstyle*.xml`, `CLAUDE.md`, `docs/project/task-protocol.md`, `docs/project/critical-rules.md`
 
-**Required Agents**: technical-architect, style-auditor, code-quality-auditor, build-validator
-**Additional Agents**: security-auditor (if security-related), performance-analyzer (if performance-critical), code-tester (if new functionality), usability-reviewer (if user-facing)
+**Required**: technical-architect, style-auditor, code-quality-auditor, build-validator
+**Additional**: security-auditor (security-related), performance-analyzer (performance-critical), code-tester (new functionality), usability-reviewer (user-facing)
 
 ### MEDIUM-RISK FILES (Domain Validation Required)
-**Patterns:**
-- `src/test/**/*.java` (test files)
-- `docs/code-style/**` (style documentation)
-- `**/resources/**/*.properties` (configuration)
-- `**/*Test.java`, `**/*Tests.java` (test classes)
+**Patterns**: `src/test/**/*.java`, `docs/code-style/**`, `**/resources/**/*.properties`, `**/*Test.java`, `**/*Tests.java`
 
-**Required Agents**: technical-architect, code-quality-auditor
-**Additional Agents**: style-auditor (if style files), security-auditor (if config files), performance-analyzer (if benchmarks)
+**Required**: technical-architect, code-quality-auditor
+**Additional**: style-auditor (style files), security-auditor (config files), performance-analyzer (benchmarks)
 
 ### LOW-RISK FILES (Minimal Validation Required)
-**Patterns:**
-- `*.md` (except CLAUDE.md, task-protocol.md, critical-rules.md)
-- `docs/**/*.md` (general documentation)
-- `todo.md` (task tracking)
-- `*.txt`, `*.log` (text files)
-- `**/README*` (readme files)
+**Patterns**: `*.md` (except CLAUDE.md, task-protocol.md, critical-rules.md), `docs/**/*.md`, `todo.md`, `*.txt`, `*.log`, `**/README*`
 
-**Required Agents**: None (unless escalation triggered)
+**Required**: None (unless escalation triggered)
 
 ### Escalation Triggers
-**Keywords**: "security", "architecture", "breaking", "performance", "concurrent", "database", "api", "state", "dependency"
-**Content Analysis**: Cross-module dependencies, security implications, architectural changes
-**Action**: Force escalation to next higher risk level
+**Keywords**: "security", "architecture", "breaking", "performance", "concurrent", "database", "api", "state", "dependency" → Escalate to next higher risk level
 
 ### Manual Overrides
-**Force Full Protocol**: `--force-full-protocol` flag for critical changes
-**Explicit Risk Level**: `--risk-level=HIGH|MEDIUM|LOW` to override classification
-**Escalation Keywords**: "security", "architecture", "breaking" in task description
+`--force-full-protocol` (critical changes), `--risk-level=HIGH|MEDIUM|LOW` (override classification), Escalation keywords in task description
 
 ### Risk Assessment Audit Trail
-**Required Logging:**
-- Risk level selected (HIGH/MEDIUM/LOW)
-- Classification method (pattern match, keyword trigger, manual override)
-- Escalation triggers activated (if any)
-- Workflow variant executed (FULL/ABBREVIATED/STREAMLINED)
-- Agent set selected for review
-- Final outcome (approved/rejected/deferred)
-
-**Implementation**: Log in state.json file and commit messages for audit purposes
+Log in state.json: Risk level, classification method, escalation triggers, workflow variant, agent set, outcome
 
 ## WORKFLOW VARIANTS BY RISK LEVEL
 
 ### HIGH_RISK_WORKFLOW (Complete Validation)
-**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE → VALIDATION → REVIEW → COMPLETE → CLEANUP
-**Stakeholder Agents**: All agents based on task requirements
-**Isolation**: Mandatory worktree isolation
-**Review**: Complete stakeholder validation
-**Use Case**: Core implementation, build configuration, security, CI/CD
-**Conditional Skips**: None - all validation required
+**States**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE → VALIDATION → REVIEW → COMPLETE → CLEANUP
+**Agents**: All based on task requirements | **Isolation**: Mandatory worktree | **Review**: Complete stakeholder validation
+**Use Case**: Core implementation, build configuration, security, CI/CD | **Skips**: None (all validation required)
 
 ### MEDIUM_RISK_WORKFLOW (Domain Validation)
-**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE → VALIDATION → REVIEW → COMPLETE → CLEANUP
-**Stakeholder Agents**: Based on change characteristics
-- Base: technical-architect (always required)
-- +style-auditor: If style/formatting files modified
-- +security-auditor: If any configuration or resource files modified
-- +performance-analyzer: If test performance or benchmarks affected
-- +code-quality-auditor: Always included for code quality validation
-**Isolation**: Worktree isolation for multi-file changes
-**Review**: Domain-appropriate stakeholder validation
-**Use Case**: Test files, style documentation, configuration files
-**Conditional Skips**: May skip CONTEXT/AUTONOMOUS_IMPLEMENTATION/CONVERGENCE/VALIDATION states if only documentation changes
+**States**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE → VALIDATION → REVIEW → COMPLETE → CLEANUP
+**Agents**: technical-architect (always), +style-auditor (style/formatting files), +security-auditor (config/resource files), +performance-analyzer (test performance/benchmarks), +code-quality-auditor (always)
+**Isolation**: Worktree for multi-file changes | **Review**: Domain-appropriate stakeholder validation
+**Use Case**: Test files, style documentation, configuration files | **Skips**: May skip CONTEXT/AUTONOMOUS_IMPLEMENTATION/CONVERGENCE/VALIDATION if documentation-only
 
 ### LOW_RISK_WORKFLOW (Streamlined Validation)
-**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → COMPLETE → CLEANUP
-**Stakeholder Agents**: None (unless escalation triggered)
-**Isolation**: Required for multi-file changes, optional for single documentation file
-**Review**: Evidence-based validation and automated checks
-**Safety Gates**:
-- Verify no cross-references to modified files in src/
-- Confirm no build configuration impact
-- Validate no security-sensitive content changes
-**Use Case**: Documentation updates, todo.md, README files
-**Conditional Skips**: Skip CONTEXT, AUTONOMOUS_IMPLEMENTATION, CONVERGENCE, VALIDATION, REVIEW states entirely
+**States**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → COMPLETE → CLEANUP
+**Agents**: None (unless escalation) | **Isolation**: Required for multi-file, optional for single doc | **Review**: Evidence-based validation, automated checks
+**Safety Gates**: Verify no src/ cross-references, no build config impact, no security-sensitive content changes
+**Use Case**: Documentation updates, todo.md, README files | **Skips**: CONTEXT, AUTONOMOUS_IMPLEMENTATION, CONVERGENCE, VALIDATION, REVIEW (all skipped)
 
 ### Conditional State Transition Logic
 ```python
@@ -221,167 +137,73 @@ def determine_state_path(risk_level, change_type):
 ```
 
 ### Skip Condition Examples
-**CONTEXT/AUTONOMOUS_IMPLEMENTATION/CONVERGENCE/VALIDATION State Skip Conditions:**
-- Maven dependency additions (configuration only)
-- Build plugin configuration changes
-- Documentation updates without code references
-- Property file modifications
-- Version bumps without code changes
-- README and markdown file updates
-- Todo.md task tracking updates
+**Skip CONTEXT/AUTONOMOUS_IMPLEMENTATION/CONVERGENCE/VALIDATION**: Maven dependency additions, Build plugin config changes, Documentation updates (no code references), Property file modifications, Version bumps (no code changes), README/markdown updates, todo.md tracking updates
 
-**Full Validation Required Conditions:**
-- Any source code modifications (*.java, *.js, *.py, etc.)
-- Runtime behavior changes expected
-- Security-sensitive configuration changes
-- Build system modifications affecting compilation
-- API contract modifications
+**Require Full Validation**: Source code modifications (*.java, *.js, *.py), Runtime behavior changes, Security-sensitive config changes, Build system modifications (affecting compilation), API contract modifications
 
 ## AGENT SELECTION DECISION TREE
 
 ### Comprehensive Agent Selection Framework
-**Input**: Task description and file modification patterns
-**Available Agents**: technical-architect, usability-reviewer, performance-analyzer, security-auditor, style-auditor, code-quality-auditor, code-tester, build-validator
+**Input**: Task description + file modification patterns
+**Available**: technical-architect, usability-reviewer, performance-analyzer, security-auditor, style-auditor, code-quality-auditor, code-tester, build-validator
 
-**Processing Logic:**
+**🚨 CORE**: technical-architect (MANDATORY for ALL file modifications)
 
-**🚨 CORE AGENTS (Always Required):**
-- **technical-architect**: MANDATORY for ALL file modification tasks (provides implementation requirements)
+**🔍 FUNCTIONAL** (Code Implementation): NEW CODE → add style-auditor, code-quality-auditor, build-validator | CODE CHANGES (not config) → add code-tester | MAJOR FEATURES completed → add usability-reviewer (MANDATORY)
 
-**🔍 FUNCTIONAL AGENTS (Code Implementation):**
-- IF NEW CODE created: add style-auditor, code-quality-auditor, build-validator
-- IF CODE CHANGES (not just config): add code-tester
-- IF MAJOR FEATURES completed: add usability-reviewer (MANDATORY after completion)
+**🛡️ SECURITY** (Actual Security Concerns): AUTH changes, EXTERNAL API/DATA integration, ENCRYPTION/CRYPTO operations, INPUT VALIDATION/SANITIZATION → add security-auditor
 
-**🛡️ SECURITY AGENTS (Actual Security Concerns):**
-- IF AUTHENTICATION/AUTHORIZATION changes: add security-auditor
-- IF EXTERNAL API/DATA integration: add security-auditor
-- IF ENCRYPTION/CRYPTOGRAPHIC operations: add security-auditor
-- IF INPUT VALIDATION/SANITIZATION: add security-auditor
+**⚡ PERFORMANCE** (Performance Critical): ALGORITHM optimization, DATABASE/QUERY optimization, MEMORY/CPU intensive operations → add performance-analyzer
 
-**⚡ PERFORMANCE AGENTS (Performance Critical):**
-- IF ALGORITHM optimization tasks: add performance-analyzer
-- IF DATABASE/QUERY optimization: add performance-analyzer
-- IF MEMORY/CPU intensive operations: add performance-analyzer
+**🔧 FORMATTING** (Code Quality): PARSER LOGIC → add performance-analyzer, security-auditor | AST TRANSFORMATION → add code-quality-auditor, code-tester | FORMATTING RULES → add style-auditor
 
-**🔧 FORMATTING AGENTS (Code Quality):**
-- IF PARSER LOGIC modified: add performance-analyzer, security-auditor
-- IF AST TRANSFORMATION changed: add code-quality-auditor, code-tester
-- IF FORMATTING RULES affected: add style-auditor
+**❌ NOT NEEDED**: Maven module renames (NO performance-analyzer), Config file updates (NO security-auditor unless auth), Directory/file renames (NO performance-analyzer), Documentation updates (usually only technical-architect)
 
-**❌ AGENTS NOT NEEDED FOR SIMPLE OPERATIONS:**
-- Maven module renames: NO performance-analyzer
-- Configuration file updates: NO security-auditor unless changing auth
-- Directory/file renames: NO performance-analyzer
-- Documentation updates: Usually only technical-architect
+**📊 ANALYSIS** (Research/Study): ARCHITECTURAL → technical-architect | PERFORMANCE → performance-analyzer | UX/INTERFACE → usability-reviewer | SECURITY → security-auditor | CODE QUALITY → code-quality-auditor | PARSER/FORMATTER PERFORMANCE → performance-analyzer
 
-**📊 ANALYSIS AGENTS (Research/Study Tasks):**
-- IF ARCHITECTURAL ANALYSIS: add technical-architect
-- IF PERFORMANCE ANALYSIS: add performance-analyzer
-- IF UX/INTERFACE ANALYSIS: add usability-reviewer
-- IF SECURITY ANALYSIS: add security-auditor
-- IF CODE QUALITY REVIEW: add code-quality-auditor
-- IF PARSER/FORMATTER PERFORMANCE ANALYSIS: add performance-analyzer
+**Verification Checklist**: NEW CODE → style-auditor? | Source files created/modified → build-validator? | Performance-critical → performance-analyzer? | Security-sensitive → security-auditor? | User-facing → usability-reviewer? | Post-implementation refactoring → code-quality-auditor? | AST parsing/formatting → performance-analyzer?
 
-**Agent Selection Verification Checklist:**
-- [ ] NEW CODE task → style-auditor included?
-- [ ] Source files created/modified → build-validator included?
-- [ ] Performance-critical code → performance-analyzer included?
-- [ ] Security-sensitive features → security-auditor included?
-- [ ] User-facing interfaces → usability-reviewer included?
-- [ ] Post-implementation refactoring → code-quality-auditor included?
-- [ ] AST parsing/code formatting → performance-analyzer included?
-
-**Special Agent Usage Patterns:**
-- **style-auditor**: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and language-specific patterns)
-- **build-validator**: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through build system
-- **build-validator**: Use alongside style-auditor to ensure comprehensive validation (automated + manual rules)
-- **code-quality-auditor**: Post-implementation refactoring and best practices enforcement
-- **code-tester**: Business logic validation and comprehensive test creation
-- **security-auditor**: Data handling and storage compliance review
-- **performance-analyzer**: Algorithmic efficiency and resource optimization
-- **usability-reviewer**: User experience design and interface evaluation
-- **technical-architect**: System architecture and implementation guidance
+**Special Usage Patterns**: style-auditor (apply ALL manual rules from docs/code-style/), build-validator (triggers linters for style/formatting, use with style-auditor for comprehensive validation), code-quality-auditor (post-implementation refactoring, best practices), code-tester (business logic validation, comprehensive tests), security-auditor (data handling/storage compliance), performance-analyzer (algorithmic efficiency, resource optimization), usability-reviewer (UX design, interface evaluation), technical-architect (system architecture, implementation guidance)
 
 ## COMPLETE STYLE VALIDATION FRAMEWORK
 
 ### Three-Component Style Validation
-**MANDATORY PROCESS**: When style validation is required, ALL THREE components must pass:
+**When style validation required, ALL THREE must pass:**
 
-1. **Automated Linters** (via build-validator):
-   - `checkstyle`: Java coding conventions and formatting
-   - `PMD`: Code quality and best practices
-   - `ESLint`: JavaScript/TypeScript style (if applicable)
+1. **Automated Linters** (build-validator): checkstyle (Java conventions/formatting), PMD (code quality/best practices), ESLint (JavaScript/TypeScript if applicable)
 
-2. **Manual Style Rules** (via style-auditor):
-   - Apply ALL detection patterns from `docs/code-style/*-claude.md`
-   - Java-specific patterns (naming, structure, comments)
-   - Common patterns (cross-language consistency)
-   - Language-specific patterns as applicable
+2. **Manual Style Rules** (style-auditor): Apply ALL detection patterns from `docs/code-style/*-claude.md` (Java-specific, Common patterns, Language-specific)
 
-3. **Build Integration** (via build-validator):
-   - Automated fixing when conflicts detected (LineLength vs UnderutilizedLines)
-   - Use `checkstyle/fixers` module for AST-based consolidate-then-split strategy
-   - Comprehensive testing validates fixing logic before application
+3. **Build Integration** (build-validator): Automated fixing for conflicts (LineLength vs UnderutilizedLines), `checkstyle/fixers` module (AST-based consolidate-then-split), Testing validates fixing logic before application
 
 ### Complete Style Validation Gate Pattern
 ```bash
-# MANDATORY: Never assume checkstyle-only validation
-# CRITICAL ERROR PATTERN: Checking only checkstyle and declaring "no violations found" when PMD/manual violations exist
+# NEVER assume checkstyle-only validation
+# CRITICAL ERROR: Checking only checkstyle, declaring "no violations" when PMD/manual violations exist
 
 validate_complete_style_compliance() {
     echo "=== COMPLETE STYLE VALIDATION GATE ==="
-
-    # Component 1: Automated linters via build system
-    echo "Validating automated linters..."
-    ./mvnw checkstyle:check || return 1
+    ./mvnw checkstyle:check || return 1  # Component 1: Automated linters
     ./mvnw pmd:check || return 1
-
-    # Component 2: Manual style rules via style-auditor agent
-    echo "Validating manual style rules..."
-    invoke_style_auditor_with_manual_detection_patterns || return 1
-
-    # Component 3: Automated fixing integration if conflicts
-    echo "Checking for LineLength vs UnderutilizedLines conflicts..."
-    if detect_style_conflicts; then
-        echo "Applying automated AST-based fixes..."
+    invoke_style_auditor_with_manual_detection_patterns || return 1  # Component 2: Manual rules
+    if detect_style_conflicts; then  # Component 3: Automated fixing if conflicts
         apply_automated_style_fixes || return 1
-        # Re-validate after automated fixes
-        validate_complete_style_compliance
+        validate_complete_style_compliance  # Re-validate
     fi
-
-    echo "✅ Complete style validation passed: checkstyle + PMD + manual rules"
-    return 0
+    echo "✅ Complete: checkstyle + PMD + manual rules"
 }
 ```
 
 ### Style Validation Integration Points
-- **VALIDATION State**: Complete style validation before transitioning to REVIEW
-- **build-validator Agent**: Triggers automated linters and reports results
-- **style-auditor Agent**: Validates manual detection patterns from docs/code-style/
-- **Conflict Resolution**: Automatic AST-based fixes when linter rules conflict
-- **Evidence Requirement**: All three validation components must pass for ✅ APPROVED
+**VALIDATION State**: Complete style validation before REVIEW | **build-validator**: Triggers automated linters, reports results | **style-auditor**: Validates manual patterns from docs/code-style/ | **Conflict Resolution**: Automatic AST-based fixes when linter rules conflict | **Evidence**: All three components must pass for ✅ APPROVED
 
 ## DELEGATED IMPLEMENTATION PROTOCOL
 
-**Standard Implementation Workflow:** Autonomous agent implementation with 67% token reduction
+**Standard Workflow**: Autonomous agent implementation with 67% token reduction. Stakeholder agents implement in parallel, iterate until consensus via file-based diffs.
 
-### Overview
+**Use For**: HIGH/MEDIUM-RISK tasks, multiple stakeholder domains, parallel implementation
 
-The Delegated Implementation Protocol is the standard workflow where stakeholder agents implement their components autonomously in parallel, then iterate until consensus. This approach provides superior context efficiency and parallel execution compared to serial main-agent implementation.
-
-**When to Use:**
-- All HIGH-RISK and MEDIUM-RISK tasks requiring implementation
-- Tasks with multiple stakeholder domains
-- Complex tasks requiring parallel implementation
-- Tasks benefiting from specialized agent expertise
-
-**Infrastructure Location:** `.claude/protocol/`
-- `generate-context.py` - Context generation (Phase 3)
-- `convergence.py` - Iterative integration (Phase 5)
-- `differential-read.sh` - Efficient file reading
-- `incremental-validation.sh` - Changed-files-only validation
-- `README.md` - Complete protocol documentation
+**Infrastructure**: `.claude/protocol/` (`generate-context.py`, `convergence.py`, `differential-read.sh`, `incremental-validation.sh`)
 
 ### State Flow
 
@@ -392,89 +214,31 @@ SYNTHESIS → CONTEXT → AUTONOMOUS_IMPLEMENTATION → CONVERGENCE → VALIDATI
 
 ### New State Definitions
 
-**CONTEXT State:**
-- Generate comprehensive context.md file for autonomous agents
-- Extract task requirements from todo.md
-- Determine agent work assignments
-- Define scope boundaries and integration points
-- Specify file-based communication protocol
+**CONTEXT**: Generate context.md for autonomous agents (task requirements from todo.md, agent work assignments, scope boundaries, integration points, file-based communication protocol)
 
-**AUTONOMOUS_IMPLEMENTATION State:**
-- Implementation agents work in parallel
-- Each agent implements assigned components
-- Changes written to diff files (../agent-type.diff)
-- Metadata responses only (10-50 tokens vs 1000-2000)
-- No main agent context pollution
+**AUTONOMOUS_IMPLEMENTATION**: Agents implement in parallel, write diffs to files (../agent-type.diff), return metadata only (10-50 tokens)
 
-**CONVERGENCE State:**
-- Iterative integration until unanimous approval
-- Conflict detection and resolution
-- Selective agent review (only changed files)
-- Implicit approval for unchanged files
-- Maximum 10 rounds (extendable by user checkpoint)
+**CONVERGENCE**: Iterative integration until unanimous approval, selective review (changed files only), max 10 rounds (extendable)
 
 ### SYNTHESIS → CONTEXT Transition
 
-**Mandatory Conditions:**
-- [ ] User approval of implementation plan obtained
-- [ ] Task requirements clearly defined in synthesis
-- [ ] Agent assignments determined
-- [ ] Context infrastructure available (.claude/protocol/)
+**Conditions**: User approval obtained, Task requirements defined in synthesis, Agent assignments determined, Context infrastructure available
 
-**Implementation:**
+**Implementation**:
 ```bash
-# Generate context.md for autonomous implementation
-python3 .claude/protocol/generate-context.py \
-  --task-name ${TASK_NAME} \
-  --task-dir /workspace/branches/${TASK_NAME}
-
-# Verify context.md created
+python3 .claude/protocol/generate-context.py --task-name ${TASK_NAME} --task-dir /workspace/branches/${TASK_NAME}
 test -f ../context.md && echo "✅ CONTEXT state complete"
 ```
 
-**Context.md Sections:**
-1. Task Requirements Summary
-2. Technical Constraints
-3. Security Requirements
-4. Code Quality Standards
-5. File Structure and Expected Changes
-6. Agent Work Assignments
-7. File-Based Communication Protocol
+**Context.md Sections**: Task Requirements Summary, Technical Constraints, Security Requirements, Code Quality Standards, File Structure/Expected Changes, Agent Work Assignments, File-Based Communication Protocol
 
 ### CONTEXT → AUTONOMOUS_IMPLEMENTATION Transition
 
-**Mandatory Conditions:**
-- [ ] Context.md exists with all required sections
-- [ ] Agent assignments clearly defined
-- [ ] Implementation agents ready (technical-architect, security-auditor, code-quality-auditor, performance-analyzer, code-tester)
-- [ ] Review-only agents identified (style-auditor, usability-reviewer, build-validator)
+**Conditions**: Context.md exists with all sections, Agent assignments defined, Implementation agents ready (technical-architect, security-auditor, code-quality-auditor, performance-analyzer, code-tester), Review-only agents identified (style-auditor, usability-reviewer, build-validator)
 
-**Implementation:**
-```bash
-# Launch implementation agents in parallel
-# Each agent:
-# 1. Reads ../context.md
-# 2. Reads assigned files (full read initially)
-# 3. Implements changes
-# 4. Writes ../agent-type.diff
-# 5. Returns metadata only
+**Implementation**: Launch agents in parallel → each reads context.md, implements changes, writes ../agent-type.diff → Return: `{"summary": "...", "files_changed": [...], "diff_file": "...", "diff_size_lines": N}`
 
-# Agents return format:
-{
-  "summary": "Implemented X (120 lines in 2 files)",
-  "files_changed": ["File1.java", "File2.java"],
-  "diff_file": "../agent-type.diff",
-  "diff_size_lines": 120,
-  "tests_added": true,
-  "build_status": "success"
-}
-```
-
-**Context Efficiency Benefits:**
-- Diffs written to files (not in main agent context)
-- Metadata responses (10-50 tokens per agent)
-- Parallel implementation (4x speedup)
-- Agents reconstruct file state mentally (baseline + diffs)
+**Efficiency**: Diffs in files (not context), metadata only (10-50 tokens), parallel execution (4x speedup)
 
 ### AUTONOMOUS_IMPLEMENTATION → CONVERGENCE Transition
 
@@ -541,24 +305,12 @@ Result: max_rounds = 3 + 10 = 13 (agents have until round 13)
 
 ### Context Reconstruction Pattern
 
-**Efficiency Through Mental State Tracking:**
+1. Initial: Agent reads full files → baseline
+2. Convergence: Agent receives diffs → reconstructs mentally (baseline + diff)
+3. If needed: Read specific lines (not entire file)
+4. Re-read full file only if context lost
 
-1. **Phase 4 (Initial):** Agent reads full files → baseline in context
-2. **Phase 5 (Convergence):** Agent receives diffs → reconstructs state mentally (baseline + diff)
-3. **If context needed:** Read specific lines around diff (not entire file)
-4. **Only re-read full file:** If context lost (compaction) or unfamiliar file
-
-**Example:**
-```
-Initial Read: Token.java (150 lines) → baseline established
-Round 1 Diff: +20, -5 lines → agent applies mentally → current state known
-Round 2: Need style context → read lines 45-47 only
-Round 3: No changes to Token.java → implicit approval
-```
-
-**Token Efficiency:**
-- Agents use baseline + diffs (10,600 tokens vs 32,500 tokens for full file reads)
-- **67% reduction** through differential file operations
+**Token Efficiency**: 67% reduction (10,600 vs 32,500 tokens) via baseline + diffs
 
 ### CONVERGENCE → VALIDATION Transition
 
@@ -592,117 +344,41 @@ git diff --stat
 
 ### Process Memory Separation
 
-**Three Separate Contexts:**
-
-1. **Python Script Memory (convergence.py):**
-   - Loads diffs from files
-   - Parses line ranges, detects conflicts
-   - Outputs metadata only
-
-2. **Git Process Memory:**
-   - Reads diffs directly from files
-   - Applies changes with `git apply`
-   - No involvement of Claude context
-
-3. **Main Claude Agent Context:**
-   - Receives metadata only (conflict reports, summaries)
-   - NEVER sees raw diff content
-   - Processes 10-50 tokens instead of 1000-2000
-
-**Why This Matters:**
-Context savings come from keeping diff content in external process memory (Python/git), passing only metadata to main Claude agent's token-limited context.
+1. **Python (convergence.py)**: Loads diffs, parses conflicts, outputs metadata
+2. **Git**: Applies diffs via `git apply`
+3. **Main Agent**: Receives metadata only (10-50 tokens, never sees raw diffs)
 
 ### Delegated Protocol Benefits
 
-**Context Efficiency:**
-- 67% token reduction (baseline + diff reconstruction)
-- Diffs never in main agent's Claude context
-- Summary-only UX (metadata responses)
-- Selective agent review
-
-**Speed:**
-- Parallel implementation (4x faster for 4 agents)
-- Selective validation (5-10x faster for small changes)
-- File-based communication (fewer round trips)
-
-**Quality:**
-- Unanimous approval still required
-- Cross-domain review preserved
-- Iterative convergence ensures coherence
-- File-based artifacts for debugging
-
-**User Experience:**
-- Familiar workflow (review with `git diff`)
-- Better visibility (syntax highlighting, standard git tools)
-- Summary-only console (no diff clutter)
-- Manual control (user decides when to review)
+**Context**: 67% token reduction, diffs in files, metadata only, selective review
+**Speed**: 4x parallel, 5-10x selective validation, fewer round trips
+**Quality**: Unanimous approval, cross-domain review, iterative convergence
+**UX**: Git-based review, syntax highlighting, summary-only console
 
 ### Infrastructure Reference
 
-**Complete Documentation:** `.claude/protocol/README.md`
-
-**Scripts:**
-- `generate-context.py` - Phase 3 context generation
-- `convergence.py` - Phase 5 iterative integration
-- `differential-read.sh` - Read-once + diff updates
-- `incremental-validation.sh` - Changed-files-only validation
-
-**Agent Configurations:**
-All 8 agents support delegated protocol workflows.
-
-**Requirements Phase - No File Writing:**
-- Agents return requirements analysis in response text (not files)
-- Main agent mentally consolidates requirements during SYNTHESIS
-- No temporary requirement report files created
+**Documentation**: `.claude/protocol/README.md`
+**Scripts**: `generate-context.py`, `convergence.py`, `differential-read.sh`, `incremental-validation.sh`
+**Agents**: All 8 support delegated workflows
+**Requirements**: Agents return text (not files), main agent consolidates during SYNTHESIS
 
 ## BATCH PROCESSING AND CONTINUOUS MODE
 
 ### Batch Processing Restrictions
-**PROHIBITED PATTERNS:**
-- Processing multiple tasks sequentially without individual protocol execution
-- "Work on all Phase 1 tasks until done" - Must select ONE specific task
-- "Complete these 5 tasks" - Each requires separate lock acquisition and worktree
-- Assuming research tasks can bypass protocol because they create "only" study files
+**PROHIBITED**: Processing multiple tasks sequentially without individual protocol, "Work on all Phase 1 tasks" (must select ONE), "Complete these 5 tasks" (each needs separate lock/worktree), Assuming research tasks bypass protocol
 
-**MANDATORY SINGLE-TASK PROCESSING:**
-1. Select ONE specific task from todo.md
-2. Acquire atomic lock for THAT specific task only
-3. Create isolated worktree for THAT task only
-4. Execute full state machine protocol for THAT task only
-5. Complete CLEANUP state before starting any other task
+**MANDATORY SINGLE-TASK**: Select ONE task from todo.md → Acquire atomic lock for THAT task → Create isolated worktree for THAT task → Execute full protocol for THAT task → Complete CLEANUP before starting another
 
 ### Automatic Continuous Mode Translation
-**When users request batch operations:**
+**Auto-Translation Protocol**: ACKNOWLEDGE ("I understand...") → AUTO-TRANSLATE ("I'll interpret as continuous mode request...") → EXECUTE (trigger continuous workflow automatically)
 
-**AUTOMATIC TRANSLATION PROTOCOL:**
-1. **ACKNOWLEDGE**: "I understand you want to work on multiple tasks efficiently..."
-2. **AUTO-TRANSLATE**: "I'll interpret this as a request to work on the todo list in continuous mode, processing each task with full protocol isolation..."
-3. **EXECUTE**: Automatically trigger continuous workflow mode without requiring user to rephrase
+**Batch Patterns to Auto-Translate**: "Work on all [phase/type] tasks", "Complete these tasks until done", "Process the todo list", "Work on multiple tasks", Any request mentioning multiple specific tasks
 
-**Batch Request Patterns to Auto-Translate:**
-- "Work on all [phase/type] tasks"
-- "Complete these tasks until done"
-- "Process the todo list"
-- "Work on multiple tasks"
-- Any request mentioning multiple specific tasks
-
-**Task Filtering for Continuous Mode:**
-When batch requests specify subsets:
-1. **Phase-based filtering**: Process only tasks in specified phases
-2. **Type-based filtering**: Process only tasks matching specified types
-3. **Name-based filtering**: Process only specifically mentioned task names
-4. **Default behavior**: Process all available tasks if no filter mentioned
+**Task Filtering**: Phase-based (specified phases only), Type-based (matching types only), Name-based (mentioned names only), Default (all available if no filter)
 
 ## 🧠 PROTOCOL INTERPRETATION MODE
 
-**ENHANCED ANALYTICAL RIGOR**: Parent agent must apply deeper analysis when interpreting and following the task protocol workflow. Rather than surface-level interpretations, carefully analyze what the protocol truly requires for the specific task context.
-
-**Critical Thinking Requirements:**
-- Question assumptions about task scope and complexity
-- Verify all transition conditions are genuinely met
-- Apply evidence-based validation rather than procedural compliance
-- Consider edge cases and alternative approaches
-- Maintain skeptical evaluation of "good enough" solutions
+Apply deeper analysis when interpreting protocol. Verify transition conditions genuinely met, use evidence-based validation, consider edge cases, evaluate "good enough" solutions skeptically.
 
 ## MANDATORY STATE TRANSITIONS
 
@@ -735,36 +411,11 @@ Every task MUST maintain a `state.json` file in the task directory containing:
 
 ### Autonomous Completion Feasibility Check
 
-Before acquiring lock and starting INIT, verify the task can be completed without user intervention:
+**Pre-Task Checklist**: Clear deliverables (Purpose, Scope, Components in todo.md), No external blockers (dependencies available, no missing APIs), Implementation within capabilities (technical approach clear)
 
-**MANDATORY PRE-TASK CHECKLIST**:
-
-```bash
-# 1. Task has clear deliverables
-grep -A 20 "TASK.*${TASK_NAME}" /workspace/branches/main/code/todo.md
-# Verify: Purpose, Scope, Components are defined
-
-# 2. No external blockers exist
-# ✅ PROCEED if: All dependencies available, no missing APIs, no ambiguous requirements
-# ❌ SELECT ALTERNATIVE if: Requires unavailable external API, missing credentials, undefined requirements
-
-# 3. Implementation is within capabilities
-# ✅ PROCEED if: Technical approach is clear, no user design decisions needed
-# ❌ SELECT ALTERNATIVE if: Requires user to choose between architectural options
-```
-
-**PROHIBITED STOPPING REASONS** (these are NOT blockers):
-❌ "This might take a long time" - TIME ESTIMATES ARE NOT BLOCKERS
-❌ "This is complex" - COMPLEXITY IS NOT A BLOCKER unless genuinely impossible
-❌ "Token usage is high" - TOKENS NEVER JUSTIFY STOPPING
-❌ "Should I ask the user first?" - NO, protocol is AUTONOMOUS
-
-**LEGITIMATE STOPPING REASONS** (these ARE blockers):
-✅ Genuine technical blocker (missing external API, undefined requirement)
-✅ Ambiguity requiring user clarification (conflicting requirements with no resolution)
-✅ Task scope changed externally (user modified todo.md indicating change)
-
-**COMMITMENT**: If all checks pass, you MUST complete entire protocol (States 0-8) without asking user permission.
+**Not Blockers**: Time estimates, complexity, token usage
+**Actual Blockers**: Missing external API, undefined requirements, conflicting requirements
+**Commitment**: If checks pass, complete States 0-8 autonomously
 
 ### Decision Logic: Can I Work on This Task?
 
@@ -807,20 +458,11 @@ ls -d /workspace/branches/{TASK_NAME} 2>/dev/null && echo "Worktree exists" || e
 | ❌ NO | N/A | ✅ YES | **ASK USER**: Worktree exists without lock - crashed session or manual intervention |
 | ❌ NO | N/A | ❌ NO | **PROCEED WITH INIT**: Task is available - execute normal INIT phase |
 
-### Prohibited Actions
+### Prohibited/Required Actions
 
-❌ **NEVER** delete or override a lock file owned by a different session
-❌ **NEVER** assume an existing worktree without a lock is abandoned
-❌ **NEVER** proceed with INIT if a lock exists for a different session
-❌ **NEVER** skip lock verification when user says "continue with next task"
+**PROHIBITED**: Delete/override lock file owned by different session, Assume existing worktree without lock is abandoned, Proceed with INIT if lock exists for different session, Skip lock verification for "continue with next task"
 
-### Required Actions
-
-✅ **ALWAYS** check `/workspace/locks/{TASK_NAME}.json` before starting work
-✅ **ALWAYS** compare lock session_id with current session_id
-✅ **ALWAYS** check for existing worktree at `/workspace/branches/{TASK_NAME}`
-✅ **ALWAYS** select an alternative task if lock is owned by different session
-✅ **ALWAYS** ask user for guidance if worktree exists without a lock
+**REQUIRED**: Check `/workspace/locks/{TASK_NAME}.json` before starting, Compare lock session_id with current session_id, Check for existing worktree at `/workspace/branches/{TASK_NAME}`, Select alternative task if lock owned by different session, Ask user if worktree exists without lock
 
 ### Example: Proper Task Selection Verification
 
@@ -851,24 +493,15 @@ fi
 
 ### Recovery from Crashed Sessions
 
-**Scenario**: Worktree exists at `/workspace/branches/{TASK_NAME}` but no lock file exists.
+**Scenario**: Worktree exists but no lock file
 
-**Possible Causes**:
-- Previous Claude instance crashed before cleanup
-- Manual worktree creation outside protocol
-- Lock file manually deleted
-
-**Required Action**: Ask user for guidance
+**Action**: Ask user:
 ```
-"I found an existing worktree for task '{TASK_NAME}' at /workspace/branches/{TASK_NAME}
-but no lock file exists at /workspace/locks/{TASK_NAME}.json. This may indicate a
-crashed session. Should I:
-1. Clean up the abandoned worktree and start fresh
-2. Resume work in the existing worktree
-3. Select a different task"
+Found worktree at /workspace/branches/{TASK_NAME} but no lock file. Options:
+1. Clean up abandoned worktree and start fresh
+2. Resume work in existing worktree
+3. Select different task
 ```
-
-**DO NOT** make this decision autonomously - user knows if another instance is running.
 
 ---
 
@@ -944,24 +577,10 @@ echo "✅ Main worktree lock released"
 
 ### Main Worktree Lock vs Task-Specific Locks
 
-**Key Differences:**
-- **Task locks** (`/workspace/locks/{task-name}.json`): Used for task-specific worktrees during normal protocol execution
-- **Main lock** (`/workspace/locks/main.json`): Used ONLY for direct operations on main worktree
+**Task locks** (`/workspace/locks/{task-name}.json`): Task worktrees during protocol
+**Main lock** (`/workspace/locks/main.json`): Direct operations on main worktree only
 
-**When to use each:**
-- **Normal task work**: Use task-specific lock (`{task-name}.json`) and work in task worktree (`/workspace/branches/{task-name}/code/`)
-- **Direct main operations**: Use main lock (`main.json`) when working directly in main worktree (`/workspace/branches/main/code/`)
-
-**Prohibited Patterns:**
-❌ Modifying main worktree files without acquiring main lock
-❌ Running git operations on main branch without main lock
-❌ Assuming main worktree is always available
-
-**Required Patterns:**
-✅ Acquire main lock before ANY main worktree operations
-✅ Release main lock immediately after operations complete
-✅ Verify lock ownership before release
-✅ Wait or select alternative task if main lock is owned by different session
+**Required**: Acquire main lock before main worktree operations, release after, verify ownership before release
 
 ### Example: Git Operation on Main Branch
 
@@ -1372,62 +991,21 @@ ELSE:
 - Test execution results showing all tests pass
 - Performance baseline comparison (if performance-critical changes)
 
-**🚨 CRITICAL BUILD CACHE VERIFICATION REQUIREMENTS:**
+**🚨 CRITICAL BUILD CACHE VERIFICATION:**
 
-Maven Build Cache can create false positives by restoring cached quality gate results without actually executing analysis on modified code. This can allow violations to slip through VALIDATION phase undetected.
+Maven cache can restore cached quality gate results without analyzing modified code, allowing violations through.
 
-**MANDATORY CACHE-BYPASSING PROCEDURES:**
-
-When running validation after code modifications:
-
+**Validation Procedure**:
 ```bash
-# OPTION 1: Disable cache for critical validation (RECOMMENDED for final validation)
+# RECOMMENDED: Disable cache for final validation
 ./mvnw verify -Dmaven.build.cache.enabled=false
-
-# OPTION 2: If using default verify, verify quality gates actually executed
-./mvnw verify
-# Then verify PMD/checkstyle actually ran (not cached):
-grep -q "Skipping plugin execution (cached): pmd:check" && {
-  echo "❌ WARNING: PMD results were cached, not executed!"
-  echo "Re-running with cache disabled..."
-  ./mvnw verify -Dmaven.build.cache.enabled=false
-} || echo "✅ PMD executed fresh analysis"
 ```
 
-**QUALITY GATE EXECUTION VERIFICATION CHECKLIST:**
-
-Before transitioning from VALIDATION → REVIEW:
+**Checklist Before VALIDATION → REVIEW**:
 - [ ] Build executed with `-Dmaven.build.cache.enabled=false`, OR
-- [ ] Verified build output does NOT contain "Skipping plugin execution (cached)" for:
-  - `pmd:check`
-  - `checkstyle:check`
-  - Other quality gates (PMD, checkstyle, etc.)
-- [ ] All quality gates show actual execution timestamps (not cache restoration)
-- [ ] Build output explicitly shows analysis results (not "restored from cache")
+- [ ] Verified no "Skipping plugin execution (cached)" for pmd:check, checkstyle:check
 
-**CACHE-RELATED VIOLATION PATTERNS:**
-
-❌ **PROHIBITED**: Running `./mvnw verify` once and trusting cached results
-❌ **PROHIBITED**: Assuming "BUILD SUCCESS" means quality gates actually executed
-❌ **PROHIBITED**: Ignoring "Skipping plugin execution (cached)" messages in build output
-
-✅ **REQUIRED**: Verify quality gates executed fresh analysis on modified code
-✅ **REQUIRED**: Disable cache for final validation before REVIEW phase
-✅ **REQUIRED**: Check build logs for cache skip messages
-
-**WHY THIS MATTERS:**
-
-Real-world example from task `implement-cli-arguments`:
-1. Early in task: Ran unit tests without PMD violations
-2. Added `.toLowerCase()` call to line 304 (introduced PMD violation)
-3. Before merge: Ran `./mvnw clean verify`
-4. Cache matched checksum: `[INFO] Skipping plugin execution (cached): pmd:check`
-5. Reported SUCCESS without scanning new code
-6. Violation merged to main, broke build
-
-**PREVENTION:**
-
-The `-Dmaven.build.cache.enabled=false` flag forces fresh execution of all plugins, ensuring modified code is actually analyzed by quality gates.
+**Required**: Verify quality gates executed fresh analysis, disable cache for final validation
 
 **Evidence Required (Skip Path):**
 - Documentation that no runtime behavior changes
@@ -1589,16 +1167,7 @@ def process_scope_negotiation_results(agent_responses):
 - **usability-reviewer**: Can defer UX improvements if core functionality accessible
 
 **Security Auditor Configuration:**
-**CRITICAL: Use Project-Specific Security Model from scope.md**
-
-For Parser Implementation Tasks:
-- **Attack Model**: Single-user code formatting scenarios (see docs/project/scope.md)
-- **Security Focus**: Resource exhaustion prevention, system stability
-- **NOT in Scope**: Information disclosure, data exfiltration, multi-user attacks
-- **Usability Priority**: Error messages should prioritize debugging assistance
-- **Appropriate Limits**: Reasonable protection for legitimate code formatting use cases
-
-**MANDATORY**: security-auditor MUST reference docs/project/scope.md "Security Model for Parser Operations" before conducting any parser security review.
+Parser tasks: Use attack model from docs/project/scope.md (single-user code formatting, resource exhaustion focus, NOT information disclosure/exfiltration)
 
 **Authority Hierarchy for Domain Conflicts:**
 When agent authorities overlap or conflict:

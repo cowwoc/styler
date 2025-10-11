@@ -2,107 +2,100 @@
 
 ## Overview
 
-The delegated implementation protocol enables agent-based implementation for complex tasks through round-based execution. Agents are organized into dependency rounds and execute sequentially or in parallel based on their dependencies.
+Agent-based implementation via **emergent dependency discovery**. All agents attempt implementation each round; ordering emerges from readiness.
 
-**KEY PRINCIPLE**: Agents must execute in dependency order - dependent agents cannot run until their dependencies complete and their changes are integrated.
+**KEY**: Dependencies discovered during implementation, not predicted. Agents self-organize into rounds.
 
-## Round-Based Execution Model
+## Emergent Dependency Discovery
 
-### Why Rounds Are Required
+### Why Static Planning Fails
+Main agent cannot predict: Domain expertise gap (helper classes/interfaces/utilities) | Emergent dependencies (discovered during implementation) | Cross-agent coordination (interface extensions) | Circular dependencies (both agents need each other)
 
-**The Problem**: Agents cannot see each other's work when running in parallel. If Agent B depends on Agent A's output (e.g., an interface Agent A creates), Agent B will fail if launched before Agent A's changes are integrated into the codebase.
+### Self-Organizing Round Structure
 
-**The Solution**: Organize agents into **dependency rounds**:
-1. **Round 1**: Foundation agents (no dependencies) - execute in parallel
-2. **Integration**: Apply all Round 1 diffs to codebase
-3. **Round 2**: Implementation agents (depend on Round 1) - execute in parallel
-4. **Integration**: Apply all Round 2 diffs to codebase
-5. **Round N**: Subsequent rounds following same pattern
-6. **Final Round**: Validation agents (read-only verification)
+Rounds emerge from agent readiness:
+1. **Round 1**: All agents attempt → COMPLETE (no deps) | PARTIAL (implement available) | BLOCKED (cannot proceed)
+2. **Integration**: Apply COMPLETE + PARTIAL diffs
+3. **Round N**: Non-COMPLETE agents retry → Continue until all COMPLETE
 
-### Round Execution Pattern
+**Key**: PARTIAL implementations prevent deadlocks by ensuring progress despite missing dependencies.
+
+### Benefits of Partial Implementation
+
+**Deadlock Prevention**: Agents rarely BLOCKED; circular dependencies resolve incrementally.
+**Faster Convergence**: PARTIAL enables parallelism. Example: BLOCKED approach 3 rounds (sequential) vs PARTIAL 2 rounds (parallel agents).
+**Better Dependency Discovery**: Agents discover needs during implementation (not guesses).
+**Reduced Wasted Effort**: No idle agents; earlier integration catches mismatches sooner.
+
+### Execution Pattern
 
 ```python
-for round_num, agents in rounds:
-    # 1. Launch all agents in this round in parallel
-    results = launch_agents_parallel(agents)
+def autonomous_implementation_with_discovery():
+    """All agents participate each round. Rounds emerge from agent readiness."""
+    round_num = 1
+    all_agents = get_required_agents()
+    completed_agents = set()
 
-    # 2. Validate all diffs before proceeding
-    for agent in agents:
-        validate_diff_applies(agent.diff_file)
+    while len(completed_agents) < len(all_agents):
+        remaining_agents = [a for a in all_agents if a not in completed_agents]
+        if not remaining_agents:
+            break
 
-    # 3. Integrate all diffs into codebase
-    for agent in agents:
-        apply_diff(agent.diff_file)
+        results = launch_agents_with_dependency_check(remaining_agents, round_num)
+        ready_agents, blocked_agents = [], []
 
-    # 4. Verify build still compiles
-    run_build_check()
+        for agent_name, response in results.items():
+            if "PARTIAL:" in response or "COMPLETE:" in response:
+                ready_agents.append({
+                    "agent": agent_name,
+                    "diff": get_agent_diff_file(agent_name, round_num),
+                    "status": "PARTIAL" if "PARTIAL:" in response else "COMPLETE",
+                    "completed_work": parse_completed_work(response),
+                    "missing_deps": parse_missing_dependencies(response) if "PARTIAL:" in response else []
+                })
+                if "COMPLETE:" in response:
+                    completed_agents.add(agent_name)
+            elif "BLOCKED:" in response:
+                blocked_agents.append({
+                    "agent": agent_name,
+                    "missing": parse_missing_dependencies(response),
+                    "reason": parse_blocker_reason(response)
+                })
 
-    # 5. Proceed to next round
+        if not ready_agents:
+            handle_deadlock(blocked_agents, round_num)
+            break
+
+        for agent_result in ready_agents:
+            diff_file = agent_result["diff"]
+            if validate_diff_applies(diff_file):
+                apply_diff(diff_file)
+                if agent_result["status"] == "COMPLETE":
+                    completed_agents.add(agent_result["agent"])
+
+        if ready_agents:
+            git_commit(f"Round {round_num}: {', '.join([a['agent'] for a in ready_agents])}")
+        round_num += 1
+
+    return len(completed_agents) == len(all_agents)
 ```
-
-### Typical Round Structure
-
-**Round 1 - Foundation**:
-- `technical-architect`: Create core interfaces, data structures
-- `build-validator`: Create/update Maven POMs, module descriptors
-- **Parallelism**: ✅ Yes (no dependencies between these agents)
-
-**Round 2 - Implementation**:
-- `code-quality-auditor`: Implement concrete classes using Round 1 interfaces
-- `performance-analyzer`: Implement algorithms, optimization logic
-- **Parallelism**: ✅ Yes (both depend on Round 1, but not on each other)
-- **Dependencies**: Requires Round 1 complete (interfaces must exist)
-
-**Round 3 - Enhancement**:
-- `style-auditor`: Add JavaDoc, fix style violations
-- **Parallelism**: N/A (single agent)
-- **Dependencies**: Requires Round 2 complete (classes must exist to document)
-
-**Round 4 - Testing**:
-- `code-tester`: Create comprehensive test suite
-- **Parallelism**: N/A (single agent)
-- **Dependencies**: Requires Round 3 complete (implementation must be complete)
-
-**Round 5 - Validation** (Read-Only):
-- `build-validator`: Run `mvn verify`, check quality gates
-- `security-auditor`: Scan for vulnerabilities
-- **Parallelism**: ✅ Yes (both are read-only)
-- **Dependencies**: Requires Round 4 complete (tests must exist)
-
-### Performance Implications
-
-**Actual Speedup** = (Rounds with >1 agent) × (agents per round)
-
-**Example**:
-- Sequential execution: 6 agents × 2 min = **12 minutes**
-- Round-based execution: 5 rounds × 2 min (max agent time per round) = **10 minutes**
-- Improvement: ~17% (not 4× as originally claimed)
-
-**Reality**: Most tasks have 3-5 dependency rounds, limiting parallelism to 2-3× speedup maximum.
 
 ## Protocol Detection
 
-**Automatic Detection Criteria**:
-1. `context.md` exists in task root (`/workspace/branches/{task-name}/context.md`)
-2. File contains section: `## Agent Work Assignments`
-3. Lock file state is one of: CONTEXT, AUTONOMOUS_IMPLEMENTATION, CONVERGENCE
+**Automatic Detection**: `context.md` exists in task root (`/workspace/branches/{task-name}/context.md`) | Contains `## Agent Work Assignments` section | Lock file state: CONTEXT, AUTONOMOUS_IMPLEMENTATION, or CONVERGENCE
 
-**When Detected**:
-- Direct Write/Edit usage for implementation files is **PROHIBITED**
-- Implementation must be performed by delegated agents
-- Enforcement via `enforce-delegated-implementation.sh` hook
+**When Detected**: Direct Write/Edit for implementation files **PROHIBITED** | Implementation via delegated agents only | Enforced by `enforce-delegated-implementation.sh` hook
 
 ## State Machine (Delegated Protocol)
 
 ```
 USER_APPROVAL (plan approved)
     ↓
-CONTEXT (generate/verify context.md with agent assignments)
+CONTEXT (generate context.md with agent assignments)
     ↓
-AUTONOMOUS_IMPLEMENTATION (invoke agents in parallel)
+AUTONOMOUS_IMPLEMENTATION (iterative rounds until completion)
     ↓
-CONVERGENCE (integrate agent outputs, resolve conflicts)
+CONVERGENCE (final integration, conflict resolution)
     ↓
 VALIDATION (build verification)
     ↓
@@ -119,15 +112,45 @@ CLEANUP (remove worktree)
 
 ### Phase 1: CONTEXT State
 
-**Objective**: Generate or verify implementation context
+**Objective**: Generate implementation context WITHOUT predicting dependency order
 
-**Actions**:
-1. Verify `context.md` exists with complete agent work assignments
-2. Each agent assignment must specify:
-   - Agent type (e.g., technical-architect, security-auditor)
-   - Specific files to create/modify
-   - Implementation requirements
-3. Update lock state to AUTONOMOUS_IMPLEMENTATION
+**Actions**: Create `context.md` with agent assignments (NO round numbers) | Specify: agent type, task description, deliverables, known dependencies (may be incomplete) | Update lock state to AUTONOMOUS_IMPLEMENTATION
+
+**context.md Structure** (NO static rounds):
+```markdown
+## Agent Work Assignments
+
+### technical-architect
+**Task**: Create core interfaces and data structures
+**Deliverables**:
+- FormattingRule.java interface
+- Violation.java record
+**Known Dependencies**: None
+**Notes**: Foundation interfaces for other agents
+
+### code-quality-auditor
+**Task**: Implement concrete formatter classes
+**Deliverables**:
+- LineWrapperFormatter.java
+**Known Dependencies**: FormattingRule.java (may discover more during implementation)
+**Notes**: Will use interfaces created by technical-architect
+
+### security-auditor
+**Task**: Implement input validation
+**Deliverables**:
+- InputValidator.java
+**Known Dependencies**: Unknown until implementation (may need validation interfaces)
+
+### style-auditor
+**Task**: Add JavaDoc and fix style violations
+**Deliverables**: JavaDoc comments, style fixes
+**Known Dependencies**: All implementation files (runs after other agents)
+
+### code-tester
+**Task**: Create comprehensive test suite
+**Deliverables**: Test classes
+**Known Dependencies**: All implementation files (runs after other agents)
+```
 
 **Lock Update**:
 ```bash
@@ -137,313 +160,602 @@ mv /tmp/lock.json /workspace/locks/{task}.json
 
 ### Phase 2: AUTONOMOUS_IMPLEMENTATION State
 
-**Objective**: Invoke delegated agents in dependency rounds to perform implementation
+**Objective**: Execute emergent dependency discovery rounds
 
-**MANDATORY ROUND-BASED EXECUTION**:
+**MANDATORY EXECUTION PATTERN** (preserved verbatim - execution-critical bash script):
 
-**Step 1: Parse Round Assignments from context.md**
 ```bash
-# context.md contains round assignments:
-# Round 1: [technical-architect, build-validator]
-# Round 2: [code-quality-auditor, performance-analyzer]
-# Round 3: [style-auditor]
-# Round 4: [code-tester]
-# Round 5: [build-validator (validation)]
-```
+#!/bin/bash
 
-**Step 2: Execute Each Round**
-```bash
-for ROUND in 1 2 3 4 5; do
-    echo "=== Executing Round $ROUND ==="
+ROUND=1
+ALL_AGENTS=("technical-architect" "code-quality-auditor" "security-auditor" "style-auditor" "code-tester")
+COMPLETED_AGENTS=()
 
-    # 2a. Launch all agents in round (parallel Task tool invocations)
-    # Example: Round 1 launches technical-architect AND build-validator in single message
+while [ ${#COMPLETED_AGENTS[@]} -lt ${#ALL_AGENTS[@]} ]; do
+    echo "=== ROUND $ROUND: Dependency Discovery ==="
 
-    # 2b. Wait for all round agents to complete
-
-    # 2c. Validate all diffs (MANDATORY)
-    for AGENT_DIFF in ../round${ROUND}-*.diff; do
-        git apply --check "$AGENT_DIFF" || {
-            echo "ERROR: $AGENT_DIFF does not apply cleanly"
-            # Retry agent with error details OR use alternative integration
-            exit 1
-        }
+    # Get remaining agents
+    REMAINING_AGENTS=()
+    for agent in "${ALL_AGENTS[@]}"; do
+        if [[ ! " ${COMPLETED_AGENTS[@]} " =~ " ${agent} " ]]; then
+            REMAINING_AGENTS+=("$agent")
+        fi
     done
 
-    # 2d. Apply all diffs
-    for AGENT_DIFF in ../round${ROUND}-*.diff; do
-        git apply "$AGENT_DIFF"
-    done
-
-    # 2e. Verify build compiles (except Round 5 which IS the build verification)
-    if [ $ROUND -lt 5 ]; then
-        mvn compile -q || {
-            echo "ERROR: Build broken after Round $ROUND"
-            exit 1
-        }
+    if [ ${#REMAINING_AGENTS[@]} -eq 0 ]; then
+        echo "✅ All agents completed"
+        break
     fi
 
-    echo "✅ Round $ROUND complete"
+    echo "Attempting: ${REMAINING_AGENTS[@]}"
+
+    # Launch all remaining agents in parallel
+    # (Use single message with multiple Task tool invocations)
+    # Each agent gets dependency-check-enabled prompt
+
+    # Collect results
+    READY_AGENTS=()
+    BLOCKED_AGENTS=()
+
+    for agent in "${REMAINING_AGENTS[@]}"; do
+        RESPONSE=$(cat "../round${ROUND}-${agent}-response.txt")
+
+        if grep -q "COMPLETE:" <<< "$RESPONSE"; then
+            READY_AGENTS+=("$agent")
+            COMPLETED_AGENTS+=("$agent")  # Fully done, won't retry
+            echo "   ✅ COMPLETE: $agent"
+        elif grep -q "PARTIAL:" <<< "$RESPONSE"; then
+            READY_AGENTS+=("$agent")
+            # Note: NOT added to COMPLETED_AGENTS - will retry next round
+            echo "   ⚙️  PARTIAL: $agent (has deferred work)"
+        elif grep -q "BLOCKED:" <<< "$RESPONSE"; then
+            BLOCKED_AGENTS+=("$agent")
+            echo "   ⏸️  BLOCKED: $agent"
+            grep "BLOCKED:" <<< "$RESPONSE"
+        fi
+    done
+
+    # Deadlock detection
+    if [ ${#READY_AGENTS[@]} -eq 0 ]; then
+        echo "❌ DEADLOCK: No agents made progress in round $ROUND"
+        echo "Blocked agents: ${BLOCKED_AGENTS[@]}"
+        # Call deadlock resolution function
+        resolve_deadlock "${BLOCKED_AGENTS[@]}"
+        exit 1
+    fi
+
+    # Validate and apply diffs for ready agents
+    for agent in "${READY_AGENTS[@]}"; do
+        DIFF_FILE="../round${ROUND}-${agent}.diff"
+
+        # Validate
+        if ! git apply --check "$DIFF_FILE"; then
+            echo "⚠️  Diff validation failed for $agent - skipping"
+            continue
+        fi
+
+        # Apply
+        git apply "$DIFF_FILE"
+        COMPLETED_AGENTS+=("$agent")
+        echo "   ✅ Integrated: $agent"
+    done
+
+    # Commit integration
+    if [ ${#READY_AGENTS[@]} -gt 0 ]; then
+        git commit -am "Round $ROUND: ${READY_AGENTS[*]}"
+    fi
+
+    ROUND=$((ROUND + 1))
 done
-```
 
-**Example Round 1 Agent Invocation** (both agents in single message):
-```
-Task tool invocation 1:
-- subagent_type: "technical-architect"
-- prompt: "ROUND 1 of 5. Create FormattingRule interface and Violation record. Read context.md section '## Round 1: technical-architect'. Output diff to ../round1-technical-architect.diff"
-
-Task tool invocation 2 (same message):
-- subagent_type: "build-validator"
-- prompt: "ROUND 1 of 5. Create Maven POM files for formatter modules. Read context.md section '## Round 1: build-validator'. Output diff to ../round1-build-validator.diff"
-```
-
-**Expected Outputs Per Round**:
-- `../round{N}-{agent-type}.diff` - Code changes for round N
-- `../round{N}-{agent-type}-metadata.json` - Metadata (files changed, summary)
-
-**DIFF VALIDATION GATE** (MANDATORY):
-
-Before accepting any agent diff, MUST verify it applies cleanly:
-```bash
-git apply --check /path/to/agent.diff
-if [ $? -ne 0 ]; then
-    echo "❌ VALIDATION FAILED: Diff does not apply cleanly"
-    echo "Common causes:"
-    echo "  - Agent generated diff against hypothetical files (context mismatch)"
-    echo "  - Agent used placeholder git index values (not real commit hashes)"
-    echo "  - File changed between agent read and diff generation"
-    echo ""
-    echo "Resolution: Re-invoke agent with instruction to read actual files first"
-    # DO NOT PROCEED - fix the diff or retry agent
-    exit 1
+if [ ${#COMPLETED_AGENTS[@]} -eq ${#ALL_AGENTS[@]} ]; then
+    echo "✅ All agents completed successfully in $((ROUND - 1)) rounds"
+else
+    INCOMPLETE=()
+    for agent in "${ALL_AGENTS[@]}"; do
+        if [[ ! " ${COMPLETED_AGENTS[@]} " =~ " ${agent} " ]]; then
+            INCOMPLETE+=("$agent")
+        fi
+    done
+    echo "❌ Incomplete: ${INCOMPLETE[@]}"
 fi
 ```
 
-**Alternative to Diffs** (if validation repeatedly fails):
+### Agent Prompt Template (Dependency-Check-Enabled)
 
-Agents can return complete file contents instead of diffs:
-```json
+**CRITICAL**: Every agent prompt includes early bailout instructions (template preserved verbatim - execution-critical)
+
+```
+ROUND {round_number} IMPLEMENTATION ATTEMPT
+
+Your task: {agent_specific_task_description}
+
+Expected deliverables:
+{list_of_files_to_create_or_modify}
+
+Known dependencies (may be incomplete):
+{dependencies_from_context_md}
+
+═══════════════════════════════════════════════════════════════
+DEPENDENCY CHECK PROTOCOL - READ THIS FIRST
+═══════════════════════════════════════════════════════════════
+
+BEFORE implementing, verify dependencies and implement as much as possible:
+
+1. Read context.md to understand what other agents are creating
+2. Identify all files you need to import/reference
+3. Use Read tool to check which dependencies exist
+
+4. Based on available dependencies, choose ONE response:
+
+   **OPTION A: COMPLETE Implementation**
+   All dependencies available → Implement everything
+
+   Response format:
+   "COMPLETE: Implemented [full summary]
+
+   Created/Modified:
+   - File1.java: [description]
+   - File2.java: [description]
+
+   Diff written to: ../round{round_number}-{agent_type}.diff"
+
+   **OPTION B: PARTIAL Implementation**
+   Some dependencies missing → Implement what you can
+
+   Response format:
+   "PARTIAL: Implemented [what you completed]
+
+   Completed:
+   - File1.java: [description - doesn't need missing deps]
+   - File2.java: [description - standalone utility]
+
+   Deferred (missing dependencies):
+   - File3.java: BLOCKED by missing DependencyX.java
+   - File4.java: BLOCKED by missing DependencyY.java
+
+   Missing dependencies:
+   - DependencyX.java: Reason: [why needed], Created by: [agent]
+   - DependencyY.java: Reason: [why needed], Created by: [agent]
+
+   Diff written to: ../round{round_number}-{agent_type}.diff
+   Will retry deferred items in next round."
+
+   **OPTION C: BLOCKED (No Progress Possible)**
+   All your work depends on missing dependencies
+
+   Response format:
+   "BLOCKED: Cannot proceed
+
+   All implementation requires:
+   - DependencyX.java: Reason: [why needed], Created by: [agent]
+   - DependencyY.java: Reason: [why needed], Created by: [agent]
+
+   I cannot implement anything until these dependencies are satisfied."
+
+   IMPORTANT: Prefer PARTIAL over BLOCKED whenever possible.
+   Even implementing 10% is better than blocking completely.
+
+═══════════════════════════════════════════════════════════════
+IMPORTANT: You may discover NEW dependencies during implementation
+═══════════════════════════════════════════════════════════════
+
+If you realize mid-implementation that you need something not listed above:
+1. STOP implementation immediately
+2. Respond: "BLOCKED: Missing [newly discovered file]"
+3. Explain what you need and why
+4. We will ensure it's created in the next round
+
+═══════════════════════════════════════════════════════════════
+
+Implementation requirements:
+{detailed_requirements_for_this_agent}
+
+Current repository state (Round {round_number}):
+{output_of_find_src_-name_*.java}
+
+Begin dependency check now.
+```
+
+### Agent Response Examples
+
+**Example 1: COMPLETE - All dependencies available (Round 1)**
+```
+technical-architect response:
+
+Dependency check: No dependencies required (creating foundation interfaces).
+
+COMPLETE: Implemented FormattingRule.java and Violation.java
+
+Created:
+- styler-formatter-api/src/main/java/FormattingRule.java (interface)
+- styler-formatter-api/src/main/java/Violation.java (record)
+
+Diff written to: ../round1-technical-architect.diff
+```
+
+**Example 2: PARTIAL - Some dependencies missing (Round 1)**
+```
+code-quality-auditor response:
+
+Dependency check:
+- FormattingRule.java: NOT FOUND
+- FormattingContext.java: NOT FOUND
+
+PARTIAL: Implemented standalone formatter utilities
+
+Completed:
+- FormatterUtils.java: String manipulation utilities (no dependencies)
+- ConfigParser.java: Configuration file parser (standalone)
+
+Deferred (missing dependencies):
+- LineWrapperFormatter.java: BLOCKED by missing FormattingRule.java
+- ContextAwareFormatter.java: BLOCKED by missing FormattingContext.java
+
+Missing dependencies:
+- FormattingRule.java: Needed for formatter implementations, Created by: technical-architect
+- FormattingContext.java: Needed for context-aware formatting, Created by: technical-architect
+
+Diff written to: ../round1-code-quality-auditor.diff
+Will retry deferred items in next round.
+```
+
+**Example 3: COMPLETE after PARTIAL (Round 2)**
+```
+code-quality-auditor response (continuing from Round 1 PARTIAL):
+
+Dependency check:
+- FormattingRule.java: FOUND ✅
+- FormattingContext.java: FOUND ✅
+
+COMPLETE: Implemented remaining formatter classes
+
+Created:
+- LineWrapperFormatter.java: Implements FormattingRule interface
+- ContextAwareFormatter.java: Uses FormattingContext for smart formatting
+
+Note: FormatterUtils.java and ConfigParser.java were completed in Round 1.
+
+Diff written to: ../round2-code-quality-auditor.diff
+```
+
+**Example 4: BLOCKED - All work needs dependencies (Round 1)**
+```
+style-auditor response:
+
+Dependency check:
+- No Java implementation files found in repository
+
+BLOCKED: Cannot proceed
+
+All my work (adding JavaDoc and style fixes) requires:
+- Implementation files to document
+- Cannot add documentation to non-existent code
+
+I cannot implement anything until other agents create implementation files.
+Will retry in next round after implementations exist.
+```
+
+**Example 5: PARTIAL with mid-implementation discovery (Round 2)**
+```
+security-auditor response:
+
+Dependency check:
+- Initial dependencies verified ✅
+
+Started implementation...
+
+PARTIAL: Implemented basic validation, discovered new dependency
+
+Completed:
+- InputSanitizer.java: Basic input sanitization (standalone)
+- SecurityUtils.java: Security utility functions (no dependencies)
+
+Deferred (discovered during implementation):
+- InputValidator.java: BLOCKED by missing ValidationRule.java
+
+Missing dependencies (discovered):
+- ValidationRule.java: Discovered while implementing InputValidator
+  Reason: Need interface to define extensible validation contracts
+  Created by: technical-architect
+  Suggested location: styler-formatter-api/src/main/java/ValidationRule.java
+
+Diff written to: ../round2-security-auditor.diff
+Will complete InputValidator.java in next round.
+```
+
+### DIFF VALIDATION GATE (MANDATORY)
+
+Before accepting any agent diff:
+
+```bash
+validate_agent_diff() {
+    local diff_file=$1
+    local agent_name=$2
+
+    # Check file exists
+    if [ ! -f "$diff_file" ]; then
+        echo "❌ No diff file generated by $agent_name"
+        return 1
+    fi
+
+    # Validate diff applies cleanly
+    if ! git apply --check "$diff_file" 2>/dev/null; then
+        echo "❌ Diff validation failed for $agent_name"
+        echo "Common causes:"
+        echo "  - Agent generated diff against hypothetical files (context mismatch)"
+        echo "  - Agent used placeholder git index values (not real commit hashes)"
+        echo "  - File changed between agent read and diff generation"
+        echo ""
+        echo "Resolution options:"
+        echo "  1. Re-invoke agent with instruction to read actual files first"
+        echo "  2. Request full file contents instead of diff"
+        echo "  3. Check if agent has circular dependency issue"
+        return 1
+    fi
+
+    echo "✅ Diff validation passed for $agent_name"
+    return 0
+}
+
+# Usage
+if validate_agent_diff "../round2-code-quality-auditor.diff" "code-quality-auditor"; then
+    git apply "../round2-code-quality-auditor.diff"
+else
+    # Retry agent or use alternative approach
+    handle_invalid_diff "code-quality-auditor"
+fi
+```
+
+### Alternative to Diffs: Full File Contents
+
+If diff validation repeatedly fails, agents can return complete file contents:
+
+**Agent prompt modification**:
+```
+If you cannot generate a valid unified diff, return complete file contents in JSON format:
+
 {
   "implementation_method": "full_files",
   "files": [
     {
-      "path": "styler-formatter-api/pom.xml",
-      "content": "<?xml version=\"1.0\"...",
-      "action": "create"
+      "path": "relative/path/to/File.java",
+      "content": "complete file contents here",
+      "action": "create" | "modify"
     }
-  ]
+  ],
+  "summary": "Brief description of implementation"
 }
 ```
 
-**CRITICAL**: Do NOT use Write/Edit tools during this phase. All implementation must come from agents.
+**Main agent integration**:
+```bash
+if grep -q '"implementation_method": "full_files"' "../round2-agent-response.json"; then
+    # Extract files and write them
+    jq -r '.files[] | @json' "../round2-agent-response.json" | while read file_json; do
+        path=$(echo "$file_json" | jq -r '.path')
+        content=$(echo "$file_json" | jq -r '.content')
+        action=$(echo "$file_json" | jq -r '.action')
 
-### Phase 3: CONVERGENCE State
+        if [ "$action" = "create" ]; then
+            mkdir -p "$(dirname "$path")"
+        fi
 
-**Objective**: Integrate agent outputs and resolve conflicts
+        echo "$content" > "$path"
+        echo "✅ Written: $path"
+    done
+fi
+```
 
-**Actions**:
-1. Read all agent output files from `../`
-2. Apply diffs in dependency order
-3. Resolve any conflicts between agent outputs
-4. Validate integration completeness
-5. Update lock state to VALIDATION
+## Deadlock Detection and Resolution
 
-**Allowed Tools**: Write/Edit permitted ONLY for:
-- Applying agent diffs (files generated by agents)
-- Resolving merge conflicts between agent outputs
-- Integration code (minimal glue between agent outputs)
+### Deadlock Likelihood with PARTIAL Implementations
 
-**STRICTLY PROHIBITED**:
-❌ Creating new implementation files not generated by agents
-❌ Writing business logic code not provided by agents
-❌ Implementing features yourself instead of applying agent diffs
-❌ "Helping" agents by writing code they should have created
+**True deadlocks rare** - agents implement standalone components while waiting.
 
-**IF AGENTS FAILED**: Do NOT implement code in CONVERGENCE. Return to AUTONOMOUS_IMPLEMENTATION and retry agents per Failure Recovery section.
+**True Deadlock** (all must be true): ALL agents BLOCKED (no PARTIAL or COMPLETE) | Every agent's entire scope needs missing dependencies | No agent can progress
 
-### Phase 4: VALIDATION State
+### Deadlock Patterns (Rare)
 
-**Objective**: Ensure build passes and quality gates met
+**Circular Dependency** (mostly prevented): Agent A BLOCKED needs Agent B's interface, Agent B BLOCKED needs Agent A's interface. Reality: Both PARTIAL (create utilities), Round 2 both COMPLETE.
 
-**Actions**:
-1. Run `./mvnw verify`
-2. Fix any build failures
-3. Ensure all quality gates pass (checkstyle, PMD, tests)
-4. Update lock state to REVIEW
+**Missing Foundation** (usually resolved): All agents need BaseFormatter.java, no agent assigned to create it. Reality: Agents A+B PARTIAL (utilities/parsers), Agent C BLOCKED. Partial progress → dependency obvious.
 
-### Phase 5: REVIEW State
+**Transitive Blocking**: Nearly impossible with PARTIAL (agents implement independent components while waiting).
 
-**Objective**: Get unanimous stakeholder approval
+### Deadlock Resolution Function
 
-**Actions**:
-1. Invoke review agents (same types as requirements phase)
-2. Collect approval/rejection decisions
-3. If ANY rejection: Return to CONVERGENCE or AUTONOMOUS_IMPLEMENTATION
-4. If ALL approve: Move to USER_APPROVAL checkpoint
+```python
+def handle_deadlock(blocked_agents, round_num):
+    """Break deadlocks by coordinating agent work."""
+    dependency_graph = {
+        agent_info["agent"]: agent_info["missing"]
+        for agent_info in blocked_agents
+    }
+
+    if has_circular_dependency(dependency_graph):
+        resolve_circular_dependency(blocked_agents, round_num)
+        return
+
+    all_needed_files = set()
+    for deps in dependency_graph.values():
+        all_needed_files.update(deps)
+
+    creating_agents = get_agents_that_create_files(blocked_agents)
+    missing_foundation = all_needed_files - creating_agents.keys()
+
+    if missing_foundation:
+        resolve_missing_foundation(missing_foundation, round_num)
+        return
+
+    print("❌ UNKNOWN DEADLOCK TYPE - check agent assignments in context.md")
+
+def resolve_circular_dependency(blocked_agents, round_num):
+    """Create interfaces first, then implementations."""
+    coord_prompt_template = """
+    COORDINATION ROUND - Interface Definitions Only
+
+    Circular dependency detected. Create ONLY interface/abstract class definitions:
+    - Define method signatures
+    - Add minimal JavaDoc
+    - NO implementations (empty/abstract methods only)
+
+    Your interface definitions: {list_of_interfaces_this_agent_should_define}
+    Output to: ../round{round_num}-{agent_type}-interfaces.diff
+    """
+
+    # Launch coordination round, then retry full implementation
+    # (Launch agents with coordination prompt, then re-launch with original prompts)
+
+def resolve_missing_foundation(missing_files, round_num):
+    """Assign missing files to appropriate agent."""
+    for file in missing_files:
+        if "Rule" in file or "Interface" in file:
+            assigned_agent = "technical-architect"
+        elif "Test" in file:
+            assigned_agent = "code-tester"
+        elif "pom.xml" in file:
+            assigned_agent = "build-validator"
+        else:
+            assigned_agent = "technical-architect"
+
+        foundation_prompt = f"""
+        FOUNDATION FILE CREATION - Round {round_num}
+
+        Multiple agents blocked waiting for: {file}
+        Create this file because: {explain_why_this_agent_should_create_file(file, assigned_agent)}
+        Requirements: {gather_requirements_from_blocked_agents(file)}
+        Output to: ../round{round_num}-{assigned_agent}-foundation.diff
+        """
+        # (Invoke assigned_agent with foundation_prompt)
+```
+
+### Deadlock Resolution Examples
+
+**Example 1: Circular Dependency**
+
+```
+Round 3 deadlock:
+- security-auditor: BLOCKED - needs ValidationRule.java (from technical-architect)
+- technical-architect: BLOCKED - needs SecurityContext.java (from security-auditor)
+
+Resolution:
+Round 3a (Coordination):
+- technical-architect: Creates ValidationRule.java interface only (no impl)
+- security-auditor: Creates SecurityContext.java interface only (no impl)
+
+Round 3b (Implementation):
+- technical-architect: Implements full ValidationRule.java (uses SecurityContext)
+- security-auditor: Implements full SecurityContext.java (uses ValidationRule)
+```
+
+**Example 2: Missing Foundation**
+
+```
+Round 2 deadlock:
+- code-quality-auditor: BLOCKED - needs FormattingContext.java
+- performance-analyzer: BLOCKED - needs FormattingContext.java
+- security-auditor: BLOCKED - needs FormattingContext.java
+
+None of the agents claim to create FormattingContext.java
+
+Resolution:
+Round 2 (retry with foundation fix):
+- Assign FormattingContext.java to technical-architect
+- Launch technical-architect with targeted prompt to create FormattingContext
+- After integration, retry all blocked agents
+```
+
+## Phase 3: CONVERGENCE State
+
+**Objective**: Final integration and conflict resolution
+
+**Actions**: Verify all agents completed | Resolve conflicts between agent outputs | Ensure code compiles and integrates | Update lock state to VALIDATION
+
+**Allowed Tools**: Write/Edit ONLY for: Resolving merge conflicts | Integration glue code (minimal, documented)
+
+**STRICTLY PROHIBITED**: ❌ New feature implementations | ❌ Business logic not from agents | ❌ Functionality agents should have created
+
+**IF AGENTS FAILED**: Return to AUTONOMOUS_IMPLEMENTATION with refined prompts
+
+## Phase 4: VALIDATION State
+
+**Objective**: Build passes and quality gates met
+
+**Actions**: Run `./mvnw verify -Dmaven.build.cache.enabled=false` | Fix build failures | Ensure quality gates pass (checkstyle, PMD, tests) | Update lock state to REVIEW
+
+## Phase 5: REVIEW State
+
+**Objective**: Unanimous stakeholder approval
+
+**Actions**: Invoke review agents (same types as requirements phase) | Collect approval/rejection decisions | ANY rejection → Return to CONVERGENCE or AUTONOMOUS_IMPLEMENTATION | ALL approve → Move to USER_APPROVAL checkpoint
 
 ## Post-Compaction Recovery
 
-**Detection Indicators**:
-- Lock file exists with your session_id
-- context.md has "## Agent Work Assignments" section
-- Current state is CONTEXT, AUTONOMOUS_IMPLEMENTATION, or CONVERGENCE
+**Detection**: Lock file with your session_id | context.md has "## Agent Work Assignments" | State: CONTEXT, AUTONOMOUS_IMPLEMENTATION, or CONVERGENCE
 
-**Recovery Pattern**:
+**Recovery Pattern** (preserved verbatim - execution-critical bash script):
 ```bash
 # 1. Check lock state
-cat /workspace/locks/{task}.json
+LOCK_STATE=$(jq -r '.state' /workspace/locks/{task}.json)
 
 # 2. Read context.md
-grep -A 50 "## Agent Work Assignments" ../context.md
+cat ../context.md
 
-# 3. Determine protocol phase
-# 4. Follow state-specific actions above
-```
+# 3. Check for agent output files
+ls -la ../ | grep -E "(\.diff|metadata\.json)"
 
-**State-Specific Recovery**:
-
-**If in CONTEXT**:
-- Verify context.md has complete agent assignments
-- Update lock to AUTONOMOUS_IMPLEMENTATION
-- Invoke implementation agents
-
-**If in AUTONOMOUS_IMPLEMENTATION**:
-- Check for agent output files in ../
-- If agents completed: Move to CONVERGENCE
-- If agents failed/incomplete: Document failure, decide recovery strategy
-- DO NOT implement directly
-
-**If in CONVERGENCE**:
-- Read agent outputs, apply diffs, resolve conflicts
-- Allowed to use Write/Edit for integration only
-- Update lock to VALIDATION when complete
-
-## Violation Prevention
-
-**Hook Enforcement**:
-- `enforce-delegated-implementation.sh`: Blocks Write/Edit during AUTONOMOUS_IMPLEMENTATION
-- `check-lock-ownership.sh`: Provides recovery guidance after compaction
-
-**Manual Verification**:
-```bash
-# Check if delegated protocol is active
-grep -q "## Agent Work Assignments" ../context.md && echo "Delegated protocol active"
-
-# Verify current state allows direct implementation
-LOCK_STATE=$(jq -r '.state' /workspace/locks/{task}.json)
+# 4. Determine recovery action based on state
 case "$LOCK_STATE" in
-    CONTEXT|AUTONOMOUS_IMPLEMENTATION)
-        echo "❌ Direct implementation prohibited - use agents"
+    CONTEXT)
+        echo "Starting AUTONOMOUS_IMPLEMENTATION phase"
+        # Begin round 1
+        ;;
+    AUTONOMOUS_IMPLEMENTATION)
+        echo "Resuming AUTONOMOUS_IMPLEMENTATION"
+        # Determine which round we're on
+        LAST_ROUND=$(ls ../ | grep -oP 'round\K[0-9]+' | sort -n | tail -1)
+        NEXT_ROUND=$((LAST_ROUND + 1))
+        # Continue from next round
         ;;
     CONVERGENCE)
-        echo "⚠️ Direct implementation only for integration/conflict resolution"
-        ;;
-    *)
-        echo "✅ Direct implementation allowed"
+        echo "Resuming CONVERGENCE phase"
+        # Apply any remaining diffs and resolve conflicts
         ;;
 esac
 ```
 
-## Failure Recovery
+## Performance Characteristics
 
-**CRITICAL**: Main agent must NEVER implement code as first response to agent failure.
+### Speedup Comparison
 
-**Mandatory Recovery Sequence**:
+**Without PARTIAL**: Flat deps 6×, Linear deps 1× (no benefit), Typical 2-3×
+**With PARTIAL**: Flat deps 6×, Linear deps 3-4×, Typical 4-5×
 
-### Attempt 1: Refine Agent Instructions (REQUIRED)
+**PARTIAL improves performance**: More agents active per round | Fewer sequential rounds | Earlier integration
 
-1. **Analyze failure**:
-   ```bash
-   # Read agent output to understand what went wrong
-   cat ../technical-architect-metadata.json
-   ```
+**Example**: BLOCKED 7min (4 rounds, 1-3 agents/round) vs PARTIAL 4min (2 rounds, 4-6 agents/round) = 43% faster
 
-2. **DO NOT update state yet** - remain in AUTONOMOUS_IMPLEMENTATION
+## Context Efficiency: Early Bailout and Partial Work
 
-3. **Re-invoke agent with refined instructions**:
-   - Add explicit file paths to create
-   - Include code examples or patterns to follow
-   - Reference similar implementations in codebase
-   - Specify exact output format expected
+**Token costs**: BLOCKED ~100-200 | PARTIAL ~2,000-5,000 | COMPLETE ~5,000-10,000
 
-4. **Verify agent output** before proceeding
+**Example Round 1**: ~14,250 tokens (4 PARTIAL + 1 COMPLETE + 2 BLOCKED) vs BLOCKED-only ~9,750 (2 agents) vs All COMPLETE ~36,000
 
-### Attempt 2: Different Agent Type (if Attempt 1 fails)
-
-1. Try alternative agent type that might handle task better
-2. Provide even more detailed context and examples
-3. Verify output completeness
-
-### Attempt 3: Manual Implementation Fallback (ONLY if Attempts 1-2 fail)
-
-**Justification Required**: Manual fallback is permitted ONLY when:
-- Agent has been retried with refined instructions (2+ attempts)
-- Technical limitation prevents agent from completing task
-- Specific reason documented explaining why agents cannot succeed
-
-**IF justified, proceed with manual fallback**:
-
-1. Document failure in context.md:
-   ```markdown
-   ## Implementation Status
-   - [x] AUTONOMOUS_IMPLEMENTATION: FAILED after 2 retry attempts
-   - Agent returned: [describe what agent provided]
-   - Failure reason: [specific technical limitation]
-   - Retry attempt 1: [what was tried, why it failed]
-   - Retry attempt 2: [what was tried, why it failed]
-   - Fallback decision: Manual implementation justified because [reason]
-   ```
-
-2. Update state to CONVERGENCE:
-   ```bash
-   jq '.state = "CONVERGENCE"' /workspace/locks/{task}.json > /tmp/lock.json
-   mv /tmp/lock.json /workspace/locks/{task}.json
-   ```
-
-3. Implement directly with full documentation:
-   ```markdown
-   ## Convergence Notes
-   Agent delegation failed after 2 retry attempts due to [specific technical reason].
-   Manual implementation approach:
-   - Created X files manually
-   - Followed patterns from [reference implementation]
-   - Validated against requirements in context.md
-   - REVIEW agents will validate direct implementation
-   ```
-
-4. Ensure REVIEW agents validate the direct implementation
-
-**PROHIBITED PATTERNS**:
-❌ Implementing directly after single agent failure without retry
-❌ Updating state to CONVERGENCE before retry attempts
-❌ Manual implementation without documenting retry attempts
-❌ Assuming agent "won't work" without testing refined instructions
+**Tradeoff**: More tokens than pure BLOCKED (14k vs 10k), but 4 agents progress vs 2 (2× throughput) with 60% savings vs forcing all complete.
 
 ## Best Practices
 
-1. **Always update lock state** before transitioning phases
-2. **Read context.md first** after compaction to determine protocol type
-3. **Verify agent outputs** before moving to CONVERGENCE
-4. **Document deviations** when forced to bypass agent implementation
-5. **Trust the hooks** - they prevent common protocol violations
+**PARTIAL over BLOCKED** - Agents always try to implement something | **Launch all agents each round** - Self-select by readiness | **Trust incremental progress** - PARTIAL valuable, not failures | **Update lock state** before phase transitions | **Early bailout prompts** - Include dependency check and PARTIAL guidance | **Validate diffs** - Use `git apply --check` before applying | **Detect deadlocks quickly** - No progress = analyze dependencies | **Document partial work** - Track deferred items and reasons | **Integrate frequently** - Apply diffs after each round
 
 ## Common Mistakes
 
-❌ **Mistake**: Starting direct implementation without checking context.md
-✅ **Correct**: Read context.md, verify protocol type, follow state machine
-
-❌ **Mistake**: Implementing directly during AUTONOMOUS_IMPLEMENTATION
-✅ **Correct**: Invoke agents via Task tool, wait for completion
-
-❌ **Mistake**: Implementing code manually after first agent failure
-✅ **Correct**: Retry agent with refined instructions (minimum 2 attempts) before manual fallback
-
-❌ **Mistake**: Main agent writing implementation code in CONVERGENCE phase
-✅ **Correct**: CONVERGENCE is for applying agent diffs, not creating new implementation
-
-❌ **Mistake**: Forgetting to update lock state
-✅ **Correct**: Update lock after each state transition
-
-❌ **Mistake**: Bypassing failed agent implementation without documentation
-✅ **Correct**: Document all retry attempts, failure reasons, and justification for manual fallback
+❌ Agent BLOCKED when PARTIAL possible → ✅ Implement standalone, defer dependent
+❌ PARTIAL as failure → ✅ PARTIAL is incremental progress
+❌ Predetermine round structure in context.md → ✅ Let rounds emerge from readiness
+❌ Force complete implementation with missing deps → ✅ Accept PARTIAL, complete next round
+❌ Manual code when agents report PARTIAL → ✅ Let agents finish deferred work
+❌ Declare deadlock with PARTIAL → ✅ Deadlock only when ALL BLOCKED
+❌ Skip dependency check in prompts → ✅ Include COMPLETE/PARTIAL/BLOCKED options
+❌ Apply diffs without validation → ✅ Use `git apply --check` first
+❌ Give up after missing dependencies → ✅ Continue rounds, dependencies satisfied by other agents
