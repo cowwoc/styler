@@ -394,6 +394,7 @@ protocol-auditor --target docs/project/task-protocol-core.md --focus concurrent,
 ✅ Updated protocol passes final red team attack
 ✅ Changes documented with rationale
 ✅ Recovery procedures defined for all failure modes
+✅ **POST-HARDENING OPTIMIZATION**: Hardened protocol optimized via `/optimize-doc` command
 
 **AUDIT FAILED IF**:
 ❌ Critical vulnerabilities remain after max rounds
@@ -401,6 +402,38 @@ protocol-auditor --target docs/project/task-protocol-core.md --focus concurrent,
 ❌ Concurrent execution conflicts unresolved
 ❌ Context loss causes irrecoverable state
 ❌ No recovery procedures for failure modes
+
+## 🎨 POST-HARDENING OPTIMIZATION
+
+**MANDATORY FINAL STEP**: After completing all red-blue iterations and writing the hardened protocol, optimize it for conciseness and clarity.
+
+**PROCEDURE**:
+1. Complete all red-blue iteration rounds
+2. Write updated protocol with all security fixes applied
+3. Invoke `/optimize-doc` slash command on the hardened protocol file
+4. Review optimization results to ensure security constraints not weakened
+5. If optimization introduces ambiguity, revert specific changes and document
+
+**SLASH COMMAND USAGE**:
+```bash
+# After writing hardened protocol to disk
+/optimize-doc docs/project/delegated-implementation-protocol.md
+```
+
+**OPTIMIZATION GOALS**:
+- Remove redundancy while preserving security constraints
+- Strengthen vague instructions with clearer phrasing
+- Improve readability without sacrificing explicitness
+- Maintain all critical prohibitions and requirements
+
+**VERIFICATION AFTER OPTIMIZATION**:
+- [ ] All security fixes from audit still present
+- [ ] No ambiguity introduced by conciseness
+- [ ] Critical constraints explicitly stated
+- [ ] Prohibitions remain clear and enforceable
+- [ ] Verification procedures intact
+
+**RATIONALE**: Security-hardened protocols can become verbose during iterative fixing. Post-hardening optimization ensures protocols are both secure AND maintainable by removing redundancy and improving clarity without weakening security constraints.
 
 ## 🚨 CRITICAL PRINCIPLES
 
