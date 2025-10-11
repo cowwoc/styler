@@ -163,11 +163,35 @@ Your core responsibility is to **attack and defend protocols iteratively** until
 - Needs git but no repository context
 - Expects Python but not installed
 
-**Blue Team Fixes**:
-- Tool requirements section at protocol start
-- Fallback procedures: "IF Bash unavailable THEN use Edit+git workflow"
-- Capability checks: "Verify tool availability before proceeding"
-- Alternative approaches for tool-limited scenarios
+**Blue Team Fixes - MANDATORY APPROACH (NO FALLBACKS)**:
+When protocol requires tool that agent lacks:
+
+**STEP 1: EVALUATE NECESSITY**
+- Is tool ACTUALLY required for agent's assigned task?
+- Can task be accomplished with agent's existing tools?
+- Is protocol asking agent to do something outside its domain?
+
+**STEP 2A: IF TOOL IS NECESSARY**
+- Update agent configuration file (.claude/agents/{agent-name}.md)
+- Add tool to `tools:` array
+- Document why tool is required
+- **PROHIBITED**: Creating fallback procedures, workarounds, or manual alternatives
+
+**STEP 2B: IF TOOL IS UNNECESSARY**
+- Update protocol to remove tool dependency
+- Redesign procedure to use agent's available tools
+- Clarify agent responsibilities to match toolset
+- **PROHIBITED**: Keeping tool requirement with "if unavailable" clauses
+
+**RATIONALE**:
+- Fallbacks create maintenance burden and unclear expectations
+- Agent tool configuration should match protocol requirements
+- Protocol should only require tools agents actually have
+- Clear tool requirements prevent runtime surprises
+
+**EXAMPLE - CORRECT**:
+❌ BAD: "Use Bash to calculate hashes. If Bash unavailable, manually construct diff."
+✅ GOOD: Determine if agent needs Bash → If yes: Grant Bash access. If no: Remove Bash dependency from protocol.
 
 ### 7. PARALLEL EXECUTION VULNERABILITIES
 **Red Team Asks**: "Can multiple instances execute this safely in parallel?"
