@@ -86,6 +86,51 @@ def autonomous_implementation_with_discovery():
 
 **When Detected**: Direct Write/Edit for implementation files **PROHIBITED** | Implementation via delegated agents only | Enforced by `enforce-delegated-implementation.sh` hook
 
+## 🚨 CRITICAL: NO FALLBACK TO NON-DELEGATED IMPLEMENTATION
+
+**ONCE DELEGATED PROTOCOL ACTIVE, NO EXCEPTIONS:**
+
+When `context.md` exists with agent assignments, the main agent is **STRICTLY FORBIDDEN** from implementing code directly, regardless of circumstances.
+
+**PROHIBITED FALLBACK PATTERNS**:
+❌ "Agent blocked, I'll implement this part myself"
+❌ "Diff validation failed, let me write the file directly"
+❌ "Agent taking too long, I'll finish it"
+❌ "Simple fix, I'll just Edit/Write this one file"
+❌ "Integration glue code" that implements business logic
+❌ "Fixing agent errors" by rewriting their implementation
+❌ "Agent diff missing git hashes, I'll add them manually"
+❌ "Agent output has formatting issue, I'll patch it"
+❌ "Agent made mistake, I'll fix their diff before applying"
+
+**ONLY PERMITTED ACTIONS**:
+✅ Apply agent diffs via `git apply` (no manual fixes)
+✅ Resolve merge conflicts (keep both agents' intent)
+✅ Launch/re-launch agents with refined prompts
+✅ Request PARTIAL implementations from agents
+✅ Minimal integration (imports, wiring, no logic)
+
+**IF AGENTS MAKE MISTAKES**:
+1. **IDENTIFY ROOT CAUSE**: Why did the agent make this mistake? Tool availability? Ambiguous instruction? Missing validation?
+2. **INVOKE PROTOCOL-AUDITOR**: Launch protocol-auditor agent to analyze the root cause and revise the protocol to prevent future occurrences
+3. **RE-INVOKE AGENT**: After protocol update, re-invoke the original agent with the revised protocol
+4. **NEVER** manually fix agent output (diffs, files, etc.)
+
+**RATIONALE**:
+- Manually fixing agent mistakes creates one-off workarounds
+- Root cause remains in protocol, causing repeated failures
+- Protocol-auditor finds systemic issues and prevents recurrence
+- Fixing = technical debt; Protocol revision = sustainable improvement
+
+**IF AGENTS FAIL**:
+1. Re-invoke agent with clearer instructions
+2. Break task into smaller agent-implementable pieces
+3. Request PARTIAL implementation of subset
+4. If repeated failures → Invoke protocol-auditor to fix protocol
+5. **NEVER** fall back to main agent manual implementation
+
+**ENFORCEMENT**: Hook blocks Write/Edit to `src/**/*.java` during delegated protocol
+
 ## State Machine (Delegated Protocol)
 
 ```
@@ -277,485 +322,789 @@ Known dependencies (may be incomplete):
 {dependencies_from_context_md}
 
 ═══════════════════════════════════════════════════════════════
-DEPENDENCY CHECK PROTOCOL - READ THIS FIRST
+🚨 CRITICAL: DIFF-ONLY OUTPUT - DO NOT TOUCH CODEBASE DIRECTLY
 ═══════════════════════════════════════════════════════════════
 
-BEFORE implementing, verify dependencies and implement as much as possible:
+YOU MUST:
+✅ Write unified diff to: ../round{round_number}-{agent_type}.diff
+✅ Use ONLY Read tool to examine existing files
+✅ Return status response (COMPLETE/PARTIAL/BLOCKED)
 
-1. Read context.md to understand what other agents are creating
-2. Identify all files you need to import/reference
-3. Use Read tool to check which dependencies exist
+YOU MUST NOT:
+❌ Use Write tool to create implementation files
+❌ Use Edit tool to modify implementation files
+❌ Create any files in src/ directories
+❌ Modify any .java files directly
 
-4. Based on available dependencies, choose ONE response:
-
-   **OPTION A: COMPLETE Implementation**
-   All dependencies available → Implement everything
-
-   Response format:
-   "COMPLETE: Implemented [full summary]
-
-   Created/Modified:
-   - File1.java: [description]
-   - File2.java: [description]
-
-   Diff written to: ../round{round_number}-{agent_type}.diff"
-
-   **OPTION B: PARTIAL Implementation**
-   Some dependencies missing → Implement what you can
-
-   Response format:
-   "PARTIAL: Implemented [what you completed]
-
-   Completed:
-   - File1.java: [description - doesn't need missing deps]
-   - File2.java: [description - standalone utility]
-
-   Deferred (missing dependencies):
-   - File3.java: BLOCKED by missing DependencyX.java
-   - File4.java: BLOCKED by missing DependencyY.java
-
-   Missing dependencies:
-   - DependencyX.java: Reason: [why needed], Created by: [agent]
-   - DependencyY.java: Reason: [why needed], Created by: [agent]
-
-   Diff written to: ../round{round_number}-{agent_type}.diff
-   Will retry deferred items in next round."
-
-   **OPTION C: BLOCKED (No Progress Possible)**
-   All your work depends on missing dependencies
-
-   Response format:
-   "BLOCKED: Cannot proceed
-
-   All implementation requires:
-   - DependencyX.java: Reason: [why needed], Created by: [agent]
-   - DependencyY.java: Reason: [why needed], Created by: [agent]
-
-   I cannot implement anything until these dependencies are satisfied."
-
-   IMPORTANT: Prefer PARTIAL over BLOCKED whenever possible.
-   Even implementing 10% is better than blocking completely.
+RATIONALE:
+- Main agent integrates all diffs atomically
+- Direct file creation causes merge conflicts
+- Diff validation gate ensures quality
+- Allows rollback if integration fails
 
 ═══════════════════════════════════════════════════════════════
-IMPORTANT: You may discover NEW dependencies during implementation
+🚨 MANDATORY DIFF GENERATION PROCEDURE
 ═══════════════════════════════════════════════════════════════
 
-If you realize mid-implementation that you need something not listed above:
-1. STOP implementation immediately
-2. Respond: "BLOCKED: Missing [newly discovered file]"
-3. Explain what you need and why
-4. We will ensure it's created in the next round
+**CONSEQUENCES OF SKIPPING HASH GENERATION**:
 
-═══════════════════════════════════════════════════════════════
+If you return a diff without index lines containing git hashes:
 
-Implementation requirements:
-{detailed_requirements_for_this_agent}
+1. ❌ `git apply --check` will fail with "corrupt patch" error
+2. ❌ Main agent cannot integrate your work
+3. ❌ Your entire round contribution is REJECTED
+4. ❌ You will be re-invoked to fix the diff
+5. ❌ Other agents' work is blocked waiting for you
+6. ❌ Protocol convergence is delayed by entire round
 
-Current repository state (Round {round_number}):
-{output_of_find_src_-name_*.java}
+**THIS IS A BLOCKING ERROR** - Not a warning, not a minor issue.
 
-Begin dependency check now.
+**PREVENTION**: Follow STEP 4 (hash generation procedure) exactly as written. No shortcuts permitted.
+
+---
+
+**REQUIRED DIFF FORMAT - VISUAL REFERENCE**
+
+Your diff MUST match this exact format (note the index line):
+
+```diff
+✅ CORRECT FORMAT (with git hashes):
+
+diff --git a/src/Formatter.java b/src/Formatter.java
+index a1b2c3d4e5f6..e4f5g6h7i8j9 100644        ← THIS LINE IS MANDATORY
+--- a/src/Formatter.java
++++ b/src/Formatter.java
+@@ -10,6 +10,7 @@
+ public class Formatter {
++    private final Config config;  // Your change here
+     private final Logger logger;
+ }
 ```
 
-### Agent Response Examples
+```diff
+❌ INCORRECT FORMAT (missing index line):
 
-**Example 1: COMPLETE - All dependencies available (Round 1)**
-```
-technical-architect response:
+diff --git a/src/Formatter.java b/src/Formatter.java
+--- a/src/Formatter.java              ← MISSING INDEX LINE ABOVE THIS
++++ b/src/Formatter.java
+@@ -10,6 +10,7 @@
+ public class Formatter {
++    private final Config config;
+     private final Logger logger;
+ }
 
-Dependency check: No dependencies required (creating foundation interfaces).
-
-COMPLETE: Implemented FormattingRule.java and Violation.java
-
-Created:
-- styler-formatter-api/src/main/java/FormattingRule.java (interface)
-- styler-formatter-api/src/main/java/Violation.java (record)
-
-Diff written to: ../round1-technical-architect.diff
+🚨 THIS DIFF WILL BE REJECTED - Cannot be applied by git
 ```
 
-**Example 2: PARTIAL - Some dependencies missing (Round 1)**
-```
-code-quality-auditor response:
+**CRITICAL DISTINCTION**:
+- Plain `diff -u` command produces INCORRECT format (no git hashes)
+- Only the git-based procedure (STEP 4) produces CORRECT format
+- You CANNOT use shortcuts like `diff -u original.java modified.java`
+- You MUST follow STEP 4 procedure exactly as written
 
-Dependency check:
-- FormattingRule.java: NOT FOUND
-- FormattingContext.java: NOT FOUND
-
-PARTIAL: Implemented standalone formatter utilities
-
-Completed:
-- FormatterUtils.java: String manipulation utilities (no dependencies)
-- ConfigParser.java: Configuration file parser (standalone)
-
-Deferred (missing dependencies):
-- LineWrapperFormatter.java: BLOCKED by missing FormattingRule.java
-- ContextAwareFormatter.java: BLOCKED by missing FormattingContext.java
-
-Missing dependencies:
-- FormattingRule.java: Needed for formatter implementations, Created by: technical-architect
-- FormattingContext.java: Needed for context-aware formatting, Created by: technical-architect
-
-Diff written to: ../round1-code-quality-auditor.diff
-Will retry deferred items in next round.
+**PRE-RETURN VALIDATION**: Before returning, verify EVERY file change has an index line:
+```bash
+grep "^index " your-diff-file.diff
+# Should show one line per file being modified
+# Each line must match format: index <40-hex>..<40-hex> <mode>
 ```
 
-**Example 3: COMPLETE after PARTIAL (Round 2)**
+---
+
+**STEP 1: Read ALL files you will modify**
+
+Use Read tool for every file before generating diff. This is MANDATORY.
+
+**CRITICAL**: You MUST use Read tool in the CURRENT agent invocation. Previous reads from earlier in conversation are INVALID due to:
+- Context compaction may have discarded earlier reads
+- Repository state may have changed since earlier read
+- Other agents may have modified files between your reads
+
+**IF READ FAILS**:
+- File not found → Return "BLOCKED: File {path} does not exist. Required for task."
+- Read error → Return "BLOCKED: Cannot read {path}. Error: {error_message}"
+- Permission denied → Return "BLOCKED: Cannot access {path}. Permission denied."
+- File is directory → Return "BLOCKED: {path} is a directory, expected file."
+- DO NOT proceed with diff generation if Read fails
+- DO NOT guess or infer file content
+- DO NOT use cached memory of previous reads
+
+**BLOCKED RESPONSE FORMAT** (when Read fails):
 ```
-code-quality-auditor response (continuing from Round 1 PARTIAL):
+BLOCKED: Cannot read required file
 
-Dependency check:
-- FormattingRule.java: FOUND ✅
-- FormattingContext.java: FOUND ✅
+File: path/to/RequiredFile.java
+Error: [exact error message from Read tool]
+Reason: This file is required to implement {task component}
 
-COMPLETE: Implemented remaining formatter classes
-
-Created:
-- LineWrapperFormatter.java: Implements FormattingRule interface
-- ContextAwareFormatter.java: Uses FormattingContext for smart formatting
-
-Note: FormatterUtils.java and ConfigParser.java were completed in Round 1.
-
-Diff written to: ../round2-code-quality-auditor.diff
-```
-
-**Example 4: BLOCKED - All work needs dependencies (Round 1)**
-```
-style-auditor response:
-
-Dependency check:
-- No Java implementation files found in repository
-
-BLOCKED: Cannot proceed
-
-All my work (adding JavaDoc and style fixes) requires:
-- Implementation files to document
-- Cannot add documentation to non-existent code
-
-I cannot implement anything until other agents create implementation files.
-Will retry in next round after implementations exist.
+Cannot proceed without this file.
 ```
 
-**Example 5: PARTIAL with mid-implementation discovery (Round 2)**
-```
-security-auditor response:
+---
 
-Dependency check:
-- Initial dependencies verified ✅
+**STEP 1.5: VALIDATE Read Output**
 
-Started implementation...
-
-PARTIAL: Implemented basic validation, discovered new dependency
-
-Completed:
-- InputSanitizer.java: Basic input sanitization (standalone)
-- SecurityUtils.java: Security utility functions (no dependencies)
-
-Deferred (discovered during implementation):
-- InputValidator.java: BLOCKED by missing ValidationRule.java
-
-Missing dependencies (discovered):
-- ValidationRule.java: Discovered while implementing InputValidator
-  Reason: Need interface to define extensible validation contracts
-  Created by: technical-architect
-  Suggested location: styler-formatter-api/src/main/java/ValidationRule.java
-
-Diff written to: ../round2-security-auditor.diff
-Will complete InputValidator.java in next round.
-```
-
-### DIFF VALIDATION GATE (MANDATORY)
-
-Before accepting any agent diff:
+After using Read tool, verify the output:
 
 ```bash
-validate_agent_diff() {
-    local diff_file=$1
-    local agent_name=$2
+# Pseudo-code for validation
+read_output = Read("path/to/File.java")
 
-    # Check file exists
-    if [ ! -f "$diff_file" ]; then
-        echo "❌ No diff file generated by $agent_name"
-        return 1
-    fi
+# Check 1: Output is not a tool error message
+if "Error:" in read_output or "error:" in read_output:
+    return "BLOCKED: Read failed for path/to/File.java: {error}"
 
-    # Validate diff applies cleanly
-    if ! git apply --check "$diff_file" 2>/dev/null; then
-        echo "❌ Diff validation failed for $agent_name"
-        echo "Common causes:"
-        echo "  - Agent generated diff against hypothetical files (context mismatch)"
-        echo "  - Agent used placeholder git index values (not real commit hashes)"
-        echo "  - File changed between agent read and diff generation"
-        echo ""
-        echo "Resolution options:"
-        echo "  1. Re-invoke agent with instruction to read actual files first"
-        echo "  2. Request full file contents instead of diff"
-        echo "  3. Check if agent has circular dependency issue"
-        return 1
-    fi
+# Check 2: Output is not unexpectedly empty (unless file is legitimately empty)
+# NOTE: Some legitimate Java files are minimal (package-info.java, module-info.java, etc.)
+# Only block if empty AND you expect content
+if len(read_output) == 0 and file_should_have_substantial_content:
+    return "BLOCKED: Read returned empty content for path/to/File.java"
 
-    echo "✅ Diff validation passed for $agent_name"
-    return 0
-}
+# Check 3: Output not truncated by tool limits
+# Look for truncation indicators specific to Read tool
+if "... [truncated]" in read_output or len(read_output) > 100000:
+    return "BLOCKED: Read output for path/to/File.java appears truncated"
 
-# Usage
-if validate_agent_diff "../round2-code-quality-auditor.diff" "code-quality-auditor"; then
-    git apply "../round2-code-quality-auditor.diff"
-else
-    # Retry agent or use alternative approach
-    handle_invalid_diff "code-quality-auditor"
-fi
+# If checks pass, proceed to STEP 2
+# NOTE: We don't validate Java syntax here - that's git apply's job
 ```
 
-### Alternative to Diffs: Full File Contents
+**SPECIAL FILE TYPES** (expected to be minimal or unusual):
+- `package-info.java`: Only package declaration + JavaDoc
+- `module-info.java`: Only module declaration
+- Marker interfaces: Only interface declaration, no methods
+- Empty test files: Legitimately minimal for testing empty input
+- Generated files: May have unusual structure
 
-If diff validation repeatedly fails, agents can return complete file contents:
+If working with special file types, Read output validation should focus on:
+✅ Not an error message
+✅ Not truncated
+❌ NOT on validating Java structure (too many edge cases)
 
-**Agent prompt modification**:
+**VALIDATION CHECKLIST**:
+- [ ] Read output is not an error message
+- [ ] Read output is not unexpectedly empty
+- [ ] Read output length is reasonable (not truncated)
+
+---
+
+**STEP 2: FORMATTING PRESERVATION REQUIREMENT**
+
+When creating the modified copy in /tmp/, you MUST preserve EXACT formatting from the original file:
+
+✅ Preserve blank lines (including after package statement, between methods, etc.)
+✅ Preserve indentation style (tabs vs spaces, indent levels)
+✅ Preserve line endings (LF vs CRLF) - CRITICAL for cross-platform compatibility
+✅ Preserve trailing whitespace (if present in original)
+✅ Change ONLY the specific lines required for your task
+
+**EXAMPLE - CORRECT**:
+Original file has blank line after package statement:
+```java
+package com.styler.formatter;
+
+import java.util.List;  ← Note blank line above
 ```
-If you cannot generate a valid unified diff, return complete file contents in JSON format:
 
-{
-  "implementation_method": "full_files",
-  "files": [
-    {
-      "path": "relative/path/to/File.java",
-      "content": "complete file contents here",
-      "action": "create" | "modify"
-    }
-  ],
-  "summary": "Brief description of implementation"
-}
+Your modified file MUST preserve that blank line:
+```java
+package com.styler.formatter;
+
+import java.util.List;  ← Blank line preserved
+import java.util.Map;   ← Your new import
 ```
 
-**Main agent integration**:
+**EXAMPLE - INCORRECT** (causes blank line mismatch bug - REAL BUG OBSERVED):
+```java
+package com.styler.formatter;
+import java.util.List;  ← ❌ Missing blank line - causes git apply failure
+import java.util.Map;
+```
+
+**LINE ENDING PRESERVATION** (CRITICAL):
+- Read tool preserves original line endings
+- Write tool MUST preserve line endings (do not convert LF ↔ CRLF)
+- If Write tool converts line endings, diff will show entire file changed
+- Verify line ending type before Write: `file path/to/File.java` or `od -c`
+
+**EXAMPLE - Line Ending Mismatch**:
+```
+Original file: Unix (LF) line endings, 100 lines
+Agent writes: Windows (CRLF) line endings, 100 lines
+Diff result: Shows all 100 lines changed (every line has line ending change)
+❌ This creates massive diff noise and breaks git blame
+```
+
+**VERIFICATION**: After writing modified file, mentally compare blank lines, indentation, and formatting against the Read tool output to ensure only intended changes present.
+
+---
+
+**STEP 3: Create Agent-Specific Temporary Workspace**
+
 ```bash
-if grep -q '"implementation_method": "full_files"' "../round2-agent-response.json"; then
-    # Extract files and write them
-    jq -r '.files[] | @json' "../round2-agent-response.json" | while read file_json; do
-        path=$(echo "$file_json" | jq -r '.path')
-        content=$(echo "$file_json" | jq -r '.content')
-        action=$(echo "$file_json" | jq -r '.action')
+cd /workspace/branches/{task-name}/code
 
-        if [ "$action" = "create" ]; then
-            mkdir -p "$(dirname "$path")"
-        fi
+# Define agent-specific temporary directory
+AGENT_TYPE="{agent_type}"  # e.g., "technical-architect"
+ROUND={round_number}
+TEMP_DIR="/tmp/agent-${AGENT_TYPE}-round${ROUND}"
 
-        echo "$content" > "$path"
-        echo "✅ Written: $path"
-    done
+# Create isolated directory (safe for parallel execution)
+if ! mkdir -p "$TEMP_DIR"; then
+    echo "❌ ERROR: Cannot create temporary directory"
+    return "BLOCKED: Failed to create workspace directory $TEMP_DIR. Check permissions."
 fi
+
+# Verify directory is empty (paranoid check for file collisions)
+if [ "$(ls -A $TEMP_DIR)" ]; then
+    echo "⚠️  WARNING: Temporary directory not empty"
+    # Clean up stale files from previous failed attempt
+    rm -rf "${TEMP_DIR:?}"/*
+fi
+
+echo "✅ Workspace ready: $TEMP_DIR"
 ```
 
-## Deadlock Detection and Resolution
+---
 
-### Deadlock Likelihood with PARTIAL Implementations
+**STEP 4: Generate Diff Using Write + Git Workflow**
 
-**True deadlocks rare** - agents implement standalone components while waiting.
+🚨 CRITICAL: The following procedure is MANDATORY and CANNOT be simplified or substituted with alternative diff methods.
 
-**True Deadlock** (all must be true): ALL agents BLOCKED (no PARTIAL or COMPLETE) | Every agent's entire scope needs missing dependencies | No agent can progress
+**WHY THIS EXACT PROCEDURE**:
+- `git apply` REQUIRES index lines with git object hashes
+- Plain `diff -u` output is INCOMPATIBLE with git apply
+- Missing index lines = immediate integration failure
+- No shortcuts or simplifications permitted
 
-### Deadlock Patterns (Rare)
+This procedure has FOUR PHASES:
+1. **PREPARATION**: Get original file hashes from git
+2. **MODIFICATION**: Create your changed version in /tmp/
+3. **🚨 HASH GENERATION**: Calculate new hashes (MANDATORY - CANNOT BE SKIPPED)
+4. **DIFF ASSEMBLY**: Construct final unified diff with git metadata
 
-**Circular Dependency** (mostly prevented): Agent A BLOCKED needs Agent B's interface, Agent B BLOCKED needs Agent A's interface. Reality: Both PARTIAL (create utilities), Round 2 both COMPLETE.
+For EACH file you're modifying:
 
-**Missing Foundation** (usually resolved): All agents need BaseFormatter.java, no agent assigned to create it. Reality: Agents A+B PARTIAL (utilities/parsers), Agent C BLOCKED. Partial progress → dependency obvious.
+---
 
-**Transitive Blocking**: Nearly impossible with PARTIAL (agents implement independent components while waiting).
+**PHASE 1: PREPARATION - Get Original Git Hash**
 
-### Deadlock Resolution Function
+```bash
+ORIGINAL_FILE="src/main/java/com/styler/Formatter.java"
+MODIFIED_BASENAME="modified_Formatter.java"
+MODIFIED_FILE="${TEMP_DIR}/${MODIFIED_BASENAME}"
 
-```python
-def handle_deadlock(blocked_agents, round_num):
-    """Break deadlocks by coordinating agent work."""
-    dependency_graph = {
-        agent_info["agent"]: agent_info["missing"]
-        for agent_info in blocked_agents
-    }
+# Get original file's git hash from index
+ORIGINAL_HASH=$(git ls-files -s "$ORIGINAL_FILE" | awk '{print $2}')
 
-    if has_circular_dependency(dependency_graph):
-        resolve_circular_dependency(blocked_agents, round_num)
-        return
+# Validate original hash
+if [ -z "$ORIGINAL_HASH" ]; then
+    echo "❌ ERROR: Cannot get git hash for original file"
+    return "BLOCKED: File $ORIGINAL_FILE not in git index. Is it tracked?"
+fi
 
-    all_needed_files = set()
-    for deps in dependency_graph.values():
-        all_needed_files.update(deps)
+# Validate hash format (40 hex characters)
+if ! [[ "$ORIGINAL_HASH" =~ ^[0-9a-f]{40}$ ]]; then
+    echo "❌ ERROR: Invalid git hash format: $ORIGINAL_HASH"
+    return "BLOCKED: git ls-files returned invalid hash for $ORIGINAL_FILE"
+fi
 
-    creating_agents = get_agents_that_create_files(blocked_agents)
-    missing_foundation = all_needed_files - creating_agents.keys()
-
-    if missing_foundation:
-        resolve_missing_foundation(missing_foundation, round_num)
-        return
-
-    print("❌ UNKNOWN DEADLOCK TYPE - check agent assignments in context.md")
-
-def resolve_circular_dependency(blocked_agents, round_num):
-    """Create interfaces first, then implementations."""
-    coord_prompt_template = """
-    COORDINATION ROUND - Interface Definitions Only
-
-    Circular dependency detected. Create ONLY interface/abstract class definitions:
-    - Define method signatures
-    - Add minimal JavaDoc
-    - NO implementations (empty/abstract methods only)
-
-    Your interface definitions: {list_of_interfaces_this_agent_should_define}
-    Output to: ../round{round_num}-{agent_type}-interfaces.diff
-    """
-
-    # Launch coordination round, then retry full implementation
-    # (Launch agents with coordination prompt, then re-launch with original prompts)
-
-def resolve_missing_foundation(missing_files, round_num):
-    """Assign missing files to appropriate agent."""
-    for file in missing_files:
-        if "Rule" in file or "Interface" in file:
-            assigned_agent = "technical-architect"
-        elif "Test" in file:
-            assigned_agent = "code-tester"
-        elif "pom.xml" in file:
-            assigned_agent = "build-validator"
-        else:
-            assigned_agent = "technical-architect"
-
-        foundation_prompt = f"""
-        FOUNDATION FILE CREATION - Round {round_num}
-
-        Multiple agents blocked waiting for: {file}
-        Create this file because: {explain_why_this_agent_should_create_file(file, assigned_agent)}
-        Requirements: {gather_requirements_from_blocked_agents(file)}
-        Output to: ../round{round_num}-{assigned_agent}-foundation.diff
-        """
-        # (Invoke assigned_agent with foundation_prompt)
+echo "✅ Original hash: $ORIGINAL_HASH"
 ```
 
-### Deadlock Resolution Examples
+---
 
-**Example 1: Circular Dependency**
+**PHASE 2: MODIFICATION - Create Modified Version**
 
+```bash
+# Use Write tool to create modified version in temp directory
+# CRITICAL: Preserve exact formatting from Read output (see STEP 2)
+
+# Example: Write modified content
+cat > "$MODIFIED_FILE" << 'EOF'
+[your modified file content with EXACT formatting preservation]
+EOF
+
+# Verify file was written
+if [ ! -f "$MODIFIED_FILE" ]; then
+    echo "❌ ERROR: Modified file not created"
+    return "BLOCKED: Failed to write modified file to $MODIFIED_FILE"
+fi
+
+echo "✅ Modified file created: $MODIFIED_FILE"
 ```
-Round 3 deadlock:
-- security-auditor: BLOCKED - needs ValidationRule.java (from technical-architect)
-- technical-architect: BLOCKED - needs SecurityContext.java (from security-auditor)
 
-Resolution:
-Round 3a (Coordination):
-- technical-architect: Creates ValidationRule.java interface only (no impl)
-- security-auditor: Creates SecurityContext.java interface only (no impl)
+---
 
-Round 3b (Implementation):
-- technical-architect: Implements full ValidationRule.java (uses SecurityContext)
-- security-auditor: Implements full SecurityContext.java (uses ValidationRule)
+**PHASE 3: 🚨 GIT HASH GENERATION (CANNOT BE SKIPPED)**
+
+This is the MOST CRITICAL STEP. Without it, your diff is unusable.
+
+```bash
+# Generate git object hash for modified file
+# This writes the object to git's object database
+NEW_HASH=$(git hash-object -w "$MODIFIED_FILE")
+
+# MANDATORY VALIDATION
+if [ -z "$NEW_HASH" ]; then
+    echo "❌ ERROR: git hash-object failed to generate hash"
+    rm -rf "$TEMP_DIR"
+    return "BLOCKED: Cannot generate git hash for modified file. Check repository state and permissions."
+fi
+
+# Validate hash format (40 hex characters)
+if ! [[ "$NEW_HASH" =~ ^[0-9a-f]{40}$ ]]; then
+    echo "❌ ERROR: Invalid git hash format: $NEW_HASH"
+    rm -rf "$TEMP_DIR"
+    return "BLOCKED: git hash-object returned invalid hash: $NEW_HASH"
+fi
+
+echo "✅ New hash: $NEW_HASH"
+
+# YOU NOW HAVE BOTH HASHES REQUIRED FOR INDEX LINE:
+# - ORIGINAL_HASH (from git ls-files)
+# - NEW_HASH (from git hash-object)
+# BOTH are REQUIRED for the index line
 ```
 
-**Example 2: Missing Foundation**
+**WHY THIS CANNOT BE SKIPPED**:
+- `git apply` validates hashes against blob objects
+- Missing hashes = git apply fails with "corrupt patch"
+- There is NO alternative method that works
+- This step is not optional metadata
+- Hash generation MUST happen for every file in diff
 
+---
+
+**PHASE 4: DIFF ASSEMBLY - Construct Unified Diff with Git Metadata**
+
+```bash
+# Generate base unified diff
+DIFF_FILE="${TEMP_DIR}/file.diff"
+diff -u "$ORIGINAL_FILE" "$MODIFIED_FILE" > "$DIFF_FILE"
+
+# Validate diff was created
+if [ ! -f "$DIFF_FILE" ]; then
+    echo "❌ ERROR: Diff file not created"
+    return "BLOCKED: diff command failed"
+fi
+
+# Fix the --- line (must reference a/ path)
+sed -i "s|^--- .*|--- a/${ORIGINAL_FILE}|" "$DIFF_FILE"
+
+# Fix the +++ line (must reference b/ path)
+sed -i "s|^+++ .*|+++ b/${ORIGINAL_FILE}|" "$DIFF_FILE"
+
+# Fix the diff --git line (both paths must be identical)
+sed -i "s|^diff --git.*|diff --git a/${ORIGINAL_FILE} b/${ORIGINAL_FILE}|" "$DIFF_FILE"
+
+# 🚨 CRITICAL: Insert index line with BOTH git hashes
+# This line MUST appear after "diff --git" and before "---"
+# Format: index <original-hash>..<new-hash> <mode>
+sed -i "/^diff --git/a index ${ORIGINAL_HASH}..${NEW_HASH} 100644" "$DIFF_FILE"
+
+echo "✅ Diff generated with git hashes"
+
+# Append to final agent diff file
+cat "$DIFF_FILE" >> "../round${ROUND}-${AGENT_TYPE}.diff"
 ```
-Round 2 deadlock:
-- code-quality-auditor: BLOCKED - needs FormattingContext.java
-- performance-analyzer: BLOCKED - needs FormattingContext.java
-- security-auditor: BLOCKED - needs FormattingContext.java
 
-None of the agents claim to create FormattingContext.java
-
-Resolution:
-Round 2 (retry with foundation fix):
-- Assign FormattingContext.java to technical-architect
-- Launch technical-architect with targeted prompt to create FormattingContext
-- After integration, retry all blocked agents
+**FINAL DIFF STRUCTURE** (verify this format):
+```diff
+diff --git a/path/to/File.java b/path/to/File.java
+index <original-hash>..<new-hash> 100644
+--- a/path/to/File.java
++++ b/path/to/File.java
+@@ -line,count +line,count @@
+[diff content]
 ```
+
+---
+
+**STEP 5: SCOPE CONSTRAINT - MINIMAL CHANGES ONLY**
+
+When generating the modified file, you MUST make ONLY the changes required for your assigned task.
+
+**DO NOT**:
+❌ Fix unrelated style violations
+❌ Add features not in your task description
+❌ Refactor code outside your scope
+❌ Update imports for other agents' code
+❌ Add "helpful" utility methods not required
+❌ Change formatting unrelated to your task
+
+**DO**:
+✅ Make only changes specified in your task
+✅ Add imports for YOUR new code only
+✅ Update only files listed in your deliverables
+✅ Leave other code unchanged (even if you see issues)
+
+**RATIONALE**:
+- Scope creep causes merge conflicts with other agents
+- Unrelated changes complicate diff review
+- Style fixes are style-auditor's responsibility
+- Minimal diffs = faster integration = faster convergence
+
+**EXAMPLE - SCOPE VIOLATION**:
+```diff
+# Your task: Add logging to processFile() method
+
+# ❌ WRONG: Also fixed style violation in unrelated method
+@@ -15,7 +15,7 @@
+ public void processFile(File f) {
++    logger.info("Processing: " + f);  ← Your task
+     // ... existing code
+ }
+
+@@ -45,7 +45,7 @@
+-public void helperMethod( String s ){  ← Unrelated method
++public void helperMethod(String s) {   ← Style fix NOT in your scope
+     // ... existing code
+ }
+```
+
+**CORRECT APPROACH**:
+```diff
+# Your task: Add logging to processFile() method
+
+# ✅ CORRECT: Only changes for your task
+@@ -15,7 +15,7 @@
+ public void processFile(File f) {
++    logger.info("Processing: " + f);  ← Your task only
+     // ... existing code
+ }
+```
+
+---
+
+**STEP 6: 🚨 MANDATORY SELF-VERIFICATION (ALL CHECKS REQUIRED)**
+
+Before returning your diff, you MUST run ALL validation checks. Failure to validate = BLOCKED status.
+
+**CHECK 1: Index Lines Present and Correctly Formatted**
+
+```bash
+FINAL_DIFF_FILE="../round${ROUND}-${AGENT_TYPE}.diff"
+
+# Count index lines in diff
+INDEX_COUNT=$(grep -c "^index " "$FINAL_DIFF_FILE")
+FILE_COUNT=$(grep -c "^diff --git" "$FINAL_DIFF_FILE")
+
+if [ "$INDEX_COUNT" -ne "$FILE_COUNT" ]; then
+    echo "❌ CRITICAL ERROR: Diff is missing index lines"
+    echo "   Expected: $FILE_COUNT index lines (one per file)"
+    echo "   Found: $INDEX_COUNT index lines"
+    echo ""
+    echo "🚨 BLOCKED: Cannot return diff without git hashes"
+    echo "   Reason: git apply REQUIRES index lines to function"
+    echo "   Fix: Re-execute PHASE 3 (git hash-object) for all files"
+    return "BLOCKED: Diff validation failed - missing git index lines"
+fi
+
+# Validate index line FORMAT (not just presence)
+# Expected format: index <40-hex>..<40-hex> <mode>
+# Example: index a1b2c3d4...f6e5d4c3 100644
+
+INVALID_FORMAT=$(grep "^index " "$FINAL_DIFF_FILE" | grep -vE "^index [0-9a-f]{40}\.\.[0-9a-f]{40} [0-9]{6}$")
+
+if [ -n "$INVALID_FORMAT" ]; then
+    echo "❌ CRITICAL ERROR: Index line has invalid format"
+    echo "   Invalid line(s):"
+    echo "$INVALID_FORMAT"
+    echo ""
+    echo "   Expected format: index <40-hex>..<40-hex> <mode>"
+    echo "   Example: index a1b2c3d4e5f6..f6e5d4c3b2a1 100644"
+    echo ""
+    echo "   Common mistakes:"
+    echo "   - Using ... instead of .. (triple vs double dots)"
+    echo "   - Missing mode bits (100644 or 100755)"
+    echo "   - Truncated hashes (must be 40 hex characters each)"
+    return "BLOCKED: Index line format validation failed"
+fi
+
+echo "✅ CHECK 1 PASSED: All index lines present and correctly formatted"
+```
+
+**CHECK 2: Diff Applies Cleanly**
+
+```bash
+# Validate diff applies to current repository state
+if ! git apply --check "$FINAL_DIFF_FILE" 2>&1 | tee /tmp/apply-check.log; then
+    echo "❌ CRITICAL ERROR: Diff does not apply cleanly"
+    echo ""
+    echo "Git apply error:"
+    cat /tmp/apply-check.log
+    echo ""
+    echo "Common causes:"
+    echo "- File paths incorrect (must be relative to repository root)"
+    echo "- Line numbers mismatched (file changed since Read)"
+    echo "- Formatting differences (blank lines, line endings)"
+    echo "- Another agent already modified this file"
+    echo ""
+    echo "Troubleshooting:"
+    echo "1. Re-read the original file with Read tool"
+    echo "2. Verify EXACT formatting preservation (STEP 2)"
+    echo "3. Check if file was modified by another agent"
+    echo "4. If file changed: Return BLOCKED: Dependency not met"
+    return "BLOCKED: Diff validation failed - does not apply cleanly"
+fi
+
+echo "✅ CHECK 2 PASSED: Diff applies cleanly to current state"
+```
+
+**CHECK 3: Format Structure Verification**
+
+```bash
+# Verify each file change has all required headers
+# Expected structure per file:
+#   diff --git a/path b/path
+#   index abc123..def456 100644
+#   --- a/path
+#   +++ b/path
+#   @@ -X,Y +X,Y @@
+
+echo "Verifying diff structure..."
+
+# Extract all diff --git lines
+git diff --no-index /dev/null "$FINAL_DIFF_FILE" | grep "^diff --git" > /tmp/git-lines.txt || true
+
+# For each file, verify it has index, ---, +++ lines
+while IFS= read -r git_line; do
+    echo "  Checking: $git_line"
+
+    # This is a simplified check - full validation done by git apply --check
+    # Just verify basic structure exists
+done < /tmp/git-lines.txt
+
+echo "✅ CHECK 3 PASSED: Diff structure verified"
+```
+
+**CHECK 4: Scope Compliance Verification**
+
+```bash
+# Verify diff only modifies files in your deliverables list
+# Expected files: [list from task description]
+
+echo "Verifying scope compliance..."
+
+MODIFIED_FILES=$(grep "^diff --git" "$FINAL_DIFF_FILE" | awk '{print $3}' | sed 's|^a/||')
+
+echo "Files modified in diff:"
+echo "$MODIFIED_FILES"
+
+# Compare against expected deliverables
+# If modifying files outside your scope, this is a violation
+
+echo "✅ CHECK 4 PASSED: Scope compliance verified"
+```
+
+**ALL CHECKS MUST PASS** before proceeding to status response.
+
+If ANY check fails, you MUST:
+1. Return BLOCKED status with specific error
+2. Include exact error message from failed check
+3. Do NOT return the diff file
+4. Wait for re-invocation with fixes
+
+---
+
+**STEP 7: Return Status Response**
+
+After ALL validation checks pass, return appropriate status:
+
+**COMPLETE**: All work finished, no dependencies remain
+```
+COMPLETE: [Agent type] implementation finished
+
+Files modified:
+- path/to/File1.java (created interface)
+- path/to/File2.java (implemented class)
+
+Diff file: ../round{round}-{agent}.diff
+Validation: All checks passed
+
+No remaining work. Ready for integration.
+```
+
+**PARTIAL**: Some work done, remaining work deferred
+```
+PARTIAL: [Agent type] partial implementation
+
+Completed work:
+- path/to/File1.java (created base class)
+- path/to/File2.java (added validation)
+
+Deferred work:
+- path/to/File3.java (BLOCKED: Requires Interface X from technical-architect)
+- path/to/File4.java (BLOCKED: Depends on File3.java)
+
+Diff file: ../round{round}-{agent}.diff
+Validation: All checks passed
+
+Remaining dependencies: Interface X
+Will retry after round {round} integration.
+```
+
+**BLOCKED**: Cannot proceed, no work completed
+```
+BLOCKED: [Agent type] cannot proceed
+
+Reason: Missing required dependency
+
+Required: path/to/RequiredInterface.java
+Provided by: technical-architect
+Status: Not yet implemented
+
+Cannot implement any deliverables without this dependency.
+
+Will retry after technical-architect completes.
+```
+
+---
 
 ## Phase 3: CONVERGENCE State
 
-**Objective**: Final integration and conflict resolution
+**Objective**: Integrate all agent diffs, resolve conflicts, achieve unanimous stakeholder approval
 
-**Actions**: Verify all agents completed | Resolve conflicts between agent outputs | Ensure code compiles and integrates | Update lock state to VALIDATION
+**Transition from AUTONOMOUS_IMPLEMENTATION**: When all agents report COMPLETE status
 
-**Allowed Tools**: Write/Edit ONLY for: Resolving merge conflicts | Integration glue code (minimal, documented)
+**Actions**:
+1. Apply final diffs from last round
+2. Resolve any merge conflicts (preserve both agents' intent)
+3. Run build verification (`mvn verify`)
+4. Fix any compilation errors from integration
+5. Update lock state to VALIDATION
 
-**STRICTLY PROHIBITED**: ❌ New feature implementations | ❌ Business logic not from agents | ❌ Functionality agents should have created
+**Conflict Resolution**:
+- If same line modified by multiple agents: Keep both changes if possible
+- If incompatible changes: Consult context.md to determine intent
+- If unsure: Re-invoke agents with refined coordination instructions
 
-**IF AGENTS FAILED**: Return to AUTONOMOUS_IMPLEMENTATION with refined prompts
+**Lock Update**:
+```bash
+jq '.state = "VALIDATION"' /workspace/locks/{task}.json > /tmp/lock.json
+mv /tmp/lock.json /workspace/locks/{task}.json
+```
 
 ## Phase 4: VALIDATION State
 
-**Objective**: Build passes and quality gates met
+**Objective**: Ensure implementation meets all quality gates
 
-**Actions**: Run `./mvnw verify -Dmaven.build.cache.enabled=false` | Fix build failures | Ensure quality gates pass (checkstyle, PMD, tests) | Update lock state to REVIEW
+**Actions**:
+1. Run full build: `mvn clean verify`
+2. Verify all tests pass
+3. Run checkstyle validation
+4. Run PMD validation
+5. Manual code review of integration points
+6. Update lock state to REVIEW
+
+**Validation Gates**:
+- ✅ Build succeeds (no compilation errors)
+- ✅ All tests pass (100% success rate)
+- ✅ Checkstyle reports zero violations
+- ✅ PMD reports zero violations
+- ✅ Manual review: integration clean, no orphaned code
+
+**Lock Update**:
+```bash
+jq '.state = "REVIEW"' /workspace/locks/{task}.json > /tmp/lock.json
+mv /tmp/lock.json /workspace/locks/{task}.json
+```
 
 ## Phase 5: REVIEW State
 
-**Objective**: Unanimous stakeholder approval
+**Objective**: Stakeholder approval of implementation
 
-**Actions**: Invoke review agents (same types as requirements phase) | Collect approval/rejection decisions | ANY rejection → Return to CONVERGENCE or AUTONOMOUS_IMPLEMENTATION | ALL approve → Move to USER_APPROVAL checkpoint
+**Actions**:
+1. Invoke stakeholder agents for approval
+2. Present implementation summary
+3. Collect approval/rejection decisions
+4. If unanimous approval → proceed to USER_APPROVAL
+5. If any rejection → return to CONVERGENCE state
 
-## Post-Compaction Recovery
+**Stakeholder Agents**:
+- technical-architect (architecture compliance)
+- code-quality-auditor (code quality standards)
+- security-auditor (security best practices)
+- performance-analyzer (performance characteristics)
+- style-auditor (style compliance)
 
-**Detection**: Lock file with your session_id | context.md has "## Agent Work Assignments" | State: CONTEXT, AUTONOMOUS_IMPLEMENTATION, or CONVERGENCE
+**Approval Criteria**: ALL stakeholders must approve. Any rejection requires fixes.
 
-**Recovery Pattern** (preserved verbatim - execution-critical bash script):
+## Phase 6: USER_APPROVAL State
+
+**Objective**: Final human approval before merge
+
+**Actions**:
+1. Present commit summary to user
+2. Show git diff stat
+3. Wait for user approval
+4. On approval: Update lock to COMPLETE
+5. On rejection: Return to CONVERGENCE with user feedback
+
+**Lock Update** (after approval):
 ```bash
-# 1. Check lock state
-LOCK_STATE=$(jq -r '.state' /workspace/locks/{task}.json)
-
-# 2. Read context.md
-cat ../context.md
-
-# 3. Check for agent output files
-ls -la ../ | grep -E "(\.diff|metadata\.json)"
-
-# 4. Determine recovery action based on state
-case "$LOCK_STATE" in
-    CONTEXT)
-        echo "Starting AUTONOMOUS_IMPLEMENTATION phase"
-        # Begin round 1
-        ;;
-    AUTONOMOUS_IMPLEMENTATION)
-        echo "Resuming AUTONOMOUS_IMPLEMENTATION"
-        # Determine which round we're on
-        LAST_ROUND=$(ls ../ | grep -oP 'round\K[0-9]+' | sort -n | tail -1)
-        NEXT_ROUND=$((LAST_ROUND + 1))
-        # Continue from next round
-        ;;
-    CONVERGENCE)
-        echo "Resuming CONVERGENCE phase"
-        # Apply any remaining diffs and resolve conflicts
-        ;;
-esac
+jq '.state = "COMPLETE"' /workspace/locks/{task}.json > /tmp/lock.json
+mv /tmp/lock.json /workspace/locks/{task}.json
 ```
 
-## Performance Characteristics
+## Phase 7: COMPLETE State
 
-### Speedup Comparison
+**Objective**: Merge implementation to main branch
 
-**Without PARTIAL**: Flat deps 6×, Linear deps 1× (no benefit), Typical 2-3×
-**With PARTIAL**: Flat deps 6×, Linear deps 3-4×, Typical 4-5×
+**Actions**:
+1. Squash commits into single commit with descriptive message
+2. Merge worktree to main branch
+3. Verify main branch build passes
+4. Update lock state to CLEANUP
 
-**PARTIAL improves performance**: More agents active per round | Fewer sequential rounds | Earlier integration
+**Commit Message Format**:
+```
+[Task Name] Brief description
 
-**Example**: BLOCKED 7min (4 rounds, 1-3 agents/round) vs PARTIAL 4min (2 rounds, 4-6 agents/round) = 43% faster
+Detailed description of implementation:
+- Component 1: What was added/changed
+- Component 2: What was added/changed
 
-## Context Efficiency: Early Bailout and Partial Work
+Agents involved: technical-architect, code-quality-auditor, ...
+Rounds required: X
+```
 
-**Token costs**: BLOCKED ~100-200 | PARTIAL ~2,000-5,000 | COMPLETE ~5,000-10,000
+**Lock Update**:
+```bash
+jq '.state = "CLEANUP"' /workspace/locks/{task}.json > /tmp/lock.json
+mv /tmp/lock.json /workspace/locks/{task}.json
+```
 
-**Example Round 1**: ~14,250 tokens (4 PARTIAL + 1 COMPLETE + 2 BLOCKED) vs BLOCKED-only ~9,750 (2 agents) vs All COMPLETE ~36,000
+## Phase 8: CLEANUP State
 
-**Tradeoff**: More tokens than pure BLOCKED (14k vs 10k), but 4 agents progress vs 2 (2× throughput) with 60% savings vs forcing all complete.
+**Objective**: Remove task artifacts
 
-## Best Practices
+**Actions**:
+1. Remove worktree directory
+2. Remove lock file
+3. Archive context.md and agent diffs
+4. Update todo.md → changelog.md
 
-**PARTIAL over BLOCKED** - Agents always try to implement something | **Launch all agents each round** - Self-select by readiness | **Trust incremental progress** - PARTIAL valuable, not failures | **Update lock state** before phase transitions | **Early bailout prompts** - Include dependency check and PARTIAL guidance | **Validate diffs** - Use `git apply --check` before applying | **Detect deadlocks quickly** - No progress = analyze dependencies | **Document partial work** - Track deferred items and reasons | **Integrate frequently** - Apply diffs after each round
+**Cleanup Commands**:
+```bash
+# Remove worktree
+cd /workspace/branches/main/code
+git worktree remove /workspace/branches/{task}/code
 
-## Common Mistakes
+# Remove lock
+rm /workspace/locks/{task}.json
 
-❌ Agent BLOCKED when PARTIAL possible → ✅ Implement standalone, defer dependent
-❌ PARTIAL as failure → ✅ PARTIAL is incremental progress
-❌ Predetermine round structure in context.md → ✅ Let rounds emerge from readiness
-❌ Force complete implementation with missing deps → ✅ Accept PARTIAL, complete next round
-❌ Manual code when agents report PARTIAL → ✅ Let agents finish deferred work
-❌ Declare deadlock with PARTIAL → ✅ Deadlock only when ALL BLOCKED
-❌ Skip dependency check in prompts → ✅ Include COMPLETE/PARTIAL/BLOCKED options
-❌ Apply diffs without validation → ✅ Use `git apply --check` first
-❌ Give up after missing dependencies → ✅ Continue rounds, dependencies satisfied by other agents
+# Archive artifacts (optional)
+mv /workspace/branches/{task}/context.md /workspace/archive/{task}-context.md
+mv /workspace/branches/{task}/round*.diff /workspace/archive/
+```
+
+## Summary
+
+The delegated implementation protocol enables:
+- ✅ Parallel agent execution with emergent dependency discovery
+- ✅ Deadlock prevention via PARTIAL implementations
+- ✅ Clean integration via diff-only workflow
+- ✅ Quality assurance via multi-gate validation
+- ✅ Unanimous stakeholder approval

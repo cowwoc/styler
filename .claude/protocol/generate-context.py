@@ -87,6 +87,7 @@ class ContextGenerator:
         self.task_name = task_name
         self.code_dir = task_dir / "code"
         self.todo_file = Path("/workspace/branches/main/code/todo.md")
+        self.synthesis_file = task_dir / "synthesis-output.json"
 
     def extract_task_from_todo(self) -> Dict[str, any]:
         """Extract task information from todo.md"""
@@ -227,14 +228,32 @@ class ContextGenerator:
 
         return assignments
 
-    def identify_files_to_modify(self, task_info: Dict[str, any]) -> List[FileInfo]:
+    def read_synthesis_output(self) -> Optional[Dict[str, any]]:
+        """Read synthesis output if available"""
+        if not self.synthesis_file.exists():
+            return None
+
+        with open(self.synthesis_file, 'r') as f:
+            return json.load(f)
+
+    def identify_files_to_modify(self, task_info: Dict[str, any],
+                                 synthesis: Optional[Dict[str, any]] = None) -> List[FileInfo]:
         """Identify files that will be modified based on task requirements"""
         files = []
 
-        # This is a simplified version - in practice, this would analyze the task
-        # requirements more deeply to determine exact files and changes
+        # Use synthesis data if available (preferred)
+        if synthesis and 'files_to_create' in synthesis:
+            for file_spec in synthesis['files_to_create']:
+                files.append(FileInfo(
+                    path=file_spec['path'],
+                    current_lines=0,  # NEW file
+                    expected_change_type='create',
+                    expected_changes=file_spec['purpose'],
+                    risk_level=file_spec.get('risk_level', 'high')
+                ))
+            return files
 
-        # For now, we'll extract from components/scope
+        # Fallback to todo.md extraction (legacy)
         for component in task_info.get('components', []):
             # Try to infer file paths from component descriptions
             # Example: "ValidationService class" -> src/main/java/.../ValidationService.java
@@ -253,28 +272,50 @@ class ContextGenerator:
         return files
 
     def generate_context(self) -> TaskContext:
-        """Generate complete task context from todo.md and project analysis"""
+        """Generate complete task context from todo.md and synthesis output"""
         task_info = self.extract_task_from_todo()
-        files = self.identify_files_to_modify(task_info)
+        synthesis = self.read_synthesis_output()
+
+        files = self.identify_files_to_modify(task_info, synthesis)
         agent_assignments = self.determine_agent_assignments(task_info, files)
+
+        # Use synthesis data if available, fallback to task_info
+        if synthesis:
+            primary_objective = synthesis.get('primary_objective', task_info.get('purpose', ''))
+            scope_boundaries = synthesis.get('scope_boundaries', task_info.get('scope', []))
+            architecture_patterns = synthesis.get('architecture_patterns', [])
+            performance_requirements = synthesis.get('performance_requirements', [])
+            security_requirements = synthesis.get('security_requirements', [])
+            test_categories = synthesis.get('test_coverage_categories', [])
+        else:
+            primary_objective = task_info.get('purpose', '')
+            scope_boundaries = task_info.get('scope', [])
+            architecture_patterns = ["Follow existing project patterns"]
+            performance_requirements = []
+            security_requirements = []
+            test_categories = []
 
         context = TaskContext(
             task_name=self.task_name,
-            primary_objective=task_info.get('purpose', ''),
+            primary_objective=primary_objective,
             success_criteria=[
                 "All implementation changes compile successfully",
                 "All tests pass",
                 "All quality gates (checkstyle, PMD, manual rules) pass",
                 "Unanimous stakeholder approval"
             ],
-            scope_boundaries=task_info.get('scope', []),
+            scope_boundaries=scope_boundaries,
 
-            # Technical constraints (from project standards)
-            architecture_patterns=[
+            # Technical constraints (from synthesis or project standards)
+            architecture_patterns=architecture_patterns if architecture_patterns else [
                 "Follow existing project patterns",
                 "Maintain stateless design where applicable",
                 "Use dependency injection for testability"
             ],
+            performance_requirements=performance_requirements,
+
+            # Security (from synthesis if available)
+            input_validation=security_requirements,
 
             # Style compliance (mandatory)
             style_compliance=[
@@ -293,7 +334,7 @@ class ContextGenerator:
             documentation=[
                 "JavaDoc required for all public methods",
                 "Manual documentation with contextual understanding (no generic templates)"
-            ],
+            ] + (test_categories if test_categories else []),
 
             modified_files=files,
             agent_assignments=agent_assignments
