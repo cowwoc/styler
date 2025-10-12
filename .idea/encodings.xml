@@ -25,6 +25,8 @@
     <file url="file://$PROJECT_DIR$/config/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/core/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/core/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/formatter-api/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/formatter-api/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/parser/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/parser/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/pmd/src/main/java" charset="UTF-8" />
@@ -35,6 +37,8 @@
     <file url="file://$PROJECT_DIR$/simulator/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/styler-security/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/styler-security/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/tax-engine/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/tax-engine/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/tax/src/main/java" charset="UTF-8" />
