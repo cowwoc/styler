@@ -2,15 +2,26 @@
 
 ## 🚀 READY TO WORK NOW (Multi-Instance Coordination)
 
-**Current Status**: A0 complete! Phase A tasks now available
+**Current Status**: Phase A incomplete - A0 (styler-formatter) ready to implement
 
-**READY TO START** (4 parallel instances possible):
-- A1: AST Parser Foundation ← 5-7 days, implements Index-Overlay parser
-- A2: TOML Configuration ← 2-3 days, implements config system
-- A3: CLI Arguments ← 1-2 days, implements argument parsing
-- A4: Security Framework ← 2-3 days, implements security controls
+**READY TO START**:
+- A0: Formatter API Module ← 1-2 days, defines FormattingRule interfaces
 
-**Phase B/C/D**: Blocked until all Phase A tasks (A1-A4) complete
+**BLOCKED UNTIL A0 COMPLETE**:
+- B1a: Line Length Formatter ← BLOCKED by missing styler-formatter module
+- B1b: Import Organization ← BLOCKED by missing styler-formatter module
+
+**Phase B (B2-B5)**: Blocked until A0 + B1 tasks complete
+**Phase C/D**: Blocked until all Phase B tasks complete
+
+**Phase A - ⚠️ INCOMPLETE (4/5 tasks complete)**:
+- [ ] A0: styler-formatter module - **READY TO IMPLEMENT** (defines FormattingRule interfaces)
+- ✅ A1: Index-Overlay AST Parser (ast + parser modules)
+- ✅ A2: TOML Configuration (config module)
+- ✅ A3: CLI Arguments (cli module)
+- ✅ A4: Security Framework (security module)
+
+**Note**: A0 (styler-formatter) was incorrectly marked complete in previous versions but was never implemented. Task has been restored to todo.md with full specification. All B1 tasks depend on A0.
 
 ---
 
@@ -40,9 +51,9 @@
 6. ✅ Begin work following full 7-phase task protocol
 
 **Parallel Work Opportunities**:
-- **Phase A** (after A0): 4 tasks can run in parallel (A1, A2, A3, A4)
-- **Phase B**: Limited parallelism (B1 must complete first, then B2-B5 have dependencies)
-- **Phase C**: Some parallelism (C1 independent, C3 independent of C1/C2, C4 depends on all)
+- **Phase A**: INCOMPLETE - A0 never implemented, A1-A4 complete
+- **Phase B**: BLOCKED - B1 tasks require A0 (styler-formatter module)
+- **Phase C**: BLOCKED - Depends on Phase B completion
 
 ---
 
@@ -63,28 +74,49 @@
 
 **Goal**: Build core parsing, configuration, and security infrastructure without depending on formatters or AI integration.
 
-**Coordination**: A0 must complete first. After A0, tasks A1-A4 can run in parallel (4 instances possible).
+**Status**: A1-A4 complete. A0 (styler-formatter) was never implemented - MUST be completed before any Phase B work can begin.
 
-### A4. Security Framework
-- [ ] **READY:** `implement-security-controls` - Essential security for CLI tool
-  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-security module)
-  - **Blocks**: B2 (pipeline), C1 (file discovery)
-  - **Parallelizable With**: A1, A2, A3 (after A0 completes)
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Protect against malicious inputs, resource exhaustion, path traversal
-  - **Scope**: Input validation, file size limits, memory monitoring, execution timeouts
-  - **Components**:
-    - SecurityConfig: Immutable config with builder (file size, memory, timeout limits)
-    - FileValidator: File size, type, existence validation
-    - PathSanitizer: Path normalization and traversal protection
-    - MemoryMonitor: JVM heap usage tracking (512MB limit)
-    - ExecutionTimeoutManager: Thread-based timeout enforcement (30s per file)
-    - RecursionDepthTracker: Stack overflow protection (1000 max depth)
-  - **Limits**: 10MB max file size, 512MB heap, 30s timeout, .java files only
-  - **Security Model**: Single-user scenario (scope.md) - focus on resource exhaustion, not data exfiltration
-  - **Integration**: Used by CLI and file processor before any file operations
-  - **Quality**: Comprehensive exception hierarchy, actionable error messages
-  - **Estimated Effort**: 2-3 days
+**Required Action**: Implement A0 (styler-formatter module) to unblock Phase B.
+
+### A0. Formatter API Module
+- [ ] **READY:** `implement-formatter-api` - Create styler-formatter Maven module with FormattingRule interfaces
+  - **Dependencies**: A1 ✅ COMPLETE (parser - AST nodes for transformation), A4 ✅ COMPLETE (security - validation framework)
+  - **Blocks**: B1 (both line length and import formatters implement FormattingRule), B2 (pipeline applies formatting rules)
+  - **Parallelizable With**: None (only remaining Phase A task)
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Define the core API for formatting rules that will be implemented in Phase B, providing contracts for rule implementation, violation reporting, and AST transformation
+  - **Scope**: Complete API module with interfaces for formatting rules, transformation context, violation reporting, and configuration management
+  - **Module Structure**:
+    - Module name: `styler-formatter` (standalone module)
+    - Location: `/workspace/branches/main/code/formatter/`
+    - Artifact ID: `styler-formatter`
+    - Module descriptor: `module io.github.cowwoc.styler.formatter { exports io.github.cowwoc.styler.formatter; }`
+    - Package: `io.github.cowwoc.styler.formatter`
+  - **Core Interfaces**:
+    - `FormattingRule`: Base interface for all formatting rules with `analyze()` and `format()` methods
+    - `TransformationContext`: Context API providing AST access, file metadata, and configuration during rule application
+    - `FormattingViolation`: Immutable violation representation with location, severity, rule ID, message, and suggested fixes
+    - `FormattingConfiguration`: Base interface for rule-specific configuration with validation
+    - `ViolationSeverity`: Enum for severity levels (ERROR, WARNING, INFO)
+    - `FixStrategy`: Interface for suggested fix strategies with applicability checks
+  - **Features**:
+    - Thread-safe rule execution contract
+    - Immutable violation reporting with location tracking
+    - Pluggable configuration system for rule-specific settings
+    - Security-validated transformation context
+    - Support for auto-fix suggestions with applicability validation
+  - **Integration**:
+    - Uses AST node types from A1 (parser module) for transformation context
+    - Integrates with A4 (security module) for validation and resource constraints
+    - Provides foundation for B1 formatters (line length, import organization)
+    - Used by B2 pipeline to apply formatting rules in sequence
+  - **Quality**: Proper JPMS module, comprehensive Javadoc on all public APIs, immutable types, thread-safe contracts, zero violations
+  - **Deliverables**:
+    - Complete module with all interfaces
+    - module-info.java with proper exports
+    - pom.xml integration into parent reactor
+    - Unit tests for any utility methods
+    - Javadoc covering all public APIs with usage examples
 
 ---
 
@@ -92,11 +124,13 @@
 
 **Goal**: Build complete end-to-end pipeline from CLI → parse → format → AI feedback output. This phase delivers working AI agent integration.
 
-**Coordination**: B1 tasks can run in parallel (2 instances). After B1 completes, B2-B5 have sequential dependencies.
+**Status**: BLOCKED - All Phase B tasks require A0 (styler-formatter) which doesn't exist.
+
+**Coordination**: Once A0 is implemented, B1 tasks can run in parallel (2 instances). After B1 completes, B2-B5 have sequential dependencies.
 
 ### B1. Minimal Formatting Rules (MVP)
-- [ ] **READY:** `implement-line-length-formatter` - Line length violations and auto-fixing
-  - **Dependencies**: A0 ✅ COMPLETE (styler-formatter-api module), A1 ✅ COMPLETE (parser for AST)
+- [ ] **BLOCKED:** `implement-line-length-formatter` - Line length violations and auto-fixing
+  - **Dependencies**: A0 [ ] READY (styler-formatter module - see Phase A), A1 ✅ COMPLETE (parser for AST)
   - **Blocks**: B2 (pipeline needs formatters)
   - **Parallelizable With**: `implement-import-organization` (other B1 task)
   - **Estimated Effort**: 2-3 days
@@ -109,10 +143,9 @@
   - **Features**: Detect violations, suggest wrapping points, optional auto-fix
   - **Integration**: Plugs into format stage, uses AST for semantic wrapping
   - **Quality**: Comprehensive tests, respects code semantics
-  - **Estimated Effort**: 2-3 days
 
-- [ ] **READY:** `implement-import-organization` - Import grouping and unused import removal
-  - **Dependencies**: A0 ✅ COMPLETE (styler-formatter-api module), A1 ✅ COMPLETE (parser for AST)
+- [ ] **BLOCKED:** `implement-import-organization` - Import grouping and unused import removal
+  - **Dependencies**: A0 [ ] READY (styler-formatter module - see Phase A), A1 ✅ COMPLETE (parser for AST)
   - **Blocks**: B2 (pipeline needs formatters)
   - **Parallelizable With**: `implement-line-length-formatter` (other B1 task)
   - **Estimated Effort**: 2-3 days
@@ -130,7 +163,7 @@
 
 ### B2. File Processing Pipeline
 - [ ] **BLOCKED:** `implement-file-processing-pipeline` - Orchestrate parse → format → output
-  - **Dependencies**: A1 (parser), A4 (security), B1 (both formatters: line length + imports)
+  - **Dependencies**: A1 ✅ COMPLETE (parser), A4 ✅ COMPLETE (security), B1 (both formatters: line length + imports)
   - **Blocks**: B3 (AI output), B4 (error catalog), B5 (CLI integration), all of Phase C
   - **Parallelizable With**: None (depends on B1, blocks B3/B4/B5)
   - **Estimated Effort**: 3-4 days
@@ -176,7 +209,7 @@
 
 ### B4. Error Message Catalog
 - [ ] **BLOCKED:** `create-error-message-catalog` - Comprehensive error messages for AI and human users
-  - **Dependencies**: B2 (pipeline - error types), A1 (parser - parse errors)
+  - **Dependencies**: B2 (pipeline - error types), A1 ✅ COMPLETE (parser - parse errors)
   - **Blocks**: B5 (CLI integration needs error formatting)
   - **Parallelizable With**: B3 (AI output - independent concerns)
   - **Estimated Effort**: 2 days
@@ -196,7 +229,7 @@
 
 ### B5. CLI Integration
 - [ ] **BLOCKED:** `implement-cli-formatter-integration` - Wire CLI → pipeline → output
-  - **Dependencies**: A2 (config), A3 (CLI args), B2 (pipeline), B3 (AI output), B4 (errors)
+  - **Dependencies**: A2 ✅ COMPLETE (config), A3 ✅ COMPLETE (CLI args), B2 (pipeline), B3 (AI output), B4 (errors)
   - **Blocks**: All of Phase C (C1-C6 need working CLI)
   - **Parallelizable With**: None (depends on all other Phase B tasks)
   - **Estimated Effort**: 2-3 days
@@ -220,7 +253,7 @@
 
 ### C1. File Discovery
 - [ ] **BLOCKED:** `implement-file-discovery` - Recursive Java file discovery with filtering
-  - **Dependencies**: B5 (CLI integration complete), A4 (security for file validation)
+  - **Dependencies**: B5 (CLI integration complete), A4 ✅ COMPLETE (security for file validation)
   - **Blocks**: C2 (parallel processing needs file list), C5 (Maven plugin needs discovery)
   - **Parallelizable With**: C3 (formatting rules development)
   - **Estimated Effort**: 1-2 days
@@ -254,7 +287,7 @@
 
 ### C3. Additional Formatting Rules (Build to 5 Total Rules)
 - [ ] **BLOCKED:** `implement-brace-formatting` - Brace style formatting (K&R, Allman, GNU)
-  - **Dependencies**: B1 (formatter infrastructure), A1 (AST nodes)
+  - **Dependencies**: B1 (formatter infrastructure), A1 ✅ COMPLETE (AST nodes)
   - **Blocks**: C4 (concurrency benchmark needs 5 rules total)
   - **Parallelizable With**: C1 (file discovery), C2 (parallel processing), other C3 tasks (whitespace, indentation)
   - **Estimated Effort**: 2-3 days
@@ -270,7 +303,7 @@
   - **Quality**: Comprehensive tests covering all Java constructs
 
 - [ ] **BLOCKED:** `implement-whitespace-formatting` - Whitespace around operators and keywords
-  - **Dependencies**: B1 (formatter infrastructure), A1 (AST nodes)
+  - **Dependencies**: B1 (formatter infrastructure), A1 ✅ COMPLETE (AST nodes)
   - **Blocks**: C4 (concurrency benchmark needs 5 rules total)
   - **Parallelizable With**: C1 (file discovery), C2 (parallel processing), other C3 tasks (brace, indentation)
   - **Estimated Effort**: 2-3 days
@@ -286,7 +319,7 @@
   - **Quality**: Comprehensive tests, performance optimizations
 
 - [ ] **BLOCKED:** `implement-indentation-formatting` - Indentation formatting (tabs/spaces/mixed)
-  - **Dependencies**: B1 (formatter infrastructure), A1 (AST nodes)
+  - **Dependencies**: B1 (formatter infrastructure), A1 ✅ COMPLETE (AST nodes)
   - **Blocks**: C4 (concurrency benchmark needs 5 rules total)
   - **Parallelizable With**: C1 (file discovery), C2 (parallel processing), other C3 tasks (brace, whitespace)
   - **Estimated Effort**: 2-3 days
@@ -414,7 +447,7 @@
 
 ### D3. Essential Documentation
 - [ ] **BLOCKED:** `create-user-documentation` - User guide and configuration reference
-  - **Dependencies**: B5 (CLI working), A2 (config system), C5 (Maven plugin)
+  - **Dependencies**: B5 (CLI working), A2 ✅ COMPLETE (config system), C5 (Maven plugin)
   - **Blocks**: Production release (documentation required for users)
   - **Parallelizable With**: D1 (testing), D2 (CI/CD)
   - **Estimated Effort**: 2-3 days (for user docs)
@@ -429,7 +462,7 @@
   - **Quality**: Clear examples, troubleshooting section
 
 - [ ] **BLOCKED:** `create-api-documentation` - Javadoc for public APIs
-  - **Dependencies**: B1 (FormattingRule API), A2 (config APIs), C5 (Maven plugin APIs)
+  - **Dependencies**: B1 (FormattingRule API), A2 ✅ COMPLETE (config APIs), C5 (Maven plugin APIs)
   - **Blocks**: Production release (API docs required for integration)
   - **Parallelizable With**: D1 (testing), D2 (CI/CD), other D3 task (user docs)
   - **Estimated Effort**: 1-2 days
