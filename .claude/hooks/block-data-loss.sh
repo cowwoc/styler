@@ -74,13 +74,13 @@ handle_pre_tool_use()
 	        echo "❌ **VIOLATION** - Workspace directory MUST remain non-git to prevent worktree isolation conflicts" >&2
 	        exit 2
 	        ;;
-	    *"rm -rf /workspace/branches/main"|*"rm /workspace/branches/main"|*"rmdir /workspace/branches/main")
+	    *"rm -rf /workspace/branches/main"*|*"rm /workspace/branches/main"*|*"rmdir /workspace/branches/main"*)
 	        echo "⛔ BLOCKED: Deletion of /workspace/branches/main is not allowed to prevent data loss" >&2
 	        echo "🚨 DATA PROTECTION: The main workspace directory must not be deleted" >&2
 	        echo "❌ **VIOLATION** - This operation would destroy the entire workspace" >&2
 	        exit 2
 	        ;;
-	    *"rm -rf /workspace/branches/main/code"|*"rm /workspace/branches/main/code")
+	    *"rm -rf /workspace/branches/main/code"*|*"rm /workspace/branches/main/code"*)
 	        echo "⛔ BLOCKED: Deletion of /workspace/branches/main/code is not allowed to prevent data loss" >&2
 	        echo "🚨 DATA PROTECTION: The code directory must not be deleted" >&2
 	        echo "❌ **VIOLATION** - This operation would destroy the entire project" >&2
