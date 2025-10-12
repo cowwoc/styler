@@ -60,7 +60,11 @@ if timeout 1s grep -qE "(^|[;&|]) {0,10}cd +[^ ]" <<< "$BASH_COMMAND" 2>/dev/nul
     # Extract the target directory from the cd command
     # Handle both quoted and unquoted paths
     # Use timeout to prevent ReDoS - limit to 1 second
-    TARGET=$(timeout 1s grep -oE "cd +['\"]?[^'\" ;]+['\"]?" <<< "$BASH_COMMAND" 2>/dev/null | head -1 | sed "s/cd *//" | sed "s/['\"]//g")
+    # First try to extract quoted paths (handles spaces), then unquoted
+    TARGET=$(timeout 1s grep -oE "cd +['\"][^'\"]+['\"]|cd +[^ ;]+" <<< "$BASH_COMMAND" 2>/dev/null | head -1 | sed "s/cd *//" | sed "s/['\"]//g")
+
+    # Initialize VIOLATION variable
+    VIOLATION=false
 
     # If extraction failed (timeout or other), default to blocking
     if [ -z "$TARGET" ]; then
