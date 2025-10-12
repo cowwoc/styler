@@ -75,7 +75,7 @@ else
 fi
 
 # Check if task still exists in todo.md (archival was skipped)
-if ! grep -q "$TASK_NAME" "$BASE_DIR/todo.md"; then
+if ! grep -qF "$TASK_NAME" "$BASE_DIR/todo.md"; then
     # Task already removed from todo.md - archival was completed
     # Create marker to prevent re-running and exit silently
     touch "$MARKER_FILE"
@@ -83,7 +83,7 @@ if ! grep -q "$TASK_NAME" "$BASE_DIR/todo.md"; then
 fi
 
 # ARCHIVAL WAS SKIPPED - Run verification checks
-FOUND_AT=$(grep -n "$TASK_NAME" "$BASE_DIR/todo.md" | head -3 | sed 's/^/  Line /')
+FOUND_AT=$(grep -nF "$TASK_NAME" "$BASE_DIR/todo.md" | head -3 | sed 's/^/  Line /')
 
 MESSAGE="## ❌ TASK ARCHIVAL VIOLATION
 
