@@ -1,81 +1,128 @@
 #!/bin/bash
 set -euo pipefail
+
+# Identify script path for error messages
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+
 # Fail gracefully without blocking Claude Code
-trap 'echo "Warning: detect-giving-up.sh encountered error" >&2; exit 0' ERR
+trap 'echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Unexpected error at line $LINENO" >&2; exit 0' ERR
 
 # Giving Up Pattern Detection Hook
 # Detects phrases indicating abandonment of complex problems
 # Triggers: UserPromptSubmit event
 # Action: Inject persistence reminder if patterns detected
 
-# Get hook data from command-line arguments (NOT stdin)
-HOOK_EVENT="$1"
-USER_PROMPT="$2"
+# Read JSON data from stdin with timeout to prevent hanging
+JSON_INPUT=""
+if [ -t 0 ]; then
+	# No input available, exit gracefully
+	exit 0
+else
+	JSON_INPUT="$(timeout 5s cat 2>/dev/null)" || JSON_INPUT=""
+fi
+
+# Exit if no JSON input
+[[ -z "$JSON_INPUT" ]] && exit 0
+
+# Simple JSON value extraction without jq dependency
+extract_json_value()
+{
+	local json="$1"
+	local key="$2"
+	# Use grep and sed for basic JSON parsing (allow grep to fail without triggering set -e)
+	echo "$json" | grep -o "\"$key\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | sed "s/\"$key\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\"/\1/" || true
+}
+
+# Extract hook event type
+HOOK_EVENT=$(extract_json_value "$JSON_INPUT" "hook_event_name")
+
+# Only handle UserPromptSubmit events
+[[ "$HOOK_EVENT" != "UserPromptSubmit" ]] && exit 0
+
+# Extract user message - try multiple possible fields
+USER_PROMPT=$(extract_json_value "$JSON_INPUT" "message")
+
+if [[ -z "$USER_PROMPT" ]]; then
+	USER_PROMPT=$(extract_json_value "$JSON_INPUT" "user_message")
+fi
+
+if [[ -z "$USER_PROMPT" ]]; then
+	USER_PROMPT=$(extract_json_value "$JSON_INPUT" "prompt")
+fi
+
+# Skip if no prompt provided
+[[ -z "$USER_PROMPT" ]] && exit 0
 
 # Input validation: limit prompt length to prevent resource exhaustion
 MAX_PROMPT_LENGTH=100000  # 100KB maximum
 if [[ ${#USER_PROMPT} -gt $MAX_PROMPT_LENGTH ]]; then
-    USER_PROMPT="${USER_PROMPT:0:$MAX_PROMPT_LENGTH}"
+	USER_PROMPT="${USER_PROMPT:0:$MAX_PROMPT_LENGTH}"
+fi
+
+# Require session ID - fail fast if not provided
+if [[ -z "${CLAUDE_SESSION_ID:-}" ]]; then
+	echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: CLAUDE_SESSION_ID environment variable is required" >&2
+	exit 0  # Non-blocking
 fi
 
 # Sanitize session ID to prevent directory traversal attacks
-SESSION_ID_RAW="${CLAUDE_SESSION_ID:-default}"
+SESSION_ID_RAW="$CLAUDE_SESSION_ID"
 SESSION_ID=$(echo "$SESSION_ID_RAW" | tr -cd 'a-zA-Z0-9_-')
-[[ -z "$SESSION_ID" ]] && SESSION_ID="default"
+if [[ -z "$SESSION_ID" ]]; then
+	echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Invalid CLAUDE_SESSION_ID (contains no valid characters)" >&2
+	exit 0  # Non-blocking
+fi
 
 # Session tracking directory with restrictive permissions
 SESSION_TRACK_DIR="/tmp/claude-hooks-session-${SESSION_ID}"
 if [[ ! -d "$SESSION_TRACK_DIR" ]]; then
-    umask 077  # Restrictive permissions for security
-    mkdir -m 700 "$SESSION_TRACK_DIR" 2>/dev/null || {
-        echo "Warning: Session tracking unavailable (disk full?)" >&2
-        exit 0  # Graceful degradation
-    }
+	umask 077  # Restrictive permissions for security
+	mkdir -m 700 "$SESSION_TRACK_DIR" 2>/dev/null || {
+		echo "⚠️  HOOK WARNING [$SCRIPT_PATH]: Session tracking unavailable (disk full?)" >&2
+		exit 0  # Graceful degradation
+	}
 fi
 
 # Rate limiting: prevent hook execution spam (max 1 execution per second)
 RATE_LIMIT_FILE="$SESSION_TRACK_DIR/.rate_limit_giving_up"
 CURRENT_TIME=$(date +%s)
 if [[ -f "$RATE_LIMIT_FILE" ]]; then
-    LAST_EXECUTION=$(cat "$RATE_LIMIT_FILE" 2>/dev/null || echo "0")
-    TIME_DIFF=$((CURRENT_TIME - LAST_EXECUTION))
-    if [[ $TIME_DIFF -lt 1 ]]; then
-        exit 0  # Less than 1 second since last execution, skip
-    fi
+	LAST_EXECUTION=$(cat "$RATE_LIMIT_FILE" 2>/dev/null || echo "0")
+	TIME_DIFF=$((CURRENT_TIME - LAST_EXECUTION))
+	if [[ $TIME_DIFF -lt 1 ]]; then
+		exit 0  # Less than 1 second since last execution, skip
+	fi
 fi
 echo "$CURRENT_TIME" > "$RATE_LIMIT_FILE"
-
-# Skip if no prompt provided
-[[ -z "$USER_PROMPT" ]] && exit 0
 
 # Atomic check-and-mark for session tracking (prevents race conditions)
 check_and_mark_prompt()
 {
-    local prompt_type="$1"
-    local prompt_file="$SESSION_TRACK_DIR/main-${prompt_type}"
+	local prompt_type="$1"
+	local prompt_file="$SESSION_TRACK_DIR/main-${prompt_type}"
 
-    # Use noclobber (set -C) for atomic test-and-set
-    ( set -C; echo "$$" > "$prompt_file" ) 2>/dev/null
-    return $?
+	# Use noclobber (set -C) for atomic test-and-set
+	( set -C; echo "$$" > "$prompt_file" ) 2>/dev/null
+	return $?
 }
 
 # Only notify once per session (prevents notification spam)
 if ! check_and_mark_prompt "giving-up-pattern"; then
-    exit 0  # Already notified this session
+	exit 0  # Already notified this session
 fi
 
 # Remove quoted text to prevent false positives (handle balanced quotes only)
 remove_quoted_sections()
 {
-    local text="$1"
-    local quote_count=$(echo "$text" | tr -cd '"' | wc -c)
+	local text="$1"
+	local quote_count=$(echo "$text" | tr -cd '"' | wc -c)
 
-    # Only remove quotes if balanced (even number)
-    if [[ $((quote_count % 2)) -eq 0 ]]; then
-        echo "$text" | sed 's/"[^"]*"//g'
-    else
-        echo "$text"  # Unbalanced quotes, return as-is
-    fi
+	# Only remove quotes if balanced (even number)
+	if [[ $((quote_count % 2)) -eq 0 ]]; then
+		echo "$text" | sed 's/"[^"]*"//g'
+	else
+		echo "$text"  # Unbalanced quotes, return as-is
+	fi
 }
 
 WORKING_TEXT=$(remove_quoted_sections "$USER_PROMPT")
@@ -84,93 +131,93 @@ WORKING_TEXT=$(remove_quoted_sections "$USER_PROMPT")
 # No regex alternation, just simple bash string matching for security
 detect_giving_up_pattern()
 {
-    local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+	local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
-    # Short-circuit on first match for performance
-    [[ "$text_lower" == *"given the complexity of properly implementing"* ]] && return 0
-    [[ "$text_lower" == *"given the evidence that this requires significant changes"* ]] && return 0
-    [[ "$text_lower" == *"let me focus on completing the task protocol instead"* ]] && return 0
-    [[ "$text_lower" == *"let me focus on features that provide more immediate value"* ]] && return 0
-    [[ "$text_lower" == *"this would require significant architectural changes"* ]] && return 0
-    [[ "$text_lower" == *"rather than diving deeper into this complex issue"* ]] && return 0
-    [[ "$text_lower" == *"instead of implementing the full solution"* ]] && return 0
-    [[ "$text_lower" == *"due to the complexity, i'll defer this to"* ]] && return 0
-    [[ "$text_lower" == *"this appears to be beyond the current scope"* ]] && return 0
-    [[ "$text_lower" == *"let me move on to easier tasks"* ]] && return 0
+	# Short-circuit on first match for performance
+	[[ "$text_lower" == *"given the complexity of properly implementing"* ]] && return 0
+	[[ "$text_lower" == *"given the evidence that this requires significant changes"* ]] && return 0
+	[[ "$text_lower" == *"let me focus on completing the task protocol instead"* ]] && return 0
+	[[ "$text_lower" == *"let me focus on features that provide more immediate value"* ]] && return 0
+	[[ "$text_lower" == *"this would require significant architectural changes"* ]] && return 0
+	[[ "$text_lower" == *"rather than diving deeper into this complex issue"* ]] && return 0
+	[[ "$text_lower" == *"instead of implementing the full solution"* ]] && return 0
+	[[ "$text_lower" == *"due to the complexity, i'll defer this to"* ]] && return 0
+	[[ "$text_lower" == *"this appears to be beyond the current scope"* ]] && return 0
+	[[ "$text_lower" == *"let me move on to easier tasks"* ]] && return 0
 
-    return 1  # No pattern detected
+	return 1  # No pattern detected
 }
 
 # Detect code disabling/removal instead of debugging
 detect_code_disabling_pattern()
 {
-    local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+	local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
-    # Pattern: Disabling/removing broken code
-    [[ "$text_lower" == *"broken"*"remove"* ]] && return 0
-    [[ "$text_lower" == *"broken"*"disable"* ]] && return 0
-    [[ "$text_lower" == *"broken"*"skip"* ]] && return 0
-    [[ "$text_lower" == *"broken"*"comment out"* ]] && return 0
+	# Pattern: Disabling/removing broken code
+	[[ "$text_lower" == *"broken"*"remove"* ]] && return 0
+	[[ "$text_lower" == *"broken"*"disable"* ]] && return 0
+	[[ "$text_lower" == *"broken"*"skip"* ]] && return 0
+	[[ "$text_lower" == *"broken"*"comment out"* ]] && return 0
 
-    # Pattern: Simplifying to avoid debugging
-    [[ "$text_lower" == *"simplifying the implementation"*"remove"* ]] && return 0
-    [[ "$text_lower" == *"simpler approach"*"remove"* ]] && return 0
-    [[ "$text_lower" == *"simplify by removing"* ]] && return 0
+	# Pattern: Simplifying to avoid debugging
+	[[ "$text_lower" == *"simplifying the implementation"*"remove"* ]] && return 0
+	[[ "$text_lower" == *"simpler approach"*"remove"* ]] && return 0
+	[[ "$text_lower" == *"simplify by removing"* ]] && return 0
 
-    # Pattern: Temporary disabling
-    [[ "$text_lower" == *"temporarily disable"* ]] && return 0
-    [[ "$text_lower" == *"disable for now"* ]] && return 0
-    [[ "$text_lower" == *"skip for now"* ]] && return 0
-    [[ "$text_lower" == *"comment out"*"temporarily"* ]] && return 0
+	# Pattern: Temporary disabling
+	[[ "$text_lower" == *"temporarily disable"* ]] && return 0
+	[[ "$text_lower" == *"disable for now"* ]] && return 0
+	[[ "$text_lower" == *"skip for now"* ]] && return 0
+	[[ "$text_lower" == *"comment out"*"temporarily"* ]] && return 0
 
-    # Pattern: Removing exception handlers to "fix" compilation
-    [[ "$text_lower" == *"removing the broad exception handler"* ]] && return 0
-    [[ "$text_lower" == *"remove the exception handler"* ]] && return 0
-    [[ "$text_lower" == *"removing the try-catch"* ]] && return 0
+	# Pattern: Removing exception handlers to "fix" compilation
+	[[ "$text_lower" == *"removing the broad exception handler"* ]] && return 0
+	[[ "$text_lower" == *"remove the exception handler"* ]] && return 0
+	[[ "$text_lower" == *"removing the try-catch"* ]] && return 0
 
-    # Pattern: Test passes without code = remove the code
-    [[ "$text_lower" == *"test passes without"*"remove"* ]] && return 0
-    [[ "$text_lower" == *"works without"*"disable"* ]] && return 0
-    [[ "$text_lower" == *"passes without"*"skip"* ]] && return 0
+	# Pattern: Test passes without code = remove the code
+	[[ "$text_lower" == *"test passes without"*"remove"* ]] && return 0
+	[[ "$text_lower" == *"works without"*"disable"* ]] && return 0
+	[[ "$text_lower" == *"passes without"*"skip"* ]] && return 0
 
-    return 1  # No code disabling pattern detected
+	return 1  # No code disabling pattern detected
 }
 
 # Detect mid-protocol abandonment patterns
 detect_protocol_abandonment()
 {
-    local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+	local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
-    # Check for asking permission mid-protocol
-    if [[ "$text_lower" == *"would you like me to"* ]]; then
-        # Check if we have active locks (indicating task in progress)
-        if ls /workspace/locks/*.json &>/dev/null; then
-            # Pattern: asking what to do mid-task
-            [[ "$text_lower" == *"continue with implementation"* ]] && return 0
-            [[ "$text_lower" == *"select a different task"* ]] && return 0
-            [[ "$text_lower" == *"proceed with"* ]] && return 0
-            [[ "$text_lower" == *"or would you"* ]] && return 0
-        fi
-    fi
+	# Check for asking permission mid-protocol
+	if [[ "$text_lower" == *"would you like me to"* ]]; then
+		# Check if we have active locks (indicating task in progress)
+		if ls /workspace/tasks/*/task.json &>/dev/null; then
+			# Pattern: asking what to do mid-task
+			[[ "$text_lower" == *"continue with implementation"* ]] && return 0
+			[[ "$text_lower" == *"select a different task"* ]] && return 0
+			[[ "$text_lower" == *"proceed with"* ]] && return 0
+			[[ "$text_lower" == *"or would you"* ]] && return 0
+		fi
+	fi
 
-    # Pattern: using time/effort as justification to stop
-    [[ "$text_lower" == *"2-3 days"*"implementation"* ]] && return 0
-    [[ "$text_lower" == *"requires extended work session"* ]] && return 0
-    [[ "$text_lower" == *"multi-day implementation"* ]] && return 0
-    [[ "$text_lower" == *"this is a complex"*"multi-day"* ]] && return 0
+	# Pattern: using time/effort as justification to stop
+	[[ "$text_lower" == *"2-3 days"*"implementation"* ]] && return 0
+	[[ "$text_lower" == *"requires extended work session"* ]] && return 0
+	[[ "$text_lower" == *"multi-day implementation"* ]] && return 0
+	[[ "$text_lower" == *"this is a complex"*"multi-day"* ]] && return 0
 
-    # Pattern: stopping at synthesis/requirements and asking
-    if [[ "$text_lower" == *"state 3"* ]] || [[ "$text_lower" == *"synthesis"* ]]; then
-        [[ "$text_lower" == *"ready for implementation"* ]] && return 0
-        [[ "$text_lower" == *"would you like"* ]] && return 0
-    fi
+	# Pattern: stopping at synthesis/requirements and asking
+	if [[ "$text_lower" == *"state 3"* ]] || [[ "$text_lower" == *"synthesis"* ]]; then
+		[[ "$text_lower" == *"ready for implementation"* ]] && return 0
+		[[ "$text_lower" == *"would you like"* ]] && return 0
+	fi
 
-    return 1  # No protocol abandonment detected
+	return 1  # No protocol abandonment detected
 }
 
 # Detect giving up patterns and inject persistence reminder
 if detect_giving_up_pattern "$WORKING_TEXT"; then
-    cat <<'REMINDER'
+	cat <<'REMINDER'
 <system-reminder>
 🚨 GIVING UP PATTERN DETECTED - PERSISTENCE REQUIRED
 
@@ -188,7 +235,7 @@ fi
 
 # Detect protocol abandonment and inject completion requirement
 if detect_protocol_abandonment "$WORKING_TEXT"; then
-    cat <<'REMINDER'
+	cat <<'REMINDER'
 <system-reminder>
 ❌ PROTOCOL VIOLATION DETECTED - AUTONOMOUS COMPLETION REQUIRED
 
@@ -231,7 +278,7 @@ fi
 
 # Detect code disabling/removal patterns and inject debugging requirement
 if detect_code_disabling_pattern "$WORKING_TEXT"; then
-    cat <<'REMINDER'
+	cat <<'REMINDER'
 <system-reminder>
 🚨 CODE DISABLING ANTI-PATTERN DETECTED - DEBUGGING REQUIRED
 

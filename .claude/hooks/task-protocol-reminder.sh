@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Task Protocol enforcement reminder for session start
 # Ensures Claude follows the mandatory TASK PROTOCOL for ALL tasks

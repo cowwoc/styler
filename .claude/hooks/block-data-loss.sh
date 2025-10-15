@@ -1,4 +1,5 @@
-#!/bin/sh
+#!/bin/bash
+set -euo pipefail
 
 # Git Init Blocker Hook - Fixed version for both PreToolUse and UserPromptSubmit
 # Prevents git repository creation per task-protocol.md
