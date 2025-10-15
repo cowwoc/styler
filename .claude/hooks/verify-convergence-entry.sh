@@ -1,7 +1,6 @@
 #!/bin/bash
-# Verify clean state before CONVERGENCE entry (uncommitted changes, test pass, style, test count)
-
 set -euo pipefail
+# Verify clean state before CONVERGENCE entry (uncommitted changes, test pass, style, test count)
 
 # Find the task lock file based on current directory
 CURRENT_DIR="$(pwd)"
@@ -25,7 +24,9 @@ STATE=$(jq -r '.state // "UNKNOWN"' "$LOCK_FILE" 2>/dev/null || echo "UNKNOWN")
 # Detect transition TO convergence
 if [[ "$STATE" == "CONVERGENCE" ]]; then
     # Gate 1: Check for uncommitted implementation changes
-    if ! git diff --exit-code --quiet src/ 2>/dev/null; then
+    if git diff --exit-code --quiet src/ 2>/dev/null; then
+        : # No uncommitted changes, continue
+    else
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
         echo "❌ CONVERGENCE ENTRY VIOLATION - Uncommitted Changes" >&2
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
@@ -47,8 +48,12 @@ if [[ "$STATE" == "CONVERGENCE" ]]; then
         exit 1
     fi
 
+    fi
+
     # Gate 2: Check tests pass
-    if ! ./mvnw test -q 2>/dev/null; then
+    if ./mvnw test -q 2>/dev/null; then
+        : # Tests pass, continue
+    else
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
         echo "❌ CONVERGENCE ENTRY VIOLATION - Test Failures" >&2
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
@@ -65,8 +70,12 @@ if [[ "$STATE" == "CONVERGENCE" ]]; then
         exit 1
     fi
 
+    fi
+
     # Gate 3: Check style compliance
-    if ! ./mvnw checkstyle:check pmd:check -q 2>/dev/null; then
+    if ./mvnw checkstyle:check pmd:check -q 2>/dev/null; then
+        : # Style passes, continue
+    else
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
         echo "❌ CONVERGENCE ENTRY VIOLATION - Style Violations" >&2
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
@@ -83,8 +92,14 @@ if [[ "$STATE" == "CONVERGENCE" ]]; then
         exit 1
     fi
 
+    fi
+
     # Gate 4: Check minimum test count (≥15 tests)
-    TEST_COUNT=$(find src/test -name "*Test.java" -exec grep -c "@Test" {} + 2>/dev/null | awk '{sum+=$1} END {print sum}')
+    if [ -d "src/test" ]; then
+        TEST_COUNT=$(find src/test -name "*Test.java" -exec grep -c "@Test" {} + 2>/dev/null | awk '{sum+=$1} END {print sum}')
+    else
+        TEST_COUNT=0
+    fi
     if [ -z "$TEST_COUNT" ]; then
         TEST_COUNT=0
     fi

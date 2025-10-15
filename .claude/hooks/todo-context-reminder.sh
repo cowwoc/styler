@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # Hook to remind Claude about todo list synchronization
 
 # Determine the root directory of the current git repository/branch

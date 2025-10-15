@@ -1,9 +1,9 @@
 #!/bin/bash
+set -euo pipefail
 
 # Documentation Synchronization Verification Script
 # Ensures Claude and human documentation files maintain synchronized rule titles
 
-set -euo pipefail
 trap 'echo "❌ SCRIPT ERROR: verify-doc-sync.sh failed at line $LINENO" >&2; exit 1' ERR
 
 # Resolve absolute path to docs directory
@@ -131,9 +131,9 @@ compare_rule_titles() {
         return 1
     fi
     
-    # Count titles
-    local claude_count=$(echo "$claude_titles" | wc -l)
-    local human_count=$(echo "$human_titles" | wc -l)
+    # Count titles (use xargs to trim whitespace from wc output)
+    local claude_count=$(echo "$claude_titles" | wc -l | xargs)
+    local human_count=$(echo "$human_titles" | wc -l | xargs)
     
     echo "Claude rules: $claude_count"
     echo "Human rules:  $human_count"

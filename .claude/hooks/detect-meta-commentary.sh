@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Pre-commit hook to suggest improvements for potential meta-commentary
 # This suggests cleaner documentation focused on current state rather than changes

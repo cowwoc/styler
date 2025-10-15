@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Phase Guard Enforcement Hook
 # Runs on every user prompt to check for "continue" commands and enforce task protocol phase progression
@@ -76,8 +77,8 @@ get_current_protocol_phase() {
         phase=4
     fi
 
-    # Phase 5: Implementation - check for actual code changes
-    if git status --porcelain 2>/dev/null | grep -q "^[AM]" || [[ $(find . -name "*.java" -newer ../context.md 2>/dev/null | wc -l) -gt 0 ]]; then
+    # Phase 5: Implementation - check for actual code changes (only src/main, not tests)
+    if git status --porcelain 2>/dev/null | grep -q "^[AM]" || [[ -d "src/main" && $(find src/main -name "*.java" -newer ../context.md 2>/dev/null | wc -l) -gt 0 ]]; then
         phase=5
     fi
 
