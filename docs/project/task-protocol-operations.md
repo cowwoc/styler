@@ -63,7 +63,9 @@ Task tool (code-quality-auditor): {...}
 
 ---
 
-### Pattern 2: Predictive Prefetching (INIT)
+### Pattern 2: Predictive Prefetching (INIT) - **MANDATORY**
+
+**CRITICAL REQUIREMENT**: ALL predictable resources MUST be loaded in SINGLE message
 
 **DO** (predict and load upfront):
 ```bash
@@ -219,6 +221,19 @@ jq '.state = "IMPLEMENTATION"' $LOCK_FILE > /tmp/lock.json && mv /tmp/lock.json 
 ---
 
 ### Pattern 5: Batch Fixing (CONVERGENCE)
+
+**COPY-PASTE TEMPLATE** (customize agent selection based on task):
+
+```
+I am now entering CONVERGENCE phase. Launching all stakeholder agents in parallel for review.
+
+Task tool (technical-architect): Review implementation architecture and design
+Task tool (code-quality-auditor): Review code quality and best practices
+Task tool (style-auditor): Review complete style compliance (checkstyle + PMD + manual)
+Task tool (code-tester): Review test coverage and quality
+```
+
+**CRITICAL**: All agents in SINGLE message for parallel execution
 
 **DO** (collect all, fix once):
 ```bash
