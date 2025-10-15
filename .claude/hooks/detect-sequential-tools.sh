@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # Hook to detect sequential independent tool execution anti-pattern
 # Triggers reminder to batch independent tool calls for 25-30% message reduction
 #
@@ -22,6 +24,12 @@ TOOL_NAME=$(echo "$INPUT" | jq -r '.tool.name // empty')
 TOOL_COUNT=$(echo "$INPUT" | jq -r '.tool.count // 1')
 
 # State file for tracking sequential patterns
+# Require session ID - fail fast if not provided
+if [ -z "${CLAUDE_SESSION_ID:-}" ]; then
+    echo "ERROR: CLAUDE_SESSION_ID environment variable is required" >&2
+    exit 1
+fi
+SESSION_ID="$CLAUDE_SESSION_ID"
 STATE_FILE="/tmp/sequential-tool-tracker-$SESSION_ID.json"
 CURRENT_TIME=$(date +%s)
 

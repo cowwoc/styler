@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # Check for active tasks owned by this session
 # Runs on SessionStart to detect tasks that need resuming after context compaction
 #
@@ -20,7 +22,8 @@ fi
 CURRENT_DIR=$(pwd)
 
 # STEP 2: Check for invalid lock files (non-.json extensions) containing this session_id
-INVALID_LOCKS=$(find /workspace/locks -type f ! -name "*.json" -exec grep -lE "\"session_id\":\s*\"$SESSION_ID\"" {} \; 2>/dev/null)
+# Use fixed string match to prevent regex injection
+INVALID_LOCKS=$(find /workspace/locks -type f ! -name "*.json" -exec grep -lF "\"session_id\":\"$SESSION_ID\"" {} \; 2>/dev/null)
 
 if [ -n "$INVALID_LOCKS" ]; then
   MESSAGE="## 🚨 CRITICAL: INVALID LOCK FILE DETECTED
@@ -55,7 +58,8 @@ $INVALID_LOCKS
 fi
 
 # STEP 3: Search ALL lock files for this session_id
-LOCK_FILE=$(find /workspace/locks -name "*.json" -type f -exec grep -lE "\"session_id\":\s*\"$SESSION_ID\"" {} \; 2>/dev/null | head -1)
+# Use fixed string match to prevent regex injection
+LOCK_FILE=$(find /workspace/locks -name "*.json" -type f -exec grep -lF "\"session_id\":\"$SESSION_ID\"" {} \; 2>/dev/null | head -1)
 
 if [ -z "$LOCK_FILE" ]; then
   # No active task for this session
@@ -64,7 +68,7 @@ fi
 
 # Extract task details from lock file
 TASK_NAME=$(basename "$LOCK_FILE" .json)
-TASK_STATE=$(grep -oP '"state":\s*"\K[^"]+' "$LOCK_FILE")
+TASK_STATE=$(jq -r '.state // "UNKNOWN"' "$LOCK_FILE" 2>/dev/null)
 TASK_WORKTREE="/workspace/branches/$TASK_NAME/code"
 
 # Check for user approval marker if in REVIEW state

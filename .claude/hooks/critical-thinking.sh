@@ -1,5 +1,6 @@
 #!/bin/bash
 set -euo pipefail
+
 trap 'echo "at line $LINENO, exit code $? from $BASH_COMMAND" >&2; exit 1' ERR
 
 # Critical Thinking Hook

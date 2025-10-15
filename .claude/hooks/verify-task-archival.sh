@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # Verify task archival requirements after COMPLETE state
 #
 # Usage: bash .claude/hooks/verify-task-archival.sh [task-name]
@@ -14,17 +16,37 @@
 # - Archival marker file does NOT exist
 # - Task still present in todo.md (archival was skipped)
 
-set -e
-
 # Auto-detect task name from worktree path if not provided
-TASK_NAME="$1"
+TASK_NAME="${1:-}"
 
 if [ -z "$TASK_NAME" ]; then
     # Extract task name from /workspace/branches/{task-name}/code path
     TASK_NAME=$(pwd | grep -oP '/workspace/branches/\K[^/]+(?=/code)' || echo "")
 
-    if [ -z "$TASK_NAME" ] || [ "$TASK_NAME" = "main" ]; then
-        # Not in a task worktree - this is likely not a task archival operation
+    if [ -z "$TASK_NAME" ]; then
+        # Not in a task worktree path - check if any tasks are in CLEANUP state
+        # This handles hook invocation from /workspace or other directories
+        CLEANUP_LOCKS=$(find /workspace/locks -name "*.json" -type f 2>/dev/null | while read -r lock; do
+            state=$(jq -r '.state // ""' "$lock" 2>/dev/null)
+            if [ "$state" = "CLEANUP" ]; then
+                basename "$lock" .json
+            fi
+        done)
+
+        if [ -z "$CLEANUP_LOCKS" ]; then
+            # No tasks in CLEANUP state - archival check not applicable
+            exit 0
+        fi
+
+        # Found task(s) in CLEANUP state - cannot determine which one to verify
+        echo "ERROR: Cannot determine task name - no argument provided and not in task worktree" >&2
+        echo "Usage: $0 <task-name>" >&2
+        echo "Or run from within /workspace/branches/{task-name}/code/" >&2
+        exit 1
+    fi
+
+    if [ "$TASK_NAME" = "main" ]; then
+        # In main worktree - this is not a task archival operation
         # Exit silently (status 0) to avoid blocking non-archival edits to todo.md/changelog.md
         exit 0
     fi
@@ -46,7 +68,7 @@ if [ ! -f "$LOCK_FILE" ]; then
 fi
 
 # Extract current state from lock file
-LOCK_STATE=$(grep -oP '"state":\s*"\K[^"]+' "$LOCK_FILE" 2>/dev/null || echo "")
+LOCK_STATE=$(jq -r '.state // ""' "$LOCK_FILE" 2>/dev/null || echo "")
 
 # Only run verification if in CLEANUP state (after COMPLETE)
 if [ "$LOCK_STATE" != "CLEANUP" ]; then
