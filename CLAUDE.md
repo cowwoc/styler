@@ -621,6 +621,127 @@ JavaDoc serves as API documentation for future developers. Generic comments prov
 - **Bash Tool**: Use absolute paths or combine `cd` with command
 - **Pattern Matching**: Preview before replacing, use specific patterns
 
+## ⚡ PERFORMANCE OPTIMIZATION REQUIREMENTS
+
+**CRITICAL**: Session performance optimization through parallel execution and efficiency patterns.
+
+### Parallel Tool Execution (MANDATORY)
+
+**ANTI-PATTERN** (Sequential execution - 25-30% overhead):
+```
+Message 1: Read file_a.md
+Message 2: Read file_b.md
+Message 3: Read file_c.md
+# Result: 3 round-trips, 200-300 extra messages per session
+```
+
+**REQUIRED PATTERN** (Parallel execution):
+```
+Single Message:
+  Read file_a.md +
+  Read file_b.md +
+  Read file_c.md
+# Result: 1 round-trip, 67% reduction in messages
+```
+
+**Parallel Execution Rules**:
+1. **ALWAYS** launch independent tool calls in single message
+2. **Read operations**: Batch all predictable file reads together
+3. **Agent invocations**: Launch all convergence agents in single message
+4. **Validation checks**: Run independent verifications in parallel
+5. **Only sequential** when operations have dependencies
+
+**Detection Hook**: `/workspace/.claude/hooks/detect-sequential-tools.sh` monitors for sequential patterns
+
+### Fail-Fast Validation (MANDATORY)
+
+**ANTI-PATTERN** (Late-stage failure discovery - 10-15% overhead):
+```
+1. Implement entire feature (2 hours)
+2. Run validation → 60 violations discovered
+3. Fix violations iteratively (1 hour)
+# Result: Rework with stale context, 100-150 extra messages
+```
+
+**REQUIRED PATTERN** (Incremental validation):
+```
+1. Implement Component A
+2. Validate immediately: ./mvnw compile checkstyle:check -pl :module
+3. Fix violations (context fresh)
+4. Commit before next component
+# Result: Issues caught early, minimal rework
+```
+
+**Validation Checkpoints**:
+- After each component implementation: `./mvnw compile`
+- After each module completion: `./mvnw checkstyle:check -pl :module`
+- After each test class: `./mvnw test -Dtest=ClassTest`
+- Before convergence: `./mvnw verify -Dmaven.build.cache.enabled=false`
+
+### Batch Fixing (MANDATORY)
+
+**ANTI-PATTERN** (Iterative fixing - 10-20% overhead):
+```
+Fix violation 1 → verify
+Fix violation 2 → verify
+... repeat 60 times ...
+# Result: 120 messages (60 fix + 60 verify cycles)
+```
+
+**REQUIRED PATTERN** (Batch fixing):
+```
+1. Collect ALL issues from ALL agents
+2. Fix all 60 violations together
+3. Single verification: ./mvnw verify
+# Result: 2 messages (98% reduction)
+```
+
+**Convergence Pattern**:
+- Invoke all agents in parallel (single message)
+- Collect ALL feedback before fixing anything
+- Group fixes by type (style, PMD, tests, etc.)
+- Apply all fixes of same type together
+- Single verification after all fixes applied
+
+### Predictive Prefetching (MANDATORY)
+
+**ANTI-PATTERN** (Reactive loading - 5-10% overhead):
+```
+Read pom.xml → discover dependency
+Read dependency.xml → discover source files
+Glob sources → discover tests
+# Result: 5-10 round-trips, 50-100 extra messages
+```
+
+**REQUIRED PATTERN** (Predictive prefetching):
+```
+# INIT phase - single message with ALL predicted resources:
+Read pom.xml +
+Read checkstyle.xml +
+Read pom.xml +
+Glob "src/main/java/**/*Pattern*.java" +
+Glob "src/test/java/**/*Test.java" +
+Read docs/project/architecture.md
+# Result: 1 round-trip, baseline efficiency
+```
+
+**Prefetching Strategy**:
+1. Analyze task description for predictable dependencies
+2. Load all protocol files in parallel (task-protocol-core.md + task-protocol-operations.md + todo.md)
+3. Load all predicted source files based on task name patterns
+4. Cache everything in session context during INIT
+
+### Performance Metrics
+
+**Expected Impact** (based on empirical analysis):
+- Parallel tool execution: 25-30% message reduction
+- Fail-fast validation: 10-15% message reduction
+- Batch fixing: 10-20% message reduction
+- Predictive prefetching: 5-10% message reduction
+- **Total potential**: 45-50% fewer messages per session
+
+**Target**: Match or exceed 1,381 messages (better session baseline) vs 2,369 messages (worse session baseline)
+
 ## Essential References
 
 [docs/project/architecture.md](docs/project/architecture.md) - Project architecture and features

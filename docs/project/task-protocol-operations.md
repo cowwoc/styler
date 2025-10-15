@@ -39,12 +39,405 @@ This document contains:
 
 **CRITICAL: Pre-Merge Build Verification Gate**
 ```bash
-# MANDATORY: Verify build passes in worktree BEFORE attempting merge
-cd /workspace/branches/{TASK_NAME}/code
-./mvnw verify || {
-    echo "❌ VIOLATION: Build fails in worktree - merge BLOCKED"
-    echo "Fix all checkstyle, PMD, and test failures before merging"
-    exit 1
+# Launch ALL agents with Task tool in ONE message
+Task tool (technical-architect): {...}
+Task tool (code-quality-auditor): {...}
+Task tool (style-auditor): {...}
+Task tool (security-auditor): {...}
+
+# Wait for ALL responses before proceeding
+```
+
+**DON'T** (sequential):
+```bash
+# Message 1
+Task tool (technical-architect): {...}
+# Wait for response
+
+# Message 2
+Task tool (code-quality-auditor): {...}
+# Wait for response
+
+# = 3-4× overhead, 20-30 min wasted
+```
+
+---
+
+### Pattern 2: Predictive Prefetching (INIT)
+
+**DO** (predict and load upfront):
+```bash
+# Analyze task to predict ALL dependencies
+# Load ALL in single message with multiple Read/Glob calls
+
+Read pom.xml + \
+Read checkstyle.xml + \
+Read pmd.xml + \
+Glob "src/main/java/**/*Target*.java" + \
+Glob "src/test/java/**/*Test.java" + \
+Read docs/project/architecture.md
+
+# = 1 round-trip, all resources loaded
+```
+
+**DON'T** (sequential discovery):
+```bash
+Read pom.xml
+# Discover need for checkstyle.xml
+Read checkstyle.xml
+# Discover need for implementation files
+Glob "src/main/java/**/*Target*.java"
+
+# = 5-10 round-trips, 5-10 min wasted
+```
+
+---
+
+### Pattern 3: Fail-Fast Validation (IMPLEMENTATION)
+
+**DO** (incremental validation):
+```bash
+# For each component
+Edit src/main/java/Component.java
+
+# IMMEDIATE checks
+./mvnw compile -q -pl :{module}
+./mvnw checkstyle:check -q -pl :{module}
+
+Edit src/test/java/ComponentTest.java
+
+./mvnw test -Dtest=ComponentTest -q
+
+# Commit before moving to next component
+git add -A && git commit -m "Implement Component (validated)"
+```
+
+**DON'T** (late discovery):
+```bash
+# Implement everything
+Edit Component1.java
+Edit Component2.java
+Edit Component3.java
+
+# Then discover 60 style violations
+./mvnw checkstyle:check  # FAILED
+
+# Fix with stale context (30 min later)
+```
+
+---
+
+### Pattern 4: Pre-Convergence Checklist (IMPLEMENTATION Exit)
+
+**MANDATORY GATES BEFORE CONVERGENCE ENTRY**
+
+Before transitioning from IMPLEMENTATION to CONVERGENCE, ALL criteria must be met:
+
+```bash
+# IMPLEMENTATION Exit Checklist (verify-convergence-entry.sh enforces)
+
+# Gate 1: Clean working directory
+git status --porcelain src/
+# Must be empty - all changes committed
+
+# Gate 2: All tests passing
+./mvnw test
+# Exit code: 0 (all tests pass)
+
+# Gate 3: Style compliance
+./mvnw checkstyle:check pmd:check
+# Exit code: 0 (zero violations)
+
+# Gate 4: Minimum test count
+find src/test -name "*Test.java" -exec grep -c "@Test" {} + | awk '{sum+=$1} END {print sum}'
+# Count: ≥15 tests
+
+# Gate 5: Build verification
+./mvnw verify
+# Exit code: 0 (full build passes)
+```
+
+**CHECKLIST DETAILS:**
+
+**✅ Code Compilation:**
+- `./mvnw compile` passes with zero errors
+- All modules compile successfully
+- No missing dependencies
+
+**✅ Test Coverage:**
+- Minimum 15 tests (standard components)
+- Minimum 20 tests (algorithm-heavy components)
+- Required categories:
+  - Null/Empty validation: 2-3 tests
+  - Boundary conditions: 2-3 tests
+  - Edge cases: 3-5 tests
+  - Algorithm precision: 3-5 tests (if applicable)
+  - Configuration validation: 2-3 tests
+  - Real-world scenarios: 3-5 tests
+
+**✅ Test Execution:**
+- `./mvnw test` passes (100% success rate)
+- No test failures, errors, or skipped tests
+- All assertions passing
+
+**✅ Style Compliance:**
+- `./mvnw checkstyle:check` passes (zero violations)
+- `./mvnw pmd:check` passes (zero violations)
+- Manual style rules verified (see docs/code-style/)
+
+**✅ JavaDoc Documentation:**
+- All public methods documented
+- Contextual comments (not generic templates)
+- Business logic explanations included
+
+**✅ Build Configuration:**
+- pom.xml follows sibling module patterns
+- Dependencies properly scoped
+- Build properties configured correctly
+
+**✅ Edge Case Handling:**
+- Null validation tests present
+- Empty/single-element tests present
+- Boundary value tests present
+
+**ENFORCEMENT:**
+
+The `.claude/hooks/verify-convergence-entry.sh` hook automatically blocks CONVERGENCE entry if any gate fails. Recovery procedure:
+
+```bash
+# If blocked, return to IMPLEMENTATION
+jq '.state = "IMPLEMENTATION"' $LOCK_FILE > /tmp/lock.json && mv /tmp/lock.json $LOCK_FILE
+
+# Fix the specific gate failure:
+# - Uncommitted changes: git add && git commit
+# - Test failures: Fix implementation or tests
+# - Style violations: Run checkstyle/PMD and fix
+# - Insufficient tests: Add missing test categories
+# - Build failures: Fix compilation/dependency issues
+```
+
+---
+
+### Pattern 5: Batch Fixing (CONVERGENCE)
+
+**DO** (collect all, fix once):
+```bash
+# Round 1: Collect ALL issues from all agents in parallel
+# Agent 1: 37 checkstyle violations
+# Agent 2: 18 PMD violations
+# Agent 3: 5 manual rule violations
+# Agent 4: 3 test failures
+
+# Batch fix by type
+Fix all 60 style violations together
+./mvnw checkstyle:check pmd:check  # Verify all fixed
+git commit -m "Fix all style violations (60 total)"
+
+Fix all 3 test failures together
+./mvnw test  # Verify all pass
+git commit -m "Fix all test failures (3 total)"
+
+# Round 2: Re-verify with all agents
+# Expect unanimous approval
+```
+
+**DON'T** (iterative fixing):
+```bash
+Fix checkstyle violation 1
+./mvnw checkstyle:check
+Fix checkstyle violation 2
+./mvnw checkstyle:check
+# ... repeat 60 times ...
+
+# = 60 verification cycles, 45-50 min wasted
+```
+
+---
+
+## TROUBLESHOOTING
+
+### Issue: Convergence Taking >15 Minutes
+
+**Symptoms**:
+- Multiple convergence rounds (>3)
+- Agents returning ❌ REJECTED repeatedly
+- Slow progress toward unanimous approval
+
+**Root Causes**:
+1. Not using batch fixing (fixing iteratively)
+2. Not launching agents in parallel
+3. Fail-fast validation not working (issues caught late)
+
+**Solutions**:
+```bash
+# 1. Use batch fixing
+# Collect ALL issues from all agents BEFORE fixing
+# Fix all issues of same type together
+# Verify ONCE after all fixes
+
+# 2. Launch agents in parallel
+# ALL agents in SINGLE message
+Task tool (agent-1) + Task tool (agent-2) + Task tool (agent-3)
+
+# 3. Improve fail-fast validation
+# Add incremental checks during IMPLEMENTATION
+./mvnw compile + ./mvnw checkstyle:check after EACH component
+```
+
+---
+
+### Issue: High Token Usage (>65,000)
+
+**Symptoms**:
+- Conversation history exceeding 65,000 tokens
+- Context compaction occurring
+- Performance degradation
+
+**Root Causes**:
+1. Verbose agent responses (full code in messages)
+2. Redundant file reads
+3. Not using file-based diffs
+4. Sequential discovery (multiple read rounds)
+
+**Solutions**:
+```bash
+# 1. Agents return metadata only (not full code)
+# Agent response: "Implemented 3 files. See commit abc123." (50 tokens)
+# NOT: "Here's the complete implementation: [2000 lines]" (50,000 tokens)
+
+# 2. Pre-fetch all resources in INIT
+# Read once, cache in session, pass to agents
+# No re-reads during SYNTHESIS or CONVERGENCE
+
+# 3. Use file-based diffs where possible
+# Agents write diffs to files
+# Main agent reads diffs, not full code
+
+# 4. Predict dependencies upfront
+# Load ALL needed files in INIT (single message)
+```
+
+---
+
+### Issue: Sequential Discovery Delays (>5 Round-Trips)
+
+**Symptoms**:
+- Many "Need to read FileX" messages
+- 5-10+ round-trips during INIT or SYNTHESIS
+- Slow resource loading
+
+**Root Cause**:
+- Not using predictive prefetching
+- Reactive file discovery instead of proactive loading
+
+**Solution**:
+```bash
+# Analyze task BEFORE loading resources
+# Predict ALL dependencies
+# Load ALL in single message
+
+# Example for Java implementation task:
+Read pom.xml + \
+Read checkstyle.xml + \
+Read pmd.xml + \
+Glob "src/main/java/**/*{Pattern}*.java" + \
+Glob "src/test/java/**/*Test.java" + \
+Read docs/project/architecture.md + \
+Read docs/code-style/*-claude.md
+
+# ALL in ONE message = 1 round-trip
+```
+
+---
+
+### Issue: Unanimous Approval Not Achieved
+
+**Symptoms**:
+- Agents returning ❌ REJECTED after multiple rounds
+- Cannot proceed to VALIDATION
+- Stuck in CONVERGENCE
+
+**Root Causes**:
+1. Issues not fully addressed
+2. Scope exceeding task boundaries
+3. Conflicting requirements
+
+**Solutions**:
+```bash
+# 1. Verify all issues addressed
+# Re-read agent rejection feedback
+# Ensure EVERY issue has been fixed
+# Run quality gates to confirm: ./mvnw verify
+
+# 2. Scope negotiation (if effort > 2× original)
+# If resolution effort exceeds 2× task scope
+# Return to SYNTHESIS with reduced scope
+# Create follow-up tasks in todo.md for deferred work
+
+# 3. Resolve conflicting requirements
+# Identify conflicts between agents
+# Prioritize based on domain authority
+# Document trade-off decisions
+```
+
+---
+
+## BEST PRACTICES
+
+### 1. Risk Assessment
+
+```python
+# Automatic risk determination
+files_modified = get_modified_files(task)
+
+if any(f.startswith("src/main/java/") for f in files_modified):
+    risk = "HIGH"
+elif any(f.startswith("src/test/") for f in files_modified):
+    risk = "MEDIUM"
+elif all(f.endswith(".md") for f in files_modified):
+    risk = "LOW"
+else:
+    risk = "HIGH"  # Default to highest safety
+
+# Escalation triggers
+if any(keyword in task_description for keyword in
+       ["security", "authentication", "build", "encryption"]):
+    risk = "HIGH"  # Force escalation
+```
+
+### 2. Agent Selection
+
+```python
+# HIGH-RISK (mandatory agents)
+agents = [
+    "technical-architect",   # Architecture and design
+    "code-quality-auditor",  # Quality standards
+    "style-auditor",         # Style compliance
+    "code-tester",           # Test coverage
+]
+
+# Add conditional agents
+if "security" in task_description or "authentication" in task_description:
+    agents.append("security-auditor")
+
+if "performance" in task_description or "algorithm" in task_description:
+    agents.append("performance-analyzer")
+
+# MEDIUM-RISK (core only)
+agents = ["technical-architect", "code-quality-auditor"]
+
+# LOW-RISK (minimal or none)
+agents = []  # or ["code-quality-auditor"] for technical docs
+```
+
+### 3. Lock State Management
+
+```bash
+# Update lock state at each transition
+update_lock() {
+    local TASK=$1
+    local NEW_STATE=$2
+    jq ".state = \"$NEW_STATE\"" /workspace/locks/${TASK}.json > /tmp/lock.tmp
 }
 ```
 
@@ -52,7 +445,6 @@ cd /workspace/branches/{TASK_NAME}/code
 - Prevents contamination of main branch with style violations or build failures
 - Catches linter violations (checkstyle, PMD) before they reach main
 - Ensures all tests pass in isolation before integration
-- Eliminates need for cleanup commits on main branch after merge
 - Maintains main branch in continuously deployable state
 
 **CRITICAL VALIDATION: todo.md Commit Verification**
