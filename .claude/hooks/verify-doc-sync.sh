@@ -1,9 +1,9 @@
 #!/bin/bash
+set -euo pipefail
 
 # Documentation Synchronization Verification Script
 # Ensures Claude and human documentation files maintain synchronized rule titles
 
-set -euo pipefail
 trap 'echo "❌ SCRIPT ERROR: verify-doc-sync.sh failed at line $LINENO" >&2; exit 1' ERR
 
 # Resolve absolute path to docs directory

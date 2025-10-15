@@ -78,7 +78,7 @@ get_current_protocol_phase() {
     fi
 
     # Phase 5: Implementation - check for actual code changes (only src/main, not tests)
-    if git status --porcelain 2>/dev/null | grep -q "^[AM]" || [[ $(find src/main -name "*.java" -newer ../context.md 2>/dev/null | wc -l) -gt 0 ]]; then
+    if git status --porcelain 2>/dev/null | grep -q "^[AM]" || [[ -d "src/main" && $(find src/main -name "*.java" -newer ../context.md 2>/dev/null | wc -l) -gt 0 ]]; then
         phase=5
     fi
 

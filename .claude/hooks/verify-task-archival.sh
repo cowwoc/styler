@@ -16,8 +16,6 @@ set -euo pipefail
 # - Archival marker file does NOT exist
 # - Task still present in todo.md (archival was skipped)
 
-set -euo pipefail
-
 # Auto-detect task name from worktree path if not provided
 TASK_NAME="${1:-}"
 

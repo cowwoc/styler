@@ -9,6 +9,11 @@ set -euo pipefail
 # Find active task lock file
 LOCK_FILE=$(find /workspace/locks -name "*.json" -type f 2>/dev/null | head -1)
 
+# Exit early if no lock file exists
+if [ -z "$LOCK_FILE" ] || [ ! -f "$LOCK_FILE" ]; then
+    exit 0
+fi
+
 # Configuration for state transitions that require checkpoints
 SYNTHESIS_COMPLETE_PATTERNS=(
   "synthesis.*complete"
