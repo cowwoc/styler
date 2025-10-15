@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # Hook: measure-phase-metrics.sh
 # Purpose: Track metrics for each protocol phase by monitoring tool usage and state transitions
 # Trigger: ToolUse events (monitors Edit tool for lock file state updates)
@@ -39,7 +41,7 @@ TASK_NAME=$(basename "$FILE_PATH" .json)
 
 # Parse new state from edit content
 NEW_STRING=$(echo "$TOOL_PARAMS" | jq -r '.new_string // empty')
-NEW_STATE=$(echo "$NEW_STRING" | grep -oP '"state":\s*"\K[^"]+' | head -1)
+NEW_STATE=$(echo "$NEW_STRING" | jq -r '.state // empty' 2>/dev/null)
 
 # If no state change detected, exit
 if [ -z "$NEW_STATE" ]; then
@@ -88,8 +90,8 @@ if [ "$NEW_STATE" = "CLEANUP" ]; then
       entry_count: length
     }) |
     {
-      task: .[0].phase,
-      session_id: .[0].session_id,
+      task: (.[0] | if length > 0 then .[0].task else "unknown" end),
+      session_id: (.[0] | if length > 0 then .[0].session_id else "unknown" end),
       total_phases: length,
       phases: .,
       total_duration_seconds: (map(.duration_seconds) | add),

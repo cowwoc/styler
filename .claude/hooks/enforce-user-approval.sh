@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # enforce-user-approval.sh
 # Enforces BOTH mandatory user approval checkpoints using lock file state tracking:
 # 1. After SYNTHESIS (before implementation) - state: SYNTHESIS_AWAITING_APPROVAL
@@ -6,6 +8,11 @@
 
 # Find active task lock file
 LOCK_FILE=$(find /workspace/locks -name "*.json" -type f 2>/dev/null | head -1)
+
+# Exit early if no lock file exists
+if [ -z "$LOCK_FILE" ] || [ ! -f "$LOCK_FILE" ]; then
+    exit 0
+fi
 
 # Configuration for state transitions that require checkpoints
 SYNTHESIS_COMPLETE_PATTERNS=(

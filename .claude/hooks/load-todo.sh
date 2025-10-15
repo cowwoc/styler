@@ -1,15 +1,21 @@
 #!/bin/bash
+set -euo pipefail
 
 # Load todo.md tasks into TodoWrite list before first TodoWrite tool usage
 # This script provides context to automatically initialize the TodoWrite tool
 
-# Get session ID from environment or generate one
-if [[ -z "$CLAUDE_SESSION_ID" ]]; then
-	# Fallback: use a temporary session ID based on current time
-	CLAUDE_SESSION_ID="session_$(date +%s)"
+# Parse hook input - session_id and tool info passed via JSON stdin
+INPUT=$(cat)
+SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool.name // empty')
+
+# Require session ID - fail fast if not provided
+if [[ -z "$SESSION_ID" ]]; then
+	echo "ERROR: session_id must be provided in hook JSON input" >&2
+	exit 1
 fi
 
-STATE_FILE="/tmp/claude_todowrite_loaded_${CLAUDE_SESSION_ID}"
+STATE_FILE="/tmp/claude_todowrite_loaded_${SESSION_ID}"
 # Get the directory containing this script and go up two levels to find todo.md
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TODO_FILE="$SCRIPT_DIR/../todo.md"
@@ -22,7 +28,7 @@ if [[ -f "$STATE_FILE" ]]; then
 fi
 
 # Check if this is a TodoWrite tool call
-if [[ "$CLAUDE_TOOL_NAME" == "TodoWrite" ]]; then
+if [[ "$TOOL_NAME" == "TodoWrite" ]]; then
 	# Mark that we've loaded todo.md for this session
 	touch "$STATE_FILE"
 	
