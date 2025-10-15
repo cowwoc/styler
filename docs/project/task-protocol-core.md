@@ -1059,23 +1059,63 @@ PROHIBITED:
 - [ ] Implementation follows synthesis architecture plan
 - [ ] Code adheres to project conventions and patterns
 - [ ] All requirements from synthesis addressed or deferred with justification
+- [ ] **🚨 CRITICAL: Incremental validation performed during implementation (fail-fast pattern)**
 - [ ] **🚨 CRITICAL: All implementation changes COMMITTED to task branch before validation**
 
 **Evidence Required:**
 - Git commit showing all implemented changes (with commit SHA)
 - Implementation matches synthesis plan
 - Any requirement deferrals properly documented in todo.md
+- Incremental validation checkpoints passed during implementation
+
+**🚨 MANDATORY FAIL-FAST VALIDATION PATTERN**:
+
+**ANTI-PATTERN** (Late-stage failure discovery - 10-15% overhead):
+```
+1. Implement entire feature (all components)
+2. Run full validation → discover 60 violations
+3. Fix violations with stale context
+# Result: Excessive rework, 100-150 extra messages
+```
+
+**REQUIRED PATTERN** (Incremental validation):
+```bash
+# After each component implementation:
+./mvnw compile -q -pl :{module}  # Verify compilation
+./mvnw checkstyle:check -q -pl :{module}  # Check style
+# Fix violations immediately while context is fresh
+git add component-files && git commit -m "Add Component A"
+
+# After each module completion:
+./mvnw test -Dtest=ModuleTest* -q  # Run module tests
+# Fix test failures before next module
+
+# Before final VALIDATION state:
+./mvnw verify -Dmaven.build.cache.enabled=false  # Full validation
+```
+
+**Incremental Validation Checkpoints:**
+1. **After each component**: Compile + style check for that component only
+2. **After each test class**: Run test class immediately, fix failures
+3. **After each module**: Run module-specific tests
+4. **Before VALIDATION state**: Full build with all quality gates
+
+**Benefits of Fail-Fast Pattern:**
+- Issues caught with fresh implementation context
+- Violations fixed immediately, not batched at end
+- Reduces rework messages by 10-15% (100-150 messages saved)
+- Prevents compounding issues across components
 
 **COMMIT REQUIREMENT**:
 ```bash
-# Commit all implementation changes BEFORE running validation
+# Commit implementation changes BEFORE running final validation
 git add [implementation files]
 git commit -m "Implementation message with Claude attribution"
 # Record commit SHA for user review
 git rev-parse HEAD
 ```
 
-**RATIONALE**: Stakeholder agents in REVIEW state review COMMITTED code, not working directory changes. User approval checkpoint requires commit SHA for review. Committing after agent approval creates confusion about what was reviewed.
+**RATIONALE**: Stakeholder agents in REVIEW state review COMMITTED code, not working directory changes. User approval checkpoint requires commit SHA for review. Committing after agent approval creates confusion about what was reviewed. Incremental validation prevents late-stage failure discovery.
 
 ### VALIDATION → REVIEW (Conditional Path)
 **Path Selection Logic:**
