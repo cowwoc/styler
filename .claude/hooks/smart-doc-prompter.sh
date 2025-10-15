@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # Consolidated Smart Documentation Prompter
 # Handles all context-aware documentation prompting with session tracking

@@ -131,9 +131,9 @@ compare_rule_titles() {
         return 1
     fi
     
-    # Count titles
-    local claude_count=$(echo "$claude_titles" | wc -l)
-    local human_count=$(echo "$human_titles" | wc -l)
+    # Count titles (use xargs to trim whitespace from wc output)
+    local claude_count=$(echo "$claude_titles" | wc -l | xargs)
+    local human_count=$(echo "$human_titles" | wc -l | xargs)
     
     echo "Claude rules: $claude_count"
     echo "Human rules:  $human_count"

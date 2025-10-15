@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # enforce-user-approval.sh
 # Enforces BOTH mandatory user approval checkpoints using lock file state tracking:
 # 1. After SYNTHESIS (before implementation) - state: SYNTHESIS_AWAITING_APPROVAL

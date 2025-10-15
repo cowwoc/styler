@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # Session start hook to reset JavaDoc warning marker after context compaction
 # Allows detect-generic-javadoc.sh to show warning again in resumed session
 

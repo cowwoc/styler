@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # Hook to detect sequential independent tool execution anti-pattern
 # Triggers reminder to batch independent tool calls for 25-30% message reduction
 #

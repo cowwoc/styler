@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # Check for active tasks owned by this session
 # Runs on SessionStart to detect tasks that need resuming after context compaction
 #
@@ -64,7 +66,7 @@ fi
 
 # Extract task details from lock file
 TASK_NAME=$(basename "$LOCK_FILE" .json)
-TASK_STATE=$(grep -oP '"state":\s*"\K[^"]+' "$LOCK_FILE")
+TASK_STATE=$(jq -r '.state // "UNKNOWN"' "$LOCK_FILE" 2>/dev/null)
 TASK_WORKTREE="/workspace/branches/$TASK_NAME/code"
 
 # Check for user approval marker if in REVIEW state

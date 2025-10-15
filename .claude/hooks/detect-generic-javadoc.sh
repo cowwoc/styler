@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # Pre-commit hook to detect generic/automated JavaDoc patterns
 # Enforces CLAUDE.md § JavaDoc Manual Documentation Requirement
 

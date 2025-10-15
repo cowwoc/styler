@@ -1,4 +1,6 @@
 #!/bin/bash
+set -euo pipefail
+
 # detect-worktree-violation.sh - BLOCKS directory changes outside task worktree
 # Hook Type: PreToolUse (Bash tool with cd command)
 # Trigger: Before Bash tool execution when command contains 'cd'
@@ -56,12 +58,11 @@ EXPECTED_WORKTREE="/workspace/branches/${TASK_NAME}/code"
 # Detect 'cd' commands that might leave task worktree
 # Use timeout to prevent ReDoS attacks - limit regex execution to 1 second
 # Pattern: "cd path", "; cd path", "&& cd path", "|| cd path"
-if timeout 1s grep -qE "(^|[;&|]) {0,10}cd +[^ ]" <<< "$BASH_COMMAND" 2>/dev/null; then
+if timeout 1s grep -qE "(^|[;&|])[[:space:]]*cd[[:space:]]+" <<< "$BASH_COMMAND" 2>/dev/null; then
     # Extract the target directory from the cd command
     # Handle both quoted and unquoted paths
     # Use timeout to prevent ReDoS - limit to 1 second
-    # First try to extract quoted paths (handles spaces), then unquoted
-    TARGET=$(timeout 1s grep -oE "cd +['\"][^'\"]+['\"]|cd +[^ ;]+" <<< "$BASH_COMMAND" 2>/dev/null | head -1 | sed "s/cd *//" | sed "s/['\"]//g")
+    TARGET=$(timeout 1s grep -oE "cd[[:space:]]+('[^']+'|\"[^\"]+\"|[^[:space:];]+)" <<< "$BASH_COMMAND" 2>/dev/null | head -1 | sed "s/^cd[[:space:]]*//; s/['\"]//g")
 
     # Initialize VIOLATION variable
     VIOLATION=false
