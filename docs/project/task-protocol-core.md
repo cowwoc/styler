@@ -710,6 +710,22 @@ fi
 - Worktree creation confirmation
 - **pwd verification showing `/workspace/branches/{task-name}/code`**
 
+**MANDATORY TOOL USAGE PATTERN**:
+- [ ] Protocol files loaded in SINGLE parallel read:
+      `Read task-protocol-core.md + Read task-protocol-operations.md`
+- [ ] Task requirements loaded in SINGLE parallel read:
+      `Read todo.md + Glob locks/*.json`
+- [ ] Configuration files loaded in SINGLE parallel read (if applicable):
+      `Read pom.xml + Read checkstyle.xml + Read pmd.xml`
+- [ ] Architecture documentation loaded with implementation files:
+      `Read docs/project/architecture.md + Glob src/main/java/**/*Pattern*.java`
+
+**VERIFICATION**:
+```bash
+# Each message should have ≥2 tool calls during INIT
+# Average tools per message should be ≥2.0
+```
+
 **Implementation:**
 ```bash
 # IMPORTANT: Replace {TASK_NAME} with actual task name (e.g., "refactor-line-wrapping-architecture")
