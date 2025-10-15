@@ -16,7 +16,7 @@
 		<module>cli</module>
 		<module>config</module>
 		<module>parser</module>
-		<module>styler-security</module>
+		<module>security</module>
 	</modules>
 
 	<properties>

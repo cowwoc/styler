@@ -2,7 +2,7 @@
 
 ## 🚀 READY TO WORK NOW (Multi-Instance Coordination)
 
-**Current Status**: Phase A incomplete - A0 (styler-formatter-api) ready to implement
+**Current Status**: Phase A incomplete - A0 (styler-formatter) ready to implement
 
 **READY TO START**:
 - A0: Formatter API Module ← 1-2 days, defines FormattingRule interfaces
