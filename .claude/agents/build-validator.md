@@ -3,7 +3,7 @@ name: build-validator
 description: Use this agent when you have completed a major code change and need to verify that the project still compiles and all tests pass. Examples: <example>Context: User has just finished implementing a new formatting rule class and wants to ensure the build is still working. user: 'I just finished implementing the new IndentationFormattingRule class. Can you make sure everything still builds and tests pass?' assistant: 'I'll use the build-validator agent to compile the project and run all unit tests to ensure your changes haven't broken anything.' <commentary>Since the user has completed a major code change and wants build verification, use the build-validator agent to check compilation and test execution.</commentary></example> <example>Context: User has refactored the parser module and wants to validate the build. user: 'I've refactored the entire Java parsing system. Please verify that the build is still working.' assistant: 'Let me use the build-validator agent to compile the project and run the full test suite to validate your refactoring.' <commentary>After major refactoring, use the build-validator agent to ensure the changes haven't introduced compilation errors or test failures.</commentary></example>
 model: sonnet-4-5
 color: red
-tools: [Read, Bash, LS]
+tools: [Read, Write, Edit, Bash, LS]
 ---
 
 **TARGET AUDIENCE**: Claude AI for automated build status processing and failure analysis
