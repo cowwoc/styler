@@ -107,6 +107,95 @@ if [ ! -d "$TASK_WORKTREE" ]; then
   exit 0
 fi
 
+# Check for SYNTHESIS checkpoint state (PLAN APPROVAL - Checkpoint 1)
+if [ "$TASK_STATE" = "SYNTHESIS" ]; then
+  # Check if task.md has implementation plans
+  TASK_MD_FILE="/workspace/branches/$TASK_NAME/task.md"
+  PLAN_EXISTS="NO"
+  if [ -f "$TASK_MD_FILE" ] && grep -q "IMPLEMENTATION PLAN\|Implementation Plan" "$TASK_MD_FILE"; then
+    PLAN_EXISTS="YES"
+  fi
+
+  MESSAGE="## 🚨 CHECKPOINT ACTIVE - PLAN APPROVAL REQUIRED
+
+**Task**: \`$TASK_NAME\`
+**Current State**: \`SYNTHESIS\` ⏸️
+**Lock File**: \`$LOCK_FILE\`
+**Worktree**: \`$TASK_WORKTREE\`
+**Implementation Plan**: \`$PLAN_EXISTS\` (in task.md)
+
+## ⚠️ CRITICAL - MANDATORY USER APPROVAL CHECKPOINT
+
+The requirements have been gathered and implementation plan has been created.
+**YOU ARE AT CHECKPOINT 1 (PLAN APPROVAL)** - This state exists because:
+1. All stakeholder agents have contributed requirements to task.md
+2. Implementation plans have been synthesized and documented
+3. **WAITING FOR USER APPROVAL** before proceeding to IMPLEMENTATION
+
+## 🔴 REQUIRED ACTION - DO NOT BYPASS
+
+**You MUST:**
+1. Navigate to task worktree: \`cd $TASK_WORKTREE\`
+2. Read the complete implementation plan: \`cat /workspace/branches/$TASK_NAME/task.md\`
+3. Present the plan to user in clear, readable format
+4. Explain:
+   - Architecture approach and key design decisions
+   - Files to be created/modified
+   - Implementation sequence and dependencies
+   - Testing strategy and quality gates
+5. **WAIT for explicit user approval** (\"Approved\", \"LGTM\", \"Proceed\", \"Yes\")
+
+**PROHIBITED:**
+❌ Proceeding to IMPLEMENTATION state without user approval
+❌ Assuming \"continue\" or \"proceed\" means plan approval
+❌ Bypassing checkpoint because requirements are clear
+❌ Interpreting \"continue without asking questions\" as approval
+❌ Treating bypass mode as checkpoint override
+
+## 🛑 ENFORCEMENT
+
+This checkpoint is **MANDATORY REGARDLESS** of:
+- Bypass mode settings (\"bypass permissions on\")
+- Automation mode or continuous workflow mode
+- User instructions to \"continue\" or \"finish\"
+- Previous context or conversation
+- Clarity of requirements
+
+**ONLY explicit approval of THE PLAN allows SYNTHESIS → IMPLEMENTATION transition:**
+✅ \"Approved, proceed with implementation\" / \"LGTM\" / \"Looks good, go ahead\" / \"Yes, implement this plan\"
+
+**NOT SUFFICIENT (these do NOT constitute plan approval):**
+❌ \"Continue\" / \"Proceed\" / \"Keep going\" (too vague)
+❌ \"Continue without asking questions\" (explicit checkpoint override prohibition)
+❌ \"Just finish the task\" (doesn't reference plan review)
+
+## Navigation Commands
+
+\`\`\`bash
+cd $TASK_WORKTREE
+cat /workspace/branches/$TASK_NAME/task.md | grep -A 1000 \"## CONSOLIDATED IMPLEMENTATION PLAN\"
+\`\`\`
+
+## What Happens After Approval
+
+Once user approves with explicit keywords:
+1. Transition lock state to IMPLEMENTATION
+2. Launch stakeholder agents for parallel implementation
+3. Agents implement in THEIR worktrees (NOT main agent implements)
+4. Main agent coordinates via Task tool invocations"
+
+  jq -n \
+    --arg event "SessionStart" \
+    --arg context "$MESSAGE" \
+    '{
+      "hookSpecificOutput": {
+        "hookEventName": $event,
+        "additionalContext": $context
+      }
+    }'
+  exit 0
+fi
+
 # Check for AWAITING_USER_APPROVAL checkpoint state
 if [ "$TASK_STATE" = "AWAITING_USER_APPROVAL" ]; then
   # Extract checkpoint details

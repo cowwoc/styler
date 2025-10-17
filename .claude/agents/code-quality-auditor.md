@@ -3,7 +3,7 @@ name: code-quality-auditor
 description: Use this agent when a class or method has been created or modified and needs refactoring to reduce duplication, implement best coding practices, simplify code complexity, and improve readability and maintainability. This agent should be invoked after the code-tester agent has completed its validation.
 model: sonnet-4-5
 color: cyan
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---
 
 **TARGET AUDIENCE**: Claude AI for automated refactoring analysis and code improvement recommendations
