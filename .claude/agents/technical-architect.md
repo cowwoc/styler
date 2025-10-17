@@ -1,7 +1,7 @@
 ---
 name: technical-architect
 description: Use this agent when you need to translate business requirements into technical architecture and
-tools: [Read, Grep, Glob, LS]
+tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 model: sonnet-4-5
 color: blue
 ---

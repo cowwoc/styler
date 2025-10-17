@@ -17,7 +17,7 @@ usability-reviewer agent.' <commentary>The user has completed a significant feat
 	                                                      improvements.</commentary></example>
 model: sonnet-4-5
 color: green
-tools: [Read, LS, WebSearch, WebFetch]
+tools: [Read, Write, Edit, Grep, Glob, LS, Bash, WebSearch, WebFetch]
 ---
 
 **TARGET AUDIENCE**: Claude AI for comprehensive UX analysis and feature enhancement recommendations

@@ -1,7 +1,7 @@
 ---
 name: security-auditor
 description: Use this agent when you need to review new or modified code functionality for security vulnerabilities, especially after implementing new features, API endpoints, data handling logic, authentication mechanisms, or parser/formatter modules. This agent should be invoked proactively during development to identify potential security risks before they reach production.
-tools: [Read, Grep, Glob, LS, WebSearch, WebFetch]
+tools: [Read, Write, Edit, Grep, Glob, LS, Bash, WebSearch, WebFetch]
 model: sonnet-4-5
 ---
 

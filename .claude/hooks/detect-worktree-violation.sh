@@ -72,8 +72,8 @@ if timeout 1s grep -qE "(^|[;&|])[[:space:]]*cd[[:space:]]+" <<< "$BASH_COMMAND"
         VIOLATION=true
     else
         # EXCEPTION: Allow cd to main worktree during cleanup (State 8)
-        # Pattern: "cd /workspace/branches/main/code" in preparation for worktree removal
-        MAIN_WORKTREE="/workspace/branches/main/code"
+        # Pattern: "cd /workspace/main" in preparation for worktree removal
+        MAIN_WORKTREE="/workspace/main"
         if [[ "$TARGET" == "$MAIN_WORKTREE" ]] && echo "$BASH_COMMAND" | grep -q "git worktree remove"; then
             # This is the cleanup phase pattern: cd main && git worktree remove task
             exit 0  # Allow this specific pattern

@@ -8,13 +8,13 @@ export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
 
-# Extract branch name from current working directory path
-# Expected path format: /*/branches/{branch-name}/* or similar
+# Extract task name from current working directory path
+# Structure: /workspace/tasks/{task-name}/*
 CURRENT_PATH=$(pwd)
-if [[ "$CURRENT_PATH" =~ .*/branches/([^/]+) ]]; then
+if [[ "$CURRENT_PATH" =~ /workspace/tasks/([^/]+) ]]; then
 	GIT_BRANCH="${BASH_REMATCH[1]}"
 else
-	# If not in expected branches structure, show N/A
+	# If not in expected structure, show N/A
 	GIT_BRANCH="N/A"
 fi
 
@@ -36,11 +36,18 @@ if [[ "$input" =~ \"display_name\"[[:space:]]*:[[:space:]]*\"([^\"]+)\" ]]; then
 	MODEL_NAME="${BASH_REMATCH[1]}"
 fi
 
+# Extract session ID using simple string manipulation
+SESSION_ID="N/A"
+if [[ "$input" =~ \"session_id\"[[:space:]]*:[[:space:]]*\"([^\"]+)\" ]]; then
+	SESSION_ID="${BASH_REMATCH[1]}"
+fi
+
 
 # Colors for statusline components
 BRANCH_COLOR="\033[38;2;255;255;255m"  # Bright White (excellent readability)
 MODEL_COLOR="\033[38;2;220;150;9m"     # Warm Gold
 TIME_COLOR="\033[38;2;255;127;80m"     # Coral
+SESSION_COLOR="\033[38;2;147;112;219m" # Medium Purple
 RESET="\033[0m"
 
 # Set Windows Terminal tab title to git branch name
@@ -53,7 +60,8 @@ else
 fi
 
 # Generate and output the statusline
-printf '🌿 %b%s%b 🤖 %b%s%b ⏰ %b%02d:%02d%b\n' \
+printf '🌿 %b%s%b 🤖 %b%s%b ⏰ %b%02d:%02d%b 🆔 %b%s%b\n' \
     "$BRANCH_COLOR" "$GIT_BRANCH" "$RESET" \
     "$MODEL_COLOR" "$MODEL_NAME" "$RESET" \
-    "$TIME_COLOR" "$HOURS" "$MINUTES" "$RESET"
+    "$TIME_COLOR" "$HOURS" "$MINUTES" "$RESET" \
+    "$SESSION_COLOR" "$SESSION_ID" "$RESET"

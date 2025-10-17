@@ -1,5 +1,8 @@
 # Claude Code Configuration Guide
 
+> **Version:** 2.0 | **Last Updated:** 2025-10-16
+> **Related Documents:** [task-protocol-core.md](docs/project/task-protocol-core.md) • [task-protocol-operations.md](docs/project/task-protocol-operations.md)
+
 Styler Java Code Formatter project configuration and workflow guidance.
 
 ## 🚨 MANDATORY COMPLIANCE
@@ -7,90 +10,25 @@ Styler Java Code Formatter project configuration and workflow guidance.
 **CRITICAL WORKFLOW**: Task Protocol ([core](docs/project/task-protocol-core.md) + [operations](docs/project/task-protocol-operations.md)) - MANDATORY risk-based protocol selection - Apply appropriate workflow based on file risk classification.
 **CRITICAL LOCK OWNERSHIP**: See [§ Lock Ownership & Task Recovery](#-lock-ownership--task-recovery) for complete lock file requirements and ownership rules.
 **CRITICAL WORKTREE ISOLATION**: See [§ Worktree Isolation & Cleanup](#-worktree-isolation--cleanup) for complete worktree management requirements.
-**CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See task-protocol-core.md
+**CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See [§ Complete Style Validation](#complete-style-validation) and task-protocol-core.md
 **CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
-**CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL 7 phases of task protocol are finished. Implementation completion does NOT equal task completion. Only mark tasks as complete after Phase 7 cleanup and finalization.
+**CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL protocol states are finished (INIT through CLEANUP). Implementation completion does NOT equal task completion. Only mark tasks as complete after CLEANUP state finalization.
 **IMPLEMENTATION COMPLETION TRIGGER**: When you have finished implementation work (code changes, fixes, features complete), you MUST complete ALL remaining protocol phases before selecting a new task. The SessionStart hook indicates if you own an active task requiring completion.
 
-**PHASE COMPLETION VERIFICATION**: Before declaring ANY phase complete, you MUST:
-1. **READ**: Execute `grep -A 20 "^## State [N]:" docs/project/task-protocol-*.md` to read ACTUAL phase requirements
-2. **CHECKLIST**: Create explicit checklist of all phase requirements from task-protocol files
-3. **VERIFY**: Confirm EACH requirement is met with evidence (command output, file checks, etc.)
-4. **DECLARE**: Only after ALL requirements verified, declare phase complete
-
-**Detailed Archival Example:**
-
-❌ **WRONG** (marking task complete in todo.md):
-```bash
-# Modified todo.md: changed - [ ] to - [x], added completion details
-vim todo.md  # Line 547: - [x] **TASK:** debug-maven-build-cache...
-
-git add todo.md pom.xml docs/project/build-system.md
-git commit -m "Fix Maven build cache..."
-# Result: Task still in todo.md ❌, not in changelog.md ❌
-```
-
-✅ **CORRECT** (moving task from todo.md to changelog.md):
-```bash
-# Step 1: DELETE task from todo.md (remove entire entry, lines 547-567)
-vim todo.md  # Delete all lines for debug-maven-build-cache-stale-instances
-
-# Step 2: ADD task to changelog.md under ## 2025-10-08
-vim changelog.md  # Add completion entry with full details
-
-# Step 3: Verify archival
-grep "debug-maven-build-cache" todo.md && echo "❌ ERROR: Still in todo.md!"
-grep "debug-maven-build-cache" changelog.md || echo "❌ ERROR: Not in changelog.md!"
-
-# Step 4: Commit both files together
-git add todo.md changelog.md pom.xml docs/project/build-system.md
-git commit -m "Fix Maven build cache..."  # Single atomic commit
-# Result: Task removed from todo.md ✅, added to changelog.md ✅
-```
+**PHASE COMPLETION VERIFICATION**: Before declaring phase complete, verify ALL requirements in task-protocol-*.md with documented evidence.
 
 **TODO Synchronization**: Keep TodoWrite tool synced with todo.md file.
 **TODO Clarity**: Each todo.md entry must contain sufficient detail to understand the task without external context. One-line descriptions require nested sub-items explaining Purpose, Scope, Components/Features, and Integration points.
-**CRITICAL TASK ARCHIVAL**: When completing a task (Phase 7/COMPLETE state), you MUST:
+**CRITICAL TASK ARCHIVAL**: When completing a task (COMPLETE state), you MUST:
 1. **REMOVE** the completed task from todo.md (delete the entire task entry)
 2. **ADD** it to changelog.md under the appropriate date section (format: `## YYYY-MM-DD`)
 3. **INCLUDE** completion details: solution implemented, files modified, test results, quality gates, completion date
 4. **COMMIT** all changes in ONE atomic commit (implementation code + todo.md removal + changelog.md addition)
-5. **FORMAT** changelog entries to match existing style (see changelog.md for examples)
 
-**🚨 PROHIBITED ARCHIVAL PATTERNS**:
-❌ Changing `- [ ]` to `- [x]` in todo.md (tasks must be REMOVED, not marked complete)
-❌ Adding completion details to todo.md entry (details go to changelog.md, not todo.md)
-❌ Committing todo.md changes without corresponding changelog.md addition
-❌ Leaving completed tasks in todo.md for "historical reference"
+**Verification**: Use `/workspace/.claude/hooks/verify-task-archival.sh task-name` before commit
 
-**✅ REQUIRED ARCHIVAL PATTERNS**:
-✅ `git diff todo.md` shows ONLY deletions (lines removed, no modifications)
-✅ `git diff changelog.md` shows ONLY additions under today's date
-✅ Both files modified in SAME commit
-✅ Task completely absent from todo.md after commit
-
-**ARCHIVAL VERIFICATION CHECKLIST** (run before Phase 7 commit):
-```bash
-# Automated verification script (recommended)
-bash .claude/hooks/verify-task-archival.sh task-name
-
-# OR manual verification:
-# 1. Verify task REMOVED from todo.md (not just marked complete)
-grep -q "task-name" todo.md && {
-    echo "❌ VIOLATION: Task still in todo.md - must be REMOVED"
-    exit 1
-}
-
-# 2. Verify task ADDED to changelog.md
-grep -q "task-name" changelog.md || {
-    echo "❌ VIOLATION: Task not in changelog.md - must be ADDED"
-    exit 1
-}
-
-# 3. Verify both files staged
-git diff --cached --name-only | grep -q "todo.md" || echo "⚠️ todo.md not staged"
-git diff --cached --name-only | grep -q "changelog.md" || echo "⚠️ changelog.md not staged"
-```
+**🚨 PROHIBITED**: Marking tasks complete (- [x]) instead of removing from todo.md
+**✅ REQUIRED**: `git diff todo.md` shows ONLY deletions; `git diff changelog.md` shows ONLY additions
 
 **CRITICAL MID-TASK WORK CAPTURE**: When user mentions additional work during task execution, you MUST add it to TodoWrite list IMMEDIATELY in the SAME response before doing anything else. Context compaction can occur at any time, causing complete loss of uncommitted work requests. NEVER rely on memory across compaction boundaries - capture ALL new work requests in TodoWrite tool THE MOMENT they occur.
 **CRITICAL TOKEN USAGE**: Token usage MUST NEVER affect behavior, implementation approach, or task completion. IGNORE all token usage warnings and limits. Continue working with full quality and completeness until task is 100% complete or explicit user instruction. Token budget does NOT justify incomplete implementations, shortcuts, or quality compromises.
@@ -100,7 +38,7 @@ git diff --cached --name-only | grep -q "changelog.md" || echo "⚠️ changelog
 
 ## 🚨 LOCK OWNERSHIP & TASK RECOVERY {#lock-ownership}
 
-**CRITICAL**: After context compaction, the `check-lock-ownership.sh` SessionStart hook automatically checks for active tasks owned by this session and provides specific instructions.
+**CRITICAL**: After context compaction, the `check-lock-ownership.sh` SessionStart hook checks for active tasks owned by this session and provides specific instructions. **IMPORTANT**: Hook enforces user approval checkpoints - if task is in SYNTHESIS or AWAITING_USER_APPROVAL state, hook will display checkpoint-specific guidance that MUST be followed before proceeding.
 
 **Lock Ownership Rule**: ONLY work on tasks whose lock file contains YOUR session_id.
 
@@ -108,24 +46,28 @@ git diff --cached --name-only | grep -q "changelog.md" || echo "⚠️ changelog
 
 1. **NEVER manually search for lock files** - The SessionStart hook performs this check automatically
 2. **TRUST the hook output** - If it says "No Active Tasks", you have NO tasks regardless of other files
-3. **ONLY `.json` files are valid** - Lock files MUST be `/workspace/locks/{task-name}.json`
-4. **Invalid extensions are NEVER valid**:
-   - ❌ `/workspace/locks/task-name.lock` - INVALID, will be ignored
-   - ❌ `/workspace/locks/task-name.txt` - INVALID, will be ignored
-   - ❌ Any extension other than `.json` - INVALID, will be ignored
-5. **If you see your session_id in a non-.json file**: Delete it immediately, it's incorrect
-6. **NEVER remove lock files unless you own them** - session_id must match
-7. **If lock acquisition fails** - Select alternative task, do NOT delete the lock
+3. **ONLY `.json` files are valid** - Lock files MUST be `/workspace/tasks/{task-name}/task.json`
+4. **ONLY ONE VALID LOCATION** - `/workspace/tasks/{task-name}/task.json` (no other directories)
+5. **Invalid patterns are NEVER valid**:
+   - ❌ `/workspace/locks/task-name.lock` - Wrong directory
+   - ❌ `/workspace/locks/task-name.txt` - Wrong directory and extension
+   - ❌ `/workspace/tasks/{task-name}/task.lock` - Wrong extension
+   - ❌ Any file with extension other than `.json`
+6. **If you see your session_id in a non-.json file**: Delete it immediately, it's incorrect
+7. **NEVER remove lock files unless you own them** - session_id must match
+8. **If lock acquisition fails** - Select alternative task, do NOT delete the lock
 
 **Lock File Format**:
 ```json
 {
   "session_id": "unique-session-identifier",
   "task_name": "task-name-matching-filename",
-  "state": "current-protocol-phase",
-  "created_at": "ISO-8601-timestamp"
+  "state": "INIT",
+  "created_at": "2025-10-16T14:32:00Z"
 }
 ```
+
+**Valid state values**: INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS, IMPLEMENTATION, VALIDATION, REVIEW, AWAITING_USER_APPROVAL, COMPLETE, CLEANUP
 
 ## 🚨 WORKTREE ISOLATION & CLEANUP {#worktree-isolation}
 
@@ -135,54 +77,318 @@ git diff --cached --name-only | grep -q "changelog.md" || echo "⚠️ changelog
 
 **Required Pattern**:
 ```bash
-git worktree add /workspace/branches/{task}/code -b {task} && cd /workspace/branches/{task}/code
+git worktree add /workspace/tasks/{task-name}/code -b {task-name} && cd /workspace/tasks/{task-name}/code
 ```
 
 **ALL subsequent work must occur inside worktree, NEVER in main branch.**
 
 **Verification Before Proceeding**:
 ```bash
-pwd | grep -q "/workspace/branches/{task}/code$" && echo "✅ In worktree" || echo "❌ ERROR: Not in worktree!"
+pwd | grep -q "/workspace/tasks/{task-name}/code$" && echo "✅ In worktree" || echo "❌ ERROR: Not in worktree!"
 ```
 
-### During Cleanup (Phase 7/8)
+### During Cleanup (CLEANUP State)
 
-**CRITICAL WORKTREE CLEANUP**: BEFORE removing worktree, MUST `cd` to main worktree first.
+**CRITICAL WORKTREE CLEANUP**: BEFORE removing worktree, MUST `cd` to main worktree.
 
 **Required Pattern**:
 ```bash
-cd /workspace/branches/main/code && git worktree remove /workspace/branches/{task}/code
+cd /workspace/main && git worktree remove /workspace/tasks/{task-name}/code
 ```
 
-**NEVER remove a worktree while inside it** - shell loses working directory. This is MANDATORY in Phase 8 (CLEANUP).
+**NEVER remove a worktree while inside it** - shell loses working directory. This is MANDATORY in CLEANUP state.
 
-**Prohibited Pattern**: ❌ Being inside `/workspace/branches/{task}/code` and running `git worktree remove /workspace/branches/{task}/code`
-**Required Pattern**: ✅ Change to main worktree first, then remove task worktree
+## 🚨 IMPLEMENTATION ROLE BOUNDARIES {#implementation-role-boundaries}
+
+**CRITICAL**: During IMPLEMENTATION state, main agent and stakeholder agents have STRICTLY SEPARATED roles.
+
+### Terminology Definitions
+
+**CRITICAL TERMINOLOGY** (used throughout this protocol):
+
+- **Implementation**: Creating new features, classes, methods, or significant logic
+  - Examples: Writing FormattingRule.java, implementing algorithm logic, adding new methods
+  - During IMPLEMENTATION state: ONLY stakeholder agents perform implementation
+
+- **Coordination**: Managing agent invocations, monitoring status, updating state
+  - Examples: Launching agents via Task tool, checking status.json, updating lock file
+  - Main agent role during IMPLEMENTATION state
+
+- **Minor Fixes**: Mechanical corrections to code after implementation complete
+  - Examples: Adding missing imports, fixing whitespace, removing unused variables, fixing typos
+  - Main agent MAY perform after VALIDATION state begins
+  - NOT considered 'implementation' because no new logic or features
+
+- **Fixes** (during IMPLEMENTATION): Corrections to agent-written code
+  - Examples: Fixing bugs in newly written classes, adjusting architecture
+  - During IMPLEMENTATION state: ONLY original agent fixes their own work
+  - Main agent NEVER fixes during IMPLEMENTATION state
+
+**Rule of Thumb**: If it requires domain expertise or significant changes → delegate to agents. If it's mechanical and trivial → main agent may fix after VALIDATION state begins.
+
+**Coordination Examples (PERMITTED during IMPLEMENTATION)**:
+✅ Launching technical-architect agent: "Implement FormatterApi interface with transform() method"
+✅ Monitoring agent status: Reading `/workspace/tasks/add-api/agents/technical-architect/status.json`
+✅ Updating lock file state: `jq '.state = "VALIDATION"' task.json`
+✅ Creating task infrastructure: Writing `/workspace/tasks/add-api/task.md` with requirements
+
+**Implementation Examples (PROHIBITED during IMPLEMENTATION state)**:
+❌ Creating source files: `Write tool → src/main/java/FormatterApi.java`
+❌ Implementing methods: Adding `public Token getToken()` to source file
+❌ Fixing compilation: Adding `import java.util.List;` to new implementation code
+❌ Writing tests: Creating `TestFormatterApi.java` test class
+
+**Configuration File Boundary Cases**:
+✅ PERMITTED: Task infrastructure (`.claude/task-context.json`, `task.md`)
+❌ PROHIBITED: Project configuration (`pom.xml` dependencies, `application.properties`)
+
+### Main Agent Role During IMPLEMENTATION State (COORDINATION ONLY)
+
+**PERMITTED Actions**:
+✅ Launch stakeholder agents via Task tool with implementation instructions
+✅ Monitor agent status.json files for completion signals
+✅ Update lock file state transitions
+✅ Coordinate iterative validation rounds
+✅ Determine when all agents report work complete
+
+**ABSOLUTELY PROHIBITED Actions**:
+❌ Use **Write tool** to create source files (.java, .ts, .py, etc.) in task worktree
+❌ Use **Edit tool** to modify source files (.java, .ts, .py, etc.) in task worktree
+❌ Create implementation classes, interfaces, or modules directly
+❌ "Implement then have agents review" pattern - THIS IS A VIOLATION
+❌ "Quick implementation before delegating" - THIS IS A VIOLATION
+
+### Stakeholder Agent Role (IMPLEMENTATION ONLY)
+
+**REQUIRED Actions**:
+✅ Implement domain-specific requirements in THEIR OWN worktrees
+✅ Write all source code files (.java, .ts, .py, etc.)
+✅ Run incremental validation (compile, test, checkstyle)
+✅ Merge changes to task branch after validation
+✅ Update status.json with completion state
+
+**Working Directory**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
+
+### Role Verification Questions
+
+**Before writing ANY .java/.ts/.py file during IMPLEMENTATION, ask yourself**:
+- [ ] Am I the main coordination agent? → If YES, use Task tool to delegate
+- [ ] Am I a stakeholder agent in my own worktree? → If YES, proceed with implementation
+- [ ] Am I in task worktree trying to implement? → STOP - This is a VIOLATION
+
+### Required Pattern After SYNTHESIS Approval
+
+```markdown
+CORRECT SEQUENCE:
+1. User approves implementation plan
+2. Main agent: "Launching stakeholder agents for parallel implementation..."
+3. Main agent: Task tool (technical-architect) with implementation instructions
+4. Main agent: Task tool (code-quality-auditor) with implementation instructions
+5. Main agent: Task tool (style-auditor) with implementation instructions
+6. Stakeholder agents implement in THEIR worktrees
+7. Main agent monitors status.json files for completion
+8. ALL agents report COMPLETE status in their status.json files
+9. Main agent updates lock file: state = "VALIDATION"
+10. Main agent NOW PERMITTED to fix minor issues (style violations, imports, etc.)
+11. Main agent runs final build verification: ./mvnw verify
+12. If build passes → proceed to REVIEW state
+13. If build fails → main agent MAY fix OR re-delegate to agents
+```
+
+**Key Transition Point**: Step 9 (VALIDATION state) is when main agent permissions change from PROHIBITED to PERMITTED for minor fixes.
+
+**VIOLATION PATTERN** (NEVER DO THIS):
+```markdown
+❌ WRONG SEQUENCE:
+1. User approves implementation plan
+2. Main agent: "I will now implement the feature..."
+3. Main agent: **Write** src/main/java/FormatterApi.java (VIOLATION!)
+4. Main agent: **Edit** src/main/java/Feature.java (VIOLATION!)
+5. Main agent creates files directly in task worktree (VIOLATION!)
+```
+
+### Enforcement
+
+**Hook Detection**: `.claude/hooks/detect-main-agent-implementation.sh` monitors Write/Edit tool calls during IMPLEMENTATION state and BLOCKS attempts by main agent to create source files in task worktree.
+
+**🚨 CRITICAL REQUIREMENT**: This hook MUST be registered in `.claude/settings.json` under `PreToolUse` triggers to function. If hook is not registered, **NO PROTECTION EXISTS**.
+
+**Hook Registration Verification**:
+```bash
+# Verify hook is registered and active
+jq '.hooks.PreToolUse[] | select(.hooks[].command | contains("detect-main-agent-implementation"))' /workspace/.claude/settings.json
+
+# Expected output: Hook configuration object with matcher
+# If empty: CRITICAL - Hook NOT registered, no protection active
+```
+
+**If Hook NOT Registered (Verification Fails)**:
+1. **STOP IMMEDIATELY** - Do not proceed with any IMPLEMENTATION work
+2. Alert user: "CRITICAL: Implementation protection hook not registered"
+3. Provide registration instructions (show required settings.json configuration below)
+4. Wait for user to confirm hook registration
+5. Re-run verification before continuing
+
+**NEVER** proceed with IMPLEMENTATION state if hook verification fails - no protection exists.
+
+**Required Registration** (in `.claude/settings.json`):
+```json
+{
+  "matcher": "(tool:Write || tool:Edit) && path:**/*.{java,ts,py,js,go,rs,cpp,c,h}",
+  "hooks": [{
+    "type": "command",
+    "command": "/workspace/.claude/hooks/detect-main-agent-implementation.sh"
+  }]
+}
+```
+
+**Recovery**: If violation detected, return to SYNTHESIS state and re-launch stakeholder agents properly.
+
+### Agent Tool Limitation Recovery Pattern
+
+**Scenario**: Stakeholder agent reports tool limitations, file size constraints, or inability to complete assigned work.
+
+**CORRECT RECOVERY SEQUENCE**:
+1. **NEVER** bypass agent by implementing directly - this violates protocol regardless of reason
+2. Reduce agent scope: Re-launch agent with smaller file subset or reduced requirements
+3. Split work: Launch multiple agent instances with divided responsibilities
+4. If persistent: Transition to REVIEW state → document limitation → request user guidance
+5. Only after VALIDATION state begins: Main agent may fix if scope is truly mechanical (imports, whitespace)
+
+**PROHIBITED PATTERNS**:
+❌ Agent says "file too large" → Main agent implements directly
+❌ Agent reports Edit tool limitation → Main agent takes over
+❌ Agent cannot complete → Main agent "helps" by implementing in task worktree
+
+**Recovery Rule**: Agent limitations change SCOPE or APPROACH, NEVER change WHO implements.
+
+### State-Based Edit/Write Tool Permissions
+
+**CRITICAL**: Main agent Edit/Write tool permissions vary by state.
+
+| State | Main Agent Edit/Write Permission | Rationale |
+|-------|----------------------------------|------------|
+| **INIT** | ✅ PERMITTED - Infrastructure setup only | Create worktrees, lock files, task.md skeleton |
+| **CLASSIFIED** | ✅ PERMITTED - Documentation only | Update task.md with risk classification |
+| **REQUIREMENTS** | ✅ PERMITTED - Documentation only | Update task.md with consolidated requirements |
+| **SYNTHESIS** | ✅ PERMITTED - Documentation only | Update task.md with implementation plan |
+| **IMPLEMENTATION** | ❌ PROHIBITED - Source code files | Stakeholder agents implement in their worktrees |
+| **VALIDATION** | ✅ PERMITTED - Minor fixes only | Fix style violations, compilation errors after agent completion |
+| **REVIEW** | ✅ PERMITTED - Fix agent feedback | Address stakeholder agent review comments |
+| **COMPLETE** | ✅ PERMITTED - Final touches | Amend commits if user requests changes |
+| **CLEANUP** | ✅ PERMITTED - Infrastructure only | Remove worktrees, update todo.md/changelog.md |
+
+**IMPLEMENTATION State Clarification**:
+- Main agent MUST NOT create or modify source code files (.java, .ts, .py, etc.)
+- Main agent MAY update documentation files (task.md, status files)
+- ALL source code implementation delegated via Task tool to stakeholder agents
+
+**VALIDATION State Clarification**:
+- Main agent MAY fix minor issues discovered after agents complete
+- Examples: style violations, missing imports, compilation errors
+- Rationale: Efficiency - avoid re-launching agents for trivial fixes
+- Constraint: Only after all agents report COMPLETE status
+
+**VALIDATION State Exit Requirements** (CRITICAL):
+1. ✅ All quality gates pass (checkstyle, PMD, build)
+2. ✅ **All validation fixes COMMITTED to task branch** before proceeding
+3. ✅ Run final build verification on committed code
+4. ✅ Verify `git status` shows clean working directory (no uncommitted changes)
+
+**Rationale**: Uncommitted validation fixes will NOT be included in merge, causing build failures on main branch.
+
+**Verification Command**:
+```bash
+git status | grep "nothing to commit" || echo "ERROR: Uncommitted changes exist"
+```
+
+**Audit Integration**: If `/audit-session` detects uncommitted changes during VALIDATION state, this indicates a protocol violation (Check 0.3 equivalent). Phase 5 automatic fix application will commit these changes, but this represents a recovery action - the violation still occurred. Future prevention requires discipline during VALIDATION → REVIEW transition.
+
+**See Also**: `.claude/commands/audit-session.md` § Phase 5: Automatic Fix Application for audit-time detection and automatic remediation
+
+**REVIEW State Clarification**:
+- Main agent MAY implement fixes requested by stakeholder agents
+- Only for issues identified during agent review phase
+- Alternative: Re-delegate to appropriate stakeholder agent if changes are complex
+
+### Post-Implementation Issue Handling Decision Tree
+
+**CRITICAL TIMING REQUIREMENT**: This decision tree applies ONLY after ALL three conditions are met:
+1. ✅ ALL stakeholder agents have status.json with `{"status": "COMPLETE"}`
+2. ✅ ALL agents have merged their changes to task branch
+3. ✅ Lock file state updated to `"VALIDATION"`
+
+**Before these conditions**: Main agent MUST NOT fix anything - use Task tool to request agent fixes.
+**After these conditions**: Main agent MAY apply decision tree below for minor fixes.
+
+**After ALL agents report COMPLETE status, main agent discovers issues during VALIDATION:**
+
+```
+IF (issue_type == "compilation_error"):
+    IF (simple_fix like missing_import OR unused_variable):
+        ✅ Main agent fixes directly
+    ELSE:
+        ❌ Re-delegate to technical-architect agent
+
+ELSE IF (issue_type == "style_violation"):
+    IF (count <= 5 violations total across all files AND fixes are mechanical like whitespace/imports):
+        ✅ Main agent fixes directly
+    ELSE:
+        ❌ Re-delegate to style-auditor agent
+
+ELSE IF (issue_type == "test_failure"):
+    IF (simple_fix like assertion_update):
+        ✅ Main agent fixes directly
+    ELSE:
+        ❌ Re-delegate to code-tester agent
+
+ELSE IF (issue_type == "architecture_issue" OR "security_issue"):
+    ❌ ALWAYS re-delegate to appropriate domain expert
+```
+
+**Efficiency Rationale**: Re-launching agents for trivial fixes wastes 50-100 messages per round. Direct fixes for mechanical issues preserve protocol safety while maintaining efficiency.
+
+**Threshold Rationale**: The '5 violation' threshold represents message cost efficiency:
+- Auto-fixing 5 violations: ~2-3 tool calls = 3-5 messages
+- Agent delegation: ~50-100 messages per round
+- Breakeven: When manual fixing approaches agent launch cost
+
+**Counting Rule**: Total violations across ALL files, ALL types combined.
+
+**Clarification Examples**:
+- File A: 3 missing imports, File B: 2 whitespace → Total 5 → Main agent fixes ✅
+- File A: 3 missing imports, File B: 3 whitespace → Total 6 → Delegate to agent ❌
+- Files A-J: 50 violations, all same missing import statement → Treat as 1 pattern → Main agent fixes ✅
+
+**Override Rule**: If ALL violations are identical pattern (e.g., 10 missing imports, all same import statement), treat as mechanical regardless of count.
+
+**Safety Constraint**: Only apply after unanimous agent completion. During IMPLEMENTATION state, ALL fixes must go through agents.
 
 ## 🚨 TASK PROTOCOL SUMMARY {#task-protocol}
 
 **Full Protocol Details**: See [task-protocol-core.md](docs/project/task-protocol-core.md) and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for complete state machine and transition requirements.
 
-**State Machine**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
+**State Machine**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → AWAITING_USER_APPROVAL → COMPLETE → CLEANUP
 
 **Critical Requirements for All Tasks**:
 - Lock acquisition (see [§ Lock Ownership](#lock-ownership))
 - Worktree isolation (see [§ Worktree Isolation](#worktree-isolation))
+- **🚨 IMPLEMENTATION DELEGATION**: Main agent COORDINATES via Task tool - stakeholder agents IMPLEMENT in their worktrees (see [§ Implementation Role Boundaries](#implementation-role-boundaries))
 - Build verification before merge
-- Unanimous stakeholder approval (Phase 6/REVIEW)
-- Complete all phases before selecting new task
+- Unanimous stakeholder approval (REVIEW state)
+- Complete all states before selecting new task
 
 **Risk-Based Variants**:
-- **HIGH-RISK** (src/\*\*, pom.xml, security/\*\*): Full 7-phase protocol with all agents
+- **HIGH-RISK** (src/\*\*, pom.xml, security/\*\*): Full protocol with all agents
 - **MEDIUM-RISK** (tests, docs): Abbreviated protocol, domain-specific agents
 - **LOW-RISK** (general docs): Streamlined protocol, minimal validation
 
-**Post-Compaction Note**: This summary plus lock ownership and worktree isolation rules above are sufficient for basic protocol compliance when task-protocol files are not accessible.
+**Post-Compaction Note**: This summary plus lock ownership and worktree isolation rules provide EMERGENCY FALLBACK guidance when task-protocol files are not accessible. For complete protocol compliance, the full protocol files (task-protocol-core.md and task-protocol-operations.md) are REQUIRED and should be re-loaded as soon as possible.
 
 ## 🚨 RISK-BASED PROTOCOL SELECTION
 
 **PROTOCOL SELECTION BASED ON FILE RISK:**
-- **HIGH-RISK**: Full 7-phase protocol (src/\*\*, pom.xml, .github/\*\*, security/\*\*, CLAUDE.md)
+- **HIGH-RISK**: Full protocol (src/\*\*, pom.xml, .github/\*\*, security/\*\*, CLAUDE.md)
 - **MEDIUM-RISK**: Abbreviated protocol (test files, code-style docs, configuration)
 - **LOW-RISK**: Streamlined protocol (general docs, todo.md, README files)
 
@@ -215,21 +421,26 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 
 ## 🚨 AUTONOMOUS TASK COMPLETION REQUIREMENT
 
-**CRITICAL**: Once you begin a task (execute INIT state), you MUST complete ALL protocol states (0-8) autonomously, WITH TWO MANDATORY USER APPROVAL CHECKPOINTS.
+**CRITICAL**: Once you begin a task (execute INIT state), you MUST complete ALL protocol states autonomously, WITH MANDATORY USER APPROVAL CHECKPOINTS.
 
 **MANDATORY SINGLE-SESSION COMPLETION**:
 - Task execution occurs in ONE uninterrupted session
 - **EXPECTED USER APPROVAL CHECKPOINTS** (these are NOT violations):
-  1. **After SYNTHESIS**: Present implementation plan via ExitPlanMode, wait for user approval
-  2. **After REVIEW**: Present completed changes, wait for user approval to finalize
+  1. **PLAN APPROVAL**: After SYNTHESIS, user approves implementation plan before IMPLEMENTATION begins
+  2. **CHANGE REVIEW**: After REVIEW (unanimous approval), enter AWAITING_USER_APPROVAL state until user confirms
 - NO OTHER HANDOFFS to user mid-protocol
 - Complete all other states autonomously
 
 **When to Ask User**:
 ✅ **BEFORE** starting task: "Task X has ambiguous requirements. Clarify before I begin?"
-✅ **AFTER SYNTHESIS**: Present plan via ExitPlanMode, wait for approval before IMPLEMENTATION
+✅ **AFTER SYNTHESIS**: Present plan for approval before IMPLEMENTATION
 ✅ **AFTER REVIEW**: Present changes, wait for approval before COMPLETE
 ✅ **NEVER** at other points: Complete other states autonomously once INIT begins
+
+**Plan Presentation Format** (after SYNTHESIS):
+- Present implementation plan in clear, readable format (use markdown)
+- Include: architecture approach, files to modify, implementation sequence, testing strategy
+- Wait for explicit user approval before proceeding to IMPLEMENTATION
 
 **Only Stop Mid-Protocol If**:
 1. **Genuine External Blocker**: API unavailable, missing credentials, network failure
@@ -243,7 +454,7 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 **HOOK-ENFORCED REQUIREMENT**: The `enforce-user-approval.sh` hook will BLOCK transitions to COMPLETE state if user approval checkpoint is not satisfied.
 
 **Approval Marker System**:
-- **File**: `/workspace/branches/{task-name}/user-approval-obtained.flag`
+- **File**: `/workspace/tasks/{task-name}/user-approval-obtained.flag`
 - **Created**: When user provides explicit approval after REVIEW state
 - **Required**: Before COMPLETE state transition is allowed
 - **Removed**: Automatically during CLEANUP state
@@ -272,21 +483,37 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 ✅ "Yes, approved - you can merge this"
 ✅ "LGTM, proceed with cleanup"
 
-**Why This Matters**:
-- Checkpoints are quality gates, not permission gates
-- User reviews committed code, ensures nothing unexpected merged
-- Prevents accidental merges of unreviewed changes
+**Checkpoint Rejection Recovery**:
+
+**If user rejects PLAN APPROVAL** (after SYNTHESIS):
+1. Return to REQUIREMENTS state if requirements need clarification
+2. Return to SYNTHESIS if only plan needs revision
+3. Update task.md with revised requirements or plan
+4. Re-present for approval before IMPLEMENTATION
+
+**If user rejects CHANGE REVIEW** (during AWAITING_USER_APPROVAL):
+1. Identify specific issues or requested changes
+2. Return to IMPLEMENTATION if code changes needed
+3. Return to REVIEW after fixes for agent re-validation
+4. Only proceed to AWAITING_USER_APPROVAL after unanimous agent approval again
+
+**Lock state updates** for rejections:
+```bash
+# Return to appropriate state
+jq '.state = "SYNTHESIS"' /workspace/tasks/{task-name}/task.json > /tmp/lock.tmp
+mv /tmp/lock.tmp /workspace/tasks/{task-name}/task.json
+```
 
 ## 🚨 TASK UNAVAILABILITY HANDLING
 
-**CRITICAL**: When user requests "work on the next task" or similar, you MUST verify task availability before attempting to start any work.
+**CRITICAL**: When user requests "work on the next task" or similar, verify task availability before starting work.
 
 ### Mandatory Availability Check
 
 **BEFORE attempting to select or start ANY task:**
 1. Check todo.md for available tasks with `READY` status
 2. Verify task dependencies are met (check for `BLOCKED` status)
-3. Check `/workspace/locks/` for existing locks on available tasks
+3. Check `/workspace/tasks/{task-name}/task.json` for existing locks on available tasks
 4. Confirm at least ONE task is available AND accessible
 
 ### Required Response When No Tasks Available
@@ -338,56 +565,15 @@ I will stop here and await further instructions.
 ✅ Wait for user to resolve blockers or provide new instructions
 ✅ Check both BLOCKED status AND lock files AND dependencies
 
-### Example Scenario Template
-
-**All tasks blocked by dependencies:**
-```
-I cannot proceed with any tasks because:
-
-**Task Availability Analysis:**
-- Total tasks in todo.md: X
-- Tasks with READY status: Y
-- Tasks currently locked by other sessions: Z
-- Tasks blocked by dependencies: W
-
-**Specific Blockers:**
-1. [Task Name]: BLOCKED - Dependencies: [list dependencies]
-2. [Task Name]: LOCKED - Owned by session [session-id]
-...
-
-**Next Steps:**
-- Wait for [specific task] to complete, OR
-- Wait for locks held by other sessions to be released, OR
-- No tasks remain in todo.md (all work complete)
-
-I will stop here and await further instructions.
-```
-
-### Enforcement
-
-The behavior is MANDATORY and will be monitored through:
-- Hook validation of task selection patterns
-- Verification that blocked/locked tasks are never started
-- Confirmation that clear explanations are provided when stopping
-
 ## 🎯 COMPLETE STYLE VALIDATION
 
-**AUTOMATED GUIDANCE**: The `smart-doc-prompter.sh` hook automatically injects the 3-component checklist when style work is detected.
+**MANDATORY PROCESS**: Style guide consists of THREE components (checkstyle + PMD + manual rules)
 
-**MANDATORY PROCESS**: When user requests "apply style guide" or similar:
+**CRITICAL ERROR**: Checking only checkstyle when PMD/manual violations exist
 
-1. **NEVER assume checkstyle-only** - Style guide consists of THREE components
-2. **FOLLOW PROTOCOL**: task-protocol-core.md "Complete Style Validation Gate" pattern
-3. **MANUAL VERIFICATION**: Check docs/code-style/\*-claude.md detection patterns
-4. **ALL THREE REQUIRED**: checkstyle + PMD + manual rules must ALL pass
+**Automated Guidance**: `smart-doc-prompter.sh` hook injects 3-component checklist
 
-**CRITICAL ERROR PATTERN**: Checking only checkstyle and declaring "no violations found" when PMD/manual violations exist
-
-**AUTOMATED FIXING INTEGRATION**: When LineLength vs UnderutilizedLines conflicts are detected:
-1. **Use Java-Based Fixer**: `checkstyle/fixers` module implements AST-based consolidate-then-split strategy
-2. **Guidance Hook**: Automatically suggests fixer when Java files are modified
-3. **Comprehensive Testing**: Test suite validates fixing logic before application
-4. **Manual Verification**: Always verify automated fixes meet business logic requirements
+**Fixing Conflicts**: `checkstyle/fixers` module handles LineLength vs UnderutilizedLines conflicts
 
 ## 🎯 LONG-TERM SOLUTION PERSISTENCE
 
@@ -420,15 +606,9 @@ The behavior is MANDATORY and will be monitored through:
 
 ### 🚨 GIVING UP DETECTION PATTERNS
 
-**AUTOMATED ENFORCEMENT**: Runtime detection via `/workspace/.claude/hooks/detect-giving-up.sh`
+**Hook**: `detect-giving-up.sh` detects abandonment patterns
 
-**MANDATORY RESPONSE TO GIVING UP PATTERNS**:
-✅ IMMEDIATELY return to the original technical problem
-✅ Apply systematic debugging and decomposition approach
-✅ Continue working on the exact issue that triggered the pattern
-✅ Use incremental progress rather than abandoning the work
-✅ Exhaust all reasonable technical approaches before any scope modification
-✅ Document specific technical blockers if genuine limitations exist
+**Response**: Return to original problem, apply systematic debugging, exhaust approaches before scope modification
 
 ### 🧪 UNIT TEST DRIVEN BUG FIXING
 
@@ -453,8 +633,6 @@ The behavior is MANDATORY and will be monitored through:
 ✅ `testMethodReferenceInAssignment()` - for parser syntax bugs
 ✅ `testEnumConstantWithArguments()` - for enum parsing bugs
 ✅ `testGenericTypeVariableDeclaration()` - for generics bugs
-
-**INTEGRATION**: Unit tests become part of the development workflow, not separate documentation
 
 **REQUIRED JUSTIFICATION PROCESS** (when considering downgrade):
 1. **DOCUMENT EFFORT**: "Attempted optimal solution for X hours/attempts"
@@ -545,18 +723,21 @@ When evaluating whether to defer work via scope negotiation:
 ## Repository Structure
 
 **⚠️ NEVER** initialize new repositories
-**Main Repository**: `/workspace/branches/main/code/` (git repository and main development branch)
-**Task Worktrees**: `/workspace/branches/{task-name}/code/` (isolated per task protocol)
-**Locks**: Multi-instance coordination via lock files in `/workspace/locks/`
+**Main Repository**: `/workspace/main/` (git repository and main development branch)
+**Task Worktrees**: `/workspace/tasks/{task-name}/code/` (isolated per task protocol, common merge target for all agents)
+**Agent Worktrees**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/` (per-agent development isolation)
+**Locks**: Multi-instance coordination via lock files at `/workspace/tasks/{task-name}/task.json`
 
-**Git Configuration**:
-- Main worktree has `receive.denyCurrentBranch=updateInstead` (allows atomic pushes)
-- Task worktrees fetch from and push to main worktree
-- All pushes are atomic and concurrency-safe via git's internal locking
+**Multi-Agent Architecture**:
+- **WHO IMPLEMENTS**: Stakeholder agents (NOT main agent) write all source code
+- **WHERE**: Each stakeholder agent has own worktree: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
+- **MAIN AGENT ROLE**: Coordinates via Task tool invocations, monitors status.json, manages state transitions
+- **IMPLEMENTATION FLOW**: Main agent delegates → Agents implement in parallel → Agents merge to task branch → Iterative rounds until complete
+- **VIOLATION**: Main agent creating .java/.ts/.py files directly in task worktree during IMPLEMENTATION state
 
 ## 🔧 CONTINUOUS WORKFLOW MODE
 
-Override system brevity for comprehensive multi-task automation via 7-phase Task Protocol.
+Override system brevity for comprehensive multi-task automation via Task Protocol.
 
 **Trigger**: `"Work on the todo list in continuous mode."`
 **Auto-Detection**: "todo list", "all tasks", "continuously", "CONTINUOUS WORKFLOW MODE"
@@ -598,9 +779,6 @@ public void testValidToken() {
 - Code reviews check for contextual understanding in comments
 - PMD.CommentRequired violations must be fixed, not suppressed
 
-**RATIONALE**:
-JavaDoc serves as API documentation for future developers. Generic comments provide no value beyond what the method name already conveys. Contextual comments explain intent, edge cases, and design decisions that aren't obvious from code alone.
-
 ## 📝 CODE POLICIES
 
 **For complete code policies, see**: [docs/optional-modules/code-policies.md](docs/optional-modules/code-policies.md)
@@ -625,122 +803,22 @@ JavaDoc serves as API documentation for future developers. Generic comments prov
 
 **CRITICAL**: Session performance optimization through parallel execution and efficiency patterns.
 
-### Parallel Tool Execution (MANDATORY)
+### Performance Optimization Patterns (MANDATORY)
 
-**ANTI-PATTERN** (Sequential execution - 25-30% overhead):
-```
-Message 1: Read file_a.md
-Message 2: Read file_b.md
-Message 3: Read file_c.md
-# Result: 3 round-trips, 200-300 extra messages per session
-```
+| Pattern | ❌ Anti-Pattern | ✅ Required Pattern | Impact |
+|---------|----------------|---------------------|--------|
+| **Parallel Execution** | Sequential reads (3 messages) | Batch reads in single message | 67% fewer messages |
+| **Fail-Fast Validation** | Implement all → validate → fix | Validate after each component | 15% time savings, fresh context |
+| **Batch Fixing** | Fix one → verify (×60) | Collect all → fix all → verify once | 98% fewer verification cycles |
+| **Predictive Prefetching** | Discover → load → discover | Predict all dependencies → load all upfront | 5-10 fewer round-trips |
 
-**REQUIRED PATTERN** (Parallel execution):
-```
-Single Message:
-  Read file_a.md +
-  Read file_b.md +
-  Read file_c.md
-# Result: 1 round-trip, 67% reduction in messages
-```
+**Key Practices**:
+- **Parallel**: Launch independent tool calls in single message
+- **Fail-Fast**: `./mvnw compile checkstyle:check` after each component
+- **Batch**: Collect ALL agent feedback before fixing anything
+- **Prefetch**: Load protocol files + predicted sources in INIT phase
 
-**Parallel Execution Rules**:
-1. **ALWAYS** launch independent tool calls in single message
-2. **Read operations**: Batch all predictable file reads together
-3. **Agent invocations**: Launch all convergence agents in single message
-4. **Validation checks**: Run independent verifications in parallel
-5. **Only sequential** when operations have dependencies
-
-**Detection Hook**: `/workspace/.claude/hooks/detect-sequential-tools.sh` monitors for sequential patterns
-
-### Fail-Fast Validation (MANDATORY)
-
-**ANTI-PATTERN** (Late-stage failure discovery - 10-15% overhead):
-```
-1. Implement entire feature (2 hours)
-2. Run validation → 60 violations discovered
-3. Fix violations iteratively (1 hour)
-# Result: Rework with stale context, 100-150 extra messages
-```
-
-**REQUIRED PATTERN** (Incremental validation):
-```
-1. Implement Component A
-2. Validate immediately: ./mvnw compile checkstyle:check -pl :module
-3. Fix violations (context fresh)
-4. Commit before next component
-# Result: Issues caught early, minimal rework
-```
-
-**Validation Checkpoints**:
-- After each component implementation: `./mvnw compile`
-- After each module completion: `./mvnw checkstyle:check -pl :module`
-- After each test class: `./mvnw test -Dtest=ClassTest`
-- Before convergence: `./mvnw verify -Dmaven.build.cache.enabled=false`
-
-### Batch Fixing (MANDATORY)
-
-**ANTI-PATTERN** (Iterative fixing - 10-20% overhead):
-```
-Fix violation 1 → verify
-Fix violation 2 → verify
-... repeat 60 times ...
-# Result: 120 messages (60 fix + 60 verify cycles)
-```
-
-**REQUIRED PATTERN** (Batch fixing):
-```
-1. Collect ALL issues from ALL agents
-2. Fix all 60 violations together
-3. Single verification: ./mvnw verify
-# Result: 2 messages (98% reduction)
-```
-
-**Convergence Pattern**:
-- Invoke all agents in parallel (single message)
-- Collect ALL feedback before fixing anything
-- Group fixes by type (style, PMD, tests, etc.)
-- Apply all fixes of same type together
-- Single verification after all fixes applied
-
-### Predictive Prefetching (MANDATORY)
-
-**ANTI-PATTERN** (Reactive loading - 5-10% overhead):
-```
-Read pom.xml → discover dependency
-Read dependency.xml → discover source files
-Glob sources → discover tests
-# Result: 5-10 round-trips, 50-100 extra messages
-```
-
-**REQUIRED PATTERN** (Predictive prefetching):
-```
-# INIT phase - single message with ALL predicted resources:
-Read pom.xml +
-Read checkstyle.xml +
-Read pom.xml +
-Glob "src/main/java/**/*Pattern*.java" +
-Glob "src/test/java/**/*Test.java" +
-Read docs/project/architecture.md
-# Result: 1 round-trip, baseline efficiency
-```
-
-**Prefetching Strategy**:
-1. Analyze task description for predictable dependencies
-2. Load all protocol files in parallel (task-protocol-core.md + task-protocol-operations.md + todo.md)
-3. Load all predicted source files based on task name patterns
-4. Cache everything in session context during INIT
-
-### Performance Metrics
-
-**Expected Impact** (based on empirical analysis):
-- Parallel tool execution: 25-30% message reduction
-- Fail-fast validation: 10-15% message reduction
-- Batch fixing: 10-20% message reduction
-- Predictive prefetching: 5-10% message reduction
-- **Total potential**: 45-50% fewer messages per session
-
-**Target**: Match or exceed 1,381 messages (better session baseline) vs 2,369 messages (worse session baseline)
+**Detection Hook**: `/workspace/.claude/hooks/detect-sequential-tools.sh`
 
 ## Essential References
 
@@ -755,11 +833,19 @@ Read docs/project/architecture.md
 
 ### Report Types and Lifecycle
 
-**Stakeholder Reports** (`../` from code directory):
-- Temporary workflow artifacts for 7-phase task protocol
+**Task Requirements & Plans** (`task.md` at task root):
+- Location: `/workspace/tasks/{task-name}/task.md`
+- Contains all agent requirements and implementation plans
+- **Created**: During CLASSIFIED state (by main agent, BEFORE stakeholder agent invocation)
+- **Updated**: During REQUIREMENTS (agent reports added), SYNTHESIS (implementation plans added)
+- **Lifecycle**: Persists through entire task execution, removed during CLEANUP state
+
+**Stakeholder Reports** (at task root, one level up from code directory):
+- Temporary workflow artifacts for task protocol
 - Examples: `{task-name}-technical-architect-requirements.md`, `{task-name}-style-auditor-review.md`
-- **Lifecycle**: Created during task execution, cleaned up with worktree in Phase 7
+- **Lifecycle**: Created during task execution, cleaned up with worktrees in CLEANUP state
 - **Purpose**: Process documentation for protocol compliance
+- **Location**: `/workspace/tasks/{task-name}/` (task root, accessible to all agents)
 
 **Empirical Studies** (`docs/studies/{topic}.md`):
 - Temporary research cache for pending implementation tasks
@@ -773,7 +859,7 @@ Read docs/project/architecture.md
 ### Report File Naming Convention
 See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/project/task-protocol-core.md) and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for exact agent report naming conventions by phase.
 
-**Note**: The `../` path writes reports to `/workspace/branches/{task-name}/` (task root), not inside the code directory.
+**Note**: Reports are written to `/workspace/tasks/{task-name}/` (task root), not inside the code directory.
 
 ## 📝 RETROSPECTIVE DOCUMENTATION POLICY
 
@@ -785,12 +871,6 @@ See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/
 ❌ Debugging chronicles or problem-solving narratives
 ❌ Development process retrospectives or meta-documentation
 ❌ Fix documentation that duplicates information already in code/commits
-
-**RATIONALE**:
-- Code and commit messages are the primary record of changes
-- Git history provides the full development timeline
-- Retrospective documents create maintenance burden without user value
-- Documentation should serve future developers, not chronicle past problems
 
 **PERMITTED DOCUMENTATION** (only when explicitly required):
 ✅ Task explicitly requires documentation creation

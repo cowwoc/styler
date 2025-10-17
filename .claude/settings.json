@@ -82,6 +82,15 @@
         ]
       },
       {
+        "matcher": "(tool:Write || tool:Edit) && path:**/*.{java,ts,py,js,go,rs,cpp,c,h}",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/detect-main-agent-implementation.sh"
+          }
+        ]
+      },
+      {
         "hooks": [
           {
             "type": "command",
@@ -132,7 +141,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/branches/main/code/.claude/hooks/verify-task-archival.sh"
+            "command": "/workspace/main/.claude/hooks/verify-task-archival.sh"
           }
         ]
       }

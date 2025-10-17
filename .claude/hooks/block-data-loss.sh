@@ -63,11 +63,11 @@ handle_pre_tool_use()
 	    *"git init"*|*"git-init"*)
 	        echo "⛔ BLOCKED: git init not allowed at workspace root (see task-protocol.md line 931)" >&2
 	        echo "🚨 REPOSITORY CREATION BLOCKED: Per task-protocol.md, NEVER create new git repositories at workspace root" >&2
-	        echo "📍 EXISTING REPOSITORY: Use 'cd /workspace/branches/main/code' for git operations" >&2
-	        echo "📋 FOR COMMITS: Use the existing repository in /workspace/branches/main/code/" >&2
+	        echo "📍 EXISTING REPOSITORY: Use 'cd /workspace/main' for git operations" >&2
+	        echo "📋 FOR COMMITS: Use the existing repository in /workspace/main/" >&2
 	        echo "" >&2
 	        echo "🔧 CORRECT USAGE:" >&2
-	        echo "   cd /workspace/branches/main/code" >&2
+	        echo "   cd /workspace/main" >&2
 	        echo "   git status" >&2
 	        echo "   git add ." >&2
 	        echo "   git commit -m 'your message'" >&2
@@ -81,8 +81,8 @@ handle_pre_tool_use()
 	        echo "❌ **VIOLATION** - This operation would destroy the entire workspace" >&2
 	        exit 2
 	        ;;
-	    *"rm -rf /workspace/branches/main/code"*|*"rm /workspace/branches/main/code"*)
-	        echo "⛔ BLOCKED: Deletion of /workspace/branches/main/code is not allowed to prevent data loss" >&2
+	    *"rm -rf /workspace/main"*|*"rm /workspace/main"*)
+	        echo "⛔ BLOCKED: Deletion of /workspace/main is not allowed to prevent data loss" >&2
 	        echo "🚨 DATA PROTECTION: The code directory must not be deleted" >&2
 	        echo "❌ **VIOLATION** - This operation would destroy the entire project" >&2
 	        exit 2
@@ -93,7 +93,7 @@ handle_pre_tool_use()
 	        echo "❌ **VIOLATION** - This operation would destroy version control history" >&2
 	        exit 2
 	        ;;
-	    *"rm -rf /workspace/branches/main/code/.git"|*"rm /workspace/branches/main/code/.git"|*"rmdir /workspace/branches/main/code/.git"*)
+	    *"rm -rf /workspace/main/.git"|*"rm /workspace/main/.git"|*"rmdir /workspace/main/.git"*)
 	        echo "⛔ BLOCKED: Deletion of .git directory or its contents is not allowed to prevent data loss" >&2
 	        echo "🚨 REPOSITORY PROTECTION: The .git directory must not be modified or deleted" >&2
 	        echo "❌ **VIOLATION** - This operation would destroy version control history" >&2
@@ -145,11 +145,11 @@ handle_user_prompt_submit()
 	if echo "$USER_PROMPT_LOWER" | grep -q "git init\|initialize git\|create git repository\|create new repository\|create repository\|new git repo\|git-init"; then
 	    echo "⛔ PROMPT WARNING: git repository creation not allowed at workspace root (see task-protocol.md line 931)" >&2
 	    echo "🚨 REPOSITORY CREATION BLOCKED: Per task-protocol.md, NEVER create new git repositories at workspace root" >&2
-	    echo "📍 EXISTING REPOSITORY: Use 'cd /workspace/branches/main/code' for git operations" >&2
-	    echo "📋 FOR COMMITS: Use the existing repository in /workspace/branches/main/code/" >&2
+	    echo "📍 EXISTING REPOSITORY: Use 'cd /workspace/main' for git operations" >&2
+	    echo "📋 FOR COMMITS: Use the existing repository in /workspace/main/" >&2
 	    echo "" >&2
 	    echo "🔧 CORRECT USAGE:" >&2
-	    echo "   cd /workspace/branches/main/code" >&2
+	    echo "   cd /workspace/main" >&2
 	    echo "   git status" >&2
 	    echo "   git add ." >&2
 	    echo "   git commit -m 'your message'" >&2
@@ -178,10 +178,10 @@ handle_user_prompt_submit()
 
 	# Check if user is asking to commit and we're not in a git repository
 	if echo "$USER_PROMPT_LOWER" | grep -q "commit\|git.*add\|git.*status"; then
-	    if [ ! -d ".git" ] && [ ! -d "/workspace/branches/main/code/.git" ]; then
+	    if [ ! -d ".git" ] && [ ! -d "/workspace/main/.git" ]; then
 	        echo "📍 GIT OPERATIONS GUIDE:" >&2
-	        echo "   Repository location: /workspace/branches/main/code/" >&2
-	        echo "   Command: cd /workspace/branches/main/code && git status" >&2
+	        echo "   Repository location: /workspace/main/" >&2
+	        echo "   Command: cd /workspace/main && git status" >&2
 	        echo "🚨 REMINDER: Never use 'git init' - violates task-protocol.md" >&2
 	    fi
 	fi
