@@ -78,8 +78,8 @@ if [ "$LOCK_STATE" != "CLEANUP" ]; then
 fi
 
 # Determine base directory (handle both worktree and main execution)
-if [ -f "/workspace/branches/main/code/todo.md" ]; then
-    BASE_DIR="/workspace/branches/main/code"
+if [ -f "/workspace/main/todo.md" ]; then
+    BASE_DIR="/workspace/main"
 elif [ -f "todo.md" ]; then
     BASE_DIR="."
 else
