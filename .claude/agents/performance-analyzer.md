@@ -1,7 +1,7 @@
 ---
 name: performance-analyzer
 description: Use this agent when you need to analyze code for performance bottlenecks, memory issues, algorithmic efficiency, and optimization opportunities. This agent should be invoked after implementing new features, modifying computational algorithms, or when performance issues are suspected.
-tools: Grep, Glob, LS, Bash
+tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 model: sonnet-4-5
 color: orange
 ---

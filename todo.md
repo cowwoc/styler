@@ -88,7 +88,7 @@
   - **Scope**: Complete API module with interfaces for formatting rules, transformation context, violation reporting, and configuration management
   - **Module Structure**:
     - Module name: `styler-formatter` (standalone module)
-    - Location: `/workspace/branches/main/code/formatter/`
+    - Location: `/workspace/main/formatter/`
     - Artifact ID: `styler-formatter`
     - Module descriptor: `module io.github.cowwoc.styler.formatter { exports io.github.cowwoc.styler.formatter; }`
     - Package: `io.github.cowwoc.styler.formatter`

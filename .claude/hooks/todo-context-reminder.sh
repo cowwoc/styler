@@ -15,7 +15,7 @@ else
         TODO_PATH="$(pwd)/todo.md"
     else
         # We're outside branch structure - default to main branch
-        TODO_PATH="/workspace/branches/main/code/todo.md"
+        TODO_PATH="/workspace/main/todo.md"
     fi
 fi
 

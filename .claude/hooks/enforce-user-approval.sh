@@ -91,7 +91,7 @@ jq '.state = "SYNTHESIS_AWAITING_APPROVAL"' /workspace/locks/implement-security-
 
 **CORRECT WORKFLOW:**
 1. Complete SYNTHESIS (consolidate requirements into plan)
-2. Present implementation plan to user (text or ExitPlanMode)
+2. Present implementation plan to user in markdown format
 3. **Update lock file state to SYNTHESIS_AWAITING_APPROVAL**
 4. **STOP and wait for user response**
 5. User approves → Update state to CONTEXT and proceed
