@@ -181,7 +181,9 @@ grep -n -A 1 '</dependency>' pom.xml | grep -B 1 '<dependency>'
 # 4. Verify spacing: no blanks within groups, exactly one blank between groups
 ```
 
-**Rationale**: Consistent dependency organization improves POM readability, reduces merge conflicts, and makes dependency audits easier. Grouping by type (project vs external) and scope (compile vs test) creates logical sections that developers can quickly scan and understand.
+**Rationale**: Consistent dependency organization improves POM readability, reduces merge conflicts, and makes
+dependency audits easier. Grouping by type (project vs external) and scope (compile vs test) creates logical
+sections that developers can quickly scan and understand.
 
 ## Optimized Detection Commands
 

@@ -68,7 +68,8 @@
 
 **Files Modified**:
 - pom.xml: Added styler-security module to reactor build
-- docs/project/delegated-implementation-protocol.md: Strengthened failure recovery requirements (mandatory retry before manual fallback)
+-  docs/project/delegated-implementation-protocol.md: Strengthened failure recovery requirements (mandatory
+  retry before manual fallback)
 
 **Quality Gates**:
 - ✅ BUILD SUCCESS
@@ -113,7 +114,8 @@
 
 **Core Components**:
 - **Parser Module**: Lexer with 30+ token types, recursive descent parser
-- **AST Core Module**: NodeArena (index-based storage), NodeIndex (value-class references), NodeType (50+ types), SecurityConfig (centralized limits)
+-  **AST Core Module**: NodeArena (index-based storage), NodeIndex (value-class references), NodeType (50+
+  types), SecurityConfig (centralized limits)
 
 **Security Controls** (all enforced and tested):
 1. SEC-001: File Size Limit - 10MB maximum source file
@@ -135,14 +137,16 @@
 - parser/pom.xml, ast/pom.xml, ast/core/pom.xml
 - parser/src/main/java: Lexer.java, Parser.java, Token.java, TokenType.java
 - ast/core/src/main/java: NodeArena.java, NodeIndex.java, NodeType.java, SecurityConfig.java
-- parser/src/test/java: 8 test classes (ClassParserTest, IntegrationTest, LexerTest, ModernJavaFeaturesTest, ParserTest, SecurityTest, StatementParserTest, TokenTest)
+-  parser/src/test/java: 8 test classes (ClassParserTest, IntegrationTest, LexerTest, ModernJavaFeaturesTest,
+  ParserTest, SecurityTest, StatementParserTest, TokenTest)
 - ast/core/src/test/java: NodeArenaTest.java, NodeIndexTest.java
 - .claude/hooks: detect-generic-javadoc.sh, reset-javadoc-warning.sh
 
 **Files Modified**:
 - pom.xml: Added ast and parser modules
 - CLAUDE.md: Added JavaDoc manual documentation requirement
-- docs/code-style/java-claude.md: Added 3 new style rules (requireThat(), no redundant defaults, switch for OR chains)
+-  docs/code-style/java-claude.md: Added 3 new style rules (requireThat(), no redundant defaults, switch for
+  OR chains)
 - docs/code-style/java-human.md: Added human-readable explanations for new rules
 - .claude/hooks: Updated detect-meta-commentary.sh and enforce-user-approval.sh
 
@@ -295,7 +299,8 @@
 
 **Solution Implemented**:
 - Configured top-level Maven POM for multi-module build structure
-- Centralized dependency management for all future modules (Checkstyle 11.0.1, PMD 7.17.0, TestNG 7.8.0, Requirements-Java 12.0, Maven plugin APIs)
+-  Centralized dependency management for all future modules (Checkstyle 11.0.1, PMD 7.17.0, TestNG 7.8.0,
+  Requirements-Java 12.0, Maven plugin APIs)
 - Standardized plugin versions and configuration
 - Enabled build optimization with Maven build cache
 - Defined ${project.root.basedir} property for config file paths to support sub-module references

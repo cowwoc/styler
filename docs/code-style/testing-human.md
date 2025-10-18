@@ -2,7 +2,8 @@
 
 🧪 **Testing patterns, JPMS-compliant structure, and test organization standards**
 
-This document contains testing conventions, test structure requirements, and testing patterns for Java projects in Styler Java Code Formatter.
+This document contains testing conventions, test structure requirements, and testing patterns for Java
+projects in Styler Java Code Formatter.
 
 ---
 
@@ -438,7 +439,8 @@ Before submitting any test class, verify:
 
 ### Red-Blue Team Testing Approach
 
-**CRITICAL PRINCIPLE**: Prioritize **business risk coverage** over metric-driven coverage targets (e.g., "95% line coverage"). The goal is **bug prevention effectiveness**, not coverage percentages.
+**CRITICAL PRINCIPLE**: Prioritize **business risk coverage** over metric-driven coverage targets (e.g., "95%
+line coverage"). The goal is **bug prevention effectiveness**, not coverage percentages.
 
 **Test Priority Hierarchy** (inspired by security Red-Blue team methodology):
 
@@ -654,6 +656,9 @@ public void discoverConfigWithGitBoundaryStopsAtRepositoryRoot()
   - [`testing-claude.md`](testing-claude.md) - Testing validation patterns for Claude Code
 
 - **Project Context**:
-  - [`../../project/build-system.md`](../../project/build-system.md) - Maven dependency management and build configuration
+  -  [`../../project/build-system.md`](../../project/build-system.md) - Maven dependency management and build
+    configuration
   
-**Business Context**: These testing conventions ensure that Java parser and formatter components are reliable, maintainable, and can be validated efficiently during the rapid iteration cycles required for language feature support and performance optimization.
+**Business Context**: These testing conventions ensure that Java parser and formatter components are reliable,
+maintainable, and can be validated efficiently during the rapid iteration cycles required for language feature
+support and performance optimization.

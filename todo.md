@@ -21,7 +21,8 @@
 - ✅ A3: CLI Arguments (cli module)
 - ✅ A4: Security Framework (security module)
 
-**Note**: A0 (styler-formatter) was incorrectly marked complete in previous versions but was never implemented. Task has been restored to todo.md with full specification. All B1 tasks depend on A0.
+**Note**: A0 (styler-formatter) was incorrectly marked complete in previous versions but was never
+implemented. Task has been restored to todo.md with full specification. All B1 tasks depend on A0.
 
 ---
 
@@ -72,20 +73,27 @@
 
 ## Phase A: Foundation (Zero External Dependencies)
 
-**Goal**: Build core parsing, configuration, and security infrastructure without depending on formatters or AI integration.
+**Goal**: Build core parsing, configuration, and security infrastructure without depending on formatters or AI
+integration.
 
-**Status**: A1-A4 complete. A0 (styler-formatter) was never implemented - MUST be completed before any Phase B work can begin.
+**Status**: A1-A4 complete. A0 (styler-formatter) was never implemented - MUST be completed before any Phase B
+work can begin.
 
 **Required Action**: Implement A0 (styler-formatter module) to unblock Phase B.
 
 ### A0. Formatter API Module
-- [ ] **READY:** `implement-formatter-api` - Create styler-formatter Maven module with FormattingRule interfaces
-  - **Dependencies**: A1 ✅ COMPLETE (parser - AST nodes for transformation), A4 ✅ COMPLETE (security - validation framework)
-  - **Blocks**: B1 (both line length and import formatters implement FormattingRule), B2 (pipeline applies formatting rules)
+-  [ ] **READY:** `implement-formatter-api` - Create styler-formatter Maven module with FormattingRule
+  interfaces
+  -  **Dependencies**: A1 ✅ COMPLETE (parser - AST nodes for transformation), A4 ✅ COMPLETE (security -
+    validation framework)
+  -  **Blocks**: B1 (both line length and import formatters implement FormattingRule), B2 (pipeline applies
+    formatting rules)
   - **Parallelizable With**: None (only remaining Phase A task)
   - **Estimated Effort**: 1-2 days
-  - **Purpose**: Define the core API for formatting rules that will be implemented in Phase B, providing contracts for rule implementation, violation reporting, and AST transformation
-  - **Scope**: Complete API module with interfaces for formatting rules, transformation context, violation reporting, and configuration management
+  -  **Purpose**: Define the core API for formatting rules that will be implemented in Phase B, providing
+    contracts for rule implementation, violation reporting, and AST transformation
+  -  **Scope**: Complete API module with interfaces for formatting rules, transformation context, violation
+    reporting, and configuration management
   - **Module Structure**:
     - Module name: `styler-formatter` (standalone module)
     - Location: `/workspace/main/formatter/`
@@ -94,8 +102,10 @@
     - Package: `io.github.cowwoc.styler.formatter`
   - **Core Interfaces**:
     - `FormattingRule`: Base interface for all formatting rules with `analyze()` and `format()` methods
-    - `TransformationContext`: Context API providing AST access, file metadata, and configuration during rule application
-    - `FormattingViolation`: Immutable violation representation with location, severity, rule ID, message, and suggested fixes
+    -  `TransformationContext`: Context API providing AST access, file metadata, and configuration during rule
+      application
+    -  `FormattingViolation`: Immutable violation representation with location, severity, rule ID, message,
+      and suggested fixes
     - `FormattingConfiguration`: Base interface for rule-specific configuration with validation
     - `ViolationSeverity`: Enum for severity levels (ERROR, WARNING, INFO)
     - `FixStrategy`: Interface for suggested fix strategies with applicability checks
@@ -110,7 +120,8 @@
     - Integrates with A4 (security module) for validation and resource constraints
     - Provides foundation for B1 formatters (line length, import organization)
     - Used by B2 pipeline to apply formatting rules in sequence
-  - **Quality**: Proper JPMS module, comprehensive Javadoc on all public APIs, immutable types, thread-safe contracts, zero violations
+  -  **Quality**: Proper JPMS module, comprehensive Javadoc on all public APIs, immutable types, thread-safe
+    contracts, zero violations
   - **Deliverables**:
     - Complete module with all interfaces
     - module-info.java with proper exports
@@ -122,11 +133,13 @@
 
 ## Phase B: AI Integration (Vertical Slice)
 
-**Goal**: Build complete end-to-end pipeline from CLI → parse → format → AI feedback output. This phase delivers working AI agent integration.
+**Goal**: Build complete end-to-end pipeline from CLI → parse → format → AI feedback output. This phase
+delivers working AI agent integration.
 
 **Status**: BLOCKED - All Phase B tasks require A0 (styler-formatter) which doesn't exist.
 
-**Coordination**: Once A0 is implemented, B1 tasks can run in parallel (2 instances). After B1 completes, B2-B5 have sequential dependencies.
+**Coordination**: Once A0 is implemented, B1 tasks can run in parallel (2 instances). After B1 completes,
+B2-B5 have sequential dependencies.
 
 ### B1. Minimal Formatting Rules (MVP)
 - [ ] **BLOCKED:** `implement-line-length-formatter` - Line length violations and auto-fixing
@@ -163,7 +176,8 @@
 
 ### B2. File Processing Pipeline
 - [ ] **BLOCKED:** `implement-file-processing-pipeline` - Orchestrate parse → format → output
-  - **Dependencies**: A1 ✅ COMPLETE (parser), A4 ✅ COMPLETE (security), B1 (both formatters: line length + imports)
+  -  **Dependencies**: A1 ✅ COMPLETE (parser), A4 ✅ COMPLETE (security), B1 (both formatters: line length +
+    imports)
   - **Blocks**: B3 (AI output), B4 (error catalog), B5 (CLI integration), all of Phase C
   - **Parallelizable With**: None (depends on B1, blocks B3/B4/B5)
   - **Estimated Effort**: 3-4 days
@@ -229,7 +243,8 @@
 
 ### B5. CLI Integration
 - [ ] **BLOCKED:** `implement-cli-formatter-integration` - Wire CLI → pipeline → output
-  - **Dependencies**: A2 ✅ COMPLETE (config), A3 ✅ COMPLETE (CLI args), B2 (pipeline), B3 (AI output), B4 (errors)
+  -  **Dependencies**: A2 ✅ COMPLETE (config), A3 ✅ COMPLETE (CLI args), B2 (pipeline), B3 (AI output), B4
+    (errors)
   - **Blocks**: All of Phase C (C1-C6 need working CLI)
   - **Parallelizable With**: None (depends on all other Phase B tasks)
   - **Estimated Effort**: 2-3 days
@@ -241,7 +256,8 @@
     - OutputHandler: Format and display results
     - ErrorReporter: Clear error messages with file locations (uses B4 error catalog)
   - **Flow**: CLI args → config loading → pipeline execution → structured output
-  - **Integration**: Connects all Phase A and Phase B components (A3 CLI args, B2 pipeline, B3 output, B4 errors)
+  -  **Integration**: Connects all Phase A and Phase B components (A3 CLI args, B2 pipeline, B3 output, B4
+    errors)
   - **Quality**: Clear error messages, proper exit codes, progress reporting
   - **Estimated Effort**: 2-3 days
 
@@ -249,7 +265,8 @@
 
 ## Phase C: Scale & Real-World Testing
 
-**Goal**: Scale to large codebases with parallel processing, build to 5 formatting rules for realistic benchmarking, and validate with Maven plugin integration.
+**Goal**: Scale to large codebases with parallel processing, build to 5 formatting rules for realistic
+benchmarking, and validate with Maven plugin integration.
 
 ### C1. File Discovery
 - [ ] **BLOCKED:** `implement-file-discovery` - Recursive Java file discovery with filtering
@@ -289,7 +306,8 @@
 - [ ] **BLOCKED:** `implement-brace-formatting` - Brace style formatting (K&R, Allman, GNU)
   - **Dependencies**: B1 (formatter infrastructure), A1 ✅ COMPLETE (AST nodes)
   - **Blocks**: C4 (concurrency benchmark needs 5 rules total)
-  - **Parallelizable With**: C1 (file discovery), C2 (parallel processing), other C3 tasks (whitespace, indentation)
+  -  **Parallelizable With**: C1 (file discovery), C2 (parallel processing), other C3 tasks (whitespace,
+    indentation)
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Enforce consistent brace placement across Java constructs
   - **Scope**: Configurable brace styles (K&R, Allman, GNU) with construct-specific overrides
@@ -305,7 +323,8 @@
 - [ ] **BLOCKED:** `implement-whitespace-formatting` - Whitespace around operators and keywords
   - **Dependencies**: B1 (formatter infrastructure), A1 ✅ COMPLETE (AST nodes)
   - **Blocks**: C4 (concurrency benchmark needs 5 rules total)
-  - **Parallelizable With**: C1 (file discovery), C2 (parallel processing), other C3 tasks (brace, indentation)
+  -  **Parallelizable With**: C1 (file discovery), C2 (parallel processing), other C3 tasks (brace,
+    indentation)
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Ensure consistent spacing around operators, keywords, punctuation
   - **Scope**: Configurable whitespace rules for operators, keywords, commas, semicolons
@@ -336,12 +355,14 @@
 
 ### C4. Concurrency Model Benchmark
 - [ ] **BLOCKED:** `benchmark-concurrency-models` - Compare thread-per-file vs thread-per-block parallelism
-  - **Dependencies**: C2 (thread-per-file baseline), all C3 tasks (brace + whitespace + indentation = 3 rules), B1 (line length + imports = 2 rules), total 5 rules
+  -  **Dependencies**: C2 (thread-per-file baseline), all C3 tasks (brace + whitespace + indentation = 3
+    rules), B1 (line length + imports = 2 rules), total 5 rules
   - **Blocks**: C5 (Maven plugin should use optimal concurrency model if thread-per-block wins)
   - **Parallelizable With**: None (needs C2 and all C3 tasks complete first)
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Determine optimal concurrency strategy for styler through empirical testing
-  - **Scope**: Benchmark thread-per-file (baseline from C2) vs thread-per-block concurrency with 5 formatting rules
+  -  **Scope**: Benchmark thread-per-file (baseline from C2) vs thread-per-block concurrency with 5 formatting
+    rules
   - **Prerequisites**: 5 formatting rules implemented (B1: 2 rules, C3: 3 rules)
   - **Comparison Approaches**:
     - **Thread-per-file (baseline)**: One virtual thread per file (current C2 implementation)
@@ -366,7 +387,8 @@
 ### C5. Maven Plugin (Early Real-World Testing)
 - [ ] **BLOCKED:** `create-maven-plugin` - Maven plugin for build system integration
   - **Dependencies**: C1 (file discovery), C2 (parallel processing), B5 (CLI integration)
-  - **Blocks**: C6 (performance benchmarking uses Maven plugin), D1 (regression tests use Maven plugin), D2 (CI/CD uses Maven plugin)
+  -  **Blocks**: C6 (performance benchmarking uses Maven plugin), D1 (regression tests use Maven plugin), D2
+    (CI/CD uses Maven plugin)
   - **Parallelizable With**: C4 (concurrency benchmark can run independently)
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Integrate styler into Maven builds for automated formatting
@@ -383,8 +405,10 @@
 
 ### C6. Performance Benchmarking
 - [ ] **BLOCKED:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
-  - **Dependencies**: C5 (Maven plugin for running benchmarks), C2 (parallel processing), all formatters (B1 + C3)
-  - **Blocks**: D1 (testing uses benchmarks for performance regression detection), D2 (CI/CD runs benchmark comparisons)
+  -  **Dependencies**: C5 (Maven plugin for running benchmarks), C2 (parallel processing), all formatters (B1
+    + C3)
+  -  **Blocks**: D1 (testing uses benchmarks for performance regression detection), D2 (CI/CD runs benchmark
+    comparisons)
   - **Parallelizable With**: C4 (concurrency benchmark is separate empirical study)
   - **Estimated Effort**: 3-4 days
   - **Purpose**: Measure and validate parsing throughput, memory usage, scalability
@@ -432,7 +456,8 @@
 
 ### D2. CI/CD Pipeline
 - [ ] **BLOCKED:** `setup-github-actions-ci` - Automated testing and release pipeline
-  - **Dependencies**: D1 (all tests: regression + CLI integration), C6 (performance benchmarks), C5 (Maven plugin)
+  -  **Dependencies**: D1 (all tests: regression + CLI integration), C6 (performance benchmarks), C5 (Maven
+    plugin)
   - **Blocks**: Production releases
   - **Parallelizable With**: D3 (documentation)
   - **Estimated Effort**: 1-2 days
@@ -476,7 +501,8 @@
 
 ## Deferred Features (Out of MVP Scope)
 
-**Rationale**: These features are not essential for the MVP AI-integrated formatter. Implement only when demand is proven.
+**Rationale**: These features are not essential for the MVP AI-integrated formatter. Implement only when
+demand is proven.
 
 ### Advanced Features (Implement When Demand Exists)
 - **Gradle Plugin** - Build after Maven plugin proves valuable

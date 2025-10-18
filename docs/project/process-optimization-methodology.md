@@ -30,7 +30,8 @@ Each check is numbered for TodoWrite tracking. Execute ALL checks before reporti
 4. Use ACTUAL state for all subsequent violation detection
 
 **Expected States:**
-- INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS, IMPLEMENTATION, VALIDATION, REVIEW, AWAITING_USER_APPROVAL, COMPLETE, CLEANUP
+-  INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS, IMPLEMENTATION, VALIDATION, REVIEW, AWAITING_USER_APPROVAL,
+  COMPLETE, CLEANUP
 
 **CRITICAL RULE**: TodoWrite state does NOT override task.json state
 - Main agent may update TodoWrite to say "VALIDATION"
@@ -43,7 +44,8 @@ Each check is numbered for TodoWrite tracking. Execute ALL checks before reporti
 
 ### Check 0.2: Main Agent Tool Usage in IMPLEMENTATION State (MANDATORY)
 
-**Pattern:** If task.json state == "IMPLEMENTATION", detect if main agent used Write/Edit tools on source files
+**Pattern:** If task.json state == "IMPLEMENTATION", detect if main agent used Write/Edit tools on source
+files
 
 **CRITICAL**: This is a PROTOCOL VIOLATION, not a "workflow variation"
 
@@ -115,7 +117,8 @@ CRITICAL VIOLATION DETECTED:
 - Git history shows commits directly to task branch before agent coordination
 - Task.md contains main agent implementation details instead of coordination logs
 
-**Fix:** If detected in IMPLEMENTATION state, recommend returning to start of IMPLEMENTATION with proper agent coordination
+**Fix:** If detected in IMPLEMENTATION state, recommend returning to start of IMPLEMENTATION with proper agent
+coordination
 
 ---
 
@@ -439,7 +442,8 @@ git log --oneline task-branch shows:
 
 **Expected Pattern:**
 - "I will coordinate with stakeholder agents..."
-- "Launching technical-architect, code-tester, style-auditor, build-validator, code-quality-auditor in parallel..."
+-  "Launching technical-architect, code-tester, style-auditor, build-validator, code-quality-auditor in
+  parallel..."
 - Task tool invocations in first IMPLEMENTATION message
 
 **Fix:** Interrupt immediately, correct approach before implementation begins
