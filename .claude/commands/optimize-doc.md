@@ -1,5 +1,7 @@
 ---
-description: Optimize documentation for conciseness and clarity by strengthening vague instructions and removing redundancy
+description: >
+  Optimize documentation for conciseness and clarity by strengthening vague instructions and removing
+  redundancy
 ---
 
 # Optimize Documentation Command
@@ -15,7 +17,9 @@ Make documentation more concise and clearer without introducing vagueness or mis
 2. **Increase conciseness**: Remove redundancy while preserving all necessary information
 3. **Preserve clarity AND meaning**: Never sacrifice understanding or semantic accuracy for brevity
 
-**Critical Constraint**: Instructions (text + examples) should only be updated if the new version retains BOTH the same meaning AND the same clarity as the old version. If optimization reduces clarity or changes meaning, reject the change.
+**Critical Constraint**: Instructions (text + examples) should only be updated if the new version retains BOTH
+the same meaning AND the same clarity as the old version. If optimization reduces clarity or changes meaning,
+reject the change.
 
 **Idempotent Design**: This command can be run multiple times on the same document:
 - **First pass**: Strengthens vague instructions, removes obvious redundancy
@@ -97,7 +101,8 @@ Can instruction be followed correctly without examples?
 
 ## 🚨 EXECUTION-CRITICAL CONTENT (NEVER CONDENSE)
 
-The following content types are necessary for CORRECT EXECUTION - preserve even if instructions are technically clear:
+The following content types are necessary for CORRECT EXECUTION - preserve even if instructions are
+technically clear:
 
 ### 1. **Concrete Examples Defining "Correct"**
 - Examples showing EXACT correct vs incorrect patterns when instruction uses abstract terms
@@ -145,7 +150,8 @@ vim changelog.md  # ADD under ## 2025-10-08
 # Compare counts - should match unless you explicitly intended to drop commits
 ```
 
-**REMOVE comments explaining WHY** (e.g., "This prevents data loss because..." is educational, not operational).
+**REMOVE comments explaining WHY** (e.g., "This prevents data loss because..." is educational, not
+operational).
 
 ### 4. **Disambiguation Examples**
 - Multiple examples showing boundary between prohibited/permitted when rule uses subjective terms
@@ -180,7 +186,8 @@ Generic praise without extracting a reusable decision rule.
 - ✅ **KEEP**: "→ Claude doesn't need to know why" (generalizes when to remove content)
 - ❌ **REMOVE**: "This is important because it prevents errors" (explains WHY, not WHAT)
 
-**Test**: If removed, would Claude lose the ability to apply this reasoning to NEW examples not in the document? If YES → KEEP (it's pattern extraction, not commentary).
+**Test**: If removed, would Claude lose the ability to apply this reasoning to NEW examples not in the
+document? If YES → KEEP (it's pattern extraction, not commentary).
 
 ## 🚨 REFERENCE-BASED CONDENSING RULES
 

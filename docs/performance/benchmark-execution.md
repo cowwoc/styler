@@ -2,9 +2,12 @@
 
 ## Overview
 
-The Styler project includes JMH (Java Microbenchmark Harness) benchmark infrastructure for measuring system performance.
+The Styler project includes JMH (Java Microbenchmark Harness) benchmark infrastructure for measuring system
+performance.
 
-**Current Status**: The `benchmark/system` module provides an **architectural template** for JMH benchmarks. The `ParsingThroughputBenchmark` class demonstrates the structure and configuration but requires Styler parser integration to produce meaningful measurements.
+**Current Status**: The `benchmark/system` module provides an **architectural template** for JMH benchmarks.
+The `ParsingThroughputBenchmark` class demonstrates the structure and configuration but requires Styler parser
+integration to produce meaningful measurements.
 
 ## Running Benchmarks
 

@@ -31,15 +31,22 @@ This directory contains all project documentation organized hierarchically for e
 - **[code-style-human.md](code-style-human.md)** - Main human-readable style guide with navigation
 
 ### By Category
-- **Common Rules**: [code-style/common-human.md](code-style/common-human.md) (human) / [code-style/common-claude.md](code-style/common-claude.md) (Claude)
-- **Java**: [code-style/java-human.md](code-style/java-human.md) (human) / [code-style/java-claude.md](code-style/java-claude.md) (Claude)
-- **TypeScript**: [code-style/typescript-human.md](code-style/typescript-human.md) (human) / [code-style/typescript-claude.md](code-style/typescript-claude.md) (Claude)
+-  **Common Rules**: [code-style/common-human.md](code-style/common-human.md) (human) /
+  [code-style/common-claude.md](code-style/common-claude.md) (Claude)
+-  **Java**: [code-style/java-human.md](code-style/java-human.md) (human) /
+  [code-style/java-claude.md](code-style/java-claude.md) (Claude)
+-  **TypeScript**: [code-style/typescript-human.md](code-style/typescript-human.md) (human) /
+  [code-style/typescript-claude.md](code-style/typescript-claude.md) (Claude)
 
 ### By Task
-- **TypeScript development** → [code-style/typescript-human.md](code-style/typescript-human.md) (human) / [code-style/typescript-claude.md](code-style/typescript-claude.md) (Claude)
-- **Java development** → [code-style/java-human.md](code-style/java-human.md) (human) / [code-style/java-claude.md](code-style/java-claude.md) (Claude)
-- **Common formatting & validation** → [code-style/common-human.md](code-style/common-human.md) (human) / [code-style/common-claude.md](code-style/common-claude.md) (Claude)
+-  **TypeScript development** → [code-style/typescript-human.md](code-style/typescript-human.md) (human) /
+  [code-style/typescript-claude.md](code-style/typescript-claude.md) (Claude)
+-  **Java development** → [code-style/java-human.md](code-style/java-human.md) (human) /
+  [code-style/java-claude.md](code-style/java-claude.md) (Claude)
+-  **Common formatting & validation** → [code-style/common-human.md](code-style/common-human.md) (human) /
+  [code-style/common-claude.md](code-style/common-claude.md) (Claude)
 
 ## 🔗 Cross-References
 
-All documents contain "See also" sections linking to related guidelines using relative paths within this hierarchy.
+All documents contain "See also" sections linking to related guidelines using relative paths within this
+hierarchy.

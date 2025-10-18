@@ -1,28 +1,43 @@
 # Claude Code Configuration Guide
 
 > **Version:** 2.0 | **Last Updated:** 2025-10-16
-> **Related Documents:** [task-protocol-core.md](docs/project/task-protocol-core.md) • [task-protocol-operations.md](docs/project/task-protocol-operations.md)
+> **Related Documents:** [task-protocol-core.md](docs/project/task-protocol-core.md) •
+[task-protocol-operations.md](docs/project/task-protocol-operations.md)
 
 Styler Java Code Formatter project configuration and workflow guidance.
 
 ## 🚨 MANDATORY COMPLIANCE
 
-**CRITICAL WORKFLOW**: Task Protocol ([core](docs/project/task-protocol-core.md) + [operations](docs/project/task-protocol-operations.md)) - MANDATORY risk-based protocol selection - Apply appropriate workflow based on file risk classification.
-**CRITICAL LOCK OWNERSHIP**: See [§ Lock Ownership & Task Recovery](#-lock-ownership--task-recovery) for complete lock file requirements and ownership rules.
-**CRITICAL WORKTREE ISOLATION**: See [§ Worktree Isolation & Cleanup](#-worktree-isolation--cleanup) for complete worktree management requirements.
-**CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See [§ Complete Style Validation](#complete-style-validation) and task-protocol-core.md
-**CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY prioritization of optimal solutions over expedient alternatives.
-**CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL protocol states are finished (INIT through CLEANUP). Implementation completion does NOT equal task completion. Only mark tasks as complete after CLEANUP state finalization.
-**IMPLEMENTATION COMPLETION TRIGGER**: When you have finished implementation work (code changes, fixes, features complete), you MUST complete ALL remaining protocol phases before selecting a new task. The SessionStart hook indicates if you own an active task requiring completion.
+**CRITICAL WORKFLOW**: Task Protocol ([core](docs/project/task-protocol-core.md) +
+[operations](docs/project/task-protocol-operations.md)) - MANDATORY risk-based protocol selection - Apply
+appropriate workflow based on file risk classification.
+**CRITICAL LOCK OWNERSHIP**: See [§ Lock Ownership & Task Recovery](#-lock-ownership--task-recovery) for
+complete lock file requirements and ownership rules.
+**CRITICAL WORKTREE ISOLATION**: See [§ Worktree Isolation & Cleanup](#-worktree-isolation--cleanup) for
+complete worktree management requirements.
+**CRITICAL STYLE**: Complete style validation = checkstyle + PMD + manual rules - See [§ Complete Style
+Validation](#complete-style-validation) and task-protocol-core.md
+**CRITICAL PERSISTENCE**: [Long-term solution persistence](#-long-term-solution-persistence) - MANDATORY
+prioritization of optimal solutions over expedient alternatives.
+**CRITICAL TASK COMPLETION**: Tasks are NOT complete until ALL protocol states are finished (INIT through
+CLEANUP). Implementation completion does NOT equal task completion. Only mark tasks as complete after CLEANUP
+state finalization.
+**IMPLEMENTATION COMPLETION TRIGGER**: When you have finished implementation work (code changes, fixes,
+features complete), you MUST complete ALL remaining protocol phases before selecting a new task. The
+SessionStart hook indicates if you own an active task requiring completion.
 
-**PHASE COMPLETION VERIFICATION**: Before declaring phase complete, verify ALL requirements in task-protocol-*.md with documented evidence.
+**PHASE COMPLETION VERIFICATION**: Before declaring phase complete, verify ALL requirements in
+task-protocol-*.md with documented evidence.
 
 **TODO Synchronization**: Keep TodoWrite tool synced with todo.md file.
-**TODO Clarity**: Each todo.md entry must contain sufficient detail to understand the task without external context. One-line descriptions require nested sub-items explaining Purpose, Scope, Components/Features, and Integration points.
+**TODO Clarity**: Each todo.md entry must contain sufficient detail to understand the task without external
+context. One-line descriptions require nested sub-items explaining Purpose, Scope, Components/Features, and
+Integration points.
 **CRITICAL TASK ARCHIVAL**: When completing a task (COMPLETE state), you MUST:
 1. **REMOVE** the completed task from todo.md (delete the entire task entry)
 2. **ADD** it to changelog.md under the appropriate date section (format: `## YYYY-MM-DD`)
-3. **INCLUDE** completion details: solution implemented, files modified, test results, quality gates, completion date
+3.  **INCLUDE** completion details: solution implemented, files modified, test results, quality gates,
+   completion date
 4. **COMMIT** all changes in ONE atomic commit (implementation code + todo.md removal + changelog.md addition)
 
 **Verification**: Use `/workspace/.claude/hooks/verify-task-archival.sh task-name` before commit
@@ -30,15 +45,28 @@ Styler Java Code Formatter project configuration and workflow guidance.
 **🚨 PROHIBITED**: Marking tasks complete (- [x]) instead of removing from todo.md
 **✅ REQUIRED**: `git diff todo.md` shows ONLY deletions; `git diff changelog.md` shows ONLY additions
 
-**CRITICAL MID-TASK WORK CAPTURE**: When user mentions additional work during task execution, you MUST add it to TodoWrite list IMMEDIATELY in the SAME response before doing anything else. Context compaction can occur at any time, causing complete loss of uncommitted work requests. NEVER rely on memory across compaction boundaries - capture ALL new work requests in TodoWrite tool THE MOMENT they occur.
-**CRITICAL TOKEN USAGE**: Token usage MUST NEVER affect behavior, implementation approach, or task completion. IGNORE all token usage warnings and limits. Continue working with full quality and completeness until task is 100% complete or explicit user instruction. Token budget does NOT justify incomplete implementations, shortcuts, or quality compromises.
-**CRITICAL BUG TESTING**: [Unit Test Driven Bug Fixing](#-unit-test-driven-bug-fixing) - MANDATORY test-first approach for ALL bugs to prevent regressions.
-**CRITICAL JAVADOC**: JavaDoc comments MUST be written manually with contextual understanding. NEVER use scripts, sed, awk, or automated text generation to create JavaDoc. Each comment must reflect the specific purpose and context of the method it documents. See [§ JavaDoc Manual Documentation Requirement](#javadoc-manual-documentation).
+**CRITICAL MID-TASK WORK CAPTURE**: When user mentions additional work during task execution, you MUST add it
+to TodoWrite list IMMEDIATELY in the SAME response before doing anything else. Context compaction can occur at
+any time, causing complete loss of uncommitted work requests. NEVER rely on memory across compaction
+boundaries - capture ALL new work requests in TodoWrite tool THE MOMENT they occur.
+**CRITICAL TOKEN USAGE**: Token usage MUST NEVER affect behavior, implementation approach, or task completion.
+IGNORE all token usage warnings and limits. Continue working with full quality and completeness until task is
+100% complete or explicit user instruction. Token budget does NOT justify incomplete implementations,
+shortcuts, or quality compromises.
+**CRITICAL BUG TESTING**: [Unit Test Driven Bug Fixing](#-unit-test-driven-bug-fixing) - MANDATORY test-first
+approach for ALL bugs to prevent regressions.
+**CRITICAL JAVADOC**: JavaDoc comments MUST be written manually with contextual understanding. NEVER use
+scripts, sed, awk, or automated text generation to create JavaDoc. Each comment must reflect the specific
+purpose and context of the method it documents. See [§ JavaDoc Manual Documentation
+Requirement](#javadoc-manual-documentation).
 **🚨 VIOLATION = IMMEDIATE TASK RESTART REQUIRED**
 
 ## 🚨 LOCK OWNERSHIP & TASK RECOVERY {#lock-ownership}
 
-**CRITICAL**: After context compaction, the `check-lock-ownership.sh` SessionStart hook checks for active tasks owned by this session and provides specific instructions. **IMPORTANT**: Hook enforces user approval checkpoints - if task is in SYNTHESIS or AWAITING_USER_APPROVAL state, hook will display checkpoint-specific guidance that MUST be followed before proceeding.
+**CRITICAL**: After context compaction, the `check-lock-ownership.sh` SessionStart hook checks for active
+tasks owned by this session and provides specific instructions. **IMPORTANT**: Hook enforces user approval
+checkpoints - if task is in SYNTHESIS or AWAITING_USER_APPROVAL state, hook will display checkpoint-specific
+guidance that MUST be followed before proceeding.
 
 **Lock Ownership Rule**: ONLY work on tasks whose lock file contains YOUR session_id.
 
@@ -67,13 +95,15 @@ Styler Java Code Formatter project configuration and workflow guidance.
 }
 ```
 
-**Valid state values**: INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS, IMPLEMENTATION, VALIDATION, REVIEW, AWAITING_USER_APPROVAL, COMPLETE, CLEANUP
+**Valid state values**: INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS, IMPLEMENTATION, VALIDATION, REVIEW,
+AWAITING_USER_APPROVAL, COMPLETE, CLEANUP
 
 ## 🚨 WORKTREE ISOLATION & CLEANUP {#worktree-isolation}
 
 ### During Task Execution
 
-**CRITICAL WORKTREE ISOLATION**: After creating worktree, IMMEDIATELY `cd` to worktree directory BEFORE any other operations.
+**CRITICAL WORKTREE ISOLATION**: After creating worktree, IMMEDIATELY `cd` to worktree directory BEFORE any
+other operations.
 
 **Required Pattern**:
 ```bash
@@ -96,7 +126,8 @@ pwd | grep -q "/workspace/tasks/{task-name}/code$" && echo "✅ In worktree" || 
 cd /workspace/main && git worktree remove /workspace/tasks/{task-name}/code
 ```
 
-**NEVER remove a worktree while inside it** - shell loses working directory. This is MANDATORY in CLEANUP state.
+**NEVER remove a worktree while inside it** - shell loses working directory. This is MANDATORY in CLEANUP
+state.
 
 ## 🚨 IMPLEMENTATION ROLE BOUNDARIES {#implementation-role-boundaries}
 
@@ -124,7 +155,8 @@ cd /workspace/main && git worktree remove /workspace/tasks/{task-name}/code
   - During IMPLEMENTATION state: ONLY original agent fixes their own work
   - Main agent NEVER fixes during IMPLEMENTATION state
 
-**Rule of Thumb**: If it requires domain expertise or significant changes → delegate to agents. If it's mechanical and trivial → main agent may fix after VALIDATION state begins.
+**Rule of Thumb**: If it requires domain expertise or significant changes → delegate to agents. If it's
+mechanical and trivial → main agent may fix after VALIDATION state begins.
 
 **Coordination Examples (PERMITTED during IMPLEMENTATION)**:
 ✅ Launching technical-architect agent: "Implement FormatterApi interface with transform() method"
@@ -195,7 +227,8 @@ CORRECT SEQUENCE:
 13. If build fails → main agent MAY fix OR re-delegate to agents
 ```
 
-**Key Transition Point**: Step 9 (VALIDATION state) is when main agent permissions change from PROHIBITED to PERMITTED for minor fixes.
+**Key Transition Point**: Step 9 (VALIDATION state) is when main agent permissions change from PROHIBITED to
+PERMITTED for minor fixes.
 
 **VIOLATION PATTERN** (NEVER DO THIS):
 ```markdown
@@ -209,9 +242,11 @@ CORRECT SEQUENCE:
 
 ### Enforcement
 
-**Hook Detection**: `.claude/hooks/detect-main-agent-implementation.sh` monitors Write/Edit tool calls during IMPLEMENTATION state and BLOCKS attempts by main agent to create source files in task worktree.
+**Hook Detection**: `.claude/hooks/detect-main-agent-implementation.sh` monitors Write/Edit tool calls during
+IMPLEMENTATION state and BLOCKS attempts by main agent to create source files in task worktree.
 
-**🚨 CRITICAL REQUIREMENT**: This hook MUST be registered in `.claude/settings.json` under `PreToolUse` triggers to function. If hook is not registered, **NO PROTECTION EXISTS**.
+**🚨 CRITICAL REQUIREMENT**: This hook MUST be registered in `.claude/settings.json` under `PreToolUse`
+triggers to function. If hook is not registered, **NO PROTECTION EXISTS**.
 
 **Hook Registration Verification**:
 ```bash
@@ -246,7 +281,8 @@ jq '.hooks.PreToolUse[] | select(.hooks[].command | contains("detect-main-agent-
 
 ### Agent Tool Limitation Recovery Pattern
 
-**Scenario**: Stakeholder agent reports tool limitations, file size constraints, or inability to complete assigned work.
+**Scenario**: Stakeholder agent reports tool limitations, file size constraints, or inability to complete
+assigned work.
 
 **CORRECT RECOVERY SEQUENCE**:
 1. **NEVER** bypass agent by implementing directly - this violates protocol regardless of reason
@@ -295,16 +331,21 @@ jq '.hooks.PreToolUse[] | select(.hooks[].command | contains("detect-main-agent-
 3. ✅ Run final build verification on committed code
 4. ✅ Verify `git status` shows clean working directory (no uncommitted changes)
 
-**Rationale**: Uncommitted validation fixes will NOT be included in merge, causing build failures on main branch.
+**Rationale**: Uncommitted validation fixes will NOT be included in merge, causing build failures on main
+branch.
 
 **Verification Command**:
 ```bash
 git status | grep "nothing to commit" || echo "ERROR: Uncommitted changes exist"
 ```
 
-**Audit Integration**: If `/audit-session` detects uncommitted changes during VALIDATION state, this indicates a protocol violation (Check 0.3 equivalent). Phase 5 automatic fix application will commit these changes, but this represents a recovery action - the violation still occurred. Future prevention requires discipline during VALIDATION → REVIEW transition.
+**Audit Integration**: If `/audit-session` detects uncommitted changes during VALIDATION state, this indicates
+a protocol violation (Check 0.3 equivalent). Phase 5 automatic fix application will commit these changes, but
+this represents a recovery action - the violation still occurred. Future prevention requires discipline during
+VALIDATION → REVIEW transition.
 
-**See Also**: `.claude/commands/audit-session.md` § Phase 5: Automatic Fix Application for audit-time detection and automatic remediation
+**See Also**: `.claude/commands/audit-session.md` § Phase 5: Automatic Fix Application for audit-time
+detection and automatic remediation
 
 **REVIEW State Clarification**:
 - Main agent MAY implement fixes requested by stakeholder agents
@@ -346,7 +387,8 @@ ELSE IF (issue_type == "architecture_issue" OR "security_issue"):
     ❌ ALWAYS re-delegate to appropriate domain expert
 ```
 
-**Efficiency Rationale**: Re-launching agents for trivial fixes wastes 50-100 messages per round. Direct fixes for mechanical issues preserve protocol safety while maintaining efficiency.
+**Efficiency Rationale**: Re-launching agents for trivial fixes wastes 50-100 messages per round. Direct fixes
+for mechanical issues preserve protocol safety while maintaining efficiency.
 
 **Threshold Rationale**: The '5 violation' threshold represents message cost efficiency:
 - Auto-fixing 5 violations: ~2-3 tool calls = 3-5 messages
@@ -360,20 +402,26 @@ ELSE IF (issue_type == "architecture_issue" OR "security_issue"):
 - File A: 3 missing imports, File B: 3 whitespace → Total 6 → Delegate to agent ❌
 - Files A-J: 50 violations, all same missing import statement → Treat as 1 pattern → Main agent fixes ✅
 
-**Override Rule**: If ALL violations are identical pattern (e.g., 10 missing imports, all same import statement), treat as mechanical regardless of count.
+**Override Rule**: If ALL violations are identical pattern (e.g., 10 missing imports, all same import
+statement), treat as mechanical regardless of count.
 
-**Safety Constraint**: Only apply after unanimous agent completion. During IMPLEMENTATION state, ALL fixes must go through agents.
+**Safety Constraint**: Only apply after unanimous agent completion. During IMPLEMENTATION state, ALL fixes
+must go through agents.
 
 ## 🚨 TASK PROTOCOL SUMMARY {#task-protocol}
 
-**Full Protocol Details**: See [task-protocol-core.md](docs/project/task-protocol-core.md) and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for complete state machine and transition requirements.
+**Full Protocol Details**: See [task-protocol-core.md](docs/project/task-protocol-core.md) and
+[task-protocol-operations.md](docs/project/task-protocol-operations.md) for complete state machine and
+transition requirements.
 
-**State Machine**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → AWAITING_USER_APPROVAL → COMPLETE → CLEANUP
+**State Machine**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW →
+AWAITING_USER_APPROVAL → COMPLETE → CLEANUP
 
 **Critical Requirements for All Tasks**:
 - Lock acquisition (see [§ Lock Ownership](#lock-ownership))
 - Worktree isolation (see [§ Worktree Isolation](#worktree-isolation))
-- **🚨 IMPLEMENTATION DELEGATION**: Main agent COORDINATES via Task tool - stakeholder agents IMPLEMENT in their worktrees (see [§ Implementation Role Boundaries](#implementation-role-boundaries))
+-  **🚨 IMPLEMENTATION DELEGATION**: Main agent COORDINATES via Task tool - stakeholder agents IMPLEMENT in
+  their worktrees (see [§ Implementation Role Boundaries](#implementation-role-boundaries))
 - Build verification before merge
 - Unanimous stakeholder approval (REVIEW state)
 - Complete all states before selecting new task
@@ -383,7 +431,10 @@ ELSE IF (issue_type == "architecture_issue" OR "security_issue"):
 - **MEDIUM-RISK** (tests, docs): Abbreviated protocol, domain-specific agents
 - **LOW-RISK** (general docs): Streamlined protocol, minimal validation
 
-**Post-Compaction Note**: This summary plus lock ownership and worktree isolation rules provide EMERGENCY FALLBACK guidance when task-protocol files are not accessible. For complete protocol compliance, the full protocol files (task-protocol-core.md and task-protocol-operations.md) are REQUIRED and should be re-loaded as soon as possible.
+**Post-Compaction Note**: This summary plus lock ownership and worktree isolation rules provide EMERGENCY
+FALLBACK guidance when task-protocol files are not accessible. For complete protocol compliance, the full
+protocol files (task-protocol-core.md and task-protocol-operations.md) are REQUIRED and should be re-loaded as
+soon as possible.
 
 ## 🚨 RISK-BASED PROTOCOL SELECTION
 
@@ -421,13 +472,15 @@ ELSE IF (issue_type == "architecture_issue" OR "security_issue"):
 
 ## 🚨 AUTONOMOUS TASK COMPLETION REQUIREMENT
 
-**CRITICAL**: Once you begin a task (execute INIT state), you MUST complete ALL protocol states autonomously, WITH MANDATORY USER APPROVAL CHECKPOINTS.
+**CRITICAL**: Once you begin a task (execute INIT state), you MUST complete ALL protocol states autonomously,
+WITH MANDATORY USER APPROVAL CHECKPOINTS.
 
 **MANDATORY SINGLE-SESSION COMPLETION**:
 - Task execution occurs in ONE uninterrupted session
 - **EXPECTED USER APPROVAL CHECKPOINTS** (these are NOT violations):
   1. **PLAN APPROVAL**: After SYNTHESIS, user approves implementation plan before IMPLEMENTATION begins
-  2. **CHANGE REVIEW**: After REVIEW (unanimous approval), enter AWAITING_USER_APPROVAL state until user confirms
+  2.  **CHANGE REVIEW**: After REVIEW (unanimous approval), enter AWAITING_USER_APPROVAL state until user
+     confirms
 - NO OTHER HANDOFFS to user mid-protocol
 - Complete all other states autonomously
 
@@ -447,11 +500,13 @@ ELSE IF (issue_type == "architecture_issue" OR "security_issue"):
 2. **Ambiguous Conflicting Requirements**: No resolution path exists
 3. **User Explicit Interruption**: User says "stop"
 
-**Enforcement**: The `detect-giving-up.sh` hook detects mid-protocol abandonment patterns and injects completion reminders.
+**Enforcement**: The `detect-giving-up.sh` hook detects mid-protocol abandonment patterns and injects
+completion reminders.
 
 ## 🚨 USER APPROVAL CHECKPOINT ENFORCEMENT
 
-**HOOK-ENFORCED REQUIREMENT**: The `enforce-user-approval.sh` hook will BLOCK transitions to COMPLETE state if user approval checkpoint is not satisfied.
+**HOOK-ENFORCED REQUIREMENT**: The `enforce-user-approval.sh` hook will BLOCK transitions to COMPLETE state if
+user approval checkpoint is not satisfied.
 
 **Approval Marker System**:
 - **File**: `/workspace/tasks/{task-name}/user-approval-obtained.flag`
@@ -506,7 +561,8 @@ mv /tmp/lock.tmp /workspace/tasks/{task-name}/task.json
 
 ## 🚨 TASK UNAVAILABILITY HANDLING
 
-**CRITICAL**: When user requests "work on the next task" or similar, verify task availability before starting work.
+**CRITICAL**: When user requests "work on the next task" or similar, verify task availability before starting
+work.
 
 ### Mandatory Availability Check
 
@@ -577,14 +633,16 @@ I will stop here and await further instructions.
 
 ## 🎯 LONG-TERM SOLUTION PERSISTENCE
 
-**MANDATORY PRINCIPLE**: Prioritize optimal long-term solutions over expedient alternatives. Persistence and thorough problem-solving are REQUIRED.
+**MANDATORY PRINCIPLE**: Prioritize optimal long-term solutions over expedient alternatives. Persistence and
+thorough problem-solving are REQUIRED.
 
 ### 🚨 CRITICAL PERSISTENCE REQUIREMENTS
 
 **SOLUTION QUALITY HIERARCHY**:
 1. **OPTIMAL SOLUTION**: Complete, maintainable, follows best practices, addresses root cause
 2. **ACCEPTABLE SOLUTION**: Functional, meets core requirements, minor technical debt acceptable
-3. **EXPEDIENT WORKAROUND**: Quick fix, creates technical debt, only acceptable with explicit justification and follow-up task
+3.  **EXPEDIENT WORKAROUND**: Quick fix, creates technical debt, only acceptable with explicit justification
+   and follow-up task
 
 **MANDATORY DECISION PROTOCOL**:
 - **FIRST ATTEMPT**: Always pursue the OPTIMAL SOLUTION approach
@@ -599,8 +657,10 @@ I will stop here and await further instructions.
 ❌ "The optimal solution would take too long" (without effort estimation)
 ❌ "Let's use a quick workaround for now" (without technical debt assessment)
 ❌ "I'll implement the minimum viable solution" (when requirements specify comprehensive solution)
-❌ "Due to complexity and token usage, I'll create a solid MVP implementation" (complexity/tokens never justify incomplete implementation)
-❌ "Given token constraints, I'll implement a basic version" (token budget does not override quality requirements)
+❌ "Due to complexity and token usage, I'll create a solid MVP implementation" (complexity/tokens never justify
+incomplete implementation)
+❌ "Given token constraints, I'll implement a basic version" (token budget does not override quality
+requirements)
 ❌ "This edge case is too hard to handle properly" (without stakeholder consultation)
 ❌ "The existing pattern is suboptimal but I'll follow it" (without improvement attempt)
 
@@ -608,7 +668,8 @@ I will stop here and await further instructions.
 
 **Hook**: `detect-giving-up.sh` detects abandonment patterns
 
-**Response**: Return to original problem, apply systematic debugging, exhaust approaches before scope modification
+**Response**: Return to original problem, apply systematic debugging, exhaust approaches before scope
+modification
 
 ### 🧪 UNIT TEST DRIVEN BUG FIXING
 
@@ -724,15 +785,18 @@ When evaluating whether to defer work via scope negotiation:
 
 **⚠️ NEVER** initialize new repositories
 **Main Repository**: `/workspace/main/` (git repository and main development branch)
-**Task Worktrees**: `/workspace/tasks/{task-name}/code/` (isolated per task protocol, common merge target for all agents)
-**Agent Worktrees**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/` (per-agent development isolation)
+**Task Worktrees**: `/workspace/tasks/{task-name}/code/` (isolated per task protocol, common merge target for
+all agents)
+**Agent Worktrees**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/` (per-agent development
+isolation)
 **Locks**: Multi-instance coordination via lock files at `/workspace/tasks/{task-name}/task.json`
 
 **Multi-Agent Architecture**:
 - **WHO IMPLEMENTS**: Stakeholder agents (NOT main agent) write all source code
 - **WHERE**: Each stakeholder agent has own worktree: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
 - **MAIN AGENT ROLE**: Coordinates via Task tool invocations, monitors status.json, manages state transitions
-- **IMPLEMENTATION FLOW**: Main agent delegates → Agents implement in parallel → Agents merge to task branch → Iterative rounds until complete
+-  **IMPLEMENTATION FLOW**: Main agent delegates → Agents implement in parallel → Agents merge to task branch
+  → Iterative rounds until complete
 - **VIOLATION**: Main agent creating .java/.ts/.py files directly in task worktree during IMPLEMENTATION state
 
 ## 🔧 CONTINUOUS WORKFLOW MODE
@@ -741,7 +805,8 @@ Override system brevity for comprehensive multi-task automation via Task Protoco
 
 **Trigger**: `"Work on the todo list in continuous mode."`
 **Auto-Detection**: "todo list", "all tasks", "continuously", "CONTINUOUS WORKFLOW MODE"
-**Effects**: Detailed output, automatic task progression, full stakeholder analysis, comprehensive TodoWrite tracking
+**Effects**: Detailed output, automatic task progression, full stakeholder analysis, comprehensive TodoWrite
+tracking
 
 ## 📝 JAVADOC MANUAL DOCUMENTATION REQUIREMENT {#javadoc-manual-documentation}
 
@@ -781,18 +846,21 @@ public void testValidToken() {
 
 ## 📝 CODE POLICIES
 
-**For complete code policies, see**: [docs/optional-modules/code-policies.md](docs/optional-modules/code-policies.md)
+**For complete code policies, see**:
+[docs/optional-modules/code-policies.md](docs/optional-modules/code-policies.md)
 
 **Quick Reference**:
 - **Code Comments**: Update outdated comments, avoid implementation history
 - **TODO Comments**: Implement, remove, or document - never superficially rename
 - **JavaDoc**: See [§ JavaDoc Manual Documentation Requirement](#javadoc-manual-documentation) above
 - **TestNG Tests**: Thread-safe patterns only, no @BeforeMethod
-- **Exception Types**: AssertionError = valid input reaches impossible state (our bug), IllegalStateException = wrong API usage, IllegalArgumentException = invalid input
+-  **Exception Types**: AssertionError = valid input reaches impossible state (our bug), IllegalStateException
+  = wrong API usage, IllegalArgumentException = invalid input
 
 ## 🛠️ TOOL USAGE BEST PRACTICES
 
-**For complete tool usage guide, see**: [docs/optional-modules/tool-usage.md](docs/optional-modules/tool-usage.md)
+**For complete tool usage guide, see**:
+[docs/optional-modules/tool-usage.md](docs/optional-modules/tool-usage.md)
 
 **Critical Patterns**:
 - **Edit Tool**: Verify whitespace before editing (tabs vs spaces)
@@ -827,7 +895,8 @@ public void testValidToken() {
 [docs/project/build-system.md](docs/project/build-system.md) - Build configuration and commands
 [docs/project/git-workflow.md](docs/project/git-workflow.md) - Git workflows and commit squashing procedures
 [docs/code-style-human.md](docs/code-style-human.md) - Code style master guide
-[docs/code-style/](docs/code-style/) - Code style files (\*-claude.md detection patterns, \*-human.md explanations)
+[docs/code-style/](docs/code-style/) - Code style files (\*-claude.md detection patterns, \*-human.md
+explanations)
 
 ## File Organization
 
@@ -857,13 +926,16 @@ public void testValidToken() {
 **Project Code**: Task code directory (`src/`, `pom.xml`, etc.)
 
 ### Report File Naming Convention
-See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/project/task-protocol-core.md) and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for exact agent report naming conventions by phase.
+See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/project/task-protocol-core.md)
+and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for exact agent report naming
+conventions by phase.
 
 **Note**: Reports are written to `/workspace/tasks/{task-name}/` (task root), not inside the code directory.
 
 ## 📝 RETROSPECTIVE DOCUMENTATION POLICY
 
-**CRITICAL**: Do NOT create retrospective documentation files that chronicle fixes, problems, or development process.
+**CRITICAL**: Do NOT create retrospective documentation files that chronicle fixes, problems, or development
+process.
 
 **PROHIBITED DOCUMENTATION PATTERNS**:
 ❌ Post-implementation analysis reports (e.g., `protocol-violation-prevention.md`)
@@ -895,4 +967,5 @@ docs/api/file-processor.md - API documentation for users
 README.md - User-facing project documentation
 ```
 
-**ENFORCEMENT**: Before creating any `.md` file in `/docs/`, verify it serves future users/developers rather than documenting the past.
+**ENFORCEMENT**: Before creating any `.md` file in `/docs/`, verify it serves future users/developers rather
+than documenting the past.

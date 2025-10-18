@@ -1,14 +1,20 @@
 # Cross-Language Parser & Formatter Architecture Study for Styler
 
-**Study Purpose**: Analyze leading parser architectures and formatters across the top 6 programming languages (Python, JavaScript, C++, Java, TypeScript, C#) to extract architectural patterns and inform Styler's design decisions.
+**Study Purpose**: Analyze leading parser architectures and formatters across the top 6 programming languages
+(Python, JavaScript, C++, Java, TypeScript, C#) to extract architectural patterns and inform Styler's design
+decisions.
 
 ## Executive Summary
 
-Based on empirical analysis of 15+ leading parsers and formatters across Python, JavaScript, C++, Java, TypeScript, and C#, several critical architectural patterns emerge:
+Based on empirical analysis of 15+ leading parsers and formatters across Python, JavaScript, C++, Java,
+TypeScript, and C#, several critical architectural patterns emerge:
 
-**Key Finding**: The industry is converging on **performance-first, minimal-configuration architectures** written in systems languages (Rust/Go) that prioritize speed over flexibility.
+**Key Finding**: The industry is converging on **performance-first, minimal-configuration architectures**
+written in systems languages (Rust/Go) that prioritize speed over flexibility.
 
-**For Styler**: Implement a **Rust-inspired hybrid parser** combining Tree-sitter's incremental parsing techniques with Black/Prettier's opinionated formatting philosophy, targeting >30x performance improvements over traditional Java parsers.
+**For Styler**: Implement a **Rust-inspired hybrid parser** combining Tree-sitter's incremental parsing
+techniques with Black/Prettier's opinionated formatting philosophy, targeting >30x performance improvements
+over traditional Java parsers.
 
 ---
 
@@ -27,7 +33,8 @@ Based on empirical analysis of 15+ leading parsers and formatters across Python,
 
 ### Performance Revolution: The Rust Factor
 
-**Evidence**: Python's Ruff formatter achieves >30x speedup over Black by rewriting in Rust, while maintaining >99.9% compatibility. JavaScript's SWC (Rust) and esbuild (Go) achieve 10-100x improvements over Babel.
+**Evidence**: Python's Ruff formatter achieves >30x speedup over Black by rewriting in Rust, while maintaining
+>99.9% compatibility. JavaScript's SWC (Rust) and esbuild (Go) achieve 10-100x improvements over Babel.
 
 ## Index-Overlay vs Object-Reference Architecture Analysis
 
@@ -37,7 +44,8 @@ Based on empirical analysis of 15+ leading parsers and formatters across Python,
 ### JMH Benchmark Implementation Status
 
 **✅ Completed**:
-- Created comprehensive JMH benchmark (`IndexOverlayBenchmark.java`) comparing Index-Overlay vs Object-Reference architectures
+-  Created comprehensive JMH benchmark (`IndexOverlayBenchmark.java`) comparing Index-Overlay vs
+  Object-Reference architectures
 - Implemented fair symmetric data structures for accurate comparison
 - Covered sequential access, random access, type filtering, parallel processing, and memory usage patterns
 - Fixed critical methodology flaws identified in initial benchmark attempts
@@ -65,7 +73,8 @@ The implemented benchmark tests the following hypotheses:
 
 ### Scientific Integrity Note
 
-**No performance claims are made** until proper JMH execution provides statistically valid results. Manual timing benchmarks were created but are **not scientifically valid** due to:
+**No performance claims are made** until proper JMH execution provides statistically valid results. Manual
+timing benchmarks were created but are **not scientifically valid** due to:
 - Insufficient warm-up methodology
 - Lack of statistical analysis
 - Susceptibility to JVM optimizations that JMH properly handles
@@ -468,7 +477,8 @@ public class FormattingWalker : CSharpSyntaxWalker {
 
 ## V. Actionable Design Patterns for Styler
 
-Based on the evidence gathered, here are specific design patterns and data structures that Styler should adopt:
+Based on the evidence gathered, here are specific design patterns and data structures that Styler should
+adopt:
 
 ### A. Memory Management Patterns
 
@@ -1014,4 +1024,8 @@ public class StylerParser {
 
 ---
 
-**Study Conclusion**: The cross-language analysis reveals that Styler's success depends on combining the performance innovations from the Rust ecosystem (Ruff, SWC) with the opinionated design philosophy that drives adoption (Black, Prettier), while leveraging Java's strengths in enterprise build system integration (Spotless pattern). The evidence strongly supports a hybrid architecture that can achieve 30x performance improvements while maintaining the simplicity that leads to widespread adoption.
+**Study Conclusion**: The cross-language analysis reveals that Styler's success depends on combining the
+performance innovations from the Rust ecosystem (Ruff, SWC) with the opinionated design philosophy that drives
+adoption (Black, Prettier), while leveraging Java's strengths in enterprise build system integration (Spotless
+pattern). The evidence strongly supports a hybrid architecture that can achieve 30x performance improvements
+while maintaining the simplicity that leads to widespread adoption.

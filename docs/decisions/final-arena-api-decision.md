@@ -4,7 +4,9 @@
 
 **DECISION: ADOPT Arena API for Parser Memory Allocation**
 
-**RATIONALE**: Comprehensive JMH benchmark evidence demonstrates Arena API provides **3x performance improvement** over traditional allocation and **12x improvement** over current implementation, while achieving the 512MB per 1000 files target with 96.9% safety margin.
+**RATIONALE**: Comprehensive JMH benchmark evidence demonstrates Arena API provides **3x performance
+improvement** over traditional allocation and **12x improvement** over current implementation, while achieving
+the 512MB per 1000 files target with 96.9% safety margin.
 
 ## Evidence-Based Decision Process
 
@@ -153,11 +155,13 @@ The Arena API represents the optimal architectural choice for parser memory allo
 4. **Production Readiness**: No preview features or experimental dependencies
 5. **Stakeholder Consensus**: Unanimous approval from technical and performance experts
 
-This decision provides a solid foundation for the parser's long-term performance and maintainability while achieving all specified memory efficiency targets.
+This decision provides a solid foundation for the parser's long-term performance and maintainability while
+achieving all specified memory efficiency targets.
 
 ## Approval Record
 
-- **Technical-Architect**: ✅ APPROVED - "Clear technical win with proven performance and architectural simplification"
+-  **Technical-Architect**: ✅ APPROVED - "Clear technical win with proven performance and architectural
+  simplification"
 - **Performance-Analyzer**: ✅ APPROVED - "Fully validated for meeting 512MB target with 96.9% safety margin"
 - **Implementation Date**: 2025-09-28
 - **JMH Evidence File**: arena-vs-gc-jmh-evidence-decision.md

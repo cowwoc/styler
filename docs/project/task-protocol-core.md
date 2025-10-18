@@ -1,9 +1,11 @@
 # Task State Machine Protocol
 
 > **Version:** 2.0 | **Last Updated:** 2025-10-16
-> **Related Documents:** [CLAUDE.md](../../CLAUDE.md) • [task-protocol-operations.md](task-protocol-operations.md)
+> **Related Documents:** [CLAUDE.md](../../CLAUDE.md) •
+[task-protocol-operations.md](task-protocol-operations.md)
 
-**CRITICAL**: This protocol applies to ALL tasks that create, modify, or delete files, using MANDATORY STATE TRANSITIONS with zero-tolerance enforcement
+**CRITICAL**: This protocol applies to ALL tasks that create, modify, or delete files, using MANDATORY STATE
+TRANSITIONS with zero-tolerance enforcement
 
 **TARGET AUDIENCE**: Claude AI instances executing tasks
 **ARCHITECTURE**: State machine with atomic transitions and verifiable conditions
@@ -19,25 +21,36 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 ```
 
 **User Approval Checkpoints:**
-- **[PLAN APPROVAL]**: After SYNTHESIS, before IMPLEMENTATION - User reviews and approves implementation plan (all agents' plans in task.md)
-- **[CHANGE REVIEW]**: After REVIEW (unanimous stakeholder approval) - Transition to AWAITING_USER_APPROVAL state
+-  **[PLAN APPROVAL]**: After SYNTHESIS, before IMPLEMENTATION - User reviews and approves implementation plan
+  (all agents' plans in task.md)
+-  **[CHANGE REVIEW]**: After REVIEW (unanimous stakeholder approval) - Transition to AWAITING_USER_APPROVAL
+  state
 
 ### State Definitions
 - **INIT**: Task selected, locks acquired, session validated, task worktree and agent worktrees created
 - **CLASSIFIED**: Risk level determined, agents selected, isolation established
-- **REQUIREMENTS**: All stakeholder agents contribute requirements to task.md, negotiate conflicts, finalize task.md
-- **SYNTHESIS**: Each agent appends implementation plan to task.md, **USER APPROVAL CHECKPOINT: Present all plans to user, wait for explicit user approval**
-- **IMPLEMENTATION**: Iterative rounds where each agent implements domain requirements in parallel, rebases on task branch, merges changes (continues until all agents report no more work)
+-  **REQUIREMENTS**: All stakeholder agents contribute requirements to task.md, negotiate conflicts, finalize
+  task.md
+-  **SYNTHESIS**: Each agent appends implementation plan to task.md, **USER APPROVAL CHECKPOINT: Present all
+  plans to user, wait for explicit user approval**
+-  **IMPLEMENTATION**: Iterative rounds where each agent implements domain requirements in parallel, rebases
+  on task branch, merges changes (continues until all agents report no more work)
 - **VALIDATION**: Final build verification after all implementation rounds complete
-- **REVIEW**: All stakeholder agents review task branch against requirements, accept (no violations) or reject (violations found) - If ANY reject → back to IMPLEMENTATION rounds
-- **AWAITING_USER_APPROVAL**: **CHECKPOINT STATE - All agents accepted, changes committed to task branch, presented to user, waiting for explicit approval before COMPLETE**
-- **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns (ONLY when resolution effort > 2x task scope AND agent consensus permits deferral - escalate based on agent tiers, technical-architect makes final decision)
-- **COMPLETE**: Work merged to main branch, todo.md updated, dependent tasks unblocked (only after user approves changes)
+-  **REVIEW**: All stakeholder agents review task branch against requirements, accept (no violations) or
+  reject (violations found) - If ANY reject → back to IMPLEMENTATION rounds
+-  **AWAITING_USER_APPROVAL**: **CHECKPOINT STATE - All agents accepted, changes committed to task branch,
+  presented to user, waiting for explicit approval before COMPLETE**
+-  **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns (ONLY
+  when resolution effort > 2x task scope AND agent consensus permits deferral - escalate based on agent tiers,
+  technical-architect makes final decision)
+-  **COMPLETE**: Work merged to main branch, todo.md updated, dependent tasks unblocked (only after user
+  approves changes)
 - **CLEANUP**: All agent worktrees removed, task worktree removed, locks released, temporary files cleaned
 
 ### User Approval Checkpoints - MANDATORY REGARDLESS OF BYPASS MODE
 
-**CRITICAL**: The two user approval checkpoints are MANDATORY and MUST be respected REGARDLESS of whether the user is in "bypass permissions on" mode or any other automation mode.
+**CRITICAL**: The two user approval checkpoints are MANDATORY and MUST be respected REGARDLESS of whether the
+user is in "bypass permissions on" mode or any other automation mode.
 
 **🚨 BYPASS MODE DOES NOT BYPASS USER APPROVAL CHECKPOINTS**
 
@@ -45,7 +58,8 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 - MANDATORY: Present implementation plan to user in clear, readable format
 - MANDATORY: Wait for explicit user approval message
 - PROHIBITED: Assuming user approval from bypass mode or lack of response
-- PROHIBITED: Proceeding to IMPLEMENTATION without clear "yes", "approved", "proceed", or equivalent confirmation
+-  PROHIBITED: Proceeding to IMPLEMENTATION without clear "yes", "approved", "proceed", or equivalent
+  confirmation
 
 **Checkpoint 2: [CHANGE REVIEW] - After REVIEW, Before COMPLETE**
 - MANDATORY: Present completed changes with commit SHA to user
@@ -74,30 +88,36 @@ Before REVIEW → COMPLETE:
 - User message contains approval keywords: "yes", "approved", "approve", "proceed", "looks good", "LGTM"
 - AND message references review context: "review", "changes", "commit", "finalize"
 
-**Why User Instructions Don't Override**: Protocol line 36: "MANDATORY REGARDLESS of bypass mode or automation mode". Checkpoints are quality gates, not permission gates.
+**Why User Instructions Don't Override**: Protocol line 36: "MANDATORY REGARDLESS of bypass mode or automation
+mode". Checkpoints are quality gates, not permission gates.
 
 ### State Transitions
 Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS.**
 
 ## TERMINOLOGY GLOSSARY
 
-**State**: One of 10 formal states in the task protocol state machine (INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS, IMPLEMENTATION, VALIDATION, REVIEW, AWAITING_USER_APPROVAL, COMPLETE, CLEANUP)
+**State**: One of 10 formal states in the task protocol state machine (INIT, CLASSIFIED, REQUIREMENTS,
+SYNTHESIS, IMPLEMENTATION, VALIDATION, REVIEW, AWAITING_USER_APPROVAL, COMPLETE, CLEANUP)
 
 **State Transition**: Movement from one state to another after meeting all transition conditions
 
-**Implementation Round**: Iterative cycle within IMPLEMENTATION state where agents develop, validate, and refine code until all agents report no more work
+**Implementation Round**: Iterative cycle within IMPLEMENTATION state where agents develop, validate, and
+refine code until all agents report no more work
 
-**Checkpoint**: MANDATORY pause in protocol requiring explicit user approval before continuing (PLAN APPROVAL after SYNTHESIS and CHANGE REVIEW after REVIEW)
+**Checkpoint**: MANDATORY pause in protocol requiring explicit user approval before continuing (PLAN APPROVAL
+after SYNTHESIS and CHANGE REVIEW after REVIEW)
 
 **Risk Level**: Classification of file modification impact (HIGH/MEDIUM/LOW) determining workflow variant
 
-**Agent**: Stakeholder specialist (technical-architect, style-auditor, etc.) providing domain-specific validation
+**Agent**: Stakeholder specialist (technical-architect, style-auditor, etc.) providing domain-specific
+validation
 
 **Worktree**: Git worktree providing isolated workspace for task development without affecting main branch
 
 **Lock File**: JSON file at `/workspace/tasks/{task-name}/task.json` ensuring single-session task ownership
 
-**Scope Negotiation**: State for determining what work can be deferred when resolution effort exceeds 2x task scope
+**Scope Negotiation**: State for determining what work can be deferred when resolution effort exceeds 2x task
+scope
 
 **Unanimous Approval**: Required condition where ALL agents must respond with "✅ APPROVED" before proceeding
 
@@ -120,7 +140,8 @@ Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS
 - `docs/project/critical-rules.md` (safety rules)
 
 **Required Agents**: technical-architect, style-auditor, code-quality-auditor, build-validator
-**Additional Agents**: security-auditor (if security-related), performance-analyzer (if performance-critical), code-tester (if new functionality), usability-reviewer (if user-facing)
+**Additional Agents**: security-auditor (if security-related), performance-analyzer (if performance-critical),
+code-tester (if new functionality), usability-reviewer (if user-facing)
 
 ### MEDIUM-RISK FILES (Domain Validation Required)
 **Patterns:**
@@ -130,7 +151,8 @@ Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS
 - `**/*Test.java`, `**/*Tests.java` (test classes)
 
 **Required Agents**: technical-architect, code-quality-auditor
-**Additional Agents**: style-auditor (if style files), security-auditor (if config files), performance-analyzer (if benchmarks)
+**Additional Agents**: style-auditor (if style files), security-auditor (if config files),
+performance-analyzer (if benchmarks)
 
 ### LOW-RISK FILES (Minimal Validation Required)
 **Patterns:**
@@ -143,7 +165,8 @@ Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS
 **Required Agents**: None (unless escalation triggered)
 
 ### Escalation Triggers
-**Keywords**: "security", "architecture", "breaking", "performance", "concurrent", "database", "api", "state", "dependency"
+**Keywords**: "security", "architecture", "breaking", "performance", "concurrent", "database", "api", "state",
+"dependency"
 **Content Analysis**: Cross-module dependencies, security implications, architectural changes
 **Action**: Force escalation to next higher risk level
 
@@ -166,7 +189,8 @@ Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS
 ## WORKFLOW VARIANTS BY RISK LEVEL
 
 ### HIGH_RISK_WORKFLOW (Complete Validation)
-**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
+**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW →
+COMPLETE → CLEANUP
 **Stakeholder Agents**: All agents based on task requirements
 **Isolation**: Mandatory worktree isolation
 **Review**: Complete stakeholder validation
@@ -174,7 +198,8 @@ Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS
 **Conditional Skips**: None - all validation required
 
 ### MEDIUM_RISK_WORKFLOW (Domain Validation)
-**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
+**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW →
+COMPLETE → CLEANUP
 **Stakeholder Agents**: Based on change characteristics
 - Base: technical-architect (always required)
 - +style-auditor: If style/formatting files modified
@@ -243,7 +268,8 @@ def determine_state_path(risk_level, change_type):
 
 ### Comprehensive Agent Selection Framework
 **Input**: Task description and file modification patterns
-**Available Agents**: technical-architect, usability-reviewer, performance-analyzer, security-auditor, style-auditor, code-quality-auditor, code-tester, build-validator
+**Available Agents**: technical-architect, usability-reviewer, performance-analyzer, security-auditor,
+style-auditor, code-quality-auditor, code-tester, build-validator
 
 **Processing Logic:**
 
@@ -295,9 +321,12 @@ def determine_state_path(risk_level, change_type):
 - [ ] AST parsing/code formatting → performance-analyzer included?
 
 **Special Agent Usage Patterns:**
-- **style-auditor**: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and language-specific patterns)
-- **build-validator**: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through build system
-- **build-validator**: Use alongside style-auditor to ensure comprehensive validation (automated + manual rules)
+-  **style-auditor**: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and
+  language-specific patterns)
+-  **build-validator**: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through build
+  system
+-  **build-validator**: Use alongside style-auditor to ensure comprehensive validation (automated + manual
+  rules)
 - **code-quality-auditor**: Post-implementation refactoring and best practices enforcement
 - **code-tester**: Business logic validation and comprehensive test creation
 - **security-auditor**: Data handling and storage compliance review
@@ -379,7 +408,8 @@ validate_complete_style_compliance() {
 
 **AUTOMATIC TRANSLATION PROTOCOL:**
 1. **ACKNOWLEDGE**: "I understand you want to work on multiple tasks efficiently..."
-2. **AUTO-TRANSLATE**: "I'll interpret this as a request to work on the todo list in continuous mode, processing each task with full protocol isolation..."
+2.  **AUTO-TRANSLATE**: "I'll interpret this as a request to work on the todo list in continuous mode,
+   processing each task with full protocol isolation..."
 3. **EXECUTE**: Automatically trigger continuous workflow mode without requiring user to rephrase
 
 **Batch Request Patterns to Auto-Translate:**
@@ -398,7 +428,9 @@ When batch requests specify subsets:
 
 ## 🧠 PROTOCOL INTERPRETATION MODE
 
-**ENHANCED ANALYTICAL RIGOR**: Parent agent must apply deeper analysis when interpreting and following the task protocol workflow. Rather than surface-level interpretations, carefully analyze what the protocol truly requires for the specific task context.
+**ENHANCED ANALYTICAL RIGOR**: Parent agent must apply deeper analysis when interpreting and following the
+task protocol workflow. Rather than surface-level interpretations, carefully analyze what the protocol truly
+requires for the specific task context.
 
 **Critical Thinking Requirements:**
 - Question assumptions about task scope and complexity
@@ -409,7 +441,8 @@ When batch requests specify subsets:
 
 ## AUTOMATED PROTOCOL COMPLIANCE AUDIT
 
-**MANDATORY**: After EVERY state transition completion, the main agent MUST invoke the protocol compliance audit pipeline to verify correct protocol execution.
+**MANDATORY**: After EVERY state transition completion, the main agent MUST invoke the protocol compliance
+audit pipeline to verify correct protocol execution.
 
 ### 4-Agent Protocol Audit Pipeline
 
@@ -566,7 +599,8 @@ The protocol audit pipeline is automatically triggered by:
 
 **Hook-Based Automatic Agent Invocation**:
 
-Hooks cannot directly invoke agents (they are bash scripts without Task tool access), BUT they can trigger automatic invocation by outputting imperative instructions that the main agent automatically executes.
+Hooks cannot directly invoke agents (they are bash scripts without Task tool access), BUT they can trigger
+automatic invocation by outputting imperative instructions that the main agent automatically executes.
 
 **How Automatic Invocation Works**:
 
@@ -583,7 +617,8 @@ Hooks cannot directly invoke agents (they are bash scripts without Task tool acc
 - "STEP 1 (AUTOMATIC): Invoke execution-tracer agent"
 - "STEP 3b (IF FAILED): Automatically invoke documentation-auditor"
 
-**This is NOT manual invocation** - the imperative language in hook output makes it clear these are AUTOMATIC MANDATORY ACTIONS that the main agent executes immediately.
+**This is NOT manual invocation** - the imperative language in hook output makes it clear these are AUTOMATIC
+MANDATORY ACTIONS that the main agent executes immediately.
 
 **Hook Execution Flow**:
 ```
@@ -687,7 +722,8 @@ Every task MUST maintain a `state.json` file in the task directory containing:
 
 ## PRE-INIT VERIFICATION: Task Selection and Lock Validation
 
-**CRITICAL**: Before executing INIT phase, you MUST verify that the selected task is available for work by checking existing locks and worktrees, AND verify you can complete the task autonomously.
+**CRITICAL**: Before executing INIT phase, you MUST verify that the selected task is available for work by
+checking existing locks and worktrees, AND verify you can complete the task autonomously.
 
 ### Autonomous Completion Feasibility Check
 
@@ -720,7 +756,8 @@ grep -A 20 "TASK.*${TASK_NAME}" /workspace/main/todo.md
 ✅ Ambiguity requiring user clarification (conflicting requirements with no resolution)
 ✅ Task scope changed externally (user modified todo.md indicating change)
 
-**COMMITMENT**: If all checks pass, you MUST complete entire protocol (States 0-8) without asking user permission.
+**COMMITMENT**: If all checks pass, you MUST complete entire protocol (States 0-8) without asking user
+permission.
 
 ### Decision Logic: Can I Work on This Task?
 
@@ -804,7 +841,8 @@ crashed session. Should I:
 
 ## MAIN WORKTREE OPERATIONS LOCK REQUIREMENT
 
-**CRITICAL**: Any operations executed directly on the main worktree (`/workspace/main/`) require acquiring a special lock at `/workspace/tasks/main/task.json`.
+**CRITICAL**: Any operations executed directly on the main worktree (`/workspace/main/`) require acquiring a
+special lock at `/workspace/tasks/main/task.json`.
 
 ### Operations Requiring Main Worktree Lock
 
@@ -875,12 +913,15 @@ echo "✅ Main worktree lock released"
 ### Main Worktree Lock vs Task-Specific Locks
 
 **Key Differences:**
-- **Task locks** (`/workspace/tasks/{task-name}/task.json`): Used for task-specific worktrees during normal protocol execution
+-  **Task locks** (`/workspace/tasks/{task-name}/task.json`): Used for task-specific worktrees during normal
+  protocol execution
 - **Main lock** (`/workspace/tasks/main/task.json`): Used ONLY for direct operations on main worktree
 
 **When to use each:**
-- **Normal task work**: Use task-specific lock (`{task-name}.json`) and work in task worktree (`/workspace/tasks/{task-name}/code/`)
-- **Direct main operations**: Use main lock (`main.json`) when working directly in main worktree (`/workspace/main/`)
+-  **Normal task work**: Use task-specific lock (`{task-name}.json`) and work in task worktree
+  (`/workspace/tasks/{task-name}/code/`)
+-  **Direct main operations**: Use main lock (`main.json`) when working directly in main worktree
+  (`/workspace/main/`)
 
 **Prohibited Patterns:**
 ❌ Modifying main worktree files without acquiring main lock
@@ -899,7 +940,8 @@ echo "✅ Main worktree lock released"
 - [ ] Atomic lock acquired for task (LOCK_SUCCESS received) at `/workspace/tasks/{task-name}/task.json`
 - [ ] Task exists in todo.md
 - [ ] Task worktree created at `/workspace/tasks/{task-name}/code`
-- [ ] Agent worktrees created at `/workspace/tasks/{task-name}/agents/{agent-name}/code` for all selected agents
+-  [ ] Agent worktrees created at `/workspace/tasks/{task-name}/agents/{agent-name}/code` for all selected
+  agents
 - [ ] **CRITICAL: Changed directory to task worktree**
 - [ ] **CRITICAL: Verified pwd shows task directory**
 
@@ -926,7 +968,8 @@ echo "✅ Main worktree lock released"
 # Average tools per message should be ≥2.0
 ```
 
-**Implementation:** Phase-specific guidance provided by hooks (state-transition-detector.sh → phase-transition-guide.sh)
+**Implementation:** Phase-specific guidance provided by hooks (state-transition-detector.sh →
+phase-transition-guide.sh)
 
 **🚨 CRITICAL**: INIT is NOT complete until you have:
 - Created task directory and acquired atomic lock
@@ -1085,13 +1128,15 @@ fi
 - [ ] Agent set selected based on risk classification
 - [ ] **CRITICAL: Verified currently in task worktree (pwd check)**
 - [ ] Agent worktrees created for all selected agents
-- [ ] **CRITICAL: Main agent MUST create task.md at `/workspace/tasks/{TASK_NAME}/task.md` BEFORE transitioning to REQUIREMENTS state**
+-  [ ] **CRITICAL: Main agent MUST create task.md at `/workspace/tasks/{TASK_NAME}/task.md` BEFORE
+  transitioning to REQUIREMENTS state**
 
 **task.md Creation Responsibility**:
 - **WHO**: Main coordination agent (the agent that executed INIT and CLASSIFIED states)
 - **WHEN**: After agent selection, BEFORE invoking any stakeholder agents
 - **WHERE**: `/workspace/tasks/{TASK_NAME}/task.md` (task root, NOT inside code directory)
-- **WHAT**: Initial task.md with Task Objective, Scope Definition sections, and empty Stakeholder Agent Reports placeholders
+-  **WHAT**: Initial task.md with Task Objective, Scope Definition sections, and empty Stakeholder Agent
+  Reports placeholders
 
 **Verification Command**:
 ```bash
@@ -1214,7 +1259,8 @@ def validate_requirements_complete(required_agents, task_dir):
 
 ### IMPLEMENTATION State Entry Guards (CRITICAL ENFORCEMENT)
 
-**PURPOSE**: Prevent protocol violations by verifying ALL prerequisite artifacts exist before entering IMPLEMENTATION state.
+**PURPOSE**: Prevent protocol violations by verifying ALL prerequisite artifacts exist before entering
+IMPLEMENTATION state.
 
 **MANDATORY VERIFICATION SCRIPT**:
 ```bash
@@ -1352,13 +1398,16 @@ The entry guards enforce the following protocol requirements:
 - **User approval**: Prevents "skipped PLAN APPROVAL checkpoint" violations
 - **State sequence**: Prevents "jumped directly to IMPLEMENTATION" violations
 
-**CRITICAL NOTE**: These guards are DEFENSIVE measures. Proper protocol compliance means these guards should ALWAYS pass. If a guard fails, it indicates a CRITICAL VIOLATION in a previous state that MUST be corrected before proceeding.
+**CRITICAL NOTE**: These guards are DEFENSIVE measures. Proper protocol compliance means these guards should
+ALWAYS pass. If a guard fails, it indicates a CRITICAL VIOLATION in a previous state that MUST be corrected
+before proceeding.
 
 ### SYNTHESIS → IMPLEMENTATION
 **Mandatory Conditions:**
 - [ ] Requirements synthesis document created (all agents contributed to task.md)
 - [ ] Architecture plan addresses all stakeholder requirements
-- [ ] Conflict resolution documented for competing requirements (technical-architect makes final decisions based on tier hierarchy)
+-  [ ] Conflict resolution documented for competing requirements (technical-architect makes final decisions
+  based on tier hierarchy)
 - [ ] Implementation strategy defined with clear success criteria
 - [ ] Each agent's implementation plan appended to task.md
 - [ ] **USER APPROVAL: All implementation plans presented to user in task.md**
@@ -1369,7 +1418,8 @@ The entry guards enforce the following protocol requirements:
 When writing implementation plans in task.md during SYNTHESIS state, use EXPLICIT DELEGATION language:
 
 **WHO IMPLEMENTS**:
-✅ CORRECT: "technical-architect agent implements core interfaces in /workspace/tasks/{task}/agents/technical-architect/code"
+✅ CORRECT: "technical-architect agent implements core interfaces in
+/workspace/tasks/{task}/agents/technical-architect/code"
 ✅ CORRECT: "Main agent invokes technical-architect via Task tool → technical-architect implements Phase 1-2"
 ✅ CORRECT: "Stakeholder agents implement in parallel (main agent coordinates via Task tool)"
 ❌ AMBIGUOUS: "technical-architect implements Phase 1-2" (who invokes? where does implementation occur?)
@@ -1402,7 +1452,8 @@ Task tool (style-auditor): {...}"
 ❌ "First, I'll write the implementation..."
 ```
 
-**If you catch yourself saying "I will implement"**, STOP and rephrase to "I will coordinate stakeholder agents to implement".
+**If you catch yourself saying "I will implement"**, STOP and rephrase to "I will coordinate stakeholder
+agents to implement".
 
 ## MULTI-AGENT IMPLEMENTATION WORKFLOW
 
@@ -1451,7 +1502,8 @@ Task tool (style-auditor): {...}"
 
 ### Agent-Based Parallel Development Model
 
-**Core Principle**: Each stakeholder agent operates as an autonomous developer with their own worktree, implementing domain-specific requirements and merging changes to the common task branch via rebase workflow.
+**Core Principle**: Each stakeholder agent operates as an autonomous developer with their own worktree,
+implementing domain-specific requirements and merging changes to the common task branch via rebase workflow.
 
 **Main Coordination Agent Role**:
 - **PROHIBITED**: Main agent implementing code directly in task worktree
@@ -1459,10 +1511,13 @@ Task tool (style-auditor): {...}"
 - **REQUIRED**: Main agent monitors agent status.json files for completion
 - **REQUIRED**: Main agent determines when to proceed to VALIDATION based on unanimous agent completion
 
-**CRITICAL VIOLATION**: Main agent creating implementation files (*.java, *.ts, *.py) directly in task worktree during IMPLEMENTATION state. Implementation MUST be performed by stakeholder agents in their own worktrees.
+**CRITICAL VIOLATION**: Main agent creating implementation files (*.java, *.ts, *.py) directly in task
+worktree during IMPLEMENTATION state. Implementation MUST be performed by stakeholder agents in their own
+worktrees.
 
 **Correct Pattern**:
-✅ Main agent invokes technical-architect agent → technical-architect implements in their worktree → merges to task branch
+✅ Main agent invokes technical-architect agent → technical-architect implements in their worktree → merges to
+task branch
 ❌ Main agent creates FormattingRule.java directly in task worktree (PROTOCOL VIOLATION)
 
 **Agent Tier System - CLARIFICATION**:
@@ -1474,7 +1529,8 @@ Task tool (style-auditor): {...}"
 - **Tier 2**: code-quality-auditor, security-auditor - Override lower tiers on domain issues
 - **Tier 3**: style-auditor, performance-analyzer, code-tester, usability-reviewer
 
-**Tier Usage**: Tiers break decision deadlocks when agents disagree during requirements negotiation. Explicit escalation path: Tier 3 → Tier 2 → Tier 1.
+**Tier Usage**: Tiers break decision deadlocks when agents disagree during requirements negotiation. Explicit
+escalation path: Tier 3 → Tier 2 → Tier 1.
 
 **Implementation Phase Merge Ordering (SYNTHESIS → VALIDATION)**:
 - **NO tier-based ordering**: Agents merge AS SOON AS READY (parallel, not sequential)
@@ -1666,7 +1722,8 @@ echo "❌ VIOLATION: Agent {AGENT} status = IN_PROGRESS during CLEANUP"
 #   4. Do NOT proceed to CLEANUP until all agents COMPLETE
 ```
 
-**MANDATORY RULE**: Main agent MUST verify all agents have status = COMPLETE before entering CLEANUP state. No exceptions.
+**MANDATORY RULE**: Main agent MUST verify all agents have status = COMPLETE before entering CLEANUP state. No
+exceptions.
 
 **Agent Re-Invocation Logic**:
 
@@ -1839,7 +1896,8 @@ ELSE:
 
 **🚨 CRITICAL BUILD CACHE VERIFICATION REQUIREMENTS:**
 
-Maven Build Cache can create false positives by restoring cached quality gate results without actually executing analysis on modified code. This can allow violations to slip through VALIDATION phase undetected.
+Maven Build Cache can create false positives by restoring cached quality gate results without actually
+executing analysis on modified code. This can allow violations to slip through VALIDATION phase undetected.
 
 **MANDATORY CACHE-BYPASSING PROCEDURES:**
 
@@ -1880,7 +1938,8 @@ Before transitioning from VALIDATION → REVIEW:
 ✅ **REQUIRED**: Disable cache for final validation before REVIEW phase
 ✅ **REQUIRED**: Check build logs for cache skip messages
 
-**Prevention**: The `-Dmaven.build.cache.enabled=false` flag forces fresh execution of all plugins, ensuring modified code is actually analyzed by quality gates.
+**Prevention**: The `-Dmaven.build.cache.enabled=false` flag forces fresh execution of all plugins, ensuring
+modified code is actually analyzed by quality gates.
 
 **Evidence Required (Skip Path):**
 - Documentation that no runtime behavior changes
@@ -1917,9 +1976,11 @@ def validate_unanimous_approval(agent_responses):
 ```
 
 **CRITICAL ENFORCEMENT RULES:**
-- **NO HUMAN OVERRIDE**: Agent decisions are atomic and binding - Claude MUST NOT ask user for permission to implement or defer
+-  **NO HUMAN OVERRIDE**: Agent decisions are atomic and binding - Claude MUST NOT ask user for permission to
+  implement or defer
 - **MANDATORY RESOLUTION**: ANY ❌ REJECTED triggers either resolution cycle OR scope negotiation
-- **AUTOMATIC IMPLEMENTATION**: If stakeholder requirements are technically feasible, implement them immediately without asking user
+-  **AUTOMATIC IMPLEMENTATION**: If stakeholder requirements are technically feasible, implement them
+  immediately without asking user
 - **AGENT AUTHORITY**: Only agents (not users) decide what is BLOCKING vs DEFERRABLE during scope negotiation
 
 **Scope Assessment Decision Logic:**
@@ -2055,7 +2116,8 @@ For Parser Implementation Tasks:
 - **Usability Priority**: Error messages should prioritize debugging assistance
 - **Appropriate Limits**: Reasonable protection for legitimate code formatting use cases
 
-**MANDATORY**: security-auditor MUST reference docs/project/scope.md "Security Model for Parser Operations" before conducting any parser security review.
+**MANDATORY**: security-auditor MUST reference docs/project/scope.md "Security Model for Parser Operations"
+before conducting any parser security review.
 
 **Authority Hierarchy for Domain Conflicts:**
 When agent authorities overlap or conflict:

@@ -2,7 +2,9 @@
 
 ## Project Objective
 
-Styler is an unopinionated Java code formatter that supports 100% of JDK 25's features with multi-threaded file processing capabilities. Unlike Prettier, Styler strives to be configurable and unopinionated. Unlike checkstyle, Styler bundles auto-fixers for violations whenever possible.
+Styler is an unopinionated Java code formatter that supports 100% of JDK 25's features with multi-threaded
+file processing capabilities. Unlike Prettier, Styler strives to be configurable and unopinionated. Unlike
+checkstyle, Styler bundles auto-fixers for violations whenever possible.
 
 **📋 For complete project details, architecture, and features, see [architecture.md](architecture.md)**
 
@@ -11,12 +13,16 @@ Styler is an unopinionated Java code formatter that supports 100% of JDK 25's fe
 Styler supports these primary use cases across two integration modes:
 
 ### 1. AI Agent Integration (Output-Driven Learning with Automatic Context Detection)
-**Objective**: Drive AI agent behavior through structured violation feedback that provides immediate actionable guidance for code improvement.
+**Objective**: Drive AI agent behavior through structured violation feedback that provides immediate
+actionable guidance for code improvement.
 
-**Evidence-Based Approach**: Analysis shows output-driven integration enables AI agents to learn and adapt without requiring comprehensive upfront documentation:
-- **Feedback-Driven Learning**: AI agents learn style patterns from structured violation output with specific fix strategies
+**Evidence-Based Approach**: Analysis shows output-driven integration enables AI agents to learn and adapt
+without requiring comprehensive upfront documentation:
+-  **Feedback-Driven Learning**: AI agents learn style patterns from structured violation output with specific
+  fix strategies
 - **Immediate Actionability**: Each violation includes context-specific suggestions and rule explanations
-- **Priority-Guided Attention**: Violations sorted by severity × frequency to focus AI agent corrections on high-impact issues
+-  **Priority-Guided Attention**: Violations sorted by severity × frequency to focus AI agent corrections on
+  high-impact issues
 - **Automatic Context Detection**: System detects AI vs human usage without manual flags
 
 **Flow**:
@@ -27,15 +33,18 @@ Styler supports these primary use cases across two integration modes:
 - Iterative feedback loop improves AI agent code generation over time
 
 **Technical Requirements**:
-- **Structured Output Generation**: Machine-readable violation reports with rule IDs, fix strategies, and priority scores
-- **Context-Specific Suggestions**: Each violation includes tailored remediation guidance based on surrounding code
+-  **Structured Output Generation**: Machine-readable violation reports with rule IDs, fix strategies, and
+  priority scores
+-  **Context-Specific Suggestions**: Each violation includes tailored remediation guidance based on
+  surrounding code
 - **Priority-Based Ordering**: Violations sorted by impact (severity × frequency) to guide AI agent focus
 - **Iterative Learning Support**: Output format designed for AI pattern recognition and adaptation
 - **Context Detection**: Automatic AI vs human detection via environment analysis
 - **Violation Tracking**: Integrated during parsing for immediate feedback
 
 ### 2. Traditional Build Integration (Batch Processing)
-**Objective**: Format Java source files according to configurable style rules while preserving developer intent.
+**Objective**: Format Java source files according to configurable style rules while preserving developer
+intent.
 
 **Flow**:
 - User specifies Java files or directories to format
@@ -76,7 +85,8 @@ Styler supports these primary use cases across two integration modes:
 
 ## Sample Configuration
 
-**📋 IMPORTANT**: This is a **sample configuration** used for testing and development. The actual configuration system should be **flexible** and support any combination of formatting rules.
+**📋 IMPORTANT**: This is a **sample configuration** used for testing and development. The actual configuration
+system should be **flexible** and support any combination of formatting rules.
 
 ### Example Configuration for Testing
 
@@ -105,8 +115,10 @@ Styler supports these primary use cases across two integration modes:
 **🚨 CRITICAL: Implement Only What's Needed Today**
 
 - **No Over-Engineering:** Only implement features immediately required for current use cases
-- **No Theoretical Features:** Avoid adding capabilities that "might be useful in the future" but aren't needed now
-- **YAGNI Principle:** "You Aren't Gonna Need It" - resist building extensible frameworks for hypothetical future needs
+-  **No Theoretical Features:** Avoid adding capabilities that "might be useful in the future" but aren't
+  needed now
+-  **YAGNI Principle:** "You Aren't Gonna Need It" - resist building extensible frameworks for hypothetical
+  future needs
 - **Focus on Core Value:** Prioritize Java code formatting and AST parsing over architectural elegance
 
 **Implementation Strategy:**
@@ -119,12 +131,15 @@ Styler supports these primary use cases across two integration modes:
 
 **🚨 CRITICAL: Complete What You Start**
 
-- **ABSOLUTELY FORBIDDEN**: Creation, usage, or retention of stub implementations, TODO comments, placeholder methods, fake return values
-- **NO PARTIAL IMPLEMENTATIONS**: Every method must be either complete and functional OR throw clear UnsupportedOperationException
+-  **ABSOLUTELY FORBIDDEN**: Creation, usage, or retention of stub implementations, TODO comments, placeholder
+  methods, fake return values
+-  **NO PARTIAL IMPLEMENTATIONS**: Every method must be either complete and functional OR throw clear
+  UnsupportedOperationException
 - **NO "IMPLEMENT LATER" PATTERNS**: Return -1, empty implementations, or "// TODO: implement" comments
 - **HONEST ERROR HANDLING**: Unsupported features must fail fast with descriptive error messages
 - **COMPLETE SCENARIO COVERAGE**: Each supported scenario must be fully functional end-to-end
-- **MANDATORY REMOVAL**: Any existing stubs discovered during development MUST be immediately replaced with proper implementations or UnsupportedOperationException
+-  **MANDATORY REMOVAL**: Any existing stubs discovered during development MUST be immediately replaced with
+  proper implementations or UnsupportedOperationException
 
 **MANDATORY STUB DETECTION AND PREVENTION**:
 - Code quality auditors MUST reject ANY implementation containing TODO comments
@@ -244,7 +259,8 @@ Styler supports these primary use cases across two integration modes:
 - **Extension Points**: Clear interfaces for adding custom formatting rules
 - **Performance Optimization**: Efficient plugin loading and rule application
 
-**📋 For detailed technical architecture, threading models, and implementation details, see [architecture.md](architecture.md)**
+**📋 For detailed technical architecture, threading models, and implementation details, see
+[architecture.md](architecture.md)**
 
 ## User Experience Requirements
 
@@ -261,7 +277,8 @@ Styler supports these primary use cases across two integration modes:
 - **Override Capabilities**: Command-line overrides for configuration settings
 
 ### Integration Support
-- **AI Agent Integration**: Output-driven learning through structured violation feedback with context-specific fix strategies
+-  **AI Agent Integration**: Output-driven learning through structured violation feedback with
+  context-specific fix strategies
 - **Build Tool Integration**: Maven and Gradle plugin support for traditional workflows
 - **IDE Integration**: Language Server Protocol for editor integration
 - **CI/CD Integration**: Exit codes and reporting for continuous integration systems

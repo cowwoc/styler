@@ -11,11 +11,14 @@ When you need to combine (squash) commits in your git history, there are two mai
 1. **Interactive Rebase** (PRIMARY METHOD) - Reliable, efficient, and handles complex scenarios
 2. **Cherry-pick Method** - Advanced manual approach for exceptional cases only
 
-**ALWAYS use Interactive Rebase unless specifically required otherwise.** Both workflows support squashing non-adjacent commits while preserving intermediate commits, useful for consolidating related functionality without losing unrelated work.
+**ALWAYS use Interactive Rebase unless specifically required otherwise.** Both workflows support squashing
+non-adjacent commits while preserving intermediate commits, useful for consolidating related functionality
+without losing unrelated work.
 
 ## Interactive Rebase (PRIMARY METHOD)
 
-**RECOMMENDED APPROACH**: Use interactive rebase for all squash operations unless specific circumstances require the cherry-pick fallback method.
+**RECOMMENDED APPROACH**: Use interactive rebase for all squash operations unless specific circumstances
+require the cherry-pick fallback method.
 
 ### Interactive Rebase Procedure
 
@@ -64,7 +67,8 @@ git rebase -i <base-commit>  # e.g., git rebase -i eee773804f
 
 **⚠️ AUTOMATED ENVIRONMENT SAFEGUARDS**
 
-Interactive rebase requires manual editor intervention. In automated environments (CLI tools, scripts), implement these safeguards:
+Interactive rebase requires manual editor intervention. In automated environments (CLI tools, scripts),
+implement these safeguards:
 
 **Safeguard 1: Verify Editor Interaction**
 ```bash
@@ -103,7 +107,8 @@ diff -u original-commit-order.txt post-rebase-order.txt
 #### 3. Configure Squash Operations with Chronological Validation
 
 **🚨 CRITICAL CHRONOLOGICAL PRESERVATION REQUIREMENT:**
-Git presents commits in chronological order (oldest first), and you MUST preserve this order for non-squashed commits to prevent historical reordering.
+Git presents commits in chronological order (oldest first), and you MUST preserve this order for non-squashed
+commits to prevent historical reordering.
 
 **Step 3a: Review Git's Default Plan**
 Git will present commits in chronological order:
@@ -449,7 +454,8 @@ git branch -D backup-before-squash-YYYYMMDD-HHMMSS
 
 ### Handling Non-Contiguous Commits
 
-**CRITICAL DECISION POINT**: When commits to be squashed are not adjacent in git history, you must choose the appropriate strategy based on your specific situation.
+**CRITICAL DECISION POINT**: When commits to be squashed are not adjacent in git history, you must choose the
+appropriate strategy based on your specific situation.
 
 #### Decision Matrix for Non-Contiguous Commits
 
@@ -574,7 +580,9 @@ echo "REORDER VIOLATION - Restarting with corrected plan"
 - Interactive rebase repeatedly fails due to complex conflicts (>50 commits with extensive conflicts)
 - Working with a corrupted or unusual git history structure
 
-**Note on Chronological Preservation**: Interactive rebase is fully capable of maintaining chronological order in all scenarios when proper planning and verification procedures are followed. The complexity lies in human planning, not in git's technical capabilities.
+**Note on Chronological Preservation**: Interactive rebase is fully capable of maintaining chronological order
+in all scenarios when proper planning and verification procedures are followed. The complexity lies in human
+planning, not in git's technical capabilities.
 
 ## Cherry-pick Method (Advanced/Fallback Approach)
 
@@ -618,7 +626,8 @@ git show --oneline 098c95394  # Must exist and be target commit
 git show --oneline eee773804f # Must exist and be base commit
 ```
 
-**🚨 COMMIT RANGE VALIDATION**: Identify ALL commits in the range - those to be squashed, intermediate commits, AND commits after the targets:
+**🚨 COMMIT RANGE VALIDATION**: Identify ALL commits in the range - those to be squashed, intermediate commits,
+AND commits after the targets:
 
 ```bash
 git log --oneline -25  # Use broader range to see all affected commits
@@ -637,7 +646,8 @@ mno7890 (commit to squash - older TARGET)
 pqr1234 (base commit)
 ```
 
-**⚠️ CRITICAL ERROR TO AVOID**: Forgetting commits that come AFTER the target commits will result in permanent data loss.
+**⚠️ CRITICAL ERROR TO AVOID**: Forgetting commits that come AFTER the target commits will result in permanent
+data loss.
 
 #### 3. Create Working Branch
 
@@ -729,7 +739,8 @@ git cherry-pick xyz4567  # commit after targets 3
 # Continue for ALL commits that came after the newest target
 ```
 
-**⚠️ MANDATORY**: Every commit that existed in the original history (except the two being squashed) MUST be preserved.
+**⚠️ MANDATORY**: Every commit that existed in the original history (except the two being squashed) MUST be
+preserved.
 
 #### 8. Verify Result
 
@@ -750,7 +761,8 @@ stu1098 (squashed commit with combined functionality)
 pqr1234 (base commit)
 ```
 
-**✅ SUCCESS CRITERIA**: The new history contains the same number of commits as the original, minus one (because two commits were squashed into one).
+**✅ SUCCESS CRITERIA**: The new history contains the same number of commits as the original, minus one
+(because two commits were squashed into one).
 
 #### 9. Test Build Integrity
 
@@ -832,4 +844,5 @@ Avoid this procedure when:
 
 ---
 
-**⚠️ Warning**: Git history rewriting is a destructive operation. Always ensure you have backups and user approval before proceeding with complex squash operations.
+**⚠️ Warning**: Git history rewriting is a destructive operation. Always ensure you have backups and user
+approval before proceeding with complex squash operations.
