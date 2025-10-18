@@ -3,7 +3,8 @@
 > **Version:** 2.0 | **Last Updated:** 2025-10-16
 > **Related Documents:** [CLAUDE.md](../../CLAUDE.md) • [task-protocol-core.md](task-protocol-core.md)
 
-**IMPORTANT**: This document is Part 2 of the Task Protocol. Read [task-protocol-core.md](task-protocol-core.md) first for:
+**IMPORTANT**: This document is Part 2 of the Task Protocol. Read
+[task-protocol-core.md](task-protocol-core.md) first for:
 - State machine architecture and definitions
 - Risk-based agent selection
 - Workflow variants by risk level
@@ -210,7 +211,8 @@ find src/test -name "*Test.java" -exec grep -c "@Test" {} + | awk '{sum+=$1} END
 
 **ENFORCEMENT:**
 
-The `.claude/hooks/verify-implementation-exit.sh` hook automatically blocks VALIDATION entry if any gate fails. Recovery procedure:
+The `.claude/hooks/verify-implementation-exit.sh` hook automatically blocks VALIDATION entry if any gate
+fails. Recovery procedure:
 
 ```bash
 # If blocked, return to IMPLEMENTATION
@@ -645,9 +647,11 @@ NOT this (merge commit creates non-linear history):
 
 ### DEPENDENT TASK UPDATE PROCEDURE
 
-**Purpose**: Automatically unblock tasks when their dependencies are satisfied, preventing tasks from remaining unnecessarily blocked.
+**Purpose**: Automatically unblock tasks when their dependencies are satisfied, preventing tasks from
+remaining unnecessarily blocked.
 
-**When to Execute**: During Step 3d of the COMPLETE → CLEANUP transition (after archiving the completed task to changelog.md).
+**When to Execute**: During Step 3d of the COMPLETE → CLEANUP transition (after archiving the completed task
+to changelog.md).
 
 **Implementation Logic:**
 ```bash
@@ -744,7 +748,8 @@ grep "implement-line-length-formatter" todo.md | grep -q "READY:" && echo "✅ T
 
 ### AUTOMATIC CONFLICT RESOLUTION VIA ATOMIC OPERATIONS
 
-**DESIGN PRINCIPLE**: Race conditions are prevented automatically through atomic operations - no manual recovery needed.
+**DESIGN PRINCIPLE**: Race conditions are prevented automatically through atomic operations - no manual
+recovery needed.
 
 **How Atomic Operations Prevent Conflicts:**
 
@@ -915,7 +920,8 @@ TEMP_DIR=$(cat .temp_dir 2>/dev/null) && [ -n "$TEMP_DIR" ] && rm -rf "$TEMP_DIR
 echo "✅ CLEANUP complete: All worktrees and branches removed"
 ```
 
-**Example for task "refactor-line-wrapping-architecture" with agents "technical-architect code-quality-auditor style-auditor"**:
+**Example for task "refactor-line-wrapping-architecture" with agents "technical-architect code-quality-auditor
+style-auditor"**:
 ```bash
 # Verify work in main branch (from task worktree)
 cd /workspace/tasks/refactor-line-wrapping-architecture/code
@@ -1356,7 +1362,8 @@ export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && [ -n "$SESSION_ID" ]
 - [ ] CLEANUP: Resource cleanup
 ```
 
-**CRITICAL LIFECYCLE NOTE**: task.md is created during CLASSIFIED state and persists through entire task execution. It is ONLY removed during CLEANUP state along with all other task artifacts.
+**CRITICAL LIFECYCLE NOTE**: task.md is created during CLASSIFIED state and persists through entire task
+execution. It is ONLY removed during CLEANUP state along with all other task artifacts.
 
 ### Atomic Lock Acquisition Pattern
 ```bash
@@ -1774,7 +1781,8 @@ present_changes_and_wait_for_user_approval() {
 
 ## MIGRATION FROM PHASE-BASED PROTOCOL
 
-**Phase-to-State Mapping**: Phase 1=REQUIREMENTS, Phase 2=SYNTHESIS, Phase 3=IMPLEMENTATION, Phase 4=VALIDATION, Phase 5=Resolution cycles, Phase 6=REVIEW, Phase 7=CLEANUP
+**Phase-to-State Mapping**: Phase 1=REQUIREMENTS, Phase 2=SYNTHESIS, Phase 3=IMPLEMENTATION, Phase
+4=VALIDATION, Phase 5=Resolution cycles, Phase 6=REVIEW, Phase 7=CLEANUP
 
 **Enforcement**: Mandatory transition conditions with no manual overrides or exceptions
 

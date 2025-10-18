@@ -1,6 +1,7 @@
 # Styler - Java Code Formatter
 
-An unopinionated Java code formatter that supports 100% of JDK 25's features with multi-threaded file processing capabilities.
+An unopinionated Java code formatter that supports 100% of JDK 25's features with multi-threaded file
+processing capabilities.
 
 ## 🚀 Quick Start
 
@@ -104,7 +105,8 @@ styler format --profile google src/
 
 ### Configuration
 
-Styler uses [TOML](https://toml.io/) configuration files for formatting rules. Create a `.styler.toml` file in your project root:
+Styler uses [TOML](https://toml.io/) configuration files for formatting rules. Create a `.styler.toml` file in
+your project root:
 
 ```toml
 # Maximum line length before wrapping
@@ -116,7 +118,8 @@ Configuration files are discovered hierarchically:
 2. User home directory (`~/.styler.toml`)
 3. System-wide (`/etc/.styler.toml`)
 
-Multiple config files are merged with **field-level precedence** - each field uses the value from the nearest config file that specifies it.
+Multiple config files are merged with **field-level precedence** - each field uses the value from the nearest
+config file that specifies it.
 
 **For complete configuration documentation**, see [docs/configuration.md](docs/configuration.md).
 
@@ -129,7 +132,8 @@ Multiple config files are merged with **field-level precedence** - each field us
 
 ## 📋 Active Development
 
-Current tasks are tracked in [todo.md](todo.md). Development follows a strict 7-phase workflow process documented in [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md).
+Current tasks are tracked in [todo.md](todo.md). Development follows a strict 7-phase workflow process
+documented in [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md).
 
 ## 🏗️ Architecture
 

@@ -15,7 +15,8 @@
 
 ## 🧠 Why These Rules Matter
 
-This codebase implements Styler, a Java code formatter that processes and transforms source code. Code clarity and correctness are critical because:
+This codebase implements Styler, a Java code formatter that processes and transforms source code. Code clarity
+and correctness are critical because:
 - **Parse accuracy**: Errors in AST construction could corrupt source code or lose developer intent
 - **Performance requirements**: Code formatters must process large codebases efficiently with minimal latency
 - **Maintainability**: Multiple developers need to understand complex parsing and formatting logic
@@ -23,32 +24,46 @@ This codebase implements Styler, a Java code formatter that processes and transf
 ## 🚨 TIER 1 CRITICAL - Build Blockers
 
 ### External Source Documentation - Missing URLs
-**Why this matters**: Parser implementations must be traceable to official Java Language Specification sources. This rule ensures language compliance and makes JDK updates easier.
+**Why this matters**: Parser implementations must be traceable to official Java Language Specification
+sources. This rule ensures language compliance and makes JDK updates easier.
 
-**Compliance requirement**: Parser logic without documented JLS sources creates correctness risk and makes code reviews difficult.
+**Compliance requirement**: Parser logic without documented JLS sources creates correctness risk and makes
+code reviews difficult.
 
-**Implementation benefits**: Clear JLS references help developers understand parsing decisions, validate edge cases, and maintain compatibility with language evolution.
+**Implementation benefits**: Clear JLS references help developers understand parsing decisions, validate edge
+cases, and maintain compatibility with language evolution.
 
 ### JavaDoc Exception Documentation - Missing @throws
-**Critical for API safety**: Parser and formatter methods often throw parsing exceptions. API consumers need to understand what exceptions to handle and why.
+**Critical for API safety**: Parser and formatter methods often throw parsing exceptions. API consumers need
+to understand what exceptions to handle and why.
 
-**Real-world scenario**: Parser methods may throw `ParseException` for malformed syntax, `TransformationException` for formatting errors, or `LanguageException` when encountering unsupported language features.
+**Real-world scenario**: Parser methods may throw `ParseException` for malformed syntax,
+`TransformationException` for formatting errors, or `LanguageException` when encountering unsupported language
+features.
 
 **Best practice**: Document all checked exceptions with specific conditions and recovery strategies.
 
 ### JavaDoc Parameter References - Missing {@code} Markup
-**Why {@code} markup matters**: JavaDoc generates better documentation when parameter names are semantically marked with `{@code}`. This creates visual distinction between parameter names and descriptive text, improving API documentation readability.
+**Why {@code} markup matters**: JavaDoc generates better documentation when parameter names are semantically
+marked with `{@code}`. This creates visual distinction between parameter names and descriptive text, improving
+API documentation readability.
 
-**IDE integration benefits**: Modern IDEs recognize `{@code}` markup and provide better code completion, cross-referencing, and navigation when browsing JavaDoc.
+**IDE integration benefits**: Modern IDEs recognize `{@code}` markup and provide better code completion,
+cross-referencing, and navigation when browsing JavaDoc.
 
-**Standard practice**: Using `{@code}` for parameter references follows established JavaDoc conventions used throughout the Java ecosystem and major libraries.
+**Standard practice**: Using `{@code}` for parameter references follows established JavaDoc conventions used
+throughout the Java ecosystem and major libraries.
 
-**Parser API context**: AST construction and formatting APIs with complex parameter validation benefit from clear parameter identification in exception documentation.
+**Parser API context**: AST construction and formatting APIs with complex parameter validation benefit from
+clear parameter identification in exception documentation.
 
 ### Validation - Use requireThat() Instead of Manual Checks
-**Why requireThat() is preferred**: The `requireThat()` validation library from cowwoc/requirements provides consistent, expressive validation with better error messages than manual if-throw patterns. It reduces boilerplate and improves code clarity.
+**Why requireThat() is preferred**: The `requireThat()` validation library from cowwoc/requirements provides
+consistent, expressive validation with better error messages than manual if-throw patterns. It reduces
+boilerplate and improves code clarity.
 
-**Parser validation context**: Parser components validate input ranges, token positions, and structural constraints. Using `requireThat()` makes these validations uniform and self-documenting.
+**Parser validation context**: Parser components validate input ranges, token positions, and structural
+constraints. Using `requireThat()` makes these validations uniform and self-documenting.
 
 **Key benefits**:
 - **Consistent error messages**: Standardized format across all validation failures
@@ -75,18 +90,27 @@ if (position < 0) {
 }
 ```
 
-**When manual validation is still appropriate**: Complex business logic validation that requires custom error messages with domain-specific context beyond simple parameter comparisons.
+**When manual validation is still appropriate**: Complex business logic validation that requires custom error
+messages with domain-specific context beyond simple parameter comparisons.
 
 ### Parameter Formatting - Multi-line Declarations and Calls
-**Line-filling principle**: Multi-parameter constructs (records, constructor calls, method calls) should maximize horizontal space usage within the 120-character limit. Each line should be filled to capacity before wrapping to the next line, avoiding unnecessary vertical bloat.
+**Line-filling principle**: Multi-parameter constructs (records, constructor calls, method calls) should
+maximize horizontal space usage within the 120-character limit. Each line should be filled to capacity before
+wrapping to the next line, avoiding unnecessary vertical bloat.
 
-**Parsing context**: AST parsing methods like `parseExpression(TokenStream tokens, ParseContext context)` and records like `SourceRange(int start, int end, int line)` are commonly used. Compact formatting helps when reviewing multiple similar declarations.
+**Parsing context**: AST parsing methods like `parseExpression(TokenStream tokens, ParseContext context)` and
+records like `SourceRange(int start, int end, int line)` are commonly used. Compact formatting helps when
+reviewing multiple similar declarations.
 
-**Guideline**: Keep parameter lists on same line unless they exceed reasonable line length (120+ characters). This applies to records, constructors, and method declarations equally.
+**Guideline**: Keep parameter lists on same line unless they exceed reasonable line length (120+ characters).
+This applies to records, constructors, and method declarations equally.
 
-**When to use multi-line**: When parameters exceed 120 characters, fill lines efficiently by grouping parameters that fit together rather than using one-parameter-per-line format. Example: `record Result(Type param1, Type param2,\n    Type param3, Type param4)` instead of individual lines.
+**When to use multi-line**: When parameters exceed 120 characters, fill lines efficiently by grouping
+parameters that fit together rather than using one-parameter-per-line format. Example: `record Result(Type
+param1, Type param2,\n Type param3, Type param4)` instead of individual lines.
 
-**Method invocation formatting**: Apply the same line-length optimization to method calls. Use horizontal space efficiently rather than prematurely breaking lines:
+**Method invocation formatting**: Apply the same line-length optimization to method calls. Use horizontal
+space efficiently rather than prematurely breaking lines:
 
 ```java
 // ✅ PREFERRED - Efficient horizontal space usage
@@ -101,13 +125,19 @@ return new ParseResult(
 ```
 
 ### Class Organization - User-Facing Members First
-**Why API-first organization matters**: When reviewing parser classes, developers first want to understand the public interface - what methods are available and what they return. Presenting the API surface before implementation details improves code comprehension.
+**Why API-first organization matters**: When reviewing parser classes, developers first want to understand the
+public interface - what methods are available and what they return. Presenting the API surface before
+implementation details improves code comprehension.
 
-**Reading pattern optimization**: Code is read more often than written. Placing public methods before their supporting nested types follows the natural reading pattern of understanding "what does this class do" before "how does it work internally."
+**Reading pattern optimization**: Code is read more often than written. Placing public methods before their
+supporting nested types follows the natural reading pattern of understanding "what does this class do" before
+"how does it work internally."
 
-**Forward reference support**: Java allows methods to reference nested classes declared later in the same compilation unit, making this organization technically feasible.
+**Forward reference support**: Java allows methods to reference nested classes declared later in the same
+compilation unit, making this organization technically feasible.
 
-**Parser API context**: AST parsing classes often have complex result types. Seeing `parseStatement()` method first, then `ParseResult` record below, creates a logical flow from usage to implementation.
+**Parser API context**: AST parsing classes often have complex result types. Seeing `parseStatement()` method
+first, then `ParseResult` record below, creates a logical flow from usage to implementation.
 
 ## ⚠️ TIER 2 IMPORTANT - Code Review
 
@@ -115,21 +145,28 @@ return new ParseResult(
 **When to use streams**: Complex transformations, filtering, or reductions of AST node collections.
 **When to use loops**: Simple iteration, I/O operations, or when performance is critical.
 
-**Parser context**: Processing large collections of tokens or AST nodes benefits from streams, but simple operations should use clear loops.
+**Parser context**: Processing large collections of tokens or AST nodes benefits from streams, but simple
+operations should use clear loops.
 
 ### Exception Messages - Missing Business Context
-**Why parsing context matters**: Parse exceptions need enough context for developers to understand syntax errors, not just generic failures.
+**Why parsing context matters**: Parse exceptions need enough context for developers to understand syntax
+errors, not just generic failures.
 
-**Good parsing exception**: "Unexpected token 'void' at position 45, expected identifier in method declaration"
+**Good parsing exception**: "Unexpected token 'void' at position 45, expected identifier in method
+declaration"
 
 ### Class Declaration - Missing final Modifier
-**Why final matters for design clarity**: Classes should be explicitly marked `final` unless they are designed for extension. This makes design intent clear and prevents accidental inheritance.
+**Why final matters for design clarity**: Classes should be explicitly marked `final` unless they are designed
+for extension. This makes design intent clear and prevents accidental inheritance.
 
-**Parser API context**: Most formatter and parser classes are implementation details that shouldn't be extended. Marking them `final` prevents misuse and signals they are complete, standalone implementations.
+**Parser API context**: Most formatter and parser classes are implementation details that shouldn't be
+extended. Marking them `final` prevents misuse and signals they are complete, standalone implementations.
 
-**Design principle**: Inheritance requires careful design - protected methods, documented extension points, stable contracts. Most classes don't need this complexity. Making them `final` is the safe default.
+**Design principle**: Inheritance requires careful design - protected methods, documented extension points,
+stable contracts. Most classes don't need this complexity. Making them `final` is the safe default.
 
-**When NOT to use final**: Abstract classes, explicit base classes with documented extension points, classes with protected methods designed for overriding, or framework integration points requiring subclassing.
+**When NOT to use final**: Abstract classes, explicit base classes with documented extension points, classes
+with protected methods designed for overriding, or framework integration points requiring subclassing.
 
 **Practical example**:
 ```java
@@ -145,13 +182,18 @@ public class BaseFormatter {
 ```
 
 ### JavaDoc - Thread-Safety Documentation
-**Document only actual thread-safe classes**: Only classes that are genuinely thread-safe should contain thread-safety documentation in their JavaDoc. Non-thread-safe classes should omit this section entirely to avoid confusion.
+**Document only actual thread-safe classes**: Only classes that are genuinely thread-safe should contain
+thread-safety documentation in their JavaDoc. Non-thread-safe classes should omit this section entirely to
+avoid confusion.
 
 **Required Format**: Use `<b>Thread-safety</b>:` (bolded with HTML tags) followed by a brief description.
 
-**Why this matters**: Thread-safety documentation is a positive assertion about concurrent usage guarantees. Documenting that a class is NOT thread-safe creates noise and implies that thread-safety was even considered as a design goal, which may not be the case for simple utility classes.
+**Why this matters**: Thread-safety documentation is a positive assertion about concurrent usage guarantees.
+Documenting that a class is NOT thread-safe creates noise and implies that thread-safety was even considered
+as a design goal, which may not be the case for simple utility classes.
 
-**Default assumption**: In the absence of thread-safety documentation, readers should assume a class is NOT thread-safe unless there are obvious indicators (like using `ConcurrentHashMap` or synchronized methods).
+**Default assumption**: In the absence of thread-safety documentation, readers should assume a class is NOT
+thread-safe unless there are obvious indicators (like using `ConcurrentHashMap` or synchronized methods).
 
 **Practical examples**:
 ```java
@@ -231,7 +273,8 @@ public final class Config { ... }
 public final class ConfigTest { ... }
 ```
 
-**When to document thread-safety**: Only when the class is explicitly designed for concurrent access and provides specific guarantees about thread-safe operations.
+**When to document thread-safety**: Only when the class is explicitly designed for concurrent access and
+provides specific guarantees about thread-safe operations.
 
 **Format specification**:
 - Use `<b>Thread-safety</b>:` (note the HTML bold tags and "Thread-safety" spelling)
@@ -243,19 +286,26 @@ public final class ConfigTest { ... }
 ## 💡 TIER 3 QUALITY - Best Practices
 
 ### Error Handling - Default Return Values
-**Parser system reliability**: Returning default values when parsing fails can mask serious errors in code formatters. Parse operations must fail visibly so developers can identify and resolve syntax issues before they affect code transformation.
+**Parser system reliability**: Returning default values when parsing fails can mask serious errors in code
+formatters. Parse operations must fail visibly so developers can identify and resolve syntax issues before
+they affect code transformation.
 
 **Silent failure risks**:
 - Returning `ASTNode.EMPTY` on parse errors could result in incorrect code transformations
 - Returning empty collections hides data retrieval failures
 - Null returns without clear error indication leave callers uncertain about system state
 
-**Fail-fast approach**: Let parse exceptions propagate to calling systems where appropriate error handling, logging, and user notification can occur. This ensures errors are handled at the right abstraction level.
+**Fail-fast approach**: Let parse exceptions propagate to calling systems where appropriate error handling,
+logging, and user notification can occur. This ensures errors are handled at the right abstraction level.
 
 ### Error Handling - Checked Exception Wrapping
-**Use WrappedCheckedException instead of RuntimeException**: When wrapping checked exceptions in unchecked exceptions (e.g., in lambdas or stream operations), use `WrappedCheckedException.wrap()` instead of generic `RuntimeException`.
+**Use WrappedCheckedException instead of RuntimeException**: When wrapping checked exceptions in unchecked
+exceptions (e.g., in lambdas or stream operations), use `WrappedCheckedException.wrap()` instead of generic
+`RuntimeException`.
 
-**Why this matters**: `WrappedCheckedException` provides better stack trace handling and makes it explicit that this is a wrapped checked exception, not a genuine runtime failure. It helps distinguish between true programming errors and wrapped I/O or other checked exceptions.
+**Why this matters**: `WrappedCheckedException` provides better stack trace handling and makes it explicit
+that this is a wrapped checked exception, not a genuine runtime failure. It helps distinguish between true
+programming errors and wrapped I/O or other checked exceptions.
 
 **Implementation guidance**:
 ```java
@@ -278,12 +328,15 @@ return cache.computeIfAbsent(path, p -> {
 });
 ```
 
-**When to use**: Lambda expressions, stream operations, or any context where checked exceptions cannot be declared but need to be propagated.
+**When to use**: Lambda expressions, stream operations, or any context where checked exceptions cannot be
+declared but need to be propagated.
 
 ### Concurrency - Virtual Thread Preference
-**Java 25 optimization**: Styler targets Java 25 and should leverage virtual threads for I/O-bound operations instead of CompletableFuture for simple cases.
+**Java 25 optimization**: Styler targets Java 25 and should leverage virtual threads for I/O-bound operations
+instead of CompletableFuture for simple cases.
 
-**Why virtual threads for Styler**: File processing involves extensive file I/O operations. Virtual threads provide better resource utilization and simpler code patterns for these blocking operations.
+**Why virtual threads for Styler**: File processing involves extensive file I/O operations. Virtual threads
+provide better resource utilization and simpler code patterns for these blocking operations.
 
 **Implementation guidance**:
 ```java
@@ -301,7 +354,9 @@ public CompletableFuture<FormattingResult> formatFile(Path filePath) {
 }
 ```
 
-**When CompletableFuture is still appropriate**: Complex async coordination (combining multiple file operations, timeout handling with sophisticated retry logic), CPU-bound parsing operations, or when integrating with existing async APIs.
+**When CompletableFuture is still appropriate**: Complex async coordination (combining multiple file
+operations, timeout handling with sophisticated retry logic), CPU-bound parsing operations, or when
+integrating with existing async APIs.
 
 ### Exception Type Selection - IllegalStateException vs AssertionError
 **Critical semantic distinction**: The choice between these exception types communicates WHO made the mistake.
@@ -312,7 +367,9 @@ public CompletableFuture<FormattingResult> formatFile(Path filePath) {
 - Invalid method call sequences
 - Precondition failures caused by external usage
 
-**Why this matters for Styler**: Parser and formatter APIs have strict usage contracts. Calling `apply()` before `validate()`, or using a formatter after it's been closed, are user errors that should throw `IllegalStateException`.
+**Why this matters for Styler**: Parser and formatter APIs have strict usage contracts. Calling `apply()`
+before `validate()`, or using a formatter after it's been closed, are user errors that should throw
+`IllegalStateException`.
 
 **AssertionError - Implementation Bug**:
 - Internal invariant violated
@@ -320,7 +377,8 @@ public CompletableFuture<FormattingResult> formatFile(Path filePath) {
 - Defensive programming checks that should never fail
 - Post-condition violations in correct code
 
-**Why this matters for Styler**: When merging two valid configurations produces an invalid result, that's a bug in the merge logic itself - not a user error. The implementation violated its own invariants.
+**Why this matters for Styler**: When merging two valid configurations produces an invalid result, that's a
+bug in the merge logic itself - not a user error. The implementation violated its own invariants.
 
 **Practical examples**:
 ```java
@@ -343,14 +401,21 @@ public RuleConfiguration merge(RuleConfiguration override) {
 }
 ```
 
-**Detection heuristic**: If the error message contains "should be" or "must be valid", it's likely describing an invariant (use `AssertionError`). If it describes incorrect usage or state, use `IllegalStateException`.
+**Detection heuristic**: If the error message contains "should be" or "must be valid", it's likely describing
+an invariant (use `AssertionError`). If it describes incorrect usage or state, use `IllegalStateException`.
 
 ### Method Naming - Clarity Over Brevity
-**Why descriptive names matter**: Method names are read far more often than they are typed. A clear, unambiguous method name improves code comprehension and reduces cognitive load when understanding parser and formatter logic.
+**Why descriptive names matter**: Method names are read far more often than they are typed. A clear,
+unambiguous method name improves code comprehension and reduces cognitive load when understanding parser and
+formatter logic.
 
-**Prefer full words over abbreviations**: Use complete words unless the abbreviation is universally understood (like URL, HTML, HTTP). This makes code self-documenting and reduces the mental translation required when reading.
+**Prefer full words over abbreviations**: Use complete words unless the abbreviation is universally understood
+(like URL, HTML, HTTP). This makes code self-documenting and reduces the mental translation required when
+reading.
 
-**Parser and formatter context**: Configuration, parsing, and formatting APIs benefit from clear method names. When debugging complex AST transformations, explicit method names like `getLineNumber()` are more immediately understood than abbreviated forms like `getLineNr()`.
+**Parser and formatter context**: Configuration, parsing, and formatting APIs benefit from clear method names.
+When debugging complex AST transformations, explicit method names like `getLineNumber()` are more immediately
+understood than abbreviated forms like `getLineNr()`.
 
 **Practical examples**:
 ```java
@@ -373,9 +438,12 @@ public Position getCurTokPos() { ... }
 - **Domain-specific terms**: AST (Abstract Syntax Tree), JLS (Java Language Specification)
 - **Mathematical conventions**: `min`, `max`, `abs`
 
-**Reading vs Writing balance**: Modern IDEs provide excellent autocompletion. The slight typing overhead of `getLineNumber()` versus `getLineNr()` is negligible compared to the readability improvement when reviewing code months later.
+**Reading vs Writing balance**: Modern IDEs provide excellent autocompletion. The slight typing overhead of
+`getLineNumber()` versus `getLineNr()` is negligible compared to the readability improvement when reviewing
+code months later.
 
-**Codebase consistency**: When refactoring existing methods, prefer clarity. If a method name seems unclear during code review, it's a good candidate for renaming to a more descriptive alternative.
+**Codebase consistency**: When refactoring existing methods, prefer clarity. If a method name seems unclear
+during code review, it's a good candidate for renaming to a more descriptive alternative.
 
 ## 📚 Navigation
 
@@ -388,4 +456,6 @@ public Position getCurTokPos() { ... }
 ### Claude Detection Patterns
 - **[Java Detection Patterns](java-claude.md)**: Automated rule detection patterns
 
-This human guide provides the conceptual foundation. For specific violation patterns and systematic checking, Claude uses the companion detection file. Together, they ensure both understanding and consistent enforcement of parser code quality standards.
+This human guide provides the conceptual foundation. For specific violation patterns and systematic checking,
+Claude uses the companion detection file. Together, they ensure both understanding and consistent enforcement
+of parser code quality standards.

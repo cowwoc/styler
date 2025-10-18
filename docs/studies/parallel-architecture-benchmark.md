@@ -6,7 +6,9 @@
 
 ## Executive Summary
 
-This study provides empirical evidence for architectural decisions regarding parallel processing in Java code formatting. Through comprehensive JMH benchmarking, we evaluated the performance impact of different threading approaches on AST operations.
+This study provides empirical evidence for architectural decisions regarding parallel processing in Java code
+formatting. Through comprehensive JMH benchmarking, we evaluated the performance impact of different threading
+approaches on AST operations.
 
 **Key Findings:**
 - Unsynchronized single-threaded-per-file approach is 90-99x faster than synchronized approaches

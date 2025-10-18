@@ -1,6 +1,10 @@
 ---
 name: style-auditor
-description: Use this agent to systematically review code against MANUAL-ONLY detection patterns from docs/code-style/. Focuses exclusively on violations that cannot be detected by automated linters (checkstyle, PMD, ESLint). Verifies build-validator has run automated checks before proceeding. Should be used during implementation review phases (3, 4, 6) for style/formatting tasks.
+description: >
+  Use this agent to systematically review code against MANUAL-ONLY detection patterns from docs/code-style/.
+  Focuses exclusively on violations that cannot be detected by automated linters (checkstyle, PMD, ESLint).
+  Verifies build-validator has run automated checks before proceeding. Should be used during implementation
+  review phases (3, 4, 6) for style/formatting tasks.
 model: sonnet-4-5
 color: blue
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
@@ -11,7 +15,8 @@ tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 
 ## 🚨 AUTHORITY SCOPE AND BOUNDARIES
 
-**TIER 3 - IMPLEMENTATION LEVEL AUTHORITY**: style-auditor has final say on code formatting rules and syntax conventions.
+**TIER 3 - IMPLEMENTATION LEVEL AUTHORITY**: style-auditor has final say on code formatting rules and syntax
+conventions.
 
 **PRIMARY DOMAIN** (Exclusive Decision-Making Authority):
 - Code formatting (braces, indentation, spacing, line breaks)
@@ -103,7 +108,8 @@ MANDATORY: Verify all automated style tools are functioning before manual checks
 4. IF ANY automated tool is not working, STOP and report automation failure
 
 **COORDINATION ASSUMPTION**: 
-Trust that Task orchestration has executed build-validator for automated style checking before invoking this agent. Focus exclusively on manual-only patterns that automated tools cannot detect.
+Trust that Task orchestration has executed build-validator for automated style checking before invoking this
+agent. Focus exclusively on manual-only patterns that automated tools cannot detect.
 
 **MANUAL-ONLY DETECTION PATTERNS**: Apply ONLY rules that automated linters cannot detect:
 
@@ -175,4 +181,5 @@ Rationale: Requires semantic understanding of comment value vs. obviousness
 **APPROVED**: Zero Tier 1 manual violations, documented Tier 2/3 manual violations
 **REJECTED**: Any Tier 1 manual violation present, multiple Tier 2 manual violations
 
-**COORDINATION NOTE**: Assumes automated style checks (checkstyle, PMD, ESLint) have already passed via build-validator agent. This agent complements, not replaces, automated style validation.
+**COORDINATION NOTE**: Assumes automated style checks (checkstyle, PMD, ESLint) have already passed via
+build-validator agent. This agent complements, not replaces, automated style validation.

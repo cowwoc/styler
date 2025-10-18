@@ -43,15 +43,18 @@ Common patterns and requirements shared across all stakeholder agents.
 
 Before beginning analysis, agents MUST:
 
-1. **MANDATORY FOUNDATIONAL READING**: Read these project documents to understand constraints and requirements:
+1.  **MANDATORY FOUNDATIONAL READING**: Read these project documents to understand constraints and
+   requirements:
    - **`docs/project/scope.md`**: Project scope, architectural guidelines, and technical constraints
    - **`docs/code-style-human.md`**: Code formatting and development standards
 
-2. **MANDATORY FIRST STEP**: Read the task's context.md file at `../context.md` to understand the task objectives and EXACT scope boundaries
+2.  **MANDATORY FIRST STEP**: Read the task's context.md file at `../context.md` to understand the task
+   objectives and EXACT scope boundaries
 
 3. **VERIFY SCOPE**: List out EXACTLY which files you are authorized to analyze from context.md
 
-4. **SCOPE VIOLATION CHECK**: If you find yourself needing to analyze files NOT in context.md, STOP and report the limitation
+4.  **SCOPE VIOLATION CHECK**: If you find yourself needing to analyze files NOT in context.md, STOP and
+   report the limitation
 
 5. **FORBIDDEN ACTIONS**: NEVER scan, read, or analyze files outside context.md scope
 

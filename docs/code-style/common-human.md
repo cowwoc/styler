@@ -15,7 +15,8 @@
 
 ## 🧠 Philosophy: Code as Communication
 
-Code is written once but read many times. In a code formatter handling AST transformations, clarity and maintainability are critical because:
+Code is written once but read many times. In a code formatter handling AST transformations, clarity and
+maintainability are critical because:
 - **Team collaboration**: Multiple developers work on parser logic and formatting rules
 - **Language evolution**: Java language features change with each release, requiring clear, modifiable code
 - **Long-term maintenance**: Formatters must support legacy and cutting-edge language features simultaneously
@@ -27,20 +28,26 @@ Code is written once but read many times. In a code formatter handling AST trans
 ## ⚠️ TIER 2 IMPORTANT - Code Review
 
 ### Magic Strings - Hardcoded Values
-**Why problematic in parsers**: Hardcoded strings often represent language constructs that change over time. Parser error messages, token names, and language keywords need to be easily updateable.
+**Why problematic in parsers**: Hardcoded strings often represent language constructs that change over time.
+Parser error messages, token names, and language keywords need to be easily updateable.
 
-**Maintenance burden**: Scattered strings make it difficult to update messaging when language specifications change.
+**Maintenance burden**: Scattered strings make it difficult to update messaging when language specifications
+change.
 
-**Localization considerations**: Code formatters may need to support multiple languages for error messages and user-facing text.
+**Localization considerations**: Code formatters may need to support multiple languages for error messages and
+user-facing text.
 
 ## 💡 TIER 3 QUALITY - Best Practices
 
 ### Code Duplication - Repeated Logic Blocks
-**Why extract common functionality**: Parser operations often involve similar patterns (token validation, AST construction, error handling). Shared utilities ensure consistent behavior and easier maintenance.
+**Why extract common functionality**: Parser operations often involve similar patterns (token validation, AST
+construction, error handling). Shared utilities ensure consistent behavior and easier maintenance.
 
-**Testing benefits**: Shared functions can be unit tested once and reused confidently throughout the code formatting system.
+**Testing benefits**: Shared functions can be unit tested once and reused confidently throughout the code
+formatting system.
 
-**Language updates**: When Java language features or grammar rules change, having logic in one place makes updates safer and more reliable.
+**Language updates**: When Java language features or grammar rules change, having logic in one place makes
+updates safer and more reliable.
 
 ### Comments - Obvious Statements
 **When to comment parser code**:
@@ -48,23 +55,31 @@ Code is written once but read many times. In a code formatter handling AST trans
 - **Language references**: "Based on Java Language Specification §14.9"
 - **Complex transformations**: "AST restructuring for method reference expressions per JLS §15.13"
 
-**When not to comment**: Basic programming operations that are self-evident from well-named variables and methods.
+**When not to comment**: Basic programming operations that are self-evident from well-named variables and
+methods.
 
 ### Comments - Inline Placement
-**Why comments should precede code**: Inline comments interrupt the flow of reading code and make lines longer, reducing readability especially on smaller screens.
+**Why comments should precede code**: Inline comments interrupt the flow of reading code and make lines
+longer, reducing readability especially on smaller screens.
 
-**Parser code readability**: AST transformation logic is already complex. Comments should enhance understanding, not clutter the logical flow.
+**Parser code readability**: AST transformation logic is already complex. Comments should enhance
+understanding, not clutter the logical flow.
 
-**Best practice**: Place explanatory comments on the line above the code they describe, allowing the eye to read explanation first, then implementation.
+**Best practice**: Place explanatory comments on the line above the code they describe, allowing the eye to
+read explanation first, then implementation.
 
 ### Comments - Historical References
-**Why avoid historical comments**: Code should document the current state, not past decisions. Version control systems (git) provide complete change history.
+**Why avoid historical comments**: Code should document the current state, not past decisions. Version control
+systems (git) provide complete change history.
 
-**Maintenance burden**: Historical comments become stale and misleading as code evolves. They add cognitive overhead without functional value.
+**Maintenance burden**: Historical comments become stale and misleading as code evolves. They add cognitive
+overhead without functional value.
 
-**Parser code focus**: Code formatting logic should focus on current language specifications, not previous implementations or future possibilities.
+**Parser code focus**: Code formatting logic should focus on current language specifications, not previous
+implementations or future possibilities.
 
-**Parser code clarity**: Well-written parser code should read like a description of the transformation process, with comments reserved for language specification context rather than programming mechanics.
+**Parser code clarity**: Well-written parser code should read like a description of the transformation
+process, with comments reserved for language specification context rather than programming mechanics.
 
 ## 📚 Navigation
 
@@ -75,7 +90,8 @@ These common principles apply universally, but specific implementation details v
 - **[TypeScript Style Guide](typescript-human.md)**: Type safety and interface design considerations
 - **[Testing Conventions](testing-human.md)**: Testing patterns, parallel execution, and JPMS structure
 
-Both language-specific guides build upon these foundational principles while addressing language-specific concerns for code formatter development.
+Both language-specific guides build upon these foundational principles while addressing language-specific
+concerns for code formatter development.
 
 ### Related Documentation
 - **[Master Style Guide](../code-style-human.md)**: Complete overview and philosophy

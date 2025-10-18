@@ -4,13 +4,15 @@ Common tool usage patterns that cause failures and how to prevent them.
 
 ## 🛠️ CRITICAL ERROR PREVENTION
 
-This guide contains proven strategies for avoiding common tool-related errors in the Styler Java Code Formatter project.
+This guide contains proven strategies for avoiding common tool-related errors in the Styler Java Code
+Formatter project.
 
 ## File Editing with the Edit Tool
 
 **PROBLEM**: "String to replace not found in file" errors due to whitespace character mismatches.
 
-**ROOT CAUSE**: The Read tool displays output visually but doesn't distinguish between tabs and spaces. Copying text from Read output may preserve visual formatting but not actual characters.
+**ROOT CAUSE**: The Read tool displays output visually but doesn't distinguish between tabs and spaces.
+Copying text from Read output may preserve visual formatting but not actual characters.
 
 **PREVENTION STRATEGIES**:
 
@@ -65,7 +67,8 @@ sed -n 's/old/new/p' file.java  # Preview replacements without modifying
 
 **PROBLEM**: "No such file or directory" errors when running executables like `./mvnw`.
 
-**ROOT CAUSE**: Bash tool maintains working directory between invocations. Commands may be executed from unexpected directories.
+**ROOT CAUSE**: Bash tool maintains working directory between invocations. Commands may be executed from
+unexpected directories.
 
 **PREVENTION STRATEGIES**:
 
@@ -117,7 +120,8 @@ cat /workspace/branches/task-name/code/README.md
 
 ## Pattern Matching and Replacement
 
-**PROBLEM**: Over-broad pattern matching causes unintended replacements (e.g., replacing inside helper methods that use the same pattern).
+**PROBLEM**: Over-broad pattern matching causes unintended replacements (e.g., replacing inside helper methods
+that use the same pattern).
 
 **ROOT CAUSE**: Global search-and-replace without considering all possible match locations.
 
@@ -184,7 +188,8 @@ diff file.java.backup file.java  # Review changes
 
 ## General Tool Usage Principles
 
-1. **READ FIRST, EDIT SECOND**: Always read a file before editing to understand its structure and whitespace style
+1.  **READ FIRST, EDIT SECOND**: Always read a file before editing to understand its structure and whitespace
+   style
 2. **VERIFY BEFORE EXECUTING**: Use preview/dry-run options when available
 3. **ABSOLUTE OVER RELATIVE**: Prefer absolute paths to eliminate directory confusion
 4. **SPECIFIC OVER BROAD**: Make patterns as specific as possible to avoid unintended matches
