@@ -13,21 +13,27 @@
 
 ## 🧠 Why These Rules Matter
 
-Maven POM files define project structure, dependencies, and build configuration. Clear organization is critical because:
-- **Dependency management**: Developers need to quickly understand project dependencies and their relationships
+Maven POM files define project structure, dependencies, and build configuration. Clear organization is
+critical because:
+-  **Dependency management**: Developers need to quickly understand project dependencies and their
+  relationships
 - **Merge conflict reduction**: Consistent formatting minimizes git conflicts during dependency updates
 - **Maintainability**: Clear grouping makes it easier to identify missing dependencies or version conflicts
 
 ## 🚨 TIER 1 CRITICAL - Build Blockers
 
 ### Dependency Grouping - Inconsistent Organization
-**Why dependency grouping matters**: Dependencies should be organized by type and scope to make the POM file scannable and maintainable. This organization helps developers quickly understand which dependencies are internal project modules versus external libraries.
+**Why dependency grouping matters**: Dependencies should be organized by type and scope to make the POM file
+scannable and maintainable. This organization helps developers quickly understand which dependencies are
+internal project modules versus external libraries.
 
 **Grouping rules**:
-1. **Group by type first**: All project dependencies (`groupId` starting with project groupId) are grouped together at the top
+1.  **Group by type first**: All project dependencies (`groupId` starting with project groupId) are grouped
+   together at the top
 2. **Group by scope second**: External dependencies are grouped by scope (compile, provided, test)
 3. **No blank lines within groups**: Dependencies of the same type and scope should have no blank lines between `</dependency>` and `<dependency>`
-4. **Exactly one blank line between groups**: Groups with different type or scope should be separated by exactly one blank line
+4.  **Exactly one blank line between groups**: Groups with different type or scope should be separated by
+   exactly one blank line
 
 **Practical example**:
 ```xml
@@ -67,9 +73,11 @@ Maven POM files define project structure, dependencies, and build configuration.
 ```
 
 **Why this organization helps**:
-- **Project vs external separation**: Immediately see internal module dependencies versus third-party libraries
+-  **Project vs external separation**: Immediately see internal module dependencies versus third-party
+  libraries
 - **Scope visibility**: Test dependencies are visually separated from runtime dependencies
-- **Merge conflict reduction**: Consistent spacing reduces unnecessary conflicts when adding dependencies in different branches
+-  **Merge conflict reduction**: Consistent spacing reduces unnecessary conflicts when adding dependencies in
+  different branches
 - **Dependency audit**: Quickly scan for test-only dependencies that shouldn't be in compile scope
 
 ## 📚 Navigation
@@ -82,4 +90,6 @@ Maven POM files define project structure, dependencies, and build configuration.
 ### Claude Detection Patterns
 - **[Maven Detection Patterns](maven-claude.md)**: Automated rule detection patterns
 
-This human guide provides the conceptual foundation. For specific violation patterns and systematic checking, Claude uses the companion detection file. Together, they ensure both understanding and consistent enforcement of Maven POM quality standards.
+This human guide provides the conceptual foundation. For specific violation patterns and systematic checking,
+Claude uses the companion detection file. Together, they ensure both understanding and consistent enforcement
+of Maven POM quality standards.

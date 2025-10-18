@@ -5,10 +5,13 @@ Complete code policy guidelines for Styler Java Code Formatter project.
 ## 📝 CODE COMMENTS POLICY
 
 **OUTDATED CONTENT HANDLING**:
-🔄 **UPDATE PRINCIPLE**: When encountering outdated code or comments, update them to reflect current functionality rather than removing them **only if there is long-term interest in keeping them**, even if this requires significant effort. If they're not used/needed, remove them entirely.
+🔄 **UPDATE PRINCIPLE**: When encountering outdated code or comments, update them to reflect current
+functionality rather than removing them **only if there is long-term interest in keeping them**, even if this
+requires significant effort. If they're not used/needed, remove them entirely.
 
 **PROHIBITED COMMENT PATTERNS**:
-❌ References to past changes: "Note: Removed skipping of getters/setters as tests expect them to be documented"
+❌ References to past changes: "Note: Removed skipping of getters/setters as tests expect them to be
+documented"
 ❌ Implementation history: "Previously this used X, now it uses Y"
 ❌ Change rationale: "Updated to fix issue with Z"
 ❌ Refactoring notes: "Changed from approach A to approach B because..."
@@ -20,7 +23,8 @@ Complete code policy guidelines for Styler Java Code Formatter project.
 ✅ Technical rationale: "Expression context prevents statement-level transformation"
 ✅ Domain constraints: "Source position tracking requires precise integer arithmetic"
 
-**PRINCIPLE**: Comments should describe WHAT the code does and WHY it works that way, never WHAT it used to do or HOW it changed. When comments become outdated, update them to accurately reflect current behavior.
+**PRINCIPLE**: Comments should describe WHAT the code does and WHY it works that way, never WHAT it used to do
+or HOW it changed. When comments become outdated, update them to accurately reflect current behavior.
 
 ## 🔧 TODO COMMENT HANDLING
 
@@ -35,9 +39,11 @@ Complete code policy guidelines for Styler Java Code Formatter project.
 **REQUIRED APPROACH**:
 ✅ **Implement the TODO**: If it's critical for the current task, implement it now
 ✅ **Remove the comment**: If the TODO isn't needed, delete it entirely
-✅ **Fix the code**: If something is "temporary", fix the underlying problem; otherwise, make it permanent or document why it must be temporary
+✅ **Fix the code**: If something is "temporary", fix the underlying problem; otherwise, make it permanent or
+document why it must be temporary
 ✅ **Move to task tracker**: Add genuine TODOs to todo.md and remove inline comment
-✅ **Accept the violation**: If the TODO is legitimately needed for documentation, keep it as-is and accept the checkstyle violation (or suppress with @SuppressWarnings if project policy allows)
+✅ **Accept the violation**: If the TODO is legitimately needed for documentation, keep it as-is and accept the
+checkstyle violation (or suppress with @SuppressWarnings if project policy allows)
 
 **EXAMPLE - BAD**:
 ```java
@@ -69,7 +75,8 @@ return new LineLengthRuleConfiguration();
 
 ## 📚 JAVADOC COMMENT REQUIREMENTS
 
-**CRITICAL MANUAL PROCESS**: JavaDoc comments must NEVER be populated using automated scripts or template-based tools.
+**CRITICAL MANUAL PROCESS**: JavaDoc comments must NEVER be populated using automated scripts or
+template-based tools.
 
 **MANDATORY APPROACH**:
 ✅ Read and understand the actual business logic being implemented
@@ -101,7 +108,9 @@ public void canHandleWithJava25ReturnsTrue()
 public void canHandleWithJava25ReturnsTrue()
 ```
 
-**RATIONALE**: JavaDoc comments require understanding the business domain and technical context. Automated scripts cannot comprehend what a method actually does or why it matters, leading to meaningless documentation that provides no value to developers.
+**RATIONALE**: JavaDoc comments require understanding the business domain and technical context. Automated
+scripts cannot comprehend what a method actually does or why it matters, leading to meaningless documentation
+that provides no value to developers.
 
 ## 🧪 TESTNG TEST REQUIREMENTS
 
@@ -162,11 +171,13 @@ public class MyTest {
 }
 ```
 
-**RATIONALE**: TestNG runs tests in parallel by default. Using `@BeforeMethod` or mutable instance fields creates race conditions and non-deterministic test failures. Each test method must be completely independent.
+**RATIONALE**: TestNG runs tests in parallel by default. Using `@BeforeMethod` or mutable instance fields
+creates race conditions and non-deterministic test failures. Each test method must be completely independent.
 
 ## 🚨 EXCEPTION TYPE SELECTION
 
-**CRITICAL DISTINCTION**: Choose exception types based on whether valid input reached an impossible state (internal bug) or the user violated the API contract.
+**CRITICAL DISTINCTION**: Choose exception types based on whether valid input reached an impossible state
+(internal bug) or the user violated the API contract.
 
 **INTERNAL BUGS** - Use `AssertionError`:
 - **Definition**: Valid input leads to impossible/unreachable state - indicates bug in our implementation
@@ -175,7 +186,8 @@ public class MyTest {
 - Algorithm bugs (postcondition violations with valid inputs)
 - Impossible state reached (unreachable code executed, invalid enum value)
 - Invariant violations (data structure corruption with valid operations)
-- **Key principle**: If the user provided valid input and followed the API correctly, but the code reached an impossible state, it's our bug → AssertionError
+-  **Key principle**: If the user provided valid input and followed the API correctly, but the code reached an
+  impossible state, it's our bug → AssertionError
 
 **INVALID USER STATE** - Use `IllegalStateException`:
 - **Definition**: User violated API contract by using object in wrong state/order - not an internal bug
@@ -250,10 +262,13 @@ if (tabWidth < 1 || tabWidth > 8) {
 
 **PRINCIPLE**:
 - **AssertionError**: Valid input + correct API usage → impossible state reached = **our bug**
-- **IllegalStateException**: Valid input + incorrect API usage (wrong method order/lifecycle) = **user's API misuse**
+-  **IllegalStateException**: Valid input + incorrect API usage (wrong method order/lifecycle) = **user's API
+  misuse**
 - **IllegalArgumentException**: Invalid input = **user's bad data**
 
-This distinction helps developers immediately identify whether they need to fix their code (IllegalStateException/IllegalArgumentException) or file a bug report against our implementation (AssertionError).
+This distinction helps developers immediately identify whether they need to fix their code
+(IllegalStateException/IllegalArgumentException) or file a bug report against our implementation
+(AssertionError).
 
 **DECISION FLOWCHART**:
 1. Did the user provide valid input/parameters?

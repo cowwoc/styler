@@ -1,6 +1,7 @@
 # Configuration Guide
 
-Styler uses [TOML](https://toml.io/en/v1.0.0) configuration files to customize formatting rules. Configuration files are discovered hierarchically and merged with field-level precedence.
+Styler uses [TOML](https://toml.io/en/v1.0.0) configuration files to customize formatting rules. Configuration
+files are discovered hierarchically and merged with field-level precedence.
 
 ## Configuration Files
 
@@ -24,7 +25,9 @@ When Styler starts, it searches for configuration files in this order:
 4. System-wide:      /etc/.styler.toml
 ```
 
-**Git Boundary Protection**: The search stops when it encounters a `.git` directory. This prevents configuration from leaking across repository boundaries. For example, if you're working in a nested git repository, Styler won't read the parent repository's configuration.
+**Git Boundary Protection**: The search stops when it encounters a `.git` directory. This prevents
+configuration from leaking across repository boundaries. For example, if you're working in a nested git
+repository, Styler won't read the parent repository's configuration.
 
 ## Merging Strategy
 
@@ -106,13 +109,15 @@ This applies when no user or project config exists.
 Configuration values are validated when loaded:
 
 - **Syntax errors**: Invalid TOML syntax throws `ConfigurationSyntaxException` with line/column information
-- **Validation errors**: Values violating business rules (e.g., negative line length) throw `ConfigurationValidationException`
+-  **Validation errors**: Values violating business rules (e.g., negative line length) throw
+  `ConfigurationValidationException`
 
 Both exceptions include actionable error messages pointing to the problem.
 
 ## Load-Once Pattern
 
-Styler loads configuration **once** at startup and uses the same immutable `Config` instance throughout execution. There is no configuration reloading or file watching.
+Styler loads configuration **once** at startup and uses the same immutable `Config` instance throughout
+execution. There is no configuration reloading or file watching.
 
 This ensures:
 - **Consistent behavior**: All files formatted in a session use the same settings

@@ -62,11 +62,14 @@ if (position < 0) {
 // CORRECT - requireThat() range check
 requireThat(position, "position").isNotNegative();
 ```
-**Rationale**: requireThat() provides consistent validation with better error messages, standardized naming, and clearer intent. The validation library generates consistent error messages automatically and reduces boilerplate code.
+**Rationale**: requireThat() provides consistent validation with better error messages, standardized naming,
+and clearer intent. The validation library generates consistent error messages automatically and reduces
+boilerplate code.
 
 ### Parameter Formatting - Multi-line Declarations and Calls
 **Detection Pattern 1**: `(record|public\s+\w+).*\([^)]*\n.*,` (multi-line parameter declarations)
-**Detection Pattern 2**: `(new\s+\w+|[a-zA-Z_]\w*)\([^)]*\n` (multi-line parameter lists requiring efficiency analysis)
+**Detection Pattern 2**: `(new\s+\w+|[a-zA-Z_]\w*)\([^)]*\n` (multi-line parameter lists requiring efficiency
+analysis)
 
 **Multi-Step Detection for Pattern 2**:
 1. **Find multi-line parameter constructs**: `grep -n "([^)]*\n" *.java`
@@ -78,7 +81,8 @@ requireThat(position, "position").isNotNegative();
    - Empty first lines (opening paren + newline) with subsequent packed lines → VIOLATION
 
 **Canonical Line-Filling Style**:
-**Principle**: Maximize parameters per line while respecting 120-character limit. Break to next line only when adding the next parameter would exceed the limit.
+**Principle**: Maximize parameters per line while respecting 120-character limit. Break to next line only when
+adding the next parameter would exceed the limit.
 
 **Violation Examples**:
 - `record Token(\n    TokenType type,\n    int position\n)` (unnecessary wrapping - fits on one line: ~40 chars)
@@ -106,10 +110,12 @@ grep -rn -E "new \w+\(\s*\n\s+\w+.*," --include="*.java" . # Likely underutilize
 grep -rn -E "\w+\([^,)]+,[^,)]+,[^,)]+,[^,)]+,\s*\n\s+[^,)]+\);" --include="*.java" . # Overloaded first line
 ```
 
-**Rationale**: Maximize both horizontal and vertical space efficiency; avoid wasted lines and improve code density without sacrificing readability
+**Rationale**: Maximize both horizontal and vertical space efficiency; avoid wasted lines and improve code
+density without sacrificing readability
 
 ### Class Organization - User-Facing Members First
-**Detection Pattern**: `(public|protected).*record\s+\w+.*\{.*\n.*public\s+\w+.*\(` (nested types before public methods)
+**Detection Pattern**: `(public|protected).*record\s+\w+.*\{.*\n.*public\s+\w+.*\(` (nested types before
+public methods)
 **Violation**: `public record Result(...) { ... }\npublic ReturnType publicMethod() { ... }`
 **Correct**: `public ReturnType publicMethod() { ... }\npublic record Result(...) { ... }`
 **Rationale**: Present API surface first to improve code readability and understanding
@@ -171,15 +177,20 @@ public Parser(String source) {
     // position, depth, tokenCheckCounter automatically initialized to 0
 }
 ```
-**Rationale**: Java automatically initializes primitive fields to their default values (0 for numeric types, false for boolean, null for objects). Explicit assignment to default values is redundant and adds unnecessary code. This reduces visual clutter and makes non-default initializations more prominent.
-**Note**: This rule applies only when the assigned value equals Java's default. Non-default initializations (e.g., `private int maxDepth = 100;`) are required and should not be removed.
+**Rationale**: Java automatically initializes primitive fields to their default values (0 for numeric types,
+false for boolean, null for objects). Explicit assignment to default values is redundant and adds unnecessary
+code. This reduces visual clutter and makes non-default initializations more prominent.
+**Note**: This rule applies only when the assigned value equals Java's default. Non-default initializations
+(e.g., `private int maxDepth = 100;`) are required and should not be removed.
 
 ### Class Declaration - Missing final Modifier
 **Detection Pattern**: `public\s+class\s+\w+\s+(extends\s+\w+\s*)?\{` (non-final classes)
 **Violation**: `public class ArgumentParser {` (not extended anywhere)
 **Correct**: `public final class ArgumentParser {`
-**Rationale**: Classes not designed for extension should be declared final to prevent unintended subclassing and make design intent explicit
-**Exception**: Abstract classes, base classes explicitly designed for extension, or classes with protected methods intended for overriding
+**Rationale**: Classes not designed for extension should be declared final to prevent unintended subclassing
+and make design intent explicit
+**Exception**: Abstract classes, base classes explicitly designed for extension, or classes with protected
+methods intended for overriding
 
 ### Control Flow - Multiple OR Comparisons Should Use Switch
 **Detection Pattern**: `return .+ == .+ \|\|` (3 or more equality comparisons chained with OR)
@@ -240,7 +251,9 @@ if (isUnaryOperator) {
     // ...
 }
 ```
-**Rationale**: Switch statements with multiple case labels (comma-separated) are more concise, easier to maintain, and less error-prone than long chains of OR comparisons. The switch pattern makes it immediately clear that we're checking for membership in a set of values.
+**Rationale**: Switch statements with multiple case labels (comma-separated) are more concise, easier to
+maintain, and less error-prone than long chains of OR comparisons. The switch pattern makes it immediately
+clear that we're checking for membership in a set of values.
 
 ### JavaDoc - Thread-Safety Documentation Format and Usage
 **Required Format**: Use `<b>Thread-safety</b>:` (bolded with HTML tags) followed by brief description
@@ -328,12 +341,14 @@ grep -rn '<b>Thread-safety</b>:.*test method.*local variables' --include="*.java
 grep -rn '<b>Thread-safety</b>:.*try-finally cleanup' --include="*.java" .
 ```
 
-**Rationale**: Thread-safety documentation should be a positive assertion with consistent formatting. Absence of thread-safety documentation implies the class is not thread-safe.
+**Rationale**: Thread-safety documentation should be a positive assertion with consistent formatting. Absence
+of thread-safety documentation implies the class is not thread-safe.
 
 ## TIER 3 QUALITY - Best Practices
 
 ### Error Handling - Default Return Values
-**Violation**: Catching exceptions and returning default/fallback values instead of propagating errors (either directly or through error-handling methods)
+**Violation**: Catching exceptions and returning default/fallback values instead of propagating errors (either
+directly or through error-handling methods)
 **Correct**: Let exceptions propagate to allow proper error handling by callers
 **Example**:
 ```java
@@ -359,9 +374,11 @@ public ASTNode parseExpression(TokenStream tokens) {
     // Other exceptions propagate naturally
 }
 ```
-**Rationale**: Parser operations must fail visibly when errors occur. Returning default values (empty nodes, null results) can hide serious parsing errors and lead to incorrect AST construction.
+**Rationale**: Parser operations must fail visibly when errors occur. Returning default values (empty nodes,
+null results) can hide serious parsing errors and lead to incorrect AST construction.
 
-**Manual Analysis Required**: For Pattern 2 matches, examine the called method to verify if it returns default/ZERO values. Methods named `handle.*Error`, `.*ErrorHandler`, `default.*` are particularly suspect.
+**Manual Analysis Required**: For Pattern 2 matches, examine the called method to verify if it returns
+default/ZERO values. Methods named `handle.*Error`, `.*ErrorHandler`, `default.*` are particularly suspect.
 
 ### Error Handling - Checked Exception Wrapping with RuntimeException
 **Detection Pattern**: Look for `throw new RuntimeException` wrapping checked exceptions
@@ -393,8 +410,11 @@ return cache.computeIfAbsent(path, p -> {
     }
 });
 ```
-**Rationale**: `WrappedCheckedException` makes it explicit that this is a wrapped checked exception, provides better stack trace handling, and helps distinguish between true programming errors and wrapped I/O exceptions.
-**Manual Analysis**: Review each `RuntimeException` usage to determine if it's wrapping a checked exception. Not all `RuntimeException` uses are violations - only those wrapping checked exceptions in lambda/stream contexts.
+**Rationale**: `WrappedCheckedException` makes it explicit that this is a wrapped checked exception, provides
+better stack trace handling, and helps distinguish between true programming errors and wrapped I/O exceptions.
+**Manual Analysis**: Review each `RuntimeException` usage to determine if it's wrapping a checked exception.
+Not all `RuntimeException` uses are violations - only those wrapping checked exceptions in lambda/stream
+contexts.
 
 ### Concurrency - Virtual Thread Preference
 **Detection Pattern**: `CompletableFuture\.supplyAsync\(\s*\(\)\s*->\s*.*\.(read|write|process)\(`
@@ -453,7 +473,8 @@ public RuleConfiguration merge(RuleConfiguration override) {
 }
 ```
 
-**Rationale**: `IllegalStateException` signals recoverable API usage errors. `AssertionError` signals programming bugs indicating broken implementation invariants.
+**Rationale**: `IllegalStateException` signals recoverable API usage errors. `AssertionError` signals
+programming bugs indicating broken implementation invariants.
 
 ### Method Naming - Clarity Over Brevity
 **Detection Pattern**: Look for method names with unclear abbreviations
@@ -504,7 +525,8 @@ public void calculateMaximumDepth() { ... }
 public String formatSource(SourceFile file) { ... }
 ```
 
-**Rationale**: Clear method names improve code comprehension. Abbreviated names require mental translation and reduce readability, especially during code review and debugging.
+**Rationale**: Clear method names improve code comprehension. Abbreviated names require mental translation and
+reduce readability, especially during code review and debugging.
 
 ## Optimized Detection Commands
 
@@ -538,4 +560,5 @@ echo "=== TIER 3 QUALITY VIOLATIONS ==="
 
 ```
 
-**Usage for Style Auditor**: Run all commands in parallel, collect results, generate detailed violation reports with file locations and context.
+**Usage for Style Auditor**: Run all commands in parallel, collect results, generate detailed violation
+reports with file locations and context.

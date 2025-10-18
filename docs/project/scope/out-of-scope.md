@@ -15,7 +15,8 @@
 - **Microservices architecture** - Keep as monolithic application
 - **Dependency injection frameworks** - No Guice, Spring DI, or external DI containers
 - **JUnit testing framework** - Use TestNG exclusively for consistency and JPMS compatibility
-- **Test mocking frameworks** - No Mockito, EasyMock, or other mocking libraries (use real objects or test stubs)
+-  **Test mocking frameworks** - No Mockito, EasyMock, or other mocking libraries (use real objects or test
+  stubs)
 - **GraalVM native image** - No native compilation or startup optimization via GraalVM
 
 ## Third-Party Integrations & External Services
@@ -83,7 +84,8 @@
 - **Incremental builds** - No build system incremental compilation integration
 - **Multi-module coordination** - Process files independently, no cross-module formatting rules
 - **Custom build phases** - Standard formatting only, no custom build phase integration
-- **Non-standard Maven properties** - Avoid `${maven.multiModuleProjectDirectory}` and other non-standard properties subject to future removal
+-  **Non-standard Maven properties** - Avoid `${maven.multiModuleProjectDirectory}` and other non-standard
+  properties subject to future removal
 
 ## Transformation Context API Simplifications
 - **Complex authorization frameworks** - Rules run sequentially and should transform freely
@@ -112,12 +114,15 @@
 - **Preview APIs** - No use of Java preview features (e.g., StructuredTaskScope in Java 25)
 - **Incubating APIs** - No use of incubating APIs that require `--enable-preview` flags
 - **Experimental features** - Only stable, finalized Java APIs may be used in production code
-- **Rationale**: Preview features can change between Java versions and require special compiler/runtime flags, making them unsuitable for production use
-- **Alternative**: Use stable equivalents (e.g., ExecutorService with virtual threads instead of StructuredTaskScope)
+-  **Rationale**: Preview features can change between Java versions and require special compiler/runtime
+  flags, making them unsuitable for production use
+-  **Alternative**: Use stable equivalents (e.g., ExecutorService with virtual threads instead of
+  StructuredTaskScope)
 
 ## Enforcement
 
-**CRITICAL**: OUT OF SCOPE FEATURES MUST NEVER BE ADDED TO TODO.MD OR IMPLEMENTED. If a requested feature involves any of the above areas, **REJECT** it completely and suggest alternatives within scope.
+**CRITICAL**: OUT OF SCOPE FEATURES MUST NEVER BE ADDED TO TODO.MD OR IMPLEMENTED. If a requested feature
+involves any of the above areas, **REJECT** it completely and suggest alternatives within scope.
 
 **Alternative Approaches**: When functionality is needed, prefer:
 - **Simple file-based solutions** over complex database or cloud storage
@@ -127,4 +132,5 @@
 - **Configuration files** over user management or authentication systems
 - **Standard libraries** over external services or complex dependencies
 
-**Focus**: Keep Styler as a focused, efficient Java code formatter that does one thing exceptionally well: formatting Java source code according to configurable style rules.
+**Focus**: Keep Styler as a focused, efficient Java code formatter that does one thing exceptionally well:
+formatting Java source code according to configurable style rules.

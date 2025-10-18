@@ -9,7 +9,8 @@
 
 **Hooks MUST be registered in `.claude/settings.json` to function.**
 
-Simply placing a hook file in `/workspace/.claude/hooks/` does NOT activate it. Each hook requires explicit registration under the appropriate trigger event in `settings.json`.
+Simply placing a hook file in `/workspace/.claude/hooks/` does NOT activate it. Each hook requires explicit
+registration under the appropriate trigger event in `settings.json`.
 
 **Verification Command**:
 ```bash
@@ -352,4 +353,5 @@ echo $?  # Should be 0 for legitimate operations
 
 ---
 
-**Maintenance**: Update this registry when adding, removing, or modifying hooks. Keep verification commands current.
+**Maintenance**: Update this registry when adding, removing, or modifying hooks. Keep verification commands
+current.

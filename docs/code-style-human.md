@@ -19,7 +19,8 @@
 
 ### Why Code Style Matters in Code Formatter Development
 
-This codebase implements Styler, a Java code formatter that processes source code and applies formatting transformations. Code quality is critical because:
+This codebase implements Styler, a Java code formatter that processes source code and applies formatting
+transformations. Code quality is critical because:
 
 - **Parse Accuracy**: Errors in AST parsing could corrupt source code or lose formatting information
 - **Performance Requirements**: Code formatters must process large codebases efficiently with minimal latency
@@ -37,13 +38,15 @@ This codebase implements Styler, a Java code formatter that processes source cod
 
 ## 📚 Understanding the Documentation Structure
 
-> **Quick Start**: New to the project? Start with [Common Practices](code-style/common-human.md) then move to your language-specific guide.
+> **Quick Start**: New to the project? Start with [Common Practices](code-style/common-human.md) then move to
+your language-specific guide.
 
 ### Language-Specific Guides
 - **[Common Practices](code-style/common-human.md)**: Universal principles applying to all code
 - **[Java Patterns](code-style/java-human.md)**: JVM-specific patterns for AST parsing and code formatting  
 - **[TypeScript Practices](code-style/typescript-human.md)**: Type-safe frontend development
-- **[Testing Conventions](code-style/testing-human.md)**: Testing patterns, parallel execution, and JPMS structure
+-  **[Testing Conventions](code-style/testing-human.md)**: Testing patterns, parallel execution, and JPMS
+  structure
 
 ### Rule Priority Levels
 
@@ -92,14 +95,16 @@ This codebase implements Styler, a Java code formatter that processes source cod
 ### During Development
 1. **Apply TIER 1 Rules**: Ensure build won't fail and calculations are accurate
 2. **Follow Language Patterns**: Use established patterns from language-specific guides
-3. **Write Parallel-Safe Tests**: Follow [Testing Conventions](code-style/testing-human.md) for thread-safe test design
+3.  **Write Parallel-Safe Tests**: Follow [Testing Conventions](code-style/testing-human.md) for thread-safe
+   test design
 4. **Document Business Logic**: Add context for complex parsing transformations
 5. **Validate Edge Cases**: Consider boundary conditions for malformed source code
 
 ### Code Review Process
 1. **Automated Checks**: Run linting and build validation first
 2. **TIER 1 Verification**: Verify critical parsing accuracy rules
-3. **Test Quality Review**: Ensure tests follow [parallel execution safety rules](code-style/testing-human.md#parallel-test-execution-requirements)
+3.  **Test Quality Review**: Ensure tests follow [parallel execution safety
+   rules](code-style/testing-human.md#parallel-test-execution-requirements)
 4. **Business Logic Review**: Check calculation logic against requirements
 5. **Documentation Review**: Ensure external sources are properly referenced
 6. **TIER 2/3 Assessment**: Evaluate maintainability and best practices
@@ -166,4 +171,6 @@ This codebase implements Styler, a Java code formatter that processes source cod
 
 ---
 
-**Remember**: Code style in code formatters isn't just about aesthetics—it's about correctness, maintainability, and language compliance. Every style rule exists to support the ultimate goal of delivering accurate, reliable source code parsing and formatting.
+**Remember**: Code style in code formatters isn't just about aesthetics—it's about correctness,
+maintainability, and language compliance. Every style rule exists to support the ultimate goal of delivering
+accurate, reliable source code parsing and formatting.
