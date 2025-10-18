@@ -30,12 +30,46 @@ This document contains:
 - [ ] todo.md removed from todo list and added to changelog.md
 - [ ] **Dependent tasks updated in todo.md** (BLOCKED → READY if all dependencies satisfied)
 - [ ] todo.md and changelog.md changes amended to existing commit
-- [ ] **Build verification passes in task worktree BEFORE merge** (`./mvnw verify` in worktree)
+- [ ] **Build verification passes in task worktree BEFORE merge** (`./mvnw clean verify` in worktree - clean build prevents stale module-info.class issues)
 - [ ] Task branch merged to main branch with **LINEAR COMMIT HISTORY** (fast-forward only, NO merge commits)
 - [ ] Full build verification passes on main branch after merge (`./mvnw verify`)
 
+**Post-Merge Build Failure Recovery Protocol:**
+
+If `./mvnw verify` fails on main branch after merge (despite passing in worktree):
+
+1. **DO NOT create new commits** on main branch to fix build issues
+2. **Immediately revert the merge**:
+   ```bash
+   cd /workspace/main
+   git reset --hard HEAD~1  # Undo the merge commit
+   ```
+3. **Return to task worktree** to investigate:
+   ```bash
+   cd /workspace/tasks/{task-name}/code
+   ./mvnw clean verify  # Use clean build to detect stale cache issues
+   ```
+4. **Root cause analysis**:
+   - Maven build cache corruption (stale module-info.class from compile-only builds)
+   - Missing module dependencies in test module-info.java
+   - Circular module dependencies not caught in worktree
+   - Test module name conflicts with main module
+5. **Fix in worktree**, then amend the commit:
+   ```bash
+   # After fixing the issue
+   git add -u
+   git commit --amend --no-edit
+   ```
+6. **Re-verify before retry**:
+   ```bash
+   ./mvnw clean verify  # Must pass with clean build
+   ```
+7. **Retry merge to main** only after worktree clean build passes
+
+**Rationale**: The main branch must NEVER contain broken commits. If build failures occur post-merge, the merge itself was premature and must be undone. All fixes must be applied in the task worktree and re-verified before attempting merge again.
+
 **Evidence Required:**
-- **Pre-merge build success in worktree** (`./mvnw verify` passes before merge attempt)
+- **Pre-merge build success in worktree** (`./mvnw clean verify` passes before merge attempt)
 - Git log showing clean linear history (no merge commits)
 - **todo.md modification included in final commit** (verify with `git show --stat | grep "todo.md"`)
 - Main branch build success after integration (`./mvnw verify` passes)
@@ -44,10 +78,10 @@ This document contains:
 **CRITICAL: Pre-Merge Build Verification Gate**
 ```bash
 # Launch ALL agents with Task tool in ONE message
-Task tool (technical-architect): {...}
-Task tool (code-quality-auditor): {...}
-Task tool (style-auditor): {...}
-Task tool (security-auditor): {...}
+Task tool (architecture-updater): {...}
+Task tool (quality-updater): {...}
+Task tool (style-updater): {...}
+Task tool (security-updater): {...}
 
 # Wait for ALL responses before proceeding
 ```
@@ -55,11 +89,11 @@ Task tool (security-auditor): {...}
 **DON'T** (sequential):
 ```bash
 # Message 1
-Task tool (technical-architect): {...}
+Task tool (architecture-updater): {...}
 # Wait for response
 
 # Message 2
-Task tool (code-quality-auditor): {...}
+Task tool (quality-updater): {...}
 # Wait for response
 
 # = 3-4× overhead, 20-30 min wasted
@@ -162,8 +196,9 @@ find src/test -name "*Test.java" -exec grep -c "@Test" {} + | awk '{sum+=$1} END
 # Count: ≥15 tests
 
 # Gate 5: Build verification
-./mvnw verify
-# Exit code: 0 (full build passes)
+./mvnw clean verify
+# Exit code: 0 (full build passes with clean compilation)
+# Rationale: clean build prevents stale module-info.class from compile-only builds
 ```
 
 **CHECKLIST DETAILS:**
@@ -204,6 +239,37 @@ find src/test -name "*Test.java" -exec grep -c "@Test" {} + | awk '{sum+=$1} END
 - Dependencies properly scoped
 - Build properties configured correctly
 
+**✅ JPMS Module Compilation Verification:**
+- **Test module descriptor exists**: `src/test/java/module-info.java` present
+- **Test module name correct**: Uses `.test` suffix (e.g., `io.github.styler.parser.test`)
+- **Test module requires main module**: `requires io.github.styler.parser;` present
+- **Test framework dependency**: `requires org.testng;` present (not `requires transitive`)
+- **Package opens for reflection**: All test packages have `opens X to org.testng;` (NOT `exports`)
+- **No circular dependencies**: Test module requires main, main does NOT require test
+- **Clean build verification**: `./mvnw clean verify` passes (detects stale module-info.class)
+- **Module resolution**: No "module not found" errors in compiler output
+- **Test execution**: Tests run successfully with module system enabled
+
+**Common JPMS Issues Checklist:**
+- [ ] Test module name conflicts with main module (both named `io.github.styler.parser`)
+- [ ] Missing `opens` declarations for test packages (TestNG needs reflection access)
+- [ ] Using `exports` instead of `opens` for test packages (tests fail at runtime)
+- [ ] Test module-info.java missing `requires org.testng;`
+- [ ] Stale module-info.class from previous `./mvnw compile` without package phase
+- [ ] Circular dependency: main module accidentally requires test module
+
+**Verification Commands:**
+```bash
+# Verify test module descriptor
+cat src/test/java/module-info.java
+
+# Check for module resolution errors
+./mvnw clean compile 2>&1 | grep -i "module not found"
+
+# Verify tests run with modules
+./mvnw clean test -X 2>&1 | grep "module-info"
+```
+
 **✅ Edge Case Handling:**
 - Null validation tests present
 - Empty/single-element tests present
@@ -228,17 +294,44 @@ jq '.state = "IMPLEMENTATION"' $LOCK_FILE > /tmp/lock.json && mv /tmp/lock.json 
 
 ---
 
-### Pattern 5: Batch Fixing (Implementation Rounds)
+### Pattern 5: Implementation Rounds (Reviewer/Updater Iteration)
 
-**COPY-PASTE TEMPLATE** (customize agent selection based on task):
+**CRITICAL PATTERN**: Implementation uses BOTH reviewer and updater agents in iterative cycles.
 
+**Round 1 - Initial Implementation:**
 ```
-I am now entering iterative validation rounds within IMPLEMENTATION state. Launching all stakeholder agents in parallel for review.
+I am now entering IMPLEMENTATION state. Launching updater agents for parallel implementation.
 
-Task tool (technical-architect): Review implementation architecture and design
-Task tool (code-quality-auditor): Review code quality and best practices
-Task tool (style-auditor): Review complete style compliance (checkstyle + PMD + manual)
-Task tool (code-tester): Review test coverage and quality
+Task tool (architecture-updater): Implement core FormattingRule interfaces per requirements
+Task tool (quality-updater): Apply design patterns and refactoring per requirements
+Task tool (style-updater): Ensure all code follows project style guidelines
+Task tool (test-updater): Implement comprehensive test suite per test strategy
+```
+
+**Round 1 - Review Merged Changes:**
+```
+Updater agents have merged to task branch. Launching reviewer agents for parallel review.
+
+Task tool (architecture-reviewer): Review merged architecture on task branch for completeness
+Task tool (quality-reviewer): Review merged code quality on task branch
+Task tool (style-reviewer): Review merged style compliance on task branch
+Task tool (test-reviewer): Review merged test coverage and quality on task branch
+```
+
+**Round 2 - Apply Reviewer Feedback (if rejections):**
+```
+Reviewers identified issues. Launching updater agents to fix.
+
+Task tool (style-updater): Fix 12 style violations identified by style-reviewer
+Task tool (architecture-updater): Clarify interface contracts per architecture-reviewer feedback
+```
+
+**Round 2 - Re-review Fixes:**
+```
+Updater agents have merged fixes. Re-launching reviewers to verify.
+
+Task tool (style-reviewer): Re-review style compliance on task branch
+Task tool (architecture-reviewer): Re-review architecture fixes on task branch
 ```
 
 **CRITICAL**: All agents in SINGLE message for parallel execution
@@ -433,24 +526,24 @@ if any(keyword in task_description for keyword in
 ```python
 # HIGH-RISK (mandatory agents)
 agents = [
-    "technical-architect",   # Architecture and design
-    "code-quality-auditor",  # Quality standards
-    "style-auditor",         # Style compliance
-    "code-tester",           # Test coverage
+    "architecture-reviewer",   # Architecture and design
+    "quality-reviewer",  # Quality standards
+    "style-reviewer",         # Style compliance
+    "test-reviewer",           # Test coverage
 ]
 
 # Add conditional agents
 if "security" in task_description or "authentication" in task_description:
-    agents.append("security-auditor")
+    agents.append("security-reviewer")
 
 if "performance" in task_description or "algorithm" in task_description:
-    agents.append("performance-analyzer")
+    agents.append("performance-reviewer")
 
 # MEDIUM-RISK (core only)
-agents = ["technical-architect", "code-quality-auditor"]
+agents = ["architecture-reviewer", "quality-reviewer"]
 
 # LOW-RISK (minimal or none)
-agents = []  # or ["code-quality-auditor"] for technical docs
+agents = []  # or ["quality-reviewer"] for technical docs
 ```
 
 ### 3. Lock State Management
@@ -851,7 +944,7 @@ git worktree list | grep "/workspace/tasks/{TASK_NAME}/code" && {
 # IMPORTANT: Replace {AGENT_LIST} with space-separated list of agent names
 
 # Step 1: Verify all agents reached COMPLETE status
-AGENTS="{AGENT_LIST}"  # e.g., "technical-architect code-quality-auditor style-auditor security-auditor"
+AGENTS="{AGENT_LIST}"  # e.g., "architecture-reviewer quality-reviewer style-reviewer security-reviewer"
 for agent in $AGENTS; do
   STATUS=$(jq -r '.status' "/workspace/tasks/{TASK_NAME}/agents/$agent/status.json" 2>/dev/null || echo "MISSING")
   if [ "$STATUS" != "COMPLETE" ]; then
@@ -920,8 +1013,8 @@ TEMP_DIR=$(cat .temp_dir 2>/dev/null) && [ -n "$TEMP_DIR" ] && rm -rf "$TEMP_DIR
 echo "✅ CLEANUP complete: All worktrees and branches removed"
 ```
 
-**Example for task "refactor-line-wrapping-architecture" with agents "technical-architect code-quality-auditor
-style-auditor"**:
+**Example for task "refactor-line-wrapping-architecture" with agents "architecture-reviewer quality-reviewer
+style-reviewer"**:
 ```bash
 # Verify work in main branch (from task worktree)
 cd /workspace/tasks/refactor-line-wrapping-architecture/code
@@ -946,7 +1039,7 @@ rm -f /workspace/tasks/refactor-line-wrapping-architecture/task.json
 
 # Remove all agent worktrees and branches
 # 🚨 SHELL REQUIREMENT: Execute in bash (not sh/dash)
-AGENTS="technical-architect code-quality-auditor style-auditor"
+AGENTS="architecture-reviewer quality-reviewer style-reviewer"
 
 # Variable $AGENTS MUST be UNQUOTED in the for loop
 for agent in $AGENTS; do
@@ -1049,6 +1142,177 @@ validate_state_transition() {
             return 1 ;;
     esac
 }
+```
+
+### State Transition Reversibility Table
+
+**CRITICAL REFERENCE**: This table documents which state transitions are reversible (can go back) vs irreversible (forward-only).
+
+| From State | To State | Reversibility | Type | Rationale |
+|-----------|----------|---------------|------|-----------|
+| **INIT** | CLASSIFIED | ❌ **IRREVERSIBLE** | Standard forward | Task initialization complete, agents selected |
+| **CLASSIFIED** | REQUIREMENTS | ❌ **IRREVERSIBLE** | Standard forward | Risk classified, moving to requirements gathering |
+| **CLASSIFIED** | COMPLETE | ❌ **IRREVERSIBLE** | Conditional skip | LOW-RISK only: skip to completion |
+| **REQUIREMENTS** | SYNTHESIS | ❌ **IRREVERSIBLE** | Standard forward | Requirements gathered, moving to planning |
+| **REQUIREMENTS** | COMPLETE | ❌ **IRREVERSIBLE** | Conditional skip | MEDIUM-RISK docs: skip to completion |
+| **SYNTHESIS** | IMPLEMENTATION | ❌ **IRREVERSIBLE** | Standard forward | Plan approved, moving to implementation |
+| **SYNTHESIS** | COMPLETE | ❌ **IRREVERSIBLE** | Conditional skip | Config-only changes: skip implementation |
+| **IMPLEMENTATION** | SYNTHESIS | ✅ **REVERSIBLE** | Resolution cycle | Agent rejection → revise plan |
+| **IMPLEMENTATION** | VALIDATION | ❌ **IRREVERSIBLE** | Standard forward | Implementation complete, moving to validation |
+| **VALIDATION** | SYNTHESIS | ✅ **REVERSIBLE** | Resolution cycle | Build failure → revise plan |
+| **VALIDATION** | REVIEW | ❌ **IRREVERSIBLE** | Standard forward | Validation passed, moving to review |
+| **REVIEW** | SCOPE_NEGOTIATION | ✅ **REVERSIBLE** | Scope adjustment | Scope too large → negotiate scope |
+| **REVIEW** | COMPLETE | ❌ **IRREVERSIBLE** | Standard forward | All agents approved, moving to completion |
+| **SCOPE_NEGOTIATION** | SYNTHESIS | ✅ **REVERSIBLE** | Resolution cycle | Scope reduced → re-plan |
+| **SCOPE_NEGOTIATION** | COMPLETE | ❌ **IRREVERSIBLE** | Scope resolution | Work deferred → complete remaining scope |
+| **COMPLETE** | CLEANUP | ❌ **IRREVERSIBLE** | Standard forward | Work merged, moving to cleanup |
+
+**Transition Type Definitions**:
+
+1. **Standard Forward** (forward-only, irreversible):
+   - Normal progression through protocol states
+   - Cannot return to previous state once transitioned
+   - Evidence of completion required before transition
+   - Examples: INIT → CLASSIFIED, REQUIREMENTS → SYNTHESIS
+
+2. **Conditional Skip** (forward-only, irreversible):
+   - Bypasses intermediate states based on risk level or change type
+   - Only available for specific risk levels (LOW, MEDIUM) or change types (config-only, docs)
+   - Once skipped, cannot return to skipped states
+   - Examples: CLASSIFIED → COMPLETE (LOW-RISK), SYNTHESIS → COMPLETE (config-only)
+
+3. **Resolution Cycle** (reversible, backward transition):
+   - Returns to earlier state to address issues discovered during later states
+   - Allows iterative refinement of plan or implementation
+   - Can transition forward again after resolving issues
+   - Examples: IMPLEMENTATION → SYNTHESIS (agent rejection), VALIDATION → SYNTHESIS (build failure)
+
+4. **Scope Adjustment** (reversible, lateral transition):
+   - Temporarily transitions to SCOPE_NEGOTIATION to reduce scope
+   - Returns to SYNTHESIS to re-plan with reduced scope
+   - Alternative path to COMPLETE if work deferred
+   - Example: REVIEW → SCOPE_NEGOTIATION → SYNTHESIS
+
+**Reversibility Rules**:
+
+**IRREVERSIBLE Transitions** (once crossed, cannot go back):
+- **INIT → CLASSIFIED**: Task initialization creates worktrees and locks
+- **CLASSIFIED → REQUIREMENTS**: Agents selected and invoked
+- **REQUIREMENTS → SYNTHESIS**: Requirements finalized in task.md
+- **SYNTHESIS → IMPLEMENTATION** (after user approval): Plan approved, implementation begins
+- **IMPLEMENTATION → VALIDATION**: All implementation rounds complete
+- **VALIDATION → REVIEW**: Build verification passed
+- **REVIEW → COMPLETE** (after agent approval): All agents approved changes
+- **COMPLETE → CLEANUP**: Work merged to main branch
+
+**REVERSIBLE Transitions** (can return to earlier state):
+- **IMPLEMENTATION ⇄ SYNTHESIS**: Agent rejection triggers plan revision
+- **VALIDATION → SYNTHESIS**: Build failure triggers plan revision
+- **REVIEW → SCOPE_NEGOTIATION**: Scope too large, need to negotiate
+- **SCOPE_NEGOTIATION → SYNTHESIS**: Scope reduced, need to re-plan
+
+**Why Some Transitions Are Irreversible**:
+
+1. **Resource Commitment**: Worktrees created, locks acquired (INIT → CLASSIFIED)
+2. **User Approval Obtained**: User approved plan, cannot un-approve (SYNTHESIS → IMPLEMENTATION)
+3. **Work Committed**: Changes merged to main branch (COMPLETE → CLEANUP)
+4. **Evidence Gathered**: Requirements documented, agents invoked (CLASSIFIED → REQUIREMENTS)
+5. **Validation Passed**: Quality gates passed, moving forward (VALIDATION → REVIEW)
+
+**Why Some Transitions Are Reversible**:
+
+1. **Issue Discovery**: Problems found that require earlier state revisit (VALIDATION → SYNTHESIS)
+2. **Rejection Feedback**: Agents reject, need plan revision (IMPLEMENTATION → SYNTHESIS)
+3. **Scope Management**: Scope too large, negotiate and re-plan (REVIEW → SCOPE_NEGOTIATION → SYNTHESIS)
+
+**Decision Logic: Can I Go Back?**
+
+```bash
+can_transition_back() {
+    local current_state=$1
+    local target_state=$2
+
+    case "$current_state:$target_state" in
+        "IMPLEMENTATION:SYNTHESIS")
+            # Only if agent rejection occurred
+            if agent_rejection_detected; then
+                return 0  # Can go back
+            fi
+            ;;
+        "VALIDATION:SYNTHESIS")
+            # Only if build failure occurred
+            if build_failure_detected; then
+                return 0  # Can go back
+            fi
+            ;;
+        "SCOPE_NEGOTIATION:SYNTHESIS")
+            # Only if scope reduction agreed
+            if scope_reduction_agreed; then
+                return 0  # Can go back
+            fi
+            ;;
+        *)
+            # All other backward transitions prohibited
+            return 1  # Cannot go back
+            ;;
+    esac
+}
+```
+
+**Examples: Reversible vs Irreversible**
+
+**Example 1: IMPLEMENTATION → SYNTHESIS (Reversible)**
+```
+State: IMPLEMENTATION
+Action: architecture-reviewer agent rejects implementation
+Decision: FINAL DECISION: ❌ REJECTED - Architecture violates SOLID principles
+Result: Transition back to SYNTHESIS
+Reason: Plan needs revision based on agent feedback
+Outcome: Revise plan in task.md, re-present for approval, retry IMPLEMENTATION
+```
+
+**Example 2: VALIDATION → REVIEW (Irreversible)**
+```
+State: VALIDATION
+Action: Build verification passes (./mvnw verify succeeds)
+Decision: All quality gates passed
+Result: Transition forward to REVIEW (CANNOT go back to VALIDATION)
+Reason: Validation successful, moving to final review phase
+Outcome: Launch review agents for final approval
+```
+
+**Example 3: REVIEW → SCOPE_NEGOTIATION (Reversible)**
+```
+State: REVIEW
+Action: All agents reject due to scope creep
+Decision: Unanimous agent recommendation to reduce scope
+Result: Transition to SCOPE_NEGOTIATION
+Reason: Scope too large for single task
+Outcome: Defer some work to follow-up tasks, transition back to SYNTHESIS with reduced scope
+```
+
+**Example 4: COMPLETE → CLEANUP (Irreversible)**
+```
+State: COMPLETE
+Action: Work merged to main branch via git push
+Decision: Merge successful, task archived in changelog.md
+Result: Transition forward to CLEANUP (CANNOT go back to COMPLETE)
+Reason: Work permanently integrated, only cleanup remains
+Outcome: Remove worktrees, remove locks, finalize task
+```
+
+**Audit Trail Implications**:
+
+**IRREVERSIBLE transitions must leave evidence**:
+- Lock file transition_log records transition
+- Git history shows commits (for COMPLETE → CLEANUP)
+- Agent status.json files show completion (for state transitions)
+- Task.md shows requirements/plans (for early state transitions)
+
+**REVERSIBLE transitions must record reason**:
+- Why did we go back? (agent rejection, build failure, scope issue)
+- What changed? (revised plan, reduced scope, fixed implementation)
+- Evidence of resolution attempt (commit showing fixes, updated task.md)
 ```
 
 ## AGENT INTERACTION PROTOCOLS
@@ -1343,11 +1607,11 @@ export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && [ -n "$SESSION_ID" ]
 
 ## Stakeholder Agent Reports
 **Requirements Phase:**
-- technical-architect-requirements.md (when completed)
+- architecture-reviewer-requirements.md (when completed)
 - [other-agent]-requirements.md (when completed)
 
 **Implementation Reviews:**
-- technical-architect-review1.md (when completed)
+- architecture-reviewer-review1.md (when completed)
 - [other-agent]-review1.md (when completed)
 
 ## Implementation Status
@@ -1493,9 +1757,9 @@ update_todo_with_violation_report()
 ```python
 # Batch related operations in single message
 parallel_tool_calls = [
-    {"tool": "Task", "agent": "technical-architect", "mode": "requirements"},
-    {"tool": "Task", "agent": "style-auditor", "mode": "requirements"},
-    {"tool": "Task", "agent": "code-quality-auditor", "mode": "requirements"}
+    {"tool": "Task", "agent": "architecture-reviewer", "mode": "requirements"},
+    {"tool": "Task", "agent": "style-reviewer", "mode": "requirements"},
+    {"tool": "Task", "agent": "quality-reviewer", "mode": "requirements"}
 ]
 
 # Execute all in single message to reduce context fragmentation
@@ -1553,12 +1817,12 @@ for file_path in related_files:
 # Parallel agent calls in single message
 agent_calls = [
     {
-        'subagent_type': 'technical-architect',
+        'subagent_type': 'architecture-reviewer',
         'description': 'Architecture requirements',
         'prompt': structured_prompt_template.format(domain='architecture')
     },
     {
-        'subagent_type': 'style-auditor',
+        'subagent_type': 'style-reviewer',
         'description': 'Style requirements',
         'prompt': structured_prompt_template.format(domain='style')
     }
@@ -1617,7 +1881,464 @@ handle_lock_conflict() {
 ```
 
 ### Partial Completion Recovery
+
+**COMPREHENSIVE RECOVERY PROCEDURES**: This section expands on partial completion scenarios with detailed recovery workflows.
+
+**Scenario Classification**:
+1. **Session Interruption**: Task interrupted mid-state (context compact, crash, user stop)
+2. **Agent Partial Completion**: Some agents complete, others fail or timeout
+3. **Build Failure**: Compilation/test failures after partial implementation
+4. **State Corruption**: Lock file or worktree inconsistencies
+
+#### Recovery Procedure 1: Session Interruption Recovery
+
 **Task interruption handling:**
+```bash
+# SessionStart hook detects active task for current session
+TASK_NAME=$(jq -r --arg sid "$SESSION_ID" '.task_name | select(.session_id == $sid)' /workspace/tasks/*/task.json 2>/dev/null)
+
+if [ -n "$TASK_NAME" ]; then
+    CURRENT_STATE=$(jq -r '.state' "/workspace/tasks/$TASK_NAME/task.json")
+    echo "=== RESUMING TASK: $TASK_NAME (State: $CURRENT_STATE) ==="
+
+    case "$CURRENT_STATE" in
+        "INIT"|"CLASSIFIED")
+            # Early states - safe to restart from beginning
+            echo "Early state detected - resuming from current state"
+            ;;
+
+        "REQUIREMENTS")
+            # Check agent completion status
+            echo "Checking requirements agent completion status..."
+            # Use agent completion verification from task-protocol-core.md
+            verify_agent_completion_status
+            # Resume agent invocations if needed
+            ;;
+
+        "SYNTHESIS")
+            # Check if plan approval obtained
+            if [ -f "/workspace/tasks/$TASK_NAME/user-plan-approval-obtained.flag" ]; then
+                echo "Plan approval obtained - proceeding to IMPLEMENTATION"
+            else
+                echo "Waiting for plan approval - re-presenting plan to user"
+            fi
+            ;;
+
+        "IMPLEMENTATION")
+            # Check agent implementation status
+            echo "Checking implementation agent completion status..."
+            verify_implementation_rounds_status
+            ;;
+
+        "VALIDATION")
+            # Re-run validation if interrupted
+            echo "Re-running validation checks..."
+            ;;
+
+        "REVIEW")
+            # Check agent review status
+            echo "Checking review agent completion status..."
+            verify_review_agent_status
+            ;;
+
+        "AWAITING_USER_APPROVAL")
+            # Re-present changes for approval
+            COMMIT_SHA=$(jq -r '.checkpoint.commit_sha' "/workspace/tasks/$TASK_NAME/task.json")
+            echo "Re-presenting changes (commit $COMMIT_SHA) for user approval..."
+            ;;
+
+        "COMPLETE"|"CLEANUP")
+            # Resume completion/cleanup procedures
+            echo "Resuming ${CURRENT_STATE} state procedures..."
+            ;;
+
+        *)
+            echo "Unknown state: $CURRENT_STATE - manual intervention required"
+            ;;
+    esac
+else
+    echo "No active tasks for current session"
+fi
+```
+
+#### Recovery Procedure 2: Agent Partial Completion
+
+**Scenario**: During REQUIREMENTS/IMPLEMENTATION, some agents complete successfully while others fail, timeout, or return errors.
+
+**Detection**:
+```bash
+detect_partial_agent_completion() {
+    local TASK_NAME=$1
+    local STATE=$2  # "REQUIREMENTS" or "IMPLEMENTATION"
+    local AGENTS=($(jq -r '.required_agents[]' "/workspace/tasks/$TASK_NAME/task.json"))
+
+    local COMPLETE_COUNT=0
+    local ERROR_COUNT=0
+    local TIMEOUT_COUNT=0
+    local MISSING_COUNT=0
+
+    for agent in "${AGENTS[@]}"; do
+        STATUS_FILE="/workspace/tasks/$TASK_NAME/agents/$agent/status.json"
+
+        if [ ! -f "$STATUS_FILE" ]; then
+            ((MISSING_COUNT++))
+            echo "❌ $agent: status.json missing (not invoked or invocation failed)"
+            continue
+        fi
+
+        STATUS=$(jq -r '.status' "$STATUS_FILE" 2>/dev/null)
+        case "$STATUS" in
+            "COMPLETE")
+                ((COMPLETE_COUNT++))
+                echo "✅ $agent: COMPLETE"
+                ;;
+            "ERROR")
+                ((ERROR_COUNT++))
+                ERROR_MSG=$(jq -r '.error_message // "Unknown"' "$STATUS_FILE")
+                echo "❌ $agent: ERROR - $ERROR_MSG"
+                ;;
+            "WORKING"|"IN_PROGRESS")
+                # Check timestamp to detect timeouts
+                LAST_UPDATE=$(jq -r '.updated_at' "$STATUS_FILE")
+                AGE_MINUTES=$(( ($(date +%s) - $(date -d "$LAST_UPDATE" +%s)) / 60 ))
+                if [ $AGE_MINUTES -gt 60 ]; then
+                    ((TIMEOUT_COUNT++))
+                    echo "⏱️ $agent: TIMEOUT (stuck $AGE_MINUTES min)"
+                else
+                    echo "⏳ $agent: WORKING (${AGE_MINUTES}min elapsed)"
+                fi
+                ;;
+            *)
+                echo "⚠️ $agent: Unknown status '$STATUS'"
+                ;;
+        esac
+    done
+
+    echo "Summary: ${COMPLETE_COUNT}/${#AGENTS[@]} complete, $ERROR_COUNT errors, $TIMEOUT_COUNT timeouts, $MISSING_COUNT missing"
+
+    # Return status indicating recovery action needed
+    if [ ${#AGENTS[@]} -eq $COMPLETE_COUNT ]; then
+        return 0  # All complete
+    else
+        return 1  # Partial completion
+    fi
+}
+```
+
+**Recovery Actions**:
+```bash
+recover_partial_agent_completion() {
+    local TASK_NAME=$1
+    local STATE=$2
+    local AGENTS=($(jq -r '.required_agents[]' "/workspace/tasks/$TASK_NAME/task.json"))
+
+    echo "=== PARTIAL AGENT COMPLETION RECOVERY ==="
+
+    # Strategy 1: Re-invoke incomplete agents
+    INCOMPLETE_AGENTS=()
+    for agent in "${AGENTS[@]}"; do
+        STATUS_FILE="/workspace/tasks/$TASK_NAME/agents/$agent/status.json"
+
+        if [ ! -f "$STATUS_FILE" ]; then
+            INCOMPLETE_AGENTS+=("$agent")
+            continue
+        fi
+
+        STATUS=$(jq -r '.status' "$STATUS_FILE")
+        if [ "$STATUS" != "COMPLETE" ]; then
+            INCOMPLETE_AGENTS+=("$agent")
+        fi
+    done
+
+    if [ ${#INCOMPLETE_AGENTS[@]} -eq 0 ]; then
+        echo "✅ All agents complete - no recovery needed"
+        return 0
+    fi
+
+    echo "Incomplete agents: ${INCOMPLETE_AGENTS[*]}"
+    echo "Recovery action: Re-invoking incomplete agents..."
+
+    # Re-invoke incomplete agents with same requirements
+    for agent in "${INCOMPLETE_AGENTS[@]}"; do
+        echo "Re-invoking: $agent"
+
+        # Check retry count to prevent infinite loops
+        RETRY_COUNT=$(jq -r '.retry_count // 0' "/workspace/tasks/$TASK_NAME/agents/$agent/status.json" 2>/dev/null)
+        if [ "$RETRY_COUNT" -ge 3 ]; then
+            echo "⚠️ $agent: Max retries exceeded (3) - escalating to user"
+            escalate_agent_failure_to_user "$agent"
+            continue
+        fi
+
+        # Update retry count
+        jq --arg count "$((RETRY_COUNT + 1))" '.retry_count = ($count | tonumber)' \
+           "/workspace/tasks/$TASK_NAME/agents/$agent/status.json" > "/tmp/status.tmp" 2>/dev/null
+        mv "/tmp/status.tmp" "/workspace/tasks/$TASK_NAME/agents/$agent/status.json" 2>/dev/null
+
+        # Re-invoke agent via Task tool
+        # (Main agent should use Task tool here with appropriate prompt)
+    done
+
+    # Wait for completion and verify
+    wait_for_agent_completion "${INCOMPLETE_AGENTS[@]}"
+}
+```
+
+#### Recovery Procedure 3: Build Failure After Partial Implementation
+
+**Scenario**: Some agents merged changes to task branch, but final build verification fails.
+
+**Detection & Recovery**:
+```bash
+recover_build_failure_partial_implementation() {
+    local TASK_NAME=$1
+
+    echo "=== BUILD FAILURE RECOVERY ==="
+
+    # Step 1: Identify which merges succeeded
+    echo "Analyzing git log for merged agent work..."
+    git log --oneline -20 | grep -E "(architecture-reviewer|code-quality|style-reviewer)"
+
+    # Step 2: Run build to get specific error details
+    echo "Running build to identify specific failures..."
+    BUILD_OUTPUT=$(./mvnw verify 2>&1 | tee /tmp/build-failure.log)
+
+    # Step 3: Classify failure type
+    if echo "$BUILD_OUTPUT" | grep -q "COMPILATION ERROR"; then
+        echo "Type: Compilation errors"
+        RECOVERY_ACTION="fix_compilation_errors"
+    elif echo "$BUILD_OUTPUT" | grep -q "There are test failures"; then
+        echo "Type: Test failures"
+        RECOVERY_ACTION="fix_test_failures"
+    elif echo "$BUILD_OUTPUT" | grep -q "Checkstyle violations"; then
+        echo "Type: Style violations"
+        RECOVERY_ACTION="fix_style_violations"
+    else
+        echo "Type: Unknown build failure"
+        RECOVERY_ACTION="investigate_manually"
+    fi
+
+    # Step 4: Execute recovery action
+    case "$RECOVERY_ACTION" in
+        "fix_compilation_errors")
+            # Extract compilation errors
+            ERRORS=$(echo "$BUILD_OUTPUT" | grep -A5 "COMPILATION ERROR")
+            echo "Compilation errors found:"
+            echo "$ERRORS"
+
+            # Decision: Main agent fixes if simple (missing imports)
+            # Otherwise, re-delegate to architecture-reviewer
+            if echo "$ERRORS" | grep -q "cannot find symbol"; then
+                echo "Likely missing imports - main agent can fix"
+                # Fix missing imports
+            else
+                echo "Complex compilation errors - re-delegating to architecture-reviewer"
+                # Re-invoke architecture-reviewer to fix
+            fi
+            ;;
+
+        "fix_test_failures")
+            # Show test failures
+            echo "$BUILD_OUTPUT" | grep -E "Tests run:|Failures:"
+
+            # Re-delegate to test-reviewer for test fixes
+            echo "Re-delegating test failures to test-reviewer agent"
+            ;;
+
+        "fix_style_violations")
+            # Count violations
+            VIOLATION_COUNT=$(echo "$BUILD_OUTPUT" | grep -oP '\[\d+\] violations' | grep -oP '\d+' | head -1)
+
+            if [ "$VIOLATION_COUNT" -le 5 ]; then
+                echo "Small number of violations ($VIOLATION_COUNT) - main agent fixes"
+                # Fix style violations directly
+            else
+                echo "Many violations ($VIOLATION_COUNT) - re-delegating to style-reviewer"
+                # Re-invoke style-reviewer
+            fi
+            ;;
+
+        "investigate_manually")
+            echo "Build failure requires manual investigation"
+            echo "Build log saved to /tmp/build-failure.log"
+            # Escalate to user
+            ;;
+    esac
+
+    # Step 5: Re-run build after fixes
+    echo "Re-running build after fixes..."
+    ./mvnw verify || {
+        echo "Build still failing - may need additional recovery iterations"
+        return 1
+    }
+
+    echo "✅ Build recovered successfully"
+    return 0
+}
+```
+
+#### Recovery Procedure 4: State Corruption Recovery
+
+**Scenario**: Lock file state doesn't match actual work completed, or worktrees have issues.
+
+**Detection**:
+```bash
+detect_state_corruption() {
+    local TASK_NAME=$1
+
+    echo "=== STATE CORRUPTION DETECTION ==="
+
+    ISSUES_FOUND=false
+
+    # Check 1: Lock file exists and is valid JSON
+    if [ ! -f "/workspace/tasks/$TASK_NAME/task.json" ]; then
+        echo "❌ Lock file missing"
+        ISSUES_FOUND=true
+    elif ! jq empty "/workspace/tasks/$TASK_NAME/task.json" 2>/dev/null; then
+        echo "❌ Lock file corrupted (invalid JSON)"
+        ISSUES_FOUND=true
+    fi
+
+    # Check 2: Session ID matches
+    LOCK_SESSION=$(jq -r '.session_id' "/workspace/tasks/$TASK_NAME/task.json" 2>/dev/null)
+    if [ "$LOCK_SESSION" != "$SESSION_ID" ]; then
+        echo "⚠️ Session ID mismatch: lock=$LOCK_SESSION, current=$SESSION_ID"
+        ISSUES_FOUND=true
+    fi
+
+    # Check 3: Worktrees exist
+    if [ ! -d "/workspace/tasks/$TASK_NAME/code" ]; then
+        echo "❌ Task worktree missing"
+        ISSUES_FOUND=true
+    fi
+
+    # Check 4: Agent worktrees match required_agents
+    REQUIRED_AGENTS=($(jq -r '.required_agents[]' "/workspace/tasks/$TASK_NAME/task.json" 2>/dev/null))
+    for agent in "${REQUIRED_AGENTS[@]}"; do
+        if [ ! -d "/workspace/tasks/$TASK_NAME/agents/$agent/code" ]; then
+            echo "❌ Agent worktree missing: $agent"
+            ISSUES_FOUND=true
+        fi
+    done
+
+    # Check 5: State transition log is consistent
+    TRANSITION_LOG=$(jq -r '.transition_log' "/workspace/tasks/$TASK_NAME/task.json" 2>/dev/null)
+    if [ "$TRANSITION_LOG" = "null" ] || [ -z "$TRANSITION_LOG" ]; then
+        echo "❌ Transition log missing or empty"
+        ISSUES_FOUND=true
+    fi
+
+    if $ISSUES_FOUND; then
+        return 1  # Corruption detected
+    else
+        echo "✅ No state corruption detected"
+        return 0  # State is clean
+    fi
+}
+
+recover_state_corruption() {
+    local TASK_NAME=$1
+
+    echo "=== STATE CORRUPTION RECOVERY ==="
+
+    # Recovery strategy depends on severity
+    detect_state_corruption "$TASK_NAME"
+    SEVERITY=$?
+
+    if [ $SEVERITY -eq 0 ]; then
+        echo "No recovery needed - state is valid"
+        return 0
+    fi
+
+    # Attempt automatic recovery
+    echo "Attempting automatic state recovery..."
+
+    # Fix 1: Recreate missing worktrees (if lock and branch exist)
+    CURRENT_STATE=$(jq -r '.state' "/workspace/tasks/$TASK_NAME/task.json" 2>/dev/null)
+
+    if [ ! -d "/workspace/tasks/$TASK_NAME/code" ] && git show-ref --verify --quiet "refs/heads/$TASK_NAME"; then
+        echo "Recreating task worktree from existing branch..."
+        git worktree add "/workspace/tasks/$TASK_NAME/code" "$TASK_NAME"
+    fi
+
+    # Fix 2: Recreate agent worktrees (if needed)
+    REQUIRED_AGENTS=($(jq -r '.required_agents[]' "/workspace/tasks/$TASK_NAME/task.json" 2>/dev/null))
+    for agent in "${REQUIRED_AGENTS[@]}"; do
+        AGENT_BRANCH="${TASK_NAME}-${agent}"
+        if [ ! -d "/workspace/tasks/$TASK_NAME/agents/$agent/code" ] && git show-ref --verify --quiet "refs/heads/$AGENT_BRANCH"; then
+            echo "Recreating agent worktree: $agent"
+            mkdir -p "/workspace/tasks/$TASK_NAME/agents/$agent"
+            git worktree add "/workspace/tasks/$TASK_NAME/agents/$agent/code" "$AGENT_BRANCH"
+        fi
+    done
+
+    # Fix 3: Repair lock file if corrupted
+    if ! jq empty "/workspace/tasks/$TASK_NAME/task.json" 2>/dev/null; then
+        echo "Lock file corrupted - manual intervention required"
+        echo "Options:"
+        echo "1. Delete task and restart from scratch"
+        echo "2. Reconstruct lock file from git history"
+        echo "3. Escalate to user"
+        return 1
+    fi
+
+    # Verify recovery
+    detect_state_corruption "$TASK_NAME"
+    if [ $? -eq 0 ]; then
+        echo "✅ State corruption recovered successfully"
+        return 0
+    else
+        echo "❌ Automatic recovery failed - manual intervention required"
+        return 1
+    fi
+}
+```
+
+#### Recovery Decision Tree
+
+**When to Apply Each Recovery Procedure**:
+
+```
+IF (session interrupted during task execution):
+    → Apply Recovery Procedure 1 (Session Interruption Recovery)
+
+ELSE IF (agents not all COMPLETE during REQUIREMENTS or IMPLEMENTATION):
+    → Apply Recovery Procedure 2 (Agent Partial Completion)
+
+ELSE IF (build fails after agent merges):
+    → Apply Recovery Procedure 3 (Build Failure After Partial Implementation)
+
+ELSE IF (lock file or worktrees corrupted):
+    → Apply Recovery Procedure 4 (State Corruption Recovery)
+```
+
+#### Recovery Escalation Policy
+
+**When to escalate to user**:
+1. Agent failure after 3 retries
+2. Build failure with unknown error type
+3. State corruption that cannot be automatically recovered
+4. Conflicting agent requirements with no resolution path
+5. External dependency blocking progress
+
+**Escalation Message Template**:
+```
+"Task '$TASK_NAME' encountered a recovery scenario requiring user guidance:
+
+**Issue**: [Description of the problem]
+**Current State**: [Lock file state]
+**Recovery Attempts**: [What was tried]
+**Impact**: [What work is at risk]
+
+**Options**:
+1. [Option 1 with pros/cons]
+2. [Option 2 with pros/cons]
+3. Abandon task and select alternative
+
+Please advise on how to proceed."
+```
+
+**Foreign Session Handling**:
 ```bash
 if [ -f "state.json" ]; then
     session_id=$(jq -r '.session_id' state.json)
@@ -1632,6 +2353,356 @@ if [ -f "state.json" ]; then
     fi
 fi
 ```
+
+### Multiple Interruption Handling
+
+**CRITICAL REQUIREMENT**: When user interrupts multiple times before resuming work, maintain correct state tracking and resume from the original pre-interruption state.
+
+#### Scenario: Successive Interruptions
+
+**Common Pattern**:
+1. Agent working in IMPLEMENTATION state
+2. User asks question → Agent answers → Still interrupted
+3. User runs /audit-session → Agent audits → Still interrupted
+4. User asks clarification → Agent answers → Still interrupted
+5. User says "continue working" → NOW resume IMPLEMENTATION
+
+**Problem**: Agent must resume from IMPLEMENTATION (original state), NOT from whatever activity occurred during interruptions.
+
+#### State Preservation During Interruptions
+
+**Core Principle**: Lock file state NEVER changes during interruption handling.
+
+```bash
+# Example: Agent in IMPLEMENTATION state when interrupted
+
+# Check 1: Before handling ANY user command, record current state
+ACTIVE_STATE=$(jq -r '.state' "/workspace/tasks/$TASK_NAME/task.json")
+echo "Active task state: $ACTIVE_STATE (preserved during interruption handling)"
+
+# Check 2: Handle user command (question, audit, clarification, etc.)
+# ... process user request ...
+
+# Check 3: After handling, state should be UNCHANGED
+CURRENT_STATE=$(jq -r '.state' "/workspace/tasks/$TASK_NAME/task.json")
+if [ "$CURRENT_STATE" != "$ACTIVE_STATE" ]; then
+    echo "❌ ERROR: State changed during interruption handling"
+    echo "Expected: $ACTIVE_STATE, Got: $CURRENT_STATE"
+    exit 1
+fi
+
+# Check 4: Only when user says "continue/resume/proceed" → resume active state
+```
+
+#### Interruption Type Classification
+
+**Non-Resuming Interruptions** (do NOT change state, do NOT trigger resumption):
+- User questions about code/architecture/implementation
+- User requests for clarification
+- User runs /audit-session or other diagnostic commands
+- User requests status updates
+- User provides feedback/observations during implementation
+
+**Resumption Triggers** (signal to return to active state):
+- User says "continue"
+- User says "resume work"
+- User says "proceed"
+- User says "keep going"
+- User says "continue with the task"
+
+#### Multi-Interruption Handling Logic
+
+```bash
+handle_user_command_during_task() {
+    local TASK_NAME=$1
+    local USER_COMMAND=$2
+
+    # Retrieve active state (preserved from before interruption)
+    ACTIVE_STATE=$(jq -r '.state' "/workspace/tasks/$TASK_NAME/task.json")
+
+    echo "=== HANDLING USER COMMAND ==="
+    echo "Active task: $TASK_NAME"
+    echo "Active state: $ACTIVE_STATE (preserved)"
+
+    # Classify user command
+    if [[ "$USER_COMMAND" =~ (continue|resume|proceed|keep.*going) ]]; then
+        COMMAND_TYPE="RESUMPTION"
+    elif [[ "$USER_COMMAND" =~ (audit|/audit-session) ]]; then
+        COMMAND_TYPE="AUDIT"
+    elif [[ "$USER_COMMAND" =~ (what|how|why|explain|clarify) ]]; then
+        COMMAND_TYPE="QUESTION"
+    elif [[ "$USER_COMMAND" =~ (status|progress|where.*are.*we) ]]; then
+        COMMAND_TYPE="STATUS_REQUEST"
+    else
+        COMMAND_TYPE="OTHER"
+    fi
+
+    echo "Command type: $COMMAND_TYPE"
+
+    case "$COMMAND_TYPE" in
+        "RESUMPTION")
+            echo "Resumption trigger detected - returning to active state: $ACTIVE_STATE"
+            resume_task_from_active_state "$TASK_NAME" "$ACTIVE_STATE"
+            ;;
+
+        "AUDIT")
+            echo "Running audit - state will be preserved"
+            run_audit_command "$TASK_NAME"
+            echo "Audit complete - state remains: $ACTIVE_STATE"
+            echo "Awaiting resumption trigger or additional commands"
+            ;;
+
+        "QUESTION")
+            echo "Answering user question - state will be preserved"
+            answer_user_question "$USER_COMMAND"
+            echo "Question answered - state remains: $ACTIVE_STATE"
+            echo "Awaiting resumption trigger or additional commands"
+            ;;
+
+        "STATUS_REQUEST")
+            echo "Providing status update - state will be preserved"
+            provide_status_update "$TASK_NAME" "$ACTIVE_STATE"
+            echo "Status provided - state remains: $ACTIVE_STATE"
+            echo "Awaiting resumption trigger or additional commands"
+            ;;
+
+        "OTHER")
+            echo "Processing command - state will be preserved"
+            process_other_command "$USER_COMMAND"
+            echo "Command processed - state remains: $ACTIVE_STATE"
+            echo "Awaiting resumption trigger or additional commands"
+            ;;
+    esac
+
+    # Verify state unchanged (except for RESUMPTION type)
+    if [ "$COMMAND_TYPE" != "RESUMPTION" ]; then
+        VERIFY_STATE=$(jq -r '.state' "/workspace/tasks/$TASK_NAME/task.json")
+        if [ "$VERIFY_STATE" != "$ACTIVE_STATE" ]; then
+            echo "❌ CRITICAL ERROR: State changed during interruption handling"
+            echo "This violates state preservation principle"
+            exit 1
+        fi
+    fi
+}
+```
+
+#### Resumption Logic After Multiple Interruptions
+
+```bash
+resume_task_from_active_state() {
+    local TASK_NAME=$1
+    local ACTIVE_STATE=$2
+
+    echo "=== RESUMING TASK: $TASK_NAME ==="
+    echo "Resuming from state: $ACTIVE_STATE"
+
+    case "$ACTIVE_STATE" in
+        "REQUIREMENTS")
+            echo "Resuming requirements gathering..."
+            # Check which agents completed before interruption
+            check_requirements_agent_status "$TASK_NAME"
+            # Resume incomplete agent invocations
+            resume_incomplete_agents "$TASK_NAME" "REQUIREMENTS"
+            ;;
+
+        "IMPLEMENTATION")
+            echo "Resuming implementation work..."
+            # Check which agents completed implementation
+            check_implementation_agent_status "$TASK_NAME"
+            # Resume incomplete implementation rounds
+            resume_implementation_rounds "$TASK_NAME"
+            ;;
+
+        "VALIDATION")
+            echo "Resuming validation checks..."
+            # Re-run validation from where it was interrupted
+            run_validation_checks "$TASK_NAME"
+            ;;
+
+        "REVIEW")
+            echo "Resuming review process..."
+            # Check which review agents completed
+            check_review_agent_status "$TASK_NAME"
+            # Resume incomplete reviews
+            resume_incomplete_reviews "$TASK_NAME"
+            ;;
+
+        "AWAITING_USER_APPROVAL")
+            echo "Returning to user approval checkpoint..."
+            # Re-present changes for approval
+            COMMIT_SHA=$(jq -r '.checkpoint.commit_sha' "/workspace/tasks/$TASK_NAME/task.json")
+            present_changes_for_approval "$TASK_NAME" "$COMMIT_SHA"
+            ;;
+
+        *)
+            echo "Resuming from state: $ACTIVE_STATE"
+            # Continue with state-specific work
+            ;;
+    esac
+}
+```
+
+#### Examples: Multi-Interruption Scenarios
+
+**Example 1: Question → Audit → Question → Resume**
+
+```
+Initial State: IMPLEMENTATION (architecture-reviewer working)
+
+[User interrupts with question]
+User: "What architecture pattern are you using?"
+Agent: [Answers question, lock state remains IMPLEMENTATION]
+
+[User interrupts again with audit]
+User: "/audit-session"
+Agent: [Runs audit, lock state remains IMPLEMENTATION]
+
+[User interrupts again with clarification]
+User: "Can you explain why you chose that pattern?"
+Agent: [Explains, lock state remains IMPLEMENTATION]
+
+[User triggers resumption]
+User: "Continue working"
+Agent: [Resumes IMPLEMENTATION state - architecture-reviewer continues work]
+```
+
+**Example 2: Status → Audit → Resume**
+
+```
+Initial State: REVIEW (waiting for agent decisions)
+
+[User interrupts with status request]
+User: "Where are we in the process?"
+Agent: [Provides status, lock state remains REVIEW]
+
+[User interrupts with audit]
+User: "Run audit to verify everything is correct"
+Agent: [Runs audit, lock state remains REVIEW]
+
+[User triggers resumption]
+User: "Proceed with review"
+Agent: [Resumes REVIEW state - continues waiting for agent decisions or processes received decisions]
+```
+
+**Example 3: Multiple Questions Before Resume**
+
+```
+Initial State: SYNTHESIS (drafting implementation plan)
+
+[Interruption 1]
+User: "How will you handle error cases?"
+Agent: [Answers, lock state remains SYNTHESIS]
+
+[Interruption 2]
+User: "What about thread safety?"
+Agent: [Answers, lock state remains SYNTHESIS]
+
+[Interruption 3]
+User: "Will this work with existing code?"
+Agent: [Answers, lock state remains SYNTHESIS]
+
+[Interruption 4]
+User: "Can you explain the testing strategy?"
+Agent: [Answers, lock state remains SYNTHESIS]
+
+[User triggers resumption]
+User: "Continue with the implementation plan"
+Agent: [Resumes SYNTHESIS state - completes plan and presents for user approval]
+```
+
+#### Anti-Patterns: What NOT To Do
+
+**❌ WRONG: Treating each interruption as a state change**
+```bash
+# VIOLATION: Lock state changes with every command
+User: "What's the status?"
+Agent: Updates lock state to "STATUS_CHECK"  # ❌ WRONG
+
+User: "Run audit"
+Agent: Updates lock state to "AUDITING"  # ❌ WRONG
+
+User: "Continue"
+Agent: Updates lock state to "COMPLETE"  # ❌ WRONG - lost original state!
+```
+
+**❌ WRONG: Auto-resuming after interruption without explicit trigger**
+```bash
+# VIOLATION: Resuming without user signal
+User: "What's happening now?"
+Agent: [Answers question]
+Agent: [Immediately continues IMPLEMENTATION work]  # ❌ WRONG - user didn't say continue
+```
+
+**❌ WRONG: Losing track of original state**
+```bash
+# VIOLATION: Not preserving original state
+Initial: IMPLEMENTATION
+User: "Run audit"
+Agent: [Runs audit, forgets it was in IMPLEMENTATION]
+User: "Continue"
+Agent: "Continue with what?"  # ❌ WRONG - should remember IMPLEMENTATION
+```
+
+**✅ CORRECT: State preservation across all interruptions**
+```bash
+# CORRECT: Lock state never changes during interruptions
+Initial: IMPLEMENTATION (lock file shows state=IMPLEMENTATION)
+
+User: "What's the status?" → lock still shows IMPLEMENTATION
+User: "Run audit" → lock still shows IMPLEMENTATION
+User: "Explain your approach" → lock still shows IMPLEMENTATION
+User: "Continue" → Resume IMPLEMENTATION (state was preserved)
+```
+
+#### Interruption Context Tracking
+
+**Optional Enhancement**: Track interruption history for context (NOT required, but useful for debugging)
+
+```bash
+# Store interruption log in lock file (optional)
+record_interruption() {
+    local TASK_NAME=$1
+    local COMMAND_TYPE=$2
+
+    jq --arg cmd "$COMMAND_TYPE" \
+       --arg ts "$(date -Iseconds)" \
+       '.interruptions += [{"type": $cmd, "timestamp": $ts}]' \
+       "/workspace/tasks/$TASK_NAME/task.json" > /tmp/lock.tmp
+    mv /tmp/lock.tmp "/workspace/tasks/$TASK_NAME/task.json"
+}
+
+# Retrieve interruption count
+get_interruption_count() {
+    local TASK_NAME=$1
+    jq '.interruptions | length' "/workspace/tasks/$TASK_NAME/task.json"
+}
+```
+
+#### Checkpoint Interaction: Interruptions During User Approval Wait
+
+**Special Case**: User asks questions WHILE at a checkpoint (SYNTHESIS or AWAITING_USER_APPROVAL)
+
+```bash
+# Scenario: Agent waiting at PLAN APPROVAL checkpoint
+CURRENT_STATE="SYNTHESIS"
+echo "Waiting for user plan approval..."
+
+# User asks question INSTEAD of approving
+User: "Can you explain the architecture decision?"
+Agent: [Answers question]
+# State remains SYNTHESIS - still waiting for approval
+
+# User asks another question
+User: "What's the performance impact?"
+Agent: [Answers question]
+# State remains SYNTHESIS - still waiting for approval
+
+# User finally approves
+User: "Looks good, proceed with implementation"
+Agent: [Recognizes approval, transitions SYNTHESIS → IMPLEMENTATION]
+```
+
+**Key Insight**: At checkpoints, interruptions (questions) are STILL non-resuming. Only approval keywords trigger state transition.
 
 ## WORKFLOW EXECUTION ENGINE
 
