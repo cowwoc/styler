@@ -155,7 +155,9 @@ Category 3: Multi-Agent Architecture Compliance
 
 **Tools**: Read (methodology, protocol docs, execution-tracer output)
 
-**CRITICAL RULE**: If execution-tracer shows `task_state_actual == "IMPLEMENTATION"` and `tool_usage` contains `Edit` by `main` on `.java` file, **IMMEDIATE VIOLATION FLAG**. Do NOT check "what state should it be" - flag the violation in the ACTUAL state.
+**CRITICAL RULE**: If execution-tracer shows `task_state_actual == "IMPLEMENTATION"` and `tool_usage` contains
+`Edit` by `main` on `.java` file, **IMMEDIATE VIOLATION FLAG**. Do NOT check "what state should it be" - flag
+the violation in the ACTUAL state.
 
 ---
 

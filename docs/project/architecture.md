@@ -1,10 +1,13 @@
 # Styler - Java Code Formatter Architecture
 
-This document provides a comprehensive technical architecture overview for Styler - an unopinionated Java code formatter that supports 100% of JDK 25's features with multi-threaded file processing capabilities.
+This document provides a comprehensive technical architecture overview for Styler - an unopinionated Java code
+formatter that supports 100% of JDK 25's features with multi-threaded file processing capabilities.
 
 ## 🎯 Core Architecture Objective
 
-Styler uses a modular, plugin-based architecture to provide configurable Java code formatting while maintaining optimal performance through parallel processing and preserving developer intent through intelligent AST manipulation.
+Styler uses a modular, plugin-based architecture to provide configurable Java code formatting while
+maintaining optimal performance through parallel processing and preserving developer intent through
+intelligent AST manipulation.
 
 ## 🏗️ System Architecture Overview
 
@@ -328,7 +331,8 @@ public class FormattingPipeline {
 
 **Threading Model**:
 
-Styler uses a sophisticated multi-level threading model designed for optimal performance across different scales:
+Styler uses a sophisticated multi-level threading model designed for optimal performance across different
+scales:
 
 *Current Implementation: Sequential Per File*
 - **File-Level Parallelism**: Multiple files processed concurrently across CPU cores
@@ -394,7 +398,8 @@ optimizeImportsAndMemberOrdering(allUsedImports, callGraph, unusedMembers);
 - Thread-local memory allocation (efficient GC)
 - Scales to very large files (1000+ methods)
 
-**Current Status**: Sequential approach is optimal for typical file sizes. Block-level parallelism will be implemented when performance analysis shows benefit for target codebases.
+**Current Status**: Sequential approach is optimal for typical file sizes. Block-level parallelism will be
+implemented when performance analysis shows benefit for target codebases.
 
 *Memory Management and Threading*:
 - Thread-local caching for performance
@@ -707,4 +712,5 @@ styler {
 - Thread contention analysis
 - Scalability testing
 
-This architecture provides a comprehensive foundation for Styler that addresses all stakeholder requirements while maintaining security, performance, and extensibility as core principles.
+This architecture provides a comprehensive foundation for Styler that addresses all stakeholder requirements
+while maintaining security, performance, and extensibility as core principles.

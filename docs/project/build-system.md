@@ -1,6 +1,7 @@
 # Build System & Project Structure
 
-This file contains all build system configuration, commands, and project structure documentation for Styler Java Code Formatter.
+This file contains all build system configuration, commands, and project structure documentation for Styler
+Java Code Formatter.
 
 ## Environment Setup
 
@@ -48,7 +49,8 @@ This resolves TestNG module export warnings with `-Werror` enabled.
 
 ## Build & Validation Commands
 
-**⚠️ CRITICAL**: Always use `./mvnw` (Maven Wrapper) instead of `mvn` to ensure consistent Maven version across environments.
+**⚠️ CRITICAL**: Always use `./mvnw` (Maven Wrapper) instead of `mvn` to ensure consistent Maven version
+across environments.
 
 **Core Build Commands**:
 - **Full Validation**: `./mvnw verify` (PREFERRED - compile + test + package in optimized sequence)
@@ -106,7 +108,8 @@ This resolves TestNG module export warnings with `-Werror` enabled.
 
 ### Maven Dependency Management Standards 🔴 CRITICAL
 
-**RULE**: Centralize all plugin and dependency versions in the root pom.xml using `dependencyManagement` and `pluginManagement`.
+**RULE**: Centralize all plugin and dependency versions in the root pom.xml using `dependencyManagement` and
+`pluginManagement`.
 
 **Root POM Configuration**:
 ```xml
@@ -298,7 +301,8 @@ This resolves TestNG module export warnings with `-Werror` enabled.
 
 ### Requirements
 
-Maven Build Cache Extension v1.2.0 works correctly with Java Platform Module System (JPMS) modules when following these requirements:
+Maven Build Cache Extension v1.2.0 works correctly with Java Platform Module System (JPMS) modules when
+following these requirements:
 
 - **Required Goals**: Always use `./mvnw clean verify` (or `package`/`install`/`deploy`)
 - **Prohibited Goals**: Never use `./mvnw clean compile` as final build command
@@ -347,7 +351,8 @@ Cache is configured via `.mvn/maven-build-cache-config.xml`:
 </attachedOutputs>
 ```
 
-These directories are saved as ZIP artifacts (e.g., `styler-ast-core-mvn-cache-ext-extra-output-3.zip`) containing all compiled classes including module-info.class.
+These directories are saved as ZIP artifacts (e.g., `styler-ast-core-mvn-cache-ext-extra-output-3.zip`)
+containing all compiled classes including module-info.class.
 
 ### Performance Benefits
 

@@ -1,10 +1,12 @@
 ---
-description: Review current session for protocol violations and suggest optimizations via multi-agent audit pipeline
+description: >
+  Review current session for protocol violations and suggest optimizations via multi-agent audit pipeline
 ---
 
 # Session Audit Command
 
-**Task**: Execute the full multi-agent audit pipeline to review the current session for protocol compliance, efficiency opportunities, and documentation improvements.
+**Task**: Execute the full multi-agent audit pipeline to review the current session for protocol compliance,
+efficiency opportunities, and documentation improvements.
 
 ## Audit Pipeline Architecture
 
@@ -230,7 +232,8 @@ ELSE IF protocol-auditor.overall_verdict == "PASSED":
 - ❌ Manual Review: Refactor class hierarchy (architectural decision)
 
 **Decision Tree Integration**:
-Refer to CLAUDE.md § Post-Implementation Issue Handling Decision Tree (line 267) for state-based fix permissions alignment
+Refer to CLAUDE.md § Post-Implementation Issue Handling Decision Tree (line 267) for state-based fix
+permissions alignment
 
 ### Fix Application Process
 
@@ -327,4 +330,5 @@ After presenting the audit report:
     - Confirm all auto-fixes successful
     - Provide summary of what was fixed
 
-Execute the full pipeline sequentially and provide comprehensive session audit results with automatic fix application.
+Execute the full pipeline sequentially and provide comprehensive session audit results with automatic fix
+application.
