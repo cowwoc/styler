@@ -11,6 +11,119 @@ TRANSITIONS with zero-tolerance enforcement
 **ARCHITECTURE**: State machine with atomic transitions and verifiable conditions
 **ENFORCEMENT**: No manual overrides - all transitions require documented evidence
 
+---
+
+## 📖 DOCUMENTATION STRUCTURE GUIDE
+
+**IMPORTANT**: This document contains BOTH ideal workflow documentation AND recovery procedures. Understanding when to reference each is critical.
+
+### Ideal State vs Recovery Documentation
+
+This protocol document is organized into two logical layers:
+
+**Layer 1: IDEAL STATE DOCUMENTATION** (Primary workflow - read this first):
+- Describes the EXPECTED execution path when everything works correctly
+- Shows standard state transitions without interruptions or failures
+- Example sections:
+  - "STATE MACHINE ARCHITECTURE" - Core workflow
+  - "State Definitions" - What each state does in ideal case
+  - "INIT → CLASSIFIED" - Standard transition procedure
+  - "REQUIREMENTS → SYNTHESIS" - Normal progression
+
+**Layer 2: RECOVERY DOCUMENTATION** (Exception handling - read when issues occur):
+- Describes HOW TO RECOVER when things don't go as planned
+- Shows exception handling, interruptions, and failure recovery
+- Example sections:
+  - "Agent Invocation Interruption Handling" - Handling user interruptions
+  - "Partial Agent Completion Handling" - Some agents fail
+  - "Recovery from Crashed Sessions" - Session interruption recovery
+  - "Violation Recovery Patterns" - Protocol violation fixes
+
+### When to Read Each Layer
+
+**During Normal Task Execution** (no issues):
+✅ Read IDEAL STATE sections to understand standard workflow
+✅ Follow state transition procedures as documented
+✅ Skip recovery sections unless you encounter issues
+✅ Focus on "happy path" execution
+
+**When Issues Occur** (interruptions, failures, violations):
+✅ First identify the issue type (agent failure, build error, interruption)
+✅ Then reference the appropriate RECOVERY section
+✅ Follow recovery procedures to return to ideal state
+✅ Resume normal execution after recovery
+
+### Navigation Patterns
+
+**Pattern 1: First-Time Reading** (learning the protocol):
+```
+Step 1: Read "STATE MACHINE ARCHITECTURE" (ideal state)
+Step 2: Read "State Definitions" (ideal state)
+Step 3: Read "State Transitions" sections (ideal state)
+Step 4: SKIP recovery sections on first read
+Step 5: Return to recovery sections when needed
+```
+
+**Pattern 2: Executing a Task** (applying the protocol):
+```
+Step 1: Follow ideal state transitions in order
+Step 2: If interruption occurs → Jump to "Interruption Handling" (recovery)
+Step 3: If agent fails → Jump to "Partial Agent Completion" (recovery)
+Step 4: If build fails → Jump to "Violation Recovery" (recovery)
+Step 5: After recovery → Return to ideal state workflow
+```
+
+**Pattern 3: Debugging an Issue** (troubleshooting):
+```
+Step 1: Identify current state from lock file
+Step 2: Identify issue type (interruption, failure, violation)
+Step 3: Jump directly to relevant RECOVERY section
+Step 4: Apply recovery procedure
+Step 5: Verify return to ideal state
+```
+
+### Section Type Indicators
+
+Throughout this document, section headers indicate their type:
+
+**Ideal State Sections** (standard workflow):
+- Headers describe state transitions: "INIT → CLASSIFIED"
+- Content focuses on: requirements, procedures, success criteria
+- Reading order: Sequential from INIT through CLEANUP
+
+**Recovery Sections** (exception handling):
+- Headers mention recovery/handling: "Agent Invocation Interruption Handling"
+- Content focuses on: problems, detection, recovery actions
+- Reading order: As needed when specific issues occur
+
+### Why This Structure?
+
+**Benefits of Combined Documentation**:
+1. **Complete Picture**: Both ideal and recovery in one authoritative source
+2. **Context Awareness**: Recovery procedures reference ideal state sections
+3. **Efficiency**: No need to search multiple documents during emergencies
+4. **Consistency**: Single source of truth for all protocol behavior
+
+**Avoiding Confusion**:
+1. **Clear Indicators**: Section titles clearly signal ideal vs recovery
+2. **Separate Navigation**: Different reading patterns for each layer
+3. **Explicit References**: Recovery sections explicitly link to ideal sections
+4. **Visual Separation**: Recovery sections use distinct formatting
+
+### Quick Reference: Section Classification
+
+| Section Type | Purpose | When to Read |
+|--------------|---------|--------------|
+| **State Machine Architecture** | Ideal workflow | Always (first read) |
+| **State Definitions** | Ideal behavior | Always (first read) |
+| **State Transitions** | Standard procedures | During execution |
+| **Interruption Handling** | Recovery from user interruptions | Only when interrupted |
+| **Partial Completion** | Recovery from agent failures | Only when agents fail |
+| **Violation Recovery** | Recovery from protocol violations | Only when violations detected |
+| **Checkpoint Enforcement** | Ideal checkpoint behavior | During checkpoint wait |
+
+---
+
 ## STATE MACHINE ARCHITECTURE
 
 ### Core States
@@ -42,7 +155,7 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
   presented to user, waiting for explicit approval before COMPLETE**
 -  **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns (ONLY
   when resolution effort > 2x task scope AND agent consensus permits deferral - escalate based on agent tiers,
-  technical-architect makes final decision)
+  architecture-reviewer makes final decision)
 -  **COMPLETE**: Work merged to main branch, todo.md updated, dependent tasks unblocked (only after user
   approves changes)
 - **CLEANUP**: All agent worktrees removed, task worktree removed, locks released, temporary files cleaned
@@ -54,18 +167,68 @@ user is in "bypass permissions on" mode or any other automation mode.
 
 **🚨 BYPASS MODE DOES NOT BYPASS USER APPROVAL CHECKPOINTS**
 
+**AUTONOMY vs CHECKPOINTS CLARIFICATION**:
+
+The Task Protocol requires both:
+1. **Autonomous completion** of work between checkpoints
+2. **Mandatory user approval** at two specific checkpoints
+
+These are NOT contradictory. Understanding the distinction:
+
+**"Autonomous Completion" Definition**:
+- Agent completes work WITHOUT asking for help, guidance, or direction BETWEEN checkpoints
+- Agent solves problems, debugs issues, and makes implementation decisions independently
+- Agent does NOT stop mid-protocol to ask "what should I do next?"
+- Agent does NOT abandon tasks due to complexity without exhausting recovery procedures
+
+**"Checkpoints" Definition**:
+- Planned pauses BUILT INTO the protocol state machine for user oversight
+- Occur at exactly TWO transition points: SYNTHESIS → IMPLEMENTATION and REVIEW → COMPLETE
+- Allow user to validate direction before major work (plan approval) and review results after completion (change approval)
+- These are EXPECTED parts of the workflow, NOT violations of autonomous completion
+
+**Why Checkpoints Do NOT Violate Autonomous Completion**:
+- Checkpoints are at DEFINED state transitions (not random mid-protocol stops)
+- Checkpoints serve OVERSIGHT function (not "help me decide what to do" function)
+- Agent arrives at checkpoint WITH COMPLETED WORK (plan drafted, implementation finished)
+- Agent does NOT need help to continue - only needs approval to proceed
+
+**Examples: Autonomous Completion WITH Checkpoints**:
+
+✅ **CORRECT Autonomous Behavior**:
+```
+REQUIREMENTS: Agent gathers all requirements autonomously (no questions)
+SYNTHESIS: Agent drafts complete implementation plan autonomously (no questions)
+[PLAN APPROVAL]: Agent presents plan, waits for approval ← CHECKPOINT (expected)
+IMPLEMENTATION: Agent implements according to plan autonomously (no questions)
+VALIDATION: Agent fixes issues autonomously (no questions)
+REVIEW: Agent addresses agent feedback autonomously (no questions)
+[CHANGE REVIEW]: Agent presents changes, waits for approval ← CHECKPOINT (expected)
+COMPLETE: Agent merges work autonomously (no questions)
+```
+
+❌ **WRONG: Mid-Protocol Handoffs** (these violate autonomous completion):
+```
+REQUIREMENTS: Agent stops to ask "should I gather more requirements?"
+SYNTHESIS: Agent stops to ask "what architecture should I use?"
+IMPLEMENTATION: Agent stops to ask "how should I handle this error?"
+VALIDATION: Agent stops to ask "should I fix this or delegate it?"
+```
+
 **Checkpoint 1: [PLAN APPROVAL] - After SYNTHESIS, Before IMPLEMENTATION**
 - MANDATORY: Present implementation plan to user in clear, readable format
 - MANDATORY: Wait for explicit user approval message
 - PROHIBITED: Assuming user approval from bypass mode or lack of response
 -  PROHIBITED: Proceeding to IMPLEMENTATION without clear "yes", "approved", "proceed", or equivalent
   confirmation
+- **NOT A VIOLATION**: This checkpoint is EXPECTED and part of autonomous completion protocol
 
 **Checkpoint 2: [CHANGE REVIEW] - After REVIEW, Before COMPLETE**
 - MANDATORY: Present completed changes with commit SHA to user
 - MANDATORY: Wait for explicit user review approval
 - PROHIBITED: Assuming user approval from unanimous agent approval alone
 - PROHIBITED: Proceeding to COMPLETE without clear user confirmation
+- **NOT A VIOLATION**: This checkpoint is EXPECTED and part of autonomous completion protocol
 
 **Verification Questions Before Proceeding:**
 Before SYNTHESIS → IMPLEMENTATION:
@@ -77,6 +240,178 @@ Before REVIEW → COMPLETE:
 - [ ] Did I present the completed changes with commit SHA?
 - [ ] Did the user explicitly approve proceeding to finalization?
 - [ ] Did I assume approval from agent consensus alone? (VIOLATION if yes)
+
+### Checkpoint Wait Behavior
+
+**CRITICAL GUIDANCE**: While waiting at user approval checkpoints, the main agent must follow specific behavior patterns to maintain protocol integrity while remaining responsive to user needs.
+
+**Two Checkpoint Types**:
+1. **PLAN APPROVAL** (after SYNTHESIS, before IMPLEMENTATION)
+   - Lock state: SYNTHESIS
+   - Waiting for: User to approve implementation plan in task.md
+   - Typical wait time: Minutes to hours (user reviews plan)
+
+2. **CHANGE REVIEW** (after REVIEW, before COMPLETE)
+   - Lock state: AWAITING_USER_APPROVAL
+   - Waiting for: User to approve implemented changes
+   - Typical wait time: Minutes to hours (user reviews commit)
+
+**Permitted Activities During Checkpoint Wait**:
+
+✅ **ALWAYS PERMITTED** (maintains protocol state):
+- Answer user questions about the plan/changes
+- Provide clarifications about implementation approach
+- Explain technical decisions made during prior states
+- Show file diffs or commit details on request
+- Respond to audit commands (`/audit-session`)
+
+✅ **PERMITTED IF RELATED TO CURRENT CHECKPOINT**:
+- Make minor corrections to plan presentation (formatting, typos in task.md)
+- Add clarifying details to implementation plan if user requests
+- Generate additional documentation about proposed changes
+- Provide estimates or risk assessments for proposed approach
+
+❌ **PROHIBITED** (violates checkpoint semantics):
+- Starting IMPLEMENTATION work before plan approval received
+- Modifying implementation files while awaiting change review
+- Transitioning to next state without explicit approval
+- Working on different tasks (violates single-task protocol)
+- Assuming user will approve and pre-executing next state work
+
+**Handling User Requests During Checkpoint Wait**:
+
+**Scenario 1: User Requests Plan/Change Modifications**
+```markdown
+User at PLAN APPROVAL: "Can you add error handling details to the plan?"
+
+Permitted Response:
+1. Update task.md with additional error handling section
+2. Re-present updated plan to user
+3. Continue waiting for approval of revised plan
+4. Do NOT proceed to IMPLEMENTATION until approval received
+```
+
+**Scenario 2: User Asks Clarifying Questions**
+```markdown
+User at CHANGE REVIEW: "How did you handle the edge case for empty input?"
+
+Permitted Response:
+1. Answer question with reference to implementation
+2. Show relevant code sections if helpful
+3. Remain in AWAITING_USER_APPROVAL state
+4. Do NOT assume question indicates approval
+5. Wait for explicit "proceed" or "approved" message
+```
+
+**Scenario 3: User Runs Audit Command**
+```markdown
+User at PLAN APPROVAL: "/audit-session"
+
+Permitted Response:
+1. Execute full audit pipeline
+2. Report audit results to user
+3. Return to PLAN APPROVAL checkpoint wait
+4. Lock state remains SYNTHESIS throughout
+5. Checkpoint approval still required after audit
+```
+
+**Scenario 4: User Requests Unrelated Work**
+```markdown
+User at CHANGE REVIEW: "While I review, can you update the README?"
+
+PROHIBITED Response (violates single-task protocol):
+❌ "Sure, I'll update the README while you review"
+❌ Starting work on README changes
+
+REQUIRED Response:
+✅ "I'm currently waiting for your approval of the task branch changes (commit SHA: abc123).
+    Due to task protocol isolation requirements, I cannot work on other files until
+    this task completes CLEANUP state. Would you like me to:
+    1. Continue waiting for your review approval, OR
+    2. Abandon current task and start README update task (will lose checkpoint progress)"
+```
+
+**Wait Timeout Behavior**:
+
+**NO AUTOMATIC TIMEOUT**: Agent must wait indefinitely for user approval at checkpoints.
+
+**Rationale**: User may need extended time to:
+- Review complex implementation plans thoroughly
+- Test changes locally before approving
+- Consult with team members
+- Review security implications
+- Validate against requirements
+
+**User Responsibilities During Wait**:
+- Review presented plan/changes
+- Ask clarifying questions if needed
+- Provide explicit approval or request changes
+- If abandoning task, explicitly instruct agent to stop
+
+**Context Compaction Handling**:
+
+If context compaction occurs while waiting at checkpoint:
+1. SessionStart hook detects checkpoint state
+2. Hook reminds agent of checkpoint requirements
+3. Agent re-presents plan/changes to user
+4. Wait for approval resumes from where interrupted
+
+**Checkpoint State Recovery After Compaction**:
+```bash
+# SessionStart hook detects checkpoint
+LOCK_STATE=$(jq -r '.state' /workspace/tasks/{TASK_NAME}/task.json)
+
+if [ "$LOCK_STATE" = "SYNTHESIS" ]; then
+    # Check for plan approval flag
+    if [ ! -f "/workspace/tasks/{TASK_NAME}/user-plan-approval-obtained.flag" ]; then
+        echo "📋 CHECKPOINT RECOVERY: Task waiting for PLAN APPROVAL"
+        echo "Action: Re-present implementation plan from task.md"
+        echo "Wait for explicit user approval before IMPLEMENTATION"
+    fi
+elif [ "$LOCK_STATE" = "AWAITING_USER_APPROVAL" ]; then
+    # Check for change review approval flag
+    if [ ! -f "/workspace/tasks/{TASK_NAME}/user-approval-obtained.flag" ]; then
+        COMMIT_SHA=$(jq -r '.checkpoint.commit_sha' /workspace/tasks/{TASK_NAME}/task.json)
+        echo "📋 CHECKPOINT RECOVERY: Task waiting for CHANGE REVIEW"
+        echo "Action: Re-present changes at commit $COMMIT_SHA"
+        echo "Wait for explicit user approval before COMPLETE"
+    fi
+fi
+```
+
+**Approval Signal Detection**:
+
+Agent must recognize these approval patterns:
+
+**PLAN APPROVAL Signals**:
+- ✅ "Yes, proceed with implementation"
+- ✅ "Approved, go ahead"
+- ✅ "Looks good, please continue"
+- ✅ "LGTM" (Let's Get This Made)
+- ✅ "Proceed"
+- ❌ "Interesting approach" (NOT approval, just commentary)
+- ❌ "continue" alone (ambiguous, could mean continue waiting)
+
+**CHANGE REVIEW Approval Signals**:
+- ✅ "Changes look good, please finalize"
+- ✅ "Approved, you can merge"
+- ✅ "LGTM, proceed with cleanup"
+- ✅ "Yes, approved"
+- ❌ "Nice work" (NOT approval, just praise)
+- ❌ "Okay" alone (ambiguous without review context)
+
+**Ambiguous Message Handling**:
+```markdown
+User: "continue"
+
+Agent Response:
+"I'm currently waiting for your approval of [plan/changes]. To confirm:
+ - If you approve: Please say 'yes, approved' or 'proceed with [implementation/finalization]'
+ - If you need changes: Please specify what to modify
+ - If you want me to continue waiting: I will wait for your review"
+```
+
+**CRITICAL**: When in doubt, ask for clarification rather than assuming approval.
 
 ### Automated Checkpoint Enforcement
 
@@ -109,7 +444,7 @@ after SYNTHESIS and CHANGE REVIEW after REVIEW)
 
 **Risk Level**: Classification of file modification impact (HIGH/MEDIUM/LOW) determining workflow variant
 
-**Agent**: Stakeholder specialist (technical-architect, style-auditor, etc.) providing domain-specific
+**Agent**: Stakeholder specialist (architecture-reviewer, style-reviewer, etc.) providing domain-specific
 validation
 
 **Worktree**: Git worktree providing isolated workspace for task development without affecting main branch
@@ -139,9 +474,9 @@ scope
 - `docs/project/task-protocol.md` (protocol configuration)
 - `docs/project/critical-rules.md` (safety rules)
 
-**Required Agents**: technical-architect, style-auditor, code-quality-auditor, build-validator
-**Additional Agents**: security-auditor (if security-related), performance-analyzer (if performance-critical),
-code-tester (if new functionality), usability-reviewer (if user-facing)
+**Required Agents**: architecture-reviewer, style-reviewer, quality-reviewer, build-reviewer
+**Additional Agents**: security-reviewer (if security-related), performance-reviewer (if performance-critical),
+test-reviewer (if new functionality), usability-reviewer (if user-facing)
 
 ### MEDIUM-RISK FILES (Domain Validation Required)
 **Patterns:**
@@ -150,9 +485,9 @@ code-tester (if new functionality), usability-reviewer (if user-facing)
 - `**/resources/**/*.properties` (configuration)
 - `**/*Test.java`, `**/*Tests.java` (test classes)
 
-**Required Agents**: technical-architect, code-quality-auditor
-**Additional Agents**: style-auditor (if style files), security-auditor (if config files),
-performance-analyzer (if benchmarks)
+**Required Agents**: architecture-reviewer, quality-reviewer
+**Additional Agents**: style-reviewer (if style files), security-reviewer (if config files),
+performance-reviewer (if benchmarks)
 
 ### LOW-RISK FILES (Minimal Validation Required)
 **Patterns:**
@@ -201,11 +536,11 @@ COMPLETE → CLEANUP
 **States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW →
 COMPLETE → CLEANUP
 **Stakeholder Agents**: Based on change characteristics
-- Base: technical-architect (always required)
-- +style-auditor: If style/formatting files modified
-- +security-auditor: If any configuration or resource files modified
-- +performance-analyzer: If test performance or benchmarks affected
-- +code-quality-auditor: Always included for code quality validation
+- Base: architecture-reviewer (always required)
+- +style-reviewer: If style/formatting files modified
+- +security-reviewer: If any configuration or resource files modified
+- +performance-reviewer: If test performance or benchmarks affected
+- +quality-reviewer: Always included for code quality validation
 **Isolation**: Worktree isolation for multi-file changes
 **Review**: Domain-appropriate stakeholder validation
 **Use Case**: Test files, style documentation, configuration files
@@ -268,89 +603,89 @@ def determine_state_path(risk_level, change_type):
 
 ### Comprehensive Agent Selection Framework
 **Input**: Task description and file modification patterns
-**Available Agents**: technical-architect, usability-reviewer, performance-analyzer, security-auditor,
-style-auditor, code-quality-auditor, code-tester, build-validator
+**Available Agents**: architecture-reviewer, usability-reviewer, performance-reviewer, security-reviewer,
+style-reviewer, quality-reviewer, test-reviewer, build-reviewer
 
 **Processing Logic:**
 
 **🚨 CORE AGENTS (Always Required):**
-- **technical-architect**: MANDATORY for ALL file modification tasks (provides implementation requirements)
+- **architecture-reviewer**: MANDATORY for ALL file modification tasks (provides implementation requirements)
 
 **🔍 FUNCTIONAL AGENTS (Code Implementation):**
-- IF NEW CODE created: add style-auditor, code-quality-auditor, build-validator
-- IF IMPLEMENTATION (not just config): add code-tester
+- IF NEW CODE created: add style-reviewer, quality-reviewer, build-reviewer
+- IF IMPLEMENTATION (not just config): add test-reviewer
 - IF MAJOR FEATURES completed: add usability-reviewer (MANDATORY after completion)
 
 **🛡️ SECURITY AGENTS (Actual Security Concerns):**
-- IF AUTHENTICATION/AUTHORIZATION changes: add security-auditor
-- IF EXTERNAL API/DATA integration: add security-auditor
-- IF ENCRYPTION/CRYPTOGRAPHIC operations: add security-auditor
-- IF INPUT VALIDATION/SANITIZATION: add security-auditor
+- IF AUTHENTICATION/AUTHORIZATION changes: add security-reviewer
+- IF EXTERNAL API/DATA integration: add security-reviewer
+- IF ENCRYPTION/CRYPTOGRAPHIC operations: add security-reviewer
+- IF INPUT VALIDATION/SANITIZATION: add security-reviewer
 
 **⚡ PERFORMANCE AGENTS (Performance Critical):**
-- IF ALGORITHM optimization tasks: add performance-analyzer
-- IF DATABASE/QUERY optimization: add performance-analyzer
-- IF MEMORY/CPU intensive operations: add performance-analyzer
+- IF ALGORITHM optimization tasks: add performance-reviewer
+- IF DATABASE/QUERY optimization: add performance-reviewer
+- IF MEMORY/CPU intensive operations: add performance-reviewer
 
 **🔧 FORMATTING AGENTS (Code Quality):**
-- IF PARSER LOGIC modified: add performance-analyzer, security-auditor
-- IF AST TRANSFORMATION changed: add code-quality-auditor, code-tester
-- IF FORMATTING RULES affected: add style-auditor
+- IF PARSER LOGIC modified: add performance-reviewer, security-reviewer
+- IF AST TRANSFORMATION changed: add quality-reviewer, test-reviewer
+- IF FORMATTING RULES affected: add style-reviewer
 
 **❌ AGENTS NOT NEEDED FOR SIMPLE OPERATIONS:**
-- Maven module renames: NO performance-analyzer
-- Configuration file updates: NO security-auditor unless changing auth
-- Directory/file renames: NO performance-analyzer
-- Documentation updates: Usually only technical-architect
+- Maven module renames: NO performance-reviewer
+- Configuration file updates: NO security-reviewer unless changing auth
+- Directory/file renames: NO performance-reviewer
+- Documentation updates: Usually only architecture-reviewer
 
 **📊 ANALYSIS AGENTS (Research/Study Tasks):**
-- IF ARCHITECTURAL ANALYSIS: add technical-architect
-- IF PERFORMANCE ANALYSIS: add performance-analyzer
+- IF ARCHITECTURAL ANALYSIS: add architecture-reviewer
+- IF PERFORMANCE ANALYSIS: add performance-reviewer
 - IF UX/INTERFACE ANALYSIS: add usability-reviewer
-- IF SECURITY ANALYSIS: add security-auditor
-- IF CODE QUALITY REVIEW: add code-quality-auditor
-- IF PARSER/FORMATTER PERFORMANCE ANALYSIS: add performance-analyzer
+- IF SECURITY ANALYSIS: add security-reviewer
+- IF CODE QUALITY REVIEW: add quality-reviewer
+- IF PARSER/FORMATTER PERFORMANCE ANALYSIS: add performance-reviewer
 
 **Agent Selection Verification Checklist:**
-- [ ] NEW CODE task → style-auditor included?
-- [ ] Source files created/modified → build-validator included?
-- [ ] Performance-critical code → performance-analyzer included?
-- [ ] Security-sensitive features → security-auditor included?
+- [ ] NEW CODE task → style-reviewer included?
+- [ ] Source files created/modified → build-reviewer included?
+- [ ] Performance-critical code → performance-reviewer included?
+- [ ] Security-sensitive features → security-reviewer included?
 - [ ] User-facing interfaces → usability-reviewer included?
-- [ ] Post-implementation refactoring → code-quality-auditor included?
-- [ ] AST parsing/code formatting → performance-analyzer included?
+- [ ] Post-implementation refactoring → quality-reviewer included?
+- [ ] AST parsing/code formatting → performance-reviewer included?
 
 **Special Agent Usage Patterns:**
--  **style-auditor**: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and
+-  **style-reviewer**: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and
   language-specific patterns)
--  **build-validator**: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through build
+-  **build-reviewer**: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through build
   system
--  **build-validator**: Use alongside style-auditor to ensure comprehensive validation (automated + manual
+-  **build-reviewer**: Use alongside style-reviewer to ensure comprehensive validation (automated + manual
   rules)
-- **code-quality-auditor**: Post-implementation refactoring and best practices enforcement
-- **code-tester**: Business logic validation and comprehensive test creation
-- **security-auditor**: Data handling and storage compliance review
-- **performance-analyzer**: Algorithmic efficiency and resource optimization
+- **quality-reviewer**: Post-implementation refactoring and best practices enforcement
+- **test-reviewer**: Business logic validation and comprehensive test creation
+- **security-reviewer**: Data handling and storage compliance review
+- **performance-reviewer**: Algorithmic efficiency and resource optimization
 - **usability-reviewer**: User experience design and interface evaluation
-- **technical-architect**: System architecture and implementation guidance
+- **architecture-reviewer**: System architecture and implementation guidance
 
 ## COMPLETE STYLE VALIDATION FRAMEWORK
 
 ### Three-Component Style Validation
 **MANDATORY PROCESS**: When style validation is required, ALL THREE components must pass:
 
-1. **Automated Linters** (via build-validator):
+1. **Automated Linters** (via build-reviewer):
    - `checkstyle`: Java coding conventions and formatting
    - `PMD`: Code quality and best practices
    - `ESLint`: JavaScript/TypeScript style (if applicable)
 
-2. **Manual Style Rules** (via style-auditor):
+2. **Manual Style Rules** (via style-reviewer):
    - Apply ALL detection patterns from `docs/code-style/*-claude.md`
    - Java-specific patterns (naming, structure, comments)
    - Common patterns (cross-language consistency)
    - Language-specific patterns as applicable
 
-3. **Build Integration** (via build-validator):
+3. **Build Integration** (via build-reviewer):
    - Automated fixing when conflicts detected (LineLength vs UnderutilizedLines)
    - Use `checkstyle/fixers` module for AST-based consolidate-then-split strategy
    - Comprehensive testing validates fixing logic before application
@@ -368,7 +703,7 @@ validate_complete_style_compliance() {
     ./mvnw checkstyle:check || return 1
     ./mvnw pmd:check || return 1
 
-    # Component 2: Manual style rules via style-auditor agent
+    # Component 2: Manual style rules via style-reviewer agent
     echo "Validating manual style rules..."
     invoke_style_auditor_with_manual_detection_patterns || return 1
 
@@ -660,6 +995,317 @@ When session resumes with pending audits:
 ✅ Audit pipeline executes immediately upon state transition attempt
 ✅ documentation-auditor automatically invoked when violations detected
 ✅ Audit retries automatically until PASSED verdict obtained
+
+### Audit Command Interaction Patterns Across Protocol States
+
+**CRITICAL GUIDANCE**: Audit commands (`/audit-session`, protocol compliance checks) can be invoked at any point during task execution. This section clarifies interaction patterns, state preservation, and resumption logic for each protocol state.
+
+**Core Audit Principles**:
+1. **Non-Destructive**: Audits NEVER modify task state, lock files, or implementation files
+2. **State Preservation**: Lock state remains unchanged during and after audit
+3. **Checkpoint Respect**: Audits do NOT bypass user approval checkpoints
+4. **Resumption Required**: After audit completes, resume from exact point of interruption
+
+**State-by-State Audit Interaction Patterns**:
+
+**INIT State + Audit**:
+```markdown
+Scenario: User runs audit during worktree creation
+
+Audit Behavior:
+- Audit detects task in INIT state
+- Reports minimal findings (no implementation to audit yet)
+- State remains INIT after audit
+
+Resumption After Audit:
+- Complete INIT phase tasks (finish worktree creation, lock acquisition)
+- Transition to CLASSIFIED as normal
+- No special recovery needed
+```
+
+**CLASSIFIED State + Audit**:
+```markdown
+Scenario: User runs audit after agent selection, before REQUIREMENTS
+
+Audit Behavior:
+- Verifies risk classification rationale
+- Checks agent selection against file patterns
+- Validates task.md skeleton creation
+- State remains CLASSIFIED after audit
+
+Resumption After Audit:
+- Complete CLASSIFIED phase (if any tasks pending)
+- Transition to REQUIREMENTS as normal
+- Invoke agents as planned
+```
+
+**REQUIREMENTS State + Audit (Active Agent Invocations)**:
+```markdown
+Scenario: User runs audit while agents are gathering requirements
+
+This is the most complex interaction pattern - see "Agent Invocation Interruption Handling" section for complete details.
+
+Summary:
+1. Audit executes full pipeline (execution-tracer → protocol-auditor → efficiency-optimizer → documentation-auditor)
+2. State remains REQUIREMENTS throughout audit
+3. After audit: Check agent completion status
+4. Resume agent invocations:
+   - If all agents complete: Proceed to SYNTHESIS
+   - If some agents complete: Re-invoke incomplete agents
+   - If no agents complete: Re-invoke all agents
+
+Critical: DO NOT transition to SYNTHESIS during audit
+```
+
+**SYNTHESIS State + Audit (Waiting for Plan Approval)**:
+```markdown
+Scenario: User runs audit while reviewing implementation plan
+
+Audit Behavior:
+- Audit examines agent requirements reports
+- Validates synthesis plan in task.md
+- Checks for requirement conflicts
+- State remains SYNTHESIS after audit
+
+Resumption After Audit:
+- Return to PLAN APPROVAL checkpoint wait
+- Do NOT assume audit = plan approval
+- Wait for explicit user approval message
+- Only then proceed to IMPLEMENTATION
+
+Checkpoint Interaction:
+✅ Audit can run during plan review
+❌ Audit does NOT substitute for user approval
+❌ Cannot skip from SYNTHESIS → IMPLEMENTATION via audit
+```
+
+**IMPLEMENTATION State + Audit (Active Agent Implementation)**:
+```markdown
+Scenario: User runs audit while stakeholder agents are implementing code
+
+Audit Behavior:
+- Audit verifies main agent is coordinating (not implementing)
+- Checks agent status.json files for implementation progress
+- Validates no Write/Edit tool usage by main agent on source files
+- Examines agent worktree merges to task branch
+- State remains IMPLEMENTATION after audit
+
+Critical Audit Checks During IMPLEMENTATION:
+- Check 0.2: Main agent implementation violation detection
+  → If FAILED: Agent implemented instead of delegating
+  → Recovery: Revert changes, return to SYNTHESIS, re-delegate
+
+Resumption After Audit:
+- If audit PASSED: Continue monitoring agent status
+- If audit FAILED: Fix violations per audit guidance
+- Agent implementation rounds continue until all agents COMPLETE
+- Only then transition to VALIDATION
+```
+
+**VALIDATION State + Audit**:
+```markdown
+Scenario: User runs audit during build verification
+
+Audit Behavior:
+- Verifies build actually executed (not cached)
+- Checks quality gate execution (PMD, checkstyle)
+- Validates test execution results
+- State remains VALIDATION after audit
+
+Resumption After Audit:
+- Complete validation tasks if interrupted
+- If validation incomplete: Run ./mvnw verify
+- If validation complete: Transition to REVIEW
+```
+
+**REVIEW State + Audit (Active Agent Reviews)**:
+```markdown
+Scenario: User runs audit while agents are reviewing task branch
+
+Audit Behavior:
+- Audit checks if agents reviewing correct branch (task branch, not agent worktrees)
+- Validates review scope (full task branch, not partial)
+- Checks for unanimous approval requirement
+- State remains REVIEW after audit
+
+Resumption After Audit:
+- Wait for all agent review responses
+- If all ✅ APPROVED: Transition to AWAITING_USER_APPROVAL
+- If any ❌ REJECTED: Return to IMPLEMENTATION (or SCOPE_NEGOTIATION)
+```
+
+**AWAITING_USER_APPROVAL State + Audit**:
+```markdown
+Scenario: User runs audit while reviewing completed changes
+
+Audit Behavior:
+- Audit validates change presentation (commit SHA shown)
+- Checks user approval flag status
+- Verifies no bypass attempts
+- State remains AWAITING_USER_APPROVAL after audit
+
+Resumption After Audit:
+- Return to CHANGE REVIEW checkpoint wait
+- Do NOT assume audit = change approval
+- Wait for explicit user approval message
+- Only then proceed to COMPLETE
+
+Checkpoint Interaction:
+✅ Audit can run during change review
+❌ Audit does NOT substitute for user approval
+❌ Cannot skip AWAITING_USER_APPROVAL → COMPLETE via audit
+```
+
+**COMPLETE State + Audit**:
+```markdown
+Scenario: User runs audit during merge to main branch
+
+Audit Behavior:
+- Verifies merge completion
+- Checks todo.md / changelog.md updates
+- Validates lock file state
+- State remains COMPLETE (or transitions to CLEANUP if done)
+
+Resumption After Audit:
+- Complete any pending COMPLETE state tasks
+- Transition to CLEANUP
+```
+
+**CLEANUP State + Audit**:
+```markdown
+Scenario: User runs audit during worktree cleanup
+
+Audit Behavior:
+- Verifies worktree removal in progress
+- Checks lock file removal
+- Validates agent worktree cleanup
+- Reports completion status
+
+Resumption After Audit:
+- Complete worktree removals
+- Finish cleanup
+- Release locks
+```
+
+**Critical Audit + Agent Invocation Race Conditions**:
+
+**Race Condition 1: Audit During Parallel Agent Execution**
+```markdown
+Timeline:
+T0: Main agent invokes 7 agents in parallel via Task tool
+T1: Agents start processing in background
+T2: User runs /audit-session
+T3: Audit pipeline executes
+T4: Some agents complete during audit
+T5: Audit finishes
+T6: Main agent checks agent status
+
+Correct Handling:
+- Audit does NOT block agent execution (agents continue in background)
+- Audit reads agent status.json files at T3 (snapshot)
+- At T6, re-check all agent statuses (may have changed during audit)
+- Resume with current agent completion state, not T3 snapshot
+```
+
+**Race Condition 2: Audit Triggers During State Transition**
+```markdown
+Timeline:
+T0: Main agent completes REQUIREMENTS state
+T1: Main agent begins updating lock state to SYNTHESIS
+T2: User runs /audit-session (interrupts lock update)
+T3: Audit examines lock state (sees REQUIREMENTS)
+T4: Audit completes
+T5: Main agent resumes lock state update
+
+Correct Handling:
+- Complete state transition update after audit
+- Audit report may show "state mismatch" if caught mid-transition
+- Verify final lock state matches intended transition
+- If audit reports violation, check if it's transition race or real violation
+```
+
+**Prohibited Audit Bypass Patterns**:
+
+❌ **PROHIBITED**: Using audit to skip checkpoints
+```markdown
+WRONG:
+1. Reach SYNTHESIS (plan approval checkpoint)
+2. Run /audit-session
+3. Assume audit = approval, proceed to IMPLEMENTATION
+
+CORRECT:
+1. Reach SYNTHESIS (plan approval checkpoint)
+2. Run /audit-session if desired
+3. Wait for explicit user "approved" message
+4. Only then proceed to IMPLEMENTATION
+```
+
+❌ **PROHIBITED**: Using audit to skip agent work
+```markdown
+WRONG:
+1. REQUIREMENTS state, need to invoke agents
+2. Run /audit-session
+3. Audit shows "0 violations"
+4. Skip agent invocations, proceed to SYNTHESIS
+
+CORRECT:
+1. REQUIREMENTS state
+2. Run /audit-session (optional)
+3. Audit results don't change requirements
+4. Invoke ALL required agents
+5. Wait for agent completion
+6. Proceed to SYNTHESIS
+```
+
+❌ **PROHIBITED**: Using audit failures to abort protocol
+```markdown
+WRONG:
+1. IMPLEMENTATION state
+2. Run /audit-session
+3. Audit finds violation
+4. Abandon task, select different task
+
+CORRECT:
+1. IMPLEMENTATION state
+2. Run /audit-session
+3. Audit finds violation
+4. Fix violation per audit guidance
+5. Re-run audit to verify fix
+6. Continue task to completion
+```
+
+**Required Audit Resumption Patterns**:
+
+✅ **ALWAYS**: Return to exact protocol state after audit
+```markdown
+CORRECT PATTERN:
+1. Protocol state = X before audit
+2. Run /audit-session
+3. Audit executes
+4. Protocol state = X after audit (unchanged)
+5. Resume protocol from state X
+```
+
+✅ **ALWAYS**: Re-check dynamic state after audit
+```markdown
+CORRECT PATTERN (Agent Status):
+1. Agent status snapshot before audit: 3/7 complete
+2. Run /audit-session (takes 5 minutes)
+3. Audit completes
+4. Re-check agent status: May be 5/7 complete now
+5. Resume with CURRENT status (5/7), not snapshot (3/7)
+```
+
+✅ **ALWAYS**: Verify state consistency after audit
+```markdown
+CORRECT PATTERN:
+1. Run /audit-session
+2. Audit completes
+3. Verify lock state matches expected state
+4. Verify worktrees intact
+5. Verify agent statuses current
+6. Resume protocol execution
+```
 
 ### Violation Recovery Patterns
 
@@ -1122,6 +1768,221 @@ if [ "$CHECKPOINT_APPROVED" != "true" ]; then
 fi
 ```
 
+### Dynamic Agent Addition Mid-Task
+
+**CRITICAL GUIDANCE**: Agent selection is typically finalized during CLASSIFIED state, but circumstances may require adding agents after initial selection. This section clarifies when and how to add agents dynamically.
+
+**When Dynamic Agent Addition is Permitted**:
+
+✅ **PERMITTED Scenarios**:
+1. **During REQUIREMENTS**: Initial requirements reveal need for additional domain expertise
+   - Example: Security requirements reveal need for security-reviewer (if not initially selected)
+   - Example: Performance constraints discovered, need performance-reviewer
+
+2. **During SYNTHESIS**: Requirements synthesis identifies gaps in domain coverage
+   - Example: Agent conflicts need additional tier-1 authority (architecture-reviewer)
+   - Example: Complex integration needs usability-reviewer input
+
+3. **During IMPLEMENTATION**: Implementation complexity exceeds initial agent capabilities
+   - Example: Realize need for test-reviewer for complex business logic
+   - Example: Build integration issues need build-reviewer expertise
+
+❌ **PROHIBITED Scenarios**:
+1. **During VALIDATION/REVIEW**: Too late - implementation complete, adding agents is rework
+2. **To bypass rejections**: Cannot add "friendly" agents to override existing agent rejections
+3. **For convenience**: Cannot add agents to avoid fixing issues raised by existing agents
+
+**Dynamic Agent Addition Process**:
+
+**Step 1: Identify Gap and Justification**
+```markdown
+Document why additional agent is needed:
+- What domain expertise is missing?
+- What specific requirement cannot be met without this agent?
+- Why wasn't this agent selected initially?
+- What evidence justifies adding them now?
+
+Example:
+"During REQUIREMENTS, security-reviewer identified authentication requirements.
+ Initial risk assessment classified task as MEDIUM-RISK (test files only),
+ but authentication features require HIGH-RISK security validation.
+ Adding security-reviewer to requirements gathering."
+```
+
+**Step 2: Create Agent Worktree**
+```bash
+TASK_NAME="your-task-name"
+NEW_AGENT="security-reviewer"
+TASK_DIR="/workspace/tasks/${TASK_NAME}"
+
+# Create agent worktree
+git worktree add "${TASK_DIR}/agents/${NEW_AGENT}/code" -b "task-${TASK_NAME}-agent-${NEW_AGENT}"
+
+# Verify creation
+ls -ld "${TASK_DIR}/agents/${NEW_AGENT}/code" || {
+    echo "Failed to create agent worktree"
+    exit 1
+}
+
+# Update lock file with new agent
+jq --arg agent "$NEW_AGENT" '.required_agents += [$agent]' \
+   "${TASK_DIR}/task.json" > "${TASK_DIR}/task.json.tmp"
+mv "${TASK_DIR}/task.json.tmp" "${TASK_DIR}/task.json"
+```
+
+**Step 3: Bring Agent Up to Current State**
+
+The catch-up process depends on when the agent is added:
+
+**Adding During REQUIREMENTS**:
+```markdown
+1. Invoke new agent with same prompt as other agents
+2. Agent provides requirements report
+3. Continue REQUIREMENTS state with expanded agent set
+4. Proceed to SYNTHESIS only after ALL agents (including new) complete
+```
+
+**Adding During SYNTHESIS**:
+```markdown
+1. New agent must review ALL existing requirements reports
+2. Invoke agent with synthesis mode: "Review requirements from 6 agents, provide synthesis input"
+3. Agent identifies conflicts, provides additional requirements
+4. Update synthesis plan to incorporate new agent's input
+5. Re-present plan to user (now includes new agent's perspective)
+6. User approval required for revised plan
+```
+
+**Adding During IMPLEMENTATION**:
+```markdown
+1. New agent must review existing implementation in task branch
+2. Invoke agent with implementation mode: "Review current implementation, identify gaps in [domain]"
+3. Agent implements additional components in their worktree
+4. Agent merges to task branch (normal implementation rounds)
+5. Continue rounds until ALL agents (including new) report COMPLETE
+```
+
+**Step 4: Update Task Documentation**
+
+```bash
+# Add agent to task.md stakeholder list
+# Add section for new agent's requirements/implementation plan
+# Document why agent was added mid-task
+```
+
+**Lock File Required Changes**:
+
+```json
+{
+  "session_id": "...",
+  "task_name": "...",
+  "state": "REQUIREMENTS",
+  "required_agents": [
+    "architecture-reviewer",
+    "quality-reviewer",
+    "style-reviewer",
+    "security-reviewer"  // <- Newly added
+  ],
+  "agent_additions": [
+    {
+      "agent": "security-reviewer",
+      "added_at_state": "REQUIREMENTS",
+      "timestamp": "2025-10-18T14:30:00Z",
+      "justification": "Authentication requirements discovered during requirements gathering"
+    }
+  ]
+}
+```
+
+**State-Specific Addition Constraints**:
+
+**REQUIREMENTS State**:
+- ✅ Can add any agent type
+- ✅ Agent participates fully from this point
+- ✅ No state reversal needed
+- ⚠️ May extend REQUIREMENTS duration (more agents to complete)
+
+**SYNTHESIS State**:
+- ✅ Can add if synthesis reveals gaps
+- ⚠️ Requires re-synthesis with new agent input
+- ⚠️ User must re-approve revised plan
+- ❌ Cannot skip agent's requirements input (must review existing reports)
+
+**IMPLEMENTATION State**:
+- ⚠️ Use sparingly - indicates planning failure
+- ✅ Permitted for genuine implementation gaps
+- ⚠️ Agent must catch up by reviewing task branch
+- ⚠️ May require additional implementation rounds
+- ❌ Cannot add to bypass existing agent rejections
+
+**VALIDATION/REVIEW States**:
+- ❌ Too late - implementation complete
+- ❌ Adding agents now requires returning to REQUIREMENTS
+- ✅ IF CRITICAL: Return to REQUIREMENTS, add agent, re-execute full protocol
+
+**Example: Adding Security Auditor During REQUIREMENTS**
+
+```markdown
+Scenario: Task classified as MEDIUM-RISK (test file modifications).
+During REQUIREMENTS, architecture-reviewer identifies authentication logic in tests.
+
+Decision:
+- Authentication = security concern
+- Original classification missed security implications
+- security-reviewer needed for requirements gathering
+
+Process:
+1. Document justification: "Authentication logic requires security validation"
+2. Create security-reviewer worktree
+3. Update lock file: required_agents += ["security-reviewer"]
+4. Invoke security-reviewer with REQUIREMENTS mode
+5. Wait for security-reviewer requirements report
+6. Proceed to SYNTHESIS with 4 agents (was 3)
+
+Result:
+- Task now has security validation coverage
+- Synthesis incorporates security requirements
+- Implementation includes security best practices
+```
+
+**Example: Attempting to Add Agent During REVIEW (PROHIBITED)**
+
+```markdown
+Scenario: During REVIEW, test-reviewer rejects due to insufficient test coverage.
+Main agent considers adding additional test-reviewer agent.
+
+Decision: PROHIBITED
+
+Reason:
+- REVIEW state means implementation complete
+- Cannot add agents to bypass rejection
+- Proper response: Return to IMPLEMENTATION, improve test coverage
+- test-reviewer re-reviews improved tests in next REVIEW round
+
+Correct Recovery:
+1. Do NOT add new agent
+2. Return to IMPLEMENTATION state
+3. Address test-reviewer's test coverage concerns
+4. Re-run REVIEW with original agent set
+```
+
+**Critical Rules for Dynamic Agent Addition**:
+
+1. **Justify Addition**: Document why agent wasn't selected initially and why needed now
+2. **Update Lock File**: Add agent to required_agents array + document in agent_additions
+3. **Create Worktree**: Agent needs isolated workspace like all agents
+4. **Catch-Up Required**: Agent must review all prior work before contributing
+5. **No Bypass**: Cannot add agents to override existing agent decisions
+6. **State Constraints**: Later states have stricter addition requirements
+7. **User Approval**: If adding during SYNTHESIS, user must re-approve revised plan
+
+**Audit Detection**:
+
+Protocol audits check for improper dynamic agent additions:
+- Agents added without justification
+- Agents added to bypass rejections
+- Agents added during VALIDATION/REVIEW without returning to earlier state
+- Agents missing required_agents or agent_additions in lock file
+
 ### CLASSIFIED → REQUIREMENTS
 **Mandatory Conditions:**
 - [ ] Risk level determined (HIGH/MEDIUM/LOW)
@@ -1170,7 +2031,7 @@ pwd | grep -q "/workspace/tasks/{TASK_NAME}/code$" || {
 echo "✅ Directory verification PASSED: $(pwd)"
 
 # MANDATORY: Verify all agent worktrees exist
-for agent in technical-architect code-quality-auditor style-auditor; do
+for agent in architecture-reviewer quality-reviewer style-reviewer; do
   [ -d "/workspace/tasks/{TASK_NAME}/agents/$agent/code" ] || {
     echo "❌ CRITICAL ERROR: Agent worktree missing: $agent"
     exit 1
@@ -1189,6 +2050,158 @@ echo "✅ All agent worktrees verified"
 ✅ Confirm output matches task worktree path
 ✅ Only then invoke stakeholder agents
 
+### Agent Invocation Interruption Handling
+
+**CRITICAL GUIDANCE**: When agent invocations are initiated but interrupted by user commands or directives, the following recovery pattern applies.
+
+**Common Interruption Scenarios**:
+1. **Audit Commands**: User runs `/audit-session` during REQUIREMENTS state while agents are being invoked
+2. **User Questions**: User asks questions or requests status updates mid-invocation
+3. **Priority Changes**: User requests different tasks or changes task priorities
+4. **System Commands**: User runs other slash commands that interrupt normal flow
+
+**Recovery Pattern After Interruption**:
+
+```markdown
+STEP 1: COMPLETE INTERRUPTING COMMAND
+- Process user's immediate request fully (audit, questions, status, etc.)
+- Do NOT abandon the interrupted agent invocations
+- Do NOT transition to different state without completing interruption
+
+STEP 2: VERIFY STATE CONSISTENCY
+- Check lock file state matches expected state before interruption
+- Verify worktrees remain intact
+- Confirm no state corruption occurred during interruption
+
+STEP 3: ASSESS AGENT COMPLETION STATUS
+- Check which agents completed before interruption (via status.json files)
+- Identify which agents need to be invoked or re-invoked
+- Preserve any partial agent work (requirements reports, status updates)
+
+STEP 4: RESUME AGENT INVOCATIONS
+- Re-invoke incomplete agents in parallel (same as original invocation)
+- Do NOT skip any required agents
+- Wait for all agents to complete before state transition
+```
+
+**State Preservation Requirements During Interruption**:
+- ✅ Lock file state remains unchanged (e.g., stays in REQUIREMENTS)
+- ✅ Task worktree and agent worktrees remain intact
+- ✅ Partial agent completions preserved (check status.json, requirements reports)
+- ✅ Protocol state machine position maintained
+
+**Verification Commands Before Resuming**:
+```bash
+# Check current lock state - should match state before interruption
+CURRENT_STATE=$(jq -r '.state' /workspace/tasks/{TASK_NAME}/task.json)
+echo "Current state: $CURRENT_STATE"
+
+# Check which agents completed before interruption
+echo "Agent completion status:"
+for agent in {AGENT_LIST}; do
+  if [ -f "/workspace/tasks/{TASK_NAME}/agents/$agent/status.json" ]; then
+    STATUS=$(jq -r '.status' "/workspace/tasks/{TASK_NAME}/agents/$agent/status.json")
+    echo "  $agent: $STATUS"
+  else
+    echo "  $agent: Not started (needs invocation)"
+  fi
+done
+
+# Check for requirements reports from completed agents
+echo "Requirements reports:"
+ls -1 /workspace/tasks/{TASK_NAME}/*-requirements.md 2>/dev/null || echo "  None yet"
+```
+
+**Re-Invocation Decision Logic**:
+```python
+def determine_resumption_action(task_name, required_agents):
+    """
+    Determine what action to take after interruption based on agent completion status.
+    """
+    completed_agents = []
+    incomplete_agents = []
+
+    for agent in required_agents:
+        status_file = f"/workspace/tasks/{task_name}/agents/{agent}/status.json"
+        requirements_file = f"/workspace/tasks/{task_name}/{task_name}-{agent}-requirements.md"
+
+        # Agent considered complete if both status.json AND requirements report exist
+        if os.path.exists(status_file) and os.path.exists(requirements_file):
+            completed_agents.append(agent)
+        else:
+            incomplete_agents.append(agent)
+
+    if len(incomplete_agents) == 0:
+        return "TRANSITION_TO_SYNTHESIS", "All agents completed before interruption"
+    elif len(completed_agents) == 0:
+        return "INVOKE_ALL_AGENTS", "No agents completed, re-invoke all"
+    else:
+        return "INVOKE_INCOMPLETE", f"Re-invoke: {incomplete_agents}"
+```
+
+**CRITICAL PROTOCOL REQUIREMENTS**:
+- ❌ **PROHIBITED**: Skipping agent invocations because of interruption
+- ❌ **PROHIBITED**: Transitioning to next state with incomplete agent work
+- ❌ **PROHIBITED**: Assuming interruption invalidates prior agent completions
+- ✅ **REQUIRED**: Resume and complete all agent invocations after interruption
+- ✅ **REQUIRED**: Preserve partial progress from agents that completed before interruption
+- ✅ **REQUIRED**: Verify state consistency before and after interruption
+
+**Interruption Recovery Examples**:
+
+**Example 1: All Agents Not Yet Invoked**
+```markdown
+Scenario: User runs `/audit-session` immediately after CLASSIFIED → REQUIREMENTS transition
+
+Recovery:
+1. Complete audit command execution
+2. Verify lock state = "REQUIREMENTS"
+3. Check agent status: None started
+4. Action: Invoke all required agents in parallel (original plan)
+5. Wait for all agents to complete
+6. Proceed to SYNTHESIS after unanimous completion
+```
+
+**Example 2: Partial Agent Completion**
+```markdown
+Scenario: User asks question mid-REQUIREMENTS, 3/7 agents completed
+
+Recovery:
+1. Answer user's question
+2. Verify lock state = "REQUIREMENTS"
+3. Check agent status:
+   - architecture-reviewer: COMPLETE (has requirements.md)
+   - quality-reviewer: COMPLETE (has requirements.md)
+   - style-reviewer: COMPLETE (has requirements.md)
+   - build-reviewer: NOT STARTED
+   - test-reviewer: NOT STARTED
+   - security-reviewer: NOT STARTED
+   - performance-reviewer: NOT STARTED
+4. Action: Invoke 4 incomplete agents in parallel
+5. Wait for remaining agents to complete
+6. Proceed to SYNTHESIS after all 7 agents complete
+```
+
+**Example 3: All Agents Completed Before Interruption**
+```markdown
+Scenario: User runs `/audit-session` after all agent invocations finished
+
+Recovery:
+1. Complete audit command execution
+2. Verify lock state = "REQUIREMENTS"
+3. Check agent status: All 7 agents COMPLETE with requirements.md files
+4. Action: No re-invocation needed
+5. Proceed directly to SYNTHESIS state transition
+```
+
+**Integration with Audit Commands**:
+
+When `/audit-session` or similar audit commands interrupt agent invocations:
+1. **Audit takes precedence**: Complete full audit pipeline first
+2. **State remains REQUIREMENTS**: Lock file not updated during audit
+3. **Resume after audit**: Return to agent invocation resumption logic
+4. **No state skip**: Cannot jump from REQUIREMENTS to VALIDATION via audit
+
 ### REQUIREMENTS → SYNTHESIS
 **Mandatory Conditions:**
 - [ ] ALL required agents invoked in parallel
@@ -1199,6 +2212,469 @@ echo "✅ All agent worktrees verified"
 - [ ] Architecture plan addresses all stakeholder requirements
 - [ ] Conflict resolution documented for competing requirements
 - [ ] Implementation strategy defined with clear success criteria
+
+### Partial Agent Completion Handling (REQUIREMENTS State)
+
+**CRITICAL CLARIFICATION**: REQUIREMENTS → SYNTHESIS transition requires ALL agents to complete successfully. Partial completion is NOT acceptable for state transition.
+
+**Agent Completion Criteria**:
+
+An agent is considered COMPLETE during REQUIREMENTS state when BOTH conditions are met:
+1. ✅ **status.json exists** with `{"status": "COMPLETE"}` in `/workspace/tasks/{task-name}/agents/{agent-name}/status.json`
+2. ✅ **Requirements report exists** at `/workspace/tasks/{task-name}/{task-name}-{agent-name}-requirements.md`
+
+**Verification Function**:
+```bash
+verify_agent_completion() {
+    local TASK_NAME=$1
+    local AGENT=$2
+    local STATUS_FILE="/workspace/tasks/${TASK_NAME}/agents/${AGENT}/status.json"
+    local REPORT_FILE="/workspace/tasks/${TASK_NAME}/${TASK_NAME}-${AGENT}-requirements.md"
+
+    # Check status.json
+    if [ ! -f "$STATUS_FILE" ]; then
+        echo "❌ $AGENT: status.json missing"
+        return 1
+    fi
+
+    local STATUS=$(jq -r '.status' "$STATUS_FILE" 2>/dev/null)
+    if [ "$STATUS" != "COMPLETE" ]; then
+        echo "❌ $AGENT: status=$STATUS (expected: COMPLETE)"
+        return 1
+    fi
+
+    # Check requirements report
+    if [ ! -f "$REPORT_FILE" ]; then
+        echo "❌ $AGENT: requirements report missing"
+        return 1
+    fi
+
+    # Verify report is non-empty
+    if [ ! -s "$REPORT_FILE" ]; then
+        echo "❌ $AGENT: requirements report is empty"
+        return 1
+    fi
+
+    echo "✅ $AGENT: COMPLETE (status + report verified)"
+    return 0
+}
+
+# Usage: Verify all agents before SYNTHESIS transition
+ALL_COMPLETE=true
+for agent in architecture-reviewer quality-reviewer style-reviewer build-reviewer test-reviewer security-reviewer performance-reviewer; do
+    if ! verify_agent_completion "${TASK_NAME}" "$agent"; then
+        ALL_COMPLETE=false
+    fi
+done
+
+if [ "$ALL_COMPLETE" = "true" ]; then
+    echo "✅ All agents COMPLETE - ready for SYNTHESIS transition"
+    # Proceed to SYNTHESIS state
+else
+    echo "❌ Some agents incomplete - cannot transition to SYNTHESIS"
+    # Handle incomplete agents (see recovery procedures below)
+fi
+```
+
+**Handling Incomplete Agents During REQUIREMENTS**:
+
+**Scenario 1: Agent Reports ERROR Status**
+```bash
+# Agent status.json shows: {"status": "ERROR", "error_message": "..."}
+
+Recovery:
+1. Read error_message from status.json
+2. Classify error type:
+   - Tool limitation (file too large, complexity)
+     → Re-invoke with reduced scope
+   - Blocker (missing dependency, unclear requirements)
+     → Return to CLASSIFIED state, clarify requirements
+   - Implementation error (agent bug)
+     → Re-invoke with same requirements
+3. After fix, re-invoke agent
+4. Wait for agent to reach COMPLETE status
+5. Only then proceed to SYNTHESIS
+```
+
+**Scenario 2: Agent Status is WORKING/IN_PROGRESS (Timeout)**
+```bash
+# Agent invoked but status stuck at WORKING for extended period
+
+Recovery:
+1. Check agent's last update timestamp
+2. If timestamp old (>30 minutes):
+   - Assume agent encountered issue
+   - Re-invoke agent with same requirements
+3. If timestamp recent:
+   - Wait longer (agent still processing)
+   - Monitor for status change
+4. Maximum wait: 60 minutes per agent
+5. After timeout: Re-invoke or escalate to user
+```
+
+**Scenario 3: Agent Status Missing (Invocation Failed)**
+```bash
+# Task tool invocation completed but no status.json created
+
+Recovery:
+1. Verify agent worktree exists at /workspace/tasks/{task}/agents/{agent}/code
+2. If worktree missing:
+   - Critical error - worktree creation failed
+   - Return to CLASSIFIED state
+   - Re-create agent worktrees
+3. If worktree exists:
+   - Agent invocation may have failed silently
+   - Re-invoke agent
+4. Verify status.json creation within 5 minutes of invocation
+```
+
+**Scenario 4: Multiple Agents Incomplete**
+```bash
+# Several agents haven't completed after reasonable wait time
+
+Recovery:
+1. Assess pattern:
+   - All agents incomplete → Systematic issue (requirements unclear, worktree problem)
+     → Return to CLASSIFIED state, fix root cause
+   - Specific agent type incomplete → Domain-specific issue
+     → Re-invoke those agents with clarified requirements
+   - Random subset incomplete → Individual agent issues
+     → Re-invoke incomplete agents individually
+2. Maximum retry attempts: 2 per agent
+3. After 2 failures: Escalate to user for guidance
+```
+
+**CRITICAL TRANSITION GATE**:
+
+Before updating lock state from REQUIREMENTS to SYNTHESIS:
+```bash
+# MANDATORY gate check
+echo "=== REQUIREMENTS → SYNTHESIS TRANSITION GATE ==="
+
+# Count completed agents
+COMPLETED_COUNT=0
+REQUIRED_COUNT=${#REQUIRED_AGENTS[@]}
+
+for agent in "${REQUIRED_AGENTS[@]}"; do
+    if verify_agent_completion "${TASK_NAME}" "$agent"; then
+        ((COMPLETED_COUNT++))
+    fi
+done
+
+if [ $COMPLETED_COUNT -eq $REQUIRED_COUNT ]; then
+    echo "✅ GATE PASSED: All $REQUIRED_COUNT agents COMPLETE"
+    echo "Proceeding to SYNTHESIS state"
+    jq '.state = "SYNTHESIS"' task.json > task.json.tmp
+    mv task.json.tmp task.json
+else
+    echo "❌ GATE FAILED: $COMPLETED_COUNT/$REQUIRED_COUNT agents complete"
+    echo "Missing agents require completion before SYNTHESIS"
+    exit 1
+fi
+```
+
+**PROHIBITED Transition Patterns**:
+- ❌ Proceeding to SYNTHESIS with 6/7 agents complete ("one agent not critical")
+- ❌ Skipping failed agent's requirements ("we can work without security review")
+- ❌ Accepting ERROR status without recovery ("agent provided partial feedback")
+- ❌ Assuming empty requirements report means "no requirements" (it's a failure)
+
+**REQUIRED Patterns**:
+- ✅ Wait for ALL agents to reach COMPLETE status
+- ✅ Re-invoke failed agents until successful completion
+- ✅ Escalate to user only after retry attempts exhausted
+- ✅ Verify both status.json AND requirements report before accepting completion
+
+### REQUIREMENTS State Exit Verification Procedure
+
+**MANDATORY**: Before transitioning from REQUIREMENTS to SYNTHESIS, execute this comprehensive verification procedure to ensure protocol compliance.
+
+**Exit Verification Checklist**:
+
+```bash
+#!/bin/bash
+# File: verify-requirements-exit.sh
+# Purpose: Comprehensive gate enforcement before REQUIREMENTS → SYNTHESIS transition
+
+TASK_NAME="${1}"
+TASK_DIR="/workspace/tasks/${TASK_NAME}"
+LOCK_FILE="${TASK_DIR}/task.json"
+TASK_MD="${TASK_DIR}/task.md"
+
+echo "=== REQUIREMENTS STATE EXIT VERIFICATION ==="
+echo "Task: ${TASK_NAME}"
+echo ""
+
+# =============================================================================
+# CHECK 1: Lock State Verification
+# =============================================================================
+echo "[1/9] Verifying lock state..."
+
+CURRENT_STATE=$(jq -r '.state' "$LOCK_FILE" 2>/dev/null)
+if [ "$CURRENT_STATE" != "REQUIREMENTS" ]; then
+    echo "❌ FAILED: Lock state is '$CURRENT_STATE', expected 'REQUIREMENTS'"
+    exit 1
+fi
+echo "✅ PASSED: Lock state = REQUIREMENTS"
+
+# =============================================================================
+# CHECK 2: Session Ownership Verification
+# =============================================================================
+echo "[2/9] Verifying session ownership..."
+
+LOCK_SESSION=$(jq -r '.session_id' "$LOCK_FILE")
+if [ "$LOCK_SESSION" != "$CURRENT_SESSION_ID" ]; then
+    echo "❌ FAILED: Lock owned by different session ($LOCK_SESSION)"
+    exit 1
+fi
+echo "✅ PASSED: Lock owned by current session"
+
+# =============================================================================
+# CHECK 3: Working Directory Verification
+# =============================================================================
+echo "[3/9] Verifying working directory..."
+
+CURRENT_DIR=$(pwd)
+EXPECTED_DIR="${TASK_DIR}/code"
+if [ "$CURRENT_DIR" != "$EXPECTED_DIR" ]; then
+    echo "❌ FAILED: Wrong directory"
+    echo "   Current: $CURRENT_DIR"
+    echo "   Expected: $EXPECTED_DIR"
+    exit 1
+fi
+echo "✅ PASSED: In task worktree directory"
+
+# =============================================================================
+# CHECK 4: Task.md Structure Verification
+# =============================================================================
+echo "[4/9] Verifying task.md structure..."
+
+if [ ! -f "$TASK_MD" ]; then
+    echo "❌ FAILED: task.md not found at $TASK_MD"
+    exit 1
+fi
+
+# Verify required sections exist
+REQUIRED_SECTIONS=(
+    "Task Objective"
+    "Scope Definition"
+    "Stakeholder Agent Reports"
+)
+
+for section in "${REQUIRED_SECTIONS[@]}"; do
+    if ! grep -q "## $section" "$TASK_MD"; then
+        echo "❌ FAILED: task.md missing section: $section"
+        exit 1
+    fi
+done
+echo "✅ PASSED: task.md structure valid"
+
+# =============================================================================
+# CHECK 5: Agent Worktree Existence
+# =============================================================================
+echo "[5/9] Verifying agent worktrees exist..."
+
+# Get required agents from lock file
+REQUIRED_AGENTS=($(jq -r '.required_agents[]' "$LOCK_FILE" 2>/dev/null))
+if [ ${#REQUIRED_AGENTS[@]} -eq 0 ]; then
+    echo "❌ FAILED: No required_agents in lock file"
+    exit 1
+fi
+
+for agent in "${REQUIRED_AGENTS[@]}"; do
+    AGENT_DIR="${TASK_DIR}/agents/${agent}/code"
+    if [ ! -d "$AGENT_DIR" ]; then
+        echo "❌ FAILED: Agent worktree missing: $agent"
+        echo "   Expected at: $AGENT_DIR"
+        exit 1
+    fi
+done
+echo "✅ PASSED: All ${#REQUIRED_AGENTS[@]} agent worktrees exist"
+
+# =============================================================================
+# CHECK 6: Agent Completion Status
+# =============================================================================
+echo "[6/9] Verifying agent completion status..."
+
+INCOMPLETE_AGENTS=()
+for agent in "${REQUIRED_AGENTS[@]}"; do
+    STATUS_FILE="${TASK_DIR}/agents/${agent}/status.json"
+
+    # Check status.json exists
+    if [ ! -f "$STATUS_FILE" ]; then
+        echo "❌ $agent: status.json missing"
+        INCOMPLETE_AGENTS+=("$agent")
+        continue
+    fi
+
+    # Check status is COMPLETE
+    STATUS=$(jq -r '.status' "$STATUS_FILE" 2>/dev/null)
+    if [ "$STATUS" != "COMPLETE" ]; then
+        echo "❌ $agent: status=$STATUS (expected: COMPLETE)"
+        INCOMPLETE_AGENTS+=("$agent")
+        continue
+    fi
+
+    echo "✅ $agent: COMPLETE"
+done
+
+if [ ${#INCOMPLETE_AGENTS[@]} -gt 0 ]; then
+    echo "❌ FAILED: ${#INCOMPLETE_AGENTS[@]} agents incomplete"
+    echo "   Incomplete: ${INCOMPLETE_AGENTS[*]}"
+    exit 1
+fi
+echo "✅ PASSED: All agents status = COMPLETE"
+
+# =============================================================================
+# CHECK 7: Requirements Reports Existence and Validity
+# =============================================================================
+echo "[7/9] Verifying requirements reports..."
+
+MISSING_REPORTS=()
+for agent in "${REQUIRED_AGENTS[@]}"; do
+    REPORT_FILE="${TASK_DIR}/${TASK_NAME}-${agent}-requirements.md"
+
+    # Check report exists
+    if [ ! -f "$REPORT_FILE" ]; then
+        echo "❌ $agent: requirements report missing"
+        MISSING_REPORTS+=("$agent")
+        continue
+    fi
+
+    # Check report is non-empty
+    if [ ! -s "$REPORT_FILE" ]; then
+        echo "❌ $agent: requirements report is empty"
+        MISSING_REPORTS+=("$agent")
+        continue
+    fi
+
+    # Check report has minimum content (at least 100 characters)
+    REPORT_SIZE=$(wc -c < "$REPORT_FILE")
+    if [ $REPORT_SIZE -lt 100 ]; then
+        echo "❌ $agent: requirements report too small ($REPORT_SIZE bytes)"
+        MISSING_REPORTS+=("$agent")
+        continue
+    fi
+
+    echo "✅ $agent: requirements report valid ($REPORT_SIZE bytes)"
+done
+
+if [ ${#MISSING_REPORTS[@]} -gt 0 ]; then
+    echo "❌ FAILED: ${#MISSING_REPORTS[@]} reports missing/invalid"
+    echo "   Missing: ${MISSING_REPORTS[*]}"
+    exit 1
+fi
+echo "✅ PASSED: All requirements reports valid"
+
+# =============================================================================
+# CHECK 8: State Transition History
+# =============================================================================
+echo "[8/9] Verifying state transition history..."
+
+# Verify transition log exists and contains expected sequence
+TRANSITION_LOG=$(jq -r '.transition_log' "$LOCK_FILE" 2>/dev/null)
+if [ "$TRANSITION_LOG" = "null" ]; then
+    echo "❌ FAILED: transition_log missing from lock file"
+    exit 1
+fi
+
+# Check INIT → CLASSIFIED transition exists
+if ! jq -e '.transition_log[] | select(.from == "INIT" and .to == "CLASSIFIED")' "$LOCK_FILE" >/dev/null 2>&1; then
+    echo "❌ FAILED: Missing INIT → CLASSIFIED transition"
+    exit 1
+fi
+
+# Check CLASSIFIED → REQUIREMENTS transition exists
+if ! jq -e '.transition_log[] | select(.from == "CLASSIFIED" and .to == "REQUIREMENTS")' "$LOCK_FILE" >/dev/null 2>&1; then
+    echo "❌ FAILED: Missing CLASSIFIED → REQUIREMENTS transition"
+    exit 1
+fi
+
+echo "✅ PASSED: State transition history valid"
+
+# =============================================================================
+# CHECK 9: No Error Status in Any Agent
+# =============================================================================
+echo "[9/9] Verifying no agents in ERROR state..."
+
+ERROR_AGENTS=()
+for agent in "${REQUIRED_AGENTS[@]}"; do
+    STATUS_FILE="${TASK_DIR}/agents/${agent}/status.json"
+    STATUS=$(jq -r '.status' "$STATUS_FILE" 2>/dev/null)
+
+    if [ "$STATUS" = "ERROR" ]; then
+        ERROR_MSG=$(jq -r '.error_message // "Unknown error"' "$STATUS_FILE")
+        echo "❌ $agent: ERROR status - $ERROR_MSG"
+        ERROR_AGENTS+=("$agent")
+    fi
+done
+
+if [ ${#ERROR_AGENTS[@]} -gt 0 ]; then
+    echo "❌ FAILED: ${#ERROR_AGENTS[@]} agents in ERROR state"
+    echo "   Errors: ${ERROR_AGENTS[*]}"
+    exit 1
+fi
+echo "✅ PASSED: No agents in ERROR state"
+
+# =============================================================================
+# FINAL VERDICT
+# =============================================================================
+echo ""
+echo "=============================================="
+echo "✅✅✅ ALL CHECKS PASSED ✅✅✅"
+echo "=============================================="
+echo ""
+echo "REQUIREMENTS state exit verification COMPLETE"
+echo "Ready to transition to SYNTHESIS state"
+echo ""
+
+exit 0
+```
+
+**Usage Pattern**:
+
+```bash
+# Before updating lock state to SYNTHESIS
+TASK_NAME="your-task-name"
+export CURRENT_SESSION_ID="your-session-id"
+
+# Run verification script
+/workspace/.claude/hooks/verify-requirements-exit.sh "${TASK_NAME}" || {
+    echo "❌ REQUIREMENTS exit verification FAILED"
+    echo "Cannot transition to SYNTHESIS - resolve issues above"
+    exit 1
+}
+
+# Only proceed if verification passes
+echo "Verification passed - transitioning to SYNTHESIS"
+jq --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   '.state = "SYNTHESIS" |
+    .transition_log += [{"from": "REQUIREMENTS", "to": "SYNTHESIS", "timestamp": $timestamp}]' \
+   task.json > task.json.tmp && mv task.json.tmp task.json
+```
+
+**Integration Points**:
+
+This verification procedure should be invoked:
+1. **Manually**: By main agent before SYNTHESIS transition
+2. **Automatically**: By pre-transition hooks (if configured)
+3. **Recovery**: When resuming crashed tasks in REQUIREMENTS state
+4. **Audit**: During protocol compliance audits
+
+**Failure Recovery**:
+
+If verification fails at any check:
+1. **DO NOT** proceed to SYNTHESIS state
+2. **READ** the specific check failure message
+3. **FIX** the identified issue:
+   - Check 1-3: Infrastructure issues (locks, directories)
+   - Check 4: task.md structure problems
+   - Check 5: Missing agent worktrees → return to CLASSIFIED
+   - Check 6-7: Incomplete agents → use partial completion recovery procedures
+   - Check 8: State sequence violated → protocol error, escalate
+   - Check 9: Agent errors → re-invoke failed agents
+4. **RE-RUN** verification after fix
+5. **PROCEED** only after all checks pass
 
 **Evidence Required:**
 - Agent report files exist and contain complete analysis
@@ -1213,9 +2689,9 @@ echo "✅ All agent worktrees verified"
 ```
 MANDATORY AFTER REQUIREMENTS completion:
 1. CONFLICT RESOLUTION: Identify competing requirements between domains
-   - Compare technical-architect vs performance-analyzer requirements
-   - Resolve style-auditor vs code-quality-auditor conflicts
-   - Balance security-auditor vs usability-reviewer trade-offs
+   - Compare architecture-reviewer vs performance-reviewer requirements
+   - Resolve style-reviewer vs quality-reviewer conflicts
+   - Balance security-reviewer vs usability-reviewer trade-offs
 
 2. ARCHITECTURE PLANNING: Design approach satisfying all constraints
    - Document chosen architectural patterns
@@ -1223,9 +2699,9 @@ MANDATORY AFTER REQUIREMENTS completion:
    - Define interface contracts and data flows
 
 3. REQUIREMENT MAPPING: Document how each stakeholder requirement is addressed
-   - Map each technical-architect requirement to implementation component
-   - Map each security-auditor requirement to security control
-   - Map each performance-analyzer requirement to optimization strategy
+   - Map each architecture-reviewer requirement to implementation component
+   - Map each security-reviewer requirement to security control
+   - Map each performance-reviewer requirement to optimization strategy
 
 4. TRADE-OFF ANALYSIS: Record decisions and compromises
    - Document rejected alternatives and reasons
@@ -1406,7 +2882,7 @@ before proceeding.
 **Mandatory Conditions:**
 - [ ] Requirements synthesis document created (all agents contributed to task.md)
 - [ ] Architecture plan addresses all stakeholder requirements
--  [ ] Conflict resolution documented for competing requirements (technical-architect makes final decisions
+-  [ ] Conflict resolution documented for competing requirements (architecture-reviewer makes final decisions
   based on tier hierarchy)
 - [ ] Implementation strategy defined with clear success criteria
 - [ ] Each agent's implementation plan appended to task.md
@@ -1418,12 +2894,12 @@ before proceeding.
 When writing implementation plans in task.md during SYNTHESIS state, use EXPLICIT DELEGATION language:
 
 **WHO IMPLEMENTS**:
-✅ CORRECT: "technical-architect agent implements core interfaces in
-/workspace/tasks/{task}/agents/technical-architect/code"
-✅ CORRECT: "Main agent invokes technical-architect via Task tool → technical-architect implements Phase 1-2"
+✅ CORRECT: "architecture-updater agent implements core interfaces in
+/workspace/tasks/{task}/agents/architecture-updater/code"
+✅ CORRECT: "Main agent invokes architecture-reviewer via Task tool → architecture-updater implements Phase 1-2"
 ✅ CORRECT: "Stakeholder agents implement in parallel (main agent coordinates via Task tool)"
-❌ AMBIGUOUS: "technical-architect implements Phase 1-2" (who invokes? where does implementation occur?)
-❌ PROHIBITED: "Main agent implements Phase 1-2 following technical-architect requirements"
+❌ AMBIGUOUS: "architecture-updater implements Phase 1-2" (who invokes? where does implementation occur?)
+❌ PROHIBITED: "Main agent implements Phase 1-2 following architecture-reviewer requirements"
 ❌ PROHIBITED: "I will implement the feature based on the approved plan"
 
 **CRITICAL RULE**: Any implementation activity means:
@@ -1439,9 +2915,9 @@ The ONLY acceptable next action after user approves SYNTHESIS is:
 ✅ CORRECT:
 "I am now entering IMPLEMENTATION state. Launching stakeholder agents in parallel for domain-specific implementation.
 
-Task tool (technical-architect): {...}
-Task tool (code-quality-auditor): {...}
-Task tool (style-auditor): {...}"
+Task tool (architecture-updater): {...}
+Task tool (quality-updater): {...}
+Task tool (style-updater): {...}"
 ```
 
 **VIOLATION PATTERNS** (never say these after SYNTHESIS approval):
@@ -1475,7 +2951,7 @@ agents to implement".
 
 | Violation Pattern | Why It's Wrong | Correct Pattern |
 |-------------------|----------------|-----------------|
-| Main agent: `Edit src/Feature.java` | Main agent writing code directly | Main agent: `Task tool (technical-architect)` → Agent writes code |
+| Main agent: `Edit src/Feature.java` | Main agent writing code directly | Main agent: `Task tool (architecture-reviewer)` → Agent writes code |
 | "I will implement then have agents review" | Implementation before delegation | Launch agents first → Agents implement → Agents validate |
 | Main agent creates files in task worktree | Wrong working directory | Agents create files in `/agents/{agent}/code/` |
 | "Quick skeleton implementation" | Any main agent code creation violates protocol | Launch agents for ALL code creation |
@@ -1516,7 +2992,7 @@ worktree during IMPLEMENTATION state. Implementation MUST be performed by stakeh
 worktrees.
 
 **Correct Pattern**:
-✅ Main agent invokes technical-architect agent → technical-architect implements in their worktree → merges to
+✅ Main agent invokes architecture-reviewer agent → architecture-updater implements in their worktree → merges to
 task branch
 ❌ Main agent creates FormattingRule.java directly in task worktree (PROTOCOL VIOLATION)
 
@@ -1525,9 +3001,9 @@ task branch
 **Tier Purpose**: Used ONLY for requirements negotiation decision deadlocks, NOT for merge ordering.
 
 **Requirements Phase Tiers (REQUIREMENTS → SYNTHESIS)**:
-- **Tier 1 (Highest)**: technical-architect - Final say on architecture decisions
-- **Tier 2**: code-quality-auditor, security-auditor - Override lower tiers on domain issues
-- **Tier 3**: style-auditor, performance-analyzer, code-tester, usability-reviewer
+- **Tier 1 (Highest)**: architecture-reviewer - Final say on architecture decisions
+- **Tier 2**: quality-reviewer, security-reviewer - Override lower tiers on domain issues
+- **Tier 3**: style-reviewer, performance-reviewer, test-reviewer, usability-reviewer
 
 **Tier Usage**: Tiers break decision deadlocks when agents disagree during requirements negotiation. Explicit
 escalation path: Tier 3 → Tier 2 → Tier 1.
@@ -1545,16 +3021,50 @@ escalation path: Tier 3 → Tier 2 → Tier 1.
 
 ### Implementation Round Structure
 
-**Round Flow**:
+**CRITICAL**: Implementation rounds use BOTH reviewer and updater agents in an iterative validation pattern.
+
+**Agent Roles in IMPLEMENTATION**:
+- **Updater agents** (Haiku 4.5): Implement features, write code, apply fixes
+- **Reviewer agents** (Sonnet 4.5): Review merged code, approve/reject, provide feedback
+
+**Single Agent Round Pattern**:
 ```
-1. All agents implement domain requirements in parallel (in their own worktrees)
-2. Each agent runs `mvn verify` in their worktree before merging
-3. Each agent rebases their branch on task branch (if task branch changed since last merge)
-4. Each agent merges changes to task branch (as ready, parallel not sequential)
-5. Each agent runs `mvn verify` in task worktree after merging
-6. Each agent updates status.json with work completion status
-7. If any agent has more work → repeat round
-8. If all agents report "no more work in my domain" via status.json → proceed to VALIDATION
+1. Updater agent implements in their worktree (/workspace/tasks/{task}/agents/{agent}-updater/code)
+2. Updater agent validates locally: ./mvnw verify (in their worktree)
+3. Updater agent merges to task branch
+4. Reviewer agent reviews what was merged to task branch
+5. Reviewer agent decides: APPROVED or REJECTED
+   - If APPROVED: Round complete for this agent
+   - If REJECTED: Updater agent fixes issues → merge → reviewer reviews again (repeat 4-5)
+6. Both agents update status.json when work is approved and complete
+```
+
+**Multi-Agent Round Flow**:
+```
+Round 1:
+├─ architecture-updater: Implement core interfaces → merge
+├─ architecture-reviewer: Review → REJECTED (ambiguous contracts)
+├─ architecture-updater: Fix contracts → merge
+├─ architecture-reviewer: Review → APPROVED ✓
+├─ quality-updater: Apply refactoring → merge
+├─ quality-reviewer: Review → APPROVED ✓
+├─ style-updater: Apply style rules → merge
+├─ style-reviewer: Review → REJECTED (12 violations)
+├─ style-updater: Fix violations → merge
+├─ style-reviewer: Review → APPROVED ✓
+└─ All agents: Update status.json {"status": "COMPLETE", "decision": "APPROVED"}
+
+Transition to VALIDATION (all reviewers APPROVED, all status COMPLETE)
+```
+
+**Round Completion Criteria**:
+```
+All conditions must be met:
+- [ ] All updater agents have merged their changes
+- [ ] All reviewer agents have reviewed merged changes
+- [ ] All reviewer agents report APPROVED (no rejections)
+- [ ] All agents update status.json with "COMPLETE"
+- [ ] Task branch passes ./mvnw verify
 ```
 
 **Agent Work Completion Tracking**:
@@ -1564,9 +3074,26 @@ Each agent MUST maintain a `status.json` file to track implementation progress a
 **Status File Location**: `/workspace/tasks/{task-name}/agents/{agent-name}/status.json`
 
 **Status File Format**:
+
+For reviewer agents:
 ```json
 {
-  "agent": "technical-architect",
+  "agent": "architecture-reviewer",
+  "task": "implement-feature-x",
+  "status": "WORKING|COMPLETE|BLOCKED",
+  "decision": "APPROVED|REJECTED|PENDING",
+  "round": 3,
+  "last_review_sha": "abc123def456",
+  "work_remaining": "none|description of pending work",
+  "feedback": "detailed feedback for updater agent (if REJECTED)",
+  "updated_at": "2025-10-15T10:30:00Z"
+}
+```
+
+For updater agents:
+```json
+{
+  "agent": "architecture-updater",
   "task": "implement-feature-x",
   "status": "WORKING|COMPLETE|BLOCKED",
   "round": 3,
@@ -1579,13 +3106,12 @@ Each agent MUST maintain a `status.json` file to track implementation progress a
 
 **Status Update Requirements**:
 
-After each implementation round, agent must update status.json:
+Updater agent after merging:
 ```bash
-# Agent finishes round, updates status
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
-cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
+cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
 {
-  "agent": "{AGENT}",
+  "agent": "{AGENT}-updater",
   "task": "{TASK}",
   "status": "COMPLETE",
   "work_remaining": "none",
@@ -1596,48 +3122,74 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
 EOF
 ```
 
+Reviewer agent after reviewing:
+```bash
+TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
+cat > /workspace/tasks/{TASK}/agents/{AGENT}-reviewer/status.json <<EOF
+{
+  "agent": "{AGENT}-reviewer",
+  "task": "{TASK}",
+  "status": "COMPLETE",
+  "decision": "APPROVED",
+  "work_remaining": "none",
+  "round": ${CURRENT_ROUND},
+  "last_review_sha": "${TASK_SHA}",
+  "updated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
+```
+
 **Validation Transition Trigger**:
 
-Main agent checks all agent statuses before proceeding to VALIDATION:
+Main agent checks all REVIEWER agent statuses before proceeding to VALIDATION:
 ```bash
-check_all_agents_complete() {
+check_all_reviewers_approved() {
     TASK=$1
-    AGENTS="${@:2}"
+    shift
+    REVIEWERS=("$@")
 
-    for agent in $AGENTS; do
-        STATUS_FILE="/workspace/tasks/$TASK/agents/$agent/status.json"
+    # Check all reviewer agents for APPROVED status
+    for reviewer in "${REVIEWERS[@]}"; do
+        STATUS_FILE="/workspace/tasks/$TASK/agents/$reviewer/status.json"
 
         # Verify status file exists
         [ ! -f "$STATUS_FILE" ] && {
-            echo "Agent $agent: status file missing"
+            echo "Reviewer $reviewer: status file missing"
             return 1
         }
 
-        # Check agent status
+        # Check reviewer status and decision
         STATUS=$(jq -r '.status' "$STATUS_FILE")
+        DECISION=$(jq -r '.decision' "$STATUS_FILE")
         WORK=$(jq -r '.work_remaining' "$STATUS_FILE")
 
         [ "$STATUS" != "COMPLETE" ] && {
-            echo "Agent $agent: status=$STATUS (not COMPLETE)"
+            echo "Reviewer $reviewer: status=$STATUS (not COMPLETE)"
+            return 1
+        }
+
+        [ "$DECISION" != "APPROVED" ] && {
+            echo "Reviewer $reviewer: decision=$DECISION (not APPROVED)"
             return 1
         }
 
         [ "$WORK" != "none" ] && {
-            echo "Agent $agent: work_remaining=$WORK"
+            echo "Reviewer $reviewer: work_remaining=$WORK"
             return 1
         }
     done
 
-    echo "All agents report COMPLETE with no remaining work"
+    echo "All reviewers report COMPLETE with APPROVED decision"
     return 0
 }
 
-# Usage
-if check_all_agents_complete "implement-feature-x" "technical-architect" "code-tester" "style-auditor"; then
-    echo "Transitioning to VALIDATION state"
+# Usage - check REVIEWER agents (not updaters)
+REVIEWERS=("architecture-reviewer" "quality-reviewer" "style-reviewer" "test-reviewer")
+if check_all_reviewers_approved "implement-feature-x" "${REVIEWERS[@]}"; then
+    echo "✅ All reviewers approved - transitioning to VALIDATION state"
     transition_to_validation
 else
-    echo "Continuing implementation rounds (agents still working)"
+    echo "⏳ Continuing implementation rounds (reviewers have feedback or work pending)"
 fi
 ```
 
@@ -1752,12 +3304,12 @@ check_agent_needs_reinvocation() {
 
 **Agent Implementation Scope**:
 - Each agent implements ONLY their domain requirements
-- technical-architect: Core implementation (src/main/java)
-- code-tester: Test files (src/test/java)
-- style-auditor: Style configs and fixes
-- security-auditor: Security features and validation
-- performance-analyzer: Performance optimizations
-- code-quality-auditor: Refactoring and best practices
+- architecture-reviewer: Core implementation (src/main/java)
+- test-reviewer: Test files (src/test/java)
+- style-reviewer: Style configs and fixes
+- security-reviewer: Security features and validation
+- performance-reviewer: Performance optimizations
+- quality-reviewer: Refactoring and best practices
 - usability-reviewer: UX improvements and documentation
 
 **Merge Conflict Resolution**:
@@ -1815,17 +3367,20 @@ PROHIBITED:
 
 ### IMPLEMENTATION → VALIDATION
 **Mandatory Conditions:**
-- [ ] All implementation rounds completed (all agents report "DOMAIN_WORK_COMPLETE")
+- [ ] All implementation rounds completed
+- [ ] **🚨 CRITICAL: All REVIEWER agents report APPROVED decision**
+- [ ] All updater agents have merged changes to task branch
 - [ ] All planned deliverables created in task branch
 - [ ] Implementation follows synthesis architecture plan
 - [ ] Code adheres to project conventions and patterns
 - [ ] All requirements from synthesis addressed or deferred with justification
-- [ ] **🚨 CRITICAL: Each agent performed incremental validation during rounds (fail-fast pattern)**
-- [ ] **🚨 CRITICAL: All agent changes MERGED to task branch**
+- [ ] **🚨 CRITICAL: Each updater agent performed incremental validation during rounds (fail-fast pattern)**
+- [ ] **🚨 CRITICAL: All updater agent changes MERGED to task branch**
 - [ ] **🚨 CRITICAL: Task branch passes `./mvnw verify` after final merge**
 
 **Evidence Required:**
-- All agents reported "DOMAIN_WORK_COMPLETE: No more {domain} work needed"
+- All reviewer agents: status.json shows {"status": "COMPLETE", "decision": "APPROVED"}
+- All updater agents: status.json shows {"status": "COMPLETE", "work_remaining": "none"}
 - Task branch contains all agent implementations (via git log)
 - Implementation matches synthesis plan
 - Any requirement deferrals properly documented in todo.md
@@ -2097,13 +3652,13 @@ def process_scope_negotiation_results(agent_responses):
 - All deferred work properly documented in todo.md with specific task entries
 
 **Domain Authority Framework:**
-- **security-auditor**: Absolute veto on security vulnerabilities and privacy violations
-- **build-validator**: Final authority on deployment safety and build integrity
-- **technical-architect**: Final authority on architectural completeness requirements
-- **performance-analyzer**: Authority on performance requirements and scalability
-- **code-quality-auditor**: Can defer documentation/testing if basic quality maintained
-- **style-auditor**: Can defer style issues if core functionality preserved
-- **code-tester**: Authority on test coverage adequacy for business logic
+- **security-reviewer**: Absolute veto on security vulnerabilities and privacy violations
+- **build-reviewer**: Final authority on deployment safety and build integrity
+- **architecture-reviewer**: Final authority on architectural completeness requirements
+- **performance-reviewer**: Authority on performance requirements and scalability
+- **quality-reviewer**: Can defer documentation/testing if basic quality maintained
+- **style-reviewer**: Can defer style issues if core functionality preserved
+- **test-reviewer**: Authority on test coverage adequacy for business logic
 - **usability-reviewer**: Can defer UX improvements if core functionality accessible
 
 **Security Auditor Configuration:**
@@ -2116,16 +3671,16 @@ For Parser Implementation Tasks:
 - **Usability Priority**: Error messages should prioritize debugging assistance
 - **Appropriate Limits**: Reasonable protection for legitimate code formatting use cases
 
-**MANDATORY**: security-auditor MUST reference docs/project/scope.md "Security Model for Parser Operations"
+**MANDATORY**: security-reviewer MUST reference docs/project/scope.md "Security Model for Parser Operations"
 before conducting any parser security review.
 
 **Authority Hierarchy for Domain Conflicts:**
 When agent authorities overlap or conflict:
-- Security/Privacy conflicts: Joint veto power (both security-auditor AND security-auditor must approve)
-- Architecture/Performance conflicts: technical-architect decides with performance-analyzer input
-- Build/Architecture conflicts: build-validator has final authority (deployment safety priority)
-- Testing/Quality conflicts: code-tester decides coverage adequacy, code-quality-auditor decides standards
-- Style/Quality conflicts: code-quality-auditor decides (quality encompasses style)
+- Security/Privacy conflicts: Joint veto power (both security-reviewer AND security-reviewer must approve)
+- Architecture/Performance conflicts: architecture-reviewer decides with performance-reviewer input
+- Build/Architecture conflicts: build-reviewer has final authority (deployment safety priority)
+- Testing/Quality conflicts: test-reviewer decides coverage adequacy, quality-reviewer decides standards
+- Style/Quality conflicts: quality-reviewer decides (quality encompasses style)
 
 **Scope Negotiation Agent Prompt Template:**
 ```python

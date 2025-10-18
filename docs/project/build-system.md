@@ -47,6 +47,51 @@ src/test/java/
 
 This resolves TestNG module export warnings with `-Werror` enabled.
 
+### Test Module Name Verification
+
+**CRITICAL REQUIREMENT**: Test modules MUST use a different module name than the main module to avoid conflicts.
+
+**Correct Pattern**:
+```java
+// src/main/java/module-info.java
+module io.github.styler.parser { }
+
+// src/test/java/module-info.java
+module io.github.styler.parser.test {  // ✅ Different name with .test suffix
+    requires io.github.styler.parser;
+    requires org.testng;
+    opens io.github.styler.parser.test to org.testng;
+}
+```
+
+**Incorrect Pattern (CAUSES BUILD FAILURES)**:
+```java
+// src/main/java/module-info.java
+module io.github.styler.parser { }
+
+// src/test/java/module-info.java
+module io.github.styler.parser {  // ❌ SAME NAME - module conflict
+    requires org.testng;
+    opens io.github.styler.parser.test to org.testng;
+}
+```
+
+**Symptoms of Module Name Conflict**:
+- Build succeeds with `./mvnw compile` but fails with `./mvnw verify`
+- Error: "module not found: io.github.styler.parser" despite module being present
+- Intermittent failures depending on Maven build cache state
+- Clean build required to see actual error
+
+**Verification Command**:
+```bash
+# Check both module descriptors have different names
+diff <(grep "^module " src/main/java/module-info.java) \
+     <(grep "^module " src/test/java/module-info.java)
+# Should show difference (e.g., "parser" vs "parser.test")
+```
+
+**Enforcement**: Always use `./mvnw clean verify` before merging to detect module name conflicts that might be masked by stale build cache.
+
 ## Build & Validation Commands
 
 **⚠️ CRITICAL**: Always use `./mvnw` (Maven Wrapper) instead of `mvn` to ensure consistent Maven version
@@ -54,9 +99,19 @@ across environments.
 
 **Core Build Commands**:
 - **Full Validation**: `./mvnw verify` (PREFERRED - compile + test + package in optimized sequence)
-- **Clean Build**: `./mvnw clean verify` (when dependency changes or first build)
-- **Compilation Only**: `./mvnw compile` (syntax checking)
+- **Clean Build**: `./mvnw clean verify` (when dependency changes or first build, REQUIRED for JPMS projects)
+- **Compilation Only**: `./mvnw compile` (main source only - does NOT compile tests, use for quick syntax checking)
+- **Test Compilation**: `./mvnw test-compile` (compiles both main + test sources, use for test syntax verification)
 - **Selective Testing**: `./mvnw test -Dtest=ClassName` (targeted investigation)
+
+**IMPORTANT - Maven Lifecycle Phases**:
+- `compile` - Compiles ONLY main sources (`src/main/java/`)
+- `test-compile` - Compiles main sources AND test sources (`src/test/java/`)
+- `test` - Runs test-compile + executes tests
+- `package` - Runs tests + packages JAR
+- `verify` - Runs package + integration tests + validation
+
+**For JPMS projects**: Always use `./mvnw clean verify` for final validation. The `compile` phase alone does NOT include test module descriptors, which can cause stale module-info.class in build cache.
 
 ## Maven Multi-Module Setup
 
@@ -318,16 +373,17 @@ The Maven Build Cache Extension activates on `package` or higher lifecycle phase
    - Restores both JAR artifacts and classes directory on cache hit
    - Full JPMS module support with correct module resolution
 
-2. **With `compile` only** (⚠️ INCOMPLETE CACHING):
+2. **With `compile` or `test-compile` only** (⚠️ INCOMPLETE CACHING):
    - Saves build metadata but NOT the classes directory
    - Creates `<final>false</final>` cache entries without attachedOutputs
    - Subsequent `verify` builds fail with "module not found" errors
+   - NOTE: `compile` only processes main sources; `test-compile` processes both main and test sources
 
 ### Cache Corruption Prevention
 
 **Symptom**: "module not found: io.github.cowwoc.styler.ast.core" errors despite successful previous builds
 
-**Root Cause**: Stale cache entry from `compile`-only build lacking compiled classes
+**Root Cause**: Stale cache entry from `compile` or `test-compile` build lacking packaged classes
 
 **Solution**:
 ```bash

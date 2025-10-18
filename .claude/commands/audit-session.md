@@ -10,74 +10,74 @@ efficiency opportunities, and documentation improvements.
 
 ## Audit Pipeline Architecture
 
-The audit pipeline consists of four sequential agents:
+The audit pipeline consists of five sequential agents:
 
 ```
-execution-tracer → protocol-auditor → efficiency-optimizer → documentation-auditor
-     (facts)          (compliance)        (performance)         (clarity)
+process-recorder → process-reviewer → process-updater → documentation-reviewer → documentation-updater
+    (facts)         (compliance)      (performance)        (identify)              (apply)
 ```
 
 ## Execution Sequence
 
 ### Phase 1: Fact Gathering (Neutral Data Collection)
 
-**Agent**: execution-tracer
+**Agent**: process-recorder
 **Purpose**: Collect objective facts about current session execution
 **Output**: JSON with task state, tool usage, worktrees, commits, agent invocations
 
-Launch the execution-tracer agent:
+Launch the process-recorder agent:
 ```
-Task tool (execution-tracer): "Collect objective facts about current session execution. Include: task state (from task.json), tool usage history, worktree structure, commits, and agent invocations. Output as structured JSON."
+Task tool (process-recorder): "Collect objective facts about current session execution. Include: task state (from task.json), tool usage history, worktree structure, commits, and agent invocations. Output as structured JSON."
 ```
 
 ### Phase 2: Compliance Audit (Strict Binary Enforcement)
 
-**Agent**: protocol-auditor
+**Agent**: process-reviewer
 **Purpose**: Check execution facts against protocol rules with zero tolerance
-**Input**: execution-tracer JSON output
+**Input**: process-recorder JSON output
 **Output**: Violations list with verdicts (PASS/FAIL)
 
-Launch the protocol-auditor agent:
+Launch the process-reviewer agent:
 ```
-Task tool (protocol-auditor): "Audit execution facts against protocol rules. Input: [execution-tracer JSON output]. Execute Check 0.1 (state verification) and Check 0.2 (IMPLEMENTATION tool usage) FIRST. Binary verdicts only - no rationalizations."
+Task tool (process-reviewer): "Audit execution facts against protocol rules. Input: [process-recorder JSON output]. Execute Check 0.1 (state verification) and Check 0.2 (IMPLEMENTATION tool usage) FIRST. Binary verdicts only - no rationalizations."
 ```
 
 ### Phase 3: Conditional Optimization (Performance Suggestions)
 
-**Agent**: efficiency-optimizer
-**Purpose**: Suggest efficiency improvements (ONLY if protocol-auditor passed)
-**Input**: execution-tracer JSON output
-**Condition**: ONLY runs if protocol-auditor verdict == "PASSED"
+**Agent**: process-updater
+**Purpose**: Suggest efficiency improvements (ONLY if process-reviewer passed)
+**Input**: process-recorder JSON output
+**Condition**: ONLY runs if process-reviewer verdict == "PASSED"
 
 **Decision Logic**:
 ```
-IF protocol-auditor.overall_verdict == "FAILED":
-  → SKIP efficiency-optimizer (fix violations first)
+IF process-reviewer.overall_verdict == "FAILED":
+  → SKIP process-updater (fix violations first)
 
-ELSE IF protocol-auditor.overall_verdict == "PASSED":
-  → Launch efficiency-optimizer agent
+ELSE IF process-reviewer.overall_verdict == "PASSED":
+  → Launch process-updater agent
 ```
 
-Launch the efficiency-optimizer agent (if compliant):
+Launch the process-updater agent (if compliant):
 ```
-Task tool (efficiency-optimizer): "Suggest efficiency improvements based on execution patterns. Input: [execution-tracer JSON output]. Focus: parallelization, prefetching, fail-fast validation, token reduction."
+Task tool (process-updater): "Suggest efficiency improvements based on execution patterns. Input: [process-recorder JSON output]. Focus: parallelization, prefetching, fail-fast validation, token reduction."
 ```
 
-### Phase 4: Documentation Quality Analysis
+### Phase 4a: Documentation Quality Analysis (Identification)
 
-**Agent**: documentation-auditor
+**Agent**: documentation-reviewer
 **Purpose**: Identify ambiguities in protocol docs that caused violations
-**Input**: protocol-auditor violations (if any)
-**Output**: Ambiguities, contradictions, missing guidance with proposed fixes
+**Input**: process-reviewer violations (if any)
+**Output**: Proposed fixes JSON
 
 **Execution Logic**:
 ```
-IF protocol-auditor.overall_verdict == "FAILED":
-  → Launch documentation-auditor to find doc ambiguities that CAUSED violations
+IF process-reviewer.overall_verdict == "FAILED":
+  → Launch documentation-reviewer to find doc ambiguities that CAUSED violations
   → Focus: Root cause analysis - which doc gaps led to observed violations?
 
-ELSE IF protocol-auditor.overall_verdict == "PASSED":
-  → Launch documentation-auditor to find PREVENTIVE improvements
+ELSE IF process-reviewer.overall_verdict == "PASSED":
+  → Launch documentation-reviewer to find PREVENTIVE improvements
   → Focus: Forward-looking analysis - which doc ambiguities COULD cause future violations?
 ```
 
@@ -85,9 +85,21 @@ ELSE IF protocol-auditor.overall_verdict == "PASSED":
 - FAILED sessions: Diagnostic mode (explain past violations)
 - PASSED sessions: Preventive mode (avoid future violations)
 
-Launch the documentation-auditor agent:
+Launch the documentation-reviewer agent:
 ```
-Task tool (documentation-auditor): "Find ambiguities in protocol documentation that caused violations. Input: [protocol-auditor violations]. Identify doc gaps, contradictions, and missing edge case guidance."
+Task tool (documentation-reviewer): "Find ambiguities in protocol documentation that caused violations. Input: [process-reviewer violations]. Identify doc gaps, contradictions, and missing edge case guidance. Output proposed fixes as JSON."
+```
+
+### Phase 4b: Documentation Fix Application
+
+**Agent**: documentation-updater
+**Purpose**: Apply proposed fixes from documentation-reviewer
+**Input**: documentation-reviewer proposed fixes JSON
+**Output**: Applied fixes with verification status
+
+Launch the documentation-updater agent:
+```
+Task tool (documentation-updater): "Apply documentation fixes. Input: [documentation-reviewer proposed fixes]. For each fix: read current state, apply using Edit tool, verify by reading updated file. Output applied fixes with verification status."
 ```
 
 ## Report Synthesis
@@ -100,7 +112,7 @@ After all agents complete, synthesize a comprehensive report:
 ## Session Audit Report
 
 ### Compliance Status: [PASSED/FAILED]
-- **Overall Verdict**: [protocol-auditor verdict]
+- **Overall Verdict**: [process-reviewer verdict]
 - **Violations**: [count] ([severity breakdown])
 - **Compliant Checks**: [passed]/[total]
 
@@ -109,8 +121,8 @@ After all agents complete, synthesize a comprehensive report:
 - **Check ID**: [check number]
 - **Severity**: [CRITICAL/HIGH/MEDIUM]
 - **Rule**: [protocol rule violated]
-- **Evidence**: [actual behavior from execution-tracer]
-- **Recovery Options**: [numbered list from protocol-auditor]
+- **Evidence**: [actual behavior from process-recorder]
+- **Recovery Options**: [numbered list from process-reviewer]
 
 ### Efficiency Optimizations
 [If PASSED:]
@@ -139,10 +151,11 @@ After all agents complete, synthesize a comprehensive report:
 ## Agent Configuration References
 
 **Agent Locations**:
-- `/workspace/main/.claude/agents/execution-tracer.md`
-- `/workspace/main/.claude/agents/protocol-auditor.md`
-- `/workspace/main/.claude/agents/efficiency-optimizer.md`
-- `/workspace/main/.claude/agents/documentation-auditor.md`
+- `/workspace/main/.claude/agents/process-recorder.md`
+- `/workspace/main/.claude/agents/process-reviewer.md`
+- `/workspace/main/.claude/agents/process-updater.md`
+- `/workspace/main/.claude/agents/documentation-reviewer.md`
+- `/workspace/main/.claude/agents/documentation-updater.md`
 
 **Methodology Reference**:
 - `/workspace/main/docs/project/multi-agent-process-governance.md`
@@ -150,17 +163,18 @@ After all agents complete, synthesize a comprehensive report:
 ## Success Criteria
 
 **Audit Execution Completed When**:
-- [ ] execution-tracer produced structured JSON output
-- [ ] protocol-auditor provided binary verdict (PASSED/FAILED)
-- [ ] efficiency-optimizer ran (if PASSED) or skipped (if FAILED)
-- [ ] documentation-auditor identified doc gaps
+- [ ] process-recorder produced structured JSON output
+- [ ] process-reviewer provided binary verdict (PASSED/FAILED)
+- [ ] process-updater ran (if PASSED) or skipped (if FAILED)
+- [ ] documentation-reviewer identified doc gaps
+- [ ] documentation-updater applied proposed fixes
 - [ ] Comprehensive report synthesized and presented
 
 **Quality Gates**:
-- execution-tracer output includes actual task state from task.json
-- protocol-auditor executes Check 0.1 and 0.2 FIRST
-- No rationalizations in protocol-auditor output
-- efficiency-optimizer only runs on PASSED sessions
+- process-recorder output includes actual task state from task.json
+- process-reviewer executes Check 0.1 and 0.2 FIRST
+- No rationalizations in process-reviewer output
+- process-updater only runs on PASSED sessions
 - Report includes actionable recovery options for violations
 
 ## Expected Output Format
@@ -179,14 +193,14 @@ Present the audit report to the user with:
 
 **Decision Logic**:
 ```
-IF protocol-auditor.overall_verdict == "FAILED":
+IF process-reviewer.overall_verdict == "FAILED":
   IF (auto-apply fixes available AND fixes address violation root causes):
     → Execute Phase 5 (fix violations first, then re-audit)
   ELSE:
     → SKIP Phase 5 (manual intervention required)
 
-ELSE IF protocol-auditor.overall_verdict == "PASSED":
-  IF (documentation-auditor OR efficiency-optimizer identified fixable issues):
+ELSE IF process-reviewer.overall_verdict == "PASSED":
+  IF (documentation-reviewer OR process-updater identified fixable issues):
     → Execute Phase 5 (preventive improvements)
   ELSE:
     → SKIP Phase 5 (no fixes needed)
@@ -240,7 +254,7 @@ permissions alignment
 After presenting the audit report:
 
 1. **Categorize Fixes**:
-   - List all recommended fixes from protocol-auditor and documentation-auditor
+   - List all recommended fixes from process-reviewer and documentation-reviewer
    - Classify each as auto-apply or manual-review
    - Provide rationale for classification
    - **Prioritize fixes** using this order:
@@ -311,15 +325,16 @@ After presenting the audit report:
 
 ## Execution Instructions
 
-1. **Launch execution-tracer** to gather session facts
+1. **Launch process-recorder** to gather session facts
 2. **Wait for completion** and capture JSON output
-3. **Launch protocol-auditor** with tracer output as input
+3. **Launch process-reviewer** with tracer output as input
 4. **Wait for compliance verdict**
-5. **Conditional launch of efficiency-optimizer** (only if PASSED)
-6. **Launch documentation-auditor** to identify doc gaps
-7. **Synthesize report** combining all agent outputs
-8. **Present report** to user with clear next steps
-9. **Apply automatic fixes** (new Phase 5):
+5. **Conditional launch of process-updater** (only if PASSED)
+6. **Launch documentation-reviewer** to identify doc gaps
+7. **Launch documentation-updater** to apply proposed fixes
+8. **Synthesize report** combining all agent outputs
+9. **Present report** to user with clear next steps
+10. **Apply automatic fixes** (Phase 5):
    - Categorize all recommended fixes
    - Auto-apply safe fixes (build, style, docs)
    - Verify each fix after application
