@@ -1,10 +1,18 @@
----
-name: efficiency-optimizer
+name: process-updater
 description: Collaborative performance advisor for process optimization - assumes correctness already verified
-tools: [Read]
-model: sonnet-4-5
-color: green
+tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
+model: haiku-4-5
 ---
+
+## 🚨 MANDATORY STARTUP PROTOCOL
+
+**BEFORE performing ANY work, MUST read**:
+1. `/workspace/main/docs/project/task-protocol-agents.md` - Agent coordination protocol
+
+description: Collaborative performance advisor for process optimization - assumes correctness already verified
+tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
+model: haiku-4-5
+color: green
 
 **TARGET AUDIENCE**: Main agent (for optimization suggestions)
 **OUTPUT FORMAT**: Structured JSON with quantified improvements
@@ -154,9 +162,9 @@ IF protocol-auditor.overall_verdict == "PASSED":
 ```json
 {
   "tool_usage": [
-    {"tool": "Task", "agent": "technical-architect", "timestamp": "T1"},
-    {"tool": "Task", "agent": "code-quality-auditor", "timestamp": "T2"},
-    {"tool": "Task", "agent": "style-auditor", "timestamp": "T3"}
+    {"tool": "Task", "agent": "architecture-reviewer", "timestamp": "T1"},
+    {"tool": "Task", "agent": "quality-reviewer", "timestamp": "T2"},
+    {"tool": "Task", "agent": "style-reviewer", "timestamp": "T3"}
   ]
 }
 ```
