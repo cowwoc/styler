@@ -5,14 +5,12 @@
 
 set -euo pipefail
 
-# Find all active tasks owned by this session
-SESSION_ID_FILE="/workspace/tasks/session-id.txt"
+# Read session ID from stdin JSON
+INPUT=$(cat)
+SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
 
-# Get current session ID
-if [[ -f "$SESSION_ID_FILE" ]]; then
-	SESSION_ID=$(cat "$SESSION_ID_FILE")
-else
-	# No session tracking yet, exit silently
+if [[ -z "$SESSION_ID" ]]; then
+	# No session ID available, exit silently
 	exit 0
 fi
 

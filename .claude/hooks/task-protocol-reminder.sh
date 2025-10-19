@@ -23,7 +23,7 @@ if [[ ! -f "$TASK_PROTOCOL_CORE" ]] || [[ ! -f "$TASK_PROTOCOL_OPS" ]]; then
 fi
 
 # Build base protocol reminder message
-BASE_MESSAGE="🚨 MANDATORY TASK PROTOCOL ENFORCEMENT: Before executing ANY task (whether from todo list OR any user request), you MUST FIRST read docs/project/task-protocol-core.md and task-protocol-operations.md completely and apply their mandatory TASK PROTOCOL procedures. The TASK PROTOCOL defines required steps for task isolation, stakeholder consultation, atomic locking, and worktree management. ANY task execution without following the TASK PROTOCOL procedures is a CRITICAL VIOLATION requiring immediate task restart. Read both protocol files NOW before proceeding with any task execution."
+BASE_MESSAGE="🚨 MANDATORY TASK PROTOCOL ENFORCEMENT: Before executing ANY task (whether from todo list OR any user request), you MUST follow the TASK PROTOCOL procedures for task isolation, stakeholder consultation, atomic locking, and worktree management. The protocol uses just-in-time guidance - phase-specific instructions will be provided automatically via hooks as you transition between states. You do NOT need to read protocol files upfront. The state-transition-detector hook will provide targeted reading instructions for each phase as needed. Start by understanding the task requirements, then follow the phase-specific guidance provided by the hooks."
 
 # Check if this session has an active task with delegated protocol
 if [ -n "$SESSION_ID" ]; then
