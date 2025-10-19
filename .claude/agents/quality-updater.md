@@ -4,7 +4,7 @@ description: >
   Implements code quality improvements based on quality-reviewer reports. Applies refactoring
   recommendations, fixes duplication, reduces complexity, and improves maintainability. Requires reviewer
   report as input.
-model: sonnet-4-5
+model: haiku-4-5
 color: cyan
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---

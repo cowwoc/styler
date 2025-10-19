@@ -28,7 +28,7 @@ usability-reviewer agent.' <commentary>The user has completed a significant feat
 	                                                      so use the usability-reviewer agent to evaluate user
 	                                                      experience and suggest related
 	                                                      improvements.</commentary></example>
-model: haiku-4-5
+model: sonnet-4-5
 color: green
 ---
 
@@ -66,9 +66,9 @@ usability-reviewer agent.' <commentary>The user has completed a significant feat
 	                                                      so use the usability-reviewer agent to evaluate user
 	                                                      experience and suggest related
 	                                                      improvements.</commentary></example>
-model: haiku-4-5
+model: sonnet-4-5
 color: green
-tools: [Read, Grep, Glob, LS, Bash, WebSearch, WebFetch]
+tools: [Read, Write, Grep, Glob, LS, Bash, WebSearch, WebFetch]
 
 **TARGET AUDIENCE**: Claude AI for comprehensive UX analysis and feature enhancement recommendations
 **OUTPUT FORMAT**: Structured usability assessment with user impact analysis, UX improvement recommendations,
