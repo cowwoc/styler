@@ -143,9 +143,76 @@ mechanical and trivial → main agent may fix after VALIDATION state begins.
 **ABSOLUTELY PROHIBITED Actions**:
 ❌ Use **Write tool** to create source files (.java, .ts, .py, etc.) in task worktree
 ❌ Use **Edit tool** to modify source files (.java, .ts, .py, etc.) in task worktree
+❌ Use **Edit tool** to modify module-info.java (JPMS module descriptors)
+❌ Use **Edit tool** to modify pom.xml for dependency changes
+❌ Making compilation fixes directly (add imports, fix syntax, etc.)
 ❌ Create implementation classes, interfaces, or modules directly
 ❌ "Implement then have agents review" pattern - THIS IS A VIOLATION
 ❌ "Quick implementation before delegating" - THIS IS A VIOLATION
+
+## PROHIBITED ACTIONS During IMPLEMENTATION State
+
+**CRITICAL VIOLATION PATTERNS** (detected by audit):
+
+❌ **Using Edit/Write tools on ANY .java files** (source OR test)
+- Example violation: `Edit: FormatterAPI.java` to fix compilation error
+- Correct approach: Delegate to quality-updater with error description
+
+❌ **Using Edit/Write tools on module-info.java**
+- Example violation: `Edit: module-info.java` to add `requires transitive`
+- Correct approach: Delegate to architecture-updater with JPMS requirement
+
+❌ **Using Edit/Write tools on pom.xml for dependency changes**
+- Example violation: `Edit: pom.xml` to add missing dependency
+- Correct approach: Report to architecture-updater for dependency analysis
+
+❌ **Making compilation fixes directly**
+- Example violation: Main agent adding `import java.util.List;` to fix compile error
+- Correct approach: Report error back to implementing agent for fix
+
+❌ **Creating ANY source code files directly**
+- Example violation: `Write: TransformationContext.java` to implement interface
+- Correct approach: Task tool invocation to architecture-updater
+
+**CORRECT DELEGATION PATTERN**:
+
+✅ Delegate ALL code changes to updater agents
+✅ Report compilation issues back to updater agents
+✅ Monitor status.json for agent completion
+✅ Verify build success after agent updates
+✅ Use Task tool exclusively for implementation work
+
+### ❌ INCORRECT: Main Agent Direct Implementation
+
+```bash
+# Main agent during IMPLEMENTATION state
+Edit: FormatterAPI.java           # VIOLATION!
+Edit: module-info.java            # VIOLATION!
+Edit: FormatterAPITest.java       # VIOLATION!
+Edit: pom.xml                     # VIOLATION!
+git commit -m "Fix compilation"   # Committing violations!
+```
+
+### ✅ CORRECT: Delegation Pattern
+
+```bash
+# Main agent during IMPLEMENTATION state
+Task: quality-updater
+  prompt: "Fix compilation error in FormatterAPI.java:
+
+  Error: package io.github.cowwoc.styler.ast.core does not exist
+
+  Requirements:
+  - Add module-info.java with proper requires statement
+  - Update pom.xml if dependencies missing
+  - Verify build success with ./mvnw compile -pl formatter"
+
+# Wait for agent completion
+Read: /workspace/tasks/{task}/agents/quality-updater/status.json
+
+# Verify build after agent completes
+Bash: ./mvnw clean verify -pl formatter
+```
 
 ### Stakeholder Agent Role (IMPLEMENTATION ONLY)
 

@@ -215,11 +215,31 @@ RECOMMENDED: Option 1 (proper protocol adherence)
    - Check git log for commits in task branch
    - Verify commit authors match expected pattern
    - Search task.md for language indicating main agent implemented directly
-   - Patterns to detect:
+   - **Scan tool usage for prohibited Edit/Write patterns during IMPLEMENTATION**:
+     ```
+     IF task_state == "IMPLEMENTATION":
+       FOR EACH tool_invocation IN conversation_history:
+         IF tool IN ["Edit", "Write"]:
+           IF target_file MATCHES ANY OF:
+             - Regex: '\\.java$'           # Any .java file
+             - Regex: 'module-info\\.java$' # JPMS descriptors
+             - Regex: 'pom\\.xml$'          # Maven POM files
+             - Regex: 'package\\.json$'     # NPM package files
+             - Regex: 'build\\.gradle$'     # Gradle build files
+           THEN:
+             IF actor == "main_agent":
+               → CRITICAL VIOLATION
+               → RECORD: file, tool, line_number
+               → NO EXCEPTIONS (even for "quick fixes")
+     ```
+   - Language patterns to detect:
      - "I will implement..."
      - "I have created the following files..."
      - "I implemented X, Y, Z..."
      - "Created [file] with following content..."
+     - "Let me fix this compilation error..."
+     - "I'll update the pom.xml..."
+     - "Adding module-info.java..."
 
 **Expected Pattern:**
 - Main agent coordinates stakeholder agents
