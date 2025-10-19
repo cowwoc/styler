@@ -4,7 +4,7 @@ description: >
   Reviews code against MANUAL-ONLY style patterns from docs/code-style/. Identifies violations that cannot be
   detected by automated linters (checkstyle, PMD, ESLint). Does NOT implement fixes - use style-updater to
   apply style corrections.
-model: sonnet-4-5
+model: haiku-4-5
 color: blue
 tools: [Read, Grep, Glob, LS, Bash]
 ---

@@ -4,7 +4,7 @@ description: >
   Reviews code for security vulnerabilities, attack vectors, and compliance issues. Generates structured
   security assessment with vulnerability classifications and remediation recommendations. Does NOT implement
   fixes - use security-updater to apply security patches.
-model: sonnet-4-5
+model: haiku-4-5
 color: red
 tools: [Read, Grep, Glob, LS, Bash, WebSearch, WebFetch]
 ---

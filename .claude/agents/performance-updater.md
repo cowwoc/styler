@@ -3,7 +3,7 @@ name: performance-updater
 description: >
   Implements performance optimizations based on performance-reviewer analysis. Applies algorithmic improvements,
   memory optimizations, and efficiency enhancements. Requires performance review report as input.
-model: haiku-4-5
+model: sonnet-4-5
 color: orange
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---

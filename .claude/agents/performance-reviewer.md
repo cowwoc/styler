@@ -4,7 +4,7 @@ description: >
   Analyzes code for performance bottlenecks, memory issues, algorithmic efficiency, and optimization
   opportunities. Generates structured performance reports. Does NOT implement optimizations - use
   performance-updater to apply performance improvements.
-model: sonnet-4-5
+model: haiku-4-5
 color: orange
 tools: [Read, Grep, Glob, LS, Bash, WebSearch, WebFetch]
 ---

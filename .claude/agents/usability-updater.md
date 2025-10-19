@@ -4,7 +4,7 @@ description: >
   Implements usability improvements based on usability-reviewer recommendations. Enhances user experience,
   improves error messages, clarifies workflows, and implements UX recommendations. Requires usability review
   report as input.
-model: haiku-4-5
+model: sonnet-4-5
 color: green
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---
