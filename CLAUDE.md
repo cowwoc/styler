@@ -163,6 +163,7 @@ cat -A /path/to/file.java | grep -A2 "method()"
 - **MAIN AGENT ROLE**: Coordinates via Task tool invocations, monitors status.json, manages state transitions
 - **IMPLEMENTATION FLOW**: Main agent delegates → Agents implement in parallel → Agents merge to task branch → Iterative rounds until complete
 - **VIOLATION**: Main agent creating .java/.ts/.py files directly in task worktree during IMPLEMENTATION state
+- **MODEL STRATEGY**: Reviewer agents use Sonnet 4.5 (analysis/decisions), updater agents use Haiku 4.5 (mechanical implementation) - see task-protocol-core.md "Model Selection Strategy" for rationale
 
 ## Essential References
 

@@ -2,8 +2,8 @@
 name: documentation-reviewer
 description: >
   Technical writer quality checker for protocol documentation - identifies ambiguities, contradictions, and missing guidance
-tools: [Read, Grep]
-model: haiku-4-5
+tools: [Read, Write, Grep]
+model: sonnet-4-5
 color: blue
 ---
 
