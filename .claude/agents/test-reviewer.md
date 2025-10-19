@@ -4,7 +4,7 @@ description: >
   Analyzes code to identify business logic testing gaps, edge cases, and compliance validation needs. Generates
   comprehensive test strategy with specific test case recommendations. Does NOT write tests - use
   test-updater to create actual test code.
-model: sonnet-4-5
+model: haiku-4-5
 color: purple
 tools: [Read, Grep, Glob, LS, Bash]
 ---

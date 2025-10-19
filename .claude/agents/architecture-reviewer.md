@@ -4,7 +4,7 @@ description: >
   Reviews system architecture, module boundaries, technology choices, and design patterns. Analyzes
   architectural decisions and identifies improvements. Does NOT implement changes - use architecture-updater
   to apply architectural recommendations.
-model: sonnet-4-5
+model: haiku-4-5
 color: blue
 tools: [Read, Grep, Glob, LS, Bash]
 ---

@@ -1,7 +1,7 @@
 name: process-updater
 description: Collaborative performance advisor for process optimization - assumes correctness already verified
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
-model: haiku-4-5
+model: sonnet-4-5
 ---
 
 ## 🚨 MANDATORY STARTUP PROTOCOL
@@ -11,7 +11,7 @@ model: haiku-4-5
 
 description: Collaborative performance advisor for process optimization - assumes correctness already verified
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
-model: haiku-4-5
+model: sonnet-4-5
 color: green
 
 **TARGET AUDIENCE**: Main agent (for optimization suggestions)

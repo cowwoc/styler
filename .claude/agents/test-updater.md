@@ -3,7 +3,7 @@ name: test-updater
 description: >
   Implements test code based on test-reviewer test strategy. Creates comprehensive unit tests that
   validate business logic and domain rules. Requires test strategy document as input.
-model: haiku-4-5
+model: sonnet-4-5
 color: purple
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---
