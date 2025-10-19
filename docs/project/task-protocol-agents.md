@@ -255,6 +255,71 @@ Main agent checks these conditions before transitioning to next state:
 
 ## Git Workflow for Agents
 
+### Commit Signature Requirements (MANDATORY)
+
+**PURPOSE**: Enable post-completion audit verification of proper multi-agent coordination
+
+**CRITICAL**: All agent commits MUST include agent type signature in commit message prefix
+
+**Format Requirements**:
+
+```
+[{agent-type}] Commit subject line
+
+Detailed commit body (optional).
+
+Co-Authored-By: {agent-type} <noreply@anthropic.com>
+```
+
+**Examples**:
+
+```bash
+# ✅ CORRECT - Architecture updater commit
+[architecture-updater] Implement FormattingRule and TransformationContext interfaces
+
+Created core API interfaces with proper contract definitions.
+Validated with SecurityConfig integration.
+
+Co-Authored-By: architecture-updater <noreply@anthropic.com>
+
+# ✅ CORRECT - Quality updater commit
+[quality-updater] Add comprehensive test suite for FormattingViolation
+
+Implemented 11 unit tests covering validation, immutability, equals/hashCode.
+All tests passing with 100% coverage.
+
+Co-Authored-By: quality-updater <noreply@anthropic.com>
+
+# ❌ VIOLATION - Missing agent signature
+Implement FormattingRule interface
+
+# ❌ VIOLATION - Generic signature not specific to agent
+feat: Add new feature
+```
+
+**Audit Verification**:
+
+The commit signature enables Check 0.3 (Git History Pattern Analysis) to distinguish:
+- **Agent commits**: Proper stakeholder agent implementation
+- **Main agent commits**: Coordination-only (no source file implementation)
+- **Protocol violations**: Main agent implementing source files during IMPLEMENTATION state
+
+**Detection Algorithm**:
+```bash
+# Post-completion audit can verify proper agent usage
+agent_commits=$(git log task-branch --not main --grep '\[.*-updater\]' | wc -l)
+
+if [ "$agent_commits" -eq 0 ]; then
+  echo "VIOLATION: No agent signatures found (main agent bypass suspected)"
+fi
+```
+
+**Why This Matters**:
+- Git history survives after worktrees are cleaned up
+- Provides forensic evidence of proper protocol execution
+- Enables automated compliance checking
+- Prevents post-hoc rationalization of protocol violations
+
 ### For Updater Agents: Merging to Task Branch
 
 **Step 1: Verify your worktree**
@@ -285,9 +350,10 @@ git status
 cd /workspace/tasks/{TASK}/code
 
 # Merge changes from your worktree
-git merge --no-ff /workspace/tasks/{TASK}/agents/{AGENT}-updater/code -m "feat: {description}
+# CRITICAL: Include [{AGENT}-updater] signature prefix for audit compliance
+git merge --no-ff /workspace/tasks/{TASK}/agents/{AGENT}-updater/code -m "[{AGENT}-updater] {description}
 
-Implemented by {AGENT}-updater in round ${ROUND}.
+Implemented in round ${ROUND}.
 
 Co-Authored-By: {AGENT}-updater <noreply@anthropic.com>"
 

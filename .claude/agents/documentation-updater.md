@@ -2,8 +2,8 @@
 name: documentation-updater
 description: >
   Documentation fix applicator - receives aggregated recommendations from multiple reviewer agents and applies them automatically
-tools: [Read, Edit]
-model: sonnet-4-5
+tools: [Read, Write, Edit]
+model: haiku-4-5
 color: green
 ---
 

@@ -3,7 +3,7 @@ name: security-updater
 description: >
   Implements security fixes based on security-reviewer vulnerability reports. Applies security patches, input
   validation, sanitization, and protection mechanisms. Requires security review report as input.
-model: sonnet-4-5
+model: haiku-4-5
 color: red
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---

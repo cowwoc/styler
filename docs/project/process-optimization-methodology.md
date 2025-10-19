@@ -87,6 +87,120 @@ CRITICAL VIOLATION DETECTED:
 
 ---
 
+### Check 0.3: Git History Pattern Analysis (MANDATORY)
+
+**Pattern:** Detect suspicious single-commit patterns that suggest main agent implementation bypass
+
+**CRITICAL**: Git history provides empirical evidence of WHO implemented code, independent of conversation content
+
+**Verification Steps:**
+1. Navigate to task branch: `cd /workspace/tasks/{task-name}/code`
+2. Analyze commit history: `git log --oneline --graph task-{task-name}`
+3. Count total commits in task implementation
+4. Analyze commit authorship and messages
+5. Check for stakeholder agent commit signatures
+
+**Expected Pattern (Multi-Agent Implementation):**
+```bash
+# Multiple commits from different agents
+* abc1234 [architecture-updater] Implement core FormattingRule interfaces
+* abc1235 [style-updater] Apply JavaDoc and formatting standards
+* abc1236 [quality-updater] Add comprehensive test suite
+* abc1237 [main] Merge agent implementations to task branch
+* abc1238 [main] Fix test API mismatches
+```
+
+**Violation Pattern (Main Agent Bypass):**
+```bash
+# Single monolithic commit
+* abc1234 Implement styler-formatter-api module
+
+# OR: Main agent commits with no agent attribution
+* abc1234 Add FormattingRule.java, FormattingViolation.java, tests
+* abc1235 Fix compilation errors
+* abc1236 Update module-info.java
+```
+
+**Detection Algorithm:**
+```bash
+# Step 1: Count commits in task branch
+cd /workspace/tasks/{task-name}/code
+total_commits=$(git log --oneline task-{task-name} --not main | wc -l)
+
+# Step 2: Check for agent commit signatures
+agent_commits=$(git log task-{task-name} --not main --grep '\[.*-updater\]' | wc -l)
+implementation_commits=$(git log task-{task-name} --not main \
+  --grep '\[architecture-updater\]\|\[quality-updater\]\|\[style-updater\]' | wc -l)
+
+# Step 3: Detect suspicious patterns
+if [ "$total_commits" -eq 1 ] && [ "$agent_commits" -eq 0 ]; then
+  echo "🚨 CRITICAL: Single commit with no agent signatures (main agent bypass suspected)"
+elif [ "$implementation_commits" -eq 0 ] && [ "$total_commits" -gt 0 ]; then
+  echo "⚠️  WARNING: No stakeholder agent implementation commits detected"
+elif [ "$total_commits" -lt 3 ]; then
+  echo "⚠️  WARNING: Low commit count ($total_commits) for multi-component task"
+fi
+```
+
+**Violation Indicators:**
+- **Single commit**: Entire module implemented in one commit (suggests main agent batch implementation)
+- **No agent signatures**: Commits lack `[agent-name]` prefixes in messages
+- **Low commit count**: 3+ components but <3 commits (suggests batched main agent work)
+- **Main-only attribution**: All commits attributed to "main" agent with no stakeholder differentiation
+- **No merge commits**: Missing merge commits from agent worktrees to task branch
+- **Temporal clustering**: All commits within single timestamp (suggests single-agent batch work)
+
+**Cross-Reference with Audit Trail** (if available):
+```bash
+# Verify git history matches audit-trail.json
+if [ -f /workspace/tasks/{task-name}/audit-trail.json ]; then
+  logged_agents=$(jq '[.agent_invocations[] | select(.agent_type | endswith("-updater"))] | length' \
+    /workspace/tasks/{task-name}/audit-trail.json)
+
+  if [ "$logged_agents" -gt 0 ] && [ "$agent_commits" -eq 0 ]; then
+    echo "🚨 AUDIT MISMATCH: audit-trail.json shows agent invocations but git shows no agent commits"
+  fi
+fi
+```
+
+**Fix:**
+```
+CRITICAL VIOLATION DETECTED - Suspicious Git History Pattern:
+- Total commits: [N]
+- Agent implementation commits: 0
+- Pattern: [Single commit / No agent signatures / Low commit count]
+
+EVIDENCE:
+$ git log --oneline task-{task-name} --not main
+[paste actual output]
+
+DIAGNOSIS:
+This pattern indicates main agent implemented code directly instead of coordinating stakeholder agents.
+Expected pattern: Multiple commits with agent signatures ([architecture-updater], [style-updater], etc.)
+
+CORRECTIVE ACTION REQUIRED:
+Option 1: Revert task branch to start of IMPLEMENTATION
+  - git reset --hard main
+  - Restart IMPLEMENTATION with proper stakeholder agent coordination
+  - Ensure agents commit from their worktrees with proper signatures
+
+Option 2: Audit and document bypass justification
+  - Create audit report explaining why single-commit was necessary
+  - Document as technical debt for future protocol improvement
+  - Add compensating controls for quality assurance
+
+Option 3: Post-hoc agent validation
+  - Launch all stakeholder agents to review existing implementation
+  - Collect comprehensive validation reports
+  - Document validation results in task.md
+
+RECOMMENDED: Option 1 (proper protocol adherence)
+```
+
+**Priority**: CRITICAL - Git history is forensic evidence that cannot be post-hoc rationalized
+
+---
+
 ## Category 1: Implementation Actor Verification
 
 **Purpose:** Verify WHO is implementing code matches protocol requirements
@@ -626,6 +740,7 @@ public void testSpecificBugScenario() {
 |----------|---------------|----------|
 | 0.1 | State verification not performed | CRITICAL |
 | 0.2 | Main agent implements during IMPLEMENTATION state | CRITICAL |
+| 0.3 | Suspicious git history pattern (single commit/no agent signatures) | CRITICAL |
 | 1.x | Main agent implements directly | CRITICAL |
 | 2.x | Wrong worktree usage | CRITICAL |
 | 3.x | No multi-agent coordination | CRITICAL |
