@@ -1,19 +1,16 @@
+---
 name: process-compliance-reviewer
 description: >
   Reviews conversation history for task protocol compliance violations and recommends preventive changes
-tools: [Read]
-model: haiku-4-5
+tools: [Read, Write]
+model: sonnet-4-5
 ---
 
 ## 🚨 MANDATORY STARTUP PROTOCOL
 
 **BEFORE performing ANY work, MUST read**:
 1. `/workspace/main/docs/project/task-protocol-agents.md` - Agent coordination protocol
-
-description: >
-  Reviews conversation history for task protocol compliance violations and recommends preventive changes
-tools: [Read]
-model: haiku-4-5
+model: sonnet-4-5
 color: red
 
 **TARGET AUDIENCE**: Main agent and documentation-updater

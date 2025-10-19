@@ -682,18 +682,14 @@ cd /workspace/tasks/{TASK_NAME}/code
 rm -f .temp_dir
 git status --porcelain | grep -E "(dist/|target/|\.temp_dir$)" | wc -l  # Must be 0
 
-# Step 2: Commit all task deliverables (code, tests, docs)
-git add <changed-files>
-git commit -m "Descriptive commit message for task changes"
-
-# Step 3: Archive completed task from todo.md to changelog.md
+# Step 2: Archive completed task from todo.md to changelog.md
 # CRITICAL: Follow CLAUDE.md task archival policy
-# 3a. Remove completed task entry from todo.md (delete entire task section)
-# 3b. Add completed task to changelog.md under today's date (## YYYY-MM-DD)
-# 3c. Include completion details: solution, files modified, tests, quality gates
-# Edit todo.md and changelog.md accordingly
+# CRITICAL: These changes MUST be in the same commit as task deliverables
+# 2a. Remove completed task entry from todo.md (delete entire task section)
+# 2b. Add completed task to changelog.md under today's date (## YYYY-MM-DD)
+# 2c. Include completion details: solution, files modified, tests, quality gates
 
-# Step 3d: Update dependent tasks in todo.md (with file locking)
+# Step 2d: Update dependent tasks in todo.md (with file locking)
 # Acquire todo.md lock to prevent concurrent modifications
 TODO_LOCK="/workspace/.todo.md.lock"
 exec 200>"$TODO_LOCK"
@@ -705,15 +701,16 @@ flock -x 200 || { echo "ERROR: Could not acquire todo.md lock"; exit 1; }
 #   - Example: If task B1 depends on A0 and A1, and both A0 and A1 are now in changelog.md,
 #             change "- [ ] **BLOCKED:** `task-name`" to "- [ ] **READY:** `task-name`"
 
-# Edit todo.md with dependent task updates
+# Edit todo.md and changelog.md with all changes
 # ... editing logic (use Edit tool or sed commands) ...
 
 # Release lock
 flock -u 200
 
-# Step 3e: Amend the commit to include todo.md and changelog.md changes
-git add todo.md changelog.md
-git commit --amend --no-edit
+# Step 3: Commit ALL changes together (implementation + todo.md + changelog.md)
+# CRITICAL: Single atomic commit containing all task deliverables and project status updates
+git add <changed-files> todo.md changelog.md
+git commit -m "Descriptive commit message for task changes"
 
 # Step 4: Verify todo.md and changelog.md are included in the commit
 git show --stat | grep "todo.md" || { echo "ERROR: todo.md not in commit"; exit 1; }
@@ -724,68 +721,64 @@ git fetch /workspace/main refs/heads/main:refs/remotes/origin/main
 git rebase origin/main
 
 # Step 6: PRE-MERGE BUILD VERIFICATION (CRITICAL GATE)
-# MANDATORY: Verify build passes in worktree BEFORE push attempt
+# MANDATORY: Verify build passes in worktree BEFORE merge attempt
 ./mvnw verify || {
-    echo "❌ VIOLATION: Build fails in worktree - push BLOCKED"
+    echo "❌ VIOLATION: Build fails in worktree - merge BLOCKED"
     echo "Fix all checkstyle, PMD, and test failures before merging"
     exit 1
 }
 
-# Step 7: Atomic push to main worktree (TRULY CONCURRENCY-SAFE)
-# Main worktree has receive.denyCurrentBranch=updateInstead configured
-# Git's internal locking ensures only one push succeeds at a time
-# Push automatically updates both ref and working tree atomically
-git push /workspace/main HEAD:refs/heads/main || {
-    echo "❌ Push failed - another instance merged first"
-    echo "Solution: Fetch, rebase, and retry"
+# Step 7: Linear merge to main branch (fast-forward only)
+# CRITICAL: Must use --ff-only to enforce linear history
+# CRITICAL: No merge commits allowed
+cd /workspace/main
+git merge --ff-only {TASK_NAME} || {
+    echo "❌ Fast-forward merge failed - non-linear history detected"
+    echo "Solution: Return to task worktree, fetch latest main, rebase, and retry"
+    cd /workspace/tasks/{TASK_NAME}/code
     git fetch /workspace/main refs/heads/main:refs/remotes/origin/main
     git rebase origin/main
-    # Retry after rebase
-    git push /workspace/main HEAD:refs/heads/main || exit 1
+    ./mvnw verify || { echo "❌ Build failed after rebase"; exit 1; }
+    # Retry merge
+    cd /workspace/main
+    git merge --ff-only {TASK_NAME} || exit 1
 }
 
-# Step 8: Post-merge verification (from task worktree)
-# Verify push succeeded
-git fetch /workspace/main refs/heads/main:refs/remotes/origin/main
-git log origin/main --oneline -5  # Must show our commit at HEAD
-git show origin/main --stat | grep "todo.md" || { echo "ERROR: todo.md missing"; exit 1; }
+# Step 8: Post-merge verification (from main worktree)
+# Verify merge succeeded and todo.md/changelog.md are present
+git log --oneline -5  # Must show task commit at HEAD
+git show HEAD --stat | grep "todo.md" || { echo "ERROR: todo.md missing in merged commit"; exit 1; }
+git show HEAD --stat | grep "changelog.md" || { echo "ERROR: changelog.md missing in merged commit"; exit 1; }
 
-# Step 9: OPTIONAL - Verify build on main (skip if Step 6 passed)
-# Main worktree is automatically updated by push (receive.denyCurrentBranch=updateInstead)
-# cd /workspace/main && ./mvnw verify -q
+# Step 9: Verify build on main (MANDATORY after merge)
+./mvnw verify || {
+    echo "❌ CRITICAL: Build fails on main after merge"
+    echo "This should not happen if Step 6 passed - investigate immediately"
+    exit 1
+}
 ```
 
 **Concurrency Safety Guarantees:**
-- **Truly atomic**: Git's push with receive.denyCurrentBranch=updateInstead uses internal locking
-- **No race conditions**: Push operations are serialized by git's index.lock
-- **Automatic working tree update**: Main worktree files updated automatically on successful push
-- **Automatic conflict detection**: Non-fast-forward push fails cleanly
+- **Linear history enforced**: --ff-only flag prevents merge commits
+- **Automatic conflict detection**: Non-fast-forward merge fails cleanly
 - **Clear retry path**: Fetch + rebase + retry on conflict
-- **Perfect concurrency**: Multiple instances can push simultaneously without conflicts
+- **Build verification**: Tests run before and after merge
+- **Atomic commit**: All changes (code + todo.md + changelog.md) in single commit
 
-**Repository Configuration:**
-```bash
-# Main worktree must have this setting (already configured):
-cd /workspace/main
-git config receive.denyCurrentBranch updateInstead
-```
-
-**Example for task "refactor-line-wrapping-architecture"**:
+**Example for task "implement-formatter-api"**:
 ```bash
 # Step 1: Ensure clean state (in task worktree)
-cd /workspace/tasks/refactor-line-wrapping-architecture/code
+cd /workspace/tasks/implement-formatter-api/code
 git status --porcelain | grep -E "(dist/|target/)" | wc -l  # Must be 0
 
-# Step 2: Changes already committed during USER REVIEW checkpoint
-# Verify commit exists
-git log -1 --oneline
+# Step 2: Archive task and update dependencies BEFORE committing
+# 2a-c. Remove task from todo.md, add to changelog.md with completion details
+# 2d. Update dependent tasks: check each BLOCKED task, if all dependencies complete, change to READY
+# (Use Edit tool to update todo.md and changelog.md)
 
-# Step 3: Archive completed task and update dependent tasks
-# 3a-c. Remove task from todo.md, add to changelog.md with completion details
-# 3d. Update dependent tasks: check each BLOCKED task, if all dependencies complete, change to READY
-# 3e. Amend commit with both files
-git add todo.md changelog.md
-git commit --amend --no-edit
+# Step 3: Commit ALL changes together (implementation already staged from VALIDATION)
+git add . todo.md changelog.md
+git commit -m "Implement FormattingRule API with core interfaces"
 
 # Step 4: Verify todo.md and changelog.md included
 git show --stat | grep "todo.md"
@@ -795,26 +788,32 @@ git show --stat | grep "changelog.md"
 git fetch /workspace/main refs/heads/main:refs/remotes/origin/main
 git rebase origin/main
 
-# Step 6: PRE-MERGE BUILD VERIFICATION (blocks push if fails)
+# Step 6: PRE-MERGE BUILD VERIFICATION (blocks merge if fails)
 ./mvnw verify || {
     echo "❌ Build failed - fix violations before merging"
     exit 1
 }
 
-# Step 7: Atomic push to main worktree (concurrency-safe)
-git push /workspace/main HEAD:refs/heads/main || {
-    echo "❌ Push failed - another instance merged first"
-    echo "Rebasing onto updated main..."
+# Step 7: Linear merge to main branch (fast-forward only)
+cd /workspace/main
+git merge --ff-only implement-formatter-api || {
+    echo "❌ Fast-forward merge failed - rebasing..."
+    cd /workspace/tasks/implement-formatter-api/code
     git fetch /workspace/main refs/heads/main:refs/remotes/origin/main
     git rebase origin/main
-    # Retry push after rebase
-    git push /workspace/main HEAD:refs/heads/main
+    ./mvnw verify || { echo "❌ Build failed after rebase"; exit 1; }
+    # Retry merge
+    cd /workspace/main
+    git merge --ff-only implement-formatter-api
 }
 
-# Step 8: Post-merge verification (from task worktree)
-git fetch /workspace/main refs/heads/main:refs/remotes/origin/main
-git log origin/main --oneline -10
-git show origin/main --stat | grep "todo.md"
+# Step 8: Post-merge verification (from main worktree)
+git log --oneline -5
+git show HEAD --stat | grep "todo.md"
+git show HEAD --stat | grep "changelog.md"
+
+# Step 9: Verify build on main
+./mvnw verify
 ```
 
 **Fast-Forward Merge Validation:**

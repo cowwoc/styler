@@ -150,9 +150,12 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
   on task branch, merges changes (continues until all agents report no more work)
 - **VALIDATION**: Final build verification after all implementation rounds complete
 -  **REVIEW**: All stakeholder agents review task branch against requirements, accept (no violations) or
-  reject (violations found) - If ANY reject → back to IMPLEMENTATION rounds
--  **AWAITING_USER_APPROVAL**: **CHECKPOINT STATE - All agents accepted, changes committed to task branch,
-  presented to user, waiting for explicit approval before COMPLETE**
+  reject (violations found) - If ANY reject → back to IMPLEMENTATION rounds. **After unanimous approval, MUST
+  transition to AWAITING_USER_APPROVAL state**
+-  **AWAITING_USER_APPROVAL**: **MANDATORY CHECKPOINT STATE - All agents accepted, changes committed to task
+  branch, waiting for user review and approval before finalizing. Main agent MUST present changes, ask for
+  approval, wait for user response, create approval flag, then transition to COMPLETE. This state CANNOT be
+  skipped.**
 -  **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns (ONLY
   when resolution effort > 2x task scope AND agent consensus permits deferral - escalate based on agent tiers,
   architecture-reviewer makes final decision)
@@ -2880,6 +2883,157 @@ The entry guards enforce the following protocol requirements:
 ALWAYS pass. If a guard fails, it indicates a CRITICAL VIOLATION in a previous state that MUST be corrected
 before proceeding.
 
+### IMPLEMENTATION State Audit Trail Requirements (MANDATORY)
+
+**PURPOSE**: Enable post-completion compliance verification by maintaining persistent audit trail throughout
+task execution.
+
+**AUDIT TRAIL LOCATION**: `/workspace/tasks/{task-name}/audit-trail.json`
+
+**MANDATORY**: Main agent MUST maintain audit-trail.json starting from INIT state through CLEANUP state.
+
+**Audit Trail Schema**:
+```json
+{
+  "task_name": "task-name",
+  "session_id": "uuid",
+  "started_at": "2025-10-19T10:00:00Z",
+  "state_transitions": [
+    {
+      "from_state": "INIT",
+      "to_state": "CLASSIFIED",
+      "timestamp": "2025-10-19T10:01:00Z",
+      "verification_passed": true
+    }
+  ],
+  "agent_invocations": [
+    {
+      "agent_name": "architecture-reviewer",
+      "agent_type": "reviewer",
+      "working_dir": "/workspace/tasks/{task-name}/code/",
+      "invocation_timestamp": "2025-10-19T10:05:00Z",
+      "completion_timestamp": "2025-10-19T10:10:00Z",
+      "report_location": "/workspace/tasks/{task-name}/task-name-architecture-reviewer-requirements.md",
+      "status": "completed"
+    }
+  ],
+  "tool_usage": [
+    {
+      "tool": "Task",
+      "agent_name": "architecture-updater",
+      "timestamp": "2025-10-19T10:15:00Z",
+      "working_dir": "/workspace/tasks/{task-name}/agents/architecture-updater/code/"
+    },
+    {
+      "tool": "Edit",
+      "file_path": "todo.md",
+      "timestamp": "2025-10-19T10:20:00Z",
+      "note": "Main agent coordination activity (non-implementation)"
+    }
+  ],
+  "commits": [
+    {
+      "sha": "abc123def",
+      "agent": "architecture-updater",
+      "branch": "task-branch",
+      "timestamp": "2025-10-19T10:18:00Z",
+      "files_created": ["FormattingRule.java"],
+      "files_modified": [],
+      "message": "[agent:architecture-updater] Add FormattingRule interface"
+    }
+  ],
+  "build_verifications": [
+    {
+      "timestamp": "2025-10-19T10:25:00Z",
+      "command": "./mvnw clean verify -pl formatter",
+      "result": "SUCCESS",
+      "tests_run": 34,
+      "tests_passed": 34,
+      "tests_failed": 0
+    }
+  ]
+}
+```
+
+**LOGGING REQUIREMENTS**:
+
+1. **State Transitions**: Log every state change with timestamp and verification status
+2. **Agent Invocations**: Log every Task() tool call with agent name, working dir, and completion time
+3. **Tool Usage**: Log Write/Edit tool usage to distinguish coordination from implementation
+4. **Commits**: Associate git commits with agents via commit message tags or worktree analysis
+5. **Build Verifications**: Log all Maven/build commands and results
+
+**MAIN AGENT RESPONSIBILITIES**:
+
+```bash
+# After each state transition
+log_state_transition() {
+  local from_state="$1"
+  local to_state="$2"
+
+  jq --arg from "$from_state" \
+     --arg to "$to_state" \
+     --arg ts "$(date -Iseconds)" \
+     '.state_transitions += [{
+       "from_state": $from,
+       "to_state": $to,
+       "timestamp": $ts,
+       "verification_passed": true
+     }]' audit-trail.json > audit-trail.tmp && mv audit-trail.tmp audit-trail.json
+}
+
+# When invoking agent via Task tool
+log_agent_invocation() {
+  local agent_name="$1"
+  local working_dir="$2"
+
+  jq --arg agent "$agent_name" \
+     --arg dir "$working_dir" \
+     --arg ts "$(date -Iseconds)" \
+     '.agent_invocations += [{
+       "agent_name": $agent,
+       "working_dir": $dir,
+       "invocation_timestamp": $ts,
+       "status": "running"
+     }]' audit-trail.json > audit-trail.tmp && mv audit-trail.tmp audit-trail.json
+}
+
+# When agent completes
+log_agent_completion() {
+  local agent_name="$1"
+  local report_location="$2"
+
+  jq --arg agent "$agent_name" \
+     --arg report "$report_location" \
+     --arg ts "$(date -Iseconds)" \
+     '.agent_invocations |= map(
+       if .agent_name == $agent and .status == "running"
+       then . + {"completion_timestamp": $ts, "report_location": $report, "status": "completed"}
+       else .
+       end
+     )' audit-trail.json > audit-trail.tmp && mv audit-trail.tmp audit-trail.json
+}
+```
+
+**VERIFICATION CHECKS**:
+
+Before transitioning to CLEANUP state, verify audit trail completeness:
+```bash
+# Check all required sections exist
+jq -e '.state_transitions | length > 0' audit-trail.json || echo "ERROR: No state transitions logged"
+jq -e '.agent_invocations | length > 0' audit-trail.json || echo "ERROR: No agent invocations logged"
+jq -e '.commits | length > 0' audit-trail.json || echo "ERROR: No commits logged"
+
+# Check all agents completed
+INCOMPLETE=$(jq '[.agent_invocations[] | select(.status != "completed")] | length' audit-trail.json)
+if [ "$INCOMPLETE" -gt 0 ]; then
+  echo "ERROR: $INCOMPLETE agents did not complete"
+  jq '.agent_invocations[] | select(.status != "completed")' audit-trail.json
+fi
+```
+
+**CRITICAL**: Audit trail MUST be preserved during CLEANUP state (see CLEANUP State Audit Preservation section).
+
 ### SYNTHESIS → IMPLEMENTATION
 **Mandatory Conditions:**
 - [ ] Requirements synthesis document created (all agents contributed to task.md)
@@ -3021,13 +3175,66 @@ escalation path: Tier 3 → Tier 2 → Tier 1.
 ❌ "Wait for all Tier N agents before Tier N+1 can merge" (unnecessary blocking)
 ❌ "Lower-tier agents cannot merge if higher-tier still working" (incorrect)
 
+### Model Selection Strategy
+
+**COST-OPTIMIZED ARCHITECTURE**: Agent model selection is designed to maximize quality while minimizing cost.
+
+**Model Assignments**:
+- **Reviewer agents** (Sonnet 4.5): Deep analysis, complex decision-making, detailed requirements generation
+- **Updater agents** (Haiku 4.5): Mechanical implementation following detailed specifications
+
+**Strategic Rationale**:
+
+The protocol uses a **two-phase quality amplification** approach:
+
+1. **REQUIREMENTS Phase** (High-cost, high-value):
+   - Reviewer agents use Sonnet 4.5 for comprehensive analysis
+   - Generate extremely detailed, implementation-ready specifications
+   - Make ALL difficult decisions (architecture, design patterns, naming, trade-offs)
+   - Output must be detailed enough for simpler model to execute mechanically
+
+2. **IMPLEMENTATION Phase** (Low-cost, high-volume):
+   - Updater agents use Haiku 4.5 for mechanical code generation
+   - Execute reviewer specifications without making new decisions
+   - Apply exact changes using Edit/Write tools with provided strings
+   - No analysis, no judgment, pure implementation execution
+
+**Critical Requirement for Reviewers**:
+
+Reviewer agents MUST produce specifications that a **simpler model** (Haiku) can implement **without making
+difficult decisions**. See agent-specific guidance sections in reviewer agent definitions for detailed
+requirements.
+
+**Quality Guarantee**:
+
+- **Bad requirements + expensive model** = Expensive, potentially wrong implementation
+- **Good requirements + cheap model** = Cost-effective, correct implementation
+- **Investment in requirements quality** enables cost savings in implementation volume
+
+**Cost Optimization Calculation**:
+
+Typical task execution:
+- 1x REQUIREMENTS round (reviewer agents analyze entire codebase): Use Sonnet 4.5
+- 2-5x IMPLEMENTATION rounds (updater agents apply fixes): Use Haiku 4.5 (40% cost reduction)
+- Net savings: ~30-35% on total task cost while maintaining quality
+
+**Prohibited Patterns**:
+❌ Reviewer producing vague requirements ("fix the issue")
+❌ Updater making design decisions (naming, patterns, architecture)
+❌ Assuming both agents need same model capability
+
+**Success Criteria**:
+✅ Updater succeeds on first attempt using only reviewer's specifications
+✅ No clarification questions from updater to reviewer
+✅ Implementation matches requirements without re-analysis
+
 ### Implementation Round Structure
 
 **CRITICAL**: Implementation rounds use BOTH reviewer and updater agents in an iterative validation pattern.
 
 **Agent Roles in IMPLEMENTATION**:
-- **Updater agents** (Haiku 4.5): Implement features, write code, apply fixes
-- **Reviewer agents** (Sonnet 4.5): Review merged code, approve/reject, provide feedback
+- **Reviewer agents** (Sonnet 4.5): Deep analysis, generate detailed requirements, approve/reject with specific feedback
+- **Updater agents** (Haiku 4.5): Mechanical implementation, apply exact specifications, merge verified changes
 
 **Single Agent Round Pattern**:
 ```
@@ -3651,19 +3858,30 @@ def handle_agent_rejections(rejecting_agents, rejection_feedback):
 
 **User Review After Unanimous Approval:**
 ```markdown
-MANDATORY AFTER UNANIMOUS STAKEHOLDER APPROVAL:
-1. Stop workflow after receiving ALL ✅ APPROVED responses from all agents
-2. Task branch already contains all agent implementations (via merge rounds)
-3. Present change summary to user including:
-   - Task branch HEAD SHA for review
-   - Files modified/created/deleted in task branch (git diff --stat main..task-branch)
-   - Key implementation decisions made by each agent
+CRITICAL STATE TRANSITION REQUIREMENT:
+
+After REVIEW state with unanimous agent approval, main agent MUST:
+
+1. **TRANSITION TO AWAITING_USER_APPROVAL STATE** (update lock file: state = "AWAITING_USER_APPROVAL")
+2. **PRESENT CHANGES TO USER** with:
+   - Task branch HEAD commit SHA
+   - Files modified/created/deleted (git diff --stat main..task-branch)
+   - Key implementation decisions from each agent
    - Test results and quality gate status
    - Summary of how each stakeholder requirement was addressed
    - Agent implementation history (git log showing agent merges)
-4. Ask user: "All stakeholder agents have approved the task branch. Changes available for review at task branch HEAD (SHA: <commit-sha>). Please review the integrated implementation. Would you like me to proceed with finalizing (COMPLETE → CLEANUP)?"
-5. Wait for user approval response
-6. Only proceed to COMPLETE state after user confirms approval
+3. **ASK FOR APPROVAL**: "All stakeholder agents have approved the task branch. Changes available for review at task branch HEAD (SHA: <commit-sha>). May I proceed to merge to main?"
+4. **WAIT FOR USER RESPONSE** - Do NOT proceed without explicit approval
+5. **CREATE APPROVAL FLAG**: touch /workspace/tasks/{task-name}/user-approval-obtained.flag
+6. **VERIFY FLAG CREATION**: Confirm flag exists before state transition
+7. **TRANSITION TO COMPLETE STATE** (only after steps 1-6)
+
+PROHIBITED PATTERNS:
+❌ Transitioning directly from REVIEW → COMPLETE (CRITICAL VIOLATION)
+❌ Transitioning from REVIEW → CLEANUP (skips both AWAITING_USER_APPROVAL and COMPLETE)
+❌ Merging to main without AWAITING_USER_APPROVAL state execution
+❌ Assuming user approval from agent consensus alone
+❌ Skipping user review for "straightforward" changes
 
 TASK BRANCH REVIEW:
 - Task branch contains all agent implementations merged linearly
@@ -3732,6 +3950,92 @@ pwd | grep -q '/workspace/main$'
 
 # ✅ Step 3: Now safe to remove
 git worktree remove /workspace/tasks/{task-name}/code
+```
+
+### CLEANUP State Audit Preservation (MANDATORY)
+
+**PURPOSE**: Preserve audit trail for post-completion compliance verification
+
+**CRITICAL**: Audit files MUST NOT be deleted during CLEANUP. They provide the only persistent evidence of proper protocol execution.
+
+**Files to Preserve**:
+1. `/workspace/tasks/{task-name}/audit-trail.json` - Complete execution log
+2. `/workspace/tasks/{task-name}/audit-snapshot.json` - Final state summary
+
+**Preservation Procedure**:
+
+Before removing task worktrees, create audit snapshot:
+```bash
+# Step 1: Create final audit snapshot
+cat > /workspace/tasks/{task-name}/audit-snapshot.json <<'EOF'
+{
+  "task_name": "{task-name}",
+  "completion_timestamp": "$(date -Iseconds)",
+  "final_state": "COMPLETE",
+  "total_state_transitions": $(jq '.state_transitions | length' audit-trail.json),
+  "total_agent_invocations": $(jq '.agent_invocations | length' audit-trail.json),
+  "agents_used": $(jq '[.agent_invocations[].agent_type] | unique' audit-trail.json),
+  "total_commits": $(jq '.commits | length' audit-trail.json),
+  "implementation_commits": $(jq '[.commits[] | select(.agent != "main")] | length' audit-trail.json),
+  "coordination_commits": $(jq '[.commits[] | select(.agent == "main")] | length' audit-trail.json),
+  "build_verifications": $(jq '.build_verifications | length' audit-trail.json),
+  "verification_summary": {
+    "all_builds_passed": $(jq '[.build_verifications[].success] | all' audit-trail.json),
+    "stakeholder_agents_used": $(jq '[.agent_invocations[] | select(.agent_type | endswith("-updater") or endswith("-reviewer"))] | length > 0' audit-trail.json)
+  }
+}
+EOF
+
+# Step 2: Verify audit completeness
+if [ ! -f /workspace/tasks/{task-name}/audit-trail.json ]; then
+  echo "❌ VIOLATION: audit-trail.json missing before CLEANUP"
+  exit 1
+fi
+
+# Step 3: Verify minimum audit requirements
+total_agents=$(jq '.agent_invocations | length' /workspace/tasks/{task-name}/audit-trail.json)
+if [ "$total_agents" -eq 0 ]; then
+  echo "⚠️  WARNING: No agent invocations logged (possible protocol bypass)"
+fi
+
+# Step 4: Remove worktrees but PRESERVE audit files
+cd /workspace/main
+git worktree remove /workspace/tasks/{task-name}/code
+# Remove agent worktrees if they exist
+for agent_dir in /workspace/tasks/{task-name}/agents/*/code; do
+  if [ -d "$agent_dir" ]; then
+    git worktree remove "$agent_dir"
+  fi
+done
+
+# ✅ CRITICAL: Do NOT remove audit files
+# Leave audit-trail.json and audit-snapshot.json in /workspace/tasks/{task-name}/
+```
+
+**Post-CLEANUP Audit Access**:
+
+After CLEANUP, audit files remain accessible at:
+- `/workspace/tasks/{task-name}/audit-trail.json` - Full execution log
+- `/workspace/tasks/{task-name}/audit-snapshot.json` - Summary metrics
+
+**Audit Verification Commands**:
+```bash
+# Verify task used stakeholder agents (not main agent implementation)
+jq '.agent_invocations[] | select(.agent_type | endswith("-updater"))' \
+  /workspace/tasks/{task-name}/audit-trail.json
+
+# Check for suspicious single-commit pattern
+total_commits=$(jq '.commits | length' /workspace/tasks/{task-name}/audit-trail.json)
+implementation_commits=$(jq '[.commits[] | select(.agent != "main")] | length' \
+  /workspace/tasks/{task-name}/audit-trail.json)
+
+if [ "$total_commits" -eq 1 ] && [ "$implementation_commits" -eq 0 ]; then
+  echo "⚠️  SUSPICIOUS: Single commit with no agent implementation commits"
+fi
+
+# Verify all state transitions were logged
+jq '.state_transitions[] | "\(.from_state) → \(.to_state)"' \
+  /workspace/tasks/{task-name}/audit-trail.json
 ```
 
 ### SCOPE_NEGOTIATION → SYNTHESIS (Return Path) or SCOPE_NEGOTIATION → COMPLETE (Deferral Path)

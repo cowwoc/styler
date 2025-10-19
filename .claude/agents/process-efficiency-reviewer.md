@@ -1,6 +1,7 @@
+---
 name: process-efficiency-reviewer
 description: Reviews conversation history for protocol efficiency opportunities and recommends improvements
-tools: [Read]
+tools: [Read, Write]
 model: sonnet-4-5
 ---
 
@@ -8,9 +9,6 @@ model: sonnet-4-5
 
 **BEFORE performing ANY work, MUST read**:
 1. `/workspace/main/docs/project/task-protocol-agents.md` - Agent coordination protocol
-
-description: Reviews conversation history for protocol efficiency opportunities and recommends improvements
-tools: [Read]
 model: sonnet-4-5
 color: green
 

@@ -3,7 +3,7 @@ name: style-updater
 description: >
   Implements style fixes based on style-reviewer violation reports. Applies formatting corrections, naming
   convention fixes, and documentation improvements. Requires style review report as input.
-model: sonnet-4-5
+model: haiku-4-5
 color: blue
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---

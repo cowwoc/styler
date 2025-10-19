@@ -251,7 +251,16 @@ CORRECT SEQUENCE:
 11. Main agent runs final build verification: ./mvnw verify
 12. If build passes → proceed to REVIEW state
 13. If build fails → main agent MAY fix OR re-delegate to agents
+14. After REVIEW state with unanimous approval → transition to AWAITING_USER_APPROVAL state
+15. Present changes to user with commit SHA and ask: "May I proceed to merge to main?"
+16. Wait for user approval response
+17. Create user-approval-obtained.flag after approval received
+18. Transition to COMPLETE state
+19. Merge to main branch
+20. Transition to CLEANUP state
 ```
+
+**CRITICAL**: Steps 14-18 are MANDATORY and CANNOT be skipped. The sequence REVIEW → AWAITING_USER_APPROVAL → COMPLETE → CLEANUP is REQUIRED.
 
 **Key Transition Point**: Step 9 (VALIDATION state) is when main agent permissions change from PROHIBITED to
 PERMITTED for minor fixes. Steps 5-8 are iterative rounds within IMPLEMENTATION state using both reviewer and
