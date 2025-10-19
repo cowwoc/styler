@@ -116,6 +116,27 @@ This document contains the **essential task protocol information** that all sub-
 - `last_merge_sha`: Git SHA of last merge to task branch
 - `work_remaining`: "none" when implementation complete
 
+## Agent Response Verbosity Guidelines
+
+**MANDATORY**: Return metadata-only status reports, NOT full code listings.
+
+**✅ CORRECT (50 tokens)**:
+```
+Implementation complete.
+- Files created: FormattingRule.java, TransformationContext.java, FormattingViolation.java
+- Commit SHA: abc1234
+- Validation: PASSED (22/22 tests, 0 violations)
+```
+
+**❌ VIOLATION (5,000+ tokens)**:
+```
+Implementation complete. Here is the code:
+
+[Full code listing of 3 files × 200 lines each = 600 lines]
+```
+
+**Token Impact**: Returning full code for 4 agents × 2 rounds = 40,000-60,000 wasted tokens.
+
 ### Status Update Commands
 
 **Updater agent after merging**:

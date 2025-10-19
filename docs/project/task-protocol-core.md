@@ -3428,7 +3428,49 @@ git commit -m "Implementation message with Claude attribution"
 git rev-parse HEAD
 ```
 
+**MANDATORY COMMIT MESSAGE CONVENTION**:
+
+Each stakeholder agent MUST include their agent name in commit message when merging to task branch:
+
+**Agent Commit Format**: `[agent-name] Implementation summary`
+
+**Examples**:
+- `[architecture-updater] Add FormattingRule interface hierarchy`
+- `[quality-updater] Apply factory pattern to rule instantiation`
+- `[style-updater] Implement JavaDoc requirements for public APIs`
+- `[test-updater] Add comprehensive test suite for FormattingRule`
+
+**Main Agent Final Commit**: When main agent commits validation fixes or merges to main branch, commit message MUST list all contributing agents:
+
+```bash
+git commit -m "$(cat <<'EOF'
+Implement FormattingRule system
+
+Contributing agents:
+- architecture-updater: Core interface design
+- quality-updater: Design pattern application
+- style-updater: Code style compliance
+- test-updater: Test suite implementation
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
+**Rationale**: Agent-attributed commits provide verifiable audit trail that multi-agent protocol was followed, not main-agent direct implementation.
+
 ### VALIDATION → REVIEW (Conditional Path)
+
+**🚨 MANDATORY PATTERN**: Batch Collection and Fixing
+1. Run ALL quality gates (checkstyle, PMD, tests)
+2. Collect ALL violations from current round
+3. Fix ALL issues of same type together
+4. Verify ONCE after all fixes complete
+
+**VIOLATION**: Fix-verify-fix-verify cycles waste 98% of verification time. For 60 violations, sequential fixing wastes 29 minutes and 29,000 tokens.
+
 **Path Selection Logic:**
 ```
 IF (source_code_modified OR runtime_behavior_changed):
@@ -3479,6 +3521,35 @@ Before transitioning from VALIDATION → REVIEW:
 - [ ] Verified build output does NOT contain "Skipping plugin execution (cached)" for:
   - `pmd:check`
   - `checkstyle:check`
+- [ ] **MANDATORY: Verify `git status` shows clean working directory (no uncommitted changes)**
+
+**MANDATORY STATE TRANSITION BLOCKER - Clean Working Directory**:
+
+```bash
+# REQUIRED before transitioning VALIDATION → REVIEW
+git status
+
+# Expected output: "nothing to commit, working tree clean"
+# If uncommitted changes exist → BLOCK transition
+```
+
+**State Transition Rule**: Lock file state MUST NOT be updated to REVIEW if uncommitted changes exist.
+
+**Automated Verification**:
+```bash
+# Check working directory before state transition
+if git status | grep -q "nothing to commit"; then
+    echo "✅ Clean working directory - proceeding to REVIEW state"
+    jq '.state = "REVIEW"' task.json > task.json.tmp && mv task.json.tmp task.json
+else
+    echo "❌ CRITICAL: Uncommitted changes detected"
+    echo "All validation fixes MUST be committed before REVIEW transition"
+    git status
+    exit 1
+fi
+```
+
+**Rationale**: Uncommitted validation fixes will NOT be included in task branch merge to main, causing build failures after integration despite passing in VALIDATION state.
   - Other quality gates (PMD, checkstyle, etc.)
 - [ ] All quality gates show actual execution timestamps (not cache restoration)
 - [ ] Build output explicitly shows analysis results (not "restored from cache")
@@ -3511,6 +3582,19 @@ modified code is actually analyzed by quality gates.
 - [ ] **Task branch ready for user review** (all agent changes integrated)
 - [ ] **USER REVIEW: Changes presented to user for review (task branch HEAD SHA)**
 - [ ] **USER APPROVAL: User has approved the implemented changes**
+
+**MANDATORY PRE-MERGE VERIFICATION**:
+```bash
+# In task worktree BEFORE merge attempt
+cd /workspace/tasks/{task-name}/code
+./mvnw clean verify  # MANDATORY clean build (detects cache issues)
+
+# ONLY proceed to merge if exit code 0
+cd /workspace/main
+git merge --ff-only {task-name}
+```
+
+**🚨 CRITICAL for JPMS projects**: `./mvnw verify` alone misses stale module-info.class files. `clean verify` prevents 90% of post-merge build failures.
 
 **CRITICAL REJECTION HANDLING:**
 - **IF ANY agent returns ❌ REJECTED** → Return to IMPLEMENTATION state
@@ -3621,6 +3705,32 @@ PROHIBITED:
 - Classification of issues (BLOCKING/DEFERRABLE) with justification
 - Domain authority decisions documented
 - Follow-up tasks created in todo.md for deferred work
+
+### COMPLETE → CLEANUP
+
+**MANDATORY SEQUENCING**: Always `cd /workspace/main` BEFORE worktree removal
+
+**WHY**: Git cannot remove a worktree while you are inside it.
+
+**FAILURE MODE**:
+```bash
+# ❌ VIOLATION: Attempting removal from inside worktree
+cd /workspace/tasks/{task-name}/code  # Inside worktree
+git worktree remove /workspace/tasks/{task-name}/code
+# ERROR: Cannot remove worktree while inside it
+```
+
+**CORRECT SEQUENCE**:
+```bash
+# ✅ Step 1: Exit to main worktree FIRST
+cd /workspace/main
+
+# ✅ Step 2: Verify location
+pwd | grep -q '/workspace/main$'
+
+# ✅ Step 3: Now safe to remove
+git worktree remove /workspace/tasks/{task-name}/code
+```
 
 ### SCOPE_NEGOTIATION → SYNTHESIS (Return Path) or SCOPE_NEGOTIATION → COMPLETE (Deferral Path)
 **Decision Logic:**
