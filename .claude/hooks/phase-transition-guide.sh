@@ -1,6 +1,6 @@
 #!/bin/bash
-# Phase-specific guidance injection with brevity optimization
-# Triggered at phase transitions via UserPromptSubmit
+# Phase-specific guidance with targeted MD file reading instructions
+# Provides just-in-time protocol guidance without requiring upfront MD reading
 # Performance: ~5ms (state file lookup + conditional output)
 
 set -euo pipefail
@@ -30,7 +30,7 @@ else
 	VERBOSITY="BRIEF"
 fi
 
-# Phase-specific guidance
+# Phase-specific guidance with targeted reading instructions
 case "$NEW_STATE" in
 	"INIT")
 		if [[ "$VERBOSITY" == "FULL" ]]; then
@@ -39,9 +39,13 @@ case "$NEW_STATE" in
 📋 INIT PHASE - Task Initialization
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+📖 DETAILED PROTOCOL:
+   Read /workspace/main/docs/project/task-protocol-core.md lines 1583-1626
+   (Section: "INIT → CLASSIFIED")
+
 REQUIRED ACTIONS:
 1. ✅ Create lock file at /workspace/tasks/{task-name}/task.json
-   - Include: session_id, task_name, state, created_at
+   - Include: session_id, task_name, state: "INIT", created_at
 
 2. ✅ Create isolated worktree
    - Pattern: git worktree add /workspace/tasks/{task-name}/code -b {task-name}
@@ -49,15 +53,26 @@ REQUIRED ACTIONS:
 
 3. ✅ Create task.md placeholder
    - Location: /workspace/tasks/{task-name}/task.md
-   - Will be populated in CLASSIFIED state
+   - Content: Empty or basic template
 
 4. ✅ Verify isolation
-   - Run: pwd | grep -q "/workspace/tasks/{task-name}/code$"
+   - Run: pwd
+   - Expected: /workspace/tasks/{task-name}/code
+
+✅ PHASE COMPLETE WHEN:
+   - Lock file exists with INIT state
+   - Task worktree created and is current directory
+   - task.md placeholder exists
+
+➡️  NEXT PHASE: CLASSIFIED
+   Transition: Update lock state:
+   jq '.state = "CLASSIFIED"' /workspace/tasks/{task-name}/task.json > /tmp/lock.tmp
+   mv /tmp/lock.tmp /workspace/tasks/{task-name}/task.json
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 		else
-			echo "📋 INIT (visit $NEW_VISIT_COUNT): Lock + Worktree + CD to worktree + task.md placeholder"
+			echo "📋 INIT (visit $NEW_VISIT_COUNT): Lock + Worktree + CD + task.md | Next: CLASSIFIED"
 		fi
 		;;
 
@@ -68,6 +83,10 @@ EOF
 🔍 CLASSIFIED PHASE - Risk Assessment & Agent Identification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+📖 DETAILED PROTOCOL:
+   Read /workspace/main/docs/project/task-protocol-core.md lines 1986-2053
+   (Section: "CLASSIFIED → REQUIREMENTS")
+
 REQUIRED ACTIONS:
 1. ✅ Determine risk level (HIGH/MEDIUM/LOW)
    - HIGH-RISK: src/**, pom.xml, security/**, .github/**, CLAUDE.md
@@ -75,10 +94,10 @@ REQUIRED ACTIONS:
    - LOW-RISK: general docs, todo.md, README
 
 2. ✅ Identify required stakeholder agents
-   - HIGH-RISK: technical-architect, security-auditor, code-quality-auditor,
-                performance-analyzer, style-auditor
-   - MEDIUM-RISK: domain-specific (style-auditor for code-style docs, etc.)
-   - LOW-RISK: build-validator only (if build changes)
+   - HIGH-RISK: architecture-reviewer, security-reviewer, quality-reviewer,
+                performance-reviewer, style-reviewer, test-reviewer
+   - MEDIUM-RISK: domain-specific subset
+   - LOW-RISK: build-reviewer only (if build changes)
 
 3. ✅ Write task.md with classification
    - Risk level
@@ -86,10 +105,17 @@ REQUIRED ACTIONS:
    - Required agents list
    - Detailed requirements
 
+✅ PHASE COMPLETE WHEN:
+   - task.md contains risk level and agent list
+   - All required agents identified
+
+➡️  NEXT PHASE: REQUIREMENTS
+   Transition: Update lock state to REQUIREMENTS
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 		else
-			echo "🔍 CLASSIFIED (visit $NEW_VISIT_COUNT): Risk level + Agent list + Update task.md"
+			echo "🔍 CLASSIFIED (visit $NEW_VISIT_COUNT): Risk level + Agents + task.md | Next: REQUIREMENTS"
 		fi
 		;;
 
@@ -100,24 +126,37 @@ EOF
 📝 REQUIREMENTS PHASE - Stakeholder Consultation
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+📖 DETAILED PROTOCOL:
+   Read /workspace/main/docs/project/task-protocol-core.md lines 2205-2388
+   (Sections: "REQUIREMENTS → SYNTHESIS" and "REQUIREMENTS State Exit Verification")
+
 REQUIRED ACTIONS:
 1. ✅ Invoke ALL identified stakeholder agents IN PARALLEL
    - Use single message with multiple Task tool calls
    - Pass task.md as input context
+   - Example: Task("architecture-reviewer", "..."), Task("quality-reviewer", "...")
 
-2. ✅ Collect agent requirement reports
-   - Each agent writes: {task-name}-{agent-type}-requirements.md
-   - Location: /workspace/tasks/{task-name}/ (task root)
+2. ✅ Wait for ALL agents to complete
+   - Monitor agent completion status
+   - Collect requirement reports from /workspace/tasks/{task-name}/
 
 3. ✅ Consolidate requirements into task.md
    - Add "Stakeholder Requirements Summary" section
    - Include key points from each agent
-   - Preserve full agent reports for SYNTHESIS phase
+   - Preserve full reports for SYNTHESIS phase
+
+✅ PHASE COMPLETE WHEN:
+   - All stakeholder agents have completed
+   - All requirement reports collected
+   - task.md updated with consolidated requirements
+
+➡️  NEXT PHASE: SYNTHESIS
+   Transition: Update lock state to SYNTHESIS
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 		else
-			echo "📝 REQUIREMENTS (visit $NEW_VISIT_COUNT): Invoke agents in parallel + Collect reports + Update task.md"
+			echo "📝 REQUIREMENTS (visit $NEW_VISIT_COUNT): Invoke agents parallel + Collect + Consolidate | Next: SYNTHESIS"
 		fi
 		;;
 
@@ -128,20 +167,23 @@ EOF
 🎯 SYNTHESIS PHASE - Implementation Planning
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+📖 DETAILED PROTOCOL:
+   Read /workspace/main/docs/project/task-protocol-core.md lines 2736-2881
+   (Sections: "IMPLEMENTATION State Entry Guards" and "SYNTHESIS → IMPLEMENTATION")
+
 REQUIRED ACTIONS:
 1. ✅ Read ALL stakeholder requirement reports
-   - technical-architect: Architecture & design
-   - security-auditor: Security requirements
-   - code-quality-auditor: Quality standards
-   - performance-analyzer: Performance constraints
-   - style-auditor: Style compliance needs
+   - {task-name}-architecture-reviewer-requirements.md
+   - {task-name}-quality-reviewer-requirements.md
+   - {task-name}-style-reviewer-requirements.md
+   - etc.
 
 2. ✅ Create comprehensive implementation plan
-   - Architecture approach
-   - Component breakdown
-   - Implementation sequence
-   - Testing strategy
-   - Integration points
+   - Architecture approach and design patterns
+   - Component breakdown and file structure
+   - Implementation sequence and dependencies
+   - Testing strategy and validation criteria
+   - Integration points and interfaces
 
 3. ✅ Write plan to task.md
    - Add "Implementation Plan" section
@@ -150,12 +192,21 @@ REQUIRED ACTIONS:
 
 4. ✅ Present plan to user for approval
    - Clear, readable markdown format
+   - Explain approach and rationale
    - Wait for explicit approval before IMPLEMENTATION
+
+✅ PHASE COMPLETE WHEN:
+   - Implementation plan written to task.md
+   - User has explicitly approved plan
+   - Ready to begin implementation
+
+➡️  NEXT PHASE: IMPLEMENTATION
+   Transition: After user approval, update lock state to IMPLEMENTATION
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 		else
-			echo "🎯 SYNTHESIS (visit $NEW_VISIT_COUNT): Read agent reports + Create plan + Update task.md + Get user approval"
+			echo "🎯 SYNTHESIS (visit $NEW_VISIT_COUNT): Read reports + Create plan + Get approval | Next: IMPLEMENTATION"
 		fi
 		;;
 
@@ -164,67 +215,73 @@ EOF
 			# Get risk level from lock file
 			RISK_LEVEL=$(jq -r '.risk_level // "UNKNOWN"' "$LOCK_FILE" 2>/dev/null || echo "UNKNOWN")
 
-			if [[ "$RISK_LEVEL" == "HIGH-RISK" ]]; then
-				cat << 'EOF'
+			cat << EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️  IMPLEMENTATION PHASE - HIGH-RISK (Agent Delegation Required)
+⚙️  IMPLEMENTATION PHASE - Risk Level: ${RISK_LEVEL}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-MANDATORY APPROACH:
-1. ✅ DELEGATE to technical-architect agent
-   - Agent creates isolated worktree at:
-     /workspace/tasks/{task-name}/agents/technical-architect/code/
-   - Agent implements all code in THEIR worktree
-   - Agent merges to task branch when complete
+📖 DETAILED PROTOCOL:
+   Read /workspace/main/docs/project/task-protocol-core.md lines 2881-3368
+   (Sections: "SYNTHESIS → IMPLEMENTATION" and "MULTI-AGENT IMPLEMENTATION WORKFLOW")
+   Also read: task-protocol-operations.md for implementation patterns
+
+EOF
+
+			if [[ "$RISK_LEVEL" == "HIGH-RISK" ]]; then
+				cat << 'EOF'
+⚠️  HIGH-RISK IMPLEMENTATION - MANDATORY DELEGATION:
+1. ✅ DELEGATE to updater agents (NOT implement yourself)
+   - Invoke {domain}-updater agents based on requirements
+   - Each agent works in: /workspace/tasks/{task}/agents/{agent}-updater/code/
+   - Agents implement, validate, then merge to task branch
 
 2. ❌ PROHIBITED ACTIONS
    - DO NOT write code files (.java, .ts, .py, etc.) yourself
    - DO NOT use Write/Edit tools for implementation code
-   - DO NOT implement in task worktree directly
+   - Main agent COORDINATES only
 
-3. ✅ DELEGATION PATTERN
-   Task("technical-architect", "Implement according to plan in task.md.
-   Work in your isolated worktree. Merge to task branch when complete.")
+3. ✅ COORDINATION PATTERN
+   - Invoke updater agents in parallel
+   - Monitor status.json files for completion
+   - Collect merged changes on task branch
+   - Iterate rounds until all agents report COMPLETE
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 			elif [[ "$RISK_LEVEL" == "MEDIUM-RISK" ]]; then
 				cat << 'EOF'
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ IMPLEMENTATION PHASE - MEDIUM-RISK (Direct Implementation)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-PERMITTED APPROACH:
+✅ MEDIUM-RISK IMPLEMENTATION - DIRECT WITH VALIDATION:
 1. ✅ Implement directly in task worktree
    - Use Write/Edit tools for code files
    - Follow implementation plan from task.md
 
-2. ✅ Validation during implementation
+2. ✅ Continuous validation during implementation
    - Run ./mvnw compile after each component
    - Run ./mvnw test to verify changes
-   - Fix issues immediately (fail-fast)
+   - Fix issues immediately (fail-fast approach)
 
-3. ✅ Domain-specific review required after completion
-   - Will invoke relevant agents in REVIEW phase
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 			else
 				cat << 'EOF'
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ IMPLEMENTATION PHASE - LOW-RISK (Streamlined)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-STREAMLINED APPROACH:
+✅ LOW-RISK IMPLEMENTATION - STREAMLINED:
 1. ✅ Implement changes directly
-2. ✅ Basic validation (formatting, links)
-3. ✅ Build verification if applicable
+2. ✅ Basic validation (formatting, links, build if applicable)
+
+EOF
+			fi
+
+			cat << 'EOF'
+✅ PHASE COMPLETE WHEN:
+   - All implementation complete per plan
+   - Code compiles successfully
+   - Ready for validation
+
+➡️  NEXT PHASE: VALIDATION
+   Transition: Update lock state to VALIDATION
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
-			fi
 		else
-			echo "⚙️  IMPLEMENTATION (visit $NEW_VISIT_COUNT): Follow risk-appropriate pattern (check .claude/hooks/check-implementation-pattern.sh)"
+			echo "⚙️  IMPLEMENTATION (visit $NEW_VISIT_COUNT): Follow plan + Validate continuously | Next: VALIDATION"
 		fi
 		;;
 
@@ -234,6 +291,10 @@ EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🧪 VALIDATION PHASE - Build & Test Verification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📖 DETAILED PROTOCOL:
+   Read /workspace/main/docs/project/task-protocol-core.md lines 3368-3431
+   (Section: "IMPLEMENTATION → VALIDATION")
 
 REQUIRED ACTIONS:
 1. ✅ Full build verification
@@ -249,12 +310,22 @@ REQUIRED ACTIONS:
    - PMD: ./mvnw pmd:check
    - Manual rules: Review docs/code-style/*-claude.md patterns
 
-4. ✅ Fix any violations before proceeding to REVIEW
+4. ✅ Fix any violations
+   - Return to IMPLEMENTATION if validation fails
+   - Fix and re-validate
+
+✅ PHASE COMPLETE WHEN:
+   - Build succeeds
+   - All tests pass
+   - All style checks pass
+
+➡️  NEXT PHASE: REVIEW (if HIGH/MEDIUM risk) or COMPLETE (if LOW risk)
+   Transition: Update lock state based on risk level
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 		else
-			echo "🧪 VALIDATION (visit $NEW_VISIT_COUNT): Build + Tests + Style (checkstyle + PMD + manual)"
+			echo "🧪 VALIDATION (visit $NEW_VISIT_COUNT): Build + Tests + Style checks | Next: REVIEW or COMPLETE"
 		fi
 		;;
 
@@ -265,55 +336,42 @@ EOF
 👥 REVIEW PHASE - Stakeholder Agent Approval
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+📖 DETAILED PROTOCOL:
+   Read /workspace/main/docs/project/task-protocol-core.md lines 3431-3513
+   (Section: "VALIDATION → REVIEW")
+
 REQUIRED ACTIONS:
-1. ✅ Invoke ALL stakeholder agents IN PARALLEL
+1. ✅ Invoke ALL stakeholder reviewer agents IN PARALLEL
    - Same agents from REQUIREMENTS phase
    - Each reviews implementation against their requirements
+   - Pattern: Task("architecture-reviewer", "..."), Task("quality-reviewer", "...")
 
 2. ✅ Collect review reports
-   - Each agent writes: {task-name}-{agent-type}-review.md
-   - Location: /workspace/tasks/{task-name}/ (task root)
+   - Each agent writes status.json with decision: APPROVED or REJECTED
+   - Location: /workspace/tasks/{task-name}/agents/{agent}-reviewer/status.json
 
 3. ✅ Check for unanimous approval
-   - ALL agents must respond: "FINAL DECISION: ✅ APPROVED"
-   - ANY "❌ REJECTED" → Return to IMPLEMENTATION
-   - Address feedback and re-run REVIEW
+   - ALL agents must have decision: "APPROVED"
+   - ANY "REJECTED" → Invoke corresponding updater agents
+   - Updaters fix issues, merge, reviewers re-review
+   - Repeat until all APPROVED
 
-4. ✅ Only proceed to AWAITING_USER_APPROVAL after unanimous approval
+4. ✅ Iterative rounds until consensus
+   - Round N: Reviewers review → some REJECT with feedback
+   - Round N+1: Updaters fix → merge → reviewers re-review
+   - Continue until unanimous approval
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-EOF
-		else
-			echo "👥 REVIEW (visit $NEW_VISIT_COUNT): Invoke agents in parallel + Check unanimous approval + Fix if rejected"
-		fi
-		;;
+✅ PHASE COMPLETE WHEN:
+   - All reviewer agents report decision: APPROVED
+   - No REJECTED decisions remain
 
-	"AWAITING_USER_APPROVAL")
-		if [[ "$VERBOSITY" == "FULL" ]]; then
-			cat << 'EOF'
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✋ AWAITING_USER_APPROVAL PHASE - User Checkpoint
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-REQUIRED ACTIONS:
-1. ✅ Present implementation summary
-   - Files created/modified
-   - Test results
-   - Agent approval status
-   - Any notable decisions
-
-2. ✅ Wait for explicit user approval
-   - User must say: "approved", "LGTM", "proceed", etc.
-   - If rejected: Return to IMPLEMENTATION and fix issues
-
-3. ✅ Create approval marker when approved
-   - File: /workspace/tasks/{task-name}/user-approval-obtained.flag
-   - Required before COMPLETE state transition
+➡️  NEXT PHASE: COMPLETE
+   Transition: Update lock state to COMPLETE
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 		else
-			echo "✋ AWAITING_USER_APPROVAL (visit $NEW_VISIT_COUNT): Present summary + Wait for approval"
+			echo "👥 REVIEW (visit $NEW_VISIT_COUNT): Invoke reviewers + Check approval + Iterate if needed | Next: COMPLETE"
 		fi
 		;;
 
@@ -324,25 +382,39 @@ EOF
 🎉 COMPLETE PHASE - Finalization
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+📖 DETAILED PROTOCOL:
+   Read /workspace/main/docs/project/task-protocol-core.md lines 3647-3673
+   (Section: "COMPLETE → CLEANUP")
+   Also read: /workspace/main/docs/project/git-workflow.md for merge procedures
+
 REQUIRED ACTIONS:
 1. ✅ Merge task branch to main
-   - Checkout main branch
-   - Merge with squash: git merge --squash {task-name}
-   - Commit with descriptive message
+   - cd /workspace/main/code (main worktree)
+   - git merge --squash {task-name}
+   - Commit with descriptive message + Co-Authored-By: Claude
 
 2. ✅ Update project documentation
-   - REMOVE task from todo.md (delete entire entry)
+   - REMOVE task from todo.md (delete entire task entry)
    - ADD to changelog.md with completion details
    - Verify: git diff todo.md shows ONLY deletions
 
 3. ✅ Commit all changes atomically
    - Include: implementation + todo.md + changelog.md
-   - Format message with Co-Authored-By: Claude
+   - Single atomic commit
+
+✅ PHASE COMPLETE WHEN:
+   - Changes merged to main branch
+   - todo.md updated (task removed)
+   - changelog.md updated (completion recorded)
+   - All changes committed
+
+➡️  NEXT PHASE: CLEANUP
+   Transition: Update lock state to CLEANUP
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 		else
-			echo "🎉 COMPLETE (visit $NEW_VISIT_COUNT): Merge to main + Remove from todo.md + Add to changelog.md + Commit"
+			echo "🎉 COMPLETE (visit $NEW_VISIT_COUNT): Merge + Update todo/changelog + Commit | Next: CLEANUP"
 		fi
 		;;
 
@@ -355,7 +427,7 @@ EOF
 
 REQUIRED ACTIONS:
 1. ✅ Navigate to main worktree FIRST
-   - CRITICAL: cd /workspace/tasks/main/code
+   - CRITICAL: cd /workspace/main/code
    - NEVER remove worktree while inside it
 
 2. ✅ Remove task worktree
@@ -367,24 +439,29 @@ REQUIRED ACTIONS:
 4. ✅ Remove lock file
    - rm /workspace/tasks/{task-name}/task.json
 
-5. ✅ Remove stakeholder reports
+5. ✅ Remove stakeholder reports and artifacts
    - rm /workspace/tasks/{task-name}/*-requirements.md
    - rm /workspace/tasks/{task-name}/*-review.md
-
-6. ✅ Remove task.md
+   - rm /workspace/tasks/{task-name}/agents/*/status.json
    - rm /workspace/tasks/{task-name}/task.md
-
-7. ✅ Remove phase visit tracker
    - rm /workspace/tasks/{task-name}/.phase-visits
+
+✅ PHASE COMPLETE WHEN:
+   - All worktrees removed
+   - All task artifacts deleted
+   - Task directory clean
+
+➡️  TASK COMPLETE
+   No further state transitions. Task protocol execution finished.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 EOF
 		else
-			echo "🧹 CLEANUP (visit $NEW_VISIT_COUNT): CD to main + Remove worktrees + Remove lock/reports/task.md"
+			echo "🧹 CLEANUP (visit $NEW_VISIT_COUNT): CD to main + Remove worktrees + Delete artifacts | TASK COMPLETE"
 		fi
 		;;
 
 	*)
-		echo "⚠️  Unknown phase: $NEW_STATE"
+		echo "⚠️  Unknown phase: $NEW_STATE - Read /workspace/main/docs/project/task-protocol-core.md for guidance"
 		;;
 esac

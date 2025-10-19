@@ -5,7 +5,7 @@
 
 ## Problem Statement
 
-**Current Flaw**: Single `process-optimizer` agent has conflicting responsibilities:
+**Current Flaw**: Single `process-efficiency-reviewer` agent has conflicting responsibilities:
 - **Audit correctness** (adversarial, strict, binary)
 - **Optimize efficiency** (collaborative, flexible, continuous)
 
@@ -18,20 +18,20 @@
 ```
 User Request: "Review session for violations"
     ↓
-[1] execution-tracer → Collects neutral facts
+[1] process-recorder → Collects neutral facts
     ↓
-[2] protocol-auditor → Binary violation detection (PASS/FAIL)
+[2] process-compliance-reviewer → Binary violation detection (PASS/FAIL)
     ↓
-[3] efficiency-optimizer → Suggests improvements (assumes correctness)
+[3] process-efficiency-reviewer → Suggests improvements (assumes correctness)
     ↓
-[4] documentation-auditor → Finds ambiguities/contradictions
+[4] documentation-reviewer → Finds ambiguities/contradictions
     ↓
 Final Report: Violations + Optimizations + Doc Fixes
 ```
 
 ---
 
-## Agent 1: execution-tracer
+## Agent 1: process-recorder
 
 **Role**: Neutral fact gatherer (no judgments)
 
@@ -74,16 +74,16 @@ Final Report: Violations + Optimizations + Doc Fixes
 
 ---
 
-## Agent 2: protocol-auditor
+## Agent 2: process-compliance-reviewer
 
 **Role**: Adversarial compliance checker (strict, binary)
 
 **Responsibility**:
-- Check facts from execution-tracer against protocol rules
+- Check facts from process-recorder against protocol rules
 - Binary output: VIOLATION or COMPLIANT (no gray area)
 - No rationalizations, no "this would be OK if..."
 
-**Input**: execution-tracer JSON output
+**Input**: process-recorder JSON output
 
 **Output Format**:
 ```json
@@ -124,7 +124,7 @@ Final Report: Violations + Optimizations + Doc Fixes
 **Key Characteristics**:
 - ✅ Strict rule enforcement
 - ✅ Binary verdicts (no rationalization)
-- ✅ Evidence-based (uses execution-tracer data)
+- ✅ Evidence-based (uses process-recorder data)
 - ✅ Clear recovery options
 - ❌ No efficiency suggestions
 - ❌ No documentation fixes
@@ -153,26 +153,26 @@ Category 3: Multi-Agent Architecture Compliance
 ... (all 25 checks)
 ```
 
-**Tools**: Read (methodology, protocol docs, execution-tracer output)
+**Tools**: Read (methodology, protocol docs, process-recorder output)
 
-**CRITICAL RULE**: If execution-tracer shows `task_state_actual == "IMPLEMENTATION"` and `tool_usage` contains
+**CRITICAL RULE**: If process-recorder shows `task_state_actual == "IMPLEMENTATION"` and `tool_usage` contains
 `Edit` by `main` on `.java` file, **IMMEDIATE VIOLATION FLAG**. Do NOT check "what state should it be" - flag
 the violation in the ACTUAL state.
 
 ---
 
-## Agent 3: efficiency-optimizer
+## Agent 3: process-efficiency-reviewer
 
 **Role**: Collaborative performance advisor (helpful, flexible)
 
 **Responsibility**:
-- **ONLY runs if protocol-auditor verdict == "COMPLIANT"**
+- **ONLY runs if process-compliance-reviewer verdict == "COMPLIANT"**
 - Suggests efficiency improvements
 - Identifies parallelization opportunities
 - Recommends prefetching patterns
 - Calculates token savings
 
-**Input**: execution-tracer JSON output
+**Input**: process-recorder JSON output
 
 **Output Format**:
 ```json
@@ -217,11 +217,11 @@ the violation in the ACTUAL state.
 3. Fail-fast validation (incremental checks)
 4. Context reduction (smaller responses)
 
-**Tools**: Read (execution-tracer output, protocol docs)
+**Tools**: Read (process-recorder output, protocol docs)
 
 ---
 
-## Agent 4: documentation-auditor
+## Agent 4: documentation-reviewer
 
 **Role**: Technical writer quality checker (clarity, consistency)
 
@@ -232,7 +232,7 @@ the violation in the ACTUAL state.
 - Propose clarity improvements
 
 **Input**:
-- protocol-auditor violations (to find doc gaps)
+- process-compliance-reviewer violations (to find doc gaps)
 - CLAUDE.md, task-protocol-*.md files
 
 **Output Format**:
@@ -247,7 +247,7 @@ the violation in the ACTUAL state.
       "issue": "Section says 'main agent coordinates' but doesn't specify which agents can implement vs review-only",
       "confusion_caused": "Main agent unclear if fixing violations violates protocol",
       "proposed_fix": "Add 'Stakeholder Agent Capabilities Matrix' section clearly listing implementation vs review-only agents",
-      "related_violation": "protocol-auditor check 0.2 failed due to this ambiguity"
+      "related_violation": "process-compliance-reviewer check 0.2 failed due to this ambiguity"
     }
   ],
   "contradictions": [
@@ -276,7 +276,7 @@ the violation in the ACTUAL state.
 - ✅ Finds root causes of violations (ambiguous docs)
 - ✅ Proposes specific text improvements
 - ✅ Cross-references violations to doc gaps
-- ❌ Doesn't detect violations (that's protocol-auditor's job)
+- ❌ Doesn't detect violations (that's process-compliance-reviewer's job)
 
 **Tools**: Read, Grep, Edit (for proposing fixes)
 
@@ -293,19 +293,19 @@ User: "Review session for violations and optimize"
 
 ```bash
 # Phase 1: Fact Gathering (neutral)
-Task tool (execution-tracer): "Collect facts about current session execution"
+Task tool (process-recorder): "Collect facts about current session execution"
 
 # Phase 2: Compliance Audit (adversarial)
-Task tool (protocol-auditor): "Audit facts against protocol rules. Input: execution-tracer output"
+Task tool (process-compliance-reviewer): "Audit facts against protocol rules. Input: process-recorder output"
 
 # Phase 3: Conditional Optimization (collaborative)
-IF protocol-auditor verdict == "COMPLIANT":
-  Task tool (efficiency-optimizer): "Suggest optimizations. Input: execution-tracer output"
+IF process-compliance-reviewer verdict == "COMPLIANT":
+  Task tool (process-efficiency-reviewer): "Suggest optimizations. Input: process-recorder output"
 ELSE:
   Skip optimization (fix violations first)
 
 # Phase 4: Documentation Improvement (quality)
-Task tool (documentation-auditor): "Find doc ambiguities that caused violations. Input: protocol-auditor violations"
+Task tool (documentation-reviewer): "Find doc ambiguities that caused violations. Input: process-compliance-reviewer violations"
 ```
 
 ### Step 3: Main Agent Synthesizes Report
@@ -320,7 +320,7 @@ Task tool (documentation-auditor): "Find doc ambiguities that caused violations.
 ### Critical Violation
 - **Check 0.2**: Main agent used Edit tool during IMPLEMENTATION state
 - **Evidence**: task.json state == IMPLEMENTATION, Edit tool on FormattingViolation.java
-- **Recovery Options**: (see protocol-auditor output)
+- **Recovery Options**: (see process-compliance-reviewer output)
 
 ### Efficiency Optimizations
 - Skipped (fix violations first)
@@ -334,10 +334,10 @@ Task tool (documentation-auditor): "Find doc ambiguities that caused violations.
 
 ## Agent Configuration Files
 
-### execution-tracer.md
+### process-recorder.md
 ```yaml
 ---
-name: execution-tracer
+name: process-recorder
 description: Neutral fact gatherer for session execution analysis
 tools: [Read, Grep, Bash, LS]
 model: sonnet-4-5
@@ -351,17 +351,17 @@ color: gray
 **CRITICAL**: Do NOT make judgments or recommendations - just collect data
 ```
 
-### protocol-auditor.md
+### process-compliance-reviewer.md
 ```yaml
 ---
-name: protocol-auditor
+name: process-compliance-reviewer
 description: Adversarial compliance checker for protocol violations
 tools: [Read]
 model: sonnet-4-5
 color: red
 ---
 
-**Role**: Check execution-tracer facts against protocol rules (strict, binary)
+**Role**: Check process-recorder facts against protocol rules (strict, binary)
 
 **CRITICAL RULES**:
 1. Check task.json state FIRST (Check 0.1)
@@ -370,14 +370,14 @@ color: red
 4. Binary verdicts: VIOLATION or COMPLIANT (no gray area)
 5. Provide evidence and recovery options
 
-**Input**: execution-tracer JSON output
+**Input**: process-recorder JSON output
 **Output**: Violations list with verdicts
 ```
 
-### efficiency-optimizer.md
+### process-efficiency-reviewer.md
 ```yaml
 ---
-name: efficiency-optimizer
+name: process-efficiency-reviewer
 description: Collaborative performance advisor for process optimization
 tools: [Read]
 model: sonnet-4-5
@@ -386,7 +386,7 @@ color: green
 
 **Role**: Suggest efficiency improvements (helpful, quantified)
 
-**CRITICAL RULE**: ONLY runs if protocol-auditor verdict == "COMPLIANT"
+**CRITICAL RULE**: ONLY runs if process-compliance-reviewer verdict == "COMPLIANT"
 
 **Focus Areas**:
 - Parallelization opportunities
@@ -397,10 +397,10 @@ color: green
 **Output**: Optimization suggestions with token savings
 ```
 
-### documentation-auditor.md
+### documentation-reviewer.md
 ```yaml
 ---
-name: documentation-auditor
+name: documentation-reviewer
 description: Technical writer quality checker for protocol documentation
 tools: [Read, Grep, Edit]
 model: sonnet-4-5
@@ -409,7 +409,7 @@ color: blue
 
 **Role**: Find ambiguities and contradictions in protocol docs
 
-**Input**: protocol-auditor violations (to identify doc gaps)
+**Input**: process-compliance-reviewer violations (to identify doc gaps)
 
 **Output**: Ambiguities, contradictions, missing guidance with proposed fixes
 ```
@@ -419,10 +419,10 @@ color: blue
 ## Benefits of Multi-Agent Architecture
 
 ### 1. Separation of Concerns
-- **execution-tracer**: Facts only (no bias)
-- **protocol-auditor**: Strict enforcement (no rationalization)
-- **efficiency-optimizer**: Helpful suggestions (no violation detection)
-- **documentation-auditor**: Clarity improvements (no compliance checking)
+- **process-recorder**: Facts only (no bias)
+- **process-compliance-reviewer**: Strict enforcement (no rationalization)
+- **process-efficiency-reviewer**: Helpful suggestions (no violation detection)
+- **documentation-reviewer**: Clarity improvements (no compliance checking)
 
 ### 2. No Conflicting Responsibilities
 - Auditor can't rationalize violations (not its job)
@@ -441,7 +441,7 @@ color: blue
 - Each agent can fail independently
 
 ### 5. Accountability
-- Clear attribution: "protocol-auditor flagged violation"
+- Clear attribution: "process-compliance-reviewer flagged violation"
 - No ambiguity about who found what
 - Easier to debug agent failures
 
@@ -449,24 +449,24 @@ color: blue
 
 ## Migration Path
 
-### Phase 1: Deprecate process-optimizer
+### Phase 1: Deprecate process-efficiency-reviewer
 - Mark as deprecated in agent config
-- Document replacement: "Use execution-tracer → protocol-auditor → efficiency-optimizer pipeline"
+- Document replacement: "Use process-recorder → process-compliance-reviewer → process-efficiency-reviewer pipeline"
 
 ### Phase 2: Create New Agents
-1. Create execution-tracer.md (simplest, facts only)
-2. Create protocol-auditor.md (copy checks from methodology, make strict)
-3. Create efficiency-optimizer.md (extract efficiency checks from methodology)
-4. Create documentation-auditor.md (new functionality)
+1. Create process-recorder.md (simplest, facts only)
+2. Create process-compliance-reviewer.md (copy checks from methodology, make strict)
+3. Create process-efficiency-reviewer.md (extract efficiency checks from methodology)
+4. Create documentation-reviewer.md (new functionality)
 
 ### Phase 3: Update Methodology
 - Split process-optimization-methodology.md into:
-  - protocol-audit-checklist.md (for protocol-auditor)
-  - efficiency-patterns.md (for efficiency-optimizer)
-  - documentation-quality-standards.md (for documentation-auditor)
+  - protocol-audit-checklist.md (for process-compliance-reviewer)
+  - efficiency-patterns.md (for process-efficiency-reviewer)
+  - documentation-quality-standards.md (for documentation-reviewer)
 
 ### Phase 4: Update CLAUDE.md
-- Replace references to "process-optimizer"
+- Replace references to "process-efficiency-reviewer"
 - Document multi-agent pipeline
 - Provide usage examples
 
@@ -478,7 +478,7 @@ color: blue
 
 **Input**: Current implement-formatter-api session
 
-**Expected execution-tracer output**:
+**Expected process-recorder output**:
 ```json
 {
   "task_state_actual": "IMPLEMENTATION",
@@ -489,7 +489,7 @@ color: blue
 }
 ```
 
-**Expected protocol-auditor output**:
+**Expected process-compliance-reviewer output**:
 ```json
 {
   "violations": [
@@ -509,12 +509,12 @@ color: blue
 }
 ```
 
-**Expected efficiency-optimizer output**:
+**Expected process-efficiency-reviewer output**:
 ```
 SKIPPED (violations must be fixed first)
 ```
 
-**Expected documentation-auditor output**:
+**Expected documentation-reviewer output**:
 ```json
 {
   "ambiguities": [
