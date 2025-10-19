@@ -785,7 +785,7 @@ audit pipeline to verify correct protocol execution.
 
 **Pipeline Architecture**:
 ```
-execution-tracer → protocol-auditor → efficiency-optimizer → documentation-auditor
+process-recorder → process-compliance-reviewer → efficiency-optimizer → documentation-auditor
     (facts)           (enforcement)        (performance)        (root causes)
 ```
 
@@ -801,13 +801,13 @@ execution-tracer → protocol-auditor → efficiency-optimizer → documentation
 
 ```bash
 # Step 1: Collect session facts
-execution_tracer_output=$(invoke_agent execution-tracer \
+process_recorder_output=$(invoke_agent process-recorder \
   --task-name "${TASK_NAME}" \
   --session-id "${SESSION_ID}")
 
 # Step 2: Check protocol compliance
-protocol_audit_result=$(invoke_agent protocol-auditor \
-  --execution-trace "${execution_tracer_output}")
+protocol_audit_result=$(invoke_agent process-compliance-reviewer \
+  --execution-trace "${process_recorder_output}")
 
 # Step 3: Handle violations
 if [[ $(echo "$protocol_audit_result" | jq -r '.overall_verdict') == "FAILED" ]]; then
@@ -855,16 +855,16 @@ fi
 **Critical Violation Response Pattern**:
 
 ```markdown
-IF (protocol-auditor returns FAILED):
+IF (process-compliance-reviewer returns FAILED):
   1. **STOP immediately** - Do not proceed to next state
-  2. **IDENTIFY violation** - Read protocol-auditor output for specific check IDs
+  2. **IDENTIFY violation** - Read process-compliance-reviewer output for specific check IDs
   3. **APPLY fix** - Based on violation type:
      - Check 0.2 (main agent implementation): Revert changes, re-delegate to agents
      - State sequence violation: Return to skipped state
      - Missing artifacts: Create required files/reports
      - Lock state mismatch: Update lock file to match actual state
   4. **RE-RUN protocol audit** - Verify fix resolved violation
-  5. **REPEAT until PASSED** - Cannot proceed until protocol-auditor returns PASSED
+  5. **REPEAT until PASSED** - Cannot proceed until process-compliance-reviewer returns PASSED
   6. **ONLY THEN proceed** - After PASSED verdict, continue to next state
 ```
 
@@ -882,7 +882,7 @@ IF (protocol-auditor returns FAILED):
 2. **MANDATORY PROTOCOL AUDIT** before launching agents:
    ```bash
    # Audit current state
-   protocol-auditor --check-state-transition "SYNTHESIS→IMPLEMENTATION"
+   process-compliance-reviewer --check-state-transition "SYNTHESIS→IMPLEMENTATION"
    ```
 
 3. **IF AUDIT PASSES**:
@@ -892,14 +892,14 @@ IF (protocol-auditor returns FAILED):
 
 4. **IF AUDIT FAILS**:
    - STOP - do not launch agents
-   - Fix violations identified by protocol-auditor
+   - Fix violations identified by process-compliance-reviewer
    - Re-run audit
    - Only proceed after PASSED verdict
 
 5. **After all agents report COMPLETE**:
    - **MANDATORY PROTOCOL AUDIT** before transitioning to VALIDATION:
      ```bash
-     protocol-auditor --check-implementation-complete
+     process-compliance-reviewer --check-implementation-complete
      ```
    - Verify main agent did not create source files in task worktree
    - Verify all agents merged to task branch
@@ -949,7 +949,7 @@ automatic invocation by outputting imperative instructions that the main agent a
 - "🤖 AUTOMATIC EXECUTION SEQUENCE (DO NOT WAIT FOR USER INPUT)"
 - "Main agent: Execute this audit pipeline AUTOMATICALLY"
 - "🤖 AUTONOMOUS EXECUTION: These steps run AUTOMATICALLY without waiting for user"
-- "STEP 1 (AUTOMATIC): Invoke execution-tracer agent"
+- "STEP 1 (AUTOMATIC): Invoke process-recorder agent"
 - "STEP 3b (IF FAILED): Automatically invoke documentation-auditor"
 
 **This is NOT manual invocation** - the imperative language in hook output makes it clear these are AUTOMATIC
@@ -965,13 +965,13 @@ MANDATORY ACTIONS that the main agent executes immediately.
    → Hook creates audit-pending.flag
    → Hook BLOCKS transition (exit 1)
    → Main agent reads hook output
-   → Main agent AUTOMATICALLY invokes execution-tracer
-   → Main agent AUTOMATICALLY invokes protocol-auditor
-   → IF protocol-auditor returns FAILED:
+   → Main agent AUTOMATICALLY invokes process-recorder
+   → Main agent AUTOMATICALLY invokes process-compliance-reviewer
+   → IF process-compliance-reviewer returns FAILED:
       → Main agent AUTOMATICALLY invokes documentation-auditor
       → Main agent fixes violations per documentation-auditor guidance
-      → Main agent re-runs audit (return to execution-tracer step)
-   → IF protocol-auditor returns PASSED:
+      → Main agent re-runs audit (return to process-recorder step)
+   → IF process-compliance-reviewer returns PASSED:
       → Main agent creates audit-passed.flag
       → Main agent retries state transition (now succeeds)
 5. IF flag exists:
@@ -1046,7 +1046,7 @@ Scenario: User runs audit while agents are gathering requirements
 This is the most complex interaction pattern - see "Agent Invocation Interruption Handling" section for complete details.
 
 Summary:
-1. Audit executes full pipeline (execution-tracer → protocol-auditor → efficiency-optimizer → documentation-auditor)
+1. Audit executes full pipeline (process-recorder → process-compliance-reviewer → efficiency-optimizer → documentation-auditor)
 2. State remains REQUIREMENTS throughout audit
 3. After audit: Check agent completion status
 4. Resume agent invocations:
@@ -1599,14 +1599,16 @@ echo "✅ Main worktree lock released"
 - **pwd verification showing `/workspace/tasks/{task-name}/code`**
 
 **MANDATORY TOOL USAGE PATTERN**:
-- [ ] Protocol files loaded in SINGLE parallel read:
-      `Read task-protocol-core.md + Read task-protocol-operations.md`
 - [ ] Task requirements loaded in SINGLE parallel read:
       `Read todo.md + Glob locks/*.json`
 - [ ] Configuration files loaded in SINGLE parallel read (if applicable):
       `Read pom.xml + Read checkstyle.xml + Read pmd.xml`
-- [ ] Architecture documentation loaded with implementation files:
+- [ ] Architecture documentation loaded with implementation files (if applicable):
       `Read docs/project/architecture.md + Glob src/main/java/**/*Pattern*.java`
+
+**NOTE**: Protocol guidance is provided just-in-time via hooks. You do NOT need to read
+task-protocol-core.md or task-protocol-operations.md upfront. The phase-transition-guide hook
+will direct you to specific sections as needed for each state.
 
 **VERIFICATION**:
 ```bash

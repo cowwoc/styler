@@ -10,11 +10,11 @@ efficiency opportunities, and documentation improvements.
 
 ## Audit Pipeline Architecture
 
-The audit pipeline consists of five sequential agents:
+The audit pipeline consists of four sequential agents:
 
 ```
-process-recorder → process-reviewer → process-updater → documentation-reviewer → documentation-updater
-    (facts)         (compliance)      (performance)        (identify)              (apply)
+process-recorder → process-compliance-reviewer → process-efficiency-reviewer → documentation-updater
+    (facts)         (compliance + recommendations)  (efficiency + recommendations)   (apply changes)
 ```
 
 ## Execution Sequence
@@ -23,71 +23,65 @@ process-recorder → process-reviewer → process-updater → documentation-revi
 
 **Agent**: process-recorder
 **Purpose**: Collect objective facts about current session execution
-**Output**: JSON with task state, tool usage, worktrees, commits, agent invocations
+**Output**: JSON with conversation history, tool usage, worktrees, commits, agent invocations
 
 Launch the process-recorder agent:
 ```
-Task tool (process-recorder): "Collect objective facts about current session execution. Include: task state (from task.json), tool usage history, worktree structure, commits, and agent invocations. Output as structured JSON."
+Task tool (process-recorder): "Collect objective facts about current session execution. Include conversation history, tool usage, worktree structure, commits, and agent invocations. Output as structured JSON."
 ```
 
-### Phase 2: Compliance Audit (Strict Binary Enforcement)
+### Phase 2: Compliance Review (Always Runs)
 
-**Agent**: process-reviewer
-**Purpose**: Check execution facts against protocol rules with zero tolerance
-**Input**: process-recorder JSON output
-**Output**: Violations list with verdicts (PASS/FAIL)
+**Agent**: process-compliance-reviewer
+**Purpose**: Review conversation history for protocol violations and recommend preventive changes
+**Input**: process-recorder conversation history
+**Output**: Violations list with recommended protocol changes
 
-Launch the process-reviewer agent:
+**ALWAYS RUNS** - compliance review happens for every audit
+
+Launch the process-compliance-reviewer agent:
 ```
-Task tool (process-reviewer): "Audit execution facts against protocol rules. Input: [process-recorder JSON output]. Execute Check 0.1 (state verification) and Check 0.2 (IMPLEMENTATION tool usage) FIRST. Binary verdicts only - no rationalizations."
+Task tool (process-compliance-reviewer): "Review conversation history for task protocol compliance violations. Input: [process-recorder output]. For each violation, recommend specific protocol changes to prevent future occurrences."
 ```
 
-### Phase 3: Conditional Optimization (Performance Suggestions)
+### Phase 3: Efficiency Review (Conditional)
 
-**Agent**: process-updater
-**Purpose**: Suggest efficiency improvements (ONLY if process-reviewer passed)
-**Input**: process-recorder JSON output
-**Condition**: ONLY runs if process-reviewer verdict == "PASSED"
+**Agent**: process-efficiency-reviewer
+**Purpose**: Review conversation history for efficiency opportunities and recommend improvements
+**Input**: process-recorder conversation history + process-compliance-reviewer results
+**Condition**: ONLY runs if no CRITICAL or HIGH severity violations detected
 
 **Decision Logic**:
 ```
-IF process-reviewer.overall_verdict == "FAILED":
-  → SKIP process-updater (fix violations first)
+IF process-compliance-reviewer contains CRITICAL or HIGH severity violations:
+  → SKIP process-efficiency-reviewer (fix major violations first)
 
-ELSE IF process-reviewer.overall_verdict == "PASSED":
-  → Launch process-updater agent
+ELSE:
+  → Launch process-efficiency-reviewer
 ```
 
-Launch the process-updater agent (if compliant):
+Launch the process-efficiency-reviewer agent (if no major violations):
 ```
-Task tool (process-updater): "Suggest efficiency improvements based on execution patterns. Input: [process-recorder JSON output]. Focus: parallelization, prefetching, fail-fast validation, token reduction."
-```
-
-### Phase 4a: Documentation Quality Analysis (Identification)
-
-**Agent**: documentation-reviewer
-**Purpose**: Identify ambiguities in protocol docs that caused violations
-**Input**: process-reviewer violations (if any)
-**Output**: Proposed fixes JSON
-
-**Execution Logic**:
-```
-IF process-reviewer.overall_verdict == "FAILED":
-  → Launch documentation-reviewer to find doc ambiguities that CAUSED violations
-  → Focus: Root cause analysis - which doc gaps led to observed violations?
-
-ELSE IF process-reviewer.overall_verdict == "PASSED":
-  → Launch documentation-reviewer to find PREVENTIVE improvements
-  → Focus: Forward-looking analysis - which doc ambiguities COULD cause future violations?
+Task tool (process-efficiency-reviewer): "Review conversation history for protocol efficiency opportunities. Input: [process-recorder output]. Focus: reducing execution time, reducing token usage, increasing quality. Recommend specific protocol changes."
 ```
 
-**Key Difference**:
-- FAILED sessions: Diagnostic mode (explain past violations)
-- PASSED sessions: Preventive mode (avoid future violations)
+### Phase 4: Apply Recommendations
 
-Launch the documentation-reviewer agent:
+**Agent**: documentation-updater
+**Purpose**: Apply recommended changes from both reviewers
+**Input**: Aggregated recommendations from process-compliance-reviewer + process-efficiency-reviewer (if ran)
+**Output**: Applied changes with verification status
+
+**Aggregation Logic**:
 ```
-Task tool (documentation-reviewer): "Find ambiguities in protocol documentation that caused violations. Input: [process-reviewer violations]. Identify doc gaps, contradictions, and missing edge case guidance. Output proposed fixes as JSON."
+recommendations = process-compliance-reviewer.recommended_changes
+IF process-efficiency-reviewer ran:
+  recommendations += process-efficiency-reviewer.recommended_changes
+```
+
+Launch the documentation-updater agent:
+```
+Task tool (documentation-updater): "Apply protocol documentation changes. Input: [aggregated recommendations from reviewers]. For each recommendation: read current state, apply using Edit tool, verify by reading updated file."
 ```
 
 ### Phase 4b: Documentation Fix Application
@@ -112,7 +106,7 @@ After all agents complete, synthesize a comprehensive report:
 ## Session Audit Report
 
 ### Compliance Status: [PASSED/FAILED]
-- **Overall Verdict**: [process-reviewer verdict]
+- **Overall Verdict**: [process-compliance-reviewer verdict]
 - **Violations**: [count] ([severity breakdown])
 - **Compliant Checks**: [passed]/[total]
 
@@ -122,7 +116,7 @@ After all agents complete, synthesize a comprehensive report:
 - **Severity**: [CRITICAL/HIGH/MEDIUM]
 - **Rule**: [protocol rule violated]
 - **Evidence**: [actual behavior from process-recorder]
-- **Recovery Options**: [numbered list from process-reviewer]
+- **Recovery Options**: [numbered list from process-compliance-reviewer]
 
 ### Efficiency Optimizations
 [If PASSED:]
@@ -152,8 +146,8 @@ After all agents complete, synthesize a comprehensive report:
 
 **Agent Locations**:
 - `/workspace/main/.claude/agents/process-recorder.md`
-- `/workspace/main/.claude/agents/process-reviewer.md`
-- `/workspace/main/.claude/agents/process-updater.md`
+- `/workspace/main/.claude/agents/process-compliance-reviewer.md`
+- `/workspace/main/.claude/agents/process-efficiency-reviewer.md`
 - `/workspace/main/.claude/agents/documentation-reviewer.md`
 - `/workspace/main/.claude/agents/documentation-updater.md`
 
@@ -164,17 +158,17 @@ After all agents complete, synthesize a comprehensive report:
 
 **Audit Execution Completed When**:
 - [ ] process-recorder produced structured JSON output
-- [ ] process-reviewer provided binary verdict (PASSED/FAILED)
-- [ ] process-updater ran (if PASSED) or skipped (if FAILED)
+- [ ] process-compliance-reviewer provided binary verdict (PASSED/FAILED)
+- [ ] process-efficiency-reviewer ran (if PASSED) or skipped (if FAILED)
 - [ ] documentation-reviewer identified doc gaps
 - [ ] documentation-updater applied proposed fixes
 - [ ] Comprehensive report synthesized and presented
 
 **Quality Gates**:
 - process-recorder output includes actual task state from task.json
-- process-reviewer executes Check 0.1 and 0.2 FIRST
-- No rationalizations in process-reviewer output
-- process-updater only runs on PASSED sessions
+- process-compliance-reviewer executes Check 0.1 and 0.2 FIRST
+- No rationalizations in process-compliance-reviewer output
+- process-efficiency-reviewer only runs on PASSED sessions
 - Report includes actionable recovery options for violations
 
 ## Expected Output Format
@@ -193,14 +187,14 @@ Present the audit report to the user with:
 
 **Decision Logic**:
 ```
-IF process-reviewer.overall_verdict == "FAILED":
+IF process-compliance-reviewer.overall_verdict == "FAILED":
   IF (auto-apply fixes available AND fixes address violation root causes):
     → Execute Phase 5 (fix violations first, then re-audit)
   ELSE:
     → SKIP Phase 5 (manual intervention required)
 
-ELSE IF process-reviewer.overall_verdict == "PASSED":
-  IF (documentation-reviewer OR process-updater identified fixable issues):
+ELSE IF process-compliance-reviewer.overall_verdict == "PASSED":
+  IF (documentation-reviewer OR process-efficiency-reviewer identified fixable issues):
     → Execute Phase 5 (preventive improvements)
   ELSE:
     → SKIP Phase 5 (no fixes needed)
@@ -254,7 +248,7 @@ permissions alignment
 After presenting the audit report:
 
 1. **Categorize Fixes**:
-   - List all recommended fixes from process-reviewer and documentation-reviewer
+   - List all recommended fixes from process-compliance-reviewer and documentation-reviewer
    - Classify each as auto-apply or manual-review
    - Provide rationale for classification
    - **Prioritize fixes** using this order:
@@ -327,9 +321,9 @@ After presenting the audit report:
 
 1. **Launch process-recorder** to gather session facts
 2. **Wait for completion** and capture JSON output
-3. **Launch process-reviewer** with tracer output as input
+3. **Launch process-compliance-reviewer** with tracer output as input
 4. **Wait for compliance verdict**
-5. **Conditional launch of process-updater** (only if PASSED)
+5. **Conditional launch of process-efficiency-reviewer** (only if PASSED)
 6. **Launch documentation-reviewer** to identify doc gaps
 7. **Launch documentation-updater** to apply proposed fixes
 8. **Synthesize report** combining all agent outputs

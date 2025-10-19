@@ -9,10 +9,11 @@ Styler Java Code Formatter project configuration and universal guidance for all 
 
 ## 🚨 MANDATORY STARTUP PROTOCOL
 
-**MAIN AGENT**: You MUST read additional coordination documentation:
-```
-Read /workspace/main/docs/project/main-agent-coordination.md
-```
+**MAIN AGENT**: Task protocol uses just-in-time guidance via hooks. You do NOT need to read protocol files upfront.
+- Phase-specific instructions provided automatically as you transition states
+- Hooks will direct you to read specific sections of documentation when needed
+- Start tasks by following hook guidance, not by reading complete protocol docs
+- Reference docs available for troubleshooting: main-agent-coordination.md, task-protocol-core.md
 
 **SUB-AGENTS**: If you are a sub-agent (reviewer or updater), this file contains universal guidance only. You MUST also read:
 ```
