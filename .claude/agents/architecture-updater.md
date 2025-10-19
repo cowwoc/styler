@@ -4,7 +4,7 @@ description: >
   Implements architectural changes based on architecture-reviewer recommendations. Applies structural
   refactoring, module reorganization, and interface improvements. Requires architectural design specification
   as input.
-model: haiku-4-5
+model: sonnet-4-5
 color: blue
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---

@@ -3,7 +3,7 @@ name: build-updater
 description: >
   Implements fixes for build failures based on build-reviewer analysis. Resolves compilation errors, fixes
   failing tests, and addresses quality gate violations. Requires build review report as input.
-model: haiku-4-5
+model: sonnet-4-5
 color: red
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---

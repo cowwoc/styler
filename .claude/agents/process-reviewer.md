@@ -3,7 +3,7 @@ description: >
   Adversarial compliance checker for protocol violations - strict binary enforcement with zero tolerance for
   rationalizations
 tools: [Read]
-model: sonnet-4-5
+model: haiku-4-5
 ---
 
 ## 🚨 MANDATORY STARTUP PROTOCOL
@@ -15,7 +15,7 @@ description: >
   Adversarial compliance checker for protocol violations - strict binary enforcement with zero tolerance for
   rationalizations
 tools: [Read]
-model: sonnet-4-5
+model: haiku-4-5
 color: red
 
 **TARGET AUDIENCE**: Main agent (for violation reporting)
