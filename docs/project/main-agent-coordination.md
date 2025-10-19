@@ -158,6 +158,38 @@ mechanical and trivial → main agent may fix after VALIDATION state begins.
 
 **Working Directory**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
 
+### Session Summary Documentation Requirements
+
+**MANDATORY SESSION SUMMARY REQUIREMENT**: When presenting implementation work for protocol compliance review, session summaries MUST include:
+
+1. **Agent Invocation Audit Trail**: List of all Task tool invocations with agent names
+2. **Commit Attribution**: Commit SHAs for each agent's merge to task branch
+3. **Parallel Launch Verification**: Explicit confirmation of parallel agent launch pattern used
+
+**Example Compliant Session Summary**:
+```markdown
+## Implementation Phase Summary
+
+### Agent Invocations (Parallel Launch):
+- architecture-updater: Task tool invoked in Message 15
+- quality-updater: Task tool invoked in Message 15 (parallel)
+- style-updater: Task tool invoked in Message 15 (parallel)
+- test-updater: Task tool invoked in Message 15 (parallel)
+
+### Agent Commits to Task Branch:
+- architecture-updater: abc123def (merged FormattingRule interfaces)
+- quality-updater: def456ghi (applied design patterns)
+- style-updater: ghi789jkl (code style compliance)
+- test-updater: jkl012mno (test suite implementation)
+
+### Verification:
+✅ Parallel agent launch pattern confirmed (all agents invoked in single message)
+✅ All agents merged to task branch independently
+✅ Main agent performed NO source code implementation
+```
+
+**Rationale**: These audit trail elements provide verifiable evidence that the multi-agent implementation protocol was followed correctly, preventing protocol violations where main agent implements directly.
+
 ### Role Verification Questions
 
 **Before writing ANY .java/.ts/.py file during IMPLEMENTATION, ask yourself**:
@@ -166,6 +198,35 @@ mechanical and trivial → main agent may fix after VALIDATION state begins.
 - [ ] Am I in task worktree trying to implement? → STOP - This is a VIOLATION
 
 ### Required Pattern After SYNTHESIS Approval
+
+**🚨 MANDATORY REQUIREMENT**: Agent launches MUST use parallel Task tool calls in a SINGLE message.
+
+**VIOLATION**: Launching agents sequentially across multiple messages is a CRITICAL protocol violation that wastes 30,000-40,000 tokens per task.
+
+**MANDATORY SESSION DOCUMENTATION**: Agent invocation record MUST be documented in task.md under "Implementation Status" section:
+
+```markdown
+## Implementation Status
+
+### Agent Invocations
+**Round 1 - Initial Implementation** (Message 15, 2025-10-19T14:32:00Z):
+- architecture-updater: Launched (parallel)
+- quality-updater: Launched (parallel)
+- style-updater: Launched (parallel)
+- test-updater: Launched (parallel)
+
+**Round 1 - Review** (Message 22, 2025-10-19T14:45:00Z):
+- architecture-reviewer: Launched (parallel)
+- quality-reviewer: Launched (parallel)
+- style-reviewer: Launched (parallel)
+- test-reviewer: Launched (parallel)
+
+**Round 2 - Fixes** (Message 28, 2025-10-19T15:02:00Z):
+- style-updater: Re-launched for violation fixes
+- architecture-updater: Re-launched for interface clarifications
+```
+
+**Rationale**: This record provides audit trail showing parallel launch pattern was used, not sequential violations.
 
 ```markdown
 CORRECT SEQUENCE:
@@ -334,14 +395,33 @@ cat -A /path/to/file.java | grep -A2 "method()"
 1. ✅ All quality gates pass (checkstyle, PMD, build)
 2. ✅ **All validation fixes COMMITTED to task branch** before proceeding
 3. ✅ Run final build verification on committed code
-4. ✅ Verify `git status` shows clean working directory (no uncommitted changes)
+4. ✅ **Verify `git status` shows clean working directory before REVIEW transition**
 
 **Rationale**: Uncommitted validation fixes will NOT be included in merge, causing build failures on main
 branch.
 
+**MANDATORY Pre-Transition Verification Checkpoint**:
+```bash
+# REQUIRED before transitioning VALIDATION → REVIEW
+git status
+
+# Expected output: "nothing to commit, working tree clean"
+# If uncommitted changes exist → BLOCK transition, commit changes first
+```
+
+**State Transition Blocker**: Lock file state MUST NOT be updated to REVIEW if `git status` shows uncommitted changes.
+
 **Verification Command**:
 ```bash
-git status | grep "nothing to commit" || echo "ERROR: Uncommitted changes exist"
+# Automated verification before state transition
+if git status | grep -q "nothing to commit"; then
+    echo "✅ Clean working directory - safe to transition to REVIEW"
+    jq '.state = "REVIEW"' task.json > task.json.tmp && mv task.json.tmp task.json
+else
+    echo "❌ ERROR: Uncommitted changes exist - CANNOT transition to REVIEW"
+    echo "Commit all validation fixes before proceeding"
+    exit 1
+fi
 ```
 
 **Commit Timing During VALIDATION**:
@@ -752,6 +832,35 @@ user approval checkpoint is not satisfied.
 - **PLAN APPROVAL**: `/workspace/tasks/{task-name}/user-plan-approval-obtained.flag`
 - **CHANGE REVIEW**: `/workspace/tasks/{task-name}/user-approval-obtained.flag`
 
+**Session Summary Documentation Requirements for Approval Checkpoints**:
+
+When documenting approval checkpoints in session summaries, MUST include:
+
+1. **Checkpoint Identification**: Which checkpoint was reached (PLAN APPROVAL or CHANGE REVIEW)
+2. **Presentation Evidence**: Message number where checkpoint content was presented to user
+3. **User Response**: Exact user message that constituted approval
+4. **Flag Creation Confirmation**: Verification that approval flag file was created
+5. **State After Approval**: Lock file state after approval obtained
+
+**Example Session Summary Entry**:
+```markdown
+## PLAN APPROVAL Checkpoint
+
+**Checkpoint Reached**: Message 25 (after SYNTHESIS state)
+**Plan Presented**: Implementation plan shown to user with:
+- Architecture approach
+- Files to modify
+- Implementation sequence
+- Testing strategy
+
+**User Response**: Message 26 - "Looks good, please proceed with implementation"
+**Approval Flag**: Created at /workspace/tasks/my-task/user-plan-approval-obtained.flag
+**State Transition**: SYNTHESIS → IMPLEMENTATION (lock file updated)
+**Timestamp**: 2025-10-19T14:32:00Z
+```
+
+**Rationale**: Documented approval checkpoints provide audit trail showing protocol compliance with mandatory user oversight requirements.
+
 **Context Compaction Scenarios**:
 
 **Scenario 1: Approval Before Compaction**
@@ -816,6 +925,31 @@ fi
 ```
 
 **Flag Creation Timing**:
+
+## Approval Persistence Pattern
+
+**Problem**: Context compaction can lose approval state, causing duplicate approval requests.
+
+**Solution**: Create persistent approval flag files
+
+**After obtaining approval**:
+```bash
+# Detect approval keywords
+if [[ "$USER_MESSAGE" =~ (yes|approved|proceed|LGTM|go ahead) ]]; then
+  touch /workspace/tasks/{task-name}/user-plan-approval-obtained.flag
+fi
+```
+
+**On session resumption** (check before re-requesting approval):
+```bash
+if [ -f /workspace/tasks/{task-name}/user-plan-approval-obtained.flag ]; then
+  echo "Approval already obtained - proceeding without re-request"
+else
+  echo "Present plan and wait for approval"
+fi
+```
+
+**Cleanup**: Remove flags during CLEANUP state only
 
 **PLAN APPROVAL Flag**:
 - **Created**: Immediately after user provides plan approval message
@@ -1224,6 +1358,20 @@ tracking
 
 **Detection Hook**: `/workspace/.claude/hooks/detect-sequential-tools.sh`
 
+### Fail-Fast vs Batch Collection Decision Criteria
+
+**Use FAIL-FAST (stop on first error)**:
+- Compilation errors (blocking all other checks)
+- JPMS module resolution failures
+- Missing dependencies (cannot proceed without)
+- Architecture violations detected by build-reviewer
+
+**Use BATCH COLLECTION (collect all, fix together)**:
+- Style violations (checkstyle, PMD)
+- Test failures (non-blocking)
+- Documentation issues
+- Any violation count >5 of same type
+
 ### Protocol File Prefetching Pattern
 
 **Optimization**: Load all protocol files during INIT phase instead of discovering need mid-task.
@@ -1255,6 +1403,23 @@ Message 2: Now have all protocol context, proceed with REQUIREMENTS
 - Task-specific domain docs if known upfront
 
 **Impact**: Saves 5-10 round-trips × 2000 tokens each = **10,000-20,000 token savings per task**
+
+### Incremental Validation Frequency
+
+**Component Boundaries** (validate at these points):
+- After each complete interface/class (NOT after each method)
+- After each test class with full test coverage
+- After each logical module (group of related classes)
+
+**Validation Commands**:
+```bash
+./mvnw compile -q              # Quick syntax check
+./mvnw checkstyle:check -q     # Style validation
+./mvnw test -Dtest=ClassName   # Single test class
+```
+
+**Avoid Over-Validation**: Do NOT validate after each method (too granular, wastes time)
+**Avoid Under-Validation**: Do NOT wait until all 23 files complete (late error detection)
 
 **Component Boundary Definition** (for Fail-Fast Validation):
 
