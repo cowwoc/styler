@@ -4,7 +4,7 @@ description: >
   Reviews code for quality issues, duplication, complexity, and maintainability concerns. Generates structured
   reports with specific refactoring recommendations. Does NOT implement fixes - use quality-updater
   to apply recommended changes.
-model: sonnet-4-5
+model: haiku-4-5
 color: cyan
 tools: [Read, Grep, Glob, LS, Bash]
 ---

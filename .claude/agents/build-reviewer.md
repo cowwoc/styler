@@ -3,7 +3,7 @@ name: build-reviewer
 description: >
   Executes build commands and analyzes build failures. Reports compilation errors, test failures, and quality
   gate violations. Does NOT fix issues - use build-fixer to apply remediation.
-model: sonnet-4-5
+model: haiku-4-5
 color: red
 tools: [Read, Grep, Glob, LS, Bash]
 ---
