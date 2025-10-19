@@ -28,9 +28,15 @@ objective facts about session execution without making any judgments or recommen
 
 ### Step 0: Discover Session ID
 
+**Session ID is available in the conversation context** - the ensure-session-id.py hook injects it as:
+"System Note: The current session ID is {session_id}."
+
+Extract it from recent conversation context or use this Bash pattern to find it:
+
 ```bash
-# Read session ID from workspace
-SESSION_ID=$(cat /workspace/tasks/session-id.txt)
+# Session ID is in conversation - look for recent task.json files owned by this session
+# Or use the session ID mentioned in your conversation context
+SESSION_ID="<extract-from-conversation-context>"
 echo "Session ID: $SESSION_ID"
 ```
 
@@ -56,8 +62,7 @@ jq -r '.state' /workspace/tasks/{task-name}/task.json 2>/dev/null || echo "N/A (
 `~/.config/projects/-workspace/${SESSION_ID}.jsonl`
 
 ```bash
-# Get session ID
-SESSION_ID=$(cat /workspace/tasks/session-id.txt)
+# Use session ID from conversation context (extracted above)
 
 # Count tool usage by type
 jq -r 'select(.type == "assistant") | .message.content[]? | select(.type == "tool_use")? | .name' \
@@ -121,7 +126,7 @@ ls -la /workspace/tasks/{task-name}/ 2>/dev/null || echo "Task directory removed
 
 ```bash
 # Extract Task tool invocations with prompts
-SESSION_ID=$(cat /workspace/tasks/session-id.txt)
+# Use SESSION_ID from conversation context (extracted in Step 0)
 
 jq -c 'select(.type == "assistant") | select(.message.content[]?.name == "Task") | {timestamp, invocations: [.message.content[] | select(.name == "Task") | {agent: .input.subagent_type, description: .input.description}]}' \
   ~/.config/projects/-workspace/${SESSION_ID}.jsonl 2>/dev/null | grep -v '"invocations":\[\]'
@@ -145,7 +150,7 @@ git log --oneline --all --grep="{task-name}" -20
 **Source**: Conversation log contains bash command outputs including Maven builds
 
 ```bash
-SESSION_ID=$(cat /workspace/tasks/session-id.txt)
+# Use SESSION_ID from conversation context (extracted in Step 0)
 
 # Search for Maven build outputs
 jq -r 'select(.type == "assistant") | select(.message.content[]? | select(.type == "tool_result" and (.content | tostring | contains("BUILD SUCCESS")))) | .timestamp' \

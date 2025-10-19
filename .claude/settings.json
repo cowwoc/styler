@@ -39,6 +39,10 @@
           },
           {
             "type": "command",
+            "command": "/workspace/.claude/hooks/state-transition-detector.sh"
+          },
+          {
+            "type": "command",
             "command": "/workspace/.claude/hooks/detect-giving-up.sh"
           },
           {
