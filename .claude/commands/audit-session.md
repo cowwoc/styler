@@ -13,7 +13,7 @@ efficiency opportunities, and documentation improvements.
 The audit pipeline consists of four sequential agents:
 
 ```
-process-recorder → process-compliance-reviewer → process-efficiency-reviewer → documentation-updater
+process-recorder → process-compliance-reviewer → process-efficiency-reviewer → config-updater
     (facts)         (compliance + recommendations)  (efficiency + recommendations)   (apply changes)
 ```
 
@@ -67,7 +67,7 @@ Task tool (process-efficiency-reviewer): "Review conversation history for protoc
 
 ### Phase 4: Apply Recommendations
 
-**Agent**: documentation-updater
+**Agent**: config-updater
 **Purpose**: Apply recommended changes from both reviewers
 **Input**: Aggregated recommendations from process-compliance-reviewer + process-efficiency-reviewer (if ran)
 **Output**: Applied changes with verification status
@@ -79,21 +79,9 @@ IF process-efficiency-reviewer ran:
   recommendations += process-efficiency-reviewer.recommended_changes
 ```
 
-Launch the documentation-updater agent:
+Launch the config-updater agent:
 ```
-Task tool (documentation-updater): "Apply protocol documentation changes. Input: [aggregated recommendations from reviewers]. For each recommendation: read current state, apply using Edit tool, verify by reading updated file."
-```
-
-### Phase 4b: Documentation Fix Application
-
-**Agent**: documentation-updater
-**Purpose**: Apply proposed fixes from documentation-reviewer
-**Input**: documentation-reviewer proposed fixes JSON
-**Output**: Applied fixes with verification status
-
-Launch the documentation-updater agent:
-```
-Task tool (documentation-updater): "Apply documentation fixes. Input: [documentation-reviewer proposed fixes]. For each fix: read current state, apply using Edit tool, verify by reading updated file. Output applied fixes with verification status."
+Task tool (config-updater): "Apply Claude Code configuration changes. Input: [aggregated recommendations from reviewers]. For each recommendation: read current state, apply using Edit tool, verify by reading updated file."
 ```
 
 ## Report Synthesis
@@ -148,8 +136,8 @@ After all agents complete, synthesize a comprehensive report:
 - `/workspace/main/.claude/agents/process-recorder.md`
 - `/workspace/main/.claude/agents/process-compliance-reviewer.md`
 - `/workspace/main/.claude/agents/process-efficiency-reviewer.md`
-- `/workspace/main/.claude/agents/documentation-reviewer.md`
-- `/workspace/main/.claude/agents/documentation-updater.md`
+- `/workspace/main/.claude/agents/config-reviewer.md`
+- `/workspace/main/.claude/agents/config-updater.md`
 
 **Methodology Reference**:
 - `/workspace/main/docs/project/multi-agent-process-governance.md`
@@ -160,8 +148,8 @@ After all agents complete, synthesize a comprehensive report:
 - [ ] process-recorder produced structured JSON output
 - [ ] process-compliance-reviewer provided binary verdict (PASSED/FAILED)
 - [ ] process-efficiency-reviewer ran (if PASSED) or skipped (if FAILED)
-- [ ] documentation-reviewer identified doc gaps
-- [ ] documentation-updater applied proposed fixes
+- [ ] config-reviewer identified configuration gaps
+- [ ] config-updater applied proposed fixes
 - [ ] Comprehensive report synthesized and presented
 
 **Quality Gates**:
@@ -194,7 +182,7 @@ IF process-compliance-reviewer.overall_verdict == "FAILED":
     → SKIP Phase 5 (manual intervention required)
 
 ELSE IF process-compliance-reviewer.overall_verdict == "PASSED":
-  IF (documentation-reviewer OR process-efficiency-reviewer identified fixable issues):
+  IF (config-reviewer OR process-efficiency-reviewer identified fixable issues):
     → Execute Phase 5 (preventive improvements)
   ELSE:
     → SKIP Phase 5 (no fixes needed)
@@ -240,15 +228,14 @@ ELSE IF process-compliance-reviewer.overall_verdict == "PASSED":
 - ❌ Manual Review: Refactor class hierarchy (architectural decision)
 
 **Decision Tree Integration**:
-Refer to CLAUDE.md § Post-Implementation Issue Handling Decision Tree (line 267) for state-based fix
-permissions alignment
+Refer to [main-agent-coordination.md § Post-Implementation Issue Handling Decision Tree](../../../docs/project/main-agent-coordination.md#post-implementation-issue-handling-decision-tree) for state-based fix permissions alignment
 
 ### Fix Application Process
 
 After presenting the audit report:
 
 1. **Categorize Fixes**:
-   - List all recommended fixes from process-compliance-reviewer and documentation-reviewer
+   - List all recommended fixes from process-compliance-reviewer and config-reviewer
    - Classify each as auto-apply or manual-review
    - Provide rationale for classification
    - **Prioritize fixes** using this order:
@@ -324,17 +311,17 @@ After presenting the audit report:
 3. **Launch process-compliance-reviewer** with tracer output as input
 4. **Wait for compliance verdict**
 5. **Conditional launch of process-efficiency-reviewer** (only if PASSED)
-6. **Launch documentation-reviewer** to identify doc gaps
-7. **Launch documentation-updater** to apply proposed fixes
+6. **Launch config-reviewer** to identify configuration gaps
+7. **Launch config-updater** to apply proposed fixes
 8. **Synthesize report** combining all agent outputs
 9. **Present report** to user with clear next steps
 10. **Apply automatic fixes** (Phase 5):
-   - Categorize all recommended fixes
-   - Auto-apply safe fixes (build, style, docs)
-   - Verify each fix after application
-   - Commit applied fixes with detailed messages
-   - Report manual fixes requiring review
-10. **Final verification**:
+    - Categorize all recommended fixes
+    - Auto-apply safe fixes (build, style, docs)
+    - Verify each fix after application
+    - Commit applied fixes with detailed messages
+    - Report manual fixes requiring review
+11. **Final verification**:
     - Run build if code fixes applied
     - Confirm all auto-fixes successful
     - Provide summary of what was fixed

@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+trap 'echo "[HOOK DEBUG] load-todo.sh FAILED at line $LINENO" >&2; exit 1' ERR
+
+echo "[HOOK DEBUG] load-todo.sh START" >&2
+
 # Load todo.md tasks into TodoWrite list before first TodoWrite tool usage
 # This script provides context to automatically initialize the TodoWrite tool
 
@@ -60,3 +64,5 @@ else
 	# Not a TodoWrite call, return empty response
 	echo '{}'
 fi
+
+echo "[HOOK DEBUG] load-todo.sh END" >&2

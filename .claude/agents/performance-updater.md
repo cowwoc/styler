@@ -8,7 +8,7 @@ color: orange
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---
 
-**TARGET AUDIENCE**: Claude AI for automated performance optimization implementation
+**TARGET AUDIENCE**: Automated performance optimization implementation
 **INPUT REQUIREMENT**: Structured performance report from performance-reviewer with specific optimization
 recommendations
 
@@ -74,7 +74,7 @@ performance-reviewer.
 
 ## OPTIMIZATION IMPLEMENTATION EXAMPLES
 
-### Example 1: Algorithm Complexity Optimization (from reviewer report)
+### Example 1: Algorithm Complexity Optimization
 
 ```json
 {
@@ -127,7 +127,7 @@ private Map<TokenType, List<Rule>> buildRuleMap(List<Rule> rules) {
 }
 ```
 
-### Example 2: String Concatenation Optimization (from reviewer report)
+### Example 2: String Concatenation Optimization
 
 ```json
 {
@@ -160,7 +160,7 @@ public String formatTokens(List<Token> tokens) {
 }
 ```
 
-### Example 3: Memory Optimization (from reviewer report)
+### Example 3: Memory Optimization
 
 ```json
 {
@@ -202,7 +202,7 @@ public AstNode buildNode(Token token) {
 cat /workspace/tasks/{task-name}/performance-review-report.json
 ```
 
-**Phase 2: Implement Optimizations (Priority Order: Critical → High → Medium → Low)**
+**Phase 2: Implement Optimizations (Critical → High → Medium → Low)**
 ```bash
 # For each optimization in report:
 # 1. Read target file
@@ -318,7 +318,7 @@ Remember: Your role is to faithfully implement performance optimizations recomme
 
 ## 🚨 MANDATORY STARTUP PROTOCOL
 
-**BEFORE performing ANY work, MUST read**:
+**BEFORE performing work, MUST read**:
 1. `/workspace/main/docs/project/task-protocol-agents.md` - Agent coordination protocol
 
 

@@ -240,7 +240,7 @@ quality.
 - **Consistent Patterns**: Maintain design consistency across the entire application
 - **Accessibility First**: Ensure features work for users of all abilities and technical levels
 
-**OUTPUT FORMAT FOR USABILITY-IMPLEMENTOR:**
+**OUTPUT FORMAT:**
 
 **MANDATORY**: Structure output as JSON for usability-updater consumption:
 

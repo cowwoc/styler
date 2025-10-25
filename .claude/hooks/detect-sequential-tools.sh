@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in detect-sequential-tools.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
 # Hook to detect sequential independent tool execution anti-pattern
 # Triggers reminder to batch independent tool calls for 25-30% message reduction
 #
@@ -9,6 +12,10 @@ set -euo pipefail
 # - Tracks consecutive single-tool messages
 # - Warns after 2+ sequential independent tool calls
 # - Provides specific batching guidance
+
+# Load helper scripts
+source /workspace/.claude/scripts/session-helper.sh
+source /workspace/.claude/scripts/json-output.sh
 
 # Parse hook input
 INPUT=$(cat)
@@ -19,17 +26,10 @@ if [ "$EVENT_NAME" != "ToolUse" ]; then
   exit 0
 fi
 
-# Extract tool information
+# Extract tool information and session ID
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool.name // empty')
 TOOL_COUNT=$(echo "$INPUT" | jq -r '.tool.count // 1')
-
-# State file for tracking sequential patterns
-# Require session ID - fail fast if not provided
-if [ -z "${CLAUDE_SESSION_ID:-}" ]; then
-    echo "ERROR: CLAUDE_SESSION_ID environment variable is required" >&2
-    exit 1
-fi
-SESSION_ID="$CLAUDE_SESSION_ID"
+SESSION_ID=$(get_required_session_id "$INPUT")
 STATE_FILE="/tmp/sequential-tool-tracker-$SESSION_ID.json"
 CURRENT_TIME=$(date +%s)
 
@@ -140,16 +140,8 @@ See: CLAUDE.md § Performance Optimization Requirements
   # Reset counter after warning
   echo "{\"last_tool_time\": $CURRENT_TIME, \"sequential_count\": 0, \"last_tool_names\": []}" > "$STATE_FILE"
 
-  # Output warning
-  jq -n \
-    --arg event "ToolUse" \
-    --arg context "$MESSAGE" \
-    '{
-      "hookSpecificOutput": {
-        "hookEventName": $event,
-        "additionalContext": $context
-      }
-    }'
+  # Output warning using helper
+  output_hook_warning "ToolUse" "$MESSAGE"
 fi
 
 exit 0

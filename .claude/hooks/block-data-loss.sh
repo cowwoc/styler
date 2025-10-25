@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+trap 'echo "[HOOK DEBUG] block-data-loss.sh FAILED at line $LINENO" >&2; exit 1' ERR
+
+echo "[HOOK DEBUG] block-data-loss.sh START" >&2
+
 # Git Init Blocker Hook - Fixed version for both PreToolUse and UserPromptSubmit
 # Prevents git repository creation per task-protocol.md
 # Handles both actual command execution blocking and user prompt warnings
@@ -75,8 +79,8 @@ handle_pre_tool_use()
 	        echo "❌ **VIOLATION** - Workspace directory MUST remain non-git to prevent worktree isolation conflicts" >&2
 	        exit 2
 	        ;;
-	    *"rm -rf /workspace/branches/main"*|*"rm /workspace/branches/main"*|*"rmdir /workspace/branches/main"*)
-	        echo "⛔ BLOCKED: Deletion of /workspace/branches/main is not allowed to prevent data loss" >&2
+	    *"rm -rf /workspace/tasks/main"*|*"rm /workspace/tasks/main"*|*"rmdir /workspace/tasks/main"*)
+	        echo "⛔ BLOCKED: Deletion of /workspace/tasks/main is not allowed to prevent data loss" >&2
 	        echo "🚨 DATA PROTECTION: The main workspace directory must not be deleted" >&2
 	        echo "❌ **VIOLATION** - This operation would destroy the entire workspace" >&2
 	        exit 2
@@ -87,7 +91,7 @@ handle_pre_tool_use()
 	        echo "❌ **VIOLATION** - This operation would destroy the entire project" >&2
 	        exit 2
 	        ;;
-	    *"rm -rf /workspace/branches/main/.git"|*"rm /workspace/branches/main/.git"|*"rmdir /workspace/branches/main/.git"*)
+	    *"rm -rf /workspace/tasks/main/.git"|*"rm /workspace/tasks/main/.git"|*"rmdir /workspace/tasks/main/.git"*)
 	        echo "⛔ BLOCKED: Deletion of .git directory or its contents is not allowed to prevent data loss" >&2
 	        echo "🚨 REPOSITORY PROTECTION: The .git directory must not be modified or deleted" >&2
 	        echo "❌ **VIOLATION** - This operation would destroy version control history" >&2
@@ -99,13 +103,13 @@ handle_pre_tool_use()
 	        echo "❌ **VIOLATION** - This operation would destroy version control history" >&2
 	        exit 2
 	        ;;
-	    *"mv /workspace/branches/main "*|*"mv /workspace/branches/main/.git "*)
+	    *"mv /workspace/tasks/main "*|*"mv /workspace/tasks/main/.git "*)
 	        echo "⛔ BLOCKED: Moving/renaming protected directories is not allowed to prevent data loss" >&2
 	        echo "🚨 DATA PROTECTION: The main workspace and .git directories must not be moved" >&2
 	        echo "❌ **VIOLATION** - This operation could break the workspace structure" >&2
 	        exit 2
 	        ;;
-	    *"ln -s /workspace/branches/main"*|*"ln -s /workspace/branches/main/.git"*)
+	    *"ln -s /workspace/tasks/main"*|*"ln -s /workspace/tasks/main/.git"*)
 	        echo "⛔ BLOCKED: Creating symlinks to protected directories is not allowed to prevent data loss" >&2
 	        echo "🚨 SYMLINK ATTACK PREVENTION: Symlinks could be used to bypass directory protection" >&2
 	        echo "❌ **VIOLATION** - This operation could enable indirect deletion of protected directories" >&2
@@ -163,7 +167,7 @@ handle_user_prompt_submit()
 
 	# Check for dangerous deletion operations
 	if echo "$USER_PROMPT_LOWER" | grep -q "delete.*workspace/branches/main\|remove.*workspace/branches/main\|rm.*workspace/branches/main"; then
-	    echo "⛔ PROMPT WARNING: Deletion of /workspace/branches/main is not allowed to prevent data loss" >&2
+	    echo "⛔ PROMPT WARNING: Deletion of /workspace/tasks/main is not allowed to prevent data loss" >&2
 	    echo "🚨 DATA PROTECTION: The main workspace directory must not be deleted" >&2
 	    echo "❌ **VIOLATION** - This operation would destroy the entire workspace" >&2
 	    exit 0
@@ -228,6 +232,9 @@ case "$HOOK_EVENT" in
 	*)
 	    # Unknown event or no event detected, allow it
 	    echo "$(date): Unknown or missing hook event: '$HOOK_EVENT'" >> /tmp/consolidated-debug.log 2>/dev/null || true
+	    echo "[HOOK DEBUG] block-data-loss.sh END" >&2
 	    exit 0
 	    ;;
 esac
+
+echo "[HOOK DEBUG] block-data-loss.sh END" >&2

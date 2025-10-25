@@ -17,7 +17,7 @@
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/task-protocol-reminder.sh"
+            "command": "/workspace/.claude/hooks/protocol-and-role-reminder.sh"
           },
           {
             "type": "command",
@@ -26,6 +26,10 @@
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/critical-thinking.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/reset-javadoc-warning.sh"
           }
         ]
       }
@@ -40,6 +44,26 @@
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/state-transition-detector.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/phase-transition-guide.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/phase-guard-enforcement.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/enforce-checkpoints.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/cleanup-verification.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/validate-git-status-on-transition.sh"
           },
           {
             "type": "command",
@@ -86,11 +110,56 @@
         ]
       },
       {
-        "matcher": "(tool:Write || tool:Edit) && path:**/*.{java,ts,py,js,go,rs,cpp,c,h}",
+        "matcher": "tool:Bash && command:*git*merge*",
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/detect-main-agent-implementation.sh"
+            "command": "/workspace/.claude/hooks/enforce-commit-squashing.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "(tool:Write || tool:Edit) && path:/workspace/tasks/**",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/require-task-protocol.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "(tool:Write || tool:Edit)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/pre-tool-use-implementation-guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:Bash && command:*git*merge*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/enforce-checkpoints.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/validate-agent-invocation.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:Bash && command:*jq*state*CONVERGENCE*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/verify-convergence-entry.sh"
           }
         ]
       },
@@ -105,35 +174,21 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "tool:Write && path:docs/",
+        "matcher": "tool:Task",
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/verify-doc-sync.sh"
+            "command": "/workspace/.claude/hooks/post-tool-use-task-invoke.sh"
           }
         ]
       },
       {
-        "matcher": "tool:Edit && path:docs/",
+        "matcher": "(tool:Write || tool:Edit || tool:MultiEdit) && path:docs/",
         "hooks": [
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/verify-doc-sync.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "tool:MultiEdit && path:docs/",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/verify-doc-sync.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "tool:Write && path:docs/ || tool:Edit && path:docs/ || tool:MultiEdit && path:docs/",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/detect-meta-commentary.sh"
@@ -145,7 +200,25 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/main/.claude/hooks/verify-task-archival.sh"
+            "command": "/workspace/.claude/hooks/verify-task-archival.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:Read || tool:Glob || tool:Grep || tool:WebFetch || tool:WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/detect-sequential-tools.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:Edit && path:**/task.json",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/measure-phase-metrics.sh"
           }
         ]
       }

@@ -43,32 +43,29 @@ Common patterns and requirements shared across all stakeholder agents.
 
 Before beginning analysis, agents MUST:
 
-1.  **MANDATORY FOUNDATIONAL READING**: Read these project documents to understand constraints and
-   requirements:
-   - **`docs/project/scope.md`**: Project scope, architectural guidelines, and technical constraints
+1. **MANDATORY FOUNDATIONAL READING**: Read project documents to understand constraints:
+   - **`docs/project/scope.md`**: Project scope, architectural guidelines, technical constraints
    - **`docs/code-style-human.md`**: Code formatting and development standards
 
-2.  **MANDATORY FIRST STEP**: Read the task's context.md file at `../context.md` to understand the task
-   objectives and EXACT scope boundaries
+2. **MANDATORY FIRST STEP**: Read `../context.md` to understand task objectives and EXACT scope boundaries
 
-3. **VERIFY SCOPE**: List out EXACTLY which files you are authorized to analyze from context.md
+3. **VERIFY SCOPE**: List EXACTLY which files you are authorized to analyze from context.md
 
-4.  **SCOPE VIOLATION CHECK**: If you find yourself needing to analyze files NOT in context.md, STOP and
-   report the limitation
+4. **SCOPE VIOLATION CHECK**: If needing files NOT in context.md, STOP and report limitation
 
 5. **FORBIDDEN ACTIONS**: NEVER scan, read, or analyze files outside context.md scope
 
 6. Read ALL agent reports referenced in context.md to understand previous findings
 
-7. **ARCHITECTURAL CONSTRAINT VERIFICATION**: Ensure all recommendations align with:
+7. **ARCHITECTURAL CONSTRAINT VERIFICATION**: Ensure recommendations align with:
    - Stateless server architecture (docs/project/scope.md)
-   - Client-side state management requirements (docs/project/scope.md)
+   - Client-side state management (docs/project/scope.md)
    - Java code formatter focus (docs/project/scope.md)
    - Prohibited technologies and patterns (docs/project/scope.md)
 
-8. After completing analysis, create a detailed report using the agent-report template
+8. After completing analysis, create detailed report using agent-report template
 
-9. Update context.md with a summary of your work and reference to your report
+9. Update context.md with summary and reference to your report
 
 ## 🗂️ TEMPORARY FILE MANAGEMENT
 

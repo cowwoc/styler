@@ -4,16 +4,51 @@
 > **Audience:** Main coordination agent only
 > **Purpose:** Task protocol, lock management, approval checkpoints, and coordination patterns
 
-This document contains **main-agent-specific** content extracted from CLAUDE.md. It covers task protocol coordination, lock ownership, worktree management, agent invocation patterns, approval checkpoints, and performance optimization.
+Main-agent-specific content covering task protocol coordination, lock ownership, worktree management, agent invocation, approval checkpoints, and performance optimization.
 
-**Sub-agents**: You should read `task-protocol-agents.md` instead - this file is for main agent coordination only.
+**Sub-agents**: Read `task-protocol-agents.md` instead.
+
+## 🚨 SOURCE CODE CREATION DECISION TREE {#source-code-creation}
+
+**Critical Rule**: Main agent role boundaries determine when you can create source files.
+
+```
+Need to create/modify source files (.java/.ts/.py)?
+│
+├─ Current state: IMPLEMENTATION?
+│  ├─ YES → ❌ STOP: Main agent CANNOT create source files
+│  │         ✅ CORRECT: Delegate to stakeholder agents via Task tool
+│  │         Each agent works in: /workspace/tasks/{task}/agents/{agent}/code/
+│  │
+│  └─ NO → Check state:
+│     ├─ INIT/CLASSIFIED: ✅ Main agent can create build/config files ONLY
+│     ├─ POST_IMPLEMENTATION: ✅ Main agent can merge and fix integration issues
+│     └─ CLEANUP: ✅ Main agent can finalize and commit
+│
+└─ File type: Configuration/Documentation?
+   └─ YES → ✅ Main agent can modify in any state
+      (CLAUDE.md, .claude/*, docs/project/*, pom.xml, README.md)
+```
+
+**Pre-Implementation Checklist** (MANDATORY before IMPLEMENTATION state):
+
+Before transitioning to IMPLEMENTATION state, verify:
+
+- [ ] All stakeholder agent worktrees created
+- [ ] Agent worktree branches exist: {task-name}-{agent-name}
+- [ ] Agent worktrees verified with: `git worktree list`
+- [ ] Task coordination plan documented in task.md
+- [ ] Main agent role boundaries reviewed (NO source file creation)
+
+**Worktree Creation Helper**:
+```bash
+source /workspace/main/.claude/hooks/lib/worktree-manager.sh
+create_agent_worktree "{task-name}" "{agent-name}"
+```
 
 ## 🚨 LOCK OWNERSHIP & TASK RECOVERY {#lock-ownership}
 
-**CRITICAL**: After context compaction, the `check-lock-ownership.sh` SessionStart hook checks for active
-tasks owned by this session and provides specific instructions. **IMPORTANT**: Hook enforces user approval
-checkpoints - if task is in SYNTHESIS or AWAITING_USER_APPROVAL state, hook will display checkpoint-specific
-guidance that MUST be followed before proceeding.
+After context compaction, `check-lock-ownership.sh` SessionStart hook checks for active tasks owned by this session. Hook enforces user approval checkpoints - if task is in SYNTHESIS or AWAITING_USER_APPROVAL state, hook displays checkpoint-specific guidance that MUST be followed.
 
 **Lock Ownership Rule**: ONLY work on tasks whose lock file contains YOUR session_id.
 
@@ -47,71 +82,62 @@ AWAITING_USER_APPROVAL, COMPLETE, CLEANUP
 
 ## 🚨 WORKTREE ISOLATION & CLEANUP {#worktree-isolation}
 
-### During Task Execution
+### During Task Execution {#during-task-execution}
 
-**CRITICAL WORKTREE ISOLATION**: After creating worktree, IMMEDIATELY `cd` to worktree directory BEFORE any
-other operations.
+After creating worktree, IMMEDIATELY `cd` to worktree directory BEFORE other operations.
 
 **Required Pattern**:
 ```bash
 git worktree add /workspace/tasks/{task-name}/code -b {task-name} && cd /workspace/tasks/{task-name}/code
 ```
 
-**ALL subsequent work must occur inside worktree, NEVER in main branch.**
+ALL subsequent work must occur inside worktree, NEVER in main branch.
 
-**Verification Before Proceeding**:
-```bash
-pwd | grep -q "/workspace/tasks/{task-name}/code$" && echo "✅ In worktree" || echo "❌ ERROR: Not in worktree!"
-```
+### During Cleanup (CLEANUP State) {#during-cleanup-cleanup-state}
 
-### During Cleanup (CLEANUP State)
-
-**CRITICAL WORKTREE CLEANUP**: BEFORE removing worktree, MUST `cd` to main worktree.
+BEFORE removing worktree, MUST `cd` to main worktree.
 
 **Required Pattern**:
 ```bash
 cd /workspace/main && git worktree remove /workspace/tasks/{task-name}/code
 ```
 
-**NEVER remove a worktree while inside it** - shell loses working directory. This is MANDATORY in CLEANUP
-state.
+NEVER remove a worktree while inside it - shell loses working directory.
 
 ## 🚨 IMPLEMENTATION ROLE BOUNDARIES {#implementation-role-boundaries}
 
-**CRITICAL**: During IMPLEMENTATION state, main agent and stakeholder agents have STRICTLY SEPARATED roles.
+During IMPLEMENTATION state, main agent and stakeholder agents have STRICTLY SEPARATED roles.
 
-### Terminology Definitions
-
-**CRITICAL TERMINOLOGY** (used throughout this protocol):
+### Terminology Definitions {#terminology-definitions}
 
 - **Implementation**: Creating new features, classes, methods, or significant logic
-  - Examples: Writing FormattingRule.java, implementing algorithm logic, adding new methods
+  - Writing FormattingRule.java, implementing algorithm logic, adding new methods
   - During IMPLEMENTATION state: ONLY stakeholder agents perform implementation
 
 - **Coordination**: Managing agent invocations, monitoring status, updating state
-  - Examples: Launching agents via Task tool, checking status.json, updating lock file
+  - Launching agents via Task tool, checking status.json, updating lock file
   - Main agent role during IMPLEMENTATION state
 
 - **Minor Fixes**: Mechanical corrections to code after implementation complete
-  - Examples: Adding missing imports, fixing whitespace, removing unused variables, fixing typos
+  - Adding missing imports, fixing whitespace, removing unused variables, fixing typos
   - Main agent MAY perform after VALIDATION state begins
   - NOT considered 'implementation' because no new logic or features
 
 - **Fixes** (during IMPLEMENTATION): Corrections to agent-written code
-  - Examples: Fixing bugs in newly written classes, adjusting architecture
+  - Fixing bugs in newly written classes, adjusting architecture
   - During IMPLEMENTATION state: ONLY original agent fixes their own work
   - Main agent NEVER fixes during IMPLEMENTATION state
 
 **Rule of Thumb**: If it requires domain expertise or significant changes → delegate to agents. If it's
 mechanical and trivial → main agent may fix after VALIDATION state begins.
 
-**Coordination Examples (PERMITTED during IMPLEMENTATION)**:
+**Coordination (PERMITTED during IMPLEMENTATION)**:
 ✅ Launching architecture-reviewer agent: "Implement FormatterApi interface with transform() method"
 ✅ Monitoring agent status: Reading `/workspace/tasks/add-api/agents/architecture-updater/status.json`
 ✅ Updating lock file state: `jq '.state = "VALIDATION"' task.json`
 ✅ Creating task infrastructure: Writing `/workspace/tasks/add-api/task.md` with requirements
 
-**Implementation Examples (PROHIBITED during IMPLEMENTATION state)**:
+**Implementation (PROHIBITED during IMPLEMENTATION state)**:
 ❌ Creating source files: `Write tool → src/main/java/FormatterApi.java`
 ❌ Implementing methods: Adding `public Token getToken()` to source file
 ❌ Fixing compilation: Adding `import java.util.List;` to new implementation code
@@ -129,9 +155,9 @@ mechanical and trivial → main agent may fix after VALIDATION state begins.
   3. Agent validates no conflicts with existing dependencies
 - ✅ PERMITTED (Main Agent): Adding test dependencies during VALIDATION if agents request them
 
-**Example**: Technical-architect implements new integration tests requiring Mockito → agent may add `mockito-core` with test scope in their worktree.
+Technical-architect implements new integration tests requiring Mockito → agent may add `mockito-core` with test scope in their worktree.
 
-### Main Agent Role During IMPLEMENTATION State (COORDINATION ONLY)
+### Main Agent Role During IMPLEMENTATION State (COORDINATION ONLY) {#main-agent-role-during-implementation-state-coordination-only}
 
 **PERMITTED Actions**:
 ✅ Launch stakeholder agents via Task tool with implementation instructions
@@ -150,29 +176,29 @@ mechanical and trivial → main agent may fix after VALIDATION state begins.
 ❌ "Implement then have agents review" pattern - THIS IS A VIOLATION
 ❌ "Quick implementation before delegating" - THIS IS A VIOLATION
 
-## PROHIBITED ACTIONS During IMPLEMENTATION State
+## PROHIBITED ACTIONS During IMPLEMENTATION State {#prohibited-actions-during-implementation-state}
 
 **CRITICAL VIOLATION PATTERNS** (detected by audit):
 
 ❌ **Using Edit/Write tools on ANY .java files** (source OR test)
-- Example violation: `Edit: FormatterAPI.java` to fix compilation error
-- Correct approach: Delegate to quality-updater with error description
+- Violation: `Edit: FormatterAPI.java` to fix compilation error
+- Correct: Delegate to quality-updater with error description
 
 ❌ **Using Edit/Write tools on module-info.java**
-- Example violation: `Edit: module-info.java` to add `requires transitive`
-- Correct approach: Delegate to architecture-updater with JPMS requirement
+- Violation: `Edit: module-info.java` to add `requires transitive`
+- Correct: Delegate to architecture-updater with JPMS requirement
 
 ❌ **Using Edit/Write tools on pom.xml for dependency changes**
-- Example violation: `Edit: pom.xml` to add missing dependency
-- Correct approach: Report to architecture-updater for dependency analysis
+- Violation: `Edit: pom.xml` to add missing dependency
+- Correct: Report to architecture-updater for dependency analysis
 
 ❌ **Making compilation fixes directly**
-- Example violation: Main agent adding `import java.util.List;` to fix compile error
-- Correct approach: Report error back to implementing agent for fix
+- Violation: Main agent adding `import java.util.List;` to fix compile error
+- Correct: Report error back to implementing agent for fix
 
 ❌ **Creating ANY source code files directly**
-- Example violation: `Write: TransformationContext.java` to implement interface
-- Correct approach: Task tool invocation to architecture-updater
+- Violation: `Write: TransformationContext.java` to implement interface
+- Correct: Task tool invocation to architecture-updater
 
 **CORRECT DELEGATION PATTERN**:
 
@@ -182,7 +208,7 @@ mechanical and trivial → main agent may fix after VALIDATION state begins.
 ✅ Verify build success after agent updates
 ✅ Use Task tool exclusively for implementation work
 
-### ❌ INCORRECT: Main Agent Direct Implementation
+### ❌ INCORRECT: Main Agent Direct Implementation {#incorrect-main-agent-direct-implementation}
 
 ```bash
 # Main agent during IMPLEMENTATION state
@@ -193,7 +219,7 @@ Edit: pom.xml                     # VIOLATION!
 git commit -m "Fix compilation"   # Committing violations!
 ```
 
-### ✅ CORRECT: Delegation Pattern
+### ✅ CORRECT: Delegation Pattern {#correct-delegation-pattern}
 
 ```bash
 # Main agent during IMPLEMENTATION state
@@ -214,7 +240,7 @@ Read: /workspace/tasks/{task}/agents/quality-updater/status.json
 Bash: ./mvnw clean verify -pl formatter
 ```
 
-### Stakeholder Agent Role (IMPLEMENTATION ONLY)
+### Stakeholder Agent Role (IMPLEMENTATION ONLY) {#stakeholder-agent-role-implementation-only}
 
 **REQUIRED Actions**:
 ✅ Implement domain-specific requirements in THEIR OWN worktrees
@@ -225,46 +251,77 @@ Bash: ./mvnw clean verify -pl formatter
 
 **Working Directory**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
 
-### Session Summary Documentation Requirements
+### Session Summary Documentation Requirements {#session-summary-documentation-requirements}
 
-**MANDATORY SESSION SUMMARY REQUIREMENT**: When presenting implementation work for protocol compliance review, session summaries MUST include:
+When presenting implementation work for protocol compliance review, session summaries MUST include:
 
 1. **Agent Invocation Audit Trail**: List of all Task tool invocations with agent names
 2. **Commit Attribution**: Commit SHAs for each agent's merge to task branch
 3. **Parallel Launch Verification**: Explicit confirmation of parallel agent launch pattern used
 
-**Example Compliant Session Summary**:
+**Compliant Session Summary**:
 ```markdown
-## Implementation Phase Summary
+## Implementation Phase Summary {#implementation-phase-summary}
 
-### Agent Invocations (Parallel Launch):
+### Agent Invocations (Parallel Launch): {#agent-invocations-parallel-launch}
 - architecture-updater: Task tool invoked in Message 15
 - quality-updater: Task tool invoked in Message 15 (parallel)
 - style-updater: Task tool invoked in Message 15 (parallel)
 - test-updater: Task tool invoked in Message 15 (parallel)
 
-### Agent Commits to Task Branch:
+### Agent Commits to Task Branch: {#agent-commits-to-task-branch}
 - architecture-updater: abc123def (merged FormattingRule interfaces)
 - quality-updater: def456ghi (applied design patterns)
 - style-updater: ghi789jkl (code style compliance)
 - test-updater: jkl012mno (test suite implementation)
 
-### Verification:
+### Verification: {#verification}
 ✅ Parallel agent launch pattern confirmed (all agents invoked in single message)
 ✅ All agents merged to task branch independently
 ✅ Main agent performed NO source code implementation
 ```
 
-**Rationale**: These audit trail elements provide verifiable evidence that the multi-agent implementation protocol was followed correctly, preventing protocol violations where main agent implements directly.
 
-### Role Verification Questions
+### Role Verification Questions {#role-verification-questions}
 
 **Before writing ANY .java/.ts/.py file during IMPLEMENTATION, ask yourself**:
 - [ ] Am I the main coordination agent? → If YES, use Task tool to delegate
 - [ ] Am I a stakeholder agent in my own worktree? → If YES, proceed with implementation
 - [ ] Am I in task worktree trying to implement? → STOP - This is a VIOLATION
 
-### Required Pattern After SYNTHESIS Approval
+### Required Pattern After SYNTHESIS Approval {#required-pattern-after-synthesis-approval}
+
+> **⚠️ MANDATORY USER APPROVAL CHECKPOINT**
+>
+> **BEFORE transitioning from SYNTHESIS to IMPLEMENTATION state**, you MUST:
+> 1. Present the implementation plan to the user (via message output)
+> 2. **Explicitly ask user for approval**: "May I proceed to IMPLEMENTATION?"
+> 3. **WAIT for user response** (BLOCKED until approval received)
+> 4. User must respond with explicit approval (e.g., "approved", "yes", "proceed")
+> 5. Create flag file: `touch /workspace/tasks/{task-name}/user-approved-synthesis.flag`
+> 6. Hook will BLOCK transition without this flag file
+>
+> **Required Message Pattern**:
+> ```
+> I've completed SYNTHESIS and created an implementation plan in task.md.
+>
+> **Implementation Summary**:
+> - [Brief bullet points of what will be implemented]
+>
+> **Stakeholder Agents**:
+> - [List of agents that will be invoked]
+>
+> May I proceed to IMPLEMENTATION state?
+> ```
+>
+> **Enforcement**: State transition from SYNTHESIS → IMPLEMENTATION is BLOCKED unless
+> `/workspace/tasks/{task-name}/user-approved-synthesis.flag` exists (checked by
+> pre-state-transition.sh hook). Flag is only created AFTER receiving explicit user approval.
+>
+> **Note**: Do NOT use AskUserQuestion tool for approval gates - it may be skipped in
+> bypass permissions mode. Use explicit user message approval + flag file instead.
+>
+> See [User Approval Checkpoint Enforcement](#user-approval-checkpoint-enforcement) for complete requirements.
 
 **🚨 MANDATORY REQUIREMENT**: Agent launches MUST use parallel Task tool calls in a SINGLE message.
 
@@ -273,9 +330,9 @@ Bash: ./mvnw clean verify -pl formatter
 **MANDATORY SESSION DOCUMENTATION**: Agent invocation record MUST be documented in task.md under "Implementation Status" section:
 
 ```markdown
-## Implementation Status
+## Implementation Status {#implementation-status}
 
-### Agent Invocations
+### Agent Invocations {#agent-invocations}
 **Round 1 - Initial Implementation** (Message 15, 2025-10-19T14:32:00Z):
 - architecture-updater: Launched (parallel)
 - quality-updater: Launched (parallel)
@@ -293,7 +350,6 @@ Bash: ./mvnw clean verify -pl formatter
 - architecture-updater: Re-launched for interface clarifications
 ```
 
-**Rationale**: This record provides audit trail showing parallel launch pattern was used, not sequential violations.
 
 ```markdown
 CORRECT SEQUENCE:
@@ -319,12 +375,71 @@ CORRECT SEQUENCE:
 12. If build passes → proceed to REVIEW state
 13. If build fails → main agent MAY fix OR re-delegate to agents
 14. After REVIEW state with unanimous approval → transition to AWAITING_USER_APPROVAL state
-15. Present changes to user with commit SHA and ask: "May I proceed to merge to main?"
-16. Wait for user approval response
-17. Create user-approval-obtained.flag after approval received
-18. Transition to COMPLETE state
-19. Merge to main branch
-20. Transition to CLEANUP state
+15. **Present implementation summary and request explicit user approval** (via message output):
+    ```
+    Implementation complete and validated.
+
+    **Summary**:
+    - [Key deliverables]
+    - All reviewer agents approved
+    - Build passing
+
+    May I proceed to COMPLETE and merge to main?
+    ```
+16. WAIT for user approval response (BLOCKED until received)
+17. User must respond with explicit approval (e.g., "approved", "yes", "proceed")
+18. After user approves, create flag: `touch /workspace/tasks/{task-name}/user-approval-obtained.flag`
+19. Transition to COMPLETE state (hook will verify flag exists)
+19. **Pre-Merge Validation** (MANDATORY):
+    ```bash
+    # Verify task branch has exactly 1 commit
+    .claude/hooks/pre-task-merge-check.sh <task-branch> main
+
+    # If validation fails (>1 commit), squash before merge:
+    cd /workspace/main
+    git checkout <task-branch>
+    git reset --soft main
+    git commit -m "Squashed task implementation"
+
+    # Re-run validation to confirm
+    .claude/hooks/pre-task-merge-check.sh <task-branch> main
+    ```
+20. **Merge to main with atomic documentation update** (MANDATORY - all changes in single commit):
+    ```bash
+    # Step 20a: Merge task branch to main
+    cd /workspace/main
+    git checkout main
+    git merge <task-branch> --ff-only
+
+    # Step 20b: Update project documentation (MANDATORY)
+    # CRITICAL: These updates MUST be part of the same commit as the task
+    # Update todo.md: Mark task complete, update dependencies, update current status
+    # Update changelog.md: Add task completion entry with date, commit SHA, summary
+
+    # Step 20c: Amend merge commit to include documentation updates
+    git add todo.md changelog.md
+    git commit --amend --no-edit
+
+    # VERIFICATION: Single commit includes task implementation AND documentation updates
+    git show HEAD --stat  # Should show task files + todo.md + changelog.md
+    ```
+
+    **CRITICAL REQUIREMENT**: The merge commit MUST include both:
+    - Task implementation (from task branch)
+    - Documentation updates (todo.md, changelog.md)
+
+    **VIOLATION PATTERN** (separate commits):
+    ```bash
+    ❌ WRONG - Task and documentation in separate commits:
+    git merge <task-branch> --ff-only          # Commit 1: e70587a (task only)
+    # Update todo.md and changelog.md
+    git add todo.md changelog.md
+    git commit -m "Update documentation"       # Commit 2: 755532c (docs only)
+    # RESULT: Two commits instead of one atomic unit
+    ```
+
+    **Rationale**: Atomic commits ensure task completion is indivisible - the task implementation and its documentation update happen together, preventing incomplete state where task is merged but documentation is stale.
+21. Transition to CLEANUP state
 ```
 
 **CRITICAL**: Steps 14-18 are MANDATORY and CANNOT be skipped. The sequence REVIEW → AWAITING_USER_APPROVAL → COMPLETE → CLEANUP is REQUIRED.
@@ -343,46 +458,13 @@ updater agents until all reviewers approve.
 5. Main agent creates files directly in task worktree (VIOLATION!)
 ```
 
-### Enforcement
+### Enforcement {#enforcement}
 
-**Hook Detection**: `.claude/hooks/detect-main-agent-implementation.sh` monitors Write/Edit tool calls during
-IMPLEMENTATION state and BLOCKS attempts by main agent to create source files in task worktree.
-
-**🚨 CRITICAL REQUIREMENT**: This hook MUST be registered in `.claude/settings.json` under `PreToolUse`
-triggers to function. If hook is not registered, **NO PROTECTION EXISTS**.
-
-**Hook Registration Verification**:
-```bash
-# Verify hook is registered and active
-jq '.hooks.PreToolUse[] | select(.hooks[].command | contains("detect-main-agent-implementation"))' /workspace/.claude/settings.json
-
-# Expected output: Hook configuration object with matcher
-# If empty: CRITICAL - Hook NOT registered, no protection active
-```
-
-**If Hook NOT Registered (Verification Fails)**:
-1. **STOP IMMEDIATELY** - Do not proceed with any IMPLEMENTATION work
-2. Alert user: "CRITICAL: Implementation protection hook not registered"
-3. Provide registration instructions (show required settings.json configuration below)
-4. Wait for user to confirm hook registration
-5. Re-run verification before continuing
-
-**NEVER** proceed with IMPLEMENTATION state if hook verification fails - no protection exists.
-
-**Required Registration** (in `.claude/settings.json`):
-```json
-{
-  "matcher": "(tool:Write || tool:Edit) && path:**/*.{java,ts,py,js,go,rs,cpp,c,h}",
-  "hooks": [{
-    "type": "command",
-    "command": "/workspace/.claude/hooks/detect-main-agent-implementation.sh"
-  }]
-}
-```
+**Hook Detection**: `.claude/hooks/detect-main-agent-implementation.sh` monitors Write/Edit tool calls during IMPLEMENTATION state and BLOCKS attempts by main agent to create source files in task worktree.
 
 **Recovery**: If violation detected, return to SYNTHESIS state and re-launch stakeholder agents properly.
 
-### Agent Tool Limitation Recovery Pattern
+### Agent Tool Limitation Recovery Pattern {#agent-tool-limitation-recovery-pattern}
 
 **Scenario**: Stakeholder agent reports tool limitations, file size constraints, or inability to complete
 assigned work.
@@ -401,182 +483,55 @@ assigned work.
 
 **Recovery Rule**: Agent limitations change SCOPE or APPROACH, NEVER change WHO implements.
 
-### Edit Tool Whitespace Mismatch Recovery
+### Edit Tool Whitespace Mismatch Recovery {#edit-tool-whitespace-mismatch-recovery}
 
-**Common Scenario**: Edit tool fails with 'old_string not found' despite text appearing correct.
+See CLAUDE.md § Tool Usage Best Practices for complete Edit tool whitespace handling guidance.
 
-**Root Cause**: Whitespace mismatches (tabs vs spaces, trailing spaces, line endings)
+### State-Based Edit/Write Tool Permissions {#state-based-editwrite-tool-permissions}
 
-**Recovery Procedure**:
-1. **Diagnose**: Read file section to see actual whitespace characters
-2. **Identify Mismatch**: Compare visible text vs actual indentation
-3. **Adapt**: Adjust old_string to match EXACT whitespace in file
-4. **Common Issues**:
-   - Tabs vs spaces: Check file uses consistent indentation
-   - Trailing spaces: Include or exclude from old_string to match
-   - Line number prefix in Read output: Never include line number prefix in old_string
+Main agent Edit/Write tool permissions vary by state.
 
-**Prevention**: When reading file before Edit, note indentation style (tabs vs spaces) and preserve it exactly in old_string.
+| State | Main Agent Permission | Scope |
+|-------|----------------------|-------|
+| **INIT** | ✅ PERMITTED | Infrastructure setup only |
+| **CLASSIFIED** | ✅ PERMITTED | Documentation only |
+| **REQUIREMENTS** | ✅ PERMITTED | Documentation only |
+| **SYNTHESIS** | ✅ PERMITTED | Documentation only |
+| **IMPLEMENTATION** | ❌ PROHIBITED | Source code files - agents implement |
+| **VALIDATION** | ✅ PERMITTED | Minor fixes after agent completion |
+| **REVIEW** | ✅ PERMITTED | Fix agent feedback |
+| **COMPLETE** | ✅ PERMITTED | Final touches |
+| **CLEANUP** | ✅ PERMITTED | Infrastructure only |
 
-**Example Failure and Fix**:
-```bash
-# Read output shows (note the tab character after line number):
-15→	public void method() {
-
-# ❌ FAILS: old_string uses spaces but file has tab
-Edit: old_string="    public void method()" # 4 spaces - doesn't match
-
-# ✅ CORRECT: Use tab to match file
-Edit: old_string="	public void method()" # 1 tab character - matches file
-
-# Note: Line number "15→" and tab separator are NOT part of file content
-# Only text AFTER the separator tab is the actual file content
-```
-
-**Verification Command**:
-```bash
-# If Edit fails, verify exact whitespace in file
-cat -A /path/to/file.java | grep -A2 "method()"
-# Shows ^I for tabs, $ for line endings, · for spaces
-```
-
-### State-Based Edit/Write Tool Permissions
-
-**CRITICAL**: Main agent Edit/Write tool permissions vary by state.
-
-| State | Main Agent Edit/Write Permission | Rationale |
-|-------|----------------------------------|------------|
-| **INIT** | ✅ PERMITTED - Infrastructure setup only | Create worktrees, lock files, task.md skeleton |
-| **CLASSIFIED** | ✅ PERMITTED - Documentation only | Update task.md with risk classification |
-| **REQUIREMENTS** | ✅ PERMITTED - Documentation only | Update task.md with consolidated requirements |
-| **SYNTHESIS** | ✅ PERMITTED - Documentation only | Update task.md with implementation plan |
-| **IMPLEMENTATION** | ❌ PROHIBITED - Source code files | Stakeholder agents implement in their worktrees |
-| **VALIDATION** | ✅ PERMITTED - Minor fixes only | Fix style violations, compilation errors after agent completion |
-| **REVIEW** | ✅ PERMITTED - Fix agent feedback | Address stakeholder agent review comments |
-| **COMPLETE** | ✅ PERMITTED - Final touches | Amend commits if user requests changes |
-| **CLEANUP** | ✅ PERMITTED - Infrastructure only | Remove worktrees, update todo.md/changelog.md |
-
-**IMPLEMENTATION State Clarification**:
-- Main agent MUST NOT create or modify source code files (.java, .ts, .py, etc.)
-- Main agent MAY update documentation files (task.md, status files)
-- ALL source code implementation delegated via Task tool to stakeholder agents
-
-**VALIDATION State Clarification**:
-- Main agent MAY fix minor issues discovered after agents complete
-- Examples: style violations, missing imports, compilation errors
-- Rationale: Efficiency - avoid re-launching agents for trivial fixes
-- Constraint: Only after all agents report COMPLETE status
-
-**VALIDATION State Exit Requirements** (CRITICAL):
+**VALIDATION State Exit Requirements**:
 1. ✅ All quality gates pass (checkstyle, PMD, build)
-2. ✅ **All validation fixes COMMITTED to task branch** before proceeding
+2. ✅ All validation fixes COMMITTED to task branch
 3. ✅ Run final build verification on committed code
-4. ✅ **Verify `git status` shows clean working directory before REVIEW transition**
+4. ✅ Verify `git status` shows clean working directory before REVIEW transition
 
-**Rationale**: Uncommitted validation fixes will NOT be included in merge, causing build failures on main
-branch.
-
-**MANDATORY Pre-Transition Verification Checkpoint**:
+**Pre-Transition Verification**:
 ```bash
-# REQUIRED before transitioning VALIDATION → REVIEW
-git status
-
-# Expected output: "nothing to commit, working tree clean"
-# If uncommitted changes exist → BLOCK transition, commit changes first
+git status  # Must show "nothing to commit, working tree clean"
 ```
 
-**State Transition Blocker**: Lock file state MUST NOT be updated to REVIEW if `git status` shows uncommitted changes.
-
-**Verification Command**:
-```bash
-# Automated verification before state transition
-if git status | grep -q "nothing to commit"; then
-    echo "✅ Clean working directory - safe to transition to REVIEW"
-    jq '.state = "REVIEW"' task.json > task.json.tmp && mv task.json.tmp task.json
-else
-    echo "❌ ERROR: Uncommitted changes exist - CANNOT transition to REVIEW"
-    echo "Commit all validation fixes before proceeding"
-    exit 1
-fi
-```
-
-**Commit Timing During VALIDATION**:
-- **RECOMMENDED**: Commit after each logical fix group (e.g., all style violations → commit, all missing imports → commit)
-- **MINIMUM REQUIREMENT**: All fixes committed BEFORE running final `./mvnw verify` (step 3)
-- **VERIFICATION**: `git status` must show clean working directory before transitioning to REVIEW
-
-**Rationale**: Incremental commits prevent loss of work and make final verification easier to debug if failures occur.
-
-**Example Workflow**:
-```bash
-# Fix style violations
-Edit: FormattingRule.java (fix 5 violations)
-git add FormattingRule.java
-git commit -m "Fix checkstyle violations in FormattingRule"
-
-# Fix missing imports
-Edit: TransformationContext.java (add imports)
-git add TransformationContext.java
-git commit -m "Add missing imports to TransformationContext"
-
-# Final verification on committed code
-./mvnw verify
-
-# Verify clean state before REVIEW
-git status  # Should show "nothing to commit, working tree clean"
-```
+Lock file state MUST NOT be updated to REVIEW if `git status` shows uncommitted changes.
 
 **Quality Gate Cache Verification**:
 
-Before transitioning from VALIDATION → REVIEW, verify quality gates ACTUALLY EXECUTED (not cached):
+Before transitioning VALIDATION → REVIEW, verify quality gates executed (not cached):
 
 ```bash
-# Option A: Disable cache explicitly
 ./mvnw verify -Dmaven.build.cache.enabled=false
-
-# Option B: Verify build output shows execution
-./mvnw verify 2>&1 | tee build.log
-grep -q "Skipping plugin execution (cached)" build.log && {
-  echo "❌ ERROR: Quality gates were cached, not executed"
-  exit 1
-}
-
-# Option C: Check for actual analysis output
-grep -q "PMD Failure\|Checkstyle violations" build.log || {
-  echo "✅ Quality gates executed (found analysis output)"
-}
 ```
-
-**Cache Indicators to Watch For**:
-- ❌ "Skipping plugin execution (cached)" → Quality gate NOT executed
-- ❌ "Restored from cache" → Results may be stale
-- ✅ "Running PMD analysis" → Fresh execution
-- ✅ "Checking checkstyle" → Fresh execution
 
 **See Also**: task-protocol-core.md § VALIDATION → REVIEW for detailed cache detection patterns
 
-**Audit Integration**: If `/audit-session` detects uncommitted changes during VALIDATION state, this indicates
-a protocol violation (Check 0.3 equivalent). Phase 5 automatic fix application will commit these changes, but
-this represents a recovery action - the violation still occurred. Future prevention requires discipline during
-VALIDATION → REVIEW transition.
+### Post-Implementation Issue Handling Decision Tree {#post-implementation-issue-handling-decision-tree}
 
-**See Also**: `.claude/commands/audit-session.md` § Phase 5: Automatic Fix Application for audit-time
-detection and automatic remediation
-
-**REVIEW State Clarification**:
-- Main agent MAY implement fixes requested by stakeholder agents
-- Only for issues identified during agent review phase
-- Alternative: Re-delegate to appropriate stakeholder agent if changes are complex
-
-### Post-Implementation Issue Handling Decision Tree
-
-**CRITICAL TIMING REQUIREMENT**: This decision tree applies ONLY after ALL three conditions are met:
+This decision tree applies ONLY after ALL three conditions are met:
 1. ✅ ALL stakeholder agents have status.json with `{"status": "COMPLETE"}`
 2. ✅ ALL agents have merged their changes to task branch
 3. ✅ Lock file state updated to `"VALIDATION"`
-
-**Before these conditions**: Main agent MUST NOT fix anything - use Task tool to request agent fixes.
-**After these conditions**: Main agent MAY apply decision tree below for minor fixes.
 
 **'Mechanical' Fix Definition** (objective criteria):
 
@@ -620,10 +575,9 @@ ELSE IF (issue_type == "architecture_issue" OR "security_issue"):
     ❌ ALWAYS re-delegate to appropriate domain expert
 ```
 
-**Efficiency Rationale**: Re-launching agents for trivial fixes wastes 50-100 messages per round. Direct fixes
-for mechanical issues preserve protocol safety while maintaining efficiency.
+Re-launching agents for trivial fixes wastes 50-100 messages per round. Direct fixes for mechanical issues preserve protocol safety while maintaining efficiency.
 
-**Threshold Rationale**: The '5 violation' threshold represents message cost efficiency:
+The '5 violation' threshold represents message cost efficiency:
 - Auto-fixing 5 violations: ~2-3 tool calls = 3-5 messages
 - Agent delegation: ~50-100 messages per round
 - Breakeven: When manual fixing approaches agent launch cost
@@ -643,7 +597,7 @@ statement), treat as mechanical regardless of count.
 **Safety Constraint**: Only apply after unanimous agent completion. During IMPLEMENTATION state, ALL fixes
 must go through agents.
 
-### Re-delegation Workflow (When Violations Exceed Threshold)
+### Re-delegation Workflow (When Violations Exceed Threshold) {#re-delegation-workflow-when-violations-exceed-threshold}
 
 When main agent determines fixes require agent delegation (count > 5, complexity, or domain expertise):
 
@@ -700,18 +654,14 @@ Task tool (architecture-updater): "Address architectural issues found during val
 
 ## 🚨 TASK PROTOCOL SUMMARY {#task-protocol}
 
-**Full Protocol Details**: See [task-protocol-core.md](docs/project/task-protocol-core.md) and
-[task-protocol-operations.md](docs/project/task-protocol-operations.md) for complete state machine and
-transition requirements.
+**Full Protocol**: See [task-protocol-core.md](docs/project/task-protocol-core.md) and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for complete details.
 
-**State Machine**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW →
-AWAITING_USER_APPROVAL → COMPLETE → CLEANUP
+**State Machine**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → AWAITING_USER_APPROVAL → COMPLETE → CLEANUP
 
-**Critical Requirements for All Tasks**:
-- Lock acquisition (see [§ Lock Ownership](#lock-ownership))
-- Worktree isolation (see [§ Worktree Isolation](#worktree-isolation))
--  **🚨 IMPLEMENTATION DELEGATION**: Main agent COORDINATES via Task tool - stakeholder agents IMPLEMENT in
-  their worktrees (see [§ Implementation Role Boundaries](#implementation-role-boundaries))
+**Critical Requirements**:
+- Lock acquisition (§ Lock Ownership)
+- Worktree isolation (§ Worktree Isolation)
+- Implementation delegation: Main agent coordinates, stakeholder agents implement (§ Implementation Role Boundaries)
 - Build verification before merge
 - Unanimous stakeholder approval (REVIEW state)
 - Complete all states before selecting new task
@@ -721,12 +671,7 @@ AWAITING_USER_APPROVAL → COMPLETE → CLEANUP
 - **MEDIUM-RISK** (tests, docs): Abbreviated protocol, domain-specific agents
 - **LOW-RISK** (general docs): Streamlined protocol, minimal validation
 
-**Post-Compaction Note**: This summary plus lock ownership and worktree isolation rules provide EMERGENCY
-FALLBACK guidance when task-protocol files are not accessible. For complete protocol compliance, the full
-protocol files (task-protocol-core.md and task-protocol-operations.md) are REQUIRED and should be re-loaded as
-soon as possible.
-
-## 🚨 RISK-BASED PROTOCOL SELECTION
+## 🚨 RISK-BASED PROTOCOL SELECTION {#risk-based-protocol-selection}
 
 **PROTOCOL SELECTION BASED ON FILE RISK:**
 - **HIGH-RISK**: Full protocol (src/\*\*, pom.xml, .github/\*\*, security/\*\*, CLAUDE.md)
@@ -750,159 +695,79 @@ soon as possible.
 ✅ "Work on study-claude-cli-interface task" - Single task with proper isolation
 ❌ Manual batch processing within single protocol execution - PROHIBITED
 
-## 🚨 STAKEHOLDER CONSENSUS ENFORCEMENT
+## 🚨 STAKEHOLDER CONSENSUS ENFORCEMENT {#stakeholder-consensus-enforcement}
 
-**CRITICAL PROTOCOL VIOLATION PREVENTION**: Phase 6 requires UNANIMOUS stakeholder approval
+Phase 6 requires UNANIMOUS stakeholder approval.
 
-**MANDATORY DECISION LOGIC**:
+**Decision Logic**:
 - ALL agents must respond with "FINAL DECISION: ✅ APPROVED"
 - ANY agent with "❌ REJECTED" → MANDATORY Phase 5 execution + Phase 6 re-run
-- NO human override permitted - agent decisions are ATOMIC and BINDING
-- NO subjective "MVP scope" or "enhancement-level" assessments allowed
+- NO human override - agent decisions are ATOMIC and BINDING
 
-## 🚨 AUTONOMOUS TASK COMPLETION REQUIREMENT
+## 🚨 AUTONOMOUS TASK COMPLETION REQUIREMENT {#autonomous-task-completion-requirement}
 
-**CRITICAL**: Once you begin a task (execute INIT state), you MUST complete ALL protocol states autonomously,
-WITH MANDATORY USER APPROVAL CHECKPOINTS.
+Once you begin a task (execute INIT state), you MUST complete ALL protocol states autonomously, WITH MANDATORY USER APPROVAL CHECKPOINTS.
 
-**TERMINOLOGY CLARIFICATION - "Autonomous Completion"**:
-- **"Autonomous"** means: Agent completes work WITHOUT asking for help, guidance, or direction between checkpoints
-- **"Checkpoints"** are: Planned pauses built INTO the protocol state machine for user oversight
-- **"Autonomous" DOES NOT mean**: No user interaction whatsoever
-- **"Autonomous" DOES mean**: No mid-protocol abandonment, no "what should I do?" questions, no giving up
+**"Autonomous Completion" Definition**:
+- Complete work WITHOUT asking for help, guidance, or direction between checkpoints
+- Checkpoints are planned pauses built into protocol for user oversight
+- Does NOT mean no user interaction - means no mid-protocol abandonment or "what should I do?" questions
 
-**What Autonomous Completion Requires**:
-✅ Complete REQUIREMENTS without asking "should I continue?"
-✅ Complete SYNTHESIS without asking "how should I plan this?"
-✅ Complete IMPLEMENTATION without asking "what should I do about this error?"
-✅ Complete VALIDATION without asking "should I fix this or delegate?"
-✅ **PAUSE at SYNTHESIS for PLAN APPROVAL checkpoint** (this is EXPECTED, not a violation)
-✅ **PAUSE at REVIEW for CHANGE REVIEW checkpoint** (this is EXPECTED, not a violation)
+**Expected Behavior**:
+✅ Complete REQUIREMENTS, SYNTHESIS, IMPLEMENTATION, VALIDATION without asking "should I continue?"
+✅ PAUSE at SYNTHESIS for PLAN APPROVAL checkpoint
+✅ PAUSE at AWAITING_USER_APPROVAL for CHANGE REVIEW checkpoint
 
-**What Violates Autonomous Completion**:
+**Violations**:
 ❌ Stopping mid-state to ask "what should I do next?"
 ❌ Abandoning task due to complexity without exhausting recovery options
-❌ Asking user to make implementation decisions that agents should make
-❌ Giving up on problems that can be solved through systematic debugging
-❌ Requesting user intervention for issues that protocol already defines recovery procedures for
+❌ Requesting user intervention for issues that protocol defines recovery procedures for
 
-**MANDATORY SINGLE-SESSION COMPLETION**:
+**Single-Session Completion**:
 - Task execution occurs in ONE uninterrupted session
-- **EXPECTED USER APPROVAL CHECKPOINTS** (these are NOT violations of autonomous completion):
-  1. **PLAN APPROVAL**: After SYNTHESIS, user approves implementation plan before IMPLEMENTATION begins
-  2.  **CHANGE REVIEW**: After REVIEW (unanimous approval), enter AWAITING_USER_APPROVAL state until user
-     confirms
-- NO OTHER HANDOFFS to user mid-protocol
-- Complete all other states autonomously (without asking for help)
-
-**When to Ask User**:
-✅ **BEFORE** starting task: "Task X has ambiguous requirements. Clarify before I begin?"
-✅ **AFTER SYNTHESIS**: Present plan for approval before IMPLEMENTATION
-✅ **AFTER REVIEW**: Present changes, wait for approval before COMPLETE
-✅ **NEVER** at other points: Complete other states autonomously once INIT begins
-
-**Plan Presentation Format** (after SYNTHESIS):
-- Present implementation plan in clear, readable format (use markdown)
-- Include: architecture approach, files to modify, implementation sequence, testing strategy
-- Wait for explicit user approval before proceeding to IMPLEMENTATION
+- TWO approval checkpoints: PLAN APPROVAL (after SYNTHESIS), CHANGE REVIEW (after REVIEW)
+- NO OTHER user handoffs mid-protocol
 
 **Interruption Type Classification**:
 
-Understanding when to stop, when to continue, and what constitutes a violation:
+**EXPECTED Pauses** (built into protocol):
+1. **PLAN APPROVAL**: After SYNTHESIS, before IMPLEMENTATION - wait for user approval
+2. **CHANGE REVIEW**: After REVIEW, before COMPLETE - wait for user approval (state: AWAITING_USER_APPROVAL)
 
-**EXPECTED Pauses** (built into protocol, NOT violations):
-1. **PLAN APPROVAL Checkpoint**: After SYNTHESIS, before IMPLEMENTATION
-   - Agent presents complete implementation plan
-   - Agent waits for user approval
-   - Lock state remains SYNTHESIS
-   - This is EXPECTED protocol behavior
+**PERMITTED Interruptions** (not violations):
+1. **User Questions**: Answer, then resume work from same state
+2. **User Commands**: Execute (/audit-session, etc.), then resume
 
-2. **CHANGE REVIEW Checkpoint**: After REVIEW, before COMPLETE
-   - Agent presents committed changes with SHA
-   - Agent waits for user approval
-   - Lock state: AWAITING_USER_APPROVAL
-   - This is EXPECTED protocol behavior
+**ACCEPTABLE Stops** (genuine blockers):
+1. **External Blocker**: API unavailable, missing credentials, network failure
+2. **Conflicting Requirements**: Unresolvable contradictions after exhausting resolution attempts
+3. **User Stop Command**: User explicitly says "stop"
 
-**PERMITTED Interruptions** (agent handles, continues work):
-1. **User Questions During Work**: User asks for status, clarification, or explanation
-   - Agent answers the question
-   - Agent resumes work from same state
-   - Lock state preserved throughout
-   - NOT a violation of autonomous completion
-
-2. **User Commands During Work**: User runs /audit-session or other diagnostic commands
-   - Agent executes the command
-   - Agent returns to active work state
-   - Lock state preserved throughout
-   - NOT a violation of autonomous completion
-
-**ACCEPTABLE Stops** (genuine blockers requiring stop):
-1. **Genuine External Blocker**: API unavailable, missing credentials, network failure
-   - External dependency cannot be resolved by agent
-   - Work cannot proceed without external resource
-   - Agent must stop and escalate to user
-
-2. **Ambiguous Conflicting Requirements**: No resolution path exists
-   - Requirements contain unresolvable contradictions
-   - Agent exhausted all conflict resolution attempts
-   - User clarification required before continuing
-
-3. **User Explicit Stop Command**: User says "stop" or "halt"
-   - User explicitly commands task termination
-   - Agent must stop immediately
-   - Task may need to be resumed or abandoned
-
-**VIOLATION Patterns** (prohibited stops):
-❌ **Agent Giving Up**: "This is too hard, let me try something simpler"
-❌ **Premature Help-Seeking**: "I don't know what to do next"
-❌ **Abandonment**: "I'll leave this for the user to decide"
-❌ **Complexity Avoidance**: "Due to complexity, I'll skip this"
-❌ **Mid-State Handoffs**: "Should I continue with IMPLEMENTATION?"
+**VIOLATION Patterns**:
+❌ Agent giving up: "This is too hard, let me try something simpler"
+❌ Premature help-seeking: "I don't know what to do next"
+❌ Mid-state handoffs: "Should I continue with IMPLEMENTATION?"
 
 **Decision Tree: Should I Stop?**
-```
-IF (at SYNTHESIS checkpoint OR at AWAITING_USER_APPROVAL checkpoint):
-    → STOP and wait for approval ✅ EXPECTED
+- At approval checkpoint? → STOP ✅
+- User question/command? → Handle, then CONTINUE ✅
+- External blocker/unresolvable conflict/user stop? → STOP ✅
+- Complexity/uncertainty? → CONTINUE, apply recovery ❌ DO NOT STOP
+- Otherwise → CONTINUE ✅
 
-ELSE IF (user asked question OR user ran command):
-    → Answer/execute, then CONTINUE from same state ✅ PERMITTED
+## 🚨 USER APPROVAL CHECKPOINT ENFORCEMENT {#user-approval-checkpoint-enforcement}
 
-ELSE IF (genuine external blocker OR unresolvable conflict):
-    → STOP and escalate to user ✅ ACCEPTABLE
-
-ELSE IF (user said "stop" explicitly):
-    → STOP immediately ✅ ACCEPTABLE
-
-ELSE IF (complexity/uncertainty/difficulty):
-    → CONTINUE, apply recovery procedures ❌ DO NOT STOP
-
-ELSE:
-    → CONTINUE autonomously ✅ DEFAULT
-```
-
-**Enforcement**: The `detect-giving-up.sh` hook detects mid-protocol abandonment patterns and injects
-completion reminders.
-
-## 🚨 USER APPROVAL CHECKPOINT ENFORCEMENT
-
-**HOOK-ENFORCED REQUIREMENT**: The `enforce-user-approval.sh` hook will BLOCK transitions to COMPLETE state if
-user approval checkpoint is not satisfied.
+The `enforce-user-approval.sh` hook BLOCKS transitions to COMPLETE state if user approval checkpoint not satisfied.
 
 **Approval Marker System**:
 - **File**: `/workspace/tasks/{task-name}/user-approval-obtained.flag`
 - **Created**: When user provides explicit approval after REVIEW state
-- **Required**: Before COMPLETE state transition is allowed
-- **Removed**: Automatically during CLEANUP state
+- **Required**: Before COMPLETE state transition
+- **Removed**: During CLEANUP state
 
-**Approval Flag Persistence Across Context Boundaries**:
+**Approval Flag Persistence**:
 
-**CRITICAL**: Approval flags are PERSISTENT across context compaction and session resumption.
-
-**Persistence Guarantees**:
-1. **File-Based Storage**: Flags stored as files in `/workspace/tasks/{task-name}/` directory
-2. **Filesystem Persistence**: Files persist across context compaction (memory cleared, filesystem unchanged)
-3. **Session Independence**: Flags remain valid across session boundaries
-4. **Checkpoint Isolation**: Each checkpoint has separate flag file
+Approval flags are PERSISTENT across context compaction and session resumption via file-based storage.
 
 **Flag Locations**:
 - **PLAN APPROVAL**: `/workspace/tasks/{task-name}/user-plan-approval-obtained.flag`
@@ -920,7 +785,7 @@ When documenting approval checkpoints in session summaries, MUST include:
 
 **Example Session Summary Entry**:
 ```markdown
-## PLAN APPROVAL Checkpoint
+## PLAN APPROVAL Checkpoint {#plan-approval-checkpoint}
 
 **Checkpoint Reached**: Message 25 (after SYNTHESIS state)
 **Plan Presented**: Implementation plan shown to user with:
@@ -935,197 +800,50 @@ When documenting approval checkpoints in session summaries, MUST include:
 **Timestamp**: 2025-10-19T14:32:00Z
 ```
 
-**Rationale**: Documented approval checkpoints provide audit trail showing protocol compliance with mandatory user oversight requirements.
-
 **Context Compaction Scenarios**:
-
-**Scenario 1: Approval Before Compaction**
-```
-Time T1: User approves plan → Flag created
-Time T2: Context compaction occurs
-Time T3: Session resumes → Flag STILL EXISTS
-Result: ✅ Approval preserved, proceed to IMPLEMENTATION
-```
-
-**Scenario 2: Compaction During Checkpoint Wait**
-```
-Time T1: Agent waiting at PLAN APPROVAL checkpoint
-Time T2: Context compaction occurs
-Time T3: Session resumes → Lock state = SYNTHESIS, no flag
-Result: ✅ Agent re-presents plan, waits for approval
-```
-
-**Scenario 3: Multiple Compactions Between Checkpoints**
-```
-Time T1: User approves plan → Flag created
-Time T2-T10: Multiple context compactions during IMPLEMENTATION
-Time T11: Agent reaches CHANGE REVIEW checkpoint
-Result: ✅ PLAN APPROVAL flag ignored (different checkpoint), wait for CHANGE REVIEW approval
-```
+- Approval before compaction → Flag persists, proceed
+- Compaction during checkpoint wait → Re-present, wait for approval
+- Multiple compactions between checkpoints → Old flags ignored, wait for current checkpoint approval
 
 **Session Resumption Behavior**:
 
 When resuming after context compaction or crash:
-
-**Check 1: Verify Current State**
-```bash
-CURRENT_STATE=$(jq -r '.state' /workspace/tasks/{task-name}/task.json)
-```
-
-**Check 2: Check Approval Flags**
-```bash
-PLAN_APPROVAL_FLAG="/workspace/tasks/{task-name}/user-plan-approval-obtained.flag"
-CHANGE_APPROVAL_FLAG="/workspace/tasks/{task-name}/user-approval-obtained.flag"
-
-if [ "$CURRENT_STATE" = "SYNTHESIS" ]; then
-    if [ -f "$PLAN_APPROVAL_FLAG" ]; then
-        echo "✅ PLAN APPROVAL already obtained - proceeding to IMPLEMENTATION"
-        # Do NOT re-present plan
-        # Do NOT wait for approval again
-    else
-        echo "⏳ PLAN APPROVAL pending - re-presenting plan to user"
-        # Re-present plan
-        # Wait for approval
-    fi
-elif [ "$CURRENT_STATE" = "AWAITING_USER_APPROVAL" ]; then
-    if [ -f "$CHANGE_APPROVAL_FLAG" ]; then
-        echo "✅ CHANGE REVIEW approval already obtained - proceeding to COMPLETE"
-        # Do NOT re-present changes
-        # Do NOT wait for approval again
-    else
-        echo "⏳ CHANGE REVIEW pending - re-presenting changes to user"
-        # Re-present changes
-        # Wait for approval
-    fi
-fi
-```
+1. Check current state from lock file
+2. Check approval flag existence
+3. If flag exists → proceed without re-requesting approval
+4. If flag missing → re-present checkpoint for approval
 
 **Flag Creation Timing**:
 
-## Approval Persistence Pattern
+## Approval Persistence Pattern {#approval-persistence-pattern}
 
-**Problem**: Context compaction can lose approval state, causing duplicate approval requests.
-
-**Solution**: Create persistent approval flag files
+Context compaction can lose approval state. Solution: Create persistent approval flag files.
 
 **After obtaining approval**:
 ```bash
-# Detect approval keywords
-if [[ "$USER_MESSAGE" =~ (yes|approved|proceed|LGTM|go ahead) ]]; then
-  touch /workspace/tasks/{task-name}/user-plan-approval-obtained.flag
-fi
+touch /workspace/tasks/{task-name}/user-plan-approval-obtained.flag  # or user-approval-obtained.flag
 ```
 
-**On session resumption** (check before re-requesting approval):
+**On session resumption**:
 ```bash
-if [ -f /workspace/tasks/{task-name}/user-plan-approval-obtained.flag ]; then
-  echo "Approval already obtained - proceeding without re-request"
-else
-  echo "Present plan and wait for approval"
-fi
+[ -f /workspace/tasks/{task-name}/user-plan-approval-obtained.flag ] || present_plan_for_approval
 ```
 
 **Cleanup**: Remove flags during CLEANUP state only
 
-**PLAN APPROVAL Flag**:
-- **Created**: Immediately after user provides plan approval message
-- **Created By**: Main agent (after detecting approval keywords)
-- **Location**: `/workspace/tasks/{task-name}/user-plan-approval-obtained.flag`
-- **Content**: Empty file (existence is the signal)
-
-**CHANGE REVIEW Flag**:
-- **Created**: Immediately after user provides change review approval message
-- **Created By**: Main agent (after detecting approval keywords)
-- **Location**: `/workspace/tasks/{task-name}/user-approval-obtained.flag`
-- **Content**: Empty file (existence is the signal)
-
-**Flag Validation**:
-```bash
-# Verify flag was created after approval
-create_approval_flag() {
-    local FLAG_PATH=$1
-    local CHECKPOINT_NAME=$2
-
-    # Create flag file
-    touch "$FLAG_PATH"
-
-    # Verify creation
-    if [ -f "$FLAG_PATH" ]; then
-        echo "✅ $CHECKPOINT_NAME approval flag created successfully"
-        return 0
-    else
-        echo "❌ CRITICAL: Failed to create $CHECKPOINT_NAME approval flag"
-        return 1
-    fi
-}
-
-# Example usage
-create_approval_flag "/workspace/tasks/my-task/user-plan-approval-obtained.flag" "PLAN APPROVAL"
-```
-
 **Edge Cases**:
-
-**Edge Case 1: Flag Exists But Lock State Doesn't Match**
-```
-Lock state: IMPLEMENTATION
-Plan approval flag: EXISTS
-
-Interpretation: Approval was obtained, agent has progressed past SYNTHESIS
-Action: Continue with IMPLEMENTATION (flag no longer relevant)
-```
-
-**Edge Case 2: Flag Missing But State Advanced**
-```
-Lock state: IMPLEMENTATION
-Plan approval flag: MISSING
-
-Interpretation: Either (1) flag was manually deleted, or (2) protocol violation
-Action: Assume approval was obtained (state already advanced), continue work
-Warning: Log potential protocol violation for audit
-```
-
-**Edge Case 3: Both Flags Exist**
-```
-Plan approval flag: EXISTS
-Change review flag: EXISTS
-Lock state: COMPLETE
-
-Interpretation: Both checkpoints passed, task completing
-Action: Proceed with COMPLETE → CLEANUP transition
-```
-
-**Edge Case 4: Session Crash Between Approval and Flag Creation**
-```
-Time T1: User says "approved"
-Time T2: Session crashes BEFORE flag created
-Time T3: Session resumes → No flag exists
-
-Interpretation: Approval occurred but not recorded
-Action: Re-present checkpoint for approval (safer to re-ask)
-Rationale: Cannot verify approval without flag
-```
+- Flag exists but state advanced → Continue (approval already obtained)
+- Flag missing but state advanced → Assume approval obtained, continue, log potential violation
+- Both flags exist → Both checkpoints passed, proceed to CLEANUP
+- Session crash between approval and flag creation → Re-present for approval (safer)
 
 **Flag Cleanup**:
 
-**CRITICAL**: Flags are ONLY removed during CLEANUP state, never during task execution.
-
-**Cleanup Procedure**:
+Flags removed ONLY during CLEANUP state:
 ```bash
-# During CLEANUP state only
-TASK_NAME="my-task"
 rm -f "/workspace/tasks/${TASK_NAME}/user-plan-approval-obtained.flag"
 rm -f "/workspace/tasks/${TASK_NAME}/user-approval-obtained.flag"
-
-# Verify removal
-[ ! -f "/workspace/tasks/${TASK_NAME}/user-plan-approval-obtained.flag" ] || echo "ERROR: Flag not removed"
-[ ! -f "/workspace/tasks/${TASK_NAME}/user-approval-obtained.flag" ] || echo "ERROR: Flag not removed"
 ```
-
-**Why Flags Never Expire**:
-1. **No Time Limit**: Approval valid indefinitely until task completes
-2. **User Intent**: User approved specific plan/changes, intent doesn't expire
-3. **Session Independence**: Approval not tied to specific session
-4. **Resumption Safety**: Allows safe resumption after long delays
 
 **Automatic Approval Detection** (hook recognizes these patterns):
 ✅ User message contains approval keywords: "yes", "approved", "approve", "proceed", "looks good", "LGTM"
@@ -1172,12 +890,12 @@ jq '.state = "SYNTHESIS"' /workspace/tasks/{task-name}/task.json > /tmp/lock.tmp
 mv /tmp/lock.tmp /workspace/tasks/{task-name}/task.json
 ```
 
-## 🚨 TASK UNAVAILABILITY HANDLING
+## 🚨 TASK UNAVAILABILITY HANDLING {#task-unavailability-handling}
 
 **CRITICAL**: When user requests "work on the next task" or similar, verify task availability before starting
 work.
 
-### Mandatory Availability Check
+### Mandatory Availability Check {#mandatory-availability-check}
 
 **BEFORE attempting to select or start ANY task:**
 1. Check todo.md for available tasks with `READY` status
@@ -1185,7 +903,7 @@ work.
 3. Check `/workspace/tasks/{task-name}/task.json` for existing locks on available tasks
 4. Confirm at least ONE task is available AND accessible
 
-### Required Response When No Tasks Available
+### Required Response When No Tasks Available {#required-response-when-no-tasks-available}
 
 **If ALL tasks are unavailable, you MUST:**
 1. **STOP immediately** - Do NOT attempt to start any work
@@ -1215,7 +933,7 @@ I cannot proceed with any tasks because:
 I will stop here and await further instructions.
 ```
 
-### Prohibited Patterns
+### Prohibited Patterns {#prohibited-patterns}
 
 **NEVER do any of the following when all tasks are unavailable:**
 ❌ Select a blocked task and attempt to start work
@@ -1225,7 +943,7 @@ I will stop here and await further instructions.
 ❌ Proceed with any work when clear blockers exist
 ❌ Suggest working on tasks that violate dependency requirements
 
-### Required Patterns
+### Required Patterns {#required-patterns}
 
 **ALWAYS do the following when all tasks are unavailable:**
 ✅ Stop immediately after determining no tasks available
@@ -1234,12 +952,12 @@ I will stop here and await further instructions.
 ✅ Wait for user to resolve blockers or provide new instructions
 ✅ Check both BLOCKED status AND lock files AND dependencies
 
-## 🎯 LONG-TERM SOLUTION PERSISTENCE
+## 🎯 LONG-TERM SOLUTION PERSISTENCE {#long-term-solution-persistence}
 
 **MANDATORY PRINCIPLE**: Prioritize optimal long-term solutions over expedient alternatives. Persistence and
 thorough problem-solving are REQUIRED.
 
-### 🚨 CRITICAL PERSISTENCE REQUIREMENTS
+### 🚨 CRITICAL PERSISTENCE REQUIREMENTS {#critical-persistence-requirements}
 
 **SOLUTION QUALITY HIERARCHY**:
 1. **OPTIMAL SOLUTION**: Complete, maintainable, follows best practices, addresses root cause
@@ -1253,7 +971,7 @@ thorough problem-solving are REQUIRED.
 - **BEFORE DOWNGRADING**: Must exhaust reasonable effort toward optimal solution
 - **NEVER ABANDON**: Complex problems require persistence, not shortcuts
 
-### 🚨 PROHIBITED DOWNGRADE PATTERNS
+### 🚨 PROHIBITED DOWNGRADE PATTERNS {#prohibited-downgrade-patterns}
 
 **ANTI-PATTERNS - ABSOLUTELY FORBIDDEN**:
 ❌ "This is too complex, let me try a simpler approach" (without justification)
@@ -1267,14 +985,14 @@ requirements)
 ❌ "This edge case is too hard to handle properly" (without stakeholder consultation)
 ❌ "The existing pattern is suboptimal but I'll follow it" (without improvement attempt)
 
-### 🚨 GIVING UP DETECTION PATTERNS
+### 🚨 GIVING UP DETECTION PATTERNS {#giving-up-detection-patterns}
 
 **Hook**: `detect-giving-up.sh` detects abandonment patterns
 
 **Response**: Return to original problem, apply systematic debugging, exhaust approaches before scope
 modification
 
-### 🧪 UNIT TEST DRIVEN BUG FIXING
+### 🧪 UNIT TEST DRIVEN BUG FIXING {#unit-test-driven-bug-fixing}
 
 **MANDATORY PROCESS**: When encountering any bug during development:
 
@@ -1305,7 +1023,7 @@ modification
 4. **TECHNICAL DEBT ASSESSMENT**: "Proposed workaround creates debt in areas: [list]"
 5. **FOLLOW-UP COMMITMENT**: "Created todo.md task for proper solution: [task-name]"
 
-### 🛡️ STAKEHOLDER AGENT PERSISTENCE ENFORCEMENT
+### 🛡️ STAKEHOLDER AGENT PERSISTENCE ENFORCEMENT {#stakeholder-agent-persistence-enforcement}
 
 **AGENT DECISION STANDARDS**:
 - **TECHNICAL-ARCHITECT**: Must validate architectural completeness, not just basic functionality
@@ -1321,7 +1039,7 @@ modification
 ❌ Technical debt introduction without compelling business justification
 ❌ Partial compliance with requirements when full compliance is achievable
 
-### 🔧 IMPLEMENTATION PERSISTENCE PATTERNS
+### 🔧 IMPLEMENTATION PERSISTENCE PATTERNS {#implementation-persistence-patterns}
 
 **WHEN ENCOUNTERING COMPLEX PROBLEMS**:
 1. **DECOMPOSITION**: Break complex problems into manageable sub-problems
@@ -1342,7 +1060,7 @@ modification
 3. **COLLABORATIVE EFFORT**: Multi-agent coordination for complex architectural challenges
 4. **DOCUMENTED DEFERRAL**: Only after stakeholder consensus that effort exceeds reasonable scope
 
-### 🚨 SCOPE NEGOTIATION PERSISTENCE INTEGRATION
+### 🚨 SCOPE NEGOTIATION PERSISTENCE INTEGRATION {#scope-negotiation-persistence-integration}
 
 **ENHANCED SCOPE ASSESSMENT** (extends task-protocol-core.md Phase 5):
 When evaluating whether to defer work via scope negotiation:
@@ -1366,7 +1084,7 @@ When evaluating whether to defer work via scope negotiation:
 ❌ "We can improve this later"
 ❌ "This level of quality isn't necessary"
 
-### 🎯 SUCCESS METRICS AND VALIDATION
+### 🎯 SUCCESS METRICS AND VALIDATION {#success-metrics-and-validation}
 
 **SOLUTION QUALITY INDICATORS**:
 ✅ Addresses root cause, not just symptoms
@@ -1384,25 +1102,17 @@ When evaluating whether to defer work via scope negotiation:
 - [ ] Created follow-up tasks for any deferred improvements
 - [ ] Achieved solution that will remain viable long-term
 
-## Repository Structure
+## Repository Structure {#repository-structure}
 
 **⚠️ NEVER** initialize new repositories
 **Main Repository**: `/workspace/main/` (git repository and main development branch)
-**Task Worktrees**: `/workspace/tasks/{task-name}/code/` (isolated per task protocol, common merge target for
-all agents)
-**Agent Worktrees**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/` (per-agent development
-isolation)
+**Task Worktrees**: `/workspace/tasks/{task-name}/code/` (isolated per task protocol, common merge target)
+**Agent Worktrees**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/` (per-agent isolation)
 **Locks**: Multi-instance coordination via lock files at `/workspace/tasks/{task-name}/task.json`
 
-**Multi-Agent Architecture**:
-- **WHO IMPLEMENTS**: Stakeholder agents (NOT main agent) write all source code
-- **WHERE**: Each stakeholder agent has own worktree: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
-- **MAIN AGENT ROLE**: Coordinates via Task tool invocations, monitors status.json, manages state transitions
--  **IMPLEMENTATION FLOW**: Main agent delegates → Agents implement in parallel → Agents merge to task branch
-  → Iterative rounds until complete
-- **VIOLATION**: Main agent creating .java/.ts/.py files directly in task worktree during IMPLEMENTATION state
+**Multi-Agent Architecture**: See § Implementation Role Boundaries for complete role definitions and workflow patterns.
 
-## 🔧 CONTINUOUS WORKFLOW MODE
+## 🔧 CONTINUOUS WORKFLOW MODE {#continuous-workflow-mode}
 
 Override system brevity for comprehensive multi-task automation via Task Protocol.
 
@@ -1411,11 +1121,11 @@ Override system brevity for comprehensive multi-task automation via Task Protoco
 **Effects**: Detailed output, automatic task progression, full stakeholder analysis, comprehensive TodoWrite
 tracking
 
-## ⚡ PERFORMANCE OPTIMIZATION REQUIREMENTS
+## ⚡ PERFORMANCE OPTIMIZATION REQUIREMENTS {#performance-optimization-requirements}
 
 **CRITICAL**: Session performance optimization through parallel execution and efficiency patterns.
 
-### Performance Optimization Patterns (MANDATORY)
+### Performance Optimization Patterns (MANDATORY) {#performance-optimization-patterns-mandatory}
 
 | Pattern | ❌ Anti-Pattern | ✅ Required Pattern | Impact |
 |---------|----------------|---------------------|--------|
@@ -1434,7 +1144,44 @@ tracking
 
 **Detection Hook**: `/workspace/.claude/hooks/detect-sequential-tools.sh`
 
-### Fail-Fast vs Batch Collection Decision Criteria
+### Parallel Agent Invocation (MANDATORY) {#parallel-agent-invocation-mandatory}
+
+**CRITICAL**: When launching multiple independent agents (reviewers or updaters), invoke ALL agents in a SINGLE message using parallel Task calls.
+
+❌ **Anti-Pattern (Sequential Launches - wastes ~20,000 tokens)**:
+```markdown
+Message 1: Task(architecture-reviewer)
+[wait for completion]
+Message 2: Task(quality-reviewer)
+[wait for completion]
+Message 3: Task(style-reviewer)
+[wait for completion]
+```
+
+✅ **Required Pattern (Parallel Launch in Single Message)**:
+```markdown
+Single Message:
+  Task(architecture-reviewer): "Analyze architecture requirements..."
+  Task(quality-reviewer): "Review quality standards..."
+  Task(style-reviewer): "Validate style requirements..."
+[all agents run concurrently, wait for all completions]
+```
+
+**Impact**: Reduces message overhead from N × 4000 tokens to 1 × 4000 tokens
+- 3 agents sequential: ~12,000 tokens overhead
+- 3 agents parallel: ~4,000 tokens overhead
+- **Savings: ~8,000 tokens (67% reduction) per agent invocation round**
+
+**When to Use Parallel Invocation**:
+- ✅ REQUIREMENTS phase: Launch all reviewer agents simultaneously (architecture, quality, style, test)
+- ✅ IMPLEMENTATION phase: Launch all updater agents simultaneously when implementing parallel components
+- ✅ REVIEW phase: Launch all reviewer agents simultaneously for final validation
+- ❌ Do NOT parallelize agents with dependencies (e.g., architecture must complete before implementation)
+
+**Tool Call Syntax**:
+All Task calls must appear in the same `<function_calls>` block to execute in parallel.
+
+### Fail-Fast vs Batch Collection Decision Criteria {#fail-fast-vs-batch-collection-decision-criteria}
 
 **Use FAIL-FAST (stop on first error)**:
 - Compilation errors (blocking all other checks)
@@ -1448,7 +1195,7 @@ tracking
 - Documentation issues
 - Any violation count >5 of same type
 
-### Protocol File Prefetching Pattern
+### Protocol File Prefetching Pattern {#protocol-file-prefetching-pattern}
 
 **Optimization**: Load all protocol files during INIT phase instead of discovering need mid-task.
 
@@ -1467,6 +1214,7 @@ Message 1 (INIT - parallel prefetch):
   Bash: git worktree add /workspace/tasks/my-task/code -b my-task
   Read /workspace/main/docs/project/task-protocol-core.md
   Read /workspace/main/docs/project/task-protocol-operations.md
+  Read /workspace/main/docs/project/task-protocol-agents.md
   Read /workspace/main/CLAUDE.md --offset=140 --limit=300  # Implementation boundaries section
 Message 2: Now have all protocol context, proceed with REQUIREMENTS
 ```
@@ -1474,13 +1222,14 @@ Message 2: Now have all protocol context, proceed with REQUIREMENTS
 **Files to Prefetch During INIT**:
 - `task-protocol-core.md` - State definitions, transitions, requirements
 - `task-protocol-operations.md` - Operational patterns, examples
+- `task-protocol-agents.md` - Sub-agent coordination protocol (all tasks invoke sub-agents)
 - `CLAUDE.md` sections relevant to task type (Implementation boundaries, Performance patterns)
 - `code-style-human.md` - If style work expected (formatting rules, new classes)
 - Task-specific domain docs if known upfront
 
 **Impact**: Saves 5-10 round-trips × 2000 tokens each = **10,000-20,000 token savings per task**
 
-### Incremental Validation Frequency
+### Incremental Validation Frequency {#incremental-validation-frequency}
 
 **Component Boundaries** (validate at these points):
 - After each complete interface/class (NOT after each method)
@@ -1528,7 +1277,7 @@ cd /workspace/tasks/my-task/code
 
 **Rationale**: Validate at logical completion points to catch integration issues early while avoiding excessive build cycles.
 
-### Parallel Execution Enforcement
+### Parallel Execution Enforcement {#parallel-execution-enforcement}
 
 **CRITICAL REQUIREMENT**: Parallel execution is MANDATORY, not optional. Sequential patterns waste significant tokens and violate performance requirements.
 
@@ -1579,7 +1328,7 @@ Task tool (quality-updater): "Audit code quality and design patterns..."
 
 **Rule of Thumb**: If operation B depends on result of operation A, use sequential. If operations are independent, use parallel.
 
-### Combining Parallel and Sequential Operations
+### Combining Parallel and Sequential Operations {#combining-parallel-and-sequential-operations}
 
 **Pattern**: When workflow has both parallel and sequential components, maximize parallelism within each message while maintaining necessary sequencing between messages.
 

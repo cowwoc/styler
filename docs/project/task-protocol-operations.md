@@ -24,7 +24,7 @@ This document contains:
 
 ---
 
-### COMPLETE → CLEANUP
+### COMPLETE → CLEANUP {#complete-cleanup}
 **Mandatory Conditions:**
 - [ ] All work already committed to task branch (from USER REVIEW checkpoint)
 - [ ] todo.md removed from todo list and added to changelog.md
@@ -66,7 +66,7 @@ If `./mvnw verify` fails on main branch after merge (despite passing in worktree
    ```
 7. **Retry merge to main** only after worktree clean build passes
 
-**Rationale**: The main branch must NEVER contain broken commits. If build failures occur post-merge, the merge itself was premature and must be undone. All fixes must be applied in the task worktree and re-verified before attempting merge again.
+The main branch must NEVER contain broken commits. If build failures occur post-merge, the merge itself was premature and must be undone. All fixes must be applied in the task worktree and re-verified before attempting merge again.
 
 **Evidence Required:**
 - **Pre-merge build success in worktree** (`./mvnw clean verify` passes before merge attempt)
@@ -101,7 +101,7 @@ Task tool (quality-updater): {...}
 
 ---
 
-### Pattern 2: Predictive Prefetching (INIT) - **MANDATORY**
+### Predictive Prefetching (INIT) - **MANDATORY** {#predictive-prefetching-init---mandatory}
 
 **CRITICAL REQUIREMENT**: ALL predictable resources MUST be loaded in SINGLE message
 
@@ -133,7 +133,7 @@ Glob "src/main/java/**/*Target*.java"
 
 ---
 
-### Pattern 3: Fail-Fast Validation (IMPLEMENTATION)
+### Fail-Fast Validation (IMPLEMENTATION) {#fail-fast-validation-implementation}
 
 **DO** (incremental validation):
 ```bash
@@ -170,7 +170,7 @@ Edit Component3.java
 
 ---
 
-### Pattern 4: Pre-Validation Checklist (IMPLEMENTATION Exit)
+### Pre-Validation Checklist (IMPLEMENTATION Exit) {#pre-validation-checklist-implementation-exit}
 
 **MANDATORY GATES BEFORE EXITING IMPLEMENTATION**
 
@@ -198,7 +198,7 @@ find src/test -name "*Test.java" -exec grep -c "@Test" {} + | awk '{sum+=$1} END
 # Gate 5: Build verification
 ./mvnw clean verify
 # Exit code: 0 (full build passes with clean compilation)
-# Rationale: clean build prevents stale module-info.class from compile-only builds
+# Clean build prevents stale module-info.class from compile-only builds
 ```
 
 **CHECKLIST DETAILS:**
@@ -294,7 +294,7 @@ jq '.state = "IMPLEMENTATION"' $LOCK_FILE > /tmp/lock.json && mv /tmp/lock.json 
 
 ---
 
-### Pattern 5: Implementation Rounds (Reviewer/Updater Iteration)
+### Implementation Rounds (Reviewer/Updater Iteration) {#implementation-rounds-reviewerupdater-iteration}
 
 **CRITICAL PATTERN**: Implementation uses BOTH reviewer and updater agents in iterative cycles.
 
@@ -368,9 +368,9 @@ Fix checkstyle violation 2
 # = 60 verification cycles, 45-50 min wasted
 ```
 
-### Pattern 6: Multi-Agent Implementation Commit History Examples
+### Multi-Agent Implementation Commit History Examples {#multi-agent-implementation-commit-history-examples}
 
-**PURPOSE**: Demonstrate CORRECT vs INCORRECT commit history patterns that show multi-agent implementation.
+Demonstrate CORRECT vs INCORRECT commit history patterns that show multi-agent implementation.
 
 **INCORRECT Pattern - Single Commit (Protocol Violation)**:
 ```bash
@@ -466,9 +466,9 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ---
 
-## TROUBLESHOOTING
+## TROUBLESHOOTING {#troubleshooting}
 
-### Issue: Implementation Rounds Taking >15 Minutes
+### Issue: Implementation Rounds Taking >15 Minutes {#issue-implementation-rounds-taking-15-minutes}
 
 **Symptoms**:
 - Multiple implementation rounds (>3)
@@ -498,7 +498,7 @@ Task tool (agent-1) + Task tool (agent-2) + Task tool (agent-3)
 
 ---
 
-### Issue: High Token Usage (>65,000)
+### Issue: High Token Usage (>65,000) {#issue-high-token-usage-65000}
 
 **Symptoms**:
 - Conversation history exceeding 65,000 tokens
@@ -531,7 +531,7 @@ Task tool (agent-1) + Task tool (agent-2) + Task tool (agent-3)
 
 ---
 
-### Issue: Sequential Discovery Delays (>5 Round-Trips)
+### Issue: Sequential Discovery Delays (>5 Round-Trips) {#issue-sequential-discovery-delays-5-round-trips}
 
 **Symptoms**:
 - Many "Need to read FileX" messages
@@ -562,7 +562,7 @@ Read docs/code-style/*-claude.md
 
 ---
 
-### Issue: Unanimous Approval Not Achieved
+### Issue: Unanimous Approval Not Achieved {#issue-unanimous-approval-not-achieved}
 
 **Symptoms**:
 - Agents returning ❌ REJECTED after multiple rounds
@@ -594,9 +594,9 @@ Read docs/code-style/*-claude.md
 
 ---
 
-## BEST PRACTICES
+## BEST PRACTICES {#best-practices}
 
-### 1. Risk Assessment
+### 1. Risk Assessment {#1-risk-assessment}
 
 ```python
 # Automatic risk determination
@@ -617,7 +617,7 @@ if any(keyword in task_description for keyword in
     risk = "HIGH"  # Force escalation
 ```
 
-### 2. Agent Selection
+### 2. Agent Selection {#2-agent-selection}
 
 ```python
 # HIGH-RISK (mandatory agents)
@@ -642,7 +642,7 @@ agents = ["architecture-reviewer", "quality-reviewer"]
 agents = []  # or ["quality-reviewer"] for technical docs
 ```
 
-### 3. Lock State Management
+### 3. Lock State Management {#3-lock-state-management}
 
 ```bash
 # Update lock state at each transition
@@ -833,7 +833,7 @@ NOT this (merge commit creates non-linear history):
 * 6a2b1c3 Previous commit on main
 ```
 
-### DEPENDENT TASK UPDATE PROCEDURE
+### DEPENDENT TASK UPDATE PROCEDURE {#dependent-task-update-procedure}
 
 **Purpose**: Automatically unblock tasks when their dependencies are satisfied, preventing tasks from
 remaining unnecessarily blocked.
@@ -934,7 +934,7 @@ Result in todo.md:
 grep "implement-line-length-formatter" todo.md | grep -q "READY:" && echo "✅ Task unblocked" || echo "❌ Task still blocked"
 ```
 
-### AUTOMATIC CONFLICT RESOLUTION VIA ATOMIC OPERATIONS
+### AUTOMATIC CONFLICT RESOLUTION VIA ATOMIC OPERATIONS {#automatic-conflict-resolution-via-atomic-operations}
 
 **DESIGN PRINCIPLE**: Race conditions are prevented automatically through atomic operations - no manual
 recovery needed.
@@ -976,7 +976,7 @@ recovery needed.
 
 ---
 
-### CLEANUP (Final State)
+### CLEANUP (Final State) {#cleanup-final-state}
 **Mandatory Conditions (ORDERED EXECUTION REQUIRED):**
 
 **Phase 1: Pre-Cleanup Verification**
@@ -1154,9 +1154,9 @@ rm -rf /workspace/tasks/refactor-line-wrapping-architecture
 echo "✅ CLEANUP complete: All worktrees and branches removed"
 ```
 
-## TRANSITION VALIDATION FUNCTIONS
+## TRANSITION VALIDATION FUNCTIONS {#transition-validation-functions}
 
-### Universal Validation Requirements
+### Universal Validation Requirements {#universal-validation-requirements}
 Every transition MUST execute these checks:
 
 ```python
@@ -1190,7 +1190,7 @@ def validate_evidence(evidence_type, evidence_data):
     pass
 ```
 
-### State Enforcement Functions
+### State Enforcement Functions {#state-enforcement-functions}
 
 ```bash
 # Function: Update task state
@@ -1239,7 +1239,7 @@ validate_state_transition() {
 }
 ```
 
-### State Transition Reversibility Table
+### State Transition Reversibility Table {#state-transition-reversibility-table}
 
 **CRITICAL REFERENCE**: This table documents which state transitions are reversible (can go back) vs irreversible (forward-only).
 
@@ -1410,9 +1410,9 @@ Outcome: Remove worktrees, remove locks, finalize task
 - Evidence of resolution attempt (commit showing fixes, updated task.md)
 ```
 
-## AGENT INTERACTION PROTOCOLS
+## AGENT INTERACTION PROTOCOLS {#agent-interaction-protocols}
 
-### Parallel Agent Invocation Pattern
+### Parallel Agent Invocation Pattern {#parallel-agent-invocation-pattern}
 ```python
 # Template for requirements gathering
 agent_prompt_template = """
@@ -1457,7 +1457,7 @@ def invoke_requirements_agents(required_agents, task_context):
     return execute_parallel_agents(agent_calls)
 ```
 
-### Review Agent Invocation Pattern
+### Review Agent Invocation Pattern {#review-agent-invocation-pattern}
 ```python
 review_prompt_template = """
 Task: {task_description}
@@ -1481,9 +1481,9 @@ This decision determines workflow continuation.
 """
 ```
 
-## ERROR HANDLING & RECOVERY
+## ERROR HANDLING & RECOVERY {#error-handling-recovery}
 
-### Transition Failure Recovery
+### Transition Failure Recovery {#transition-failure-recovery}
 ```python
 def handle_transition_failure(current_state, attempted_state, failure_reason):
     """Handle failed state transitions with appropriate recovery"""
@@ -1510,7 +1510,7 @@ def handle_transition_failure(current_state, attempted_state, failure_reason):
     execute_recovery_action(action, current_state, attempted_state, failure_reason)
 ```
 
-### Multi-Instance Coordination
+### Multi-Instance Coordination {#multi-instance-coordination}
 ```bash
 # Lock conflict resolution
 handle_lock_conflict() {
@@ -1541,9 +1541,9 @@ handle_lock_conflict() {
 }
 ```
 
-## COMPLIANCE VERIFICATION
+## COMPLIANCE VERIFICATION {#compliance-verification}
 
-### Pre-Task Validation Checklist
+### Pre-Task Validation Checklist {#pre-task-validation-checklist}
 ```bash
 # MANDATORY before ANY task execution
 pre_task_validation() {
@@ -1571,7 +1571,7 @@ pre_task_validation() {
 }
 ```
 
-### Continuous Compliance Monitoring
+### Continuous Compliance Monitoring {#continuous-compliance-monitoring}
 ```bash
 # Execute after each state transition
 post_transition_validation() {
@@ -1596,7 +1596,7 @@ post_transition_validation() {
 }
 ```
 
-### Final Compliance Audit
+### Final Compliance Audit {#final-compliance-audit}
 ```bash
 # MANDATORY before CLEANUP state
 final_compliance_audit() {
@@ -1653,9 +1653,9 @@ final_compliance_audit() {
 }
 ```
 
-## VIOLATION PREVENTION PATTERNS
+## VIOLATION PREVENTION PATTERNS {#violation-prevention-patterns}
 
-### Pre-Task Validation Block
+### Pre-Task Validation Block {#pre-task-validation-block}
 **MANDATORY before ANY task execution:**
 ```bash
 # Session ID validation
@@ -1668,7 +1668,7 @@ export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && [ -n "$SESSION_ID" ]
 [ -f "todo.md" ] || (echo "ERROR: todo.md not accessible" && exit 1)
 ```
 
-### Mandatory task.md Creation
+### Mandatory task.md Creation {#mandatory-taskmd-creation}
 
 **CRITICAL RESPONSIBILITY CLARIFICATION**:
 - **WHO**: Main coordination agent (the agent that executed INIT and CLASSIFIED states)
@@ -1690,17 +1690,17 @@ export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && [ -n "$SESSION_ID" ]
 ```markdown
 # Task Context: {task-name}
 
-## Task Objective
+## Task Objective {#task-objective}
 {task-description}
 
-## Scope Definition
+## Scope Definition {#scope-definition}
 **FILES IN SCOPE:**
 - [List exact files/directories that stakeholder agents are authorized to analyze]
 
 **FILES OUT OF SCOPE:**
 - [List directories/files explicitly excluded from analysis]
 
-## Stakeholder Agent Reports
+## Stakeholder Agent Reports {#stakeholder-agent-reports}
 **Requirements Phase:**
 - architecture-reviewer-requirements.md (when completed)
 - [other-agent]-requirements.md (when completed)
@@ -1709,7 +1709,7 @@ export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && [ -n "$SESSION_ID" ]
 - architecture-reviewer-review1.md (when completed)
 - [other-agent]-review1.md (when completed)
 
-## Implementation Status
+## Implementation Status {#implementation-status}
 - [ ] INIT: Task initialization
 - [ ] CLASSIFIED: Risk assessment
 - [ ] REQUIREMENTS: Stakeholder analysis
@@ -1724,7 +1724,7 @@ export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && [ -n "$SESSION_ID" ]
 **CRITICAL LIFECYCLE NOTE**: task.md is created during CLASSIFIED state and persists through entire task
 execution. It is ONLY removed during CLEANUP state along with all other task artifacts.
 
-### Atomic Lock Acquisition Pattern
+### Atomic Lock Acquisition Pattern {#atomic-lock-acquisition-pattern}
 ```bash
 # MANDATORY atomic lock acquisition
 export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && mkdir -p ../../../locks && (set -C; echo '{"session_id": "'${SESSION_ID}'", "start_time": "'$(date '+%Y-%m-%d %H:%M:%S %Z')'"}' > ../../../locks/{task-name}.json) 2>/dev/null && echo "LOCK_SUCCESS" || echo "LOCK_FAILED"
@@ -1736,7 +1736,7 @@ if [[ "$lock_result" != *"LOCK_SUCCESS"* ]]; then
 fi
 ```
 
-### Temporary File Management Setup
+### Temporary File Management Setup {#temporary-file-management-setup}
 **BEFORE IMPLEMENTATION BEGINS (Mandatory for all tasks):**
 ```bash
 # TEMP_DIRECTORY_CREATION: Set up isolated temporary file space
@@ -1761,7 +1761,7 @@ fi
 - Debug logs and intermediate processing files
 - Generated test data and mock objects
 
-### Implementation Safety Guards
+### Implementation Safety Guards {#implementation-safety-guards}
 **Before ANY Write/Edit/MultiEdit operation:**
 ```bash
 # Working directory validation
@@ -1771,7 +1771,7 @@ pwd | grep -q "/workspace/tasks/.*/code$" || (echo "ERROR: Invalid working direc
 git status --porcelain | grep -E "(dist/|node_modules/|target/|\.jar$)" && (echo "ERROR: Prohibited files detected" && exit 1)
 ```
 
-### Build Validation Gates
+### Build Validation Gates {#build-validation-gates}
 **Mandatory after implementation:**
 ```bash
 # Full verification (build + tests + linters) before completion
@@ -1780,7 +1780,7 @@ git status --porcelain | grep -E "(dist/|node_modules/|target/|\.jar$)" && (echo
 # Note: 'mvnw verify' executes: compile → test → checkstyle → PMD → all quality gates
 ```
 
-### Decision Parsing Enforcement
+### Decision Parsing Enforcement {#decision-parsing-enforcement}
 **After ANY agent invocation:**
 ```bash
 # Extract agent decision
@@ -1798,7 +1798,7 @@ elif [[ "$decision" == *"✅ APPROVED"* ]]; then
 fi
 ```
 
-### Protocol Violation Reporting Pattern
+### Protocol Violation Reporting Pattern {#protocol-violation-reporting-pattern}
 ```
 MAINTAIN THROUGHOUT TASK EXECUTION:
 1. Track all format violations in TodoWrite tool as separate item
@@ -1831,9 +1831,9 @@ violation_tracking = {
 update_todo_with_violation_report()
 ```
 
-## CONTEXT PRESERVATION RULES
+## CONTEXT PRESERVATION RULES {#context-preservation-rules}
 
-### Single Session Continuity
+### Single Session Continuity {#single-session-continuity}
 **Requirements:**
 - All task execution in single Claude session
 - **EXPECTED USER INTERACTION**: Wait for user approval at two mandatory checkpoints:
@@ -1847,7 +1847,7 @@ update_todo_with_violation_report()
 - These do NOT violate the "autonomous completion" principle
 - These ensure user oversight at critical decision points
 
-### Tool Call Batching
+### Tool Call Batching {#tool-call-batching}
 **Optimization patterns:**
 ```python
 # Batch related operations in single message
@@ -1861,7 +1861,7 @@ parallel_tool_calls = [
 execute_parallel_tools(parallel_tool_calls)
 ```
 
-### State Persistence Patterns
+### State Persistence Patterns {#state-persistence-patterns}
 **Critical state tracking:**
 - Current state in state.json file
 - Session ID in environment variables
@@ -1876,9 +1876,9 @@ expected_state="$1"
 [ "$current_state" = "$expected_state" ] || (echo "ERROR: State inconsistency" && exit 1)
 ```
 
-## TOOL-SPECIFIC OPTIMIZATION PATTERNS
+## TOOL-SPECIFIC OPTIMIZATION PATTERNS {#tool-specific-optimization-patterns}
 
-### Bash Tool Usage
+### Bash Tool Usage {#bash-tool-usage}
 ```bash
 # Combine related operations with safety checks
 command1 && echo "SUCCESS" || (echo "FAILED" && exit 1)
@@ -1892,7 +1892,7 @@ result=$(command_with_output)
 # ✅ git rebase main
 ```
 
-### Read Tool Usage
+### Read Tool Usage {#read-tool-usage}
 ```python
 # Batch reads for related content
 related_files = [
@@ -1907,7 +1907,7 @@ for file_path in related_files:
     analyze_content(content)
 ```
 
-### Task Tool Usage
+### Task Tool Usage {#task-tool-usage}
 ```python
 # Parallel agent calls in single message
 agent_calls = [
@@ -1927,7 +1927,7 @@ agent_calls = [
 execute_parallel_agents(agent_calls)
 ```
 
-### TodoWrite Tool Usage
+### TodoWrite Tool Usage {#todowrite-tool-usage}
 ```python
 # Frequent progress updates
 update_todo_progress("requirements", "in_progress", "Gathering stakeholder requirements")
@@ -1943,9 +1943,9 @@ todo_item = {
 verify_workflow_position_via_todo_state()
 ```
 
-## ERROR RECOVERY PROTOCOLS
+## ERROR RECOVERY PROTOCOLS {#error-recovery-protocols}
 
-### Violation Detection Triggers
+### Violation Detection Triggers {#violation-detection-triggers}
 **Automatic violation detection:**
 - Wrong directory (pwd check fails)
 - Missing locks (lock file check fails)
@@ -1955,7 +1955,7 @@ verify_workflow_position_via_todo_state()
 
 **Recovery Action**: TERMINATE current task, restart from INIT state
 
-### Multi-Instance Conflict Resolution
+### Multi-Instance Conflict Resolution {#multi-instance-conflict-resolution}
 **Lock conflict handling:**
 ```bash
 handle_lock_conflict() {
@@ -1975,7 +1975,7 @@ handle_lock_conflict() {
 }
 ```
 
-### Partial Completion Recovery
+### Partial Completion Recovery {#partial-completion-recovery}
 
 **COMPREHENSIVE RECOVERY PROCEDURES**: This section expands on partial completion scenarios with detailed recovery workflows.
 
@@ -1985,7 +1985,7 @@ handle_lock_conflict() {
 3. **Build Failure**: Compilation/test failures after partial implementation
 4. **State Corruption**: Lock file or worktree inconsistencies
 
-#### Recovery Procedure 1: Session Interruption Recovery
+#### Recovery Procedure 1: Session Interruption Recovery {#recovery-procedure-1-session-interruption-recovery}
 
 **Task interruption handling:**
 ```bash
@@ -2056,7 +2056,7 @@ else
 fi
 ```
 
-#### Recovery Procedure 2: Agent Partial Completion
+#### Recovery Procedure 2: Agent Partial Completion {#recovery-procedure-2-agent-partial-completion}
 
 **Scenario**: During REQUIREMENTS/IMPLEMENTATION, some agents complete successfully while others fail, timeout, or return errors.
 
@@ -2179,7 +2179,7 @@ recover_partial_agent_completion() {
 }
 ```
 
-#### Recovery Procedure 3: Build Failure After Partial Implementation
+#### Recovery Procedure 3: Build Failure After Partial Implementation {#recovery-procedure-3-build-failure-after-partial-implementation}
 
 **Scenario**: Some agents merged changes to task branch, but final build verification fails.
 
@@ -2272,7 +2272,7 @@ recover_build_failure_partial_implementation() {
 }
 ```
 
-#### Recovery Procedure 4: State Corruption Recovery
+#### Recovery Procedure 4: State Corruption Recovery {#recovery-procedure-4-state-corruption-recovery}
 
 **Scenario**: Lock file state doesn't match actual work completed, or worktrees have issues.
 
@@ -2389,7 +2389,7 @@ recover_state_corruption() {
 }
 ```
 
-#### Recovery Decision Tree
+#### Recovery Decision Tree {#recovery-decision-tree}
 
 **When to Apply Each Recovery Procedure**:
 
@@ -2407,7 +2407,7 @@ ELSE IF (lock file or worktrees corrupted):
     → Apply Recovery Procedure 4 (State Corruption Recovery)
 ```
 
-#### Recovery Escalation Policy
+#### Recovery Escalation Policy {#recovery-escalation-policy}
 
 **When to escalate to user**:
 1. Agent failure after 3 retries
@@ -2449,11 +2449,11 @@ if [ -f "state.json" ]; then
 fi
 ```
 
-### Multiple Interruption Handling
+### Multiple Interruption Handling {#multiple-interruption-handling}
 
 **CRITICAL REQUIREMENT**: When user interrupts multiple times before resuming work, maintain correct state tracking and resume from the original pre-interruption state.
 
-#### Scenario: Successive Interruptions
+#### Scenario: Successive Interruptions {#scenario-successive-interruptions}
 
 **Common Pattern**:
 1. Agent working in IMPLEMENTATION state
@@ -2464,7 +2464,7 @@ fi
 
 **Problem**: Agent must resume from IMPLEMENTATION (original state), NOT from whatever activity occurred during interruptions.
 
-#### State Preservation During Interruptions
+#### State Preservation During Interruptions {#state-preservation-during-interruptions}
 
 **Core Principle**: Lock file state NEVER changes during interruption handling.
 
@@ -2489,7 +2489,7 @@ fi
 # Check 4: Only when user says "continue/resume/proceed" → resume active state
 ```
 
-#### Interruption Type Classification
+#### Interruption Type Classification {#interruption-type-classification}
 
 **Non-Resuming Interruptions** (do NOT change state, do NOT trigger resumption):
 - User questions about code/architecture/implementation
@@ -2505,7 +2505,7 @@ fi
 - User says "keep going"
 - User says "continue with the task"
 
-#### Multi-Interruption Handling Logic
+#### Multi-Interruption Handling Logic {#multi-interruption-handling-logic}
 
 ```bash
 handle_user_command_during_task() {
@@ -2581,7 +2581,7 @@ handle_user_command_during_task() {
 }
 ```
 
-#### Resumption Logic After Multiple Interruptions
+#### Resumption Logic After Multiple Interruptions {#resumption-logic-after-multiple-interruptions}
 
 ```bash
 resume_task_from_active_state() {
@@ -2637,7 +2637,7 @@ resume_task_from_active_state() {
 }
 ```
 
-#### Examples: Multi-Interruption Scenarios
+#### Examples: Multi-Interruption Scenarios {#examples-multi-interruption-scenarios}
 
 **Example 1: Question → Audit → Question → Resume**
 
@@ -2705,7 +2705,7 @@ User: "Continue with the implementation plan"
 Agent: [Resumes SYNTHESIS state - completes plan and presents for user approval]
 ```
 
-#### Anti-Patterns: What NOT To Do
+#### Anti-Patterns: What NOT To Do {#anti-patterns-what-not-to-do}
 
 **❌ WRONG: Treating each interruption as a state change**
 ```bash
@@ -2749,7 +2749,7 @@ User: "Explain your approach" → lock still shows IMPLEMENTATION
 User: "Continue" → Resume IMPLEMENTATION (state was preserved)
 ```
 
-#### Interruption Context Tracking
+#### Interruption Context Tracking {#interruption-context-tracking}
 
 **Optional Enhancement**: Track interruption history for context (NOT required, but useful for debugging)
 
@@ -2773,7 +2773,7 @@ get_interruption_count() {
 }
 ```
 
-#### Checkpoint Interaction: Interruptions During User Approval Wait
+#### Checkpoint Interaction: Interruptions During User Approval Wait {#checkpoint-interaction-interruptions-during-user-approval-wait}
 
 **Special Case**: User asks questions WHILE at a checkpoint (SYNTHESIS or AWAITING_USER_APPROVAL)
 
@@ -2799,9 +2799,9 @@ Agent: [Recognizes approval, transitions SYNTHESIS → IMPLEMENTATION]
 
 **Key Insight**: At checkpoints, interruptions (questions) are STILL non-resuming. Only approval keywords trigger state transition.
 
-## WORKFLOW EXECUTION ENGINE
+## WORKFLOW EXECUTION ENGINE {#workflow-execution-engine}
 
-### Main Task Execution Function
+### Main Task Execution Function {#main-task-execution-function}
 ```bash
 execute_task_protocol() {
     local task_name=$1
@@ -2945,7 +2945,7 @@ present_changes_and_wait_for_user_approval() {
 }
 ```
 
-## MIGRATION FROM PHASE-BASED PROTOCOL
+## MIGRATION FROM PHASE-BASED PROTOCOL {#migration-from-phase-based-protocol}
 
 **Phase-to-State Mapping**: Phase 1=REQUIREMENTS, Phase 2=SYNTHESIS, Phase 3=IMPLEMENTATION, Phase
 4=VALIDATION, Phase 5=Resolution cycles, Phase 6=REVIEW, Phase 7=CLEANUP

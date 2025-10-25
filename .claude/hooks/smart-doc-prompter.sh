@@ -5,7 +5,9 @@ set -euo pipefail
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 
 # Fail gracefully without blocking Claude Code
-trap 'echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Unexpected error at line $LINENO" >&2; exit 0' ERR
+trap 'echo "[HOOK DEBUG] smart-doc-prompter.sh FAILED at line $LINENO" >&2; echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Unexpected error at line $LINENO" >&2; exit 0' ERR
+
+echo "[HOOK DEBUG] smart-doc-prompter.sh START" >&2
 
 # Consolidated Smart Documentation Prompter
 # Handles all context-aware documentation prompting with session tracking
@@ -48,13 +50,15 @@ if [[ -z "$HOOK_EVENT" ]]; then
 	exit 0  # Non-blocking exit
 fi
 
+# Extract session ID from JSON input
+SESSION_ID=$(extract_json_value "$JSON_INPUT" "session_id")
+
 # Require session ID - fail fast if not provided
-if [ -z "${CLAUDE_SESSION_ID:-}" ]; then
-	echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: CLAUDE_SESSION_ID environment variable not set" >&2
+if [ -z "$SESSION_ID" ]; then
+	echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: session_id must be provided in hook JSON input" >&2
 	echo "   This hook requires a session ID for tracking" >&2
 	exit 0  # Non-blocking exit
 fi
-SESSION_ID="$CLAUDE_SESSION_ID"
 
 # Detect current agent type context
 CURRENT_AGENT_TYPE="main"
@@ -299,5 +303,7 @@ case "$HOOK_EVENT" in
 		echo "⚠️  HOOK WARNING [$SCRIPT_PATH]: Unknown hook event type: $HOOK_EVENT" >&2
 		;;
 esac
+
+echo "[HOOK DEBUG] smart-doc-prompter.sh END" >&2
 
 exit 0
