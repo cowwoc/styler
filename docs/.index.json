@@ -1,0 +1,978 @@
+{
+  "docs/README.md": {
+  }
+,
+  "docs/code-style-human.md": {
+  }
+,
+  "docs/code-style/common-claude.md": {
+  }
+,
+  "docs/code-style/common-human.md": {
+  }
+,
+  "docs/code-style/java-claude.md": {
+  }
+,
+  "docs/code-style/java-human.md": {
+  }
+,
+  "docs/code-style/maven-claude.md": {
+  }
+,
+  "docs/code-style/maven-human.md": {
+  }
+,
+  "docs/code-style/testing-claude.md": {
+  }
+,
+  "docs/code-style/testing-human.md": {
+  }
+,
+  "docs/code-style/typescript-claude.md": {
+  }
+,
+  "docs/code-style/typescript-human.md": {
+  }
+,
+  "docs/configuration.md": {
+  }
+,
+  "docs/optional-modules/code-policies.md": {
+  }
+,
+  "docs/optional-modules/tool-usage.md": {
+  }
+,
+  "docs/performance/benchmark-execution.md": {
+  }
+,
+  "docs/project/agent-common-patterns.md": {
+  }
+,
+  "docs/project/architecture.md": {
+    "core-architecture-objective": {"start": 6, "end": 11}
+,
+    "system-architecture-overview": {"start": 12, "end": 38}
+,
+    "module-architecture": {"start": 39, "end": 40}
+,
+    "core-modules-structure": {"start": 41, "end": 52}
+,
+    "module-dependencies": {"start": 53, "end": 67}
+,
+    "detailed-component-design": {"start": 68, "end": 69}
+,
+    "1-styler-ast-core": {"start": 70, "end": 105}
+,
+    "2-styler-parser": {"start": 106, "end": 191}
+,
+    "3-styler-formatter-api": {"start": 192, "end": 226}
+,
+    "4-styler-formatter-impl": {"start": 227, "end": 259}
+,
+    "5-styler-config": {"start": 260, "end": 328}
+,
+    "6-styler-engine": {"start": 329, "end": 332}
+,
+    "multi-threaded-processing-design": {"start": 333, "end": 340}
+,
+    "security-and-resource-management": {"start": 341, "end": 455}
+,
+    "7-styler-security": {"start": 456, "end": 487}
+,
+    "8-styler-cli": {"start": 488, "end": 521}
+,
+    "security-architecture": {"start": 522, "end": 523}
+,
+    "defense-in-depth-strategy": {"start": 524, "end": 549}
+,
+    "threat-model": {"start": 550, "end": 566}
+,
+    "performance-architecture": {"start": 567, "end": 568}
+,
+    "multi-threading-design": {"start": 569, "end": 589}
+,
+    "benchmarking-and-profiling": {"start": 590, "end": 597}
+,
+    "plugin-development-architecture": {"start": 598, "end": 599}
+,
+    "plugin-api-design": {"start": 600, "end": 615}
+,
+    "extensibility-patterns": {"start": 616, "end": 623}
+,
+    "deployment-and-integration": {"start": 624, "end": 625}
+,
+    "build-tool-integration": {"start": 626, "end": 652}
+,
+    "ide-integration": {"start": 653, "end": 660}
+,
+    "cicd-integration": {"start": 661, "end": 671}
+,
+    "monitoring-and-observability": {"start": 672, "end": 673}
+,
+    "metrics-and-logging": {"start": 674, "end": 693}
+,
+    "migration-strategy-from-legacy-codebase": {"start": 694, "end": 695}
+,
+    "phase-1-foundation": {"start": 696, "end": 701}
+,
+    "phase-2-parser-implementation": {"start": 702, "end": 707}
+,
+    "phase-3-formatter-migration": {"start": 708, "end": 713}
+,
+    "phase-4-engine-and-cli": {"start": 714, "end": 719}
+,
+    "phase-5-production-readiness": {"start": 720, "end": 725}
+,
+    "quality-assurance": {"start": 726, "end": 727}
+,
+    "testing-strategy": {"start": 728, "end": 747}
+,
+    "code-quality": {"start": 748, "end": 763}
+  }
+,
+  "docs/project/build-system.md": {
+    "environment-setup": {"start": 6, "end": 13}
+,
+    "test-module-structure-jpms-compliance": {"start": 14, "end": 49}
+,
+    "test-module-name-verification": {"start": 50, "end": 94}
+,
+    "build-validation-commands": {"start": 95, "end": 115}
+,
+    "build-output-efficiency": {"start": 116, "end": 166}
+,
+    "maven-multi-module-setup": {"start": 167, "end": 168}
+,
+    "pomxml-style-guidelines": {"start": 169, "end": 214}
+,
+    "maven-dependency-management-standards-critical": {"start": 215, "end": 283}
+,
+    "critical-build-validation-workflow": {"start": 284, "end": 291}
+,
+    "timeout-configuration": {"start": 292, "end": 307}
+,
+    "formatter-execution-modes": {"start": 308, "end": 314}
+,
+    "project-structure": {"start": 315, "end": 316}
+,
+    "core-module-styler-ast-coresrcmainjavaiogithubstylerast": {"start": 317, "end": 327}
+,
+    "parser-module-styler-parsersrcmainjavaiogithubstylerparser": {"start": 328, "end": 338}
+,
+    "formatter-module-styler-formatter-implsrcmainjavaiogithubstylerformatter": {"start": 339, "end": 348}
+,
+    "cli-module-styler-cli": {"start": 349, "end": 379}
+,
+    "engine-module-styler-engine": {"start": 380, "end": 389}
+,
+    "supporting-structure": {"start": 390, "end": 403}
+,
+    "maven-build-cache-compatibility": {"start": 404, "end": 407}
+,
+    "requirements": {"start": 408, "end": 417}
+,
+    "how-it-works": {"start": 418, "end": 432}
+,
+    "cache-corruption-prevention": {"start": 433, "end": 447}
+,
+    "cache-configuration": {"start": 448, "end": 463}
+,
+    "performance-benefits": {"start": 464, "end": 470}
+  }
+,
+  "docs/project/consolidated-hooks-design.md": {
+  }
+,
+  "docs/project/documentation-references.md": {
+    "anchor-id": {"start": 45, "end": 55}
+,
+    "lock-ownership": {"start": 56, "end": 56}
+,
+    "multi-agent-implementation-workflow": {"start": 57, "end": 57}
+,
+    "init-classified": {"start": 58, "end": 210}
+  }
+,
+  "docs/project/git-workflow.md": {
+    "git-working-directory-requirements": {"start": 5, "end": 20}
+,
+    "commit-squashing-procedures": {"start": 21, "end": 22}
+,
+    "overview": {"start": 23, "end": 33}
+,
+    "task-branch-squashing-task-protocol": {"start": 34, "end": 124}
+,
+    "squash-enforcement-workflow": {"start": 125, "end": 158}
+,
+    "interactive-rebase-primary-method": {"start": 159, "end": 163}
+,
+    "interactive-rebase-procedure": {"start": 164, "end": 165}
+,
+    "1-create-backup-branch": {"start": 166, "end": 174}
+,
+    "2-create-chronological-rebase-plan": {"start": 175, "end": 247}
+,
+    "3-configure-squash-operations-with-chronological-validation": {"start": 248, "end": 301}
+,
+    "4-handle-conflicts-during-rebase": {"start": 302, "end": 343}
+,
+    "5-advanced-conflict-resolution-strategies": {"start": 344, "end": 398}
+,
+    "6-advanced-conflict-handling-scenarios": {"start": 399, "end": 440}
+,
+    "7-error-recovery-during-rebase": {"start": 441, "end": 474}
+,
+    "8-verify-results-with-chronological-validation": {"start": 475, "end": 522}
+,
+    "9-error-recovery-and-critical-failure-analysis": {"start": 523, "end": 555}
+,
+    "10-finalization": {"start": 556, "end": 567}
+,
+    "10-cleanup-backup-branch": {"start": 568, "end": 575}
+,
+    "critical-success-factors-for-complex-squash-operations": {"start": 576, "end": 595}
+,
+    "handling-non-contiguous-commits": {"start": 596, "end": 600}
+,
+    "decision-matrix-for-non-contiguous-commits": {"start": 601, "end": 612}
+,
+    "strategy-1-interactive-rebase-for-non-contiguous-historical-commits": {"start": 613, "end": 663}
+,
+    "strategy-2-fixup-workflow-for-future-development": {"start": 664, "end": 692}
+,
+    "critical-success-factors-for-non-contiguous-squashing": {"start": 693, "end": 715}
+,
+    "when-interactive-rebase-may-not-be-suitable": {"start": 716, "end": 727}
+,
+    "cherry-pick-method-advancedfallback-approach": {"start": 728, "end": 731}
+,
+    "critical-user-request-validation": {"start": 732, "end": 746}
+,
+    "procedure": {"start": 747, "end": 748}
+,
+    "1-create-backup-branch": {"start": 749, "end": 757}
+,
+    "2-analyze-commit-structure-and-validate-user-request": {"start": 758, "end": 792}
+,
+    "3-create-working-branch": {"start": 793, "end": 803}
+,
+    "4-perform-targeted-soft-reset": {"start": 804, "end": 830}
+,
+    "5-handle-staging-area-for-exact-target-commits": {"start": 831, "end": 849}
+,
+    "6-create-squashed-commit": {"start": 850, "end": 866}
+,
+    "7-restore-all-non-target-commits": {"start": 867, "end": 885}
+,
+    "8-verify-result": {"start": 886, "end": 907}
+,
+    "9-test-build-integrity": {"start": 908, "end": 916}
+,
+    "10-user-approval": {"start": 917, "end": 920}
+,
+    "11-replace-original-branch-if-approved": {"start": 921, "end": 932}
+,
+    "12-cleanup-backup-branch-if-approved": {"start": 933, "end": 942}
+,
+    "important-notes": {"start": 943, "end": 950}
+,
+    "critical-data-loss-prevention": {"start": 951, "end": 969}
+,
+    "when-to-use-this-procedure": {"start": 970, "end": 977}
+,
+    "when-not-to-use": {"start": 978, "end": 989}
+  }
+,
+  "docs/project/hook-consolidation-summary.md": {
+  }
+,
+  "docs/project/init-phase-template.md": {
+  }
+,
+  "docs/project/main-agent-coordination.md": {
+    "source-code-creation": {"start": 11, "end": 48}
+,
+    "lock-ownership": {"start": 49, "end": 82}
+,
+    "worktree-isolation": {"start": 83, "end": 84}
+,
+    "during-task-execution": {"start": 85, "end": 95}
+,
+    "during-cleanup-cleanup-state": {"start": 96, "end": 106}
+,
+    "implementation-role-boundaries": {"start": 107, "end": 110}
+,
+    "terminology-definitions": {"start": 111, "end": 159}
+,
+    "main-agent-role-during-implementation-state-coordination-only": {"start": 160, "end": 178}
+,
+    "prohibited-actions-during-implementation-state": {"start": 179, "end": 210}
+,
+    "incorrect-main-agent-direct-implementation": {"start": 211, "end": 221}
+,
+    "correct-delegation-pattern": {"start": 222, "end": 242}
+,
+    "stakeholder-agent-role-implementation-only": {"start": 243, "end": 253}
+,
+    "session-summary-documentation-requirements": {"start": 254, "end": 263}
+,
+    "implementation-phase-summary": {"start": 264, "end": 265}
+,
+    "agent-invocations-parallel-launch": {"start": 266, "end": 271}
+,
+    "agent-commits-to-task-branch": {"start": 272, "end": 277}
+,
+    "verification": {"start": 278, "end": 284}
+,
+    "role-verification-questions": {"start": 285, "end": 291}
+,
+    "required-pattern-after-synthesis-approval": {"start": 292, "end": 332}
+,
+    "implementation-status": {"start": 333, "end": 334}
+,
+    "agent-invocations": {"start": 335, "end": 460}
+,
+    "enforcement": {"start": 461, "end": 466}
+,
+    "agent-tool-limitation-recovery-pattern": {"start": 467, "end": 485}
+,
+    "edit-tool-whitespace-mismatch-recovery": {"start": 486, "end": 489}
+,
+    "state-based-editwrite-tool-permissions": {"start": 490, "end": 528}
+,
+    "post-implementation-issue-handling-decision-tree": {"start": 529, "end": 599}
+,
+    "re-delegation-workflow-when-violations-exceed-threshold": {"start": 600, "end": 654}
+,
+    "task-protocol": {"start": 655, "end": 673}
+,
+    "risk-based-protocol-selection": {"start": 674, "end": 697}
+,
+    "stakeholder-consensus-enforcement": {"start": 698, "end": 706}
+,
+    "autonomous-task-completion-requirement": {"start": 707, "end": 757}
+,
+    "user-approval-checkpoint-enforcement": {"start": 758, "end": 787}
+,
+    "plan-approval-checkpoint": {"start": 788, "end": 817}
+,
+    "approval-persistence-pattern": {"start": 818, "end": 892}
+,
+    "task-unavailability-handling": {"start": 893, "end": 897}
+,
+    "mandatory-availability-check": {"start": 898, "end": 905}
+,
+    "required-response-when-no-tasks-available": {"start": 906, "end": 935}
+,
+    "prohibited-patterns": {"start": 936, "end": 945}
+,
+    "required-patterns": {"start": 946, "end": 954}
+,
+    "long-term-solution-persistence": {"start": 955, "end": 959}
+,
+    "critical-persistence-requirements": {"start": 960, "end": 973}
+,
+    "prohibited-downgrade-patterns": {"start": 974, "end": 987}
+,
+    "giving-up-detection-patterns": {"start": 988, "end": 994}
+,
+    "unit-test-driven-bug-fixing": {"start": 995, "end": 1025}
+,
+    "stakeholder-agent-persistence-enforcement": {"start": 1026, "end": 1041}
+,
+    "implementation-persistence-patterns": {"start": 1042, "end": 1062}
+,
+    "scope-negotiation-persistence-integration": {"start": 1063, "end": 1086}
+,
+    "success-metrics-and-validation": {"start": 1087, "end": 1104}
+,
+    "repository-structure": {"start": 1105, "end": 1114}
+,
+    "continuous-workflow-mode": {"start": 1115, "end": 1123}
+,
+    "performance-optimization-requirements": {"start": 1124, "end": 1127}
+,
+    "performance-optimization-patterns-mandatory": {"start": 1128, "end": 1146}
+,
+    "parallel-agent-invocation-mandatory": {"start": 1147, "end": 1183}
+,
+    "fail-fast-vs-batch-collection-decision-criteria": {"start": 1184, "end": 1197}
+,
+    "protocol-file-prefetching-pattern": {"start": 1198, "end": 1231}
+,
+    "incremental-validation-frequency": {"start": 1232, "end": 1279}
+,
+    "parallel-execution-enforcement": {"start": 1280, "end": 1330}
+,
+    "combining-parallel-and-sequential-operations": {"start": 1331, "end": 1367}
+  }
+,
+  "docs/project/multi-agent-process-governance.md": {
+  }
+,
+  "docs/project/process-optimization-methodology.md": {
+  }
+,
+  "docs/project/protocol-scope-specification.md": {
+    "non-protocol-work": {"start": 11, "end": 99}
+,
+    "protocol-required-work": {"start": 100, "end": 247}
+,
+    "resolved-cases": {"start": 248, "end": 302}
+,
+    "enforcement-rules": {"start": 303, "end": 385}
+,
+    "consolidation": {"start": 386, "end": 420}
+,
+    "error-messages": {"start": 421, "end": 495}
+,
+    "examples": {"start": 496, "end": 553}
+,
+    "migration": {"start": 554, "end": 571}
+,
+    "faq": {"start": 572, "end": 599}
+  }
+,
+  "docs/project/quality-guide.md": {
+    "unit-test-driven-bug-fixing": {"start": 7, "end": 10}
+,
+    "bug-discovery-protocol": {"start": 11, "end": 18}
+,
+    "unit-test-requirements": {"start": 19, "end": 31}
+,
+    "example-workflow": {"start": 32, "end": 54}
+,
+    "quality-specific-code-policies": {"start": 55, "end": 56}
+,
+    "code-comments": {"start": 57, "end": 65}
+,
+    "todo-comments": {"start": 66, "end": 78}
+,
+    "duplication-detection": {"start": 79, "end": 87}
+,
+    "complexity-thresholds": {"start": 88, "end": 99}
+,
+    "refactoring-patterns": {"start": 100, "end": 141}
+,
+    "test-strategy-requirements": {"start": 142, "end": 143}
+,
+    "minimum-test-coverage": {"start": 144, "end": 152}
+,
+    "test-naming-convention": {"start": 153, "end": 163}
+,
+    "test-independence": {"start": 164, "end": 186}
+,
+    "incremental-test-validation-strategy": {"start": 187, "end": 216}
+,
+    "module-dependency-testing-requirements-jpms-projects": {"start": 217, "end": 298}
+,
+    "code-review-checklist": {"start": 299, "end": 313}
+,
+    "references": {"start": 314, "end": 319}
+  }
+,
+  "docs/project/scope.md": {
+    "project-objective": {"start": 3, "end": 10}
+,
+    "core-use-cases": {"start": 11, "end": 14}
+,
+    "1-ai-agent-integration-output-driven-learning-with-automatic-context-detection": {"start": 15, "end": 44}
+,
+    "2-traditional-build-integration-batch-processing": {"start": 45, "end": 55}
+,
+    "3-multi-threaded-project-processing": {"start": 56, "end": 65}
+,
+    "4-integrated-violation-detection-and-context-aware-reporting": {"start": 66, "end": 85}
+,
+    "sample-configuration": {"start": 86, "end": 90}
+,
+    "example-configuration-for-testing": {"start": 91, "end": 112}
+,
+    "development-philosophy": {"start": 113, "end": 126}
+,
+    "implementation-quality-no-stubbing-principle": {"start": 127, "end": 161}
+,
+    "yagni-no-stubbing-synergy": {"start": 162, "end": 182}
+,
+    "key-constraints-and-rules": {"start": 183, "end": 210}
+,
+    "technical-capabilities": {"start": 211, "end": 212}
+,
+    "ast-processing-features": {"start": 213, "end": 219}
+,
+    "plugin-system-capabilities": {"start": 220, "end": 225}
+,
+    "performance-requirements": {"start": 226, "end": 227}
+,
+    "performance-targets": {"start": 228, "end": 241}
+,
+    "architecture-guidelines": {"start": 242, "end": 258}
+,
+    "user-experience-requirements": {"start": 259, "end": 260}
+,
+    "command-line-interface-design": {"start": 261, "end": 266}
+,
+    "configuration-flexibility": {"start": 267, "end": 272}
+,
+    "integration-support": {"start": 273, "end": 279}
+,
+    "api-scope-and-compatibility-guidelines": {"start": 280, "end": 281}
+,
+    "command-line-tool-architecture": {"start": 282, "end": 300}
+,
+    "public-vs-internal-api-classification": {"start": 301, "end": 302}
+,
+    "command-line-interface-primary-interface": {"start": 303, "end": 316}
+,
+    "library-api-secondary-interface": {"start": 317, "end": 330}
+,
+    "development-guidelines": {"start": 331, "end": 343}
+  }
+,
+  "docs/project/scope/out-of-scope.md": {
+  }
+,
+  "docs/project/style-guide.md": {
+    "complete-style-validation": {"start": 7, "end": 14}
+,
+    "validation-components": {"start": 15, "end": 33}
+,
+    "validation-commands": {"start": 34, "end": 47}
+,
+    "complete-validation-checklist": {"start": 48, "end": 58}
+,
+    "javadoc-manual-documentation-requirement": {"start": 59, "end": 62}
+,
+    "absolutely-prohibited": {"start": 63, "end": 70}
+,
+    "required-approach": {"start": 71, "end": 77}
+,
+    "contextual-documentation": {"start": 78, "end": 105}
+,
+    "enforcement": {"start": 106, "end": 109}
+,
+    "style-specific-code-policies": {"start": 110, "end": 111}
+,
+    "code-comments": {"start": 112, "end": 120}
+,
+    "todo-comments": {"start": 121, "end": 133}
+,
+    "testng-tests": {"start": 134, "end": 154}
+,
+    "exception-types": {"start": 155, "end": 179}
+,
+    "references": {"start": 180, "end": 185}
+  }
+,
+  "docs/project/task-protocol-agents.md": {
+    "mandatory-read-this-document-at-startup": {"start": 9, "end": 12}
+,
+    "worktree-structure": {"start": 13, "end": 14}
+,
+    "directory-layout": {"start": 15, "end": 46}
+,
+    "critical-path-distinctions": {"start": 47, "end": 64}
+,
+    "status-tracking-protocol": {"start": 65, "end": 66}
+,
+    "status-file-location": {"start": 67, "end": 74}
+,
+    "status-file-formats": {"start": 75, "end": 115}
+,
+    "agent-response-verbosity-guidelines": {"start": 116, "end": 134}
+,
+    "status-update-commands": {"start": 135, "end": 190}
+,
+    "iterative-workflow-pattern": {"start": 191, "end": 192}
+,
+    "single-agent-round-pattern": {"start": 193, "end": 207}
+,
+    "multi-agent-round-flow-example": {"start": 208, "end": 238}
+,
+    "round-completion-criteria": {"start": 239, "end": 250}
+,
+    "updater-agent-design-decision-protocol": {"start": 251, "end": 254}
+,
+    "role-separation-principle": {"start": 255, "end": 260}
+,
+    "when-to-consult-reviewers": {"start": 261, "end": 268}
+,
+    "consultation-process": {"start": 269, "end": 311}
+,
+    "git-workflow-for-agents": {"start": 312, "end": 313}
+,
+    "commit-signature-requirements-mandatory": {"start": 314, "end": 363}
+,
+    "for-updater-agents-merging-to-task-branch": {"start": 364, "end": 424}
+,
+    "for-reviewer-agents-reviewing-task-branch": {"start": 425, "end": 482}
+,
+    "validation-commands": {"start": 483, "end": 484}
+,
+    "for-updater-agents": {"start": 485, "end": 509}
+,
+    "for-reviewer-agents": {"start": 510, "end": 523}
+,
+    "file-locations": {"start": 524, "end": 525}
+,
+    "input-files-where-to-read": {"start": 526, "end": 553}
+,
+    "output-files-where-to-write": {"start": 554, "end": 584}
+,
+    "common-patterns": {"start": 585, "end": 586}
+,
+    "pattern-incremental-validation": {"start": 587, "end": 604}
+,
+    "pattern-reading-reviewer-feedback": {"start": 605, "end": 626}
+,
+    "pattern-error-handling": {"start": 627, "end": 646}
+,
+    "pattern-multi-round-collaboration": {"start": 647, "end": 668}
+,
+    "summary-agent-checklist": {"start": 669, "end": 670}
+,
+    "updater-agent-checklist": {"start": 671, "end": 694}
+,
+    "reviewer-agent-checklist": {"start": 695, "end": 711}
+,
+    "references": {"start": 712, "end": 717}
+  }
+,
+  "docs/project/task-protocol-core.md": {
+    "documentation-structure-guide": {"start": 16, "end": 19}
+,
+    "ideal-state-vs-recovery-documentation": {"start": 20, "end": 41}
+,
+    "when-to-read-each-layer": {"start": 42, "end": 55}
+,
+    "navigation-patterns": {"start": 56, "end": 84}
+,
+    "section-type-indicators": {"start": 85, "end": 98}
+,
+    "quick-reference-section-classification": {"start": 99, "end": 112}
+,
+    "state-machine-architecture": {"start": 113, "end": 114}
+,
+    "core-states": {"start": 115, "end": 127}
+,
+    "state-definitions": {"start": 128, "end": 151}
+,
+    "user-approval-checkpoints---mandatory-regardless-of-bypass-mode": {"start": 152, "end": 232}
+,
+    "checkpoint-wait-behavior": {"start": 233, "end": 404}
+,
+    "automated-checkpoint-enforcement": {"start": 405, "end": 417}
+,
+    "state-transitions": {"start": 418, "end": 420}
+,
+    "terminology-glossary": {"start": 421, "end": 447}
+,
+    "risk-based-agent-selection-engine": {"start": 448, "end": 449}
+,
+    "agent-classification": {"start": 450, "end": 467}
+,
+    "automatic-risk-classification": {"start": 468, "end": 472}
+,
+    "high-risk-files-complete-validation-required": {"start": 473, "end": 487}
+,
+    "medium-risk-files-domain-validation-required": {"start": 488, "end": 498}
+,
+    "low-risk-files-minimal-validation-required": {"start": 499, "end": 508}
+,
+    "escalation-triggers": {"start": 509, "end": 514}
+,
+    "manual-overrides": {"start": 515, "end": 519}
+,
+    "risk-assessment-audit-trail": {"start": 520, "end": 530}
+,
+    "workflow-variants-by-risk-level": {"start": 531, "end": 532}
+,
+    "high_risk_workflow-complete-validation": {"start": 533, "end": 541}
+,
+    "medium_risk_workflow-domain-validation": {"start": 542, "end": 555}
+,
+    "low_risk_workflow-streamlined-validation": {"start": 556, "end": 567}
+,
+    "conditional-state-transition-logic": {"start": 568, "end": 591}
+,
+    "skip-condition-examples": {"start": 592, "end": 608}
+,
+    "agent-selection-decision-tree": {"start": 609, "end": 610}
+,
+    "comprehensive-agent-selection-framework": {"start": 611, "end": 678}
+,
+    "complete-style-validation-framework": {"start": 679, "end": 680}
+,
+    "three-component-style-validation": {"start": 681, "end": 699}
+,
+    "complete-style-validation-gate-pattern": {"start": 700, "end": 731}
+,
+    "batch-processing-and-continuous-mode": {"start": 732, "end": 733}
+,
+    "batch-processing-restrictions": {"start": 734, "end": 747}
+,
+    "automatic-continuous-mode-translation": {"start": 748, "end": 770}
+,
+    "protocol-interpretation-mode": {"start": 771, "end": 783}
+,
+    "automated-protocol-compliance-audit": {"start": 784, "end": 788}
+,
+    "4-agent-protocol-audit-pipeline": {"start": 789, "end": 798}
+,
+    "when-to-run-protocol-audit": {"start": 799, "end": 806}
+,
+    "protocol-audit-execution-pattern": {"start": 807, "end": 859}
+,
+    "violation-detection-and-retry-logic": {"start": 860, "end": 877}
+,
+    "example-implementation-state-transition-with-audit": {"start": 878, "end": 880}
+,
+    "after-synthesis-state-complete-and-user-approval-received": {"start": 881, "end": 915}
+,
+    "protocol-audit-integration-points": {"start": 916, "end": 931}
+,
+    "automated-protocol-enforcement": {"start": 932, "end": 1005}
+,
+    "audit-command-interaction-patterns-across-protocol-states": {"start": 1006, "end": 1316}
+,
+    "violation-recovery-patterns": {"start": 1317, "end": 1352}
+,
+    "mandatory-state-transitions": {"start": 1353, "end": 1354}
+,
+    "statejson-file-management": {"start": 1355, "end": 1375}
+,
+    "pre-init-verification-task-selection-and-lock-validation": {"start": 1376, "end": 1380}
+,
+    "autonomous-completion-feasibility-check": {"start": 1381, "end": 1414}
+,
+    "decision-logic-can-i-work-on-this-task": {"start": 1415, "end": 1444}
+,
+    "task-selection-decision-matrix": {"start": 1445, "end": 1455}
+,
+    "prohibited-actions": {"start": 1456, "end": 1462}
+,
+    "required-actions": {"start": 1463, "end": 1471}
+,
+    "recovery-from-crashed-sessions": {"start": 1472, "end": 1494}
+,
+    "main-worktree-operations-lock-requirement": {"start": 1495, "end": 1499}
+,
+    "operations-requiring-main-worktree-lock": {"start": 1500, "end": 1508}
+,
+    "main-worktree-lock-format": {"start": 1509, "end": 1520}
+,
+    "acquiring-main-worktree-lock": {"start": 1521, "end": 1547}
+,
+    "releasing-main-worktree-lock": {"start": 1548, "end": 1565}
+,
+    "main-worktree-lock-vs-task-specific-locks": {"start": 1566, "end": 1589}
+,
+    "init-classified": {"start": 1590, "end": 1634}
+,
+    "lock-state-update-helper": {"start": 1635, "end": 1680}
+,
+    "enhanced-lock-file-format-with-checkpoint-tracking": {"start": 1681, "end": 1779}
+,
+    "dynamic-agent-addition-mid-task": {"start": 1780, "end": 1994}
+,
+    "classified-requirements": {"start": 1995, "end": 2061}
+,
+    "agent-invocation-interruption-handling": {"start": 2062, "end": 2213}
+,
+    "requirements-synthesis": {"start": 2214, "end": 2224}
+,
+    "partial-agent-completion-handling-requirements-state": {"start": 2225, "end": 2396}
+,
+    "requirements-state-exit-verification-procedure": {"start": 2397, "end": 2744}
+,
+    "implementation-state-entry-guards-critical-enforcement": {"start": 2745, "end": 2899}
+,
+    "implementation-state-audit-trail-requirements-mandatory": {"start": 2900, "end": 3050}
+,
+    "synthesis-implementation": {"start": 3051, "end": 3148}
+,
+    "multi-agent-implementation-workflow": {"start": 3149, "end": 3150}
+,
+    "implementation-role-boundaries---visual-reference": {"start": 3151, "end": 3193}
+,
+    "agent-based-parallel-development-model": {"start": 3194, "end": 3236}
+,
+    "model-selection-strategy": {"start": 3237, "end": 3289}
+,
+    "implementation-round-structure": {"start": 3290, "end": 3463}
+,
+    "agent-non-completion-recovery-protocol": {"start": 3464, "end": 3635}
+,
+    "implementation-validation": {"start": 3636, "end": 3731}
+,
+    "validation-review-conditional-path": {"start": 3732, "end": 3842}
+,
+    "review-complete-unanimous-approval-gate": {"start": 3843, "end": 3993}
+,
+    "review-scope_negotiation-conditional-transition": {"start": 3994, "end": 4011}
+,
+    "complete-cleanup": {"start": 4012, "end": 4037}
+,
+    "cleanup-state-audit-preservation-mandatory": {"start": 4038, "end": 4135}
+,
+    "scope_negotiation-synthesis-return-path-or-scope_negotiation-complete-deferral-path": {"start": 4136, "end": 4238}
+  }
+,
+  "docs/project/task-protocol-operations.md": {
+    "complete-cleanup": {"start": 27, "end": 103}
+,
+    "predictive-prefetching-init---mandatory": {"start": 104, "end": 135}
+,
+    "fail-fast-validation-implementation": {"start": 136, "end": 172}
+,
+    "pre-validation-checklist-implementation-exit": {"start": 173, "end": 296}
+,
+    "implementation-rounds-reviewerupdater-iteration": {"start": 297, "end": 370}
+,
+    "multi-agent-implementation-commit-history-examples": {"start": 371, "end": 468}
+,
+    "troubleshooting": {"start": 469, "end": 470}
+,
+    "issue-implementation-rounds-taking-15-minutes": {"start": 471, "end": 500}
+,
+    "issue-high-token-usage-65000": {"start": 501, "end": 533}
+,
+    "issue-sequential-discovery-delays-5-round-trips": {"start": 534, "end": 564}
+,
+    "issue-unanimous-approval-not-achieved": {"start": 565, "end": 596}
+,
+    "best-practices": {"start": 597, "end": 598}
+,
+    "1-risk-assessment": {"start": 599, "end": 619}
+,
+    "2-agent-selection": {"start": 620, "end": 644}
+,
+    "3-lock-state-management": {"start": 645, "end": 835}
+,
+    "dependent-task-update-procedure": {"start": 836, "end": 936}
+,
+    "automatic-conflict-resolution-via-atomic-operations": {"start": 937, "end": 978}
+,
+    "cleanup-final-state": {"start": 979, "end": 1156}
+,
+    "transition-validation-functions": {"start": 1157, "end": 1158}
+,
+    "universal-validation-requirements": {"start": 1159, "end": 1192}
+,
+    "state-enforcement-functions": {"start": 1193, "end": 1241}
+,
+    "state-transition-reversibility-table": {"start": 1242, "end": 1412}
+,
+    "agent-interaction-protocols": {"start": 1413, "end": 1414}
+,
+    "parallel-agent-invocation-pattern": {"start": 1415, "end": 1459}
+,
+    "review-agent-invocation-pattern": {"start": 1460, "end": 1483}
+,
+    "error-handling-recovery": {"start": 1484, "end": 1485}
+,
+    "transition-failure-recovery": {"start": 1486, "end": 1512}
+,
+    "multi-instance-coordination": {"start": 1513, "end": 1543}
+,
+    "compliance-verification": {"start": 1544, "end": 1545}
+,
+    "pre-task-validation-checklist": {"start": 1546, "end": 1573}
+,
+    "continuous-compliance-monitoring": {"start": 1574, "end": 1598}
+,
+    "final-compliance-audit": {"start": 1599, "end": 1655}
+,
+    "violation-prevention-patterns": {"start": 1656, "end": 1657}
+,
+    "pre-task-validation-block": {"start": 1658, "end": 1670}
+,
+    "mandatory-taskmd-creation": {"start": 1671, "end": 1692}
+,
+    "task-objective": {"start": 1693, "end": 1695}
+,
+    "scope-definition": {"start": 1696, "end": 1702}
+,
+    "stakeholder-agent-reports": {"start": 1703, "end": 1711}
+,
+    "implementation-status": {"start": 1712, "end": 1726}
+,
+    "atomic-lock-acquisition-pattern": {"start": 1727, "end": 1738}
+,
+    "temporary-file-management-setup": {"start": 1739, "end": 1763}
+,
+    "implementation-safety-guards": {"start": 1764, "end": 1773}
+,
+    "build-validation-gates": {"start": 1774, "end": 1782}
+,
+    "decision-parsing-enforcement": {"start": 1783, "end": 1800}
+,
+    "protocol-violation-reporting-pattern": {"start": 1801, "end": 1833}
+,
+    "context-preservation-rules": {"start": 1834, "end": 1835}
+,
+    "single-session-continuity": {"start": 1836, "end": 1849}
+,
+    "tool-call-batching": {"start": 1850, "end": 1863}
+,
+    "state-persistence-patterns": {"start": 1864, "end": 1878}
+,
+    "tool-specific-optimization-patterns": {"start": 1879, "end": 1880}
+,
+    "bash-tool-usage": {"start": 1881, "end": 1894}
+,
+    "read-tool-usage": {"start": 1895, "end": 1909}
+,
+    "task-tool-usage": {"start": 1910, "end": 1929}
+,
+    "todowrite-tool-usage": {"start": 1930, "end": 1945}
+,
+    "error-recovery-protocols": {"start": 1946, "end": 1947}
+,
+    "violation-detection-triggers": {"start": 1948, "end": 1957}
+,
+    "multi-instance-conflict-resolution": {"start": 1958, "end": 1977}
+,
+    "partial-completion-recovery": {"start": 1978, "end": 1987}
+,
+    "recovery-procedure-1-session-interruption-recovery": {"start": 1988, "end": 2058}
+,
+    "recovery-procedure-2-agent-partial-completion": {"start": 2059, "end": 2181}
+,
+    "recovery-procedure-3-build-failure-after-partial-implementation": {"start": 2182, "end": 2274}
+,
+    "recovery-procedure-4-state-corruption-recovery": {"start": 2275, "end": 2391}
+,
+    "recovery-decision-tree": {"start": 2392, "end": 2409}
+,
+    "recovery-escalation-policy": {"start": 2410, "end": 2451}
+,
+    "multiple-interruption-handling": {"start": 2452, "end": 2455}
+,
+    "scenario-successive-interruptions": {"start": 2456, "end": 2466}
+,
+    "state-preservation-during-interruptions": {"start": 2467, "end": 2491}
+,
+    "interruption-type-classification": {"start": 2492, "end": 2507}
+,
+    "multi-interruption-handling-logic": {"start": 2508, "end": 2583}
+,
+    "resumption-logic-after-multiple-interruptions": {"start": 2584, "end": 2639}
+,
+    "examples-multi-interruption-scenarios": {"start": 2640, "end": 2707}
+,
+    "anti-patterns-what-not-to-do": {"start": 2708, "end": 2751}
+,
+    "interruption-context-tracking": {"start": 2752, "end": 2775}
+,
+    "checkpoint-interaction-interruptions-during-user-approval-wait": {"start": 2776, "end": 2801}
+,
+    "workflow-execution-engine": {"start": 2802, "end": 2803}
+,
+    "main-task-execution-function": {"start": 2804, "end": 2947}
+,
+    "migration-from-phase-based-protocol": {"start": 2948, "end": 2956}
+  }
+}

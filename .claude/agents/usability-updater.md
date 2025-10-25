@@ -9,7 +9,7 @@ color: green
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---
 
-**TARGET AUDIENCE**: Claude AI for automated usability improvement implementation
+**TARGET AUDIENCE**: Automated usability improvement implementation
 **INPUT REQUIREMENT**: Usability assessment from usability-reviewer with specific UX improvement
 recommendations
 
@@ -77,7 +77,7 @@ what to improve.
 
 **IMPLEMENTATION EXAMPLES**:
 
-**Example 1: Improve Error Message (from reviewer report)**
+**Example 1: Improve Error Message**
 ```json
 {
   "issue": "Unclear error message for invalid input",
@@ -106,7 +106,7 @@ if (input.isEmpty()) {
 }
 ```
 
-**Example 2: Add User Guidance (from reviewer report)**
+**Example 2: Add User Guidance**
 ```json
 {
   "issue": "Missing guidance for configuration setup",
@@ -141,7 +141,7 @@ if (!configFile.exists()) {
 }
 ```
 
-**Example 3: Improve CLI Help Text (from reviewer report)**
+**Example 3: Improve CLI Help Text**
 ```json
 {
   "issue": "CLI help text doesn't explain options clearly",
@@ -167,7 +167,7 @@ private String file;
 private String file;
 ```
 
-**Example 4: Add Workflow Documentation (from reviewer report)**
+**Example 4: Add Workflow Documentation**
 ```json
 {
   "issue": "Users don't understand how to use formatter programmatically",
@@ -206,7 +206,7 @@ public String format(String input) {
 cat /workspace/tasks/{task-name}/usability-review-report.json
 ```
 
-**Phase 2: Implement Improvements (Priority Order: Critical → High → Medium → Low)**
+**Phase 2: Implement Improvements (Critical → High → Medium → Low)**
 ```bash
 # For each improvement in report:
 # 1. Read target file
@@ -309,7 +309,7 @@ Remember: Your role is to faithfully implement UX improvements recommended by us
 
 ## 🚨 MANDATORY STARTUP PROTOCOL
 
-**BEFORE performing ANY work, MUST read**:
+**BEFORE performing work, MUST read**:
 1. `/workspace/main/docs/project/task-protocol-agents.md` - Agent coordination protocol
 
 

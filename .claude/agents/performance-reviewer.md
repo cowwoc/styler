@@ -80,14 +80,14 @@ TEMP_DIR=$(cat .temp_dir 2>/dev/null || echo "/tmp/fallback-$$")
 Your requirements and specifications MUST be sufficiently detailed for a **simpler model** (Haiku) to implement
 **mechanically without making any difficult decisions**.
 
-**PROHIBITED OUTPUT PATTERNS** (Insufficient Detail):
+**PROHIBITED OUTPUT PATTERNS**:
 ❌ "Refactor code for better quality"
 ❌ "Improve implementation"
 ❌ "Apply appropriate patterns"
 ❌ "Fix issues as needed"
 ❌ "Enhance code quality"
 
-**REQUIRED OUTPUT PATTERNS** (Implementation-Ready):
+**REQUIRED OUTPUT PATTERNS**:
 ✅ Exact file paths and line numbers for changes
 ✅ Complete code snippets showing before/after states
 ✅ Explicit method signatures with full type information
@@ -171,7 +171,7 @@ Your core responsibilities:
 4. **Concurrency Analysis**: Evaluate thread safety and parallel processing opportunities
 5. **Resource Utilization**: Assess CPU, memory, and I/O resource usage patterns
 
-## OUTPUT FORMAT FOR PERFORMANCE-IMPLEMENTER
+## OUTPUT FORMAT
 
 **MANDATORY**: Structure output as JSON for performance-updater consumption:
 

@@ -8,7 +8,7 @@ color: red
 tools: [Read, Write, Edit, Grep, Glob, LS, Bash]
 ---
 
-**TARGET AUDIENCE**: Claude AI for automated security fix implementation
+**TARGET AUDIENCE**: Automated security fix implementation
 **INPUT REQUIREMENT**: Structured security report from security-reviewer with specific vulnerability fixes
 
 ## 🚨 AUTHORITY SCOPE
@@ -71,7 +71,7 @@ what to fix.
 
 **FIX IMPLEMENTATION EXAMPLES**:
 
-**Example 1: Add Input Validation (from reviewer report)**
+**Example 1: Add Input Validation**
 ```json
 {
   "vulnerability": "Missing input validation",
@@ -100,7 +100,7 @@ public AST parse(String input) {
 }
 ```
 
-**Example 2: Add Resource Limits (from reviewer report)**
+**Example 2: Add Resource Limits**
 ```json
 {
   "vulnerability": "Stack overflow from deep recursion",
@@ -136,7 +136,7 @@ private void buildAstInternal(Node node, int depth) {
 }
 ```
 
-**Example 3: Add Memory Protection (from reviewer report)**
+**Example 3: Add Memory Protection**
 ```json
 {
   "vulnerability": "Memory exhaustion from large inputs",
@@ -154,7 +154,7 @@ private void buildAstInternal(Node node, int depth) {
 cat /workspace/tasks/{task-name}/security-review-report.json
 ```
 
-**Phase 2: Implement Fixes (Priority Order: CRITICAL → HIGH → MEDIUM → LOW)**
+**Phase 2: Implement Fixes (CRITICAL → HIGH → MEDIUM → LOW)**
 ```bash
 # For each fix in report:
 # 1. Read target file
@@ -253,7 +253,7 @@ Remember: Your role is to faithfully implement security fixes recommended by sec
 
 ## 🚨 MANDATORY STARTUP PROTOCOL
 
-**BEFORE performing ANY work, MUST read**:
+**BEFORE performing work, MUST read**:
 1. `/workspace/main/docs/project/task-protocol-agents.md` - Agent coordination protocol
 
 

@@ -8,7 +8,7 @@ model: sonnet-4-5
 
 ## 🚨 MANDATORY STARTUP PROTOCOL
 
-**BEFORE performing ANY work, MUST read**:
+**BEFORE performing work, MUST read**:
 1. `/workspace/main/docs/project/task-protocol-agents.md` - Agent coordination protocol
 
 **TARGET AUDIENCE**: Protocol auditors and optimization agents
@@ -23,14 +23,13 @@ objective facts about session execution without making any judgments or recommen
 
 ### Step 0: Discover Session ID
 
-**Session ID is available in the conversation context** - the ensure-session-id.py hook injects it as:
+**Session ID is available in conversation context** - the ensure-session-id.py hook injects it as:
 "System Note: The current session ID is {session_id}."
 
-Extract it from recent conversation context or use this Bash pattern to find it:
+Extract from conversation context or use this pattern:
 
 ```bash
-# Session ID is in conversation - look for recent task.json files owned by this session
-# Or use the session ID mentioned in your conversation context
+# Look for recent task.json files owned by this session
 SESSION_ID="<extract-from-conversation-context>"
 echo "Session ID: $SESSION_ID"
 ```
@@ -53,11 +52,11 @@ jq -r '.state' /workspace/tasks/{task-name}/task.json 2>/dev/null || echo "N/A (
 
 ### Step 2: Collect Tool Usage Facts from Conversation Log
 
-**CRITICAL DISCOVERY**: Conversation history with ALL tool usage is stored at:
+Conversation history with ALL tool usage is at:
 `~/.config/projects/-workspace/${SESSION_ID}.jsonl`
 
 ```bash
-# Use session ID from conversation context (extracted above)
+# Use session ID from conversation context
 
 # Count tool usage by type
 jq -r 'select(.type == "assistant") | .message.content[]? | select(.type == "tool_use")? | .name' \
@@ -90,9 +89,9 @@ jq -c 'select(.type == "assistant") | {timestamp, cwd, branch: .gitBranch, tools
 
 ### Step 3: Correlate Tool Usage with Task States
 
-**Challenge**: Conversation log doesn't directly record task state at time of tool usage.
+Conversation log doesn't directly record task state at time of tool usage.
 
-**Workaround**: Infer state from git branch and working directory:
+Infer state from git branch and working directory:
 - `cwd` = `/workspace/tasks/{task-name}/code` → Task worktree (likely IMPLEMENTATION or later)
 - `gitBranch` = `{task-name}` → On task branch
 - `cwd` = `/workspace/main` → Main branch (CLEANUP or post-merge)
@@ -121,7 +120,6 @@ ls -la /workspace/tasks/{task-name}/ 2>/dev/null || echo "Task directory removed
 
 ```bash
 # Extract Task tool invocations with prompts
-# Use SESSION_ID from conversation context (extracted in Step 0)
 
 jq -c 'select(.type == "assistant") | select(.message.content[]?.name == "Task") | {timestamp, invocations: [.message.content[] | select(.name == "Task") | {agent: .input.subagent_type, description: .input.description}]}' \
   ~/.config/projects/-workspace/${SESSION_ID}.jsonl 2>/dev/null | grep -v '"invocations":\[\]'
@@ -142,10 +140,9 @@ git log --oneline --all --grep="{task-name}" -20
 
 ### Step 7: Collect Build Verification Facts
 
-**Source**: Conversation log contains bash command outputs including Maven builds
+Conversation log contains bash command outputs including Maven builds.
 
 ```bash
-# Use SESSION_ID from conversation context (extracted in Step 0)
 
 # Search for Maven build outputs
 jq -r 'select(.type == "assistant") | select(.message.content[]? | select(.type == "tool_result" and (.content | tostring | contains("BUILD SUCCESS")))) | .timestamp' \

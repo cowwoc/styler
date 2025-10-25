@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in phase-guard-enforcement.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
 # Phase Guard Enforcement Hook
 # Runs on every user prompt to check for "continue" commands and enforce task protocol phase progression
 # Prevents Claude from skipping protocol phases when continuing work
@@ -43,7 +46,7 @@ is_continue_command() {
 is_task_protocol_active() {
     local current_dir=$(pwd)
     # Check if we're in a task-specific branch/worktree
-    if [[ "$current_dir" =~ /workspace/branches/[^/]+/code$ ]]; then
+    if [[ "$current_dir" =~ /workspace/tasks/[^/]+/code$ ]]; then
         return 0
     fi
     # Check for task protocol markers

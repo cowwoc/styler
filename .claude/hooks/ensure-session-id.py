@@ -19,7 +19,7 @@ def create_context_output(event_name, context_message):
 def main():
 	try:
 	    # Debug: Log that the hook was called
-	    print(f"DEBUG: ensure-session-id.py called from {os.getcwd()}", file=sys.stderr)
+	    print(f"[HOOK DEBUG] ensure-session-id.py START from {os.getcwd()}", file=sys.stderr)
 	    
 	    # Check if stdin has data
 	    if sys.stdin.isatty():
@@ -68,9 +68,12 @@ def main():
 	            # File read error, inject context to be safe
 	            print(json.dumps(create_context_output("UserPromptSubmit", context_message)))
 
+	    print(f"[HOOK DEBUG] ensure-session-id.py END - success", file=sys.stderr)
 	except Exception as e:
 	    # Log errors to stderr to avoid breaking the hook's JSON output
-	    print(f"Error in ensure-session-id.py: {e}", file=sys.stderr)
+	    print(f"[HOOK DEBUG] ensure-session-id.py FAILED: {e}", file=sys.stderr)
+	    import traceback
+	    traceback.print_exc(file=sys.stderr)
 	    sys.exit(1)
 
 if __name__ == "__main__":

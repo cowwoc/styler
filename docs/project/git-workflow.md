@@ -2,9 +2,25 @@
 
 This document outlines git workflows and best practices for the Styler project.
 
-## Commit Squashing Procedures
+## Git Working Directory Requirements {#git-working-directory-requirements}
 
-### Overview
+**MANDATORY RULE**: Working directory MUST be clean (all changes committed) before any state transition.
+
+**Verification Command**:
+```bash
+git status  # Must show "nothing to commit, working tree clean"
+```
+
+**BLOCKED Transitions**:
+- Lock file state MUST NOT be updated if `git status` shows uncommitted changes
+- State transition hooks SHOULD validate git status before allowing transitions
+- Commit all work-in-progress before transitioning states
+
+**See Also**: main-agent-coordination.md § VALIDATION State Exit Requirements
+
+## Commit Squashing Procedures {#commit-squashing-procedures}
+
+### Overview {#overview}
 
 When you need to combine (squash) commits in your git history, there are two main approaches:
 
@@ -15,14 +31,139 @@ When you need to combine (squash) commits in your git history, there are two mai
 non-adjacent commits while preserving intermediate commits, useful for consolidating related functionality
 without losing unrelated work.
 
-## Interactive Rebase (PRIMARY METHOD)
+### Task Branch Squashing (Task Protocol) {#task-branch-squashing-task-protocol}
+
+> ⚠️ **CRITICAL VIOLATION PATTERN**: Merging task branch with multiple commits
+>
+> **REQUIREMENT**: Task branches MUST have exactly 1 squashed commit before merge
+> **ENFORCEMENT**: Pre-merge hook `.claude/hooks/pre-task-merge-check.sh` validates commit count
+> **CORRECT**: `git rev-list --count main..<task-branch>` returns 1
+> **INCORRECT**: Merging with 2+ commits creates unclear history and violates protocol
+
+**MANDATORY REQUIREMENT**: Before merging a task branch to main, ALL commits on the task branch MUST be squashed into a single commit.
+
+**Why This Requirement**:
+- Maintains atomic task units in main branch history
+- Each commit on main represents one complete task
+- Simplifies history navigation and bisecting
+- Prevents main branch pollution with implementation details
+
+**Procedure** (from task worktree, before merge to main):
+
+```bash
+# Step 1: Ensure you're in the task worktree
+cd /workspace/tasks/{task-name}/code
+
+# Step 2: Count commits on task branch
+COMMIT_COUNT=$(git rev-list --count main..{task-name})
+echo "Task branch has $COMMIT_COUNT commits"
+
+# Step 3: If more than 1 commit, squash all into 1
+if [ "$COMMIT_COUNT" -gt 1 ]; then
+  # Interactive rebase to squash all commits
+  git rebase -i main
+
+  # In the interactive editor that opens:
+  # - Line 1: Keep as "pick" (this will be the final commit)
+  # - Lines 2-N: Change ALL to "squash" (or just "s")
+  # - Save and close editor
+  #
+  # Git will then open another editor for the combined commit message:
+  # - Edit to create a single comprehensive message describing the entire task
+  # - Remove redundant individual commit messages
+  # - Keep the task summary and key changes
+  # - Save and close editor
+fi
+
+# Step 4: Verify exactly 1 commit remains
+FINAL_COUNT=$(git rev-list --count main..{task-name})
+if [ "$FINAL_COUNT" -ne 1 ]; then
+  echo "❌ VIOLATION: Task branch must have exactly 1 commit, found $FINAL_COUNT"
+  exit 1
+fi
+
+echo "✅ Task branch ready for merge: 1 commit"
+```
+
+**Example Interactive Rebase Editor**:
+
+```
+# Before (4 commits to squash):
+pick a1b2c3d Initial implementation of formatter API
+pick e4f5g6h Fix checkstyle violations in FormattingConfiguration
+pick i7j8k9l Add missing JavaDoc to public methods
+pick m0n1o2p Fix PMD violations in TransformationContext
+
+# Change to (squash all into first):
+pick a1b2c3d Initial implementation of formatter API
+squash e4f5g6h Fix checkstyle violations in FormattingConfiguration
+squash i7j8k9l Add missing JavaDoc to public methods
+squash m0n1o2p Fix PMD violations in TransformationContext
+```
+
+**Combined Commit Message Template**:
+
+```
+Implement formatter API for code transformation
+
+- Created core interfaces: FormattingConfiguration, TransformationContext
+- Implemented Fix abstraction with NoFixAvailable singleton
+- Added comprehensive test coverage
+- All checkstyle, PMD, and SpotBugs validations passing
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+Co-Authored-By: architecture-updater <noreply@anthropic.com>
+Co-Authored-By: style-updater <noreply@anthropic.com>
+```
+
+**Enforcement**: Pre-merge hook will block `git merge --ff-only {task-name}` if task branch contains more than 1 commit.
+
+**See Also**: task-protocol-core.md § MANDATORY PRE-MERGE VERIFICATION for complete merge procedure.
+
+### Squash Enforcement Workflow {#squash-enforcement-workflow}
+
+**Pre-Merge Validation** (automated):
+
+```bash
+# Validation hook checks commit count before merge
+.claude/hooks/pre-task-merge-check.sh <task-branch> main
+
+# If validation fails (>1 commit), squash required:
+cd /workspace/main
+git checkout <task-branch>
+git reset --soft main
+git commit -m "Combined commit message describing all changes"
+```
+
+**Manual Verification**:
+
+```bash
+# Count commits ahead of main
+git rev-list --count main..<task-branch>
+# Expected output: 1
+
+# If output is >1, squash before merge
+```
+
+**Post-Squash Merge**:
+
+```bash
+# After squashing to 1 commit
+git checkout main
+git merge <task-branch> --ff-only
+# Fast-forward merge preserves linear history
+```
+
+## Interactive Rebase (PRIMARY METHOD) {#interactive-rebase-primary-method}
 
 **RECOMMENDED APPROACH**: Use interactive rebase for all squash operations unless specific circumstances
 require the cherry-pick fallback method.
 
-### Interactive Rebase Procedure
+### Interactive Rebase Procedure {#interactive-rebase-procedure}
 
-#### 1. Create Backup Branch
+#### 1. Create Backup Branch {#1-create-backup-branch}
 
 Always create a backup branch before performing any git history operations:
 
@@ -31,7 +172,7 @@ git checkout -b backup-before-squash-$(date +%Y%m%d-%H%M%S)
 git checkout main  # or your working branch
 ```
 
-#### 2. Create Chronological Rebase Plan
+#### 2. Create Chronological Rebase Plan {#2-create-chronological-rebase-plan}
 
 **CRITICAL**: Before starting rebase, create and validate the chronological plan to prevent commit reordering.
 
@@ -104,7 +245,7 @@ diff -u original-commit-order.txt post-rebase-order.txt
 - For example, to squash commits A, B, C, use the parent of A as base-commit
 - Use `git log --oneline -20` to identify the correct base commit
 
-#### 3. Configure Squash Operations with Chronological Validation
+#### 3. Configure Squash Operations with Chronological Validation {#3-configure-squash-operations-with-chronological-validation}
 
 **🚨 CRITICAL CHRONOLOGICAL PRESERVATION REQUIREMENT:**
 Git presents commits in chronological order (oldest first), and you MUST preserve this order for non-squashed
@@ -158,7 +299,7 @@ Before saving the rebase plan, verify:
 3. **Order matters** - commits are applied top-to-bottom (chronologically)
 4. **🚨 NEW: NEVER reorder preserved commits** - maintain exact original sequence
 
-#### 4. Handle Conflicts During Rebase
+#### 4. Handle Conflicts During Rebase {#4-handle-conflicts-during-rebase}
 
 **When conflicts occur**, git will pause the rebase and display conflict information:
 
@@ -200,7 +341,7 @@ Resolve all conflicts manually, mark them as resolved with
    git rebase --continue
    ```
 
-#### 5. Advanced Conflict Resolution Strategies
+#### 5. Advanced Conflict Resolution Strategies {#5-advanced-conflict-resolution-strategies}
 
 **Strategy 1: State Tracking Conflicts** (todo.md, documentation status, etc.)
 
@@ -255,7 +396,7 @@ git show <commit-hash> -- conflicted-file.java  # See incoming version
 # 4. Test build after resolution: mvn clean install
 ```
 
-#### 6. Advanced Conflict Handling Scenarios
+#### 6. Advanced Conflict Handling Scenarios {#6-advanced-conflict-handling-scenarios}
 
 **Scenario A: Multiple Files with Related Conflicts**
 
@@ -297,7 +438,7 @@ When squashing commits, git will prompt for the combined commit message:
 # Follow project commit message conventions
 ```
 
-#### 7. Error Recovery During Rebase
+#### 7. Error Recovery During Rebase {#7-error-recovery-during-rebase}
 
 **If conflicts become too complex or you make mistakes:**
 
@@ -331,7 +472,7 @@ git rebase --skip
 # 3. Change 'pick' to 'drop' for problematic commit
 ```
 
-#### 8. Verify Results with Chronological Validation
+#### 8. Verify Results with Chronological Validation {#8-verify-results-with-chronological-validation}
 
 After successful rebase, perform comprehensive verification:
 
@@ -379,7 +520,7 @@ echo "CHRONOLOGICAL VIOLATION DETECTED - Restarting with corrected plan"
 # Return to Step 2 and create proper chronological plan
 ```
 
-#### 9. Error Recovery and Critical Failure Analysis
+#### 9. Error Recovery and Critical Failure Analysis {#9-error-recovery-and-critical-failure-analysis}
 
 **🚨 CRITICAL FAILURE ANALYSIS FRAMEWORK**
 
@@ -412,7 +553,7 @@ git rebase --abort
 git reset --hard backup-before-squash-YYYYMMDD-HHMMSS
 ```
 
-#### 10. Finalization
+#### 10. Finalization {#10-finalization}
 
 If results are satisfactory:
 
@@ -424,7 +565,7 @@ git commit --amend  # for most recent commit only
 # Original branch now contains the squashed history
 ```
 
-#### 10. Cleanup Backup Branch
+#### 10. Cleanup Backup Branch {#10-cleanup-backup-branch}
 
 Only after confirming everything works correctly:
 
@@ -432,7 +573,7 @@ Only after confirming everything works correctly:
 git branch -D backup-before-squash-YYYYMMDD-HHMMSS
 ```
 
-### Critical Success Factors for Complex Squash Operations
+### Critical Success Factors for Complex Squash Operations {#critical-success-factors-for-complex-squash-operations}
 
 **🚨 MANDATORY CHRONOLOGICAL PRESERVATION PROTOCOL:**
 1. **Pre-rebase Planning**: Document original commit order before starting
@@ -452,12 +593,12 @@ git branch -D backup-before-squash-YYYYMMDD-HHMMSS
 - **Code Review**: Ensures logical development progression remains intact
 - **Blame Analysis**: Maintains accurate attribution timeline
 
-### Handling Non-Contiguous Commits
+### Handling Non-Contiguous Commits {#handling-non-contiguous-commits}
 
 **CRITICAL DECISION POINT**: When commits to be squashed are not adjacent in git history, you must choose the
 appropriate strategy based on your specific situation.
 
-#### Decision Matrix for Non-Contiguous Commits
+#### Decision Matrix for Non-Contiguous Commits {#decision-matrix-for-non-contiguous-commits}
 
 **Scenario A: Historical Reorganization** (commits already exist, not adjacent)
 - **User Request Pattern**: "Squash commits A, B, C into commit D" where commits are scattered
@@ -469,7 +610,7 @@ appropriate strategy based on your specific situation.
 - **Preferred Approach**: Fixup commits + autosquash
 - **Benefits**: Maintains timeline until final squashing
 
-#### Strategy 1: Interactive Rebase for Non-Contiguous Historical Commits
+#### Strategy 1: Interactive Rebase for Non-Contiguous Historical Commits {#strategy-1-interactive-rebase-for-non-contiguous-historical-commits}
 
 **When to Use**: Historical reorganization of existing commits that are not adjacent
 
@@ -520,7 +661,7 @@ pick f3824d3 Complete study-claude-streaming        # Preserve original position
 - ✅ **Only reorder commits that are being squashed together**
 - ✅ **Maintain all other commits in their original positions**
 
-#### Strategy 2: Fixup Workflow for Future Development
+#### Strategy 2: Fixup Workflow for Future Development {#strategy-2-fixup-workflow-for-future-development}
 
 **When to Use**: When you need to make fixes to older commits during active development
 
@@ -549,7 +690,7 @@ git rebase -i --autosquash <base-commit>
 - Cannot reorganize completely unrelated commits
 - Still requires interactive rebase for final application
 
-#### Critical Success Factors for Non-Contiguous Squashing
+#### Critical Success Factors for Non-Contiguous Squashing {#critical-success-factors-for-non-contiguous-squashing}
 
 **MANDATORY VERIFICATION AFTER REORDERING**:
 ```bash
@@ -572,7 +713,7 @@ git reset --hard backup-branch
 echo "REORDER VIOLATION - Restarting with corrected plan"
 ```
 
-### When Interactive Rebase May Not Be Suitable
+### When Interactive Rebase May Not Be Suitable {#when-interactive-rebase-may-not-be-suitable}
 
 **Use Cherry-pick Method Instead When**:
 - Working with commits from different branches/remotes
@@ -584,11 +725,11 @@ echo "REORDER VIOLATION - Restarting with corrected plan"
 in all scenarios when proper planning and verification procedures are followed. The complexity lies in human
 planning, not in git's technical capabilities.
 
-## Cherry-pick Method (Advanced/Fallback Approach)
+## Cherry-pick Method (Advanced/Fallback Approach) {#cherry-pick-method-advancedfallback-approach}
 
 **⚠️ NOTE**: This is a complex manual approach. Use Interactive Rebase (see above) for most cases.
 
-### ⚠️ CRITICAL: User Request Validation
+### ⚠️ CRITICAL: User Request Validation {#critical-user-request-validation}
 
 **BEFORE STARTING**: Parse the user's squash request EXACTLY to avoid data loss.
 
@@ -603,9 +744,9 @@ planning, not in git's technical capabilities.
 **COMMON ERROR**: Assuming "squash into G" means "squash everything from G to HEAD"
 **CORRECT INTERPRETATION**: "squash ONLY the specified commits A,B,C,D,E,F into G"
 
-### Procedure
+### Procedure {#procedure}
 
-#### 1. Create Backup Branch
+#### 1. Create Backup Branch {#1-create-backup-branch}
 
 Always create a backup branch before performing complex git operations:
 
@@ -614,7 +755,7 @@ git checkout -b backup-before-squash-$(date +%Y%m%d-%H%M%S)
 git checkout main  # or your working branch
 ```
 
-#### 2. Analyze Commit Structure and Validate User Request
+#### 2. Analyze Commit Structure and Validate User Request {#2-analyze-commit-structure-and-validate-user-request}
 
 **🚨 CRITICAL**: Parse the user's EXACT request to identify specific commits to squash:
 
@@ -649,7 +790,7 @@ pqr1234 (base commit)
 **⚠️ CRITICAL ERROR TO AVOID**: Forgetting commits that come AFTER the target commits will result in permanent
 data loss.
 
-#### 3. Create Working Branch
+#### 3. Create Working Branch {#3-create-working-branch}
 
 Create a new branch with "squashed" in the name for the squash operation:
 
@@ -660,7 +801,7 @@ git checkout -b main-squashed  # Keep original branch name + "squashed"
 
 **CRITICAL**: The original branch keeps its name, the new branch gets "squashed" suffix.
 
-#### 4. Perform Targeted Soft Reset
+#### 4. Perform Targeted Soft Reset {#4-perform-targeted-soft-reset}
 
 **🚨 CRITICAL ERROR PREVENTION**: Only reset to capture the EXACT commits requested for squashing:
 
@@ -687,7 +828,7 @@ git reset --soft D  # base commit specified by user
 # MUST manually exclude non-target commits (see next section)
 ```
 
-#### 5. Handle Staging Area for Exact Target Commits
+#### 5. Handle Staging Area for Exact Target Commits {#5-handle-staging-area-for-exact-target-commits}
 
 **🚨 IF USING SOFT RESET APPROACH**: Remove changes from non-target commits before committing:
 
@@ -706,7 +847,7 @@ git restore --source=intermediate-commit-1 path/to/file/from/non-target-commit
 # WARNING: This approach is error-prone. Cherry-pick method (step 4) is safer.
 ```
 
-#### 6. Create Squashed Commit
+#### 6. Create Squashed Commit {#6-create-squashed-commit}
 
 Create a new commit that combines the functionality of ONLY the target commits:
 
@@ -723,7 +864,7 @@ git commit -m "Combined functionality: descriptive message
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
-#### 7. Restore ALL Non-Target Commits  
+#### 7. Restore ALL Non-Target Commits   {#7-restore-all-non-target-commits}
 
 **🚨 CRITICAL**: Cherry-pick ALL commits that were NOT in the user's squash request, in chronological order:
 
@@ -742,7 +883,7 @@ git cherry-pick xyz4567  # commit after targets 3
 **⚠️ MANDATORY**: Every commit that existed in the original history (except the two being squashed) MUST be
 preserved.
 
-#### 8. Verify Result
+#### 8. Verify Result {#8-verify-result}
 
 Check the final commit structure:
 
@@ -764,7 +905,7 @@ pqr1234 (base commit)
 **✅ SUCCESS CRITERIA**: The new history contains the same number of commits as the original, minus one
 (because two commits were squashed into one).
 
-#### 9. Test Build Integrity
+#### 9. Test Build Integrity {#9-test-build-integrity}
 
 Verify that the changes work correctly:
 
@@ -773,11 +914,11 @@ mvn clean install
 # Run relevant tests
 ```
 
-#### 10. User Approval
+#### 10. User Approval {#10-user-approval}
 
 Present the results to the user and get approval for the changes.
 
-#### 11. Replace Original Branch (if approved)
+#### 11. Replace Original Branch (if approved) {#11-replace-original-branch-if-approved}
 
 If the user approves the result, replace the original branch:
 
@@ -789,7 +930,7 @@ git branch -D main-squashed  # delete the squashed branch
 
 **WORKFLOW**: Original branch is replaced, squashed branch is deleted and renamed to original name.
 
-#### 12. Cleanup Backup Branch (if approved)
+#### 12. Cleanup Backup Branch (if approved) {#12-cleanup-backup-branch-if-approved}
 
 Remove the backup branch only after user confirmation:
 
@@ -799,7 +940,7 @@ git branch -D backup-before-squash-YYYYMMDD-HHMMSS
 
 **NOTE**: Only delete backup branch after confirming squashed branch works correctly.
 
-### Important Notes
+### Important Notes {#important-notes}
 
 - **Always create backups** before complex git operations
 - **Test build integrity** after any history rewriting
@@ -807,7 +948,7 @@ git branch -D backup-before-squash-YYYYMMDD-HHMMSS
 - **Preserve commit messages** that provide valuable context
 - **Maintain logical commit grouping** when possible
 
-### 🚨 CRITICAL DATA LOSS PREVENTION
+### 🚨 CRITICAL DATA LOSS PREVENTION {#critical-data-loss-prevention}
 
 **MOST COMMON ERROR**: Dropping commits that come AFTER the target commits.
 
@@ -826,7 +967,7 @@ git log --oneline backup-branch --not new-branch
 git cherry-pick <missing-commit-hash>
 ```
 
-### When to Use This Procedure
+### When to Use This Procedure {#when-to-use-this-procedure}
 
 Use this squashing procedure when:
 - Combining related functionality scattered across the commit history
@@ -834,7 +975,7 @@ Use this squashing procedure when:
 - Creating cleaner release branches
 - Preparing commits for code review
 
-### When NOT to Use
+### When NOT to Use {#when-not-to-use}
 
 Avoid this procedure when:
 - Simple adjacent commit squashing is sufficient

@@ -15,10 +15,7 @@ Styler Java Code Formatter project configuration and universal guidance for all 
 - Start tasks by following hook guidance, not by reading complete protocol docs
 - Reference docs available for troubleshooting: main-agent-coordination.md, task-protocol-core.md
 
-**SUB-AGENTS**: If you are a sub-agent (reviewer or updater), this file contains universal guidance only. You MUST also read:
-```
-Read /workspace/main/docs/project/task-protocol-agents.md
-```
+**SUB-AGENTS**: If you are a sub-agent (reviewer or updater), this file contains universal guidance only. You MUST also read `/workspace/main/docs/project/task-protocol-agents.md`
 
 **Domain-Specific Agents**: Additionally read domain-specific guides:
 - **Style agents** (style-reviewer, style-updater): `Read /workspace/main/docs/project/style-guide.md`
@@ -30,20 +27,19 @@ This file contains guidance applicable to **ALL agents** (main agent and all sub
 
 ### Professional Objectivity
 
-Prioritize technical accuracy and truthfulness over validating the user's beliefs. Focus on facts and problem-solving, providing direct, objective technical info without any unnecessary superlatives, praise, or emotional validation. It is best for the user if Claude honestly applies the same rigorous standards to all ideas and disagrees when necessary, even if it may not be what the user wants to hear. Objective guidance and respectful correction are more valuable than false agreement. Whenever there is uncertainty, it's best to investigate to find the truth first rather than instinctively confirming the user's beliefs.
+Prioritize technical accuracy over validating user beliefs. Provide direct, objective information without superlatives, praise, or emotional validation. Apply rigorous standards to all ideas and disagree when necessary. Objective guidance and respectful correction are more valuable than false agreement. When uncertain, investigate first rather than confirming user beliefs.
 
 ### Tone and Style
 
-- Only use emojis if the user explicitly requests it. Avoid using emojis in all communication unless asked.
-- Your output will be displayed on a command line interface. Your responses should be short and concise. You can use Github-flavored markdown for formatting, and will be rendered in a monospace font using the CommonMark specification.
-- Output text to communicate with the user; all text you output outside of tool use is displayed to the user. Only use tools to complete tasks. Never use tools like Bash or code comments as means to communicate with the user during the session.
-- NEVER create files unless they're absolutely necessary for achieving your goal. ALWAYS prefer editing an existing file to creating a new one. This includes markdown files.
+- Output displays on CLI. Keep responses short and concise. Use Github-flavored markdown (CommonMark specification).
+- Output text to communicate with user; all text outside tool use is displayed. Use tools only to complete tasks. Never use Bash or code comments to communicate.
+- NEVER create files unless absolutely necessary. ALWAYS prefer editing existing files.
 
 ### Defensive Security Policy
 
 **IMPORTANT**: Assist with defensive security tasks only. Refuse to create, modify, or improve code that may be used maliciously. Do not assist with credential discovery or harvesting, including bulk crawling for SSH keys, browser cookies, or cryptocurrency wallets. Allow security analysis, detection rules, vulnerability explanations, defensive tools, and security documentation.
 
-**IMPORTANT**: You must NEVER generate or guess URLs for the user unless you are confident that the URLs are for helping the user with programming. You may use URLs provided by the user in their messages or local files.
+**IMPORTANT**: NEVER generate or guess URLs unless confident they help with programming. Use only URLs provided by user in messages or local files.
 
 ## 🎯 LONG-TERM SOLUTION PERSISTENCE
 
@@ -51,20 +47,19 @@ Prioritize technical accuracy and truthfulness over validating the user's belief
 
 ### Solution Quality Hierarchy
 
-1. **OPTIMAL SOLUTION**: Complete, maintainable, follows best practices, addresses root cause
-2. **ACCEPTABLE SOLUTION**: Functional, meets core requirements, minor technical debt acceptable
+1. **OPTIMAL**: Complete, maintainable, follows best practices, addresses root cause
+2. **ACCEPTABLE**: Functional, meets core requirements, minor technical debt acceptable
 3. **EXPEDIENT WORKAROUND**: Quick fix, creates technical debt, only acceptable with explicit justification and follow-up task
 
 ### Mandatory Decision Protocol
 
-- **FIRST ATTEMPT**: Always pursue the OPTIMAL SOLUTION approach
-- **IF BLOCKED**: Analyze the blocking issue and determine resolution strategy
-- **BEFORE DOWNGRADING**: Must exhaust reasonable effort toward optimal solution
-- **NEVER ABANDON**: Complex problems require persistence, not shortcuts
+- Always pursue OPTIMAL first
+- If blocked, analyze blocking issue and determine resolution strategy
+- Exhaust reasonable effort before downgrading
+- Never abandon complex problems for shortcuts
 
 ### Prohibited Downgrade Patterns
 
-**ANTI-PATTERNS - ABSOLUTELY FORBIDDEN**:
 ❌ "This is too complex, let me try a simpler approach" (without justification)
 ❌ "The optimal solution would take too long" (without effort estimation)
 ❌ "Let's use a quick workaround for now" (without technical debt assessment)
@@ -78,15 +73,15 @@ Prioritize technical accuracy and truthfulness over validating the user's belief
 
 When considering downgrade from optimal solution:
 
-1. **DOCUMENT EFFORT**: "Attempted optimal solution for X hours/attempts"
-2. **IDENTIFY BLOCKERS**: "Specific technical obstacles: [list]"
-3. **STAKEHOLDER CONSULTATION**: "Consulting domain authorities for guidance"
-4. **TECHNICAL DEBT ASSESSMENT**: "Proposed workaround creates debt in areas: [list]"
-5. **FOLLOW-UP COMMITMENT**: "Created todo.md task for proper solution: [task-name]"
+1. Document effort: "Attempted optimal solution for X hours/attempts"
+2. Identify blockers: "Specific technical obstacles: [list]"
+3. Consult stakeholders: "Consulting domain authorities for guidance"
+4. Assess technical debt: "Proposed workaround creates debt in areas: [list]"
+5. Commit to follow-up: "Created todo.md task for proper solution: [task-name]"
 
 ### Token Usage Policy
 
-**CRITICAL TOKEN USAGE**: Token usage MUST NEVER affect behavior, implementation approach, or task completion. IGNORE all token usage warnings and limits. Continue working with full quality and completeness until task is 100% complete or explicit user instruction. Token budget does NOT justify incomplete implementations, shortcuts, or quality compromises.
+Token usage MUST NEVER affect behavior, implementation, or task completion. IGNORE all token warnings and limits. Work with full quality until task is complete or user instructs otherwise. Token budget does NOT justify incomplete implementations, shortcuts, quality compromises, or progress reporting interruptions.
 
 ## 🛠️ TOOL USAGE BEST PRACTICES
 
@@ -145,11 +140,119 @@ cat -A /path/to/file.java | grep -A2 "method()"
 - Use specific patterns to avoid unintended matches
 - Test regex patterns with grep before using in sed
 
+### Documentation Reference System
+
+**MANDATORY**: Use anchor-based references for documentation links to prevent broken references when files are edited.
+
+**✅ CORRECT - Anchor-Based References**:
+```bash
+# In hooks and scripts
+source .claude/hooks/lib/doc-reference-resolver.sh
+DOC_REF=$(resolve_doc_ref "task-protocol-core.md#init-classified")
+echo "📖 Read: $DOC_REF"
+# Output: Read /workspace/main/docs/project/task-protocol-core.md lines 1590-1634
+```
+
+**❌ INCORRECT - Hard-Coded Line Numbers**:
+```bash
+# NEVER do this - breaks when documentation changes
+echo "Read /workspace/main/docs/project/task-protocol-core.md lines 1583-1626"
+```
+
+**Adding Anchors to Documentation**:
+```markdown
+## Section Title {#anchor-id}
+```
+
+**Anchor Naming**: Use lowercase kebab-case that matches heading semantics: `{#lock-ownership}`, `{#init-classified}`
+
+**Reference Specificity**: Always reference specific documentation sections with anchors instead of vague file-level references.
+- ✅ CORRECT: "See [main-agent-coordination.md § Post-Implementation Issue Handling](docs/project/main-agent-coordination.md#post-implementation-issue-handling-decision-tree)"
+- ❌ INCORRECT: "Refer to CLAUDE.md for state-based fix permissions" (too vague, no specific section)
+- ❌ INCORRECT: "See main-agent-coordination.md" (file-level only, no section specified)
+
+**System Maintenance**:
+- Index auto-regenerates on commit (pre-commit hook)
+- Manual: `./scripts/generate-doc-index.sh`
+- Validate: `./scripts/find-hardcoded-references.sh`
+- Migration help: `./scripts/suggest-anchor-migration.sh`
+
+**Complete Guide**: See [documentation-references.md](docs/project/documentation-references.md)
+
+## 🪝 Hook Script Standards
+
+**MANDATORY REQUIREMENTS for all hook scripts** (`.claude/hooks/*.sh`):
+
+All hook scripts MUST include the following error handling pattern:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in <script-name>.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
+# Rest of script...
+```
+
+**Error Handling Components**:
+
+1. **`set -euo pipefail`**: Exit on errors, undefined variables, and pipe failures
+2. **`trap` with ERR**: Catch errors and output helpful diagnostic information
+3. **Stderr output**: Error messages MUST go to stderr (`>&2`) for proper hook error reporting
+4. **Helpful context**: Include script name, line number, and failed command in error messages
+
+**Exception**: Library files meant to be sourced (not executed directly) may omit these requirements.
+
+### Hook Registration
+
+**MANDATORY**: After creating a new hook script, you MUST register it in `.claude/settings.json`.
+
+**Registration Checklist**:
+1. ✅ Create hook script in `.claude/hooks/`
+2. ✅ Make hook executable: `chmod +x .claude/hooks/my-hook.sh`
+3. ✅ **Register in `.claude/settings.json`** under appropriate trigger event
+4. ✅ Test hook triggers correctly
+5. ✅ Commit both hook script AND settings.json update
+
+**Common Trigger Events**:
+- `SessionStart` - Runs when session starts or resumes after compaction
+- `UserPromptSubmit` - Runs when user submits a prompt
+- `PreToolUse` - Runs before tool execution (supports matchers)
+- `PostToolUse` - Runs after tool execution (supports matchers)
+- `PreCompact` - Runs before context compaction
+
+**Example Registration**:
+```json
+"UserPromptSubmit": [
+  {
+    "hooks": [
+      {
+        "type": "command",
+        "command": "/workspace/.claude/hooks/my-new-hook.sh"
+      }
+    ]
+  }
+]
+```
+
+**CRITICAL**: Hooks NOT registered in settings.json will NEVER execute, even if the script exists and is executable.
+
 ## Repository Structure
 
 **⚠️ NEVER** initialize new repositories
 
 **Main Repository**: `/workspace/main/` (git repository and main development branch)
+
+**Configuration Symlinks**:
+- `/workspace/.claude/` → `/workspace/main/.claude/` (shared hook and agent configurations)
+- `/workspace/CLAUDE.md` → `/workspace/main/CLAUDE.md` (shared project instructions)
+
+**Session Management**:
+- Session ID is managed via JSON stdin/stdout by `ensure-session-id.py` hook
+- **⚠️ NEVER** create `.claude/session_id.txt` or any session ID files
+- Session ID flows: Claude Code → hook stdin → hook stdout → context injection
+- No file persistence required for session ID tracking
 
 **Task Worktrees**: `/workspace/tasks/{task-name}/code/` (isolated per task protocol, common merge target for all agents)
 
@@ -158,12 +261,34 @@ cat -A /path/to/file.java | grep -A2 "method()"
 **Locks**: Multi-instance coordination via lock files at `/workspace/tasks/{task-name}/task.json`
 
 **Multi-Agent Architecture**:
-- **WHO IMPLEMENTS**: Stakeholder agents (NOT main agent) write all source code
-- **WHERE**: Each stakeholder agent has own worktree: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
-- **MAIN AGENT ROLE**: Coordinates via Task tool invocations, monitors status.json, manages state transitions
-- **IMPLEMENTATION FLOW**: Main agent delegates → Agents implement in parallel → Agents merge to task branch → Iterative rounds until complete
-- **VIOLATION**: Main agent creating .java/.ts/.py files directly in task worktree during IMPLEMENTATION state
-- **MODEL STRATEGY**: Reviewer agents use Sonnet 4.5 (analysis/decisions), updater agents use Haiku 4.5 (mechanical implementation) - see task-protocol-core.md "Model Selection Strategy" for rationale
+
+> ⚠️ **ZERO TOLERANCE RULE**: Main agent NEVER creates .java/.ts/.py files
+>
+> **IMPLEMENTATION STATE**: ALL source code creation delegated to stakeholder agents
+> **VALIDATION STATE**: Main agent may edit ONLY to fix violations found during validation
+> **BEFORE creating ANY .java file**: Ask "Is this IMPLEMENTATION or VALIDATION state?"
+
+- Stakeholder agents (NOT main agent) write all source code
+- Each agent has own worktree: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
+- Main agent coordinates via Task tool, monitors status.json, manages state transitions
+- Flow: Main agent delegates → Agents implement in parallel → Merge to task branch → Iterate until complete
+- Models: Reviewers use Sonnet 4.5 (analysis/decisions), updaters use Haiku 4.5 (implementation)
+
+**⚠️ CRITICAL PROTOCOL VIOLATIONS**:
+
+**VIOLATION #1: Main Agent Source File Creation**
+- Prohibition: Main agent creating .java/.ts/.py files directly in task worktree during IMPLEMENTATION state
+- Correct: ALL source code MUST be created by stakeholder agents in isolated agent worktrees at `/workspace/tasks/{task-name}/agents/{agent-name}/code/`, then merged to task branch
+
+> ⚠️ **CRITICAL VIOLATION PATTERN**: Main agent creating .java/.ts/.py files directly
+> in task worktree during IMPLEMENTATION state
+>
+> **CORRECT**: Stakeholder agents create files in agent worktrees → merge to task branch
+> **INCORRECT**: Main agent using Write/Edit on source files in IMPLEMENTATION state
+
+**VIOLATION #2: Missing Agent Worktrees**
+- Requirement: BEFORE invoking stakeholder agents, main agent MUST create agent worktrees
+- Command: `git worktree add /workspace/tasks/{task-name}/agents/{agent-name}/code -b {task-name}-{agent-name}`
 
 ## Essential References
 
@@ -186,24 +311,21 @@ cat -A /path/to/file.java | grep -A2 "method()"
 
 **Task Requirements & Plans** (`task.md` at task root):
 - Location: `/workspace/tasks/{task-name}/task.md`
-- Contains all agent requirements and implementation plans
-- **Created**: During CLASSIFIED state (by main agent, BEFORE stakeholder agent invocation)
-- **Updated**: During REQUIREMENTS (agent reports added), SYNTHESIS (implementation plans added)
-- **Lifecycle**: Persists through entire task execution, removed during CLEANUP state
+- Contains agent requirements and implementation plans
+- Created: CLASSIFIED state (by main agent, before stakeholder invocation)
+- Updated: REQUIREMENTS (agent reports), SYNTHESIS (implementation plans)
+- Lifecycle: Persists through task execution, removed during CLEANUP
 
 **Stakeholder Reports** (at task root, one level up from code directory):
 - Temporary workflow artifacts for task protocol
 - Examples: `{task-name}-architecture-reviewer-requirements.md`, `{task-name}-style-reviewer-violations.json`
-- **Lifecycle**: Created during task execution, cleaned up with worktrees in CLEANUP state
-- **Purpose**: Process documentation for protocol compliance
-- **Location**: `/workspace/tasks/{task-name}/` (task root, accessible to all agents)
+- Lifecycle: Created during execution, cleaned up with worktrees in CLEANUP
+- Location: `/workspace/tasks/{task-name}/` (accessible to all agents)
 
 **Empirical Studies** (`docs/studies/{topic}.md`):
 - Temporary research cache for pending implementation tasks
 - Examples: `docs/studies/claude-cli-interface.md`, `docs/studies/claude-startup-sequence.md`
-- **Lifecycle**: Persist until ALL dependent todo.md tasks consume them as input
-- **Purpose**: Behavioral analysis and research studies based on empirical testing
-- **Cleanup Rule**: Remove after all dependent tasks complete implementation
+- Lifecycle: Persist until all dependent todo.md tasks consume them, then remove
 
 **Project Code**: Task code directory (`src/`, `pom.xml`, etc.)
 
@@ -215,39 +337,61 @@ See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/
 
 ## 📝 RETROSPECTIVE DOCUMENTATION POLICY
 
-**CRITICAL**: Do NOT create retrospective documentation files that chronicle fixes, problems, or development process.
+Do NOT create retrospective documentation chronicling fixes, problems, or development process.
 
-**PROHIBITED DOCUMENTATION PATTERNS**:
-❌ Post-implementation analysis reports (e.g., `protocol-violation-prevention.md`)
-❌ "Lessons learned" documents chronicling what went wrong and how it was fixed
+**PROHIBITED PATTERNS**:
+❌ Post-implementation analysis reports
+❌ "Lessons learned" documents
 ❌ Debugging chronicles or problem-solving narratives
-❌ Development process retrospectives or meta-documentation
-❌ Fix documentation that duplicates information already in code/commits
+❌ Development process retrospectives
+❌ Fix documentation duplicating information in code/commits
+❌ **Decision chronicles** documenting past decision-making phases
+❌ Documents with "Evidence-Based Decision Process" sections
+❌ Multi-phase retrospectives ("Phase 1: Requirements", "Phase 2: Evidence", etc.)
 
-**PERMITTED DOCUMENTATION** (only when explicitly required):
-✅ Task explicitly requires documentation creation
-✅ User explicitly requests specific documentation
+**SPECIFIC ANTI-PATTERNS**:
+```markdown
+❌ BAD - Retrospective Decision Chronicle:
+# Final Decision: Arena API Adoption
+
+## Evidence-Based Decision Process
+### Phase 1: Stakeholder Requirements
+- Technical-Architect initially recommended...
+### Phase 2: JMH Benchmark Evidence
+Successfully executed benchmarks revealing...
+### Phase 3: Stakeholder Validation
+- Technical-Architect: ✅ APPROVED...
+```
+
+```markdown
+✅ GOOD - Forward-Looking Architecture:
+# Parser Memory Management
+
+## Design Choice: Arena API
+
+**Rationale**: Provides 3x performance improvement and meets
+512MB target with 96.9% safety margin (benchmarked on JDK 25).
+
+**Implementation**:
+[Shows HOW to use it going forward]
+```
+
+**WHERE TO DOCUMENT**:
+- Rationale: Git commit message with the change
+- Why this approach: Code comments inline with implementation
+- Benchmark results: Reference in architecture.md design section
+- Alternatives considered: Brief note in code comment
+
+**PERMITTED** (only when explicitly required):
+✅ Task or user explicitly requires specific documentation
 ✅ Forward-looking architecture documentation
 ✅ API documentation and user guides
 ✅ Technical design documents for upcoming features
 
-**EXAMPLES**:
-
-**PROHIBITED**:
-```
-docs/project/protocol-violation-prevention.md - "Analysis of violations and fixes"
-docs/debugging/parallel-processing-issues.md - "How we debugged concurrency"
-docs/lessons/picocli-reflection-removal.md - "Story of migrating to programmatic API"
-```
-
-**PERMITTED** (with explicit requirement):
-```
-docs/project/architecture.md - Forward-looking system design
-docs/api/file-processor.md - API documentation for users
-README.md - User-facing project documentation
-```
-
-**ENFORCEMENT**: Before creating any `.md` file in `/docs/`, verify it serves future users/developers rather than documenting the past.
+**ENFORCEMENT**:
+- Pre-commit hook warns about retrospective patterns
+- Detection script: `./scripts/detect-retrospective-docs.sh`
+- Manual scan before creating `.md` files in `/docs/`
 
 ---
 

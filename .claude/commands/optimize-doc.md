@@ -8,6 +8,47 @@ description: >
 
 **Task**: Optimize the documentation file: `{{arg}}`
 
+## 🚨 DOCUMENT TYPE VALIDATION
+
+**This command ONLY optimizes Claude-facing documentation. REFUSE to run on human-facing documents.**
+
+### Claude-Facing Documents (ALLOWED)
+- `.claude/` configuration files (agents, commands, hooks, settings)
+- `CLAUDE.md` and project instructions for Claude
+- `docs/project/` development protocol documentation (task-protocol-*, agent-*, *-guide.md)
+- `docs/code-style/*-claude.md` style detection patterns for Claude
+
+### Human-Facing Documents (FORBIDDEN)
+- `README.md` files (user-facing project documentation)
+- `changelog.md`, `CHANGELOG.md` (user-facing release notes)
+- `docs/studies/` research and analysis documents
+- `docs/decisions/` historical decision records
+- `docs/performance/` performance documentation
+- `docs/optional-modules/` potentially user-facing guides
+- `todo.md` (working task list)
+- `docs/code-style/*-human.md` human explanations
+- Any documentation in project root intended for human developers
+
+### Validation Procedure
+
+**BEFORE optimizing, check the file path:**
+
+1. **If path matches forbidden patterns, REFUSE**:
+   ```
+   This command only optimizes Claude-facing documentation.
+
+   The file `{{arg}}` appears to be human-facing documentation (README, changelog, studies, etc.).
+
+   Human-facing documents should not be optimized by this command as they serve external
+   audiences and may require specific formatting, marketing language, or pedagogical content.
+   ```
+
+2. **If path matches allowed patterns, PROCEED** with optimization
+
+**Detection Patterns**:
+- FORBIDDEN: `**/README.md`, `**/changelog.md`, `**/CHANGELOG.md`, `docs/studies/**`, `docs/decisions/**`, `docs/performance/**`, `docs/optional-modules/**`, `todo.md`, `**/*-human.md`
+- ALLOWED: `.claude/**`, `CLAUDE.md`, `docs/project/task-protocol-*`, `docs/project/agent-*`, `docs/project/*-guide.md`, `docs/code-style/*-claude.md`
+
 ## Objective
 
 Make documentation more concise and clearer without introducing vagueness or misinterpretation.
@@ -369,6 +410,7 @@ vim todo.md  # DELETE entire task entry
    - Keep all measurable criteria and success definitions
 
 **Warning**: Do NOT sacrifice these for conciseness:
+- **Semantic metadata headers**: Labels like "**TARGET AUDIENCE**:", "**OUTPUT FORMAT**:", "**INPUT REQUIREMENT**:" provide explicit categorization and scannability
 - **Scannability**: Vertical lists are clearer than comma-separated concatenations
 - **Pattern recognition**: Checkmarks/bullets for required actions are clearer than prose
 - Explicit criteria ("ALL", "at least ONE", "NEVER")
@@ -377,6 +419,7 @@ vim todo.md  # DELETE entire task entry
 - Error condition definitions
 
 **Anti-Pattern Examples** (clarity violations to avoid):
+- ❌ Removing semantic metadata headers: "**TARGET AUDIENCE**: Claude AI" → "Claude AI" (loses explicit categorization)
 - ❌ Converting vertical list of prohibited phrases to slash-separated concatenation
 - ❌ Converting checkmarked action items (✅) to comma-separated prose
 - ❌ Removing section headers that aid navigation

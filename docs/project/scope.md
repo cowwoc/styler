@@ -1,6 +1,6 @@
 # Styler - Java Code Formatter - Project Scope
 
-## Project Objective
+## Project Objective {#project-objective}
 
 Styler is an unopinionated Java code formatter that supports 100% of JDK 25's features with multi-threaded
 file processing capabilities. Unlike Prettier, Styler strives to be configurable and unopinionated. Unlike
@@ -8,11 +8,11 @@ checkstyle, Styler bundles auto-fixers for violations whenever possible.
 
 **📋 For complete project details, architecture, and features, see [architecture.md](architecture.md)**
 
-## Core Use Cases
+## Core Use Cases {#core-use-cases}
 
 Styler supports these primary use cases across two integration modes:
 
-### 1. AI Agent Integration (Output-Driven Learning with Automatic Context Detection)
+### 1. AI Agent Integration (Output-Driven Learning with Automatic Context Detection) {#1-ai-agent-integration-output-driven-learning-with-automatic-context-detection}
 **Objective**: Drive AI agent behavior through structured violation feedback that provides immediate
 actionable guidance for code improvement.
 
@@ -42,7 +42,7 @@ without requiring comprehensive upfront documentation:
 - **Context Detection**: Automatic AI vs human detection via environment analysis
 - **Violation Tracking**: Integrated during parsing for immediate feedback
 
-### 2. Traditional Build Integration (Batch Processing)
+### 2. Traditional Build Integration (Batch Processing) {#2-traditional-build-integration-batch-processing}
 **Objective**: Format Java source files according to configurable style rules while preserving developer
 intent.
 
@@ -53,7 +53,7 @@ intent.
 - Output formatted code while preserving comments and structure
 - Support for incremental formatting of only changed sections
 
-### 3. Multi-threaded Project Processing
+### 3. Multi-threaded Project Processing {#3-multi-threaded-project-processing}
 **Objective**: Process large codebases efficiently using parallel file processing.
 
 **Flow**:
@@ -63,7 +63,7 @@ intent.
 - Aggregate results and report progress
 - Handle error recovery and partial failures gracefully
 
-### 4. Integrated Violation Detection and Context-Aware Reporting
+### 4. Integrated Violation Detection and Context-Aware Reporting {#4-integrated-violation-detection-and-context-aware-reporting}
 **Objective**: Track style violations during parsing with automatic output adaptation for different audiences.
 
 **Evidence-Based Implementation**:
@@ -83,12 +83,12 @@ intent.
 - **Context Preservation**: Source location, surrounding code context for each violation
 - **Fix Guidance**: Specific remediation strategies integrated with violation reports
 
-## Sample Configuration
+## Sample Configuration {#sample-configuration}
 
 **📋 IMPORTANT**: This is a **sample configuration** used for testing and development. The actual configuration
 system should be **flexible** and support any combination of formatting rules.
 
-### Example Configuration for Testing
+### Example Configuration for Testing {#example-configuration-for-testing}
 
 **Core Settings:**
 - **Language Version**: JDK 25 (full feature support)
@@ -110,15 +110,12 @@ system should be **flexible** and support any combination of formatting rules.
 - **Preserve Semantics**: Never change code behavior, only formatting
 - **Plugin System**: Extensible for custom formatting rules
 
-## Development Philosophy
+## Development Philosophy {#development-philosophy}
 
 **🚨 CRITICAL: Implement Only What's Needed Today**
 
 - **No Over-Engineering:** Only implement features immediately required for current use cases
--  **No Theoretical Features:** Avoid adding capabilities that "might be useful in the future" but aren't
-  needed now
--  **YAGNI Principle:** "You Aren't Gonna Need It" - resist building extensible frameworks for hypothetical
-  future needs
+- **YAGNI Principle:** "You Aren't Gonna Need It" - avoid theoretical features or extensible frameworks for hypothetical future needs
 - **Focus on Core Value:** Prioritize Java code formatting and AST parsing over architectural elegance
 
 **Implementation Strategy:**
@@ -127,19 +124,16 @@ system should be **flexible** and support any combination of formatting rules.
 3. Refactor and extend only when existing code becomes insufficient
 4. Validate each feature against actual usage before adding more complexity
 
-### Implementation Quality (No Stubbing Principle)
+### Implementation Quality (No Stubbing Principle) {#implementation-quality-no-stubbing-principle}
 
 **🚨 CRITICAL: Complete What You Start**
 
--  **ABSOLUTELY FORBIDDEN**: Creation, usage, or retention of stub implementations, TODO comments, placeholder
-  methods, fake return values
--  **NO PARTIAL IMPLEMENTATIONS**: Every method must be either complete and functional OR throw clear
-  UnsupportedOperationException
-- **NO "IMPLEMENT LATER" PATTERNS**: Return -1, empty implementations, or "// TODO: implement" comments
-- **HONEST ERROR HANDLING**: Unsupported features must fail fast with descriptive error messages
-- **COMPLETE SCENARIO COVERAGE**: Each supported scenario must be fully functional end-to-end
--  **MANDATORY REMOVAL**: Any existing stubs discovered during development MUST be immediately replaced with
-  proper implementations or UnsupportedOperationException
+- **ABSOLUTELY FORBIDDEN**: Stub implementations, TODO comments, placeholder methods, fake return values
+- **NO PARTIAL IMPLEMENTATIONS**: Every method must be complete and functional OR throw UnsupportedOperationException
+- **NO "IMPLEMENT LATER" PATTERNS**: No return -1, empty implementations, or "// TODO: implement" comments
+- **HONEST ERROR HANDLING**: Unsupported features fail fast with descriptive error messages
+- **COMPLETE SCENARIO COVERAGE**: Each supported scenario fully functional end-to-end
+- **MANDATORY REMOVAL**: Existing stubs MUST be immediately replaced with proper implementations or UnsupportedOperationException
 
 **MANDATORY STUB DETECTION AND PREVENTION**:
 - Code quality auditors MUST reject ANY implementation containing TODO comments
@@ -165,7 +159,7 @@ system should be **flexible** and support any combination of formatting rules.
 4. Each commit should contain working, testable functionality for its scenarios
 5. Extend scenario coverage incrementally in future iterations
 
-### YAGNI + No-Stubbing Synergy
+### YAGNI + No-Stubbing Synergy {#yagni-no-stubbing-synergy}
 
 **These principles work together harmoniously:**
 
@@ -186,7 +180,7 @@ system should be **flexible** and support any combination of formatting rules.
 3. **Error Boundaries**: Fail fast with clear messages for unsupported scenarios
 4. **Incremental Expansion**: Add scenarios based on actual need, not speculation
 
-## Key Constraints and Rules
+## Key Constraints and Rules {#key-constraints-and-rules}
 
 **Performance Constraints:**
 - Process 100+ files/second on modern multi-core systems
@@ -214,24 +208,24 @@ system should be **flexible** and support any combination of formatting rules.
 - <1% false positive rate in formatting decisions
 - Support for incremental formatting of changed sections only
 
-## Technical Capabilities
+## Technical Capabilities {#technical-capabilities}
 
-### AST Processing Features
+### AST Processing Features {#ast-processing-features}
 - **Full Language Support**: Complete JDK 25 feature coverage (pattern matching, string templates, etc.)
 - **Comment Preservation**: Maintain all comments, whitespace, and formatting hints
 - **Incremental Parsing**: Support for parsing only changed sections of files
 - **Error Recovery**: Graceful handling of malformed or partial Java files
 - **Multi-version Support**: Parse files written for different Java versions
 
-### Plugin System Capabilities
+### Plugin System Capabilities {#plugin-system-capabilities}
 - **Modular Design**: Formatting rules implemented as independent plugins
 - **Configurable Rules**: Users can enable/disable specific formatting plugins
 - **Custom Extensions**: Support for user-defined formatting rules and auto-fixers
 - **Conflict Resolution**: Handle conflicts between competing formatting rules
 
-## Performance Requirements
+## Performance Requirements {#performance-requirements}
 
-### Performance Targets
+### Performance Targets {#performance-targets}
 
 **AI Agent Mode**:
 - **Validation Latency**: <50ms for real-time format validation
@@ -245,7 +239,7 @@ system should be **flexible** and support any combination of formatting rules.
 - **Scalability**: Near-linear scaling up to 16 CPU cores
 - **Latency**: <100ms response time for single file formatting
 
-### Architecture Guidelines
+### Architecture Guidelines {#architecture-guidelines}
 
 **Command-Line Tool Architecture**:
 - **Self-Contained Operations**: Tool operates independently without external services
@@ -262,31 +256,30 @@ system should be **flexible** and support any combination of formatting rules.
 **📋 For detailed technical architecture, threading models, and implementation details, see
 [architecture.md](architecture.md)**
 
-## User Experience Requirements
+## User Experience Requirements {#user-experience-requirements}
 
-### Command-Line Interface Design
-- **Simple Commands**: Intuitive command-line options for common operations
-- **Configuration Discovery**: Automatic detection of configuration files in project directories
-- **Progress Reporting**: Clear progress indication for large codebase processing
-- **Error Reporting**: Detailed error messages with file locations and suggested fixes
+### Command-Line Interface Design {#command-line-interface-design}
+- **Simple Commands**: Intuitive options for common operations
+- **Configuration Discovery**: Automatic config file detection in project directories
+- **Progress Reporting**: Clear progress for large codebase processing
+- **Error Reporting**: Detailed errors with file locations and suggested fixes
 
-### Configuration Flexibility
-- **YAML-Based Config**: Human-readable configuration with reasonable defaults
-- **Rule Inheritance**: Configuration inheritance from global to project-specific settings
-- **Profile Support**: Pre-defined configuration profiles (Google Style, Oracle Style, etc.)
-- **Override Capabilities**: Command-line overrides for configuration settings
+### Configuration Flexibility {#configuration-flexibility}
+- **YAML-Based Config**: Human-readable with reasonable defaults
+- **Rule Inheritance**: Global to project-specific configuration inheritance
+- **Profile Support**: Pre-defined profiles (Google Style, Oracle Style, etc.)
+- **Override Capabilities**: Command-line configuration overrides
 
-### Integration Support
--  **AI Agent Integration**: Output-driven learning through structured violation feedback with
-  context-specific fix strategies
-- **Build Tool Integration**: Maven and Gradle plugin support for traditional workflows
-- **IDE Integration**: Language Server Protocol for editor integration
-- **CI/CD Integration**: Exit codes and reporting for continuous integration systems
+### Integration Support {#integration-support}
+- **AI Agent Integration**: Output-driven learning via structured violation feedback with context-specific fix strategies
+- **Build Tool Integration**: Maven and Gradle plugin support
+- **IDE Integration**: Language Server Protocol support
+- **CI/CD Integration**: Exit codes and reporting for CI systems
 - **Git Integration**: Pre-commit hooks and diff-aware formatting
 
-## API Scope and Compatibility Guidelines
+## API Scope and Compatibility Guidelines {#api-scope-and-compatibility-guidelines}
 
-### Command-Line Tool Architecture
+### Command-Line Tool Architecture {#command-line-tool-architecture}
 
 **Important**: This system serves **dual integration modes** with automatic context detection:
 
@@ -305,9 +298,9 @@ system should be **flexible** and support any combination of formatting rules.
 - Language Server Protocol for IDE integration
 - Library API for programmatic usage
 
-### Public vs Internal API Classification
+### Public vs Internal API Classification {#public-vs-internal-api-classification}
 
-#### Command-Line Interface (Primary Interface)
+#### Command-Line Interface (Primary Interface) {#command-line-interface-primary-interface}
 **Definition**: Command-line options and configuration file formats for end users.
 
 **Characteristics**:
@@ -321,7 +314,7 @@ system should be **flexible** and support any combination of formatting rules.
 - Configuration file schema and supported options
 - Exit codes and error message formats
 
-#### Library API (Secondary Interface)
+#### Library API (Secondary Interface) {#library-api-secondary-interface}
 **Definition**: Programmatic interface for build tools and IDE integrations.
 
 **Characteristics**:
@@ -335,7 +328,7 @@ system should be **flexible** and support any combination of formatting rules.
 - Plugin interfaces for custom formatting rules
 - Configuration builders and validation APIs
 
-### Development Guidelines
+### Development Guidelines {#development-guidelines}
 
 1. **CLI-First Design**: Primary focus on command-line user experience
 2. **Library Integration**: Secondary focus on programmatic API for tool integration
@@ -343,8 +336,8 @@ system should be **flexible** and support any combination of formatting rules.
 4. **Plugin System**: Extensible architecture for custom formatting rules
 5. **Performance Focus**: Optimize for large codebase processing efficiency
 
-**📋 Additional technical details, build instructions, and coding standards are documented in:**
-- [build-system.md](build-system.md) - Maven configuration and build commands
-- [../code-style-human.md](../code-style-human.md) - Java coding conventions and formatting rules
-- [critical-rules.md](critical-rules.md) - Critical safety protocols and build integrity requirements
-- [architecture.md](architecture.md) - Detailed technical architecture documentation
+**📋 Additional details documented in:**
+- [build-system.md](build-system.md) - Maven configuration and build
+- [../code-style-human.md](../code-style-human.md) - Java coding conventions
+- [critical-rules.md](critical-rules.md) - Safety protocols and build integrity
+- [architecture.md](architecture.md) - Technical architecture
