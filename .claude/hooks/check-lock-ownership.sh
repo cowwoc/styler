@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in check-lock-ownership.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
 # Check for active tasks owned by this session
 # Runs on SessionStart to detect tasks that need resuming after context compaction
 #
@@ -23,7 +26,12 @@ CURRENT_DIR=$(pwd)
 
 # STEP 2: Check for invalid lock files (non-.json extensions) containing this session_id
 # Use fixed string match to prevent regex injection
-INVALID_LOCKS=$(find /workspace/locks -type f ! -name "*.json" -exec grep -lF "\"session_id\":\"$SESSION_ID\"" {} \; 2>/dev/null)
+# Skip if tasks directory doesn't exist yet
+if [ -d /workspace/tasks ]; then
+  INVALID_LOCKS=$(find /workspace/tasks -type f -name "task.*" ! -name "*.json" -exec grep -lF "\"session_id\":\"$SESSION_ID\"" {} \; 2>/dev/null)
+else
+  INVALID_LOCKS=""
+fi
 
 if [ -n "$INVALID_LOCKS" ]; then
   MESSAGE="## 🚨 CRITICAL: INVALID LOCK FILE DETECTED
@@ -59,7 +67,12 @@ fi
 
 # STEP 3: Search ALL lock files for this session_id
 # Use fixed string match to prevent regex injection
-LOCK_FILE=$(find /workspace/locks -name "*.json" -type f -exec grep -lF "\"session_id\":\"$SESSION_ID\"" {} \; 2>/dev/null | head -1)
+# Skip if tasks directory doesn't exist yet
+if [ -d /workspace/tasks ]; then
+  LOCK_FILE=$(find /workspace/tasks -name "task.json" -type f -exec grep -lF "\"session_id\":\"$SESSION_ID\"" {} \; 2>/dev/null | head -1)
+else
+  LOCK_FILE=""
+fi
 
 if [ -z "$LOCK_FILE" ]; then
   # No active task for this session
@@ -67,13 +80,13 @@ if [ -z "$LOCK_FILE" ]; then
 fi
 
 # Extract task details from lock file
-TASK_NAME=$(basename "$LOCK_FILE" .json)
+TASK_NAME=$(basename $(dirname "$LOCK_FILE"))
 TASK_STATE=$(jq -r '.state // "UNKNOWN"' "$LOCK_FILE" 2>/dev/null)
-TASK_WORKTREE="/workspace/branches/$TASK_NAME/code"
+TASK_WORKTREE="/workspace/tasks/$TASK_NAME/code"
 
 # Check for user approval marker if in REVIEW state
 APPROVAL_STATUS=""
-APPROVAL_MARKER="/workspace/branches/$TASK_NAME/user-approval-obtained.flag"
+APPROVAL_MARKER="/workspace/tasks/$TASK_NAME/user-approval-obtained.flag"
 if [[ "$TASK_STATE" == "REVIEW" ]]; then
   if [ -f "$APPROVAL_MARKER" ]; then
     APPROVAL_STATUS="✅ User Approval: OBTAINED"
@@ -110,7 +123,7 @@ fi
 # Check for SYNTHESIS checkpoint state (PLAN APPROVAL - Checkpoint 1)
 if [ "$TASK_STATE" = "SYNTHESIS" ]; then
   # Check if task.md has implementation plans
-  TASK_MD_FILE="/workspace/branches/$TASK_NAME/task.md"
+  TASK_MD_FILE="/workspace/tasks/$TASK_NAME/task.md"
   PLAN_EXISTS="NO"
   if [ -f "$TASK_MD_FILE" ] && grep -q "IMPLEMENTATION PLAN\|Implementation Plan" "$TASK_MD_FILE"; then
     PLAN_EXISTS="YES"
@@ -136,7 +149,7 @@ The requirements have been gathered and implementation plan has been created.
 
 **You MUST:**
 1. Navigate to task worktree: \`cd $TASK_WORKTREE\`
-2. Read the complete implementation plan: \`cat /workspace/branches/$TASK_NAME/task.md\`
+2. Read the complete implementation plan: \`cat /workspace/tasks/$TASK_NAME/task.md\`
 3. Present the plan to user in clear, readable format
 4. Explain:
    - Architecture approach and key design decisions
@@ -173,7 +186,7 @@ This checkpoint is **MANDATORY REGARDLESS** of:
 
 \`\`\`bash
 cd $TASK_WORKTREE
-cat /workspace/branches/$TASK_NAME/task.md | grep -A 1000 \"## CONSOLIDATED IMPLEMENTATION PLAN\"
+cat /workspace/tasks/$TASK_NAME/task.md | grep -A 1000 \"## CONSOLIDATED IMPLEMENTATION PLAN\"
 \`\`\`
 
 ## What Happens After Approval

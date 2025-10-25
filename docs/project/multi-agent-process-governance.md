@@ -5,7 +5,7 @@
 
 ## Problem Statement
 
-**Current Flaw**: Single `process-efficiency-reviewer` agent has conflicting responsibilities:
+Single `process-efficiency-reviewer` agent has conflicting responsibilities:
 - **Audit correctness** (adversarial, strict, binary)
 - **Optimize efficiency** (collaborative, flexible, continuous)
 
@@ -24,7 +24,7 @@ User Request: "Review session for violations"
     ↓
 [3] process-efficiency-reviewer → Suggests improvements (assumes correctness)
     ↓
-[4] documentation-reviewer → Finds ambiguities/contradictions
+[4] config-reviewer → Finds ambiguities/contradictions
     ↓
 Final Report: Violations + Optimizations + Doc Fixes
 ```
@@ -33,9 +33,8 @@ Final Report: Violations + Optimizations + Doc Fixes
 
 ## Agent 1: process-recorder
 
-**Role**: Neutral fact gatherer (no judgments)
+Neutral fact gatherer (no judgments)
 
-**Responsibility**:
 - Collect objective facts about session execution
 - No interpretation, no recommendations
 - Pure data extraction
@@ -76,9 +75,8 @@ Final Report: Violations + Optimizations + Doc Fixes
 
 ## Agent 2: process-compliance-reviewer
 
-**Role**: Adversarial compliance checker (strict, binary)
+Adversarial compliance checker (strict, binary)
 
-**Responsibility**:
 - Check facts from process-recorder against protocol rules
 - Binary output: VIOLATION or COMPLIANT (no gray area)
 - No rationalizations, no "this would be OK if..."
@@ -163,9 +161,8 @@ the violation in the ACTUAL state.
 
 ## Agent 3: process-efficiency-reviewer
 
-**Role**: Collaborative performance advisor (helpful, flexible)
+Collaborative performance advisor (helpful, flexible)
 
-**Responsibility**:
 - **ONLY runs if process-compliance-reviewer verdict == "COMPLIANT"**
 - Suggests efficiency improvements
 - Identifies parallelization opportunities
@@ -221,11 +218,10 @@ the violation in the ACTUAL state.
 
 ---
 
-## Agent 4: documentation-reviewer
+## Agent 4: config-reviewer
 
-**Role**: Technical writer quality checker (clarity, consistency)
+Technical writer quality checker (clarity, consistency)
 
-**Responsibility**:
 - Find ambiguities in protocol documentation
 - Detect contradictions between documents
 - Identify missing edge case guidance
@@ -305,7 +301,7 @@ ELSE:
   Skip optimization (fix violations first)
 
 # Phase 4: Documentation Improvement (quality)
-Task tool (documentation-reviewer): "Find doc ambiguities that caused violations. Input: process-compliance-reviewer violations"
+Task tool (config-reviewer): "Find doc ambiguities that caused violations. Input: process-compliance-reviewer violations"
 ```
 
 ### Step 3: Main Agent Synthesizes Report
@@ -397,10 +393,10 @@ color: green
 **Output**: Optimization suggestions with token savings
 ```
 
-### documentation-reviewer.md
+### config-reviewer.md
 ```yaml
 ---
-name: documentation-reviewer
+name: config-reviewer
 description: Technical writer quality checker for protocol documentation
 tools: [Read, Grep, Edit]
 model: sonnet-4-5
@@ -422,7 +418,7 @@ color: blue
 - **process-recorder**: Facts only (no bias)
 - **process-compliance-reviewer**: Strict enforcement (no rationalization)
 - **process-efficiency-reviewer**: Helpful suggestions (no violation detection)
-- **documentation-reviewer**: Clarity improvements (no compliance checking)
+- **config-reviewer**: Clarity improvements (no compliance checking)
 
 ### 2. No Conflicting Responsibilities
 - Auditor can't rationalize violations (not its job)
@@ -457,13 +453,13 @@ color: blue
 1. Create process-recorder.md (simplest, facts only)
 2. Create process-compliance-reviewer.md (copy checks from methodology, make strict)
 3. Create process-efficiency-reviewer.md (extract efficiency checks from methodology)
-4. Create documentation-reviewer.md (new functionality)
+4. Create config-reviewer.md (new functionality)
 
 ### Phase 3: Update Methodology
 - Split process-optimization-methodology.md into:
   - protocol-audit-checklist.md (for process-compliance-reviewer)
   - efficiency-patterns.md (for process-efficiency-reviewer)
-  - documentation-quality-standards.md (for documentation-reviewer)
+  - documentation-quality-standards.md (for config-reviewer)
 
 ### Phase 4: Update CLAUDE.md
 - Replace references to "process-efficiency-reviewer"
@@ -514,7 +510,7 @@ color: blue
 SKIPPED (violations must be fixed first)
 ```
 
-**Expected documentation-reviewer output**:
+**Expected config-reviewer output**:
 ```json
 {
   "ambiguities": [

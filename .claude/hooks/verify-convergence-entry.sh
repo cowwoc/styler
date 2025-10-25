@@ -1,5 +1,8 @@
 #!/bin/bash
 set -euo pipefail
+
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in verify-convergence-entry.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 # Verify clean state before CONVERGENCE entry (uncommitted changes, test pass, style, test count)
 
 # Find the task lock file based on current directory
@@ -8,10 +11,10 @@ TASK_NAME="$(basename "$(dirname "$CURRENT_DIR")")"
 
 # Try multiple lock file patterns
 LOCK_FILE=""
-if [ -f "/workspace/locks/${TASK_NAME}.json" ]; then
-    LOCK_FILE="/workspace/locks/${TASK_NAME}.json"
-elif [ -f "/workspace/locks/$(basename "$CURRENT_DIR").json" ]; then
-    LOCK_FILE="/workspace/locks/$(basename "$CURRENT_DIR").json"
+if [ -f "/workspace/tasks/${TASK_NAME}/task.json" ]; then
+    LOCK_FILE="/workspace/tasks/${TASK_NAME}/task.json"
+elif [ -f "/workspace/tasks/$(basename "$CURRENT_DIR")/task.json" ]; then
+    LOCK_FILE="/workspace/tasks/$(basename "$CURRENT_DIR")/task.json"
 fi
 
 # No lock file = no enforcement
@@ -48,8 +51,6 @@ if [[ "$STATE" == "CONVERGENCE" ]]; then
         exit 1
     fi
 
-    fi
-
     # Gate 2: Check tests pass
     if ./mvnw test -q 2>/dev/null; then
         : # Tests pass, continue
@@ -70,8 +71,6 @@ if [[ "$STATE" == "CONVERGENCE" ]]; then
         exit 1
     fi
 
-    fi
-
     # Gate 3: Check style compliance
     if ./mvnw checkstyle:check pmd:check -q 2>/dev/null; then
         : # Style passes, continue
@@ -90,8 +89,6 @@ if [[ "$STATE" == "CONVERGENCE" ]]; then
         echo "" >&2
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
         exit 1
-    fi
-
     fi
 
     # Gate 4: Check minimum test count (≥15 tests)

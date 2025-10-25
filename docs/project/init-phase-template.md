@@ -3,7 +3,7 @@
 **For Java Implementation Tasks**:
 
 ```bash
-# Copy-paste this pattern into first message:
+# Copy-paste into first message:
 
 Read docs/project/task-protocol-core.md + \
 Read docs/project/task-protocol-operations.md + \
@@ -22,13 +22,13 @@ Glob "docs/code-style/*-claude.md"
 
 ## Usage Instructions
 
-1. **Identify Task Keywords**: Extract primary keywords from task name
+1. **Identify Task Keywords**: Extract keywords from task name
    - Example: `implement-line-length-formatter` → Keywords: `LineLength`, `Formatter`
    - Example: `refactor-parser-architecture` → Keywords: `Parser`, `Architecture`
 
 2. **Substitute Keywords**: Replace `{KeywordFromTask}` with identified keywords
-   - Use wildcards to match related files
-   - Include both implementation and test patterns
+   - Use wildcards for related files
+   - Include implementation and test patterns
 
 3. **Adjust for Task Type**:
    - **New Features**: Include all patterns above
@@ -86,9 +86,9 @@ Read docs/project/architecture.md
 ## Verification
 
 After executing parallel read:
-- Verify all expected files loaded (check for "file not found" errors)
+- Verify expected files loaded (check for "file not found" errors)
 - Confirm no additional reads needed before SYNTHESIS
-- Check message count: Should be 1 message for all resources
+- Check message count: 1 message for all resources
 
 ## Common Patterns by Module
 

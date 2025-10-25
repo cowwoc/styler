@@ -4,15 +4,15 @@
 > **Audience:** All sub-agents (reviewers and updaters)
 > **Purpose:** Agent coordination protocol, worktree structure, and status tracking
 
-This document contains the **essential task protocol information** that all sub-agents must understand to coordinate properly with the main agent and other sub-agents during task execution.
+Essential task protocol for sub-agent coordination with main agent and other sub-agents during task execution.
 
-## 🚨 MANDATORY: Read This Document at Startup
+## 🚨 MANDATORY: Read This Document at Startup {#mandatory-read-this-document-at-startup}
 
-**ALL sub-agents MUST read this document BEFORE performing any work.** This ensures proper coordination, worktree usage, status tracking, and iterative collaboration.
+ALL sub-agents MUST read this document BEFORE performing any work to ensure proper coordination, worktree usage, status tracking, and iterative collaboration.
 
-## Worktree Structure
+## Worktree Structure {#worktree-structure}
 
-### Directory Layout
+### Directory Layout {#directory-layout}
 
 ```
 /workspace/
@@ -44,7 +44,7 @@ This document contains the **essential task protocol information** that all sub-
                 └── status.json
 ```
 
-### Critical Path Distinctions
+### Critical Path Distinctions {#critical-path-distinctions}
 
 **Updater Agents**:
 - **YOUR worktree**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
@@ -62,9 +62,9 @@ This document contains the **essential task protocol information** that all sub-
 - **Monitors**: All agent status.json files in `/workspace/tasks/{task-name}/agents/*/status.json`
 - **Coordinates**: Agent invocations, state transitions, final merge to main branch
 
-## Status Tracking Protocol
+## Status Tracking Protocol {#status-tracking-protocol}
 
-### Status File Location
+### Status File Location {#status-file-location}
 
 **Every agent** (reviewer and updater) MUST maintain a `status.json` file:
 
@@ -72,7 +72,7 @@ This document contains the **essential task protocol information** that all sub-
 /workspace/tasks/{task-name}/agents/{agent-name}/status.json
 ```
 
-### Status File Formats
+### Status File Formats {#status-file-formats}
 
 **For Reviewer Agents**:
 
@@ -90,12 +90,9 @@ This document contains the **essential task protocol information** that all sub-
 }
 ```
 
-**Required fields for reviewers**:
-- `decision`: **CRITICAL** - Main agent checks this field to determine if work is complete
-  - `APPROVED`: Changes meet requirements, round complete
-  - `REJECTED`: Changes need fixes, provide feedback
-  - `PENDING`: Review in progress
-- `feedback`: Detailed feedback for updater agent when decision is REJECTED
+**Required reviewer fields**:
+- `decision`: Main agent checks this to determine completion (APPROVED/REJECTED/PENDING)
+- `feedback`: Detailed feedback for updater when REJECTED
 
 **For Updater Agents**:
 
@@ -112,15 +109,15 @@ This document contains the **essential task protocol information** that all sub-
 }
 ```
 
-**Required fields for updaters**:
+**Required updater fields**:
 - `last_merge_sha`: Git SHA of last merge to task branch
-- `work_remaining`: "none" when implementation complete
+- `work_remaining`: "none" when complete
 
-## Agent Response Verbosity Guidelines
+## Agent Response Verbosity Guidelines {#agent-response-verbosity-guidelines}
 
-**MANDATORY**: Return metadata-only status reports, NOT full code listings.
+Return metadata-only status reports, NOT full code listings.
 
-**✅ CORRECT (50 tokens)**:
+**✅ CORRECT**:
 ```
 Implementation complete.
 - Files created: FormattingRule.java, TransformationContext.java, FormattingViolation.java
@@ -128,16 +125,14 @@ Implementation complete.
 - Validation: PASSED (22/22 tests, 0 violations)
 ```
 
-**❌ VIOLATION (5,000+ tokens)**:
+**❌ VIOLATION**:
 ```
 Implementation complete. Here is the code:
 
 [Full code listing of 3 files × 200 lines each = 600 lines]
 ```
 
-**Token Impact**: Returning full code for 4 agents × 2 rounds = 40,000-60,000 wasted tokens.
-
-### Status Update Commands
+### Status Update Commands {#status-update-commands}
 
 **Updater agent after merging**:
 
@@ -193,9 +188,9 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}-reviewer/status.json <<EOF
 EOF
 ```
 
-## Iterative Workflow Pattern
+## Iterative Workflow Pattern {#iterative-workflow-pattern}
 
-### Single Agent Round Pattern
+### Single Agent Round Pattern {#single-agent-round-pattern}
 
 ```
 1. Updater agent implements in their worktree (/workspace/tasks/{task}/agents/{agent}-updater/code)
@@ -210,7 +205,7 @@ EOF
 8. Round complete when reviewer decision=APPROVED
 ```
 
-### Multi-Agent Round Flow Example
+### Multi-Agent Round Flow Example {#multi-agent-round-flow-example}
 
 ```
 Round 1 - Initial Implementation:
@@ -241,7 +236,7 @@ Main agent checks all reviewer status.json files:
 - All have decision=APPROVED → Transition to VALIDATION state
 ```
 
-### Round Completion Criteria
+### Round Completion Criteria {#round-completion-criteria}
 
 Main agent checks these conditions before transitioning to next state:
 
@@ -253,15 +248,74 @@ Main agent checks these conditions before transitioning to next state:
 - [ ] Task branch passes ./mvnw verify
 ```
 
-## Git Workflow for Agents
+## Updater Agent Design Decision Protocol {#updater-agent-design-decision-protocol}
 
-### Commit Signature Requirements (MANDATORY)
+When updater agents encounter unexpected design problems not specified in the implementation plan, they MUST consult reviewer/planner agents rather than making architectural decisions themselves.
 
-**PURPOSE**: Enable post-completion audit verification of proper multi-agent coordination
+### Role Separation Principle {#role-separation-principle}
 
-**CRITICAL**: All agent commits MUST include agent type signature in commit message prefix
+**Reviewer Agents (Planners)**: Make architectural decisions, analyze requirements, create plans, resolve ambiguities
 
-**Format Requirements**:
+**Updater Agents (Implementers)**: Execute mechanical implementation per plan, apply reviewer fixes, report blockers, DO NOT make architectural decisions independently
+
+### When to Consult Reviewers {#when-to-consult-reviewers}
+
+Updater agents MUST report to reviewers when encountering:
+
+1. **Unexpected Design Problems**: Planned approach not viable, multiple valid approaches exist, design pattern choice needed, ambiguous contracts
+2. **Scope Ambiguities**: Unspecified edge case handling, unclear component ownership, conflicting requirements
+3. **Technical Blockers**: Missing dependencies, platform limitations, performance constraints
+
+### Consultation Process {#consultation-process}
+
+```
+1. Updater agent detects unexpected design problem
+2. Updater agent updates status.json:
+   {
+     "status": "BLOCKED",
+     "blocked_by": "design_decision_required",
+     "details": "Specific description of problem and why plan is insufficient"
+   }
+3. Updater agent returns with summary explaining blocker
+4. Main agent invokes reviewer agent with:
+   - Description of problem
+   - Why current plan doesn't address it
+   - Request for design guidance
+5. Reviewer agent provides updated plan section with decision
+6. Main agent provides updated plan to updater agent
+7. Updater agent implements per updated plan
+```
+
+**Example**:
+
+❌ **INCORRECT** (Updater makes architectural decision):
+```
+Problem: Plan says "validate inputs" but doesn't specify validation framework
+Updater Action: Independently chooses to use Bean Validation annotations
+Result: Violates separation of concerns, may contradict project patterns
+```
+
+✅ **CORRECT** (Updater consults reviewer):
+```
+Problem: Plan says "validate inputs" but doesn't specify validation framework
+Updater Action:
+  - Updates status.json with BLOCKED status
+  - Returns: "Blocked: Plan requires input validation but doesn't specify framework.
+             Project uses both requirements-java and Bean Validation. Need reviewer
+             guidance on which to use for consistency."
+Main Agent: Invokes architecture-reviewer with problem description
+Reviewer: Analyzes project patterns, specifies "Use requirements-java requireThat()
+          for consistency with existing security module"
+Updater: Implements using requirements-java per reviewer guidance
+```
+
+## Git Workflow for Agents {#git-workflow-for-agents}
+
+### Commit Signature Requirements (MANDATORY) {#commit-signature-requirements-mandatory}
+
+All agent commits MUST include agent type signature in commit message prefix for post-completion audit verification.
+
+**Format**:
 
 ```
 [{agent-type}] Commit subject line
@@ -299,28 +353,15 @@ feat: Add new feature
 
 **Audit Verification**:
 
-The commit signature enables Check 0.3 (Git History Pattern Analysis) to distinguish:
-- **Agent commits**: Proper stakeholder agent implementation
-- **Main agent commits**: Coordination-only (no source file implementation)
-- **Protocol violations**: Main agent implementing source files during IMPLEMENTATION state
+Commit signatures enable post-completion audit to distinguish agent commits from main agent commits and detect protocol violations.
 
-**Detection Algorithm**:
 ```bash
-# Post-completion audit can verify proper agent usage
+# Verify proper agent usage
 agent_commits=$(git log task-branch --not main --grep '\[.*-updater\]' | wc -l)
-
-if [ "$agent_commits" -eq 0 ]; then
-  echo "VIOLATION: No agent signatures found (main agent bypass suspected)"
-fi
+[ "$agent_commits" -eq 0 ] && echo "VIOLATION: No agent signatures found"
 ```
 
-**Why This Matters**:
-- Git history survives after worktrees are cleaned up
-- Provides forensic evidence of proper protocol execution
-- Enables automated compliance checking
-- Prevents post-hoc rationalization of protocol violations
-
-### For Updater Agents: Merging to Task Branch
+### For Updater Agents: Merging to Task Branch {#for-updater-agents-merging-to-task-branch}
 
 **Step 1: Verify your worktree**
 
@@ -381,7 +422,7 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
 EOF
 ```
 
-### For Reviewer Agents: Reviewing Task Branch
+### For Reviewer Agents: Reviewing Task Branch {#for-reviewer-agents-reviewing-task-branch}
 
 **Step 1: Review the task branch (NOT updater worktrees)**
 
@@ -439,9 +480,9 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}-reviewer/status.json <<EOF
 EOF
 ```
 
-## Validation Commands
+## Validation Commands {#validation-commands}
 
-### For Updater Agents
+### For Updater Agents {#for-updater-agents}
 
 **Local validation in YOUR worktree** (before merging):
 
@@ -466,7 +507,7 @@ cd /workspace/tasks/{task-name}/code
 ./mvnw verify
 ```
 
-### For Reviewer Agents
+### For Reviewer Agents {#for-reviewer-agents}
 
 **Review task branch** (where updaters have merged):
 
@@ -480,9 +521,9 @@ cd /workspace/tasks/{task-name}/code
 ./mvnw compile                         # Architecture/build reviewers
 ```
 
-## File Locations
+## File Locations {#file-locations}
 
-### Input Files (Where to Read)
+### Input Files (Where to Read) {#input-files-where-to-read}
 
 **Reviewer reports** (generated by reviewer agents, consumed by updater agents):
 
@@ -510,7 +551,7 @@ Examples:
 /workspace/main/docs/                  # General documentation
 ```
 
-### Output Files (Where to Write)
+### Output Files (Where to Write) {#output-files-where-to-write}
 
 **Status tracking** (MANDATORY):
 
@@ -541,13 +582,11 @@ TEMP_DIR=$(cat .temp_dir 2>/dev/null || echo "/tmp/agent-$$")
 - ❌ Project source directories
 - ❌ Main worktree
 
-## Common Patterns
+## Common Patterns {#common-patterns}
 
-### Pattern: Incremental Validation
+### Pattern: Incremental Validation {#pattern-incremental-validation}
 
-**Problem**: Full `./mvnw verify` is slow (30-60 seconds)
-
-**Solution**: Validate incrementally during development
+Full `./mvnw verify` is slow (30-60 seconds). Validate incrementally during development:
 
 ```bash
 # After creating new class
@@ -563,7 +602,7 @@ TEMP_DIR=$(cat .temp_dir 2>/dev/null || echo "/tmp/agent-$$")
 ./mvnw verify
 ```
 
-### Pattern: Reading Reviewer Feedback
+### Pattern: Reading Reviewer Feedback {#pattern-reading-reviewer-feedback}
 
 **Updater agents** must read reviewer feedback after REJECTED decision:
 
@@ -585,7 +624,7 @@ if [ "$DECISION" = "REJECTED" ]; then
 fi
 ```
 
-### Pattern: Error Handling
+### Pattern: Error Handling {#pattern-error-handling}
 
 **If implementation cannot proceed**:
 
@@ -605,9 +644,9 @@ EOF
 
 **Main agent will detect BLOCKED status and resolve dependency.**
 
-### Pattern: Multi-Round Collaboration
+### Pattern: Multi-Round Collaboration {#pattern-multi-round-collaboration}
 
-**Scenario**: Architecture change affects multiple agents
+Architecture change affects multiple agents:
 
 ```
 Round 1:
@@ -627,9 +666,9 @@ Round 3 (review):
 - style-reviewer: Review style → APPROVED
 ```
 
-## Summary: Agent Checklist
+## Summary: Agent Checklist {#summary-agent-checklist}
 
-### Updater Agent Checklist
+### Updater Agent Checklist {#updater-agent-checklist}
 
 Before starting work:
 - [ ] Read task-protocol-agents.md (this document)
@@ -653,7 +692,7 @@ If reviewer rejects:
 - [ ] Re-merge to task branch
 - [ ] Update status.json
 
-### Reviewer Agent Checklist
+### Reviewer Agent Checklist {#reviewer-agent-checklist}
 
 Before starting work:
 - [ ] Read task-protocol-agents.md (this document)
@@ -670,7 +709,7 @@ When complete:
 - [ ] If REJECTED: Provide detailed feedback
 - [ ] If APPROVED: Set work_remaining to "none"
 
-## References
+## References {#references}
 
 - **Main protocol**: [task-protocol-core.md](task-protocol-core.md) - Complete state machine (for main agent)
 - **Operations guide**: [task-protocol-operations.md](task-protocol-operations.md) - Patterns and examples (for main agent)

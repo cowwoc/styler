@@ -13,11 +13,11 @@ TRANSITIONS with zero-tolerance enforcement
 
 ---
 
-## 📖 DOCUMENTATION STRUCTURE GUIDE
+## 📖 DOCUMENTATION STRUCTURE GUIDE {#documentation-structure-guide}
 
-**IMPORTANT**: This document contains BOTH ideal workflow documentation AND recovery procedures. Understanding when to reference each is critical.
+This document contains BOTH ideal workflow documentation AND recovery procedures. Understanding when to reference each is critical.
 
-### Ideal State vs Recovery Documentation
+### Ideal State vs Recovery Documentation {#ideal-state-vs-recovery-documentation}
 
 This protocol document is organized into two logical layers:
 
@@ -39,7 +39,7 @@ This protocol document is organized into two logical layers:
   - "Recovery from Crashed Sessions" - Session interruption recovery
   - "Violation Recovery Patterns" - Protocol violation fixes
 
-### When to Read Each Layer
+### When to Read Each Layer {#when-to-read-each-layer}
 
 **During Normal Task Execution** (no issues):
 ✅ Read IDEAL STATE sections to understand standard workflow
@@ -53,9 +53,9 @@ This protocol document is organized into two logical layers:
 ✅ Follow recovery procedures to return to ideal state
 ✅ Resume normal execution after recovery
 
-### Navigation Patterns
+### Navigation Patterns {#navigation-patterns}
 
-**Pattern 1: First-Time Reading** (learning the protocol):
+**First-Time Reading** (learning the protocol):
 ```
 Step 1: Read "STATE MACHINE ARCHITECTURE" (ideal state)
 Step 2: Read "State Definitions" (ideal state)
@@ -64,7 +64,7 @@ Step 4: SKIP recovery sections on first read
 Step 5: Return to recovery sections when needed
 ```
 
-**Pattern 2: Executing a Task** (applying the protocol):
+**Executing a Task** (applying the protocol):
 ```
 Step 1: Follow ideal state transitions in order
 Step 2: If interruption occurs → Jump to "Interruption Handling" (recovery)
@@ -73,7 +73,7 @@ Step 4: If build fails → Jump to "Violation Recovery" (recovery)
 Step 5: After recovery → Return to ideal state workflow
 ```
 
-**Pattern 3: Debugging an Issue** (troubleshooting):
+**Debugging an Issue** (troubleshooting):
 ```
 Step 1: Identify current state from lock file
 Step 2: Identify issue type (interruption, failure, violation)
@@ -82,7 +82,7 @@ Step 4: Apply recovery procedure
 Step 5: Verify return to ideal state
 ```
 
-### Section Type Indicators
+### Section Type Indicators {#section-type-indicators}
 
 Throughout this document, section headers indicate their type:
 
@@ -96,21 +96,7 @@ Throughout this document, section headers indicate their type:
 - Content focuses on: problems, detection, recovery actions
 - Reading order: As needed when specific issues occur
 
-### Why This Structure?
-
-**Benefits of Combined Documentation**:
-1. **Complete Picture**: Both ideal and recovery in one authoritative source
-2. **Context Awareness**: Recovery procedures reference ideal state sections
-3. **Efficiency**: No need to search multiple documents during emergencies
-4. **Consistency**: Single source of truth for all protocol behavior
-
-**Avoiding Confusion**:
-1. **Clear Indicators**: Section titles clearly signal ideal vs recovery
-2. **Separate Navigation**: Different reading patterns for each layer
-3. **Explicit References**: Recovery sections explicitly link to ideal sections
-4. **Visual Separation**: Recovery sections use distinct formatting
-
-### Quick Reference: Section Classification
+### Quick Reference: Section Classification {#quick-reference-section-classification}
 
 | Section Type | Purpose | When to Read |
 |--------------|---------|--------------|
@@ -124,9 +110,9 @@ Throughout this document, section headers indicate their type:
 
 ---
 
-## STATE MACHINE ARCHITECTURE
+## STATE MACHINE ARCHITECTURE {#state-machine-architecture}
 
-### Core States
+### Core States {#core-states}
 ```
 INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLEMENTATION (iterative rounds) → VALIDATION → REVIEW → AWAITING_USER_APPROVAL → COMPLETE → CLEANUP
                                       ↑                                ↓                                                    ↓
@@ -139,7 +125,7 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 -  **[CHANGE REVIEW]**: After REVIEW (unanimous stakeholder approval) - Transition to AWAITING_USER_APPROVAL
   state
 
-### State Definitions
+### State Definitions {#state-definitions}
 - **INIT**: Task selected, locks acquired, session validated, task worktree and agent worktrees created
 - **CLASSIFIED**: Risk level determined, agents selected, isolation established
 -  **REQUIREMENTS**: All stakeholder agents contribute requirements to task.md, negotiate conflicts, finalize
@@ -159,11 +145,11 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 -  **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns (ONLY
   when resolution effort > 2x task scope AND agent consensus permits deferral - escalate based on agent tiers,
   architecture-reviewer makes final decision)
--  **COMPLETE**: Work merged to main branch, todo.md updated, dependent tasks unblocked (only after user
-  approves changes)
+-  **COMPLETE**: Work merged to main branch with atomic documentation update (task implementation + todo.md +
+  changelog.md in single commit), dependent tasks unblocked (only after user approves changes)
 - **CLEANUP**: All agent worktrees removed, task worktree removed, locks released, temporary files cleaned
 
-### User Approval Checkpoints - MANDATORY REGARDLESS OF BYPASS MODE
+### User Approval Checkpoints - MANDATORY REGARDLESS OF BYPASS MODE {#user-approval-checkpoints---mandatory-regardless-of-bypass-mode}
 
 **CRITICAL**: The two user approval checkpoints are MANDATORY and MUST be respected REGARDLESS of whether the
 user is in "bypass permissions on" mode or any other automation mode.
@@ -244,7 +230,7 @@ Before REVIEW → COMPLETE:
 - [ ] Did the user explicitly approve proceeding to finalization?
 - [ ] Did I assume approval from agent consensus alone? (VIOLATION if yes)
 
-### Checkpoint Wait Behavior
+### Checkpoint Wait Behavior {#checkpoint-wait-behavior}
 
 **CRITICAL GUIDANCE**: While waiting at user approval checkpoints, the main agent must follow specific behavior patterns to maintain protocol integrity while remaining responsive to user needs.
 
@@ -338,7 +324,7 @@ REQUIRED Response:
 
 **NO AUTOMATIC TIMEOUT**: Agent must wait indefinitely for user approval at checkpoints.
 
-**Rationale**: User may need extended time to:
+User may need extended time to:
 - Review complex implementation plans thoroughly
 - Test changes locally before approving
 - Consult with team members
@@ -416,7 +402,7 @@ Agent Response:
 
 **CRITICAL**: When in doubt, ask for clarification rather than assuming approval.
 
-### Automated Checkpoint Enforcement
+### Automated Checkpoint Enforcement {#automated-checkpoint-enforcement}
 
 **Approval Marker File**: `/workspace/tasks/{task-name}/user-approval-obtained.flag`
 - Required for COMPLETE state transition
@@ -429,10 +415,10 @@ Agent Response:
 **Why User Instructions Don't Override**: Protocol line 36: "MANDATORY REGARDLESS of bypass mode or automation
 mode". Checkpoints are quality gates, not permission gates.
 
-### State Transitions
+### State Transitions {#state-transitions}
 Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS.**
 
-## TERMINOLOGY GLOSSARY
+## TERMINOLOGY GLOSSARY {#terminology-glossary}
 
 **State**: One of 10 formal states in the task protocol state machine (INIT, CLASSIFIED, REQUIREMENTS,
 SYNTHESIS, IMPLEMENTATION, VALIDATION, REVIEW, AWAITING_USER_APPROVAL, COMPLETE, CLEANUP)
@@ -459,14 +445,32 @@ scope
 
 **Unanimous Approval**: Required condition where ALL agents must respond with "✅ APPROVED" before proceeding
 
-## RISK-BASED AGENT SELECTION ENGINE
+## RISK-BASED AGENT SELECTION ENGINE {#risk-based-agent-selection-engine}
 
-### Automatic Risk Classification
+### Agent Classification {#agent-classification}
+
+**STAKEHOLDER AGENTS** (for task implementation):
+- `architecture-reviewer`, `architecture-updater`
+- `style-reviewer`, `style-updater`
+- `quality-reviewer`, `quality-updater`
+- `test-reviewer`, `test-updater`
+- `build-reviewer`, `build-updater`
+- `security-reviewer`, `security-updater`
+- `performance-reviewer`, `performance-updater`
+- `usability-reviewer`, `usability-updater`
+
+**NON-STAKEHOLDER AGENTS** (excluded from task classification):
+- `config-reviewer`, `config-updater` - Claude Code configuration management only
+- `process-recorder`, `process-compliance-reviewer`, `process-efficiency-reviewer` - Audit pipeline only
+
+**CRITICAL RULE**: When performing CLASSIFIED state agent selection, ONLY select from stakeholder agents. NEVER include config-* or process-* agents in task worktree agent selection. These agents serve meta-purposes (configuration management, process auditing) and are NOT involved in task implementation.
+
+### Automatic Risk Classification {#automatic-risk-classification}
 **Input**: File paths from modification request
 **Process**: Pattern matching → Escalation trigger analysis → Agent set determination
-**Output**: Risk level (HIGH/MEDIUM/LOW) + Required agent set
+**Output**: Risk level (HIGH/MEDIUM/LOW) + Required agent set from STAKEHOLDER AGENTS only
 
-### HIGH-RISK FILES (Complete Validation Required)
+### HIGH-RISK FILES (Complete Validation Required) {#high-risk-files-complete-validation-required}
 **Patterns:**
 - `src/**/*.java` (core implementation)
 - `pom.xml`, `**/pom.xml` (build configuration)
@@ -481,7 +485,7 @@ scope
 **Additional Agents**: security-reviewer (if security-related), performance-reviewer (if performance-critical),
 test-reviewer (if new functionality), usability-reviewer (if user-facing)
 
-### MEDIUM-RISK FILES (Domain Validation Required)
+### MEDIUM-RISK FILES (Domain Validation Required) {#medium-risk-files-domain-validation-required}
 **Patterns:**
 - `src/test/**/*.java` (test files)
 - `docs/code-style/**` (style documentation)
@@ -492,7 +496,7 @@ test-reviewer (if new functionality), usability-reviewer (if user-facing)
 **Additional Agents**: style-reviewer (if style files), security-reviewer (if config files),
 performance-reviewer (if benchmarks)
 
-### LOW-RISK FILES (Minimal Validation Required)
+### LOW-RISK FILES (Minimal Validation Required) {#low-risk-files-minimal-validation-required}
 **Patterns:**
 - `*.md` (except CLAUDE.md, task-protocol.md, critical-rules.md)
 - `docs/**/*.md` (general documentation)
@@ -502,18 +506,18 @@ performance-reviewer (if benchmarks)
 
 **Required Agents**: None (unless escalation triggered)
 
-### Escalation Triggers
+### Escalation Triggers {#escalation-triggers}
 **Keywords**: "security", "architecture", "breaking", "performance", "concurrent", "database", "api", "state",
 "dependency"
 **Content Analysis**: Cross-module dependencies, security implications, architectural changes
 **Action**: Force escalation to next higher risk level
 
-### Manual Overrides
+### Manual Overrides {#manual-overrides}
 **Force Full Protocol**: `--force-full-protocol` flag for critical changes
 **Explicit Risk Level**: `--risk-level=HIGH|MEDIUM|LOW` to override classification
 **Escalation Keywords**: "security", "architecture", "breaking" in task description
 
-### Risk Assessment Audit Trail
+### Risk Assessment Audit Trail {#risk-assessment-audit-trail}
 **Required Logging:**
 - Risk level selected (HIGH/MEDIUM/LOW)
 - Classification method (pattern match, keyword trigger, manual override)
@@ -524,9 +528,9 @@ performance-reviewer (if benchmarks)
 
 **Implementation**: Log in state.json file and commit messages for audit purposes
 
-## WORKFLOW VARIANTS BY RISK LEVEL
+## WORKFLOW VARIANTS BY RISK LEVEL {#workflow-variants-by-risk-level}
 
-### HIGH_RISK_WORKFLOW (Complete Validation)
+### HIGH_RISK_WORKFLOW (Complete Validation) {#high_risk_workflow-complete-validation}
 **States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW →
 COMPLETE → CLEANUP
 **Stakeholder Agents**: All agents based on task requirements
@@ -535,7 +539,7 @@ COMPLETE → CLEANUP
 **Use Case**: Core implementation, build configuration, security, CI/CD
 **Conditional Skips**: None - all validation required
 
-### MEDIUM_RISK_WORKFLOW (Domain Validation)
+### MEDIUM_RISK_WORKFLOW (Domain Validation) {#medium_risk_workflow-domain-validation}
 **States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW →
 COMPLETE → CLEANUP
 **Stakeholder Agents**: Based on change characteristics
@@ -549,7 +553,7 @@ COMPLETE → CLEANUP
 **Use Case**: Test files, style documentation, configuration files
 **Conditional Skips**: May skip IMPLEMENTATION/VALIDATION states if only documentation changes
 
-### LOW_RISK_WORKFLOW (Streamlined Validation)
+### LOW_RISK_WORKFLOW (Streamlined Validation) {#low_risk_workflow-streamlined-validation}
 **States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → COMPLETE → CLEANUP
 **Stakeholder Agents**: None (unless escalation triggered)
 **Isolation**: Required for multi-file changes, optional for single documentation file
@@ -561,7 +565,7 @@ COMPLETE → CLEANUP
 **Use Case**: Documentation updates, todo.md, README files
 **Conditional Skips**: Skip IMPLEMENTATION, VALIDATION, REVIEW states entirely
 
-### Conditional State Transition Logic
+### Conditional State Transition Logic {#conditional-state-transition-logic}
 ```python
 def determine_state_path(risk_level, change_type):
     """Determine which states to execute based on risk and change type"""
@@ -585,7 +589,7 @@ def determine_state_path(risk_level, change_type):
         return base_states + ["IMPLEMENTATION", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
 ```
 
-### Skip Condition Examples
+### Skip Condition Examples {#skip-condition-examples}
 **IMPLEMENTATION/VALIDATION State Skip Conditions:**
 - Maven dependency additions (configuration only)
 - Build plugin configuration changes
@@ -602,9 +606,9 @@ def determine_state_path(risk_level, change_type):
 - Build system modifications affecting compilation
 - API contract modifications
 
-## AGENT SELECTION DECISION TREE
+## AGENT SELECTION DECISION TREE {#agent-selection-decision-tree}
 
-### Comprehensive Agent Selection Framework
+### Comprehensive Agent Selection Framework {#comprehensive-agent-selection-framework}
 **Input**: Task description and file modification patterns
 **Available Agents**: architecture-reviewer, usability-reviewer, performance-reviewer, security-reviewer,
 style-reviewer, quality-reviewer, test-reviewer, build-reviewer
@@ -672,9 +676,9 @@ style-reviewer, quality-reviewer, test-reviewer, build-reviewer
 - **usability-reviewer**: User experience design and interface evaluation
 - **architecture-reviewer**: System architecture and implementation guidance
 
-## COMPLETE STYLE VALIDATION FRAMEWORK
+## COMPLETE STYLE VALIDATION FRAMEWORK {#complete-style-validation-framework}
 
-### Three-Component Style Validation
+### Three-Component Style Validation {#three-component-style-validation}
 **MANDATORY PROCESS**: When style validation is required, ALL THREE components must pass:
 
 1. **Automated Linters** (via build-reviewer):
@@ -693,7 +697,7 @@ style-reviewer, quality-reviewer, test-reviewer, build-reviewer
    - Use `checkstyle/fixers` module for AST-based consolidate-then-split strategy
    - Comprehensive testing validates fixing logic before application
 
-### Complete Style Validation Gate Pattern
+### Complete Style Validation Gate Pattern {#complete-style-validation-gate-pattern}
 ```bash
 # MANDATORY: Never assume checkstyle-only validation
 # CRITICAL ERROR PATTERN: Checking only checkstyle and declaring "no violations found" when PMD/manual violations exist
@@ -725,9 +729,9 @@ validate_complete_style_compliance() {
 ```
 
 
-## BATCH PROCESSING AND CONTINUOUS MODE
+## BATCH PROCESSING AND CONTINUOUS MODE {#batch-processing-and-continuous-mode}
 
-### Batch Processing Restrictions
+### Batch Processing Restrictions {#batch-processing-restrictions}
 **PROHIBITED PATTERNS:**
 - Processing multiple tasks sequentially without individual protocol execution
 - "Work on all Phase 1 tasks until done" - Must select ONE specific task
@@ -741,7 +745,7 @@ validate_complete_style_compliance() {
 4. Execute full state machine protocol for THAT task only
 5. Complete CLEANUP state before starting any other task
 
-### Automatic Continuous Mode Translation
+### Automatic Continuous Mode Translation {#automatic-continuous-mode-translation}
 **When users request batch operations:**
 
 **AUTOMATIC TRANSLATION PROTOCOL:**
@@ -764,7 +768,7 @@ When batch requests specify subsets:
 3. **Name-based filtering**: Process only specifically mentioned task names
 4. **Default behavior**: Process all available tasks if no filter mentioned
 
-## 🧠 PROTOCOL INTERPRETATION MODE
+## 🧠 PROTOCOL INTERPRETATION MODE {#protocol-interpretation-mode}
 
 **ENHANCED ANALYTICAL RIGOR**: Parent agent must apply deeper analysis when interpreting and following the
 task protocol workflow. Rather than surface-level interpretations, carefully analyze what the protocol truly
@@ -777,14 +781,14 @@ requires for the specific task context.
 - Consider edge cases and alternative approaches
 - Maintain skeptical evaluation of "good enough" solutions
 
-## AUTOMATED PROTOCOL COMPLIANCE AUDIT
+## AUTOMATED PROTOCOL COMPLIANCE AUDIT {#automated-protocol-compliance-audit}
 
 **MANDATORY**: After EVERY state transition completion, the main agent MUST invoke the protocol compliance
 audit pipeline to verify correct protocol execution.
 
-### 4-Agent Protocol Audit Pipeline
+### 4-Agent Protocol Audit Pipeline {#4-agent-protocol-audit-pipeline}
 
-**Purpose**: Detect and prevent protocol violations through systematic, automated checking after each phase.
+Detect and prevent protocol violations through systematic, automated checking after each phase.
 
 **Pipeline Architecture**:
 ```
@@ -792,7 +796,7 @@ process-recorder → process-compliance-reviewer → efficiency-optimizer → do
     (facts)           (enforcement)        (performance)        (root causes)
 ```
 
-### When to Run Protocol Audit
+### When to Run Protocol Audit {#when-to-run-protocol-audit}
 
 **MANDATORY Audit Triggers**:
 - **After each state transition** (INIT→CLASSIFIED, CLASSIFIED→REQUIREMENTS, etc.)
@@ -800,7 +804,7 @@ process-recorder → process-compliance-reviewer → efficiency-optimizer → do
 - **After agent completion** (when all stakeholder agents report COMPLETE)
 - **On violation detection** (immediate re-audit after fixing violations)
 
-### Protocol Audit Execution Pattern
+### Protocol Audit Execution Pattern {#protocol-audit-execution-pattern}
 
 ```bash
 # Step 1: Collect session facts
@@ -853,7 +857,7 @@ else
 fi
 ```
 
-### Violation Detection and Retry Logic
+### Violation Detection and Retry Logic {#violation-detection-and-retry-logic}
 
 **Critical Violation Response Pattern**:
 
@@ -871,10 +875,10 @@ IF (process-compliance-reviewer returns FAILED):
   6. **ONLY THEN proceed** - After PASSED verdict, continue to next state
 ```
 
-### Example: IMPLEMENTATION State Transition with Audit
+### Example: IMPLEMENTATION State Transition with Audit {#example-implementation-state-transition-with-audit}
 
 ```markdown
-## After SYNTHESIS state complete and user approval received:
+## After SYNTHESIS state complete and user approval received: {#after-synthesis-state-complete-and-user-approval-received}
 
 1. Update lock state to IMPLEMENTATION:
    ```bash
@@ -909,7 +913,7 @@ IF (process-compliance-reviewer returns FAILED):
    - Verify lock state matches actual work completed
 ```
 
-### Protocol Audit Integration Points
+### Protocol Audit Integration Points {#protocol-audit-integration-points}
 
 **State-by-State Audit Requirements**:
 
@@ -923,9 +927,9 @@ IF (process-compliance-reviewer returns FAILED):
 | **VALIDATION → REVIEW** | Build passed | Quality gates executed (not cached), tests passed |
 | **REVIEW → AWAITING_USER_APPROVAL** | Unanimous approval | All agents approved, no violations found |
 | **AWAITING_USER_APPROVAL → COMPLETE** | User approved | User approval flag exists, ready to merge |
-| **COMPLETE → CLEANUP** | Merge complete | Changes merged to main, todo.md updated |
+| **COMPLETE → CLEANUP** | Merge complete | Atomic commit: task + todo.md + changelog.md merged to main |
 
-### Automated Protocol Enforcement
+### Automated Protocol Enforcement {#automated-protocol-enforcement}
 
 **Hook Integration**:
 
@@ -999,9 +1003,9 @@ When session resumes with pending audits:
 ✅ documentation-auditor automatically invoked when violations detected
 ✅ Audit retries automatically until PASSED verdict obtained
 
-### Audit Command Interaction Patterns Across Protocol States
+### Audit Command Interaction Patterns Across Protocol States {#audit-command-interaction-patterns-across-protocol-states}
 
-**CRITICAL GUIDANCE**: Audit commands (`/audit-session`, protocol compliance checks) can be invoked at any point during task execution. This section clarifies interaction patterns, state preservation, and resumption logic for each protocol state.
+Audit commands (`/audit-session`, protocol compliance checks) can be invoked at any point during task execution. This section clarifies interaction patterns, state preservation, and resumption logic for each protocol state.
 
 **Core Audit Principles**:
 1. **Non-Destructive**: Audits NEVER modify task state, lock files, or implementation files
@@ -1013,7 +1017,7 @@ When session resumes with pending audits:
 
 **INIT State + Audit**:
 ```markdown
-Scenario: User runs audit during worktree creation
+User runs audit during worktree creation
 
 Audit Behavior:
 - Audit detects task in INIT state
@@ -1028,7 +1032,7 @@ Resumption After Audit:
 
 **CLASSIFIED State + Audit**:
 ```markdown
-Scenario: User runs audit after agent selection, before REQUIREMENTS
+User runs audit after agent selection, before REQUIREMENTS
 
 Audit Behavior:
 - Verifies risk classification rationale
@@ -1044,7 +1048,7 @@ Resumption After Audit:
 
 **REQUIREMENTS State + Audit (Active Agent Invocations)**:
 ```markdown
-Scenario: User runs audit while agents are gathering requirements
+User runs audit while agents are gathering requirements
 
 This is the most complex interaction pattern - see "Agent Invocation Interruption Handling" section for complete details.
 
@@ -1310,7 +1314,7 @@ CORRECT PATTERN:
 6. Resume protocol execution
 ```
 
-### Violation Recovery Patterns
+### Violation Recovery Patterns {#violation-recovery-patterns}
 
 **Common Violations and Fixes**:
 
@@ -1346,9 +1350,9 @@ CORRECT PATTERN:
 4. Proceed to next state only after artifact exists
 ```
 
-## MANDATORY STATE TRANSITIONS
+## MANDATORY STATE TRANSITIONS {#mandatory-state-transitions}
 
-### state.json File Management
+### state.json File Management {#statejson-file-management}
 Every task MUST maintain a `state.json` file in the task directory containing:
 ```json
 {
@@ -1369,12 +1373,12 @@ Every task MUST maintain a `state.json` file in the task directory containing:
 }
 ```
 
-## PRE-INIT VERIFICATION: Task Selection and Lock Validation
+## PRE-INIT VERIFICATION: Task Selection and Lock Validation {#pre-init-verification-task-selection-and-lock-validation}
 
 **CRITICAL**: Before executing INIT phase, you MUST verify that the selected task is available for work by
 checking existing locks and worktrees, AND verify you can complete the task autonomously.
 
-### Autonomous Completion Feasibility Check
+### Autonomous Completion Feasibility Check {#autonomous-completion-feasibility-check}
 
 Before acquiring lock and starting INIT, verify the task can be completed without user intervention:
 
@@ -1408,7 +1412,7 @@ grep -A 20 "TASK.*${TASK_NAME}" /workspace/main/todo.md
 **COMMITMENT**: If all checks pass, you MUST complete entire protocol (States 0-8) without asking user
 permission.
 
-### Decision Logic: Can I Work on This Task?
+### Decision Logic: Can I Work on This Task? {#decision-logic-can-i-work-on-this-task}
 
 **Step 1: Check for existing lock file**
 ```bash
@@ -1438,7 +1442,7 @@ fi
 ls -d /workspace/tasks/{TASK_NAME} 2>/dev/null && echo "Worktree exists" || echo "No worktree"
 ```
 
-### Task Selection Decision Matrix
+### Task Selection Decision Matrix {#task-selection-decision-matrix}
 
 | Lock Exists? | Lock Owner | Worktree Exists? | Action |
 |--------------|------------|------------------|--------|
@@ -1449,14 +1453,14 @@ ls -d /workspace/tasks/{TASK_NAME} 2>/dev/null && echo "Worktree exists" || echo
 | ❌ NO | N/A | ✅ YES | **ASK USER**: Worktree exists without lock - crashed session or manual intervention |
 | ❌ NO | N/A | ❌ NO | **PROCEED WITH INIT**: Task is available - execute normal INIT phase |
 
-### Prohibited Actions
+### Prohibited Actions {#prohibited-actions}
 
 ❌ **NEVER** delete or override a lock file owned by a different session
 ❌ **NEVER** assume an existing worktree without a lock is abandoned
 ❌ **NEVER** proceed with INIT if a lock exists for a different session
 ❌ **NEVER** skip lock verification when user says "continue with next task"
 
-### Required Actions
+### Required Actions {#required-actions}
 
 ✅ **ALWAYS** check `/workspace/tasks/{TASK_NAME}/task.json` before starting work
 ✅ **ALWAYS** compare lock session_id with current session_id
@@ -1465,7 +1469,7 @@ ls -d /workspace/tasks/{TASK_NAME} 2>/dev/null && echo "Worktree exists" || echo
 ✅ **ALWAYS** ask user for guidance if worktree exists without a lock
 
 
-### Recovery from Crashed Sessions
+### Recovery from Crashed Sessions {#recovery-from-crashed-sessions}
 
 **Scenario**: Worktree exists at `/workspace/tasks/{TASK_NAME}` but no lock file exists.
 
@@ -1488,12 +1492,12 @@ crashed session. Should I:
 
 ---
 
-## MAIN WORKTREE OPERATIONS LOCK REQUIREMENT
+## MAIN WORKTREE OPERATIONS LOCK REQUIREMENT {#main-worktree-operations-lock-requirement}
 
 **CRITICAL**: Any operations executed directly on the main worktree (`/workspace/main/`) require acquiring a
 special lock at `/workspace/tasks/main/task.json`.
 
-### Operations Requiring Main Worktree Lock
+### Operations Requiring Main Worktree Lock {#operations-requiring-main-worktree-lock}
 
 **MANDATORY LOCK ACQUISITION** for:
 - Modifying files directly in main worktree working directory
@@ -1502,7 +1506,7 @@ special lock at `/workspace/tasks/main/task.json`.
 - Any direct edits to main worktree files outside of task-specific worktrees
 - Emergency fixes or hotfixes applied directly to main
 
-### Main Worktree Lock Format
+### Main Worktree Lock Format {#main-worktree-lock-format}
 
 ```json
 {
@@ -1514,7 +1518,7 @@ special lock at `/workspace/tasks/main/task.json`.
 }
 ```
 
-### Acquiring Main Worktree Lock
+### Acquiring Main Worktree Lock {#acquiring-main-worktree-lock}
 
 **Step 1: Attempt atomic lock creation**
 ```bash
@@ -1541,7 +1545,7 @@ else
 fi
 ```
 
-### Releasing Main Worktree Lock
+### Releasing Main Worktree Lock {#releasing-main-worktree-lock}
 
 **After completing main worktree operations:**
 ```bash
@@ -1559,7 +1563,7 @@ rm -f /workspace/tasks/main/task.json
 echo "✅ Main worktree lock released"
 ```
 
-### Main Worktree Lock vs Task-Specific Locks
+### Main Worktree Lock vs Task-Specific Locks {#main-worktree-lock-vs-task-specific-locks}
 
 **Key Differences:**
 -  **Task locks** (`/workspace/tasks/{task-name}/task.json`): Used for task-specific worktrees during normal
@@ -1583,7 +1587,7 @@ echo "✅ Main worktree lock released"
 ✅ Verify lock ownership before release
 ✅ Wait or select alternative task if main lock is owned by different session
 
-### INIT → CLASSIFIED
+### INIT → CLASSIFIED {#init-classified}
 **Mandatory Conditions:**
 - [ ] Session ID validated and unique
 - [ ] Atomic lock acquired for task (LOCK_SUCCESS received) at `/workspace/tasks/{task-name}/task.json`
@@ -1628,7 +1632,7 @@ phase-transition-guide.sh)
 - Changed to task worktree directory
 - Verified pwd shows correct task directory
 
-### Lock State Update Helper
+### Lock State Update Helper {#lock-state-update-helper}
 
 **Purpose**: Update lock file state as task progresses through protocol phases
 
@@ -1674,7 +1678,7 @@ update_lock_state() {
 
 **IMPORTANT**: Update lock state at the START of each phase transition to maintain accurate recovery state.
 
-### Enhanced Lock File Format with Checkpoint Tracking
+### Enhanced Lock File Format with Checkpoint Tracking {#enhanced-lock-file-format-with-checkpoint-tracking}
 
 **Standard Lock File** (basic task execution):
 ```json
@@ -1773,7 +1777,7 @@ if [ "$CHECKPOINT_APPROVED" != "true" ]; then
 fi
 ```
 
-### Dynamic Agent Addition Mid-Task
+### Dynamic Agent Addition Mid-Task {#dynamic-agent-addition-mid-task}
 
 **CRITICAL GUIDANCE**: Agent selection is typically finalized during CLASSIFIED state, but circumstances may require adding agents after initial selection. This section clarifies when and how to add agents dynamically.
 
@@ -1988,7 +1992,7 @@ Protocol audits check for improper dynamic agent additions:
 - Agents added during VALIDATION/REVIEW without returning to earlier state
 - Agents missing required_agents or agent_additions in lock file
 
-### CLASSIFIED → REQUIREMENTS
+### CLASSIFIED → REQUIREMENTS {#classified-requirements}
 **Mandatory Conditions:**
 - [ ] Risk level determined (HIGH/MEDIUM/LOW)
 - [ ] Agent set selected based on risk classification
@@ -2055,7 +2059,7 @@ echo "✅ All agent worktrees verified"
 ✅ Confirm output matches task worktree path
 ✅ Only then invoke stakeholder agents
 
-### Agent Invocation Interruption Handling
+### Agent Invocation Interruption Handling {#agent-invocation-interruption-handling}
 
 **CRITICAL GUIDANCE**: When agent invocations are initiated but interrupted by user commands or directives, the following recovery pattern applies.
 
@@ -2207,7 +2211,7 @@ When `/audit-session` or similar audit commands interrupt agent invocations:
 3. **Resume after audit**: Return to agent invocation resumption logic
 4. **No state skip**: Cannot jump from REQUIREMENTS to VALIDATION via audit
 
-### REQUIREMENTS → SYNTHESIS
+### REQUIREMENTS → SYNTHESIS {#requirements-synthesis}
 **Mandatory Conditions:**
 - [ ] ALL required agents invoked in parallel
 - [ ] ALL agents provided complete requirement reports
@@ -2218,7 +2222,7 @@ When `/audit-session` or similar audit commands interrupt agent invocations:
 - [ ] Conflict resolution documented for competing requirements
 - [ ] Implementation strategy defined with clear success criteria
 
-### Partial Agent Completion Handling (REQUIREMENTS State)
+### Partial Agent Completion Handling (REQUIREMENTS State) {#partial-agent-completion-handling-requirements-state}
 
 **CRITICAL CLARIFICATION**: REQUIREMENTS → SYNTHESIS transition requires ALL agents to complete successfully. Partial completion is NOT acceptable for state transition.
 
@@ -2390,7 +2394,7 @@ fi
 - ✅ Escalate to user only after retry attempts exhausted
 - ✅ Verify both status.json AND requirements report before accepting completion
 
-### REQUIREMENTS State Exit Verification Procedure
+### REQUIREMENTS State Exit Verification Procedure {#requirements-state-exit-verification-procedure}
 
 **MANDATORY**: Before transitioning from REQUIREMENTS to SYNTHESIS, execute this comprehensive verification procedure to ensure protocol compliance.
 
@@ -2738,7 +2742,7 @@ def validate_requirements_complete(required_agents, task_dir):
     return True, "All requirements complete"
 ```
 
-### IMPLEMENTATION State Entry Guards (CRITICAL ENFORCEMENT)
+### IMPLEMENTATION State Entry Guards (CRITICAL ENFORCEMENT) {#implementation-state-entry-guards-critical-enforcement}
 
 **PURPOSE**: Prevent protocol violations by verifying ALL prerequisite artifacts exist before entering
 IMPLEMENTATION state.
@@ -2893,7 +2897,7 @@ The entry guards enforce the following protocol requirements:
 ALWAYS pass. If a guard fails, it indicates a CRITICAL VIOLATION in a previous state that MUST be corrected
 before proceeding.
 
-### IMPLEMENTATION State Audit Trail Requirements (MANDATORY)
+### IMPLEMENTATION State Audit Trail Requirements (MANDATORY) {#implementation-state-audit-trail-requirements-mandatory}
 
 **PURPOSE**: Enable post-completion compliance verification by maintaining persistent audit trail throughout
 task execution.
@@ -3044,7 +3048,7 @@ fi
 
 **CRITICAL**: Audit trail MUST be preserved during CLEANUP state (see CLEANUP State Audit Preservation section).
 
-### SYNTHESIS → IMPLEMENTATION
+### SYNTHESIS → IMPLEMENTATION {#synthesis-implementation}
 **Mandatory Conditions:**
 - [ ] Requirements synthesis document created (all agents contributed to task.md)
 - [ ] Architecture plan addresses all stakeholder requirements
@@ -3054,6 +3058,51 @@ fi
 - [ ] Each agent's implementation plan appended to task.md
 - [ ] **USER APPROVAL: All implementation plans presented to user in task.md**
 - [ ] **USER CONFIRMATION: User has approved all proposed implementation approaches**
+
+**🚨 CRITICAL - MANDATORY USER APPROVAL CHECKPOINT**:
+
+**PROHIBITION**: Main agent MUST NOT automatically transition from SYNTHESIS to IMPLEMENTATION state.
+
+**REQUIRED BEHAVIOR**:
+1. After completing SYNTHESIS (implementation plan written to task.md), main agent MUST HALT execution
+2. Main agent MUST output approval request to user with this exact pattern:
+   ```
+   Implementation plan complete. Location: /workspace/tasks/{task-name}/task.md
+
+   Please review the implementation approach and confirm approval.
+   Type 'approved', 'LGTM', 'looks good', or 'proceed' to continue to IMPLEMENTATION state.
+   ```
+3. Main agent MUST WAIT for explicit user approval before transitioning to IMPLEMENTATION
+4. ONLY transition to IMPLEMENTATION after receiving approval keywords
+
+**EXAMPLE - CORRECT APPROVAL REQUEST PATTERN**:
+```markdown
+## Implementation Plan Complete
+
+I have completed the SYNTHESIS phase and created a comprehensive implementation plan in `/workspace/tasks/implement-formatter-api/task.md`.
+
+**Plan Summary**:
+- Architecture: 8 core interfaces across 3 packages
+- Implementation: 6 stakeholder agents in parallel
+- Testing: 90%+ coverage with 80+ unit tests
+- Quality gates: Checkstyle, PMD, compilation
+
+**May I proceed to IMPLEMENTATION?**
+
+Please review the plan and respond with:
+- "approved" / "LGTM" / "looks good" / "proceed" to continue, OR
+- Provide feedback for plan revisions
+
+I will wait for your approval before transitioning to IMPLEMENTATION state.
+```
+
+**PROHIBITED PATTERNS**:
+❌ Automatic transition from SYNTHESIS → IMPLEMENTATION without user interaction
+❌ Assuming "continue" or "proceed" from earlier messages means plan approval
+❌ Treating bypass mode as approval checkpoint override
+❌ Proceeding because requirements are clear or plan is straightforward
+
+**ENFORCEMENT**: The check-lock-ownership.sh hook enforces this checkpoint at SessionStart.
 
 **Implementation Plan Clarity Requirements**:
 
@@ -3097,9 +3146,9 @@ Task tool (style-updater): {...}"
 **If you catch yourself saying "I will implement"**, STOP and rephrase to "I will coordinate stakeholder
 agents to implement".
 
-## MULTI-AGENT IMPLEMENTATION WORKFLOW
+## MULTI-AGENT IMPLEMENTATION WORKFLOW {#multi-agent-implementation-workflow}
 
-### Implementation Role Boundaries - Visual Reference
+### Implementation Role Boundaries - Visual Reference {#implementation-role-boundaries---visual-reference}
 
 | Aspect | Main Coordination Agent | Stakeholder Agent |
 |--------|------------------------|-------------------|
@@ -3142,7 +3191,7 @@ agents to implement".
                     Proceed with Write/Edit
 ```
 
-### Agent-Based Parallel Development Model
+### Agent-Based Parallel Development Model {#agent-based-parallel-development-model}
 
 **Core Principle**: Each stakeholder agent operates as an autonomous developer with their own worktree,
 implementing domain-specific requirements and merging changes to the common task branch via rebase workflow.
@@ -3185,7 +3234,7 @@ escalation path: Tier 3 → Tier 2 → Tier 1.
 ❌ "Wait for all Tier N agents before Tier N+1 can merge" (unnecessary blocking)
 ❌ "Lower-tier agents cannot merge if higher-tier still working" (incorrect)
 
-### Model Selection Strategy
+### Model Selection Strategy {#model-selection-strategy}
 
 **COST-OPTIMIZED ARCHITECTURE**: Agent model selection is designed to maximize quality while minimizing cost.
 
@@ -3238,7 +3287,7 @@ Typical task execution:
 ✅ No clarification questions from updater to reviewer
 ✅ Implementation matches requirements without re-analysis
 
-### Implementation Round Structure
+### Implementation Round Structure {#implementation-round-structure}
 
 **CRITICAL**: Implementation rounds use BOTH reviewer and updater agents in an iterative validation pattern.
 
@@ -3412,7 +3461,7 @@ else
 fi
 ```
 
-### Agent Non-Completion Recovery Protocol
+### Agent Non-Completion Recovery Protocol {#agent-non-completion-recovery-protocol}
 
 **MANDATORY STATUS VERIFICATION** (CRITICAL COMPLIANCE REQUIREMENT):
 
@@ -3584,7 +3633,7 @@ PROHIBITED:
 ❌ Assuming approval from bypass mode or lack of objection
 ```
 
-### IMPLEMENTATION → VALIDATION
+### IMPLEMENTATION → VALIDATION {#implementation-validation}
 **Mandatory Conditions:**
 - [ ] All implementation rounds completed
 - [ ] **🚨 CRITICAL: All REVIEWER agents report APPROVED decision**
@@ -3680,7 +3729,7 @@ EOF
 
 **Rationale**: Agent-attributed commits provide verifiable audit trail that multi-agent protocol was followed, not main-agent direct implementation.
 
-### VALIDATION → REVIEW (Conditional Path)
+### VALIDATION → REVIEW (Conditional Path) {#validation-review-conditional-path}
 
 **🚨 MANDATORY PATTERN**: Batch Collection and Fixing
 1. Run ALL quality gates (checkstyle, PMD, tests)
@@ -3791,7 +3840,7 @@ modified code is actually analyzed by quality gates.
 - Verification that only configuration/documentation modified
 - Build system confirms no code compilation required
 
-### REVIEW → COMPLETE (Unanimous Approval Gate)
+### REVIEW → COMPLETE (Unanimous Approval Gate) {#review-complete-unanimous-approval-gate}
 **Mandatory Conditions:**
 - [ ] ALL required agents invoked to review task branch (not agent worktrees)
 - [ ] ALL agents return exactly: "FINAL DECISION: ✅ APPROVED - [reason]"
@@ -3807,6 +3856,30 @@ modified code is actually analyzed by quality gates.
 # In task worktree BEFORE merge attempt
 cd /workspace/tasks/{task-name}/code
 ./mvnw clean verify  # MANDATORY clean build (detects cache issues)
+
+# ⚠️ MANDATORY: Squash all task commits into single commit
+# Task branch MUST contain exactly ONE commit when merged to main
+# This ensures clean linear history and atomic task units
+
+# Count commits on task branch
+COMMIT_COUNT=$(git rev-list --count main..{task-name})
+
+if [ "$COMMIT_COUNT" -gt 1 ]; then
+  # Interactive rebase to squash all commits into 1
+  git rebase -i main
+  # In the interactive editor:
+  # - Keep first commit as "pick"
+  # - Change all subsequent commits to "squash" or "fixup"
+  # - Save and exit
+  # - Edit the combined commit message to summarize the entire task
+fi
+
+# Verify exactly 1 commit remains
+FINAL_COUNT=$(git rev-list --count main..{task-name})
+if [ "$FINAL_COUNT" -ne 1 ]; then
+  echo "❌ VIOLATION: Task branch must have exactly 1 commit, found $FINAL_COUNT"
+  exit 1
+fi
 
 # ONLY proceed to merge if exit code 0
 cd /workspace/main
@@ -3918,7 +3991,7 @@ PROHIBITED:
 ❌ Making changes directly in task branch (agents must use their worktrees)
 ```
 
-### REVIEW → SCOPE_NEGOTIATION (Conditional Transition)
+### REVIEW → SCOPE_NEGOTIATION (Conditional Transition) {#review-scope_negotiation-conditional-transition}
 **Trigger Conditions:**
 - [ ] Multiple agents returned ❌ REJECTED with extensive scope concerns
 - [ ] Estimated resolution effort exceeds 2x original task scope
@@ -3936,7 +4009,7 @@ PROHIBITED:
 - Domain authority decisions documented
 - Follow-up tasks created in todo.md for deferred work
 
-### COMPLETE → CLEANUP
+### COMPLETE → CLEANUP {#complete-cleanup}
 
 **MANDATORY SEQUENCING**: Always `cd /workspace/main` BEFORE worktree removal
 
@@ -3962,7 +4035,7 @@ pwd | grep -q '/workspace/main$'
 git worktree remove /workspace/tasks/{task-name}/code
 ```
 
-### CLEANUP State Audit Preservation (MANDATORY)
+### CLEANUP State Audit Preservation (MANDATORY) {#cleanup-state-audit-preservation-mandatory}
 
 **PURPOSE**: Preserve audit trail for post-completion compliance verification
 
@@ -4018,6 +4091,18 @@ for agent_dir in /workspace/tasks/{task-name}/agents/*/code; do
   fi
 done
 
+# Step 5: Delete ALL agent branches
+# ⚠️ MANDATORY: Agent branches MUST be deleted during CLEANUP
+git branch -D {task-name} 2>/dev/null || true
+git branch | grep "^  {task-name}-" | xargs -r git branch -D
+
+# Step 6: Verify complete branch cleanup
+if git branch | grep -q "{task-name}"; then
+  echo "❌ VIOLATION: Task branches still exist after CLEANUP"
+  git branch | grep "{task-name}"
+  exit 1
+fi
+
 # ✅ CRITICAL: Do NOT remove audit files
 # Leave audit-trail.json and audit-snapshot.json in /workspace/tasks/{task-name}/
 ```
@@ -4048,7 +4133,7 @@ jq '.state_transitions[] | "\(.from_state) → \(.to_state)"' \
   /workspace/tasks/{task-name}/audit-trail.json
 ```
 
-### SCOPE_NEGOTIATION → SYNTHESIS (Return Path) or SCOPE_NEGOTIATION → COMPLETE (Deferral Path)
+### SCOPE_NEGOTIATION → SYNTHESIS (Return Path) or SCOPE_NEGOTIATION → COMPLETE (Deferral Path) {#scope_negotiation-synthesis-return-path-or-scope_negotiation-complete-deferral-path}
 **Decision Logic:**
 ```python
 def process_scope_negotiation_results(agent_responses):

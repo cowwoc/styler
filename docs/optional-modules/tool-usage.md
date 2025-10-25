@@ -79,14 +79,14 @@ unexpected directories.
 ./mvnw verify
 
 # ✅ GOOD: Absolute path works from anywhere
-/workspace/branches/task-name/code/mvnw verify
+/workspace/tasks/task-name/code/mvnw verify
 ```
 
 ### 2. Include directory change in same command
 
 ```bash
 # ✅ GOOD: Change directory and run command atomically
-cd /workspace/branches/task-name/code && ./mvnw verify
+cd /workspace/tasks/task-name/code && ./mvnw verify
 
 # ✅ GOOD: Multiple dependent commands
 cd /workspace && ls -la && cat file.txt
@@ -109,7 +109,7 @@ pwd && ls -la mvnw && ./mvnw verify
 cat README.md
 
 # ✅ GOOD: Absolute path always works
-cat /workspace/branches/task-name/code/README.md
+cat /workspace/tasks/task-name/code/README.md
 ```
 
 **CHECKLIST BEFORE RUNNING BASH COMMANDS**:

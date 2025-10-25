@@ -5,7 +5,9 @@ set -euo pipefail
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 
 # Fail gracefully without blocking Claude Code
-trap 'echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Unexpected error at line $LINENO" >&2; exit 0' ERR
+trap 'echo "[HOOK DEBUG] verify-destructive-operations.sh FAILED at line $LINENO" >&2; echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Unexpected error at line $LINENO" >&2; exit 0' ERR
+
+echo "[HOOK DEBUG] verify-destructive-operations.sh START" >&2
 
 # Claude Code Hook: Post-Destructive Operation Verification
 # Reminds Claude to verify no important details were lost after destructive operations
@@ -102,5 +104,7 @@ for keyword in "${DESTRUCTIVE_KEYWORDS[@]}"; do
 		exit 0
 	fi
 done
+
+echo "[HOOK DEBUG] verify-destructive-operations.sh END" >&2
 
 exit 0

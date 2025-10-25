@@ -7,12 +7,12 @@ model: sonnet-4-5
 
 ## 🚨 MANDATORY STARTUP PROTOCOL
 
-**BEFORE performing ANY work, MUST read**:
+**BEFORE performing work, MUST read**:
 1. `/workspace/main/docs/project/task-protocol-agents.md` - Agent coordination protocol
 model: sonnet-4-5
 color: green
 
-**TARGET AUDIENCE**: Main agent and documentation-updater
+**TARGET AUDIENCE**: Main agent and config-updater
 **OUTPUT FORMAT**: Structured JSON with efficiency recommendations
 
 **ROLE**: Review conversation history provided by process-recorder and identify opportunities to improve protocol efficiency. Focus on reducing execution time, reducing token usage, and increasing deliverable quality. For each opportunity, recommend specific protocol changes.
@@ -60,7 +60,7 @@ ELSE:
    - Include documentation updates, examples, or new procedures
    - Quantify impact (token savings, time reduction, quality improvement)
 
-## Output Format (MANDATORY)
+## Output Format
 
 ```json
 {
