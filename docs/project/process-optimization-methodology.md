@@ -5,7 +5,7 @@
 
 ## Overview
 
-This methodology defines checks the process-optimizer agent MUST execute to:
+Systematic checklist process-optimizer agent MUST execute to:
 1. **Prevent protocol violations** (correctness)
 2. **Optimize context usage** (efficiency)
 
@@ -15,11 +15,11 @@ Each check is numbered for TodoWrite tracking. Execute ALL checks before reporti
 
 ## Category 0: MANDATORY STATE VERIFICATION
 
-**Purpose:** Verify ACTUAL task state before analyzing any behavior (prevents post-hoc rationalization)
+Verify ACTUAL task state before analyzing any behavior (prevents post-hoc rationalization)
 
 ### Check 0.1: Task State Verification (MANDATORY FIRST CHECK)
 
-**Pattern:** Read task.json to determine ACTUAL current state before analyzing any session behavior
+Read task.json to determine ACTUAL current state before analyzing any session behavior
 
 **CRITICAL**: This check MUST execute FIRST before any other analysis. Do NOT skip.
 
@@ -44,8 +44,7 @@ Each check is numbered for TodoWrite tracking. Execute ALL checks before reporti
 
 ### Check 0.2: Main Agent Tool Usage in IMPLEMENTATION State (MANDATORY)
 
-**Pattern:** If task.json state == "IMPLEMENTATION", detect if main agent used Write/Edit tools on source
-files
+If task.json state == "IMPLEMENTATION", detect if main agent used Write/Edit tools on source files
 
 **CRITICAL**: This is a PROTOCOL VIOLATION, not a "workflow variation"
 
@@ -89,7 +88,7 @@ CRITICAL VIOLATION DETECTED:
 
 ### Check 0.3: Git History Pattern Analysis (MANDATORY)
 
-**Pattern:** Detect suspicious single-commit patterns that suggest main agent implementation bypass
+Detect suspicious single-commit patterns that suggest main agent implementation bypass
 
 **CRITICAL**: Git history provides empirical evidence of WHO implemented code, independent of conversation content
 
@@ -203,11 +202,11 @@ RECOMMENDED: Option 1 (proper protocol adherence)
 
 ## Category 1: Implementation Actor Verification
 
-**Purpose:** Verify WHO is implementing code matches protocol requirements
+Verify WHO is implementing code matches protocol requirements
 
 ### Check 1.1: Main Agent Direct Implementation Detection
 
-**Pattern:** Detect if main agent implemented code directly in task worktree
+Detect if main agent implemented code directly in task worktree
 
 **Verification Steps:**
 1. Read task.json to get current state
@@ -258,7 +257,7 @@ coordination
 
 ### Check 1.2: Stakeholder Agent Invocation Pattern Analysis
 
-**Pattern:** Verify main agent invoked stakeholder agents for implementation
+Verify main agent invoked stakeholder agents for implementation
 
 **Verification Steps:**
 1. Search conversation history for Task tool invocations
@@ -286,7 +285,7 @@ Main agent message contains:
 
 ### Check 1.3: Role Clarity Verification
 
-**Pattern:** Ensure main agent understands role boundaries
+Ensure main agent understands role boundaries
 
 **Verification Steps:**
 1. Check for role confusion indicators in conversation
@@ -311,11 +310,11 @@ Main agent message contains:
 
 ## Category 2: Worktree Activity Analysis
 
-**Purpose:** Verify WHERE implementation occurs matches protocol requirements
+Verify WHERE implementation occurs matches protocol requirements
 
 ### Check 2.1: Worktree Structure Verification
 
-**Pattern:** Verify proper worktree structure exists
+Verify proper worktree structure exists
 
 **Verification Steps:**
 1. Check if task worktree exists: `/workspace/tasks/{task-name}/code/`
@@ -344,7 +343,7 @@ Main agent message contains:
 
 ### Check 2.2: Working Directory History Analysis
 
-**Pattern:** Verify main agent worked in correct directories
+Verify main agent worked in correct directories
 
 **Verification Steps:**
 1. Search conversation for `pwd` commands or directory references
@@ -367,11 +366,11 @@ Main agent message contains:
 
 ## Category 3: Multi-Agent Architecture Compliance
 
-**Purpose:** Verify multi-agent coordination pattern was followed
+Verify multi-agent coordination pattern was followed
 
 ### Check 3.1: Parallel Agent Execution
 
-**Pattern:** Verify agents were launched in parallel
+Verify agents were launched in parallel
 
 **Verification Steps:**
 1. Search for Task tool invocations
@@ -394,7 +393,7 @@ Main agent message contains:
 
 ### Check 3.2: Iterative Validation Rounds
 
-**Pattern:** Verify iterative agent validation occurred
+Verify iterative agent validation occurred
 
 **Verification Steps:**
 1. Count number of agent validation rounds
@@ -418,7 +417,7 @@ Main agent message contains:
 
 ### Check 3.3: Agent Worktree Integration
 
-**Pattern:** Verify agent changes were merged to task branch
+Verify agent changes were merged to task branch
 
 **Verification Steps:**
 1. Check git log for merge commits
@@ -444,11 +443,11 @@ git log --oneline task-branch shows:
 
 ## Category 4: Task.md Authorship Verification
 
-**Purpose:** Verify task.md is authored by main agent, not stakeholder agents implementing directly
+Verify task.md is authored by main agent, not stakeholder agents implementing directly
 
 ### Check 4.1: Task.md Creation Timing
 
-**Pattern:** Verify task.md created during CLASSIFIED state
+Verify task.md created during CLASSIFIED state
 
 **Verification Steps:**
 1. Check task.json transition log for CLASSIFIED state timestamp
@@ -471,7 +470,7 @@ git log --oneline task-branch shows:
 
 ### Check 4.2: Task.md Content Analysis
 
-**Pattern:** Verify task.md contains requirements, not implementation details
+Verify task.md contains requirements, not implementation details
 
 **Verification Steps:**
 1. Read task.md content
@@ -494,11 +493,11 @@ git log --oneline task-branch shows:
 
 ## Category 5: Protocol Interpretation Validation
 
-**Purpose:** Ensure protocol sections are correctly interpreted
+Ensure protocol sections are correctly interpreted
 
 ### Check 5.1: Multi-Agent Architecture Section Compliance
 
-**Pattern:** Verify understanding of multi-agent architecture section in CLAUDE.md
+Verify understanding of multi-agent architecture section in CLAUDE.md
 
 **Verification Steps:**
 1. Read CLAUDE.md section: "Multi-Agent Architecture"
@@ -528,7 +527,7 @@ git log --oneline task-branch shows:
 
 ### Check 5.2: IMPLEMENTATION State Requirements Validation
 
-**Pattern:** Verify IMPLEMENTATION state requirements from task-protocol-core.md
+Verify IMPLEMENTATION state requirements from task-protocol-core.md
 
 **Verification Steps:**
 1. Read task-protocol-core.md IMPLEMENTATION state section
@@ -557,11 +556,11 @@ git log --oneline task-branch shows:
 
 ## Category 6: Early Detection Triggers
 
-**Purpose:** Catch violations early before significant work is done
+Catch violations early before significant work is done
 
 ### Check 6.1: Post-SYNTHESIS Early Warning
 
-**Pattern:** After SYNTHESIS state approval, verify preparation for proper IMPLEMENTATION
+After SYNTHESIS state approval, verify preparation for proper IMPLEMENTATION
 
 **Verification Steps:**
 1. Check if SYNTHESIS state just completed
@@ -586,7 +585,7 @@ git log --oneline task-branch shows:
 
 ### Check 6.2: First File Creation Detection
 
-**Pattern:** Detect first file creation and verify it's from agent, not main
+Detect first file creation and verify it's from agent, not main
 
 **Verification Steps:**
 1. Search for first Write or Edit tool usage after IMPLEMENTATION begins
@@ -609,11 +608,11 @@ git log --oneline task-branch shows:
 
 ## Category 7: Test Coverage Validation
 
-**Purpose:** Ensure test requirements are met during IMPLEMENTATION
+Ensure test requirements are met during IMPLEMENTATION
 
 ### Check 7.1: Test Count Verification
 
-**Pattern:** Verify minimum test count before IMPLEMENTATION exit
+Verify minimum test count before IMPLEMENTATION exit
 
 **Verification Steps:**
 1. Count test files created
@@ -636,7 +635,7 @@ git log --oneline task-branch shows:
 
 ### Check 7.2: Test-First Bug Fixing
 
-**Pattern:** Verify bugs discovered during implementation have corresponding tests
+Verify bugs discovered during implementation have corresponding tests
 
 **Verification Steps:**
 1. Search conversation for bug mentions
@@ -662,11 +661,11 @@ public void testSpecificBugScenario() {
 
 ## Category 8: Efficiency Optimization
 
-**Purpose:** Reduce context usage and improve session performance
+Reduce context usage and improve session performance
 
 ### Check 8.1: Sequential Tool Call Detection
 
-**Pattern:** Identify opportunities for parallel tool execution
+Identify opportunities for parallel tool execution
 
 **Verification Steps:**
 1. Search for multiple Read tool calls in separate messages
@@ -690,7 +689,7 @@ public void testSpecificBugScenario() {
 
 ### Check 8.2: Predictive Prefetching
 
-**Pattern:** Verify protocol files loaded early in session
+Verify protocol files loaded early in session
 
 **Verification Steps:**
 1. Check when task-protocol-core.md was read
@@ -714,7 +713,7 @@ public void testSpecificBugScenario() {
 
 ### Check 8.3: Fail-Fast Validation
 
-**Pattern:** Verify compilation/style checks after each component
+Verify compilation/style checks after each component
 
 **Verification Steps:**
 1. Check for build verification frequency

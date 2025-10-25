@@ -3,7 +3,7 @@
 This file contains all build system configuration, commands, and project structure documentation for Styler
 Java Code Formatter.
 
-## Environment Setup
+## Environment Setup {#environment-setup}
 
 ```bash
 export JAVA_HOME="/home/node/.sdkman/candidates/java/current"
@@ -11,7 +11,7 @@ export JAVA_HOME="/home/node/.sdkman/candidates/java/current"
 
 **Note**: On Windows, convert paths to WSL2 mount points (/mnt/c/...)
 
-## Test Module Structure (JPMS Compliance)
+## Test Module Structure (JPMS Compliance) {#test-module-structure-jpms-compliance}
 
 **CRITICAL**: For Java modules using TestNG, tests MUST follow this pattern:
 
@@ -47,7 +47,7 @@ src/test/java/
 
 This resolves TestNG module export warnings with `-Werror` enabled.
 
-### Test Module Name Verification
+### Test Module Name Verification {#test-module-name-verification}
 
 **CRITICAL REQUIREMENT**: Test modules MUST use a different module name than the main module to avoid conflicts.
 
@@ -92,7 +92,7 @@ diff <(grep "^module " src/main/java/module-info.java) \
 
 **Enforcement**: Always use `./mvnw clean verify` before merging to detect module name conflicts that might be masked by stale build cache.
 
-## Build & Validation Commands
+## Build & Validation Commands {#build-validation-commands}
 
 **⚠️ CRITICAL**: Always use `./mvnw` (Maven Wrapper) instead of `mvn` to ensure consistent Maven version
 across environments.
@@ -113,9 +113,60 @@ across environments.
 
 **For JPMS projects**: Always use `./mvnw clean verify` for final validation. The `compile` phase alone does NOT include test module descriptors, which can cause stale module-info.class in build cache.
 
-## Maven Multi-Module Setup
+### Build Output Efficiency {#build-output-efficiency}
 
-### pom.xml Style Guidelines
+**Purpose**: Reduce token usage during validation builds by filtering output to errors/warnings only.
+
+**When to Use**:
+- Validation builds where you only need to know if build passed/failed
+- Checking for violations after fixes
+- Iterative fix-verify cycles where success output is not informative
+
+**Efficiency Pattern**:
+```bash
+# Filter to errors/warnings only (~70% token reduction per build)
+./mvnw -q clean verify 2>&1 | grep -E "(ERROR|WARN|FAIL|BUILD FAILURE|BUILD SUCCESS)"
+
+# Or for checkstyle/PMD specific validation
+./mvnw -q checkstyle:check pmd:check 2>&1 | grep -E "(ERROR|WARN|violation)"
+
+# Module-specific validation
+./mvnw -q verify -pl :module-name 2>&1 | grep -E "(ERROR|WARN|FAIL)"
+```
+
+**When NOT to Use**:
+- Debugging build failures (need full output to diagnose)
+- First build of new module (want to see all compilation steps)
+- Build performance analysis (need timing information)
+
+**Token Impact**:
+- Full build output: ~5000-8000 tokens
+- Filtered output: ~1000-2000 tokens (errors/warnings only)
+- **Savings**: ~70% token reduction per validation build
+
+**Example Comparison**:
+```bash
+# Full output (8000 tokens)
+./mvnw clean verify
+# [INFO] Scanning for projects...
+# [INFO] Building module X
+# [INFO] Compiling 47 source files...
+# [INFO] Tests run: 50, Failures: 0, Errors: 0, Skipped: 0
+# [INFO] BUILD SUCCESS
+# ... 300 lines of output ...
+
+# Filtered output (1500 tokens)
+./mvnw -q clean verify 2>&1 | grep -E "(ERROR|WARN|FAIL|BUILD SUCCESS)"
+# [WARNING] Parameter 'foo' should be final
+# [ERROR] Compilation failure: missing semicolon
+# BUILD SUCCESS
+```
+
+**Note**: For successful builds with no violations, filtered output will only show `BUILD SUCCESS`, which is exactly what you need for validation purposes.
+
+## Maven Multi-Module Setup {#maven-multi-module-setup}
+
+### pom.xml Style Guidelines {#pomxml-style-guidelines}
 
 **RULE**: Do not add explanatory comments above dependencies or plugins that simply describe what they are.
 
@@ -161,7 +212,7 @@ across environments.
 <dependency>...</dependency>
 ```
 
-### Maven Dependency Management Standards 🔴 CRITICAL
+### Maven Dependency Management Standards 🔴 CRITICAL {#maven-dependency-management-standards-critical}
 
 **RULE**: Centralize all plugin and dependency versions in the root pom.xml using `dependencyManagement` and
 `pluginManagement`.
@@ -230,7 +281,7 @@ across environments.
 </dependency>
 ```
 
-## 🚨 CRITICAL BUILD VALIDATION WORKFLOW
+## 🚨 CRITICAL BUILD VALIDATION WORKFLOW {#critical-build-validation-workflow}
 
 **Build Validation Required for Every Task**:
 - **INITIAL**: `./mvnw clean` when beginning a new task (fresh compilation state)  
@@ -238,7 +289,7 @@ across environments.
 - **FINAL**: build-validator after all changes using `./mvnw verify`
 - **MANDATORY**: Build must pass with zero warnings/failures before task completion
 
-## Timeout Configuration
+## Timeout Configuration {#timeout-configuration}
 
 **⚠️ CRITICAL**: Build operations must use adequate timeouts to prevent premature termination:
 
@@ -254,16 +305,16 @@ across environments.
 - Comprehensive test execution (parser and formatter test suites)
 - Maven builds commonly exceed 2-3 minutes on first run
 
-## Formatter Execution Modes
+## Formatter Execution Modes {#formatter-execution-modes}
 
 - **Format single file**: `java -jar styler-cli.jar format MyFile.java`
 - **Format directory**: `java -jar styler-cli.jar format src/main/java/`
 - **Check mode (CI/CD)**: `java -jar styler-cli.jar check src/`
 - **Custom configuration**: `java -jar styler-cli.jar format --config .styler.yml src/`
 
-## Project Structure
+## Project Structure {#project-structure}
 
-### Core Module (`styler-ast-core/src/main/java/io/github/styler/ast/`)
+### Core Module (`styler-ast-core/src/main/java/io/github/styler/ast/`) {#core-module-styler-ast-coresrcmainjavaiogithubstylerast}
 
 - **Entry Point**: AST node hierarchy and visitor pattern implementation
 
@@ -274,7 +325,7 @@ across environments.
 - `metadata/` - Source position tracking and formatting metadata
 - `transformations/` - AST transformation utilities
 
-### Parser Module (`styler-parser/src/main/java/io/github/styler/parser/`)
+### Parser Module (`styler-parser/src/main/java/io/github/styler/parser/`) {#parser-module-styler-parsersrcmainjavaiogithubstylerparser}
 
 - **Entry Point**: `JavaParser.java` - Main parser implementation
 
@@ -285,7 +336,7 @@ across environments.
 - `trivia/` - Comment and whitespace preservation
 - `incremental/` - Incremental parsing for performance
 
-### Formatter Module (`styler-formatter-impl/src/main/java/io/github/styler/formatter/`)
+### Formatter Module (`styler-formatter-impl/src/main/java/io/github/styler/formatter/`) {#formatter-module-styler-formatter-implsrcmainjavaiogithubstylerformatter}
 
 - **Entry Point**: Plugin-based formatting system
 
@@ -295,7 +346,7 @@ across environments.
 - `config/` - Configuration management and validation
 - `output/` - Code generation and trivia preservation
 
-### CLI Module (`styler-cli/`)
+### CLI Module (`styler-cli/`) {#cli-module-styler-cli}
 
 **Command-Line Interface**: Java application for formatting operations with configuration management.
 
@@ -326,7 +377,7 @@ across environments.
 - `target/styler-cli.jar` - Executable JAR output
 - `target/distributions/` - Distribution packages
 
-### Engine Module (`styler-engine/`)
+### Engine Module (`styler-engine/`) {#engine-module-styler-engine}
 
 **Processing Engine**: Multi-threaded file processing and coordination system.
 
@@ -336,7 +387,7 @@ across environments.
 - **Performance**: Work-stealing thread pool with progress reporting
 - **Security**: Resource limits and sandboxing controls
 
-### Supporting Structure
+### Supporting Structure {#supporting-structure}
 
 - `src/test/java/` - Parser, formatter, and integration tests
 - `src/main/resources/` - Configuration schemas and logging setup
@@ -350,11 +401,11 @@ across environments.
   - `styler-security` - Security controls
   - `styler-cli` - Command-line interface
 
-## Maven Build Cache Compatibility
+## Maven Build Cache Compatibility {#maven-build-cache-compatibility}
 
 **STATUS**: ✅ **COMPATIBLE** with JPMS multi-module builds when using correct lifecycle phases
 
-### Requirements
+### Requirements {#requirements}
 
 Maven Build Cache Extension v1.2.0 works correctly with Java Platform Module System (JPMS) modules when
 following these requirements:
@@ -364,7 +415,7 @@ following these requirements:
 - **Cache Location**: `~/.m2/build-cache/`
 - **Cache Cleanup**: `rm -rf ~/.m2/build-cache/` if stale entries cause issues
 
-### How It Works
+### How It Works {#how-it-works}
 
 The Maven Build Cache Extension activates on `package` or higher lifecycle phases:
 
@@ -379,7 +430,7 @@ The Maven Build Cache Extension activates on `package` or higher lifecycle phase
    - Subsequent `verify` builds fail with "module not found" errors
    - NOTE: `compile` only processes main sources; `test-compile` processes both main and test sources
 
-### Cache Corruption Prevention
+### Cache Corruption Prevention {#cache-corruption-prevention}
 
 **Symptom**: "module not found: io.github.cowwoc.styler.ast.core" errors despite successful previous builds
 
@@ -394,7 +445,7 @@ rm -rf ~/.m2/build-cache/
 ./mvnw clean verify
 ```
 
-### Cache Configuration
+### Cache Configuration {#cache-configuration}
 
 Cache is configured via `.mvn/maven-build-cache-config.xml`:
 
@@ -410,7 +461,7 @@ Cache is configured via `.mvn/maven-build-cache-config.xml`:
 These directories are saved as ZIP artifacts (e.g., `styler-ast-core-mvn-cache-ext-extra-output-3.zip`)
 containing all compiled classes including module-info.class.
 
-### Performance Benefits
+### Performance Benefits {#performance-benefits}
 
 Build cache provides significant performance improvements for JPMS projects:
 

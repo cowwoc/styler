@@ -4,17 +4,15 @@
 > **Audience:** style-reviewer, style-updater, main agent (during VALIDATION)
 > **Purpose:** Style validation requirements and JavaDoc documentation standards
 
-## 🎯 COMPLETE STYLE VALIDATION
+## 🎯 COMPLETE STYLE VALIDATION {#complete-style-validation}
 
-**MANDATORY PROCESS**: Style guide consists of THREE components (checkstyle + PMD + manual rules)
+Style validation requires THREE components: checkstyle + PMD + manual rules.
 
-**CRITICAL ERROR**: Checking only checkstyle when PMD/manual violations exist
+Checking only checkstyle when PMD/manual violations exist is a CRITICAL ERROR.
 
-**Automated Guidance**: `smart-doc-prompter.sh` hook injects 3-component checklist
+`smart-doc-prompter.sh` hook injects 3-component checklist. `checkstyle/fixers` module handles LineLength vs UnderutilizedLines conflicts.
 
-**Fixing Conflicts**: `checkstyle/fixers` module handles LineLength vs UnderutilizedLines conflicts
-
-### Validation Components
+### Validation Components {#validation-components}
 
 1. **Checkstyle** (automated tool):
    - Line length, indentation, naming conventions
@@ -33,7 +31,7 @@
    - TIER2 violations: Important style issues
    - TIER3 violations: Minor style issues
 
-### Validation Commands
+### Validation Commands {#validation-commands}
 
 ```bash
 # Full style validation (all three components)
@@ -47,7 +45,7 @@
 cat docs/code-style-human.md
 ```
 
-### Complete Validation Checklist
+### Complete Validation Checklist {#complete-validation-checklist}
 
 Before declaring style validation complete:
 
@@ -58,30 +56,28 @@ Before declaring style validation complete:
 - [ ] All TIER2 violations fixed
 - [ ] All TIER3 violations fixed or documented
 
-## 📝 JAVADOC MANUAL DOCUMENTATION REQUIREMENT
+## 📝 JAVADOC MANUAL DOCUMENTATION REQUIREMENT {#javadoc-manual-documentation-requirement}
 
-**CRITICAL POLICY**: JavaDoc comments require manual authoring with contextual understanding.
+JavaDoc comments require manual authoring with contextual understanding.
 
-### Absolutely Prohibited
+### Absolutely Prohibited {#absolutely-prohibited}
 
-❌ Using scripts (Python, Bash, etc.) to generate JavaDoc comments
-❌ Using sed/awk/grep to automate JavaDoc insertion
-❌ Copy-pasting generic JavaDoc templates without customization
+❌ Scripts/automation (Python, Bash, sed/awk/grep) to generate JavaDoc
+❌ Generic templates without customization
 ❌ AI-generated JavaDoc without human review and contextualization
 ❌ Batch processing JavaDoc across multiple files
 ❌ Converting method names to comments (e.g., "testValidToken" → "Tests Valid Token")
 
-### Required Approach
+### Required Approach {#required-approach}
 
-✅ Read and understand the method's purpose and implementation
-✅ Write JavaDoc that explains WHY the test exists, not just WHAT it tests
+✅ Read and understand method's purpose and implementation
+✅ Explain WHY the test exists, not just WHAT it tests
 ✅ Include context about edge cases, boundary conditions, or regression prevention
-✅ Explain the significance of specific test scenarios
 ✅ Document relationships between related tests
 
-### Example - Contextual Documentation
+### Contextual Documentation {#contextual-documentation}
 
-**BAD** (Generic, derived from method name):
+**BAD** (Generic):
 ```java
 /**
  * Tests valid token.
@@ -107,27 +103,22 @@ public void testValidToken() {
 }
 ```
 
-### Enforcement
+### Enforcement {#enforcement}
 
-- Pre-commit hook detects generic JavaDoc patterns
-- Code reviews check for contextual understanding in comments
-- PMD.CommentRequired violations must be fixed, not suppressed
+Pre-commit hook detects generic JavaDoc patterns. PMD.CommentRequired violations must be fixed, not suppressed.
 
-## 📝 STYLE-SPECIFIC CODE POLICIES
+## 📝 STYLE-SPECIFIC CODE POLICIES {#style-specific-code-policies}
 
-### Code Comments
+### Code Comments {#code-comments}
 
-**Update Outdated Comments**:
-- Comments that contradict current implementation must be updated or removed
-- Implementation history belongs in git, not code comments
+Comments that contradict current implementation must be updated or removed. Implementation history belongs in git, not code comments.
 
-**Avoid Implementation History in Comments**:
 ```java
-// BAD: "This used to use ArrayList but was changed to LinkedList for performance"
-// GOOD: "Uses LinkedList for efficient insertions at arbitrary positions"
+// ❌ BAD: "This used to use ArrayList but was changed to LinkedList for performance"
+// ✅ GOOD: "Uses LinkedList for efficient insertions at arbitrary positions"
 ```
 
-### TODO Comments
+### TODO Comments {#todo-comments}
 
 **Three Options** (choose one):
 1. **Implement**: Fix the TODO immediately
@@ -140,13 +131,12 @@ public void testValidToken() {
 // ✅ GOOD: Created todo.md task: "Optimize parse() method for large inputs"
 ```
 
-### TestNG Tests
+### TestNG Tests {#testng-tests}
 
 **Thread-Safe Patterns Only**:
 - ❌ **Prohibited**: `@BeforeMethod` (creates shared mutable state)
 - ✅ **Required**: Create fresh instances in each test method
 
-**Example**:
 ```java
 // ❌ BAD
 @BeforeMethod
@@ -162,7 +152,7 @@ public void testParse() {
 }
 ```
 
-### Exception Types
+### Exception Types {#exception-types}
 
 Choose exception type based on cause:
 
@@ -187,7 +177,7 @@ Choose exception type based on cause:
   }
   ```
 
-## References
+## References {#references}
 
 - **Complete style rules**: [docs/code-style-human.md](../code-style-human.md) - Human-readable explanations
 - **Automated patterns**: [docs/code-style/*.md](../code-style/) - Detection patterns for reviewers

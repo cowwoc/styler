@@ -5,7 +5,9 @@ set -euo pipefail
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 
 # Fail gracefully without blocking Claude Code
-trap 'echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Unexpected error at line $LINENO" >&2; exit 0' ERR
+trap 'echo "[HOOK DEBUG] detect-giving-up.sh FAILED at line $LINENO" >&2; echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Unexpected error at line $LINENO" >&2; exit 0' ERR
+
+echo "[HOOK DEBUG] detect-giving-up.sh START" >&2
 
 # Giving Up Pattern Detection Hook
 # Detects phrases indicating abandonment of complex problems
@@ -59,17 +61,19 @@ if [[ ${#USER_PROMPT} -gt $MAX_PROMPT_LENGTH ]]; then
 	USER_PROMPT="${USER_PROMPT:0:$MAX_PROMPT_LENGTH}"
 fi
 
+# Extract session ID from JSON input
+SESSION_ID_RAW=$(extract_json_value "$JSON_INPUT" "session_id")
+
 # Require session ID - fail fast if not provided
-if [[ -z "${CLAUDE_SESSION_ID:-}" ]]; then
-	echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: CLAUDE_SESSION_ID environment variable is required" >&2
+if [[ -z "$SESSION_ID_RAW" ]]; then
+	echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: session_id must be provided in hook JSON input" >&2
 	exit 0  # Non-blocking
 fi
 
 # Sanitize session ID to prevent directory traversal attacks
-SESSION_ID_RAW="$CLAUDE_SESSION_ID"
 SESSION_ID=$(echo "$SESSION_ID_RAW" | tr -cd 'a-zA-Z0-9_-')
 if [[ -z "$SESSION_ID" ]]; then
-	echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Invalid CLAUDE_SESSION_ID (contains no valid characters)" >&2
+	echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Invalid session_id (contains no valid characters)" >&2
 	exit 0  # Non-blocking
 fi
 
@@ -144,6 +148,9 @@ detect_giving_up_pattern()
 	[[ "$text_lower" == *"due to the complexity, i'll defer this to"* ]] && return 0
 	[[ "$text_lower" == *"this appears to be beyond the current scope"* ]] && return 0
 	[[ "$text_lower" == *"let me move on to easier tasks"* ]] && return 0
+	[[ "$text_lower" == *"given the large number"*"i'll continue with the next"* ]] && return 0
+	[[ "$text_lower" == *"given the large number"*"let me continue with the next"* ]] && return 0
+	[[ "$text_lower" == *"given the volume"*"i'll process them"* ]] && return 0
 
 	return 1  # No pattern detected
 }
@@ -329,5 +336,7 @@ fi
 
 # Cleanup old session tracking files (7-day TTL) - runs opportunistically
 find /tmp -maxdepth 1 -type d -name "claude-hooks-session-*" -mtime +7 -delete 2>/dev/null || true
+
+echo "[HOOK DEBUG] detect-giving-up.sh END" >&2
 
 exit 0

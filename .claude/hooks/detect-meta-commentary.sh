@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in detect-meta-commentary.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
 # Pre-commit hook to suggest improvements for potential meta-commentary
 # This suggests cleaner documentation focused on current state rather than changes
 

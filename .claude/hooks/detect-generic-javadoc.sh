@@ -1,20 +1,24 @@
 #!/bin/bash
 set -euo pipefail
 
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in detect-generic-javadoc.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
 # Pre-commit hook to detect generic/automated JavaDoc patterns
 # Enforces CLAUDE.md § JavaDoc Manual Documentation Requirement
 
-# Require Claude session ID (set by Claude Code as environment variable).
+# Load helper scripts
+source /workspace/.claude/scripts/session-helper.sh
+
+# Read session ID from stdin JSON
+INPUT=$(cat)
+SESSION_ID=$(get_required_session_id "$INPUT")
+
 # This ensures:
 # 1. Each Claude instance tracks warnings separately
 # 2. Warnings show once per Claude session
 # 3. After context compaction, new session allows warning again
-if [ -z "$CLAUDE_SESSION_ID" ]; then
-	echo "❌ ERROR: CLAUDE_SESSION_ID environment variable must be set."
-	echo "   Claude Code must export CLAUDE_SESSION_ID before git commit."
-	exit 1
-fi
-SESSION_WARNING_FILE="/tmp/claude-javadoc-warning-shown-${CLAUDE_SESSION_ID}"
+SESSION_WARNING_FILE="/tmp/claude-javadoc-warning-shown-${SESSION_ID}"
 
 # Check if we've already warned in this session
 if [ -f "$SESSION_WARNING_FILE" ]; then

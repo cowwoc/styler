@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-trap 'echo "at line $LINENO, exit code $? from $BASH_COMMAND" >&2; exit 1' ERR
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in critical-thinking.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
 # Critical Thinking Hook
 # This hook ensures Claude applies critical thinking to all user prompts
@@ -32,5 +33,3 @@ Use: "The core logic is sound. My investigation shows X evidence supporting this
 **APPLY TO CURRENT PROMPT**: Gather evidence first, then provide critical analysis based on that evidence.
 </system-reminder>
 EOF
-
-exit 0

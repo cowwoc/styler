@@ -1,12 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in measure-phase-metrics.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
 # Hook: measure-phase-metrics.sh
 # Purpose: Track metrics for each protocol phase by monitoring tool usage and state transitions
 # Trigger: ToolUse events (monitors Edit tool for lock file state updates)
 #
 # BEHAVIOR:
-# - Detects lock file state transitions via Edit tool on /workspace/locks/*.json
+# - Detects lock file state transitions via Edit tool on /workspace/tasks/*/task.json
 # - Records phase entry timestamp, tool usage count, and duration
 # - Generates phase summary report on CLEANUP state
 # - Enables data-driven protocol optimization analysis
@@ -20,9 +23,10 @@ if [ "$EVENT_NAME" != "ToolUse" ]; then
   exit 0
 fi
 
-# Extract tool information
+# Extract tool information and session ID
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool.name // empty')
 TOOL_PARAMS=$(echo "$INPUT" | jq -r '.tool.parameters // {}')
+SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
 
 # Check if this is an Edit on a lock file
 if [ "$TOOL_NAME" != "Edit" ]; then
@@ -31,8 +35,8 @@ fi
 
 FILE_PATH=$(echo "$TOOL_PARAMS" | jq -r '.file_path // empty')
 
-# Only track lock file edits in /workspace/locks/*.json
-if [[ ! "$FILE_PATH" =~ ^/workspace/locks/.*\.json$ ]]; then
+# Only track lock file edits in /workspace/tasks/*/task.json
+if [[ ! "$FILE_PATH" =~ ^/workspace/tasks/.*/task\.json$ ]]; then
   exit 0
 fi
 

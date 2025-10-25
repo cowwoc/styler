@@ -5,6 +5,13 @@
 
 set -euo pipefail
 
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in phase-transition-guide.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
+# Source documentation reference resolver
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/lib/doc-reference-resolver.sh" 2>/dev/null || true
+
 TASK_NAME="${1:-unknown}"
 NEW_STATE="${2:-UNKNOWN}"
 LOCK_FILE="/workspace/tasks/${TASK_NAME}/task.json"
@@ -34,13 +41,14 @@ fi
 case "$NEW_STATE" in
 	"INIT")
 		if [[ "$VERBOSITY" == "FULL" ]]; then
-			cat << 'EOF'
+			INIT_REF=$(resolve_doc_ref "task-protocol-core.md#init-classified" 2>/dev/null || echo "Read /workspace/main/docs/project/task-protocol-core.md section #init-classified")
+			cat << EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 INIT PHASE - Task Initialization
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📖 DETAILED PROTOCOL:
-   Read /workspace/main/docs/project/task-protocol-core.md lines 1583-1626
+   ${INIT_REF}
    (Section: "INIT → CLASSIFIED")
 
 REQUIRED ACTIONS:
@@ -78,13 +86,14 @@ EOF
 
 	"CLASSIFIED")
 		if [[ "$VERBOSITY" == "FULL" ]]; then
-			cat << 'EOF'
+			CLASSIFIED_REF=$(resolve_doc_ref "task-protocol-core.md#classified-requirements" 2>/dev/null || echo "Read /workspace/main/docs/project/task-protocol-core.md section #classified-requirements")
+			cat << EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔍 CLASSIFIED PHASE - Risk Assessment & Agent Identification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📖 DETAILED PROTOCOL:
-   Read /workspace/main/docs/project/task-protocol-core.md lines 1986-2053
+   ${CLASSIFIED_REF}
    (Section: "CLASSIFIED → REQUIREMENTS")
 
 REQUIRED ACTIONS:
@@ -121,13 +130,14 @@ EOF
 
 	"REQUIREMENTS")
 		if [[ "$VERBOSITY" == "FULL" ]]; then
-			cat << 'EOF'
+			REQUIREMENTS_REF=$(resolve_doc_ref "task-protocol-core.md#requirements-state-exit-verification-procedure" 2>/dev/null || echo "Read /workspace/main/docs/project/task-protocol-core.md section #requirements-state-exit-verification-procedure")
+			cat << EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📝 REQUIREMENTS PHASE - Stakeholder Consultation
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📖 DETAILED PROTOCOL:
-   Read /workspace/main/docs/project/task-protocol-core.md lines 2205-2388
+   ${REQUIREMENTS_REF}
    (Sections: "REQUIREMENTS → SYNTHESIS" and "REQUIREMENTS State Exit Verification")
 
 REQUIRED ACTIONS:
@@ -162,13 +172,14 @@ EOF
 
 	"SYNTHESIS")
 		if [[ "$VERBOSITY" == "FULL" ]]; then
-			cat << 'EOF'
+			SYNTHESIS_REF=$(resolve_doc_ref "task-protocol-core.md#implementation-state-entry-guards-critical-enforcement" 2>/dev/null || echo "Read /workspace/main/docs/project/task-protocol-core.md section #implementation-state-entry-guards-critical-enforcement")
+			cat << EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🎯 SYNTHESIS PHASE - Implementation Planning
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📖 DETAILED PROTOCOL:
-   Read /workspace/main/docs/project/task-protocol-core.md lines 2736-2881
+   ${SYNTHESIS_REF}
    (Sections: "IMPLEMENTATION State Entry Guards" and "SYNTHESIS → IMPLEMENTATION")
 
 REQUIRED ACTIONS:
@@ -214,6 +225,7 @@ EOF
 		if [[ "$VERBOSITY" == "FULL" ]]; then
 			# Get risk level from lock file
 			RISK_LEVEL=$(jq -r '.risk_level // "UNKNOWN"' "$LOCK_FILE" 2>/dev/null || echo "UNKNOWN")
+			IMPLEMENTATION_REF=$(resolve_doc_ref "task-protocol-core.md#multi-agent-implementation-workflow" 2>/dev/null || echo "Read /workspace/main/docs/project/task-protocol-core.md section #multi-agent-implementation-workflow")
 
 			cat << EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -221,7 +233,7 @@ EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📖 DETAILED PROTOCOL:
-   Read /workspace/main/docs/project/task-protocol-core.md lines 2881-3368
+   ${IMPLEMENTATION_REF}
    (Sections: "SYNTHESIS → IMPLEMENTATION" and "MULTI-AGENT IMPLEMENTATION WORKFLOW")
    Also read: task-protocol-operations.md for implementation patterns
 
@@ -287,13 +299,14 @@ EOF
 
 	"VALIDATION")
 		if [[ "$VERBOSITY" == "FULL" ]]; then
-			cat << 'EOF'
+			VALIDATION_REF=$(resolve_doc_ref "task-protocol-core.md#implementation-validation" 2>/dev/null || echo "Read /workspace/main/docs/project/task-protocol-core.md section #implementation-validation")
+			cat << EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🧪 VALIDATION PHASE - Build & Test Verification
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📖 DETAILED PROTOCOL:
-   Read /workspace/main/docs/project/task-protocol-core.md lines 3368-3431
+   ${VALIDATION_REF}
    (Section: "IMPLEMENTATION → VALIDATION")
 
 REQUIRED ACTIONS:
@@ -331,13 +344,14 @@ EOF
 
 	"REVIEW")
 		if [[ "$VERBOSITY" == "FULL" ]]; then
-			cat << 'EOF'
+			REVIEW_REF=$(resolve_doc_ref "task-protocol-core.md#validation-review-conditional-path" 2>/dev/null || echo "Read /workspace/main/docs/project/task-protocol-core.md section #validation-review-conditional-path")
+			cat << EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 👥 REVIEW PHASE - Stakeholder Agent Approval
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📖 DETAILED PROTOCOL:
-   Read /workspace/main/docs/project/task-protocol-core.md lines 3431-3513
+   ${REVIEW_REF}
    (Section: "VALIDATION → REVIEW")
 
 REQUIRED ACTIONS:
@@ -377,13 +391,14 @@ EOF
 
 	"COMPLETE")
 		if [[ "$VERBOSITY" == "FULL" ]]; then
-			cat << 'EOF'
+			COMPLETE_REF=$(resolve_doc_ref "task-protocol-core.md#complete-cleanup" 2>/dev/null || echo "Read /workspace/main/docs/project/task-protocol-core.md section #complete-cleanup")
+			cat << EOF
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🎉 COMPLETE PHASE - Finalization
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📖 DETAILED PROTOCOL:
-   Read /workspace/main/docs/project/task-protocol-core.md lines 3647-3673
+   ${COMPLETE_REF}
    (Section: "COMPLETE → CLEANUP")
    Also read: /workspace/main/docs/project/git-workflow.md for merge procedures
 
@@ -462,6 +477,7 @@ EOF
 		;;
 
 	*)
-		echo "⚠️  Unknown phase: $NEW_STATE - Read /workspace/main/docs/project/task-protocol-core.md for guidance"
+		DOC_REF=$(resolve_doc_ref "task-protocol-core.md#core-states" 2>/dev/null || echo "/workspace/main/docs/project/task-protocol-core.md")
+		echo "⚠️  Unknown phase: $NEW_STATE - Read $DOC_REF for guidance"
 		;;
 esac

@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in verify-task-archival.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
 # Verify task archival requirements after COMPLETE state
 #
 # Usage: bash .claude/hooks/verify-task-archival.sh [task-name]
@@ -20,18 +23,21 @@ set -euo pipefail
 TASK_NAME="${1:-}"
 
 if [ -z "$TASK_NAME" ]; then
-    # Extract task name from /workspace/branches/{task-name}/code path
-    TASK_NAME=$(pwd | grep -oP '/workspace/branches/\K[^/]+(?=/code)' || echo "")
+    # Extract task name from /workspace/tasks/{task-name}/code path
+    TASK_NAME=$(pwd | grep -oP '/workspace/tasks/\K[^/]+(?=/code)' || echo "")
 
     if [ -z "$TASK_NAME" ]; then
         # Not in a task worktree path - check if any tasks are in CLEANUP state
         # This handles hook invocation from /workspace or other directories
-        CLEANUP_LOCKS=$(find /workspace/locks -name "*.json" -type f 2>/dev/null | while read -r lock; do
-            state=$(jq -r '.state // ""' "$lock" 2>/dev/null)
-            if [ "$state" = "CLEANUP" ]; then
-                basename "$lock" .json
-            fi
-        done)
+        CLEANUP_LOCKS=""
+        if [ -d "/workspace/tasks" ]; then
+            CLEANUP_LOCKS=$(find /workspace/tasks -name "task.json" -type f 2>/dev/null | while read -r lock; do
+                state=$(jq -r '.state // ""' "$lock" 2>/dev/null)
+                if [ "$state" = "CLEANUP" ]; then
+                    basename "$lock" .json
+                fi
+            done)
+        fi
 
         if [ -z "$CLEANUP_LOCKS" ]; then
             # No tasks in CLEANUP state - archival check not applicable
@@ -41,7 +47,7 @@ if [ -z "$TASK_NAME" ]; then
         # Found task(s) in CLEANUP state - cannot determine which one to verify
         echo "ERROR: Cannot determine task name - no argument provided and not in task worktree" >&2
         echo "Usage: $0 <task-name>" >&2
-        echo "Or run from within /workspace/branches/{task-name}/code/" >&2
+        echo "Or run from within /workspace/tasks/{task-name}/code/" >&2
         exit 1
     fi
 
@@ -60,7 +66,7 @@ if [ -f "$MARKER_FILE" ]; then
 fi
 
 # Check if we're in CLEANUP state (after COMPLETE)
-LOCK_FILE="/workspace/locks/${TASK_NAME}.json"
+LOCK_FILE="/workspace/tasks/${TASK_NAME}/task.json"
 if [ ! -f "$LOCK_FILE" ]; then
     # No lock file - task may have already completed cleanup
     # Exit silently - archival check not needed

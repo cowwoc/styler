@@ -5,6 +5,9 @@
 
 set -euo pipefail
 
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in enforce-protocol-audit.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
 # Read JSON input from stdin (for BeforeToolCall trigger)
 if [ -t 0 ]; then
   # SessionStart trigger - check for pending audits

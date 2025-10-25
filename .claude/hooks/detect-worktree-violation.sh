@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in detect-worktree-violation.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
 # detect-worktree-violation.sh - BLOCKS directory changes outside task worktree
 # Hook Type: PreToolUse (Bash tool with cd command)
 # Trigger: Before Bash tool execution when command contains 'cd'
@@ -46,14 +49,14 @@ if [ "$TOOL_NAME" != "Bash" ]; then
 fi
 
 # Check if we have an active task
-LOCK_FILE=$(ls /workspace/locks/*.json 2>/dev/null | grep -v ".gitkeep" | head -1)
+LOCK_FILE=$(find /workspace/tasks -name "task.json" -type f 2>/dev/null | head -1)
 if [ -z "$LOCK_FILE" ]; then
     exit 0  # No active task, no restriction
 fi
 
 # Extract task name from lock file
 TASK_NAME=$(basename "$LOCK_FILE" .json)
-EXPECTED_WORKTREE="/workspace/branches/${TASK_NAME}/code"
+EXPECTED_WORKTREE="/workspace/tasks/${TASK_NAME}/code"
 
 # Detect 'cd' commands that might leave task worktree
 # Use timeout to prevent ReDoS attacks - limit regex execution to 1 second

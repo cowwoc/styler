@@ -4,11 +4,11 @@
 > **Audience:** quality-reviewer, quality-updater, test-reviewer, test-updater
 > **Purpose:** Code quality standards and test-driven development practices
 
-## 🧪 UNIT TEST DRIVEN BUG FIXING
+## 🧪 UNIT TEST DRIVEN BUG FIXING {#unit-test-driven-bug-fixing}
 
-**MANDATORY PROCESS**: When encountering any bug during development:
+When encountering any bug during development:
 
-### Bug Discovery Protocol
+### Bug Discovery Protocol {#bug-discovery-protocol}
 
 1. **IMMEDIATE UNIT TEST**: Create a minimal unit test that reproduces the exact bug
 2. **ISOLATION**: Extract the failing behavior into the smallest possible test case
@@ -16,7 +16,7 @@
 4. **FIX VALIDATION**: Ensure the unit test passes after implementing the fix
 5. **REGRESSION PREVENTION**: Keep the test in the permanent test suite
 
-### Unit Test Requirements
+### Unit Test Requirements {#unit-test-requirements}
 
 - **Specific**: Target the exact failing behavior, not general functionality
 - **Minimal**: Use the smallest possible input that triggers the bug
@@ -24,14 +24,12 @@
 - **Isolated**: Independent of other tests and external dependencies
 - **Fast**: Execute quickly to enable frequent testing
 
-### Examples
+✅ `testScientificNotationLexing()` - floating-point literal bugs
+✅ `testMethodReferenceInAssignment()` - parser syntax bugs
+✅ `testEnumConstantWithArguments()` - enum parsing bugs
+✅ `testGenericTypeVariableDeclaration()` - generics bugs
 
-✅ `testScientificNotationLexing()` - for floating-point literal bugs
-✅ `testMethodReferenceInAssignment()` - for parser syntax bugs
-✅ `testEnumConstantWithArguments()` - for enum parsing bugs
-✅ `testGenericTypeVariableDeclaration()` - for generics bugs
-
-### Example Workflow
+### Example Workflow {#example-workflow}
 
 ```java
 // 1. Bug discovered: Parser fails on scientific notation "1.5e10"
@@ -54,21 +52,18 @@ public void testScientificNotationLexing() {
 // 5. Test remains in suite permanently - prevents regression
 ```
 
-## 📝 QUALITY-SPECIFIC CODE POLICIES
+## 📝 QUALITY-SPECIFIC CODE POLICIES {#quality-specific-code-policies}
 
-### Code Comments
+### Code Comments {#code-comments}
 
-**Update Outdated Comments**:
-- Comments that contradict current implementation must be updated or removed
-- Implementation history belongs in git, not code comments
+Comments that contradict current implementation must be updated or removed. Implementation history belongs in git. Focus on WHY, not WHAT.
 
-**Focus on WHY, not WHAT**:
 ```java
 // ❌ BAD: "Loops through the list and checks each item"
 // ✅ GOOD: "Validates business rule: all items must have positive quantity"
 ```
 
-### TODO Comments
+### TODO Comments {#todo-comments}
 
 **Three Options** (choose one):
 1. **Implement**: Fix the TODO immediately during this task
@@ -81,16 +76,16 @@ public void testScientificNotationLexing() {
 
 **PROHIBITED**: Superficial renaming without action
 
-### Duplication Detection
+### Duplication Detection {#duplication-detection}
 
-**When reviewing code, flag duplicated logic as HIGH priority**:
+Flag duplicated logic as HIGH priority:
 
 - Duplicated business logic → Extract to shared method
 - Duplicated validation → Create validator class
 - Duplicated error handling → Extract error handling pattern
 - Duplicated transformations → Create transformation utility
 
-### Complexity Thresholds
+### Complexity Thresholds {#complexity-thresholds}
 
 **Cyclomatic Complexity**:
 - **Acceptable**: < 10 per method
@@ -102,7 +97,7 @@ public void testScientificNotationLexing() {
 - **Concerning**: 50-100 lines (consider extraction)
 - **Rejected**: > 100 lines (must extract methods)
 
-### Refactoring Patterns
+### Refactoring Patterns {#refactoring-patterns}
 
 **Extract Method**:
 ```java
@@ -144,18 +139,18 @@ public class OrderProcessor {
 }
 ```
 
-## Test Strategy Requirements
+## Test Strategy Requirements {#test-strategy-requirements}
 
-### Minimum Test Coverage
+### Minimum Test Coverage {#minimum-test-coverage}
 
 **Categories** (MANDATORY):
-1. **Null/Empty Validation**: 2-3 tests - Verify null/empty input handling
-2. **Boundary Conditions**: 2-3 tests - Test edge values (0, max, min+1, max-1)
-3. **Edge Cases**: 3-5 tests - Unusual but valid inputs
-4. **Happy Path**: 1-2 tests - Standard expected usage
-5. **Error Conditions**: 2-3 tests - Invalid inputs and expected failures
+1. **Null/Empty Validation**: 2-3 tests verifying null/empty input handling
+2. **Boundary Conditions**: 2-3 tests for edge values (0, max, min+1, max-1)
+3. **Edge Cases**: 3-5 tests for unusual but valid inputs
+4. **Happy Path**: 1-2 tests for standard expected usage
+5. **Error Conditions**: 2-3 tests for invalid inputs and expected failures
 
-### Test Naming Convention
+### Test Naming Convention {#test-naming-convention}
 
 Use descriptive names that explain WHAT is tested and WHAT the expected outcome is:
 
@@ -166,7 +161,7 @@ Use descriptive names that explain WHAT is tested and WHAT the expected outcome 
 
 ❌ `test1()`, `test2()`, `testMethod()`
 
-### Test Independence
+### Test Independence {#test-independence}
 
 Each test MUST:
 - Create its own test data
@@ -189,17 +184,45 @@ public void shouldRejectNegativeInput() {
 }
 ```
 
-### Module Dependency Testing Requirements (JPMS Projects)
+### Incremental Test Validation Strategy {#incremental-test-validation-strategy}
 
-For projects using Java Platform Module System (JPMS), test modules have additional requirements:
+For multi-file test creation, validate after each test class before proceeding to next. Detects issues early and avoids cascading errors.
 
-**Test Module Structure:**
-1. **Separate module name**: Test module MUST use different name (e.g., `io.github.styler.parser.test`)
-2. **Module descriptor**: `src/test/java/module-info.java` required
-3. **Dependency declaration**: Test module `requires` main module
-4. **Reflection access**: Use `opens` (NOT `exports`) for test packages to testing framework
+✅ **Recommended Pattern**:
+```bash
+# After creating first test file
+mvn test-compile -pl :module-name
+mvn test -Dtest=FirstTest -pl :module-name
 
-**Required Tests for Module Configuration:**
+# Fix issues, then proceed to next test file
+# Repeat for each test file
+```
+
+❌ **Anti-Pattern**:
+```bash
+# Create all 6 test files first, then run full build
+mvn clean verify
+# Results in 53 violations across all files - must fix all at once
+```
+
+**Benefits**: Earlier error detection, prevent cascading errors, faster feedback (5-10s vs 60s), reduced token usage.
+
+**Targeted Builds**:
+```bash
+mvn test-compile -pl :module-name              # Compile only
+mvn test -Dtest=ClassName -pl :module-name      # Run specific test
+mvn test -Dtest=Class1Test,Class2Test -pl :module-name  # Multiple tests
+```
+
+### Module Dependency Testing Requirements (JPMS Projects) {#module-dependency-testing-requirements-jpms-projects}
+
+For JPMS projects, test modules require:
+1. Separate module name (e.g., `io.github.styler.parser.test`)
+2. Module descriptor: `src/test/java/module-info.java`
+3. Test module `requires` main module
+4. Use `opens` (NOT `exports`) for test packages
+
+**Module Configuration Tests:**
 
 **1. Module Descriptor Validation Tests** (verify at build time):
 ```bash
@@ -235,12 +258,11 @@ public void shouldAccessMainModuleClasses() {
 
 **3. Clean Build Verification** (MANDATORY before merge):
 ```bash
-# CRITICAL: Clean build detects stale module-info.class
+# Clean build detects stale module-info.class
 ./mvnw clean verify
 
-# Common failure mode: build cache has stale module descriptors
-# Symptom: "module not found" despite module being present
-# Root cause: Previous `./mvnw compile` without package phase
+# Common failure: "module not found" despite module present
+# Cause: Stale module descriptors in build cache
 # Solution: Always use `clean verify` before final validation
 ```
 
@@ -274,7 +296,7 @@ module io.github.styler.parser.test {
 - [ ] `./mvnw clean verify` passes (clean build required)
 - [ ] Tests execute successfully with module system enabled
 
-## Code Review Checklist
+## Code Review Checklist {#code-review-checklist}
 
 Before approving code:
 
@@ -289,7 +311,7 @@ Before approving code:
 - [ ] No magic numbers (use named constants)
 - [ ] Consistent formatting and style
 
-## References
+## References {#references}
 
 - **Complete code policies**: [docs/optional-modules/code-policies.md](../optional-modules/code-policies.md)
 - **Style guide**: [style-guide.md](style-guide.md) - Style-specific requirements
