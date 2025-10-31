@@ -32,13 +32,61 @@ Need to create/modify source files (.java/.ts/.py)?
 
 **Pre-Implementation Checklist** (MANDATORY before IMPLEMENTATION state):
 
-Before transitioning to IMPLEMENTATION state, verify:
+Before ANY implementation work, complete ALL steps in order:
 
-- [ ] All stakeholder agent worktrees created
+**Step 1: State Tracking Infrastructure**
+- [ ] task.json created at `/workspace/tasks/{task-name}/task.json` with state=IMPLEMENTATION
+- [ ] Verification: `cat /workspace/tasks/{task-name}/task.json` shows correct state
+
+**Step 2: Agent Worktree Setup**
+- [ ] All stakeholder agent worktrees created: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
 - [ ] Agent worktree branches exist: {task-name}-{agent-name}
-- [ ] Agent worktrees verified with: `git worktree list`
+- [ ] Agent worktrees verified with: `git worktree list | grep {task-name}`
+- [ ] Verification: `ls -la /workspace/tasks/{task-name}/agents/` shows all required agents
+
+**Step 3: Coordination & Boundaries**
 - [ ] Task coordination plan documented in task.md
-- [ ] Main agent role boundaries reviewed (NO source file creation)
+- [ ] Main agent role boundaries reviewed (NO source file creation - use Task tool to delegate)
+- [ ] Agent requirements prepared for Task tool invocation
+
+**Step 4: Pre-Flight Validation**
+- [ ] Main agent has NOT used Write/Edit on any .java/.ts/.py files
+- [ ] task.json exists (blocks violations if missing)
+- [ ] Agent worktrees exist before invoking agents
+
+**If ANY checkbox unchecked → STOP and complete setup before proceeding**
+
+**Standard Implementation Workflow Template**:
+```bash
+# Step 1: Create task worktree
+git worktree add /workspace/tasks/{task-name}/code -b {task-name}
+cd /workspace/tasks/{task-name}/code
+
+# Step 2: Initialize task.json (REQUIRED before source file work)
+cat > /workspace/tasks/{task-name}/task.json <<EOF
+{
+  "task_name": "{task-name}",
+  "state": "IMPLEMENTATION",
+  "created": "$(date -Iseconds)"
+}
+EOF
+
+# Step 3: Create agent worktrees
+mkdir -p /workspace/tasks/{task-name}/agents
+git worktree add /workspace/tasks/{task-name}/agents/architecture-updater/code \
+  -b {task-name}-architecture-updater
+git worktree add /workspace/tasks/{task-name}/agents/quality-updater/code \
+  -b {task-name}-quality-updater
+
+# Step 4: Invoke agents (NOT implement directly)
+Task tool: architecture-updater
+  requirements: "..."
+  worktree: /workspace/tasks/{task-name}/agents/architecture-updater/code
+
+# Step 5: Merge agent work after completion
+cd /workspace/tasks/{task-name}/code
+git merge {task-name}-architecture-updater
+```
 
 **Worktree Creation Helper**:
 ```bash
@@ -502,6 +550,54 @@ Main agent Edit/Write tool permissions vary by state.
 | **REVIEW** | ✅ PERMITTED | Fix agent feedback |
 | **COMPLETE** | ✅ PERMITTED | Final touches |
 | **CLEANUP** | ✅ PERMITTED | Infrastructure only |
+
+**Detailed State Permissions**:
+
+#### INIT State {#init-state-permissions}
+
+✅ **PERMITTED**:
+- Infrastructure files: `module-info.java`, `package-info.java`
+- Build configuration: `pom.xml`, `build.gradle`, `.mvn/` config
+- Task coordination: `task.json`, `task.md` creation
+- Git worktree setup: Task and agent worktrees
+- Hook configuration updates
+
+❌ **PROHIBITED**:
+- Business logic source files (e.g., `FormattingRule.java`, `Parser.java`)
+- Test implementation files (e.g., `*Test.java`, `*Tests.java`)
+- Feature implementation or functionality
+
+**Rationale**: INIT prepares infrastructure for agents to implement features.
+
+#### IMPLEMENTATION State {#implementation-state-permissions}
+
+❌ **PROHIBITED** (Main Agent):
+- ANY creation or editing of `.java`, `.ts`, `.py` source files
+- Adding feature code to existing files
+- Implementing business logic
+
+✅ **PERMITTED** (Stakeholder Agents Only):
+- Full source file creation in agent worktrees
+- Test implementation
+- Feature development
+
+**Rationale**: Clear separation of coordination (main agent) vs implementation (stakeholder agents).
+
+#### VALIDATION State {#validation-state-permissions}
+
+✅ **PERMITTED** (Main Agent):
+- Infrastructure fixes: `module-info.java`, `package-info.java`
+- Minor style violations (< 5 fixes)
+- Build configuration updates
+- Fixing JPMS exports/requires
+
+❌ **PROHIBITED** (Main Agent):
+- Feature implementation
+- Architectural changes
+- High-volume style fixes (> 5 violations)
+- Test logic modifications
+
+**Rationale**: Main agent fixes integration issues, not missing features.
 
 **VALIDATION State Exit Requirements**:
 1. ✅ All quality gates pass (checkstyle, PMD, build)
@@ -1180,6 +1276,32 @@ Single Message:
 
 **Tool Call Syntax**:
 All Task calls must appear in the same `<function_calls>` block to execute in parallel.
+
+**Example - REQUIREMENTS Phase Parallelization**:
+
+✅ **CORRECT** (Single message with 4 parallel Task calls - saves ~24,000 tokens):
+```
+Main agent launches all reviewer agents in ONE message:
+- Task(architecture-reviewer): Gather architecture requirements
+- Task(style-reviewer): Gather style requirements
+- Task(quality-reviewer): Gather quality requirements
+- Task(test-reviewer): Gather test requirements
+
+Result: All 4 agents execute concurrently, single round-trip
+```
+
+❌ **VIOLATION** (Sequential launches - wastes ~24,000 tokens):
+```
+Message 1: Task(architecture-reviewer)
+[Wait for response...]
+Message 2: Task(style-reviewer)
+[Wait for response...]
+Message 3: Task(quality-reviewer)
+[Wait for response...]
+Message 4: Task(test-reviewer)
+
+Result: 4 sequential round-trips, 3x more latency
+```
 
 ### Fail-Fast vs Batch Collection Decision Criteria {#fail-fast-vs-batch-collection-decision-criteria}
 

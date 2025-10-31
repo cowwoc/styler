@@ -48,7 +48,7 @@ if [ -z "$TASK_NAME" ]; then
         echo "ERROR: Cannot determine task name - no argument provided and not in task worktree" >&2
         echo "Usage: $0 <task-name>" >&2
         echo "Or run from within /workspace/tasks/{task-name}/code/" >&2
-        exit 1
+        exit 2
     fi
 
     if [ "$TASK_NAME" = "main" ]; then
@@ -99,7 +99,7 @@ else
         \"additionalContext\": $(echo "$MESSAGE" | jq -Rs .)
       }
     }"
-    exit 1
+    exit 2
 fi
 
 # Check if task still exists in todo.md (archival was skipped)
@@ -154,4 +154,4 @@ echo "{
 # Create marker to prevent re-running this verification
 touch "$MARKER_FILE"
 
-exit 1
+exit 2

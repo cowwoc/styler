@@ -48,7 +48,7 @@ if [[ "$STATE" == "CONVERGENCE" ]]; then
         echo "  jq '.state = \"IMPLEMENTATION\"' $LOCK_FILE > /tmp/lock.json && mv /tmp/lock.json $LOCK_FILE" >&2
         echo "" >&2
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-        exit 1
+        exit 2
     fi
 
     # Gate 2: Check tests pass
@@ -68,7 +68,7 @@ if [[ "$STATE" == "CONVERGENCE" ]]; then
         echo "  jq '.state = \"IMPLEMENTATION\"' $LOCK_FILE > /tmp/lock.json && mv /tmp/lock.json $LOCK_FILE" >&2
         echo "" >&2
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-        exit 1
+        exit 2
     fi
 
     # Gate 3: Check style compliance
@@ -88,7 +88,7 @@ if [[ "$STATE" == "CONVERGENCE" ]]; then
         echo "  jq '.state = \"IMPLEMENTATION\"' $LOCK_FILE > /tmp/lock.json && mv /tmp/lock.json $LOCK_FILE" >&2
         echo "" >&2
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-        exit 1
+        exit 2
     fi
 
     # Gate 4: Check minimum test count (≥15 tests)
@@ -121,7 +121,7 @@ if [[ "$STATE" == "CONVERGENCE" ]]; then
         echo "  jq '.state = \"IMPLEMENTATION\"' $LOCK_FILE > /tmp/lock.json && mv /tmp/lock.json $LOCK_FILE" >&2
         echo "" >&2
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
-        exit 1
+        exit 2
     fi
 fi
 

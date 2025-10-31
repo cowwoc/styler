@@ -179,7 +179,7 @@ if [[ "$TOOL_NAME" == "Write" && "$FILE_PATH" == *"/task.json" ]]; then
         # Create pending audit marker
         echo "$CURRENT_STATE → $NEW_STATE" > "${TASK_DIR}/protocol-audit-pending.flag"
 
-        exit 1
+        exit 2
       fi
 
       # Audit passed - allow transition and clear flags
