@@ -132,6 +132,9 @@
     "code-quality": {"start": 748, "end": 763}
   }
 ,
+  "docs/project/auto-learn-from-mistakes.md": {
+  }
+,
   "docs/project/build-system.md": {
     "environment-setup": {"start": 6, "end": 13}
 ,
@@ -292,121 +295,127 @@
   }
 ,
   "docs/project/main-agent-coordination.md": {
-    "source-code-creation": {"start": 11, "end": 48}
+    "source-code-creation": {"start": 11, "end": 96}
 ,
-    "lock-ownership": {"start": 49, "end": 82}
+    "lock-ownership": {"start": 97, "end": 130}
 ,
-    "worktree-isolation": {"start": 83, "end": 84}
+    "worktree-isolation": {"start": 131, "end": 132}
 ,
-    "during-task-execution": {"start": 85, "end": 95}
+    "during-task-execution": {"start": 133, "end": 143}
 ,
-    "during-cleanup-cleanup-state": {"start": 96, "end": 106}
+    "during-cleanup-cleanup-state": {"start": 144, "end": 154}
 ,
-    "implementation-role-boundaries": {"start": 107, "end": 110}
+    "implementation-role-boundaries": {"start": 155, "end": 158}
 ,
-    "terminology-definitions": {"start": 111, "end": 159}
+    "terminology-definitions": {"start": 159, "end": 207}
 ,
-    "main-agent-role-during-implementation-state-coordination-only": {"start": 160, "end": 178}
+    "main-agent-role-during-implementation-state-coordination-only": {"start": 208, "end": 226}
 ,
-    "prohibited-actions-during-implementation-state": {"start": 179, "end": 210}
+    "prohibited-actions-during-implementation-state": {"start": 227, "end": 258}
 ,
-    "incorrect-main-agent-direct-implementation": {"start": 211, "end": 221}
+    "incorrect-main-agent-direct-implementation": {"start": 259, "end": 269}
 ,
-    "correct-delegation-pattern": {"start": 222, "end": 242}
+    "correct-delegation-pattern": {"start": 270, "end": 290}
 ,
-    "stakeholder-agent-role-implementation-only": {"start": 243, "end": 253}
+    "stakeholder-agent-role-implementation-only": {"start": 291, "end": 301}
 ,
-    "session-summary-documentation-requirements": {"start": 254, "end": 263}
+    "session-summary-documentation-requirements": {"start": 302, "end": 311}
 ,
-    "implementation-phase-summary": {"start": 264, "end": 265}
+    "implementation-phase-summary": {"start": 312, "end": 313}
 ,
-    "agent-invocations-parallel-launch": {"start": 266, "end": 271}
+    "agent-invocations-parallel-launch": {"start": 314, "end": 319}
 ,
-    "agent-commits-to-task-branch": {"start": 272, "end": 277}
+    "agent-commits-to-task-branch": {"start": 320, "end": 325}
 ,
-    "verification": {"start": 278, "end": 284}
+    "verification": {"start": 326, "end": 332}
 ,
-    "role-verification-questions": {"start": 285, "end": 291}
+    "role-verification-questions": {"start": 333, "end": 339}
 ,
-    "required-pattern-after-synthesis-approval": {"start": 292, "end": 332}
+    "required-pattern-after-synthesis-approval": {"start": 340, "end": 380}
 ,
-    "implementation-status": {"start": 333, "end": 334}
+    "implementation-status": {"start": 381, "end": 382}
 ,
-    "agent-invocations": {"start": 335, "end": 460}
+    "agent-invocations": {"start": 383, "end": 508}
 ,
-    "enforcement": {"start": 461, "end": 466}
+    "enforcement": {"start": 509, "end": 514}
 ,
-    "agent-tool-limitation-recovery-pattern": {"start": 467, "end": 485}
+    "agent-tool-limitation-recovery-pattern": {"start": 515, "end": 533}
 ,
-    "edit-tool-whitespace-mismatch-recovery": {"start": 486, "end": 489}
+    "edit-tool-whitespace-mismatch-recovery": {"start": 534, "end": 537}
 ,
-    "state-based-editwrite-tool-permissions": {"start": 490, "end": 528}
+    "state-based-editwrite-tool-permissions": {"start": 538, "end": 555}
 ,
-    "post-implementation-issue-handling-decision-tree": {"start": 529, "end": 599}
+    "init-state-permissions": {"start": 556, "end": 571}
 ,
-    "re-delegation-workflow-when-violations-exceed-threshold": {"start": 600, "end": 654}
+    "implementation-state-permissions": {"start": 572, "end": 585}
 ,
-    "task-protocol": {"start": 655, "end": 673}
+    "validation-state-permissions": {"start": 586, "end": 624}
 ,
-    "risk-based-protocol-selection": {"start": 674, "end": 697}
+    "post-implementation-issue-handling-decision-tree": {"start": 625, "end": 695}
 ,
-    "stakeholder-consensus-enforcement": {"start": 698, "end": 706}
+    "re-delegation-workflow-when-violations-exceed-threshold": {"start": 696, "end": 750}
 ,
-    "autonomous-task-completion-requirement": {"start": 707, "end": 757}
+    "task-protocol": {"start": 751, "end": 769}
 ,
-    "user-approval-checkpoint-enforcement": {"start": 758, "end": 787}
+    "risk-based-protocol-selection": {"start": 770, "end": 793}
 ,
-    "plan-approval-checkpoint": {"start": 788, "end": 817}
+    "stakeholder-consensus-enforcement": {"start": 794, "end": 802}
 ,
-    "approval-persistence-pattern": {"start": 818, "end": 892}
+    "autonomous-task-completion-requirement": {"start": 803, "end": 853}
 ,
-    "task-unavailability-handling": {"start": 893, "end": 897}
+    "user-approval-checkpoint-enforcement": {"start": 854, "end": 883}
 ,
-    "mandatory-availability-check": {"start": 898, "end": 905}
+    "plan-approval-checkpoint": {"start": 884, "end": 913}
 ,
-    "required-response-when-no-tasks-available": {"start": 906, "end": 935}
+    "approval-persistence-pattern": {"start": 914, "end": 988}
 ,
-    "prohibited-patterns": {"start": 936, "end": 945}
+    "task-unavailability-handling": {"start": 989, "end": 993}
 ,
-    "required-patterns": {"start": 946, "end": 954}
+    "mandatory-availability-check": {"start": 994, "end": 1001}
 ,
-    "long-term-solution-persistence": {"start": 955, "end": 959}
+    "required-response-when-no-tasks-available": {"start": 1002, "end": 1031}
 ,
-    "critical-persistence-requirements": {"start": 960, "end": 973}
+    "prohibited-patterns": {"start": 1032, "end": 1041}
 ,
-    "prohibited-downgrade-patterns": {"start": 974, "end": 987}
+    "required-patterns": {"start": 1042, "end": 1050}
 ,
-    "giving-up-detection-patterns": {"start": 988, "end": 994}
+    "long-term-solution-persistence": {"start": 1051, "end": 1055}
 ,
-    "unit-test-driven-bug-fixing": {"start": 995, "end": 1025}
+    "critical-persistence-requirements": {"start": 1056, "end": 1069}
 ,
-    "stakeholder-agent-persistence-enforcement": {"start": 1026, "end": 1041}
+    "prohibited-downgrade-patterns": {"start": 1070, "end": 1083}
 ,
-    "implementation-persistence-patterns": {"start": 1042, "end": 1062}
+    "giving-up-detection-patterns": {"start": 1084, "end": 1090}
 ,
-    "scope-negotiation-persistence-integration": {"start": 1063, "end": 1086}
+    "unit-test-driven-bug-fixing": {"start": 1091, "end": 1121}
 ,
-    "success-metrics-and-validation": {"start": 1087, "end": 1104}
+    "stakeholder-agent-persistence-enforcement": {"start": 1122, "end": 1137}
 ,
-    "repository-structure": {"start": 1105, "end": 1114}
+    "implementation-persistence-patterns": {"start": 1138, "end": 1158}
 ,
-    "continuous-workflow-mode": {"start": 1115, "end": 1123}
+    "scope-negotiation-persistence-integration": {"start": 1159, "end": 1182}
 ,
-    "performance-optimization-requirements": {"start": 1124, "end": 1127}
+    "success-metrics-and-validation": {"start": 1183, "end": 1200}
 ,
-    "performance-optimization-patterns-mandatory": {"start": 1128, "end": 1146}
+    "repository-structure": {"start": 1201, "end": 1210}
 ,
-    "parallel-agent-invocation-mandatory": {"start": 1147, "end": 1183}
+    "continuous-workflow-mode": {"start": 1211, "end": 1219}
 ,
-    "fail-fast-vs-batch-collection-decision-criteria": {"start": 1184, "end": 1197}
+    "performance-optimization-requirements": {"start": 1220, "end": 1223}
 ,
-    "protocol-file-prefetching-pattern": {"start": 1198, "end": 1231}
+    "performance-optimization-patterns-mandatory": {"start": 1224, "end": 1242}
 ,
-    "incremental-validation-frequency": {"start": 1232, "end": 1279}
+    "parallel-agent-invocation-mandatory": {"start": 1243, "end": 1305}
 ,
-    "parallel-execution-enforcement": {"start": 1280, "end": 1330}
+    "fail-fast-vs-batch-collection-decision-criteria": {"start": 1306, "end": 1319}
 ,
-    "combining-parallel-and-sequential-operations": {"start": 1331, "end": 1367}
+    "protocol-file-prefetching-pattern": {"start": 1320, "end": 1353}
+,
+    "incremental-validation-frequency": {"start": 1354, "end": 1401}
+,
+    "parallel-execution-enforcement": {"start": 1402, "end": 1452}
+,
+    "combining-parallel-and-sequential-operations": {"start": 1453, "end": 1489}
   }
 ,
   "docs/project/multi-agent-process-governance.md": {
@@ -613,31 +622,31 @@
 ,
     "for-updater-agents": {"start": 485, "end": 509}
 ,
-    "for-reviewer-agents": {"start": 510, "end": 523}
+    "for-reviewer-agents": {"start": 510, "end": 556}
 ,
-    "file-locations": {"start": 524, "end": 525}
+    "file-locations": {"start": 557, "end": 558}
 ,
-    "input-files-where-to-read": {"start": 526, "end": 553}
+    "input-files-where-to-read": {"start": 559, "end": 586}
 ,
-    "output-files-where-to-write": {"start": 554, "end": 584}
+    "output-files-where-to-write": {"start": 587, "end": 617}
 ,
-    "common-patterns": {"start": 585, "end": 586}
+    "common-patterns": {"start": 618, "end": 619}
 ,
-    "pattern-incremental-validation": {"start": 587, "end": 604}
+    "pattern-incremental-validation": {"start": 620, "end": 657}
 ,
-    "pattern-reading-reviewer-feedback": {"start": 605, "end": 626}
+    "pattern-reading-reviewer-feedback": {"start": 658, "end": 679}
 ,
-    "pattern-error-handling": {"start": 627, "end": 646}
+    "pattern-error-handling": {"start": 680, "end": 699}
 ,
-    "pattern-multi-round-collaboration": {"start": 647, "end": 668}
+    "pattern-multi-round-collaboration": {"start": 700, "end": 721}
 ,
-    "summary-agent-checklist": {"start": 669, "end": 670}
+    "summary-agent-checklist": {"start": 722, "end": 723}
 ,
-    "updater-agent-checklist": {"start": 671, "end": 694}
+    "updater-agent-checklist": {"start": 724, "end": 748}
 ,
-    "reviewer-agent-checklist": {"start": 695, "end": 711}
+    "reviewer-agent-checklist": {"start": 749, "end": 765}
 ,
-    "references": {"start": 712, "end": 717}
+    "references": {"start": 766, "end": 771}
   }
 ,
   "docs/project/task-protocol-core.md": {
