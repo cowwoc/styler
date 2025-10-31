@@ -8,21 +8,21 @@
 #
 # Log Format: [timestamp] [hook-name] [trigger] [result] [details]
 # Log Location: /workspace/tasks/{task-name}/hook-execution.log (if task context)
-#              /workspace/.claude/hooks/global-hook-execution.log (if no task context)
+#              /tmp/global-hook-execution.log (if no task context)
 
 # Find hook log file location based on session context
 find_hook_log_file() {
 	local SESSION_ID="${1:-}"
 
 	if [[ -z "$SESSION_ID" ]]; then
-		echo "/workspace/.claude/hooks/global-hook-execution.log"
+		echo "/tmp/global-hook-execution.log"
 		return
 	fi
 
 	# Find task owned by this session
 	local TASKS_DIR="/workspace/tasks"
 	if [[ ! -d "$TASKS_DIR" ]]; then
-		echo "/workspace/.claude/hooks/global-hook-execution.log"
+		echo "/tmp/global-hook-execution.log"
 		return
 	fi
 
@@ -43,7 +43,7 @@ find_hook_log_file() {
 		fi
 	done
 
-	echo "/workspace/.claude/hooks/global-hook-execution.log"
+	echo "/tmp/global-hook-execution.log"
 }
 
 # Log hook execution

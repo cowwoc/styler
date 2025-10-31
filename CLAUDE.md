@@ -15,6 +15,30 @@ Styler Java Code Formatter project configuration and universal guidance for all 
 - Start tasks by following hook guidance, not by reading complete protocol docs
 - Reference docs available for troubleshooting: main-agent-coordination.md, task-protocol-core.md
 
+### ⚠️ MANDATORY USER APPROVAL CHECKPOINTS
+
+**CRITICAL**: Two checkpoints require EXPLICIT user approval before proceeding:
+
+1. **SYNTHESIS → IMPLEMENTATION** (Plan Approval)
+   - **STOP after SYNTHESIS**: Present implementation plan in task.md
+   - **WAIT for user approval**: User must say "approved", "proceed", "looks good"
+   - **ONLY THEN**: Create approval flag and transition to IMPLEMENTATION
+   - Hook will BLOCK transitions without approval flag
+
+2. **AWAITING_USER_APPROVAL → COMPLETE** (Change Review)
+   - **STOP after REVIEW**: Present commit SHA and changes (git diff --stat)
+   - **WAIT for user approval**: User must say "approved", "merge it", "LGTM"
+   - **ONLY THEN**: Create approval flag and transition to COMPLETE
+   - Hook will BLOCK transitions without approval flag
+
+**NEVER**:
+- ❌ Proceed to IMPLEMENTATION without presenting plan
+- ❌ Merge to main without presenting changes
+- ❌ Assume silence or bypass mode means approval
+- ❌ Skip checkpoints because "plan is straightforward"
+
+**Enforcement**: `enforce-checkpoints.sh` hook automatically reverts state and blocks violations
+
 **SUB-AGENTS**: If you are a sub-agent (reviewer or updater), this file contains universal guidance only. You MUST also read `/workspace/main/docs/project/task-protocol-agents.md`
 
 **Domain-Specific Agents**: Additionally read domain-specific guides:
@@ -262,12 +286,58 @@ trap 'echo "ERROR in <script-name>.sh at line $LINENO: Command failed: $BASH_COM
 
 **Multi-Agent Architecture**:
 
-> ⚠️ **ZERO TOLERANCE RULE**: Main agent NEVER creates .java/.ts/.py files
+> 🚨 **ZERO TOLERANCE RULE - IMMEDIATE VIOLATION**
+>
+> Main agent creating ANY .java/.ts/.py file with Write/Edit = PROTOCOL VIOLATION
 >
 > **IMPLEMENTATION STATE**: ALL source code creation delegated to stakeholder agents
 > **VALIDATION STATE**: Main agent may edit ONLY to fix violations found during validation
+> **INFRASTRUCTURE FIXES**: Main agent may create infrastructure files (module-info.java, package-info.java) in VALIDATION state to fix build failures
 > **BEFORE creating ANY .java file**: Ask "Is this IMPLEMENTATION or VALIDATION state?"
 
+## Infrastructure File Exceptions {#infrastructure-file-exceptions}
+
+Main agent MAY create/edit the following files in **ANY state** (including INIT and VALIDATION):
+
+### Build System Files
+- `module-info.java` - Java module declarations (JPMS)
+- `package-info.java` - Package-level annotations and documentation
+- `pom.xml` - Maven configuration
+- `build.gradle` - Gradle configuration
+- `.mvn/` - Maven wrapper and configuration
+
+### Coordination Files
+- `task.json` - Task state tracking (lock file)
+- `task.md` - Task requirements and plans
+- `todo.md` - Task registry
+- `.claude/` - Hook configurations and agent definitions
+
+### IMPORTANT DISTINCTION
+
+✅ **CORRECT**: Infrastructure fix during VALIDATION
+```bash
+# Build fails due to missing module export
+Edit: formatter/src/main/java/module-info.java
+  Add: exports io.github.cowwoc.styler.formatter;
+```
+
+❌ **VIOLATION**: Feature implementation during IMPLEMENTATION
+```bash
+# Creating business logic - WRONG STATE
+Write: formatter/src/main/java/FormattingRule.java
+  [Implements feature logic - should be done by architecture-updater]
+```
+
+✅ **CORRECT**: Infrastructure setup during INIT
+```bash
+# Preparing module structure before agent invocation
+Write: formatter/src/main/java/module-info.java
+  [Declares module, requires, exports]
+```
+
+**Rule**: Infrastructure files support the build system. Feature files implement functionality. Only stakeholder agents implement features.
+
+**Correct Multi-Agent Workflow**:
 - Stakeholder agents (NOT main agent) write all source code
 - Each agent has own worktree: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
 - Main agent coordinates via Task tool, monitors status.json, manages state transitions
@@ -277,18 +347,46 @@ trap 'echo "ERROR in <script-name>.sh at line $LINENO: Command failed: $BASH_COM
 **⚠️ CRITICAL PROTOCOL VIOLATIONS**:
 
 **VIOLATION #1: Main Agent Source File Creation**
-- Prohibition: Main agent creating .java/.ts/.py files directly in task worktree during IMPLEMENTATION state
-- Correct: ALL source code MUST be created by stakeholder agents in isolated agent worktrees at `/workspace/tasks/{task-name}/agents/{agent-name}/code/`, then merged to task branch
 
-> ⚠️ **CRITICAL VIOLATION PATTERN**: Main agent creating .java/.ts/.py files directly
-> in task worktree during IMPLEMENTATION state
->
-> **CORRECT**: Stakeholder agents create files in agent worktrees → merge to task branch
-> **INCORRECT**: Main agent using Write/Edit on source files in IMPLEMENTATION state
+❌ **VIOLATION Pattern** (causes audit failures):
+```bash
+# Main agent directly creating source files in task worktree - WRONG
+cd /workspace/tasks/implement-formatter-api/code
+Write tool: src/main/java/io/github/cowwoc/styler/formatter/FormattingRule.java
+# Result: CRITICAL PROTOCOL VIOLATION
+```
+
+✅ **CORRECT Pattern** (passes audits):
+```bash
+# 1. Create task.json for state tracking
+cat > /workspace/tasks/implement-formatter-api/task.json <<EOF
+{
+  "task_name": "implement-formatter-api",
+  "state": "IMPLEMENTATION",
+  "created": "$(date -Iseconds)"
+}
+EOF
+
+# 2. Create agent worktree
+git worktree add /workspace/tasks/implement-formatter-api/agents/architecture-updater/code \
+  -b implement-formatter-api-architecture-updater
+
+# 3. Invoke agent via Task tool (agent creates files in THEIR worktree)
+Task tool: architecture-updater
+  requirements: "Create FormattingRule interface..."
+  worktree: /workspace/tasks/implement-formatter-api/agents/architecture-updater/code
+
+# 4. Main agent merges after agent completion
+cd /workspace/tasks/implement-formatter-api/code
+git merge implement-formatter-api-architecture-updater
+```
+
+**Key Distinction**: Main agent COORDINATES (via Task tool), agents IMPLEMENT (via Write/Edit in agent worktrees)
 
 **VIOLATION #2: Missing Agent Worktrees**
 - Requirement: BEFORE invoking stakeholder agents, main agent MUST create agent worktrees
 - Command: `git worktree add /workspace/tasks/{task-name}/agents/{agent-name}/code -b {task-name}-{agent-name}`
+- Enforcement: Pre-tool-use hook blocks source file creation without task.json
 
 ## Essential References
 
@@ -381,6 +479,7 @@ Successfully executed benchmarks revealing...
 - Why this approach: Code comments inline with implementation
 - Benchmark results: Reference in architecture.md design section
 - Alternatives considered: Brief note in code comment
+- **Lessons learned**: Inline comments in hook/config files explaining pattern evolution
 
 **PERMITTED** (only when explicitly required):
 ✅ Task or user explicitly requires specific documentation

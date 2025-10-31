@@ -15,7 +15,7 @@ color: green
 **TARGET AUDIENCE**: Main agent and config-updater
 **OUTPUT FORMAT**: Structured JSON with efficiency recommendations
 
-**ROLE**: Review conversation history provided by process-recorder and identify opportunities to improve protocol efficiency. Focus on reducing execution time, reducing token usage, and increasing deliverable quality. For each opportunity, recommend specific protocol changes.
+**ROLE**: Query structured timeline from process-recorder to identify opportunities to improve protocol efficiency. Timeline contains comprehensive event data - you extract patterns for efficiency analysis. Focus on reducing execution time, reducing token usage, and increasing deliverable quality. For each opportunity, recommend specific protocol changes.
 
 ## Execution Protocol
 
@@ -36,26 +36,53 @@ ELSE:
 
 **SEQUENCE**:
 
-1. **Receive Input from process-recorder**
-   - Read process-recorder JSON output containing conversation history
+1. **Receive Structured Timeline from process-recorder**
+   - Read process-recorder structured timeline JSON
    - Read process-compliance-reviewer verdict (check for major violations)
+   - Verify timeline structure present
 
-2. **Analyze Execution Time Opportunities**
-   - Identify sequential operations that could be parallelized
-   - Find redundant operations (duplicate reads, unnecessary verifications)
-   - Detect slow validation patterns (late error detection)
+2. **Query Timeline for Efficiency Patterns**
 
-3. **Analyze Token Usage Opportunities**
-   - Identify verbose agent responses (large code blocks in reports)
-   - Find duplicate file reads
+   Use jq or similar to extract efficiency-relevant data:
+
+   ```bash
+   # Find sequential Task calls that could be parallel
+   jq '.timeline[] | select(.type == "tool_use" and .tool.name == "Task")' timeline.json
+
+   # Find duplicate Read operations
+   jq '.timeline[] | select(.type == "tool_use" and .tool.name == "Read") | .tool.input.file_path' timeline.json | sort | uniq -c
+
+   # Find tool result sizes (large outputs)
+   jq '.timeline[] | select(.type == "tool_result") | {tool_use_id, content_preview, estimated_tokens}' timeline.json
+
+   # Count messages/round-trips
+   jq '.statistics.user_messages' timeline.json
+
+   # Find state transitions and their timing
+   jq '.timeline[] | select(.type == "state_transition") | {from_state, to_state, timestamp}' timeline.json
+
+   # Extract tool usage statistics
+   jq '.statistics.tool_uses' timeline.json
+   ```
+
+3. **Analyze Execution Time Opportunities**
+   - Query timeline for sequential Task calls with same timestamp range
+   - Identify opportunities to parallelize independent operations
+   - Find redundant verifications (duplicate git status checks, etc.)
+   - Detect late error detection patterns
+
+4. **Analyze Token Usage Opportunities**
+   - Query timeline for tool results with large content
+   - Find duplicate Read operations on same files
+   - Identify verbose tool outputs that could be summarized
    - Detect late protocol file loading
 
-4. **Analyze Quality Opportunities**
-   - Identify missing validation steps
-   - Find incomplete error handling
-   - Detect unclear protocol guidance that causes confusion
+5. **Analyze Quality Opportunities**
+   - Query timeline for missing validation steps before major operations
+   - Find incomplete error handling patterns
+   - Detect unclear protocol sequences (multiple retries, confusion)
 
-5. **Generate Recommendations**
+6. **Generate Recommendations**
    - For EACH opportunity, recommend specific protocol changes
    - Include documentation updates, examples, or new procedures
    - Quantify impact (token savings, time reduction, quality improvement)

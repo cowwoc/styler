@@ -11,8 +11,9 @@ trap 'echo "ERROR in pre-tool-use-implementation-guard.sh at line $LINENO: Comma
 TOOL_INPUT=$(cat)
 
 # Extract tool name and target file path
-TOOL_NAME=$(echo "$TOOL_INPUT" | jq -r '.tool // empty')
-TARGET_PATH=$(echo "$TOOL_INPUT" | jq -r '.parameters.file_path // empty')
+# Note: Claude Code uses .tool_name and .tool_input, not .tool and .parameters
+TOOL_NAME=$(echo "$TOOL_INPUT" | jq -r '.tool_name // empty')
+TARGET_PATH=$(echo "$TOOL_INPUT" | jq -r '.tool_input.file_path // empty')
 
 # Only guard Write and Edit tools
 if [[ "$TOOL_NAME" != "Write" && "$TOOL_NAME" != "Edit" ]]; then
@@ -34,9 +35,42 @@ if [[ -z "$TASK_NAME" ]]; then
     exit 0
 fi
 
+# Check if target is a source file first
+if [[ -z "$TARGET_PATH" ]]; then
+    exit 0
+fi
+
+# Source file extensions to guard
+if [[ ! "$TARGET_PATH" =~ \.(java|ts|py|js|jsx|tsx|cpp|c|h|hpp|rs|go)$ ]]; then
+    exit 0
+fi
+
 # Read task state
 TASK_JSON="/workspace/tasks/$TASK_NAME/task.json"
 if [[ ! -f "$TASK_JSON" ]]; then
+    # CRITICAL: Source file creation attempted without task.json
+    # This prevents the violation that occurred in the audit
+    if [[ "$TARGET_PATH" == /workspace/tasks/$TASK_NAME/code/* ]]; then
+        echo "❌ PROTOCOL VIOLATION: Cannot create source files without task.json" >&2
+        echo "" >&2
+        echo "Tool: $TOOL_NAME" >&2
+        echo "Target: $TARGET_PATH" >&2
+        echo "Task: $TASK_NAME" >&2
+        echo "" >&2
+        echo "REQUIRED FIRST STEP: Create task.json with initial state before any source file work." >&2
+        echo "" >&2
+        echo "Example:" >&2
+        echo "  cat > /workspace/tasks/$TASK_NAME/task.json <<EOF" >&2
+        echo "  {" >&2
+        echo "    \"task_name\": \"$TASK_NAME\"," >&2
+        echo "    \"state\": \"IMPLEMENTATION\"," >&2
+        echo "    \"created\": \"\$(date -Iseconds)\"" >&2
+        echo "  }" >&2
+        echo "  EOF" >&2
+        echo "" >&2
+        echo "See: /workspace/main/docs/project/task-protocol-core.md § State Management" >&2
+        exit 2
+    fi
     exit 0
 fi
 
@@ -47,12 +81,7 @@ if [[ "$STATE" != "IMPLEMENTATION" ]]; then
     exit 0
 fi
 
-# Check if target is a source file
-if [[ -z "$TARGET_PATH" ]]; then
-    exit 0
-fi
-
-# Source file extensions to guard
+# Check if source file in task worktree (already confirmed above)
 if [[ "$TARGET_PATH" =~ \.(java|ts|py|js|jsx|tsx|cpp|c|h|hpp|rs|go)$ ]]; then
     # Check if this is an agent worktree path (should be allowed)
     # Use regex pattern matching instead of glob
@@ -73,7 +102,7 @@ if [[ "$TARGET_PATH" =~ \.(java|ts|py|js|jsx|tsx|cpp|c|h|hpp|rs|go)$ ]]; then
         echo "Stakeholder agents create files in agent worktrees, then merge to task branch." >&2
         echo "" >&2
         echo "See: /workspace/main/CLAUDE.md § CRITICAL PROTOCOL VIOLATIONS #1" >&2
-        exit 1
+        exit 2
     fi
 fi
 
