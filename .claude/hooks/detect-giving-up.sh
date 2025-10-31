@@ -13,6 +13,15 @@ echo "[HOOK DEBUG] detect-giving-up.sh START" >&2
 # Detects phrases indicating abandonment of complex problems
 # Triggers: UserPromptSubmit event
 # Action: Inject persistence reminder if patterns detected
+#
+# PATTERN EVOLUTION HISTORY:
+# - Initial patterns: Explicit giving-up phrases ("too hard", "let's skip")
+# - 2025-10-30: Added rationalization patterns after main agent attempted to remove
+#   formatter API dependencies using "pragmatic decision" and "time constraints"
+#   language to disguise giving up on JPMS compilation debugging
+# - 2025-10-30: Added compilation abandonment detection after misdiagnosing
+#   "empty JAR" issue as "complex JPMS problems" instead of systematically
+#   debugging why security/config modules weren't compiling
 
 # Read JSON data from stdin with timeout to prevent hanging
 JSON_INPUT=""
@@ -152,6 +161,26 @@ detect_giving_up_pattern()
 	[[ "$text_lower" == *"given the large number"*"let me continue with the next"* ]] && return 0
 	[[ "$text_lower" == *"given the volume"*"i'll process them"* ]] && return 0
 
+	# Rationalization patterns (disguised giving-up using "pragmatic" language)
+	# Added 2025-10-30 after main agent used these phrases to justify removing
+	# formatter dependencies instead of debugging compilation issues
+	[[ "$text_lower" == *"due to the complex"*"i need to make a pragmatic decision"* ]] && return 0
+	[[ "$text_lower" == *"considering the time constraints"*"i need to"* ]] && return 0
+	[[ "$text_lower" == *"considering the time constraints"*"i'll"* ]] && return 0
+	[[ "$text_lower" == *"i'll simplify"*"to remove the problematic"* ]] && return 0
+	[[ "$text_lower" == *"let me take a different approach"*"remove"* ]] && return 0
+	[[ "$text_lower" == *"pragmatic decision"*"simplify"* ]] && return 0
+	# CLAUDE.md explicitly prohibits these patterns:
+	[[ "$text_lower" == *"due to complexity and token usage"* ]] && return 0
+	[[ "$text_lower" == *"given token constraints"*"i'll implement a basic"* ]] && return 0
+	[[ "$text_lower" == *"i'll create a solid mvp"* ]] && return 0
+
+	# Framing shortcuts as architectural decisions to avoid debugging
+	[[ "$text_lower" == *"as an architectural choice"*"remove"* ]] && return 0
+	[[ "$text_lower" == *"architectural decision"*"without"* ]] && return 0
+	[[ "$text_lower" == *"simplify the api"*"remove"* ]] && return 0
+	[[ "$text_lower" == *"redesign to avoid"* ]] && return 0
+
 	return 1  # No pattern detected
 }
 
@@ -188,6 +217,39 @@ detect_code_disabling_pattern()
 	[[ "$text_lower" == *"passes without"*"skip"* ]] && return 0
 
 	return 1  # No code disabling pattern detected
+}
+
+# Detect compilation/build debugging abandonment patterns
+# Added 2025-10-30 after main agent encountered "empty JAR" issue (mvn compile
+# succeeded but produced no .class files) and attempted to remove dependencies
+# instead of investigating why files weren't compiling
+detect_compilation_abandonment()
+{
+	local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+
+	# Pattern: Giving up on compilation errors by removing dependencies
+	# Context: Agent should debug why compilation fails, not remove what fails
+	[[ "$text_lower" == *"compilation error"*"remove"* ]] && return 0
+	[[ "$text_lower" == *"module not found"*"remove"* ]] && return 0
+	[[ "$text_lower" == *"build fails"*"simplify"* ]] && return 0
+	[[ "$text_lower" == *"can't find module"*"remove dependency"* ]] && return 0
+
+	# Pattern: Misdiagnosing as "complex JPMS issues" to justify avoidance
+	# Reality: Often simple missing module-info.java or compilation error
+	[[ "$text_lower" == *"complex jpms"*"simplify"* ]] && return 0
+	[[ "$text_lower" == *"jpms dependency issues"*"remove"* ]] && return 0
+	[[ "$text_lower" == *"module path"*"too complex"* ]] && return 0
+
+	# Pattern: Empty JARs or missing classes but not investigating why
+	# Should check: compilation errors, source files exist, javac works manually
+	[[ "$text_lower" == *"empty jar"*"different approach"* ]] && return 0
+	[[ "$text_lower" == *"no classes compiled"*"simplify"* ]] && return 0
+	[[ "$text_lower" == *"jar contains no"*"remove"* ]] && return 0
+
+	# Pattern: Build succeeds but produces no output - should investigate, not avoid
+	[[ "$text_lower" == *"build success"*"but"*"empty"* ]] && return 0
+
+	return 1  # No compilation abandonment detected
 }
 
 # Detect mid-protocol abandonment patterns
@@ -330,6 +392,78 @@ CORRECT APPROACH:
 6. Verify fix with tests
 
 Reference: CLAUDE.md "LONG-TERM SOLUTION PERSISTENCE" and "GIVING UP DETECTION PATTERNS"
+</system-reminder>
+REMINDER
+fi
+
+# Detect compilation abandonment and inject systematic debugging requirement
+if detect_compilation_abandonment "$WORKING_TEXT"; then
+	cat <<'REMINDER'
+<system-reminder>
+🚨 COMPILATION DEBUGGING ABANDONMENT DETECTED - SYSTEMATIC APPROACH REQUIRED
+
+You appear to be avoiding compilation/build problems by removing dependencies or "simplifying" instead of debugging.
+
+CRITICAL VIOLATION: When build/compilation fails, you MUST debug systematically to find and fix the root cause.
+
+PROHIBITED PATTERNS:
+❌ "Due to complex JPMS issues, I'll simplify by removing the dependency"
+❌ "Module not found error - let me remove this requirement"
+❌ "Empty JAR produced - I'll take a different approach"
+❌ "Build succeeds but no classes - I'll redesign to avoid this"
+❌ "JPMS module path too complex - I'll simplify the API"
+
+MANDATORY SYSTEMATIC DEBUGGING APPROACH:
+
+**Step 1: Identify Exact Error**
+✅ Read full error message carefully
+✅ Note exact file/line where error occurs
+✅ Distinguish between: missing dependency, wrong version, compilation error, packaging issue
+
+**Step 2: Investigate Root Cause**
+For "module not found":
+✅ Check if module-info.java exists in dependency
+✅ Verify module name matches between requires and module declaration
+✅ Check if JAR contains module-info.class: `jar tf path/to/file.jar | grep module-info`
+✅ Verify dependency is in Maven reactor or installed: `mvn dependency:tree`
+
+For "empty JAR" (build success but no .class files):
+✅ Check for compilation errors: `mvn compile -X 2>&1 | grep -i error`
+✅ Look for "nothing to compile" messages
+✅ Verify source files exist: `find module/src -name "*.java"`
+✅ Check target/classes directory: `ls -la module/target/classes/`
+✅ Try manual javac to see actual errors: `javac -d /tmp module/src/main/java/File.java`
+
+For JPMS issues:
+✅ Verify transitive dependencies have module descriptors
+✅ Check --add-modules or --add-reads might be needed
+✅ Test compilation with explicit module-path
+✅ Check for split packages across modules
+
+**Step 3: Fix Root Cause**
+✅ Add missing module-info.java files
+✅ Fix module name mismatches
+✅ Resolve actual compilation errors in source
+✅ Add missing dependencies to POM
+✅ Fix transitive JPMS requirements
+
+**Step 4: Verify Fix**
+✅ mvn clean compile succeeds
+✅ JAR contains expected .class files
+✅ Module dependencies resolved correctly
+
+NEVER ACCEPTABLE:
+❌ Removing dependencies because "it's too hard to make them work"
+❌ Simplifying API because "JPMS is complex"
+❌ Redesigning to avoid debugging
+❌ Moving to "later" without fixing
+
+ACCEPTABLE ONLY WITH EVIDENCE:
+✅ "After investigation, discovered dependency X genuinely isn't needed (evidence: ...)"
+✅ "Consulted stakeholder Y who confirmed this dependency should be removed"
+✅ "Root cause is external API unavailable - documented blocker"
+
+Reference: CLAUDE.md "LONG-TERM SOLUTION PERSISTENCE" - Exhaust reasonable effort before downgrading
 </system-reminder>
 REMINDER
 fi

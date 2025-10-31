@@ -521,6 +521,39 @@ cd /workspace/tasks/{task-name}/code
 ./mvnw compile                         # Architecture/build reviewers
 ```
 
+**Report Format Best Practices**:
+
+Reviewer reports should be **concise and structured** to minimize token usage:
+
+✅ **RECOMMENDED** (Concise):
+```markdown
+## Missing Components
+- File: `FormattingRule.java`
+- Add: `priority()` method returning `int`
+- Rationale: Support rule ordering
+- Reference: See style-guide.md § Rule Priority
+```
+
+❌ **AVOID** (Verbose):
+```markdown
+## Missing Components
+
+The FormattingRule interface needs a priority method. Here's the complete interface:
+
+\```java
+// Full 40-line interface definition with all existing methods...
+public interface FormattingRule {
+  // ... extensive code block ...
+}
+\```
+```
+
+**Guidelines**:
+- Use file references instead of full code blocks
+- Include code snippets ONLY for highlighting specific issues (max 5-10 lines)
+- Prefer structured lists over prose explanations
+- Updaters will read full files anyway - redundant code blocks waste tokens
+
 ## File Locations {#file-locations}
 
 ### Input Files (Where to Read) {#input-files-where-to-read}
@@ -602,6 +635,26 @@ Full `./mvnw verify` is slow (30-60 seconds). Validate incrementally during deve
 ./mvnw verify
 ```
 
+**Build Optimization**: Use incremental builds to save time:
+
+✅ **RECOMMENDED** (Incremental - ~15 seconds):
+```bash
+./mvnw verify   # Uses cached compilation for unchanged files
+```
+
+❌ **AVOID** (Full rebuild - ~45 seconds):
+```bash
+./mvnw clean verify   # Recompiles everything unnecessarily
+```
+
+**When to use `clean`**:
+- Previous build had compilation errors
+- Dependency changes (pom.xml modified)
+- Build state corruption suspected
+- Fresh verification needed after major changes
+
+**Default**: Use `./mvnw verify` for normal validation. Maven's incremental compilation is reliable.
+
 ### Pattern: Reading Reviewer Feedback {#pattern-reading-reviewer-feedback}
 
 **Updater agents** must read reviewer feedback after REJECTED decision:
@@ -678,10 +731,11 @@ Before starting work:
 During implementation:
 - [ ] Implement in YOUR worktree
 - [ ] Validate incrementally during development
-- [ ] Run `./mvnw verify` before merging
+- [ ] **MANDATORY**: Run clean build before completion: `cd /workspace/tasks/{task}/agents/{agent}/code && ../../../../../../main/mvnw clean verify`
+- [ ] Verify exit code 0 (build passes)
 
 When merging:
-- [ ] Ensure validation passes in YOUR worktree
+- [ ] Ensure clean build passes in YOUR worktree (see above)
 - [ ] Merge to task branch at `/workspace/tasks/{task}/code`
 - [ ] Update status.json with COMPLETE and last_merge_sha
 - [ ] Verify task branch still passes validation after merge

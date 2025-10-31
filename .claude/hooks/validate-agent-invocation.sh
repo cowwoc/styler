@@ -184,7 +184,7 @@ See: /workspace/main/docs/project/task-protocol-core.md § Agent Invocation Rule
 			}
 		}'
 
-	exit 1  # Block the tool invocation
+	exit 2  # Block the tool invocation
 fi
 
 log_hook_success "validate-agent-invocation" "PreToolUse" "Agent ${AGENT_NAME} allowed in ${CURRENT_STATE} state"

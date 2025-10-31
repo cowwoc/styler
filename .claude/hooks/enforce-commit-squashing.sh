@@ -161,7 +161,7 @@ See:
 			}
 		}'
 
-	exit 1  # Block the command
+	exit 2  # Block the command
 fi
 
 # Exactly 1 commit or 0 commits - allow merge
