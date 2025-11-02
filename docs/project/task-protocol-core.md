@@ -144,7 +144,7 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
   skipped.**
 -  **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns (ONLY
   when resolution effort > 2x task scope AND agent consensus permits deferral - escalate based on agent tiers,
-  architecture-reviewer makes final decision)
+  architect makes final decision)
 -  **COMPLETE**: Work merged to main branch with atomic documentation update (task implementation + todo.md +
   changelog.md in single commit), dependent tasks unblocked (only after user approves changes)
 - **CLEANUP**: All agent worktrees removed, task worktree removed, locks released, temporary files cleaned
@@ -433,7 +433,7 @@ after SYNTHESIS and CHANGE REVIEW after REVIEW)
 
 **Risk Level**: Classification of file modification impact (HIGH/MEDIUM/LOW) determining workflow variant
 
-**Agent**: Stakeholder specialist (architecture-reviewer, style-reviewer, etc.) providing domain-specific
+**Agent**: Stakeholder specialist (architect, style, etc.) providing domain-specific
 validation
 
 **Worktree**: Git worktree providing isolated workspace for task development without affecting main branch
@@ -450,18 +450,18 @@ scope
 ### Agent Classification {#agent-classification}
 
 **STAKEHOLDER AGENTS** (for task implementation):
-- `architecture-reviewer`, `architecture-updater`
-- `style-reviewer`, `style-updater`
-- `quality-reviewer`, `quality-updater`
-- `test-reviewer`, `test-updater`
-- `build-reviewer`, `build-updater`
-- `security-reviewer`, `security-updater`
-- `performance-reviewer`, `performance-updater`
-- `usability-reviewer`, `usability-updater`
+- `architect`, `architect`
+- `style`, `style`
+- `quality`, `quality`
+- `test`, `test`
+- `build`, `build`
+- `security`, `security`
+- `performance`, `performance`
+- `usability`, `usability`
 
 **NON-STAKEHOLDER AGENTS** (excluded from task classification):
-- `config-reviewer`, `config-updater` - Claude Code configuration management only
-- `process-recorder`, `process-compliance-reviewer`, `process-efficiency-reviewer` - Audit pipeline only
+- `config`, `config` - Claude Code configuration management only
+- `parse-conversation-timeline skill`, `audit-protocol-compliance skill`, `audit-protocol-efficiency skill` - Audit pipeline only
 
 **CRITICAL RULE**: When performing CLASSIFIED state agent selection, ONLY select from stakeholder agents. NEVER include config-* or process-* agents in task worktree agent selection. These agents serve meta-purposes (configuration management, process auditing) and are NOT involved in task implementation.
 
@@ -481,9 +481,9 @@ scope
 - `docs/project/task-protocol.md` (protocol configuration)
 - `docs/project/critical-rules.md` (safety rules)
 
-**Required Agents**: architecture-reviewer, style-reviewer, quality-reviewer, build-reviewer
-**Additional Agents**: security-reviewer (if security-related), performance-reviewer (if performance-critical),
-test-reviewer (if new functionality), usability-reviewer (if user-facing)
+**Required Agents**: architect, style, quality, build
+**Additional Agents**: security (if security-related), performance (if performance-critical),
+test (if new functionality), usability (if user-facing)
 
 ### MEDIUM-RISK FILES (Domain Validation Required) {#medium-risk-files-domain-validation-required}
 **Patterns:**
@@ -492,9 +492,9 @@ test-reviewer (if new functionality), usability-reviewer (if user-facing)
 - `**/resources/**/*.properties` (configuration)
 - `**/*Test.java`, `**/*Tests.java` (test classes)
 
-**Required Agents**: architecture-reviewer, quality-reviewer
-**Additional Agents**: style-reviewer (if style files), security-reviewer (if config files),
-performance-reviewer (if benchmarks)
+**Required Agents**: architect, quality
+**Additional Agents**: style (if style files), security (if config files),
+performance (if benchmarks)
 
 ### LOW-RISK FILES (Minimal Validation Required) {#low-risk-files-minimal-validation-required}
 **Patterns:**
@@ -543,11 +543,11 @@ COMPLETE → CLEANUP
 **States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW →
 COMPLETE → CLEANUP
 **Stakeholder Agents**: Based on change characteristics
-- Base: architecture-reviewer (always required)
-- +style-reviewer: If style/formatting files modified
-- +security-reviewer: If any configuration or resource files modified
-- +performance-reviewer: If test performance or benchmarks affected
-- +quality-reviewer: Always included for code quality validation
+- Base: architect (always required)
+- +style: If style/formatting files modified
+- +security: If any configuration or resource files modified
+- +performance: If test performance or benchmarks affected
+- +quality: Always included for code quality validation
 **Isolation**: Worktree isolation for multi-file changes
 **Review**: Domain-appropriate stakeholder validation
 **Use Case**: Test files, style documentation, configuration files
@@ -610,89 +610,89 @@ def determine_state_path(risk_level, change_type):
 
 ### Comprehensive Agent Selection Framework {#comprehensive-agent-selection-framework}
 **Input**: Task description and file modification patterns
-**Available Agents**: architecture-reviewer, usability-reviewer, performance-reviewer, security-reviewer,
-style-reviewer, quality-reviewer, test-reviewer, build-reviewer
+**Available Agents**: architect, usability, performance, security,
+style, quality, test, build
 
 **Processing Logic:**
 
 **🚨 CORE AGENTS (Always Required):**
-- **architecture-reviewer**: MANDATORY for ALL file modification tasks (provides implementation requirements)
+- **architect**: MANDATORY for ALL file modification tasks (provides implementation requirements)
 
 **🔍 FUNCTIONAL AGENTS (Code Implementation):**
-- IF NEW CODE created: add style-reviewer, quality-reviewer, build-reviewer
-- IF IMPLEMENTATION (not just config): add test-reviewer
-- IF MAJOR FEATURES completed: add usability-reviewer (MANDATORY after completion)
+- IF NEW CODE created: add style, quality, build
+- IF IMPLEMENTATION (not just config): add test
+- IF MAJOR FEATURES completed: add usability (MANDATORY after completion)
 
 **🛡️ SECURITY AGENTS (Actual Security Concerns):**
-- IF AUTHENTICATION/AUTHORIZATION changes: add security-reviewer
-- IF EXTERNAL API/DATA integration: add security-reviewer
-- IF ENCRYPTION/CRYPTOGRAPHIC operations: add security-reviewer
-- IF INPUT VALIDATION/SANITIZATION: add security-reviewer
+- IF AUTHENTICATION/AUTHORIZATION changes: add security
+- IF EXTERNAL API/DATA integration: add security
+- IF ENCRYPTION/CRYPTOGRAPHIC operations: add security
+- IF INPUT VALIDATION/SANITIZATION: add security
 
 **⚡ PERFORMANCE AGENTS (Performance Critical):**
-- IF ALGORITHM optimization tasks: add performance-reviewer
-- IF DATABASE/QUERY optimization: add performance-reviewer
-- IF MEMORY/CPU intensive operations: add performance-reviewer
+- IF ALGORITHM optimization tasks: add performance
+- IF DATABASE/QUERY optimization: add performance
+- IF MEMORY/CPU intensive operations: add performance
 
 **🔧 FORMATTING AGENTS (Code Quality):**
-- IF PARSER LOGIC modified: add performance-reviewer, security-reviewer
-- IF AST TRANSFORMATION changed: add quality-reviewer, test-reviewer
-- IF FORMATTING RULES affected: add style-reviewer
+- IF PARSER LOGIC modified: add performance, security
+- IF AST TRANSFORMATION changed: add quality, test
+- IF FORMATTING RULES affected: add style
 
 **❌ AGENTS NOT NEEDED FOR SIMPLE OPERATIONS:**
-- Maven module renames: NO performance-reviewer
-- Configuration file updates: NO security-reviewer unless changing auth
-- Directory/file renames: NO performance-reviewer
-- Documentation updates: Usually only architecture-reviewer
+- Maven module renames: NO performance
+- Configuration file updates: NO security unless changing auth
+- Directory/file renames: NO performance
+- Documentation updates: Usually only architect
 
 **📊 ANALYSIS AGENTS (Research/Study Tasks):**
-- IF ARCHITECTURAL ANALYSIS: add architecture-reviewer
-- IF PERFORMANCE ANALYSIS: add performance-reviewer
-- IF UX/INTERFACE ANALYSIS: add usability-reviewer
-- IF SECURITY ANALYSIS: add security-reviewer
-- IF CODE QUALITY REVIEW: add quality-reviewer
-- IF PARSER/FORMATTER PERFORMANCE ANALYSIS: add performance-reviewer
+- IF ARCHITECTURAL ANALYSIS: add architect
+- IF PERFORMANCE ANALYSIS: add performance
+- IF UX/INTERFACE ANALYSIS: add usability
+- IF SECURITY ANALYSIS: add security
+- IF CODE QUALITY REVIEW: add quality
+- IF PARSER/FORMATTER PERFORMANCE ANALYSIS: add performance
 
 **Agent Selection Verification Checklist:**
-- [ ] NEW CODE task → style-reviewer included?
-- [ ] Source files created/modified → build-reviewer included?
-- [ ] Performance-critical code → performance-reviewer included?
-- [ ] Security-sensitive features → security-reviewer included?
-- [ ] User-facing interfaces → usability-reviewer included?
-- [ ] Post-implementation refactoring → quality-reviewer included?
-- [ ] AST parsing/code formatting → performance-reviewer included?
+- [ ] NEW CODE task → style included?
+- [ ] Source files created/modified → build included?
+- [ ] Performance-critical code → performance included?
+- [ ] Security-sensitive features → security included?
+- [ ] User-facing interfaces → usability included?
+- [ ] Post-implementation refactoring → quality included?
+- [ ] AST parsing/code formatting → performance included?
 
 **Special Agent Usage Patterns:**
--  **style-reviewer**: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and
+-  **style**: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and
   language-specific patterns)
--  **build-reviewer**: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through build
+-  **build**: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through build
   system
--  **build-reviewer**: Use alongside style-reviewer to ensure comprehensive validation (automated + manual
+-  **build**: Use alongside style to ensure comprehensive validation (automated + manual
   rules)
-- **quality-reviewer**: Post-implementation refactoring and best practices enforcement
-- **test-reviewer**: Business logic validation and comprehensive test creation
-- **security-reviewer**: Data handling and storage compliance review
-- **performance-reviewer**: Algorithmic efficiency and resource optimization
-- **usability-reviewer**: User experience design and interface evaluation
-- **architecture-reviewer**: System architecture and implementation guidance
+- **quality**: Post-implementation refactoring and best practices enforcement
+- **test**: Business logic validation and comprehensive test creation
+- **security**: Data handling and storage compliance review
+- **performance**: Algorithmic efficiency and resource optimization
+- **usability**: User experience design and interface evaluation
+- **architect**: System architecture and implementation guidance
 
 ## COMPLETE STYLE VALIDATION FRAMEWORK {#complete-style-validation-framework}
 
 ### Three-Component Style Validation {#three-component-style-validation}
 **MANDATORY PROCESS**: When style validation is required, ALL THREE components must pass:
 
-1. **Automated Linters** (via build-reviewer):
+1. **Automated Linters** (via build):
    - `checkstyle`: Java coding conventions and formatting
    - `PMD`: Code quality and best practices
    - `ESLint`: JavaScript/TypeScript style (if applicable)
 
-2. **Manual Style Rules** (via style-reviewer):
+2. **Manual Style Rules** (via style):
    - Apply ALL detection patterns from `docs/code-style/*-claude.md`
    - Java-specific patterns (naming, structure, comments)
    - Common patterns (cross-language consistency)
    - Language-specific patterns as applicable
 
-3. **Build Integration** (via build-reviewer):
+3. **Build Integration** (via build):
    - Automated fixing when conflicts detected (LineLength vs UnderutilizedLines)
    - Use `checkstyle/fixers` module for AST-based consolidate-then-split strategy
    - Comprehensive testing validates fixing logic before application
@@ -710,7 +710,7 @@ validate_complete_style_compliance() {
     ./mvnw checkstyle:check || return 1
     ./mvnw pmd:check || return 1
 
-    # Component 2: Manual style rules via style-reviewer agent
+    # Component 2: Manual style rules via style agent
     echo "Validating manual style rules..."
     invoke_style_auditor_with_manual_detection_patterns || return 1
 
@@ -792,7 +792,7 @@ Detect and prevent protocol violations through systematic, automated checking af
 
 **Pipeline Architecture**:
 ```
-process-recorder → process-compliance-reviewer → efficiency-optimizer → documentation-auditor
+parse-conversation-timeline skill → audit-protocol-compliance skill → efficiency-optimizer → documentation-auditor
     (facts)           (enforcement)        (performance)        (root causes)
 ```
 
@@ -808,12 +808,12 @@ process-recorder → process-compliance-reviewer → efficiency-optimizer → do
 
 ```bash
 # Step 1: Collect session facts
-process_recorder_output=$(invoke_agent process-recorder \
+process_recorder_output=$(invoke_agent parse-conversation-timeline skill \
   --task-name "${TASK_NAME}" \
   --session-id "${SESSION_ID}")
 
 # Step 2: Check protocol compliance
-protocol_audit_result=$(invoke_agent process-compliance-reviewer \
+protocol_audit_result=$(invoke_agent audit-protocol-compliance skill \
   --execution-trace "${process_recorder_output}")
 
 # Step 3: Handle violations
@@ -862,16 +862,16 @@ fi
 **Critical Violation Response Pattern**:
 
 ```markdown
-IF (process-compliance-reviewer returns FAILED):
+IF (audit-protocol-compliance skill returns FAILED):
   1. **STOP immediately** - Do not proceed to next state
-  2. **IDENTIFY violation** - Read process-compliance-reviewer output for specific check IDs
+  2. **IDENTIFY violation** - Read audit-protocol-compliance skill output for specific check IDs
   3. **APPLY fix** - Based on violation type:
      - Check 0.2 (main agent implementation): Revert changes, re-delegate to agents
      - State sequence violation: Return to skipped state
      - Missing artifacts: Create required files/reports
      - Lock state mismatch: Update lock file to match actual state
   4. **RE-RUN protocol audit** - Verify fix resolved violation
-  5. **REPEAT until PASSED** - Cannot proceed until process-compliance-reviewer returns PASSED
+  5. **REPEAT until PASSED** - Cannot proceed until audit-protocol-compliance skill returns PASSED
   6. **ONLY THEN proceed** - After PASSED verdict, continue to next state
 ```
 
@@ -889,7 +889,7 @@ IF (process-compliance-reviewer returns FAILED):
 2. **MANDATORY PROTOCOL AUDIT** before launching agents:
    ```bash
    # Audit current state
-   process-compliance-reviewer --check-state-transition "SYNTHESIS→IMPLEMENTATION"
+   audit-protocol-compliance skill --check-state-transition "SYNTHESIS→IMPLEMENTATION"
    ```
 
 3. **IF AUDIT PASSES**:
@@ -899,14 +899,14 @@ IF (process-compliance-reviewer returns FAILED):
 
 4. **IF AUDIT FAILS**:
    - STOP - do not launch agents
-   - Fix violations identified by process-compliance-reviewer
+   - Fix violations identified by audit-protocol-compliance skill
    - Re-run audit
    - Only proceed after PASSED verdict
 
 5. **After all agents report COMPLETE**:
    - **MANDATORY PROTOCOL AUDIT** before transitioning to VALIDATION:
      ```bash
-     process-compliance-reviewer --check-implementation-complete
+     audit-protocol-compliance skill --check-implementation-complete
      ```
    - Verify main agent did not create source files in task worktree
    - Verify all agents merged to task branch
@@ -956,7 +956,7 @@ automatic invocation by outputting imperative instructions that the main agent a
 - "🤖 AUTOMATIC EXECUTION SEQUENCE (DO NOT WAIT FOR USER INPUT)"
 - "Main agent: Execute this audit pipeline AUTOMATICALLY"
 - "🤖 AUTONOMOUS EXECUTION: These steps run AUTOMATICALLY without waiting for user"
-- "STEP 1 (AUTOMATIC): Invoke process-recorder agent"
+- "STEP 1 (AUTOMATIC): Invoke parse-conversation-timeline skill agent"
 - "STEP 3b (IF FAILED): Automatically invoke documentation-auditor"
 
 **This is NOT manual invocation** - the imperative language in hook output makes it clear these are AUTOMATIC
@@ -972,13 +972,13 @@ MANDATORY ACTIONS that the main agent executes immediately.
    → Hook creates audit-pending.flag
    → Hook BLOCKS transition (exit 1)
    → Main agent reads hook output
-   → Main agent AUTOMATICALLY invokes process-recorder
-   → Main agent AUTOMATICALLY invokes process-compliance-reviewer
-   → IF process-compliance-reviewer returns FAILED:
+   → Main agent AUTOMATICALLY invokes parse-conversation-timeline skill
+   → Main agent AUTOMATICALLY invokes audit-protocol-compliance skill
+   → IF audit-protocol-compliance skill returns FAILED:
       → Main agent AUTOMATICALLY invokes documentation-auditor
       → Main agent fixes violations per documentation-auditor guidance
-      → Main agent re-runs audit (return to process-recorder step)
-   → IF process-compliance-reviewer returns PASSED:
+      → Main agent re-runs audit (return to parse-conversation-timeline skill step)
+   → IF audit-protocol-compliance skill returns PASSED:
       → Main agent creates audit-passed.flag
       → Main agent retries state transition (now succeeds)
 5. IF flag exists:
@@ -1053,7 +1053,7 @@ User runs audit while agents are gathering requirements
 This is the most complex interaction pattern - see "Agent Invocation Interruption Handling" section for complete details.
 
 Summary:
-1. Audit executes full pipeline (process-recorder → process-compliance-reviewer → efficiency-optimizer → documentation-auditor)
+1. Audit executes full pipeline (parse-conversation-timeline skill → audit-protocol-compliance skill → efficiency-optimizer → documentation-auditor)
 2. State remains REQUIREMENTS throughout audit
 3. After audit: Check agent completion status
 4. Resume agent invocations:
@@ -1785,16 +1785,16 @@ fi
 
 ✅ **PERMITTED Scenarios**:
 1. **During REQUIREMENTS**: Initial requirements reveal need for additional domain expertise
-   - Example: Security requirements reveal need for security-reviewer (if not initially selected)
-   - Example: Performance constraints discovered, need performance-reviewer
+   - Example: Security requirements reveal need for security (if not initially selected)
+   - Example: Performance constraints discovered, need performance
 
 2. **During SYNTHESIS**: Requirements synthesis identifies gaps in domain coverage
-   - Example: Agent conflicts need additional tier-1 authority (architecture-reviewer)
-   - Example: Complex integration needs usability-reviewer input
+   - Example: Agent conflicts need additional tier-1 authority (architect)
+   - Example: Complex integration needs usability input
 
 3. **During IMPLEMENTATION**: Implementation complexity exceeds initial agent capabilities
-   - Example: Realize need for test-reviewer for complex business logic
-   - Example: Build integration issues need build-reviewer expertise
+   - Example: Realize need for test for complex business logic
+   - Example: Build integration issues need build expertise
 
 ❌ **PROHIBITED Scenarios**:
 1. **During VALIDATION/REVIEW**: Too late - implementation complete, adding agents is rework
@@ -1812,16 +1812,16 @@ Document why additional agent is needed:
 - What evidence justifies adding them now?
 
 Example:
-"During REQUIREMENTS, security-reviewer identified authentication requirements.
+"During REQUIREMENTS, security identified authentication requirements.
  Initial risk assessment classified task as MEDIUM-RISK (test files only),
  but authentication features require HIGH-RISK security validation.
- Adding security-reviewer to requirements gathering."
+ Adding security to requirements gathering."
 ```
 
 **Step 2: Create Agent Worktree**
 ```bash
 TASK_NAME="your-task-name"
-NEW_AGENT="security-reviewer"
+NEW_AGENT="security"
 TASK_DIR="/workspace/tasks/${TASK_NAME}"
 
 # Create agent worktree
@@ -1886,14 +1886,14 @@ The catch-up process depends on when the agent is added:
   "task_name": "...",
   "state": "REQUIREMENTS",
   "required_agents": [
-    "architecture-reviewer",
-    "quality-reviewer",
-    "style-reviewer",
-    "security-reviewer"  // <- Newly added
+    "architect",
+    "quality",
+    "style",
+    "security"  // <- Newly added
   ],
   "agent_additions": [
     {
-      "agent": "security-reviewer",
+      "agent": "security",
       "added_at_state": "REQUIREMENTS",
       "timestamp": "2025-10-18T14:30:00Z",
       "justification": "Authentication requirements discovered during requirements gathering"
@@ -1932,19 +1932,19 @@ The catch-up process depends on when the agent is added:
 
 ```markdown
 Scenario: Task classified as MEDIUM-RISK (test file modifications).
-During REQUIREMENTS, architecture-reviewer identifies authentication logic in tests.
+During REQUIREMENTS, architect identifies authentication logic in tests.
 
 Decision:
 - Authentication = security concern
 - Original classification missed security implications
-- security-reviewer needed for requirements gathering
+- security needed for requirements gathering
 
 Process:
 1. Document justification: "Authentication logic requires security validation"
-2. Create security-reviewer worktree
-3. Update lock file: required_agents += ["security-reviewer"]
-4. Invoke security-reviewer with REQUIREMENTS mode
-5. Wait for security-reviewer requirements report
+2. Create security worktree
+3. Update lock file: required_agents += ["security"]
+4. Invoke security with REQUIREMENTS mode
+5. Wait for security requirements report
 6. Proceed to SYNTHESIS with 4 agents (was 3)
 
 Result:
@@ -1956,8 +1956,8 @@ Result:
 **Example: Attempting to Add Agent During REVIEW (PROHIBITED)**
 
 ```markdown
-Scenario: During REVIEW, test-reviewer rejects due to insufficient test coverage.
-Main agent considers adding additional test-reviewer agent.
+Scenario: During REVIEW, test rejects due to insufficient test coverage.
+Main agent considers adding additional test agent.
 
 Decision: PROHIBITED
 
@@ -1965,12 +1965,12 @@ Reason:
 - REVIEW state means implementation complete
 - Cannot add agents to bypass rejection
 - Proper response: Return to IMPLEMENTATION, improve test coverage
-- test-reviewer re-reviews improved tests in next REVIEW round
+- test re-reviews improved tests in next REVIEW round
 
 Correct Recovery:
 1. Do NOT add new agent
 2. Return to IMPLEMENTATION state
-3. Address test-reviewer's test coverage concerns
+3. Address test's test coverage concerns
 4. Re-run REVIEW with original agent set
 ```
 
@@ -2040,7 +2040,7 @@ pwd | grep -q "/workspace/tasks/{TASK_NAME}/code$" || {
 echo "✅ Directory verification PASSED: $(pwd)"
 
 # MANDATORY: Verify all agent worktrees exist
-for agent in architecture-reviewer quality-reviewer style-reviewer; do
+for agent in architect quality style; do
   [ -d "/workspace/tasks/{TASK_NAME}/agents/$agent/code" ] || {
     echo "❌ CRITICAL ERROR: Agent worktree missing: $agent"
     exit 1
@@ -2179,13 +2179,13 @@ Recovery:
 1. Answer user's question
 2. Verify lock state = "REQUIREMENTS"
 3. Check agent status:
-   - architecture-reviewer: COMPLETE (has requirements.md)
-   - quality-reviewer: COMPLETE (has requirements.md)
-   - style-reviewer: COMPLETE (has requirements.md)
-   - build-reviewer: NOT STARTED
-   - test-reviewer: NOT STARTED
-   - security-reviewer: NOT STARTED
-   - performance-reviewer: NOT STARTED
+   - architect: COMPLETE (has requirements.md)
+   - quality: COMPLETE (has requirements.md)
+   - style: COMPLETE (has requirements.md)
+   - build: NOT STARTED
+   - test: NOT STARTED
+   - security: NOT STARTED
+   - performance: NOT STARTED
 4. Action: Invoke 4 incomplete agents in parallel
 5. Wait for remaining agents to complete
 6. Proceed to SYNTHESIS after all 7 agents complete
@@ -2270,7 +2270,7 @@ verify_agent_completion() {
 
 # Usage: Verify all agents before SYNTHESIS transition
 ALL_COMPLETE=true
-for agent in architecture-reviewer quality-reviewer style-reviewer build-reviewer test-reviewer security-reviewer performance-reviewer; do
+for agent in architect quality style build test security performance; do
     if ! verify_agent_completion "${TASK_NAME}" "$agent"; then
         ALL_COMPLETE=false
     fi
@@ -2698,9 +2698,9 @@ If verification fails at any check:
 ```
 MANDATORY AFTER REQUIREMENTS completion:
 1. CONFLICT RESOLUTION: Identify competing requirements between domains
-   - Compare architecture-reviewer vs performance-reviewer requirements
-   - Resolve style-reviewer vs quality-reviewer conflicts
-   - Balance security-reviewer vs usability-reviewer trade-offs
+   - Compare architect vs performance requirements
+   - Resolve style vs quality conflicts
+   - Balance security vs usability trade-offs
 
 2. ARCHITECTURE PLANNING: Design approach satisfying all constraints
    - Document chosen architectural patterns
@@ -2708,9 +2708,9 @@ MANDATORY AFTER REQUIREMENTS completion:
    - Define interface contracts and data flows
 
 3. REQUIREMENT MAPPING: Document how each stakeholder requirement is addressed
-   - Map each architecture-reviewer requirement to implementation component
-   - Map each security-reviewer requirement to security control
-   - Map each performance-reviewer requirement to optimization strategy
+   - Map each architect requirement to implementation component
+   - Map each security requirement to security control
+   - Map each performance requirement to optimization strategy
 
 4. TRADE-OFF ANALYSIS: Record decisions and compromises
    - Document rejected alternatives and reasons
@@ -2922,21 +2922,21 @@ task execution.
   ],
   "agent_invocations": [
     {
-      "agent_name": "architecture-reviewer",
+      "agent_name": "architect",
       "agent_type": "reviewer",
       "working_dir": "/workspace/tasks/{task-name}/code/",
       "invocation_timestamp": "2025-10-19T10:05:00Z",
       "completion_timestamp": "2025-10-19T10:10:00Z",
-      "report_location": "/workspace/tasks/{task-name}/task-name-architecture-reviewer-requirements.md",
+      "report_location": "/workspace/tasks/{task-name}/task-name-architect-requirements.md",
       "status": "completed"
     }
   ],
   "tool_usage": [
     {
       "tool": "Task",
-      "agent_name": "architecture-updater",
+      "agent_name": "architect",
       "timestamp": "2025-10-19T10:15:00Z",
-      "working_dir": "/workspace/tasks/{task-name}/agents/architecture-updater/code/"
+      "working_dir": "/workspace/tasks/{task-name}/agents/architect/code/"
     },
     {
       "tool": "Edit",
@@ -2948,12 +2948,12 @@ task execution.
   "commits": [
     {
       "sha": "abc123def",
-      "agent": "architecture-updater",
+      "agent": "architect",
       "branch": "task-branch",
       "timestamp": "2025-10-19T10:18:00Z",
       "files_created": ["FormattingRule.java"],
       "files_modified": [],
-      "message": "[agent:architecture-updater] Add FormattingRule interface"
+      "message": "[agent:architect] Add FormattingRule interface"
     }
   ],
   "build_verifications": [
@@ -3052,7 +3052,7 @@ fi
 **Mandatory Conditions:**
 - [ ] Requirements synthesis document created (all agents contributed to task.md)
 - [ ] Architecture plan addresses all stakeholder requirements
--  [ ] Conflict resolution documented for competing requirements (architecture-reviewer makes final decisions
+-  [ ] Conflict resolution documented for competing requirements (architect makes final decisions
   based on tier hierarchy)
 - [ ] Implementation strategy defined with clear success criteria
 - [ ] Each agent's implementation plan appended to task.md
@@ -3109,12 +3109,12 @@ I will wait for your approval before transitioning to IMPLEMENTATION state.
 When writing implementation plans in task.md during SYNTHESIS state, use EXPLICIT DELEGATION language:
 
 **WHO IMPLEMENTS**:
-✅ CORRECT: "architecture-updater agent implements core interfaces in
-/workspace/tasks/{task}/agents/architecture-updater/code"
-✅ CORRECT: "Main agent invokes architecture-reviewer via Task tool → architecture-updater implements Phase 1-2"
+✅ CORRECT: "architect agent implements core interfaces in
+/workspace/tasks/{task}/agents/architect/code"
+✅ CORRECT: "Main agent invokes architect via Task tool → architect implements Phase 1-2"
 ✅ CORRECT: "Stakeholder agents implement in parallel (main agent coordinates via Task tool)"
-❌ AMBIGUOUS: "architecture-updater implements Phase 1-2" (who invokes? where does implementation occur?)
-❌ PROHIBITED: "Main agent implements Phase 1-2 following architecture-reviewer requirements"
+❌ AMBIGUOUS: "architect implements Phase 1-2" (who invokes? where does implementation occur?)
+❌ PROHIBITED: "Main agent implements Phase 1-2 following architect requirements"
 ❌ PROHIBITED: "I will implement the feature based on the approved plan"
 
 **CRITICAL RULE**: Any implementation activity means:
@@ -3130,9 +3130,9 @@ The ONLY acceptable next action after user approves SYNTHESIS is:
 ✅ CORRECT:
 "I am now entering IMPLEMENTATION state. Launching stakeholder agents in parallel for domain-specific implementation.
 
-Task tool (architecture-updater): {...}
-Task tool (quality-updater): {...}
-Task tool (style-updater): {...}"
+Task tool (architect), model: haiku, prompt: "Implement core architecture per requirements"
+Task tool (quality), model: haiku, prompt: "Apply design patterns per requirements"
+Task tool (style), model: haiku, prompt: "Ensure code follows style guidelines per requirements"
 ```
 
 **VIOLATION PATTERNS** (never say these after SYNTHESIS approval):
@@ -3166,7 +3166,7 @@ agents to implement".
 
 | Violation Pattern | Why It's Wrong | Correct Pattern |
 |-------------------|----------------|-----------------|
-| Main agent: `Edit src/Feature.java` | Main agent writing code directly | Main agent: `Task tool (architecture-reviewer)` → Agent writes code |
+| Main agent: `Edit src/Feature.java` | Main agent writing code directly | Main agent: `Task tool (architect)` → Agent writes code |
 | "I will implement then have agents review" | Implementation before delegation | Launch agents first → Agents implement → Agents validate |
 | Main agent creates files in task worktree | Wrong working directory | Agents create files in `/agents/{agent}/code/` |
 | "Quick skeleton implementation" | Any main agent code creation violates protocol | Launch agents for ALL code creation |
@@ -3207,7 +3207,7 @@ worktree during IMPLEMENTATION state. Implementation MUST be performed by stakeh
 worktrees.
 
 **Correct Pattern**:
-✅ Main agent invokes architecture-reviewer agent → architecture-updater implements in their worktree → merges to
+✅ Main agent invokes architect agent → architect implements in their worktree → merges to
 task branch
 ❌ Main agent creates FormattingRule.java directly in task worktree (PROTOCOL VIOLATION)
 
@@ -3216,9 +3216,9 @@ task branch
 **Tier Purpose**: Used ONLY for requirements negotiation decision deadlocks, NOT for merge ordering.
 
 **Requirements Phase Tiers (REQUIREMENTS → SYNTHESIS)**:
-- **Tier 1 (Highest)**: architecture-reviewer - Final say on architecture decisions
-- **Tier 2**: quality-reviewer, security-reviewer - Override lower tiers on domain issues
-- **Tier 3**: style-reviewer, performance-reviewer, test-reviewer, usability-reviewer
+- **Tier 1 (Highest)**: architect - Final say on architecture decisions
+- **Tier 2**: quality, security - Override lower tiers on domain issues
+- **Tier 3**: style, performance, test, usability
 
 **Tier Usage**: Tiers break decision deadlocks when agents disagree during requirements negotiation. Explicit
 escalation path: Tier 3 → Tier 2 → Tier 1.
@@ -3239,29 +3239,29 @@ escalation path: Tier 3 → Tier 2 → Tier 1.
 **COST-OPTIMIZED ARCHITECTURE**: Agent model selection is designed to maximize quality while minimizing cost.
 
 **Model Assignments**:
-- **Reviewer agents** (Sonnet 4.5): Deep analysis, complex decision-making, detailed requirements generation
-- **Updater agents** (Haiku 4.5): Mechanical implementation following detailed specifications
+- **Agents in review mode** (Sonnet 4.5): Deep analysis, complex decision-making, detailed requirements generation
+- **Agents in implementation mode** (Haiku 4.5): Mechanical implementation following detailed specifications
 
 **Strategic Rationale**:
 
 The protocol uses a **two-phase quality amplification** approach:
 
 1. **REQUIREMENTS Phase** (High-cost, high-value):
-   - Reviewer agents use Sonnet 4.5 for comprehensive analysis
+   - Agents in review mode use Sonnet 4.5 for comprehensive analysis
    - Generate extremely detailed, implementation-ready specifications
    - Make ALL difficult decisions (architecture, design patterns, naming, trade-offs)
    - Output must be detailed enough for simpler model to execute mechanically
 
 2. **IMPLEMENTATION Phase** (Low-cost, high-volume):
-   - Updater agents use Haiku 4.5 for mechanical code generation
+   - Agents in implementation mode use Haiku 4.5 for mechanical code generation
    - Execute reviewer specifications without making new decisions
    - Apply exact changes using Edit/Write tools with provided strings
    - No analysis, no judgment, pure implementation execution
 
 **Critical Requirement for Reviewers**:
 
-Reviewer agents MUST produce specifications that a **simpler model** (Haiku) can implement **without making
-difficult decisions**. See agent-specific guidance sections in reviewer agent definitions for detailed
+Agents in review mode MUST produce specifications that a **simpler model** (Haiku) can implement **without making
+difficult decisions**. See agent-specific guidance sections in agent (review mode) definitions for detailed
 requirements.
 
 **Quality Guarantee**:
@@ -3273,53 +3273,53 @@ requirements.
 **Cost Optimization Calculation**:
 
 Typical task execution:
-- 1x REQUIREMENTS round (reviewer agents analyze entire codebase): Use Sonnet 4.5
-- 2-5x IMPLEMENTATION rounds (updater agents apply fixes): Use Haiku 4.5 (40% cost reduction)
+- 1x REQUIREMENTS round (agents in review mode analyze entire codebase): Use Sonnet 4.5
+- 2-5x IMPLEMENTATION rounds (agents in implementation mode apply fixes): Use Haiku 4.5 (40% cost reduction)
 - Net savings: ~30-35% on total task cost while maintaining quality
 
 **Prohibited Patterns**:
-❌ Reviewer producing vague requirements ("fix the issue")
-❌ Updater making design decisions (naming, patterns, architecture)
-❌ Assuming both agents need same model capability
+❌ Review mode producing vague requirements ("fix the issue")
+❌ Implementation mode making design decisions (naming, patterns, architecture)
+❌ Assuming both modes need same model capability
 
 **Success Criteria**:
-✅ Updater succeeds on first attempt using only reviewer's specifications
-✅ No clarification questions from updater to reviewer
+✅ Implementation succeeds on first attempt using only review mode's specifications
+✅ No clarification questions from implementation mode to review mode
 ✅ Implementation matches requirements without re-analysis
 
 ### Implementation Round Structure {#implementation-round-structure}
 
-**CRITICAL**: Implementation rounds use BOTH reviewer and updater agents in an iterative validation pattern.
+**CRITICAL**: Implementation rounds use agents in BOTH review mode (Sonnet) and implementation mode (Haiku) in an iterative validation pattern.
 
-**Agent Roles in IMPLEMENTATION**:
-- **Reviewer agents** (Sonnet 4.5): Deep analysis, generate detailed requirements, approve/reject with specific feedback
-- **Updater agents** (Haiku 4.5): Mechanical implementation, apply exact specifications, merge verified changes
+**Agent Modes in IMPLEMENTATION**:
+- **Review mode** (model: sonnet): Deep analysis, generate detailed requirements, approve/reject with specific feedback
+- **Implementation mode** (model: haiku): Mechanical implementation, apply exact specifications, merge verified changes
 
 **Single Agent Round Pattern**:
 ```
-1. Updater agent implements in their worktree (/workspace/tasks/{task}/agents/{agent}-updater/code)
-2. Updater agent validates locally: ./mvnw verify (in their worktree)
-3. Updater agent merges to task branch
-4. Reviewer agent reviews what was merged to task branch
-5. Reviewer agent decides: APPROVED or REJECTED
+1. Agent (implementation mode) implements in their worktree (/workspace/tasks/{task}/agents/{agent}/code)
+2. Agent validates locally: ./mvnw verify (in their worktree)
+3. Agent merges to task branch
+4. Agent (review mode) reviews what was merged to task branch
+5. Agent decides: APPROVED or REJECTED
    - If APPROVED: Round complete for this agent
-   - If REJECTED: Updater agent fixes issues → merge → reviewer reviews again (repeat 4-5)
-6. Both agents update status.json when work is approved and complete
+   - If REJECTED: Agent (implementation mode) fixes issues → merge → Agent (review mode) reviews again (repeat 4-5)
+6. Agent updates status.json when work is approved and complete
 ```
 
 **Multi-Agent Round Flow**:
 ```
 Round 1:
-├─ architecture-updater: Implement core interfaces → merge
-├─ architecture-reviewer: Review → REJECTED (ambiguous contracts)
-├─ architecture-updater: Fix contracts → merge
-├─ architecture-reviewer: Review → APPROVED ✓
-├─ quality-updater: Apply refactoring → merge
-├─ quality-reviewer: Review → APPROVED ✓
-├─ style-updater: Apply style rules → merge
-├─ style-reviewer: Review → REJECTED (12 violations)
-├─ style-updater: Fix violations → merge
-├─ style-reviewer: Review → APPROVED ✓
+├─ architect: Implement core interfaces → merge
+├─ architect: Review → REJECTED (ambiguous contracts)
+├─ architect: Fix contracts → merge
+├─ architect: Review → APPROVED ✓
+├─ quality: Apply refactoring → merge
+├─ quality: Review → APPROVED ✓
+├─ style: Apply style rules → merge
+├─ style: Review → REJECTED (12 violations)
+├─ style: Fix violations → merge
+├─ style: Review → APPROVED ✓
 └─ All agents: Update status.json {"status": "COMPLETE", "decision": "APPROVED"}
 
 Transition to VALIDATION (all reviewers APPROVED, all status COMPLETE)
@@ -3328,9 +3328,9 @@ Transition to VALIDATION (all reviewers APPROVED, all status COMPLETE)
 **Round Completion Criteria**:
 ```
 All conditions must be met:
-- [ ] All updater agents have merged their changes
-- [ ] All reviewer agents have reviewed merged changes
-- [ ] All reviewer agents report APPROVED (no rejections)
+- [ ] All agents in implementation mode have merged their changes
+- [ ] All agents in review mode have reviewed merged changes
+- [ ] All agents in review mode report APPROVED (no rejections)
 - [ ] All agents update status.json with "COMPLETE"
 - [ ] Task branch passes ./mvnw verify
 ```
@@ -3343,25 +3343,25 @@ Each agent MUST maintain a `status.json` file to track implementation progress a
 
 **Status File Format**:
 
-For reviewer agents:
+For agents in review mode:
 ```json
 {
-  "agent": "architecture-reviewer",
+  "agent": "architect",
   "task": "implement-feature-x",
   "status": "WORKING|COMPLETE|BLOCKED",
   "decision": "APPROVED|REJECTED|PENDING",
   "round": 3,
   "last_review_sha": "abc123def456",
   "work_remaining": "none|description of pending work",
-  "feedback": "detailed feedback for updater agent (if REJECTED)",
+  "feedback": "detailed feedback for agent (implementation mode) (if REJECTED)",
   "updated_at": "2025-10-15T10:30:00Z"
 }
 ```
 
-For updater agents:
+For agents in implementation mode:
 ```json
 {
-  "agent": "architecture-updater",
+  "agent": "architect",
   "task": "implement-feature-x",
   "status": "WORKING|COMPLETE|BLOCKED",
   "round": 3,
@@ -3374,7 +3374,7 @@ For updater agents:
 
 **Status Update Requirements**:
 
-Updater agent after merging:
+Agent (implementation mode) after merging:
 ```bash
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
 cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
@@ -3390,7 +3390,7 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
 EOF
 ```
 
-Reviewer agent after reviewing:
+Agent (review mode) after reviewing:
 ```bash
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
 cat > /workspace/tasks/{TASK}/agents/{AGENT}-reviewer/status.json <<EOF
@@ -3416,7 +3416,7 @@ check_all_reviewers_approved() {
     shift
     REVIEWERS=("$@")
 
-    # Check all reviewer agents for APPROVED status
+    # Check all agents in review mode for APPROVED status
     for reviewer in "${REVIEWERS[@]}"; do
         STATUS_FILE="/workspace/tasks/$TASK/agents/$reviewer/status.json"
 
@@ -3452,9 +3452,9 @@ check_all_reviewers_approved() {
 }
 
 # Usage - check REVIEWER agents (not updaters)
-REVIEWERS=("architecture-reviewer" "quality-reviewer" "style-reviewer" "test-reviewer")
+REVIEWERS=("architect" "quality" "style" "test")
 if check_all_reviewers_approved "implement-feature-x" "${REVIEWERS[@]}"; then
-    echo "✅ All reviewers approved - transitioning to VALIDATION state"
+    echo "✅ All all reviews approved - transitioning to VALIDATION state"
     transition_to_validation
 else
     echo "⏳ Continuing implementation rounds (reviewers have feedback or work pending)"
@@ -3572,13 +3572,13 @@ check_agent_needs_reinvocation() {
 
 **Agent Implementation Scope**:
 - Each agent implements ONLY their domain requirements
-- architecture-reviewer: Core implementation (src/main/java)
-- test-reviewer: Test files (src/test/java)
-- style-reviewer: Style configs and fixes
-- security-reviewer: Security features and validation
-- performance-reviewer: Performance optimizations
-- quality-reviewer: Refactoring and best practices
-- usability-reviewer: UX improvements and documentation
+- architect: Core implementation (src/main/java)
+- test: Test files (src/test/java)
+- style: Style configs and fixes
+- security: Security features and validation
+- performance: Performance optimizations
+- quality: Refactoring and best practices
+- usability: UX improvements and documentation
 
 **Merge Conflict Resolution**:
 - Agents autonomously resolve conflicts in their own branches
@@ -3637,18 +3637,18 @@ PROHIBITED:
 **Mandatory Conditions:**
 - [ ] All implementation rounds completed
 - [ ] **🚨 CRITICAL: All REVIEWER agents report APPROVED decision**
-- [ ] All updater agents have merged changes to task branch
+- [ ] All agents in implementation mode have merged changes to task branch
 - [ ] All planned deliverables created in task branch
 - [ ] Implementation follows synthesis architecture plan
 - [ ] Code adheres to project conventions and patterns
 - [ ] All requirements from synthesis addressed or deferred with justification
-- [ ] **🚨 CRITICAL: Each updater agent performed incremental validation during rounds (fail-fast pattern)**
-- [ ] **🚨 CRITICAL: All updater agent changes MERGED to task branch**
+- [ ] **🚨 CRITICAL: Each agent (implementation mode) performed incremental validation during rounds (fail-fast pattern)**
+- [ ] **🚨 CRITICAL: All agent (implementation mode) changes MERGED to task branch**
 - [ ] **🚨 CRITICAL: Task branch passes `./mvnw verify` after final merge**
 
 **Evidence Required:**
-- All reviewer agents: status.json shows {"status": "COMPLETE", "decision": "APPROVED"}
-- All updater agents: status.json shows {"status": "COMPLETE", "work_remaining": "none"}
+- All agents in review mode: status.json shows {"status": "COMPLETE", "decision": "APPROVED"}
+- All agents in implementation mode: status.json shows {"status": "COMPLETE", "work_remaining": "none"}
 - Task branch contains all agent implementations (via git log)
 - Implementation matches synthesis plan
 - Any requirement deferrals properly documented in todo.md
@@ -3703,10 +3703,10 @@ Each stakeholder agent MUST include their agent name in commit message when merg
 **Agent Commit Format**: `[agent-name] Implementation summary`
 
 **Examples**:
-- `[architecture-updater] Add FormattingRule interface hierarchy`
-- `[quality-updater] Apply factory pattern to rule instantiation`
-- `[style-updater] Implement JavaDoc requirements for public APIs`
-- `[test-updater] Add comprehensive test suite for FormattingRule`
+- `[architect] Add FormattingRule interface hierarchy`
+- `[quality] Apply factory pattern to rule instantiation`
+- `[style] Implement JavaDoc requirements for public APIs`
+- `[test] Add comprehensive test suite for FormattingRule`
 
 **Main Agent Final Commit**: When main agent commits validation fixes or merges to main branch, commit message MUST list all contributing agents:
 
@@ -3715,10 +3715,10 @@ git commit -m "$(cat <<'EOF'
 Implement FormattingRule system
 
 Contributing agents:
-- architecture-updater: Core interface design
-- quality-updater: Design pattern application
-- style-updater: Code style compliance
-- test-updater: Test suite implementation
+- architect: Core interface design
+- quality: Design pattern application
+- style: Code style compliance
+- test: Test suite implementation
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
@@ -4163,14 +4163,14 @@ def process_scope_negotiation_results(agent_responses):
 - All deferred work properly documented in todo.md with specific task entries
 
 **Domain Authority Framework:**
-- **security-reviewer**: Absolute veto on security vulnerabilities and privacy violations
-- **build-reviewer**: Final authority on deployment safety and build integrity
-- **architecture-reviewer**: Final authority on architectural completeness requirements
-- **performance-reviewer**: Authority on performance requirements and scalability
-- **quality-reviewer**: Can defer documentation/testing if basic quality maintained
-- **style-reviewer**: Can defer style issues if core functionality preserved
-- **test-reviewer**: Authority on test coverage adequacy for business logic
-- **usability-reviewer**: Can defer UX improvements if core functionality accessible
+- **security**: Absolute veto on security vulnerabilities and privacy violations
+- **build**: Final authority on deployment safety and build integrity
+- **architect**: Final authority on architectural completeness requirements
+- **performance**: Authority on performance requirements and scalability
+- **quality**: Can defer documentation/testing if basic quality maintained
+- **style**: Can defer style issues if core functionality preserved
+- **test**: Authority on test coverage adequacy for business logic
+- **usability**: Can defer UX improvements if core functionality accessible
 
 **Security Auditor Configuration:**
 **CRITICAL: Use Project-Specific Security Model from scope.md**
@@ -4182,16 +4182,16 @@ For Parser Implementation Tasks:
 - **Usability Priority**: Error messages should prioritize debugging assistance
 - **Appropriate Limits**: Reasonable protection for legitimate code formatting use cases
 
-**MANDATORY**: security-reviewer MUST reference docs/project/scope.md "Security Model for Parser Operations"
+**MANDATORY**: security MUST reference docs/project/scope.md "Security Model for Parser Operations"
 before conducting any parser security review.
 
 **Authority Hierarchy for Domain Conflicts:**
 When agent authorities overlap or conflict:
-- Security/Privacy conflicts: Joint veto power (both security-reviewer AND security-reviewer must approve)
-- Architecture/Performance conflicts: architecture-reviewer decides with performance-reviewer input
-- Build/Architecture conflicts: build-reviewer has final authority (deployment safety priority)
-- Testing/Quality conflicts: test-reviewer decides coverage adequacy, quality-reviewer decides standards
-- Style/Quality conflicts: quality-reviewer decides (quality encompasses style)
+- Security/Privacy conflicts: Joint veto power (both security AND security must approve)
+- Architecture/Performance conflicts: architect decides with performance input
+- Build/Architecture conflicts: build has final authority (deployment safety priority)
+- Testing/Quality conflicts: test decides coverage adequacy, quality decides standards
+- Style/Quality conflicts: quality decides (quality encompasses style)
 
 **Scope Negotiation Agent Prompt Template:**
 ```python

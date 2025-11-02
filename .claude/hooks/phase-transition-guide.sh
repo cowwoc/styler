@@ -14,8 +14,19 @@ source "${SCRIPT_DIR}/lib/doc-reference-resolver.sh" 2>/dev/null || true
 
 TASK_NAME="${1:-unknown}"
 NEW_STATE="${2:-UNKNOWN}"
+
+# Exit silently if no task context (not in task protocol)
+if [[ "$TASK_NAME" == "unknown" ]]; then
+	exit 0
+fi
+
 LOCK_FILE="/workspace/tasks/${TASK_NAME}/task.json"
 VISIT_TRACKER="/workspace/tasks/${TASK_NAME}/.phase-visits"
+
+# Exit silently if task directory doesn't exist
+if [[ ! -d "/workspace/tasks/${TASK_NAME}" ]]; then
+	exit 0
+fi
 
 # Initialize visit tracker if not exists
 if [[ ! -f "$VISIT_TRACKER" ]]; then

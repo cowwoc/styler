@@ -47,6 +47,9 @@
   "docs/performance/benchmark-execution.md": {
   }
 ,
+  "docs/project/KNOWN-ISSUES.md": {
+  }
+,
   "docs/project/agent-common-patterns.md": {
   }
 ,
@@ -413,9 +416,9 @@
 ,
     "incremental-validation-frequency": {"start": 1354, "end": 1401}
 ,
-    "parallel-execution-enforcement": {"start": 1402, "end": 1452}
+    "parallel-execution-enforcement": {"start": 1402, "end": 1457}
 ,
-    "combining-parallel-and-sequential-operations": {"start": 1453, "end": 1489}
+    "combining-parallel-and-sequential-operations": {"start": 1458, "end": 1494}
   }
 ,
   "docs/project/multi-agent-process-governance.md": {
@@ -602,7 +605,7 @@
 ,
     "round-completion-criteria": {"start": 239, "end": 250}
 ,
-    "updater-agent-design-decision-protocol": {"start": 251, "end": 254}
+    "implementation-mode-design-decision-protocol": {"start": 251, "end": 254}
 ,
     "role-separation-principle": {"start": 255, "end": 260}
 ,
@@ -838,7 +841,7 @@
 ,
     "pre-validation-checklist-implementation-exit": {"start": 173, "end": 296}
 ,
-    "implementation-rounds-reviewerupdater-iteration": {"start": 297, "end": 370}
+    "implementation-rounds-reviewimplementation-iteration": {"start": 297, "end": 370}
 ,
     "multi-agent-implementation-commit-history-examples": {"start": 371, "end": 468}
 ,

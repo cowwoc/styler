@@ -1,7 +1,7 @@
 # Style Guide for Code Formatting
 
 > **Version:** 1.0 | **Last Updated:** 2025-10-18
-> **Audience:** style-reviewer, style-updater, main agent (during VALIDATION)
+> **Audience:** style, main agent (during VALIDATION)
 > **Purpose:** Style validation requirements and JavaDoc documentation standards
 
 ## 🎯 COMPLETE STYLE VALIDATION {#complete-style-validation}

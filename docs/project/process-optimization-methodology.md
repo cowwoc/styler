@@ -102,9 +102,9 @@ Detect suspicious single-commit patterns that suggest main agent implementation 
 **Expected Pattern (Multi-Agent Implementation):**
 ```bash
 # Multiple commits from different agents
-* abc1234 [architecture-updater] Implement core FormattingRule interfaces
-* abc1235 [style-updater] Apply JavaDoc and formatting standards
-* abc1236 [quality-updater] Add comprehensive test suite
+* abc1234 [architect] Implement core FormattingRule interfaces
+* abc1235 [style] Apply JavaDoc and formatting standards
+* abc1236 [quality] Add comprehensive test suite
 * abc1237 [main] Merge agent implementations to task branch
 * abc1238 [main] Fix test API mismatches
 ```
@@ -129,7 +129,7 @@ total_commits=$(git log --oneline task-{task-name} --not main | wc -l)
 # Step 2: Check for agent commit signatures
 agent_commits=$(git log task-{task-name} --not main --grep '\[.*-updater\]' | wc -l)
 implementation_commits=$(git log task-{task-name} --not main \
-  --grep '\[architecture-updater\]\|\[quality-updater\]\|\[style-updater\]' | wc -l)
+  --grep '\[architect\]\|\[quality\]\|\[style\]' | wc -l)
 
 # Step 3: Detect suspicious patterns
 if [ "$total_commits" -eq 1 ] && [ "$agent_commits" -eq 0 ]; then
@@ -175,7 +175,7 @@ $ git log --oneline task-{task-name} --not main
 
 DIAGNOSIS:
 This pattern indicates main agent implemented code directly instead of coordinating stakeholder agents.
-Expected pattern: Multiple commits with agent signatures ([architecture-updater], [style-updater], etc.)
+Expected pattern: Multiple commits with agent signatures ([architect], [style], etc.)
 
 CORRECTIVE ACTION REQUIRED:
 Option 1: Revert task branch to start of IMPLEMENTATION
