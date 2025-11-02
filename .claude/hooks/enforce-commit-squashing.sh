@@ -47,6 +47,82 @@ if [[ ! "$BRANCH_NAME" =~ ^[a-z0-9-]+$ ]]; then
 	exit 0
 fi
 
+# Validate merge command uses --ff-only flag for task branches
+if [[ ! "$COMMAND" =~ --ff-only ]]; then
+	# VIOLATION: Task branch merge without --ff-only flag
+	MESSAGE="## 🚨 LINEAR HISTORY VIOLATION DETECTED AND BLOCKED
+
+**Branch**: \`$BRANCH_NAME\`
+**Attempted command**: \`$COMMAND\`
+**Required flag**: \`--ff-only\`
+
+## ⚠️ CRITICAL - MANDATORY LINEAR HISTORY REQUIREMENT
+
+You attempted to merge a task branch without the \`--ff-only\` flag.
+This creates merge commits and violates the linear history requirement.
+
+**AUTOMATIC ACTION TAKEN**:
+- Merge command blocked
+- Task branch unchanged
+
+**REQUIRED COMMAND**:
+
+\`\`\`bash
+git merge --ff-only $BRANCH_NAME
+\`\`\`
+
+**WHY --ff-only IS MANDATORY**:
+- Prevents accidental merge commits
+- Enforces linear git history on main branch
+- Makes git bisect and history navigation simpler
+- Ensures each commit on main is an atomic task unit
+
+**IF FAST-FORWARD FAILS**:
+If git reports \"fatal: Not possible to fast-forward\", this means:
+1. Main branch has moved ahead since task branch was created
+2. You need to rebase the task branch onto latest main:
+
+\`\`\`bash
+# Step 1: Update main
+git checkout main
+git pull
+
+# Step 2: Rebase task branch
+git checkout $BRANCH_NAME
+git rebase main
+
+# Step 3: Merge with fast-forward
+git checkout main
+git merge --ff-only $BRANCH_NAME
+\`\`\`
+
+## Protocol Reference
+
+See:
+- /workspace/main/docs/project/git-workflow.md § Task Branch Squashing
+- /workspace/main/docs/project/task-protocol-core.md (line 3886)
+
+**PROHIBITED PATTERNS**:
+❌ \`git merge <branch>\` (default, may create merge commit)
+❌ \`git merge --no-ff <branch>\` (explicitly creates merge commit)
+❌ \`git merge --squash <branch>\` (loses commit history)
+
+**REQUIRED PATTERN**:
+✅ \`git merge --ff-only <branch>\` (enforces linear history)"
+
+	jq -n \
+		--arg event "PreToolUse" \
+		--arg context "$MESSAGE" \
+		'{
+			"hookSpecificOutput": {
+				"hookEventName": $event,
+				"additionalContext": $context
+			}
+		}'
+
+	exit 2  # Block the command
+fi
+
 # Check if branch exists
 if ! git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
 	# Branch doesn't exist, let git merge fail naturally
