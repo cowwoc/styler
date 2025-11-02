@@ -114,8 +114,8 @@ Implement formatter API for code transformation
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
 Co-Authored-By: Claude <noreply@anthropic.com>
-Co-Authored-By: architecture-updater <noreply@anthropic.com>
-Co-Authored-By: style-updater <noreply@anthropic.com>
+Co-Authored-By: architect <noreply@anthropic.com>
+Co-Authored-By: style <noreply@anthropic.com>
 ```
 
 **Enforcement**: Pre-merge hook will block `git merge --ff-only {task-name}` if task branch contains more than 1 commit.

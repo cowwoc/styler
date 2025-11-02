@@ -5,7 +5,7 @@
 
 ## Problem Statement
 
-Single `process-efficiency-reviewer` agent has conflicting responsibilities:
+Single `audit-protocol-efficiency skill` agent has conflicting responsibilities:
 - **Audit correctness** (adversarial, strict, binary)
 - **Optimize efficiency** (collaborative, flexible, continuous)
 
@@ -18,20 +18,20 @@ Single `process-efficiency-reviewer` agent has conflicting responsibilities:
 ```
 User Request: "Review session for violations"
     ↓
-[1] process-recorder → Collects neutral facts
+[1] parse-conversation-timeline skill → Collects neutral facts
     ↓
-[2] process-compliance-reviewer → Binary violation detection (PASS/FAIL)
+[2] audit-protocol-compliance skill → Binary violation detection (PASS/FAIL)
     ↓
-[3] process-efficiency-reviewer → Suggests improvements (assumes correctness)
+[3] audit-protocol-efficiency skill → Suggests improvements (assumes correctness)
     ↓
-[4] config-reviewer → Finds ambiguities/contradictions
+[4] config → Finds ambiguities/contradictions
     ↓
 Final Report: Violations + Optimizations + Doc Fixes
 ```
 
 ---
 
-## Agent 1: process-recorder
+## Agent 1: parse-conversation-timeline skill
 
 Neutral fact gatherer (no judgments)
 
@@ -73,15 +73,15 @@ Neutral fact gatherer (no judgments)
 
 ---
 
-## Agent 2: process-compliance-reviewer
+## Agent 2: audit-protocol-compliance skill
 
 Adversarial compliance checker (strict, binary)
 
-- Check facts from process-recorder against protocol rules
+- Check facts from parse-conversation-timeline skill against protocol rules
 - Binary output: VIOLATION or COMPLIANT (no gray area)
 - No rationalizations, no "this would be OK if..."
 
-**Input**: process-recorder JSON output
+**Input**: parse-conversation-timeline skill JSON output
 
 **Output Format**:
 ```json
@@ -122,7 +122,7 @@ Adversarial compliance checker (strict, binary)
 **Key Characteristics**:
 - ✅ Strict rule enforcement
 - ✅ Binary verdicts (no rationalization)
-- ✅ Evidence-based (uses process-recorder data)
+- ✅ Evidence-based (uses parse-conversation-timeline skill data)
 - ✅ Clear recovery options
 - ❌ No efficiency suggestions
 - ❌ No documentation fixes
@@ -151,25 +151,25 @@ Category 3: Multi-Agent Architecture Compliance
 ... (all 25 checks)
 ```
 
-**Tools**: Read (methodology, protocol docs, process-recorder output)
+**Tools**: Read (methodology, protocol docs, parse-conversation-timeline skill output)
 
-**CRITICAL RULE**: If process-recorder shows `task_state_actual == "IMPLEMENTATION"` and `tool_usage` contains
+**CRITICAL RULE**: If parse-conversation-timeline skill shows `task_state_actual == "IMPLEMENTATION"` and `tool_usage` contains
 `Edit` by `main` on `.java` file, **IMMEDIATE VIOLATION FLAG**. Do NOT check "what state should it be" - flag
 the violation in the ACTUAL state.
 
 ---
 
-## Agent 3: process-efficiency-reviewer
+## Agent 3: audit-protocol-efficiency skill
 
 Collaborative performance advisor (helpful, flexible)
 
-- **ONLY runs if process-compliance-reviewer verdict == "COMPLIANT"**
+- **ONLY runs if audit-protocol-compliance skill verdict == "COMPLIANT"**
 - Suggests efficiency improvements
 - Identifies parallelization opportunities
 - Recommends prefetching patterns
 - Calculates token savings
 
-**Input**: process-recorder JSON output
+**Input**: parse-conversation-timeline skill JSON output
 
 **Output Format**:
 ```json
@@ -214,11 +214,11 @@ Collaborative performance advisor (helpful, flexible)
 3. Fail-fast validation (incremental checks)
 4. Context reduction (smaller responses)
 
-**Tools**: Read (process-recorder output, protocol docs)
+**Tools**: Read (parse-conversation-timeline skill output, protocol docs)
 
 ---
 
-## Agent 4: config-reviewer
+## Agent 4: config
 
 Technical writer quality checker (clarity, consistency)
 
@@ -228,7 +228,7 @@ Technical writer quality checker (clarity, consistency)
 - Propose clarity improvements
 
 **Input**:
-- process-compliance-reviewer violations (to find doc gaps)
+- audit-protocol-compliance skill violations (to find doc gaps)
 - CLAUDE.md, task-protocol-*.md files
 
 **Output Format**:
@@ -243,7 +243,7 @@ Technical writer quality checker (clarity, consistency)
       "issue": "Section says 'main agent coordinates' but doesn't specify which agents can implement vs review-only",
       "confusion_caused": "Main agent unclear if fixing violations violates protocol",
       "proposed_fix": "Add 'Stakeholder Agent Capabilities Matrix' section clearly listing implementation vs review-only agents",
-      "related_violation": "process-compliance-reviewer check 0.2 failed due to this ambiguity"
+      "related_violation": "audit-protocol-compliance skill check 0.2 failed due to this ambiguity"
     }
   ],
   "contradictions": [
@@ -272,7 +272,7 @@ Technical writer quality checker (clarity, consistency)
 - ✅ Finds root causes of violations (ambiguous docs)
 - ✅ Proposes specific text improvements
 - ✅ Cross-references violations to doc gaps
-- ❌ Doesn't detect violations (that's process-compliance-reviewer's job)
+- ❌ Doesn't detect violations (that's audit-protocol-compliance skill's job)
 
 **Tools**: Read, Grep, Edit (for proposing fixes)
 
@@ -289,19 +289,19 @@ User: "Review session for violations and optimize"
 
 ```bash
 # Phase 1: Fact Gathering (neutral)
-Task tool (process-recorder): "Collect facts about current session execution"
+Task tool (parse-conversation-timeline skill): "Collect facts about current session execution"
 
 # Phase 2: Compliance Audit (adversarial)
-Task tool (process-compliance-reviewer): "Audit facts against protocol rules. Input: process-recorder output"
+Task tool (audit-protocol-compliance skill): "Audit facts against protocol rules. Input: parse-conversation-timeline skill output"
 
 # Phase 3: Conditional Optimization (collaborative)
-IF process-compliance-reviewer verdict == "COMPLIANT":
-  Task tool (process-efficiency-reviewer): "Suggest optimizations. Input: process-recorder output"
+IF audit-protocol-compliance skill verdict == "COMPLIANT":
+  Task tool (audit-protocol-efficiency skill): "Suggest optimizations. Input: parse-conversation-timeline skill output"
 ELSE:
   Skip optimization (fix violations first)
 
 # Phase 4: Documentation Improvement (quality)
-Task tool (config-reviewer): "Find doc ambiguities that caused violations. Input: process-compliance-reviewer violations"
+Task tool (config): "Find doc ambiguities that caused violations. Input: audit-protocol-compliance skill violations"
 ```
 
 ### Step 3: Main Agent Synthesizes Report
@@ -316,7 +316,7 @@ Task tool (config-reviewer): "Find doc ambiguities that caused violations. Input
 ### Critical Violation
 - **Check 0.2**: Main agent used Edit tool during IMPLEMENTATION state
 - **Evidence**: task.json state == IMPLEMENTATION, Edit tool on FormattingViolation.java
-- **Recovery Options**: (see process-compliance-reviewer output)
+- **Recovery Options**: (see audit-protocol-compliance skill output)
 
 ### Efficiency Optimizations
 - Skipped (fix violations first)
@@ -330,10 +330,10 @@ Task tool (config-reviewer): "Find doc ambiguities that caused violations. Input
 
 ## Agent Configuration Files
 
-### process-recorder.md
+### parse-conversation-timeline skill.md
 ```yaml
 ---
-name: process-recorder
+name: parse-conversation-timeline skill
 description: Neutral fact gatherer for session execution analysis
 tools: [Read, Grep, Bash, LS]
 model: sonnet-4-5
@@ -347,17 +347,17 @@ color: gray
 **CRITICAL**: Do NOT make judgments or recommendations - just collect data
 ```
 
-### process-compliance-reviewer.md
+### audit-protocol-compliance skill.md
 ```yaml
 ---
-name: process-compliance-reviewer
+name: audit-protocol-compliance skill
 description: Adversarial compliance checker for protocol violations
 tools: [Read]
 model: sonnet-4-5
 color: red
 ---
 
-**Role**: Check process-recorder facts against protocol rules (strict, binary)
+**Role**: Check parse-conversation-timeline skill facts against protocol rules (strict, binary)
 
 **CRITICAL RULES**:
 1. Check task.json state FIRST (Check 0.1)
@@ -366,14 +366,14 @@ color: red
 4. Binary verdicts: VIOLATION or COMPLIANT (no gray area)
 5. Provide evidence and recovery options
 
-**Input**: process-recorder JSON output
+**Input**: parse-conversation-timeline skill JSON output
 **Output**: Violations list with verdicts
 ```
 
-### process-efficiency-reviewer.md
+### audit-protocol-efficiency skill.md
 ```yaml
 ---
-name: process-efficiency-reviewer
+name: audit-protocol-efficiency skill
 description: Collaborative performance advisor for process optimization
 tools: [Read]
 model: sonnet-4-5
@@ -382,7 +382,7 @@ color: green
 
 **Role**: Suggest efficiency improvements (helpful, quantified)
 
-**CRITICAL RULE**: ONLY runs if process-compliance-reviewer verdict == "COMPLIANT"
+**CRITICAL RULE**: ONLY runs if audit-protocol-compliance skill verdict == "COMPLIANT"
 
 **Focus Areas**:
 - Parallelization opportunities
@@ -393,10 +393,10 @@ color: green
 **Output**: Optimization suggestions with token savings
 ```
 
-### config-reviewer.md
+### config.md
 ```yaml
 ---
-name: config-reviewer
+name: config
 description: Technical writer quality checker for protocol documentation
 tools: [Read, Grep, Edit]
 model: sonnet-4-5
@@ -405,7 +405,7 @@ color: blue
 
 **Role**: Find ambiguities and contradictions in protocol docs
 
-**Input**: process-compliance-reviewer violations (to identify doc gaps)
+**Input**: audit-protocol-compliance skill violations (to identify doc gaps)
 
 **Output**: Ambiguities, contradictions, missing guidance with proposed fixes
 ```
@@ -415,10 +415,10 @@ color: blue
 ## Benefits of Multi-Agent Architecture
 
 ### 1. Separation of Concerns
-- **process-recorder**: Facts only (no bias)
-- **process-compliance-reviewer**: Strict enforcement (no rationalization)
-- **process-efficiency-reviewer**: Helpful suggestions (no violation detection)
-- **config-reviewer**: Clarity improvements (no compliance checking)
+- **parse-conversation-timeline skill**: Facts only (no bias)
+- **audit-protocol-compliance skill**: Strict enforcement (no rationalization)
+- **audit-protocol-efficiency skill**: Helpful suggestions (no violation detection)
+- **config**: Clarity improvements (no compliance checking)
 
 ### 2. No Conflicting Responsibilities
 - Auditor can't rationalize violations (not its job)
@@ -437,7 +437,7 @@ color: blue
 - Each agent can fail independently
 
 ### 5. Accountability
-- Clear attribution: "process-compliance-reviewer flagged violation"
+- Clear attribution: "audit-protocol-compliance skill flagged violation"
 - No ambiguity about who found what
 - Easier to debug agent failures
 
@@ -445,24 +445,24 @@ color: blue
 
 ## Migration Path
 
-### Phase 1: Deprecate process-efficiency-reviewer
+### Phase 1: Deprecate audit-protocol-efficiency skill
 - Mark as deprecated in agent config
-- Document replacement: "Use process-recorder → process-compliance-reviewer → process-efficiency-reviewer pipeline"
+- Document replacement: "Use parse-conversation-timeline skill → audit-protocol-compliance skill → audit-protocol-efficiency skill pipeline"
 
 ### Phase 2: Create New Agents
-1. Create process-recorder.md (simplest, facts only)
-2. Create process-compliance-reviewer.md (copy checks from methodology, make strict)
-3. Create process-efficiency-reviewer.md (extract efficiency checks from methodology)
-4. Create config-reviewer.md (new functionality)
+1. Create parse-conversation-timeline skill.md (simplest, facts only)
+2. Create audit-protocol-compliance skill.md (copy checks from methodology, make strict)
+3. Create audit-protocol-efficiency skill.md (extract efficiency checks from methodology)
+4. Create config.md (new functionality)
 
 ### Phase 3: Update Methodology
 - Split process-optimization-methodology.md into:
-  - protocol-audit-checklist.md (for process-compliance-reviewer)
-  - efficiency-patterns.md (for process-efficiency-reviewer)
-  - documentation-quality-standards.md (for config-reviewer)
+  - protocol-audit-checklist.md (for audit-protocol-compliance skill)
+  - efficiency-patterns.md (for audit-protocol-efficiency skill)
+  - documentation-quality-standards.md (for config)
 
 ### Phase 4: Update CLAUDE.md
-- Replace references to "process-efficiency-reviewer"
+- Replace references to "audit-protocol-efficiency skill"
 - Document multi-agent pipeline
 - Provide usage examples
 
@@ -474,7 +474,7 @@ color: blue
 
 **Input**: Current implement-formatter-api session
 
-**Expected process-recorder output**:
+**Expected parse-conversation-timeline skill output**:
 ```json
 {
   "task_state_actual": "IMPLEMENTATION",
@@ -485,7 +485,7 @@ color: blue
 }
 ```
 
-**Expected process-compliance-reviewer output**:
+**Expected audit-protocol-compliance skill output**:
 ```json
 {
   "violations": [
@@ -505,12 +505,12 @@ color: blue
 }
 ```
 
-**Expected process-efficiency-reviewer output**:
+**Expected audit-protocol-efficiency skill output**:
 ```
 SKIPPED (violations must be fixed first)
 ```
 
-**Expected config-reviewer output**:
+**Expected config output**:
 ```json
 {
   "ambiguities": [

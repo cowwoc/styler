@@ -78,10 +78,10 @@ The main branch must NEVER contain broken commits. If build failures occur post-
 **CRITICAL: Pre-Merge Build Verification Gate**
 ```bash
 # Launch ALL agents with Task tool in ONE message
-Task tool (architecture-updater): {...}
-Task tool (quality-updater): {...}
-Task tool (style-updater): {...}
-Task tool (security-updater): {...}
+Task tool (architect), model: sonnet, prompt: "Review architecture requirements for {task}"
+Task tool (quality), model: sonnet, prompt: "Review code quality requirements for {task}"
+Task tool (style), model: sonnet, prompt: "Review style requirements for {task}"
+Task tool (security), model: sonnet, prompt: "Review security requirements for {task}"
 
 # Wait for ALL responses before proceeding
 ```
@@ -89,11 +89,11 @@ Task tool (security-updater): {...}
 **DON'T** (sequential):
 ```bash
 # Message 1
-Task tool (architecture-updater): {...}
+Task tool (architect), model: sonnet, prompt: "..."
 # Wait for response
 
 # Message 2
-Task tool (quality-updater): {...}
+Task tool (quality), model: sonnet, prompt: "..."
 # Wait for response
 
 # = 3-4× overhead, 20-30 min wasted
@@ -294,44 +294,44 @@ jq '.state = "IMPLEMENTATION"' $LOCK_FILE > /tmp/lock.json && mv /tmp/lock.json 
 
 ---
 
-### Implementation Rounds (Reviewer/Updater Iteration) {#implementation-rounds-reviewerupdater-iteration}
+### Implementation Rounds (Review/Implementation Iteration) {#implementation-rounds-reviewimplementation-iteration}
 
-**CRITICAL PATTERN**: Implementation uses BOTH reviewer and updater agents in iterative cycles.
+**CRITICAL PATTERN**: Implementation uses agents in BOTH review mode (Sonnet) and implementation mode (Haiku) in iterative cycles.
 
 **Round 1 - Initial Implementation:**
 ```
-I am now entering IMPLEMENTATION state. Launching updater agents for parallel implementation.
+I am now entering IMPLEMENTATION state. Launching agents in implementation mode for parallel implementation.
 
-Task tool (architecture-updater): Implement core FormattingRule interfaces per requirements
-Task tool (quality-updater): Apply design patterns and refactoring per requirements
-Task tool (style-updater): Ensure all code follows project style guidelines
-Task tool (test-updater): Implement comprehensive test suite per test strategy
+Task tool (architect), model: haiku, prompt: "Implement core FormattingRule interfaces per requirements"
+Task tool (quality), model: haiku, prompt: "Apply design patterns and refactoring per requirements"
+Task tool (style), model: haiku, prompt: "Ensure all code follows project style guidelines"
+Task tool (test), model: haiku, prompt: "Implement comprehensive test suite per test strategy"
 ```
 
 **Round 1 - Review Merged Changes:**
 ```
-Updater agents have merged to task branch. Launching reviewer agents for parallel review.
+Agents have merged to task branch. Launching agents in review mode for parallel validation.
 
-Task tool (architecture-reviewer): Review merged architecture on task branch for completeness
-Task tool (quality-reviewer): Review merged code quality on task branch
-Task tool (style-reviewer): Review merged style compliance on task branch
-Task tool (test-reviewer): Review merged test coverage and quality on task branch
+Task tool (architect), model: sonnet, prompt: "Review merged architecture on task branch for completeness"
+Task tool (quality), model: sonnet, prompt: "Review merged code quality on task branch"
+Task tool (style), model: sonnet, prompt: "Review merged style compliance on task branch"
+Task tool (test), model: sonnet, prompt: "Review merged test coverage and quality on task branch"
 ```
 
-**Round 2 - Apply Reviewer Feedback (if rejections):**
+**Round 2 - Apply Review Feedback (if rejections):**
 ```
-Reviewers identified issues. Launching updater agents to fix.
+Reviews identified issues. Launching agents in implementation mode to fix.
 
-Task tool (style-updater): Fix 12 style violations identified by style-reviewer
-Task tool (architecture-updater): Clarify interface contracts per architecture-reviewer feedback
+Task tool (style), model: haiku, prompt: "Fix 12 style violations identified in review"
+Task tool (architect), model: haiku, prompt: "Clarify interface contracts per review feedback"
 ```
 
 **Round 2 - Re-review Fixes:**
 ```
-Updater agents have merged fixes. Re-launching reviewers to verify.
+Agents have merged fixes. Re-launching agents in review mode to verify.
 
-Task tool (style-reviewer): Re-review style compliance on task branch
-Task tool (architecture-reviewer): Re-review architecture fixes on task branch
+Task tool (style), model: sonnet, prompt: "Re-review style compliance on task branch"
+Task tool (architect), model: sonnet, prompt: "Re-review architecture fixes on task branch"
 ```
 
 **CRITICAL**: All agents in SINGLE message for parallel execution
@@ -383,10 +383,10 @@ abc123d Implement FormattingRule system (Claude)
 **CORRECT Pattern - Multiple Agent Commits**:
 ```bash
 $ git log --oneline task-branch
-jkl012m [test-updater] Add comprehensive test suite for FormattingRule
-ghi789j [style-updater] Implement JavaDoc requirements for public APIs
-def456g [quality-updater] Apply factory pattern to rule instantiation
-abc123d [architecture-updater] Add FormattingRule interface hierarchy
+jkl012m [test] Add comprehensive test suite for FormattingRule
+ghi789j [style] Implement JavaDoc requirements for public APIs
+def456g [quality] Apply factory pattern to rule instantiation
+abc123d [architect] Add FormattingRule interface hierarchy
 ```
 
 **Analysis**: Multiple commits with agent attribution prove multi-agent implementation protocol followed.
@@ -394,22 +394,22 @@ abc123d [architecture-updater] Add FormattingRule interface hierarchy
 **CORRECT Pattern - Detailed View with Attribution**:
 ```bash
 $ git log --format='%h %s' task-branch
-jkl012m [test-updater] Add comprehensive test suite for FormattingRule
+jkl012m [test] Add comprehensive test suite for FormattingRule
     - Unit tests for all FormattingRule implementations
     - Integration tests for rule composition
     - Test coverage: 95%+
 
-ghi789j [style-updater] Implement JavaDoc requirements for public APIs
+ghi789j [style] Implement JavaDoc requirements for public APIs
     - Added JavaDoc to all public methods
     - Fixed checkstyle violations
     - Code style compliance verified
 
-def456g [quality-updater] Apply factory pattern to rule instantiation
+def456g [quality] Apply factory pattern to rule instantiation
     - Created RuleFactory for centralized creation
     - Applied builder pattern for complex rules
     - Reduced cyclomatic complexity
 
-abc123d [architecture-updater] Add FormattingRule interface hierarchy
+abc123d [architect] Add FormattingRule interface hierarchy
     - Created FormattingRule interface
     - Implemented concrete rule classes
     - Defined rule composition API
@@ -424,10 +424,10 @@ git log --oneline task-branch | grep -c '\[.*-updater\]'
 # List all contributing agents
 git log --format='%s' task-branch | grep -oP '\[\K[^]]+' | sort -u
 # Expected output:
-# architecture-updater
-# quality-updater
-# style-updater
-# test-updater
+# architect
+# quality
+# style
+# test
 
 # Verify parallel implementation (commits should have similar timestamps)
 git log --format='%h %ai %s' task-branch
@@ -440,10 +440,10 @@ $ git log --format='%h %s%n%b' main --max-count=1
 abc123z Implement FormattingRule system
 
 Contributing agents:
-- architecture-updater: Core interface design
-- quality-updater: Design pattern application
-- style-updater: Code style compliance
-- test-updater: Test suite implementation
+- architect: Core interface design
+- quality: Design pattern application
+- style: Code style compliance
+- test: Test suite implementation
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
@@ -622,24 +622,24 @@ if any(keyword in task_description for keyword in
 ```python
 # HIGH-RISK (mandatory agents)
 agents = [
-    "architecture-reviewer",   # Architecture and design
-    "quality-reviewer",  # Quality standards
-    "style-reviewer",         # Style compliance
-    "test-reviewer",           # Test coverage
+    "architect",   # Architecture and design
+    "quality",  # Quality standards
+    "style",         # Style compliance
+    "test",           # Test coverage
 ]
 
 # Add conditional agents
 if "security" in task_description or "authentication" in task_description:
-    agents.append("security-reviewer")
+    agents.append("security")
 
 if "performance" in task_description or "algorithm" in task_description:
-    agents.append("performance-reviewer")
+    agents.append("performance")
 
 # MEDIUM-RISK (core only)
-agents = ["architecture-reviewer", "quality-reviewer"]
+agents = ["architect", "quality"]
 
 # LOW-RISK (minimal or none)
-agents = []  # or ["quality-reviewer"] for technical docs
+agents = []  # or ["quality"] for technical docs
 ```
 
 ### 3. Lock State Management {#3-lock-state-management}
@@ -1039,7 +1039,7 @@ git worktree list | grep "/workspace/tasks/{TASK_NAME}/code" && {
 # IMPORTANT: Replace {AGENT_LIST} with space-separated list of agent names
 
 # Step 1: Verify all agents reached COMPLETE status
-AGENTS="{AGENT_LIST}"  # e.g., "architecture-reviewer quality-reviewer style-reviewer security-reviewer"
+AGENTS="{AGENT_LIST}"  # e.g., "architect quality style security"
 for agent in $AGENTS; do
   STATUS=$(jq -r '.status' "/workspace/tasks/{TASK_NAME}/agents/$agent/status.json" 2>/dev/null || echo "MISSING")
   if [ "$STATUS" != "COMPLETE" ]; then
@@ -1108,8 +1108,8 @@ TEMP_DIR=$(cat .temp_dir 2>/dev/null) && [ -n "$TEMP_DIR" ] && rm -rf "$TEMP_DIR
 echo "✅ CLEANUP complete: All worktrees and branches removed"
 ```
 
-**Example for task "refactor-line-wrapping-architecture" with agents "architecture-reviewer quality-reviewer
-style-reviewer"**:
+**Example for task "refactor-line-wrapping-architecture" with agents "architect quality
+style"**:
 ```bash
 # Verify work in main branch (from task worktree)
 cd /workspace/tasks/refactor-line-wrapping-architecture/code
@@ -1134,7 +1134,7 @@ rm -f /workspace/tasks/refactor-line-wrapping-architecture/task.json
 
 # Remove all agent worktrees and branches
 # 🚨 SHELL REQUIREMENT: Execute in bash (not sh/dash)
-AGENTS="architecture-reviewer quality-reviewer style-reviewer"
+AGENTS="architect quality style"
 
 # Variable $AGENTS MUST be UNQUOTED in the for loop
 for agent in $AGENTS; do
@@ -1359,7 +1359,7 @@ can_transition_back() {
 **Example 1: IMPLEMENTATION → SYNTHESIS (Reversible)**
 ```
 State: IMPLEMENTATION
-Action: architecture-reviewer agent rejects implementation
+Action: architect agent rejects implementation
 Decision: FINAL DECISION: ❌ REJECTED - Architecture violates SOLID principles
 Result: Transition back to SYNTHESIS
 Reason: Plan needs revision based on agent feedback
@@ -1702,11 +1702,11 @@ export SESSION_ID="f33c1f04-94a5-4e87-9a87-4fcbc57bc8ec" && [ -n "$SESSION_ID" ]
 
 ## Stakeholder Agent Reports {#stakeholder-agent-reports}
 **Requirements Phase:**
-- architecture-reviewer-requirements.md (when completed)
+- architect-requirements.md (when completed)
 - [other-agent]-requirements.md (when completed)
 
 **Implementation Reviews:**
-- architecture-reviewer-review1.md (when completed)
+- architect-review1.md (when completed)
 - [other-agent]-review1.md (when completed)
 
 ## Implementation Status {#implementation-status}
@@ -1852,9 +1852,9 @@ update_todo_with_violation_report()
 ```python
 # Batch related operations in single message
 parallel_tool_calls = [
-    {"tool": "Task", "agent": "architecture-reviewer", "mode": "requirements"},
-    {"tool": "Task", "agent": "style-reviewer", "mode": "requirements"},
-    {"tool": "Task", "agent": "quality-reviewer", "mode": "requirements"}
+    {"tool": "Task", "agent": "architect", "mode": "requirements"},
+    {"tool": "Task", "agent": "style", "mode": "requirements"},
+    {"tool": "Task", "agent": "quality", "mode": "requirements"}
 ]
 
 # Execute all in single message to reduce context fragmentation
@@ -1912,12 +1912,12 @@ for file_path in related_files:
 # Parallel agent calls in single message
 agent_calls = [
     {
-        'subagent_type': 'architecture-reviewer',
+        'subagent_type': 'architect',
         'description': 'Architecture requirements',
         'prompt': structured_prompt_template.format(domain='architecture')
     },
     {
-        'subagent_type': 'style-reviewer',
+        'subagent_type': 'style',
         'description': 'Style requirements',
         'prompt': structured_prompt_template.format(domain='style')
     }
@@ -2192,7 +2192,7 @@ recover_build_failure_partial_implementation() {
 
     # Step 1: Identify which merges succeeded
     echo "Analyzing git log for merged agent work..."
-    git log --oneline -20 | grep -E "(architecture-reviewer|code-quality|style-reviewer)"
+    git log --oneline -20 | grep -E "(architect|code-quality|style)"
 
     # Step 2: Run build to get specific error details
     echo "Running build to identify specific failures..."
@@ -2222,13 +2222,13 @@ recover_build_failure_partial_implementation() {
             echo "$ERRORS"
 
             # Decision: Main agent fixes if simple (missing imports)
-            # Otherwise, re-delegate to architecture-reviewer
+            # Otherwise, re-delegate to architect
             if echo "$ERRORS" | grep -q "cannot find symbol"; then
                 echo "Likely missing imports - main agent can fix"
                 # Fix missing imports
             else
-                echo "Complex compilation errors - re-delegating to architecture-reviewer"
-                # Re-invoke architecture-reviewer to fix
+                echo "Complex compilation errors - re-delegating to architect"
+                # Re-invoke architect to fix
             fi
             ;;
 
@@ -2236,8 +2236,8 @@ recover_build_failure_partial_implementation() {
             # Show test failures
             echo "$BUILD_OUTPUT" | grep -E "Tests run:|Failures:"
 
-            # Re-delegate to test-reviewer for test fixes
-            echo "Re-delegating test failures to test-reviewer agent"
+            # Re-delegate to test for test fixes
+            echo "Re-delegating test failures to test agent"
             ;;
 
         "fix_style_violations")
@@ -2248,8 +2248,8 @@ recover_build_failure_partial_implementation() {
                 echo "Small number of violations ($VIOLATION_COUNT) - main agent fixes"
                 # Fix style violations directly
             else
-                echo "Many violations ($VIOLATION_COUNT) - re-delegating to style-reviewer"
-                # Re-invoke style-reviewer
+                echo "Many violations ($VIOLATION_COUNT) - re-delegating to style"
+                # Re-invoke style
             fi
             ;;
 
@@ -2642,7 +2642,7 @@ resume_task_from_active_state() {
 **Example 1: Question → Audit → Question → Resume**
 
 ```
-Initial State: IMPLEMENTATION (architecture-reviewer working)
+Initial State: IMPLEMENTATION (architect working)
 
 [User interrupts with question]
 User: "What architecture pattern are you using?"
@@ -2658,7 +2658,7 @@ Agent: [Explains, lock state remains IMPLEMENTATION]
 
 [User triggers resumption]
 User: "Continue working"
-Agent: [Resumes IMPLEMENTATION state - architecture-reviewer continues work]
+Agent: [Resumes IMPLEMENTATION state - architect continues work]
 ```
 
 **Example 2: Status → Audit → Resume**

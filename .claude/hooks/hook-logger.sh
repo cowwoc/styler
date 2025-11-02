@@ -112,3 +112,10 @@ log_hook_warning() {
 	local DETAILS="${3:-}"
 	log_hook_execution "$HOOK_NAME" "$TRIGGER" "WARNING" "$DETAILS"
 }
+
+log_hook_info() {
+	local HOOK_NAME="${1:-unknown}"
+	local TRIGGER="${2:-unknown}"
+	local DETAILS="${3:-}"
+	log_hook_execution "$HOOK_NAME" "$TRIGGER" "INFO" "$DETAILS"
+}

@@ -11,7 +11,7 @@ echo "[HOOK DEBUG] load-todo.sh START" >&2
 # Parse hook input - session_id and tool info passed via JSON stdin
 INPUT=$(cat)
 SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool.name // empty')
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
 
 # Require session ID - fail fast if not provided
 if [[ -z "$SESSION_ID" ]]; then

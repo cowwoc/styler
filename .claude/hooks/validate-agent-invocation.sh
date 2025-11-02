@@ -24,8 +24,8 @@ source "${SCRIPT_DIR}/hook-logger.sh"
 # Read hook input from stdin
 INPUT=$(cat)
 SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
-TOOL_NAME=$(echo "$INPUT" | jq -r '.tool // empty')
-AGENT_NAME=$(echo "$INPUT" | jq -r '.params.subagent_type // empty')
+TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty')
+AGENT_NAME=$(echo "$INPUT" | jq -r '.tool_input.subagent_type // empty')
 
 # Set up logging context
 export HOOK_SESSION_ID="$SESSION_ID"

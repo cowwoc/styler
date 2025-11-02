@@ -9,7 +9,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/ensure-session-id.py"
+            "command": "/workspace/.claude/hooks/echo-session-id.sh"
           },
           {
             "type": "command",
@@ -37,10 +37,6 @@
     "UserPromptSubmit": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/ensure-session-id.py"
-          },
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/state-transition-detector.sh"
@@ -114,7 +110,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "/workspace/.claude/hooks/enforce-merge-workflow.sh"
+          },
+          {
+            "type": "command",
             "command": "/workspace/.claude/hooks/enforce-commit-squashing.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/enforce-checkpoints.sh"
           }
         ]
       },
@@ -137,17 +141,30 @@
         ]
       },
       {
-        "matcher": "tool:Bash && command:*git*merge*",
+        "matcher": "tool:Write && path:**.md",
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/enforce-checkpoints.sh"
+            "command": "/workspace/.claude/hooks/detect-retrospective-docs.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:Edit && path:**/task.json",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/validate-state-transition.sh"
           }
         ]
       },
       {
         "matcher": "tool:Task",
         "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/pre-tool-use-task-invoke.sh"
+          },
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/validate-agent-invocation.sh"
@@ -164,10 +181,23 @@
         ]
       },
       {
+        "matcher": "tool:Bash && command:*jq*state*SYNTHESIS*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/enforce-requirements-phase.sh"
+          }
+        ]
+      },
+      {
         "hooks": [
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/load-todo.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/debug-tool-use.sh"
           }
         ]
       }

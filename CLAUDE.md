@@ -17,33 +17,80 @@ Styler Java Code Formatter project configuration and universal guidance for all 
 
 ### ⚠️ MANDATORY USER APPROVAL CHECKPOINTS
 
-**CRITICAL**: Two checkpoints require EXPLICIT user approval before proceeding:
+**CRITICAL**: Two checkpoints require EXPLICIT user approval before proceeding.
 
-1. **SYNTHESIS → IMPLEMENTATION** (Plan Approval)
-   - **STOP after SYNTHESIS**: Present implementation plan in task.md
+**🚨 STATE MACHINE PROGRESSION IS MANDATORY**
+
+User approval checkpoints are tied to task.json state transitions. You MUST progress through the state machine - hooks only enforce protocol when states are used correctly.
+
+**State Workflow**:
+```
+INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLEMENTATION → VALIDATION → AWAITING_USER_APPROVAL → [USER APPROVAL] → COMPLETE
+         ↓              ↓              ↓                              ↓                             ↓
+    Create task.md  Gather reqs   Plan impl      Invoke agents    Build/test              Merge to main
+```
+
+**CRITICAL: REQUIREMENTS Phase is MANDATORY**
+
+❌ **WRONG**: Main agent writes implementation plan directly from todo.md
+✅ **CORRECT**: Invoke reviewer agents → Read reports → Synthesize plan
+
+**Required reviewers** (invoke in parallel):
+- `architecture-reviewer` - Analyzes dependencies, design patterns, integration points
+- `quality-reviewer` - Defines testing strategy, quality metrics, validation criteria
+- `style-reviewer` - Specifies documentation requirements, code style standards
+
+**Workflow**:
+1. CLASSIFIED state: Invoke ALL reviewer agents in parallel (single message, multiple Task calls)
+2. Wait for completion: Each writes `{task-name}-{agent}-requirements.md`
+3. READ all reports: Main agent synthesizes into unified plan
+4. SYNTHESIS state: Write implementation plan to task.md
+5. Get user approval
+6. IMPLEMENTATION state: Invoke updater agents
+
+**Checkpoint 1: SYNTHESIS → IMPLEMENTATION** (Plan Approval)
+   - **SYNTHESIS state**: Create implementation plan in task.md
+   - **STOP and PRESENT**: Show plan to user
    - **WAIT for user approval**: User must say "approved", "proceed", "looks good"
-   - **ONLY THEN**: Create approval flag and transition to IMPLEMENTATION
-   - Hook will BLOCK transitions without approval flag
+   - **ONLY THEN**: Create `/workspace/tasks/{task}/user-approved-synthesis.flag`
+   - **Transition to IMPLEMENTATION**: `jq '.state = "IMPLEMENTATION"' task.json`
+   - **NOW you can invoke Task tool**: Agents work in IMPLEMENTATION state
+   - Hook will BLOCK Task tool invocations from INIT state
+   - Hook will BLOCK IMPLEMENTATION transition without approval flag
 
-2. **AWAITING_USER_APPROVAL → COMPLETE** (Change Review)
-   - **STOP after REVIEW**: Present commit SHA and changes (git diff --stat)
+**Checkpoint 2: AWAITING_USER_APPROVAL → COMPLETE** (Change Review)
+   - **AWAITING_USER_APPROVAL state**: After validation passes
+   - **STOP and PRESENT**: Show commit SHA and `git diff --stat main...task-branch`
    - **WAIT for user approval**: User must say "approved", "merge it", "LGTM"
-   - **ONLY THEN**: Create approval flag and transition to COMPLETE
-   - Hook will BLOCK transitions without approval flag
+   - **ONLY THEN**: Create `/workspace/tasks/{task}/user-approved-changes.flag`
+   - **Transition to COMPLETE**: `jq '.state = "COMPLETE"' task.json`
+   - **NOW merge to main**: From /workspace/main
+   - Hook will BLOCK merges to main without approval flag
+   - Hook will BLOCK merges from wrong working directory
 
 **NEVER**:
+- ❌ Skip state progression (staying in INIT throughout task)
+- ❌ Invoke Task tool before transitioning to CLASSIFIED/IMPLEMENTATION
 - ❌ Proceed to IMPLEMENTATION without presenting plan
 - ❌ Merge to main without presenting changes
 - ❌ Assume silence or bypass mode means approval
 - ❌ Skip checkpoints because "plan is straightforward"
 
-**Enforcement**: `enforce-checkpoints.sh` hook automatically reverts state and blocks violations
+**Enforcement**:
+- `pre-tool-use-task-invoke.sh` blocks Task tool from INIT state
+- `enforce-merge-workflow.sh` validates merge location and approval
+- `enforce-checkpoints.sh` validates state transitions and approval flags
+
+**Why State Machine Matters**:
+- Hooks validate based on task.json state
+- Bypassing states disables protocol enforcement
+- User approval checkpoints are state-transition-dependent
 
 **SUB-AGENTS**: If you are a sub-agent (reviewer or updater), this file contains universal guidance only. You MUST also read `/workspace/main/docs/project/task-protocol-agents.md`
 
 **Domain-Specific Agents**: Additionally read domain-specific guides:
-- **Style agents** (style-reviewer, style-updater): `Read /workspace/main/docs/project/style-guide.md`
-- **Quality agents** (quality-reviewer, quality-updater, test-reviewer, test-updater): `Read /workspace/main/docs/project/quality-guide.md`
+- **Style agents** (style): `Read /workspace/main/docs/project/style-guide.md`
+- **Quality agents** (quality, test): `Read /workspace/main/docs/project/quality-guide.md`
 
 ## Universal Guidance
 
@@ -325,7 +372,7 @@ Edit: formatter/src/main/java/module-info.java
 ```bash
 # Creating business logic - WRONG STATE
 Write: formatter/src/main/java/FormattingRule.java
-  [Implements feature logic - should be done by architecture-updater]
+  [Implements feature logic - should be done by architect]
 ```
 
 ✅ **CORRECT**: Infrastructure setup during INIT
@@ -368,17 +415,17 @@ cat > /workspace/tasks/implement-formatter-api/task.json <<EOF
 EOF
 
 # 2. Create agent worktree
-git worktree add /workspace/tasks/implement-formatter-api/agents/architecture-updater/code \
-  -b implement-formatter-api-architecture-updater
+git worktree add /workspace/tasks/implement-formatter-api/agents/architect/code \
+  -b implement-formatter-api-architect
 
 # 3. Invoke agent via Task tool (agent creates files in THEIR worktree)
-Task tool: architecture-updater
+Task tool: architect
   requirements: "Create FormattingRule interface..."
-  worktree: /workspace/tasks/implement-formatter-api/agents/architecture-updater/code
+  worktree: /workspace/tasks/implement-formatter-api/agents/architect/code
 
 # 4. Main agent merges after agent completion
 cd /workspace/tasks/implement-formatter-api/code
-git merge implement-formatter-api-architecture-updater
+git merge implement-formatter-api-architect
 ```
 
 **Key Distinction**: Main agent COORDINATES (via Task tool), agents IMPLEMENT (via Write/Edit in agent worktrees)
@@ -416,7 +463,7 @@ git merge implement-formatter-api-architecture-updater
 
 **Stakeholder Reports** (at task root, one level up from code directory):
 - Temporary workflow artifacts for task protocol
-- Examples: `{task-name}-architecture-reviewer-requirements.md`, `{task-name}-style-reviewer-violations.json`
+- Examples: `{task-name}-architect-requirements.md`, `{task-name}-style-violations.json`
 - Lifecycle: Created during execution, cleaned up with worktrees in CLEANUP
 - Location: `/workspace/tasks/{task-name}/` (accessible to all agents)
 
