@@ -32,7 +32,7 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ### Phase 1: Mistake Identification
 
 **Input Requirements**:
-- Agent name that made the mistake (e.g., `architecture-updater`, `style-reviewer`, `main`)
+- Agent name that made the mistake (e.g., `architect`, `style`, `main`)
 - Task name if applicable (e.g., `implement-formatter-api`)
 - Description of what went wrong
 - Conversation ID or timestamp range (optional - will search recent if not provided)
@@ -46,23 +46,43 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ### Phase 2: Conversation Analysis
 
 **Access Conversation Logs**:
-```bash
-# Find recent conversations for this project
-PROJECT_DIR=~/.config/projects/$(basename $(pwd))
-CONVERSATIONS_DIR="$PROJECT_DIR/conversations"
 
-# If conversation ID provided, use it directly
-if [ -n "$CONVERSATION_ID" ]; then
-  CONV_FILE="$CONVERSATIONS_DIR/$CONVERSATION_ID/conversation.jsonl"
-else
-  # Find most recent conversations (last 5)
-  CONV_FILES=$(ls -t "$CONVERSATIONS_DIR"/*/conversation.jsonl | head -5)
+First, get the session ID from the SessionStart system reminder (provided by `get-session-id` skill):
+```
+✅ Session ID: 88194cb6-734b-498c-ab5d-ac7c773d8b34
+```
+
+Then access conversation logs:
+```bash
+# REQUIRED: Use session ID from system reminder
+SESSION_ID="88194cb6-734b-498c-ab5d-ac7c773d8b34"
+
+# Verify session ID is provided
+if [ -z "$SESSION_ID" ]; then
+  echo "ERROR: Session ID not available in context." >&2
+  echo "Expected system reminder: '✅ Session ID: {uuid}'" >&2
+  echo "Provided by get-session-id skill at SessionStart." >&2
+  exit 1
 fi
 
-# Read and parse conversation
-for file in $CONV_FILES; do
-  # Look for mentions of the agent name
-  grep -A 50 "$AGENT_NAME" "$file" | jq -r '.message.content // .content'
+# Main session conversation
+MAIN_CONVERSATION="/home/node/.config/projects/-workspace/${SESSION_ID}.jsonl"
+
+# Verify conversation file exists
+if [ ! -f "$MAIN_CONVERSATION" ]; then
+  echo "ERROR: Conversation file not found: $MAIN_CONVERSATION" >&2
+  exit 1
+fi
+
+# Agent sidechain conversations (if investigating agent-specific mistakes)
+AGENT_CONVERSATIONS=$(ls -t /home/node/.config/projects/-workspace/agent-*.jsonl 2>/dev/null | head -10)
+
+# Read and parse conversation for agent mentions
+jq -r "select(.message.content | tostring | contains(\"$AGENT_NAME\"))" "$MAIN_CONVERSATION"
+
+# For agent sidechain logs
+for agent_log in $AGENT_CONVERSATIONS; do
+  grep -l "$AGENT_NAME" "$agent_log" 2>/dev/null && echo "Found in: $agent_log"
 done
 ```
 
@@ -205,7 +225,7 @@ If ANY check fails: STOP and report the issue.
 
 ✅ **CORRECT**:
 \```bash
-cd /workspace/tasks/implement-api/agents/architecture-updater/code
+cd /workspace/tasks/implement-api/agents/architect/code
 Write: src/main/java/MyClass.java
 \```
 
@@ -604,29 +624,29 @@ Per CLAUDE.md "RETROSPECTIVE DOCUMENTATION POLICY": Do NOT create standalone ret
 **Root Cause Analysis**:
 1. **Category**: E. Protocol Violations (wrong worktree)
 2. **Available Information**: Agent prompt mentioned working directory but didn't emphasize the distinction
-3. **What Happened**: Agent used `cd /workspace/tasks/{task}/code/` instead of `cd /workspace/tasks/{task}/agents/architecture-updater/code/`
+3. **What Happened**: Agent used `cd /workspace/tasks/{task}/code/` instead of `cd /workspace/tasks/{task}/agents/architect/code/`
 4. **Why**: Prompt said "working directory" but didn't make the agent worktree requirement critical
 
 **Updates Applied**:
 
-1. **Agent Config** (`.claude/agents/architecture-updater.md`):
+1. **Agent Config** (`.claude/agents/architect.md`):
    ```markdown
    ## ⚠️ CRITICAL: Working Directory
 
    **YOU MUST WORK IN YOUR AGENT WORKTREE**
 
-   **Your worktree**: `/workspace/tasks/{task-name}/agents/architecture-updater/code/`
+   **Your worktree**: `/workspace/tasks/{task-name}/agents/architect/code/`
    **NOT the task worktree**: `/workspace/tasks/{task-name}/code/` ← PROTOCOL VIOLATION
 
    **Before ANY Write/Edit tool use**:
    1. Verify current directory: `pwd`
-   2. Confirm you're in `/workspace/tasks/{task}/agents/architecture-updater/code/`
+   2. Confirm you're in `/workspace/tasks/{task}/agents/architect/code/`
    3. If not, this is a CRITICAL ERROR - stop and report
 
    **Example**:
    ```bash
    # ✅ CORRECT
-   cd /workspace/tasks/implement-api/agents/architecture-updater/code
+   cd /workspace/tasks/implement-api/agents/architect/code
    Write: src/main/java/MyClass.java
 
    # ❌ WRONG - PROTOCOL VIOLATION
@@ -679,7 +699,7 @@ Per CLAUDE.md "RETROSPECTIVE DOCUMENTATION POLICY": Do NOT create standalone ret
    #!/bin/bash
    # Pre-Write hook: Verify agent is in correct worktree
    #
-   # ADDED: 2025-10-30 after architecture-updater created files in task worktree
+   # ADDED: 2025-10-30 after architect created files in task worktree
    # instead of agent worktree during implement-formatter-api task.
    # PREVENTS: Protocol violations from wrong working directory
 
@@ -704,7 +724,7 @@ Per CLAUDE.md "RETROSPECTIVE DOCUMENTATION POLICY": Do NOT create standalone ret
    Add worktree validation to pre-write hook
 
    **Fix Applied**:
-   - Updated: `.claude/agents/architecture-updater.md` (added critical warning)
+   - Updated: `.claude/agents/architect.md` (added critical warning)
    - Created: `.claude/hooks/pre-write.sh` (worktree validation)
    - Enhanced: `docs/project/task-protocol-agents.md` (common mistakes section)
 
@@ -738,14 +758,14 @@ Skill execution is successful when:
 /learn-from-mistake
 
 Then answer the prompts:
-- Agent: architecture-updater
+- Agent: architect
 - Task: implement-formatter-api
 - Issue: Created files in wrong worktree
 ```
 
 ### Direct Invocation
 ```
-Learn from the mistake where architecture-updater created source files in the task worktree instead of their agent worktree during implement-formatter-api task. This caused a protocol violation and required rework.
+Learn from the mistake where architect created source files in the task worktree instead of their agent worktree during implement-formatter-api task. This caused a protocol violation and required rework.
 ```
 
 ### Via Skill Tool
@@ -763,6 +783,16 @@ After execution, expect these files to be created/modified:
 4. **Git Commit**: Detailed commit message documenting the fix and rationale
 
 **NO retrospective documents created** - all documentation is inline or in git commits.
+
+## Related Skills
+
+**get-session-id**: Provides session ID automatically at SessionStart via hook
+- Use session ID from system reminder: `✅ Session ID: {uuid}`
+- Required for accessing conversation logs in Phase 2
+
+**read-conversation-history**: Access raw conversation logs for analysis
+- Uses session ID to locate: `/home/node/.config/projects/-workspace/{session-id}.jsonl`
+- Provides agent sidechain logs: `/home/node/.config/projects/-workspace/agent-*.jsonl`
 
 ## Integration with Audit
 

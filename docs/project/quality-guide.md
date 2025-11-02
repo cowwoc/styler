@@ -1,7 +1,7 @@
 # Code Quality Guide
 
 > **Version:** 1.0 | **Last Updated:** 2025-10-18
-> **Audience:** quality-reviewer, quality-updater, test-reviewer, test-updater
+> **Audience:** quality, test
 > **Purpose:** Code quality standards and test-driven development practices
 
 ## 🧪 UNIT TEST DRIVEN BUG FIXING {#unit-test-driven-bug-fixing}

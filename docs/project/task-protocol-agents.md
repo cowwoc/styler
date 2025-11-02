@@ -30,16 +30,16 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
         │   └── pom.xml             # Modified build config
         │
         └── agents/
-            ├── architecture-reviewer/
+            ├── architect/
             │   └── status.json     # Reviewer status tracking
-            ├── architecture-updater/
+            ├── architect/
             │   ├── code/           # Updater's isolated worktree
             │   │   ├── src/        # Implementation work
             │   │   └── pom.xml
             │   └── status.json     # Updater status tracking
-            ├── quality-reviewer/
+            ├── quality/
             │   └── status.json
-            └── quality-updater/
+            └── quality/
                 ├── code/
                 └── status.json
 ```
@@ -54,7 +54,7 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
 
 **Reviewer Agents**:
 - **Review location**: `/workspace/tasks/{task-name}/code/` (task branch, NOT updater worktrees)
-- **What to review**: Changes that have been merged to task branch by updater agents
+- **What to review**: Changes that have been merged to task branch by agents in implementation mode
 - **DO NOT review**: Individual updater worktrees (those are WIP)
 
 **Main Agent**:
@@ -78,14 +78,14 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
 
 ```json
 {
-  "agent": "architecture-reviewer",
+  "agent": "architect",
   "task": "implement-feature-x",
   "status": "WORKING|COMPLETE|BLOCKED",
   "decision": "APPROVED|REJECTED|PENDING",
   "round": 3,
   "last_review_sha": "abc123def456",
   "work_remaining": "none|description of pending work",
-  "feedback": "detailed feedback for updater agent (if REJECTED)",
+  "feedback": "detailed feedback for agent (implementation mode) (if REJECTED)",
   "updated_at": "2025-10-15T10:30:00Z"
 }
 ```
@@ -98,7 +98,7 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
 
 ```json
 {
-  "agent": "architecture-updater",
+  "agent": "architect",
   "task": "implement-feature-x",
   "status": "WORKING|COMPLETE|BLOCKED",
   "round": 3,
@@ -134,7 +134,7 @@ Implementation complete. Here is the code:
 
 ### Status Update Commands {#status-update-commands}
 
-**Updater agent after merging**:
+**Agent (implementation mode) after merging**:
 
 ```bash
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
@@ -151,7 +151,7 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
 EOF
 ```
 
-**Reviewer agent after reviewing**:
+**Agent (review mode) after reviewing**:
 
 ```bash
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
@@ -193,15 +193,15 @@ EOF
 ### Single Agent Round Pattern {#single-agent-round-pattern}
 
 ```
-1. Updater agent implements in their worktree (/workspace/tasks/{task}/agents/{agent}-updater/code)
-2. Updater agent validates locally: ./mvnw verify (in their worktree)
-3. Updater agent merges to task branch (/workspace/tasks/{task}/code)
-4. Updater agent updates status.json with COMPLETE
-5. Reviewer agent reviews what was merged to task branch
-6. Reviewer agent decides: APPROVED or REJECTED
+1. Agent (implementation mode) implements in their worktree (/workspace/tasks/{task}/agents/{agent}-updater/code)
+2. Agent (implementation mode) validates locally: ./mvnw verify (in their worktree)
+3. Agent (implementation mode) merges to task branch (/workspace/tasks/{task}/code)
+4. Agent (implementation mode) updates status.json with COMPLETE
+5. Agent (review mode) reviews what was merged to task branch
+6. Agent (review mode) decides: APPROVED or REJECTED
    - If APPROVED: Round complete, update status.json with decision=APPROVED
    - If REJECTED: Update status.json with decision=REJECTED and feedback
-7. If REJECTED: Updater agent reads feedback → fixes issues → merge → repeat from step 5
+7. If REJECTED: Agent (implementation mode) reads feedback → fixes issues → merge → repeat from step 5
 8. Round complete when reviewer decision=APPROVED
 ```
 
@@ -209,27 +209,27 @@ EOF
 
 ```
 Round 1 - Initial Implementation:
-├─ architecture-updater: Implement core interfaces → merge to task branch
-├─ quality-updater: Apply refactoring → merge to task branch
-├─ style-updater: Apply style rules → merge to task branch
-├─ test-updater: Implement test suite → merge to task branch
+├─ architect: Implement core interfaces → merge to task branch
+├─ quality: Apply refactoring → merge to task branch
+├─ style: Apply style rules → merge to task branch
+├─ test: Implement test suite → merge to task branch
 └─ All updaters: Update status.json with COMPLETE
 
 Round 1 - Review Merged Changes:
-├─ architecture-reviewer: Review task branch → REJECTED (ambiguous contracts)
-├─ quality-reviewer: Review task branch → APPROVED ✓
-├─ style-reviewer: Review task branch → REJECTED (12 violations)
-├─ test-reviewer: Review task branch → APPROVED ✓
+├─ architect: Review task branch → REJECTED (ambiguous contracts)
+├─ quality: Review task branch → APPROVED ✓
+├─ style: Review task branch → REJECTED (12 violations)
+├─ test: Review task branch → APPROVED ✓
 └─ Reviewers: Update status.json with decision
 
 Round 2 - Apply Reviewer Feedback:
-├─ architecture-updater: Fix contracts per feedback → merge
-├─ style-updater: Fix 12 violations per feedback → merge
+├─ architect: Fix contracts per feedback → merge
+├─ style: Fix 12 violations per feedback → merge
 └─ Updaters: Update status.json
 
 Round 2 - Re-review Fixes:
-├─ architecture-reviewer: Re-review → APPROVED ✓
-├─ style-reviewer: Re-review → APPROVED ✓
+├─ architect: Re-review → APPROVED ✓
+├─ style: Re-review → APPROVED ✓
 └─ All reviewers now APPROVED: Round complete
 
 Main agent checks all reviewer status.json files:
@@ -241,26 +241,26 @@ Main agent checks all reviewer status.json files:
 Main agent checks these conditions before transitioning to next state:
 
 ```
-- [ ] All updater agents have merged their changes to task branch
-- [ ] All reviewer agents have reviewed merged changes on task branch
-- [ ] All reviewer agents report decision=APPROVED (no REJECTED)
+- [ ] All agents in implementation mode have merged their changes to task branch
+- [ ] All agents in review mode have reviewed merged changes on task branch
+- [ ] All agents in review mode report decision=APPROVED (no REJECTED)
 - [ ] All agents have status=COMPLETE
 - [ ] Task branch passes ./mvnw verify
 ```
 
-## Updater Agent Design Decision Protocol {#updater-agent-design-decision-protocol}
+## Implementation Mode Design Decision Protocol {#implementation-mode-design-decision-protocol}
 
-When updater agents encounter unexpected design problems not specified in the implementation plan, they MUST consult reviewer/planner agents rather than making architectural decisions themselves.
+When agents in implementation mode encounter unexpected design problems not specified in the implementation plan, they MUST re-invoke themselves in review mode (model: sonnet) or invoke other agents in review mode rather than making architectural decisions themselves in implementation mode.
 
 ### Role Separation Principle {#role-separation-principle}
 
-**Reviewer Agents (Planners)**: Make architectural decisions, analyze requirements, create plans, resolve ambiguities
+**Review Mode (model: sonnet)**: Make architectural decisions, analyze requirements, create plans, resolve ambiguities
 
-**Updater Agents (Implementers)**: Execute mechanical implementation per plan, apply reviewer fixes, report blockers, DO NOT make architectural decisions independently
+**Implementation Mode (model: haiku)**: Execute mechanical implementation per plan, apply fixes from review mode, report blockers, DO NOT make architectural decisions independently
 
 ### When to Consult Reviewers {#when-to-consult-reviewers}
 
-Updater agents MUST report to reviewers when encountering:
+Agents in implementation mode MUST report to reviewers when encountering:
 
 1. **Unexpected Design Problems**: Planned approach not viable, multiple valid approaches exist, design pattern choice needed, ambiguous contracts
 2. **Scope Ambiguities**: Unspecified edge case handling, unclear component ownership, conflicting requirements
@@ -269,21 +269,21 @@ Updater agents MUST report to reviewers when encountering:
 ### Consultation Process {#consultation-process}
 
 ```
-1. Updater agent detects unexpected design problem
-2. Updater agent updates status.json:
+1. Agent (implementation mode) detects unexpected design problem
+2. Agent (implementation mode) updates status.json:
    {
      "status": "BLOCKED",
      "blocked_by": "design_decision_required",
      "details": "Specific description of problem and why plan is insufficient"
    }
-3. Updater agent returns with summary explaining blocker
-4. Main agent invokes reviewer agent with:
+3. Agent (implementation mode) returns with summary explaining blocker
+4. Main agent invokes agent (review mode) with:
    - Description of problem
    - Why current plan doesn't address it
    - Request for design guidance
-5. Reviewer agent provides updated plan section with decision
-6. Main agent provides updated plan to updater agent
-7. Updater agent implements per updated plan
+5. Agent (review mode) provides updated plan section with decision
+6. Main agent provides updated plan to agent (implementation mode)
+7. Agent (implementation mode) implements per updated plan
 ```
 
 **Example**:
@@ -303,7 +303,7 @@ Updater Action:
   - Returns: "Blocked: Plan requires input validation but doesn't specify framework.
              Project uses both requirements-java and Bean Validation. Need reviewer
              guidance on which to use for consistency."
-Main Agent: Invokes architecture-reviewer with problem description
+Main Agent: Invokes architect with problem description
 Reviewer: Analyzes project patterns, specifies "Use requirements-java requireThat()
           for consistency with existing security module"
 Updater: Implements using requirements-java per reviewer guidance
@@ -329,20 +329,20 @@ Co-Authored-By: {agent-type} <noreply@anthropic.com>
 
 ```bash
 # ✅ CORRECT - Architecture updater commit
-[architecture-updater] Implement FormattingRule and TransformationContext interfaces
+[architect] Implement FormattingRule and TransformationContext interfaces
 
 Created core API interfaces with proper contract definitions.
 Validated with SecurityConfig integration.
 
-Co-Authored-By: architecture-updater <noreply@anthropic.com>
+Co-Authored-By: architect <noreply@anthropic.com>
 
 # ✅ CORRECT - Quality updater commit
-[quality-updater] Add comprehensive test suite for FormattingViolation
+[quality] Add comprehensive test suite for FormattingViolation
 
 Implemented 11 unit tests covering validation, immutability, equals/hashCode.
 All tests passing with 100% coverage.
 
-Co-Authored-By: quality-updater <noreply@anthropic.com>
+Co-Authored-By: quality <noreply@anthropic.com>
 
 # ❌ VIOLATION - Missing agent signature
 Implement FormattingRule interface
@@ -558,16 +558,16 @@ public interface FormattingRule {
 
 ### Input Files (Where to Read) {#input-files-where-to-read}
 
-**Reviewer reports** (generated by reviewer agents, consumed by updater agents):
+**Reviewer reports** (generated by agents in review mode, consumed by agents in implementation mode):
 
 ```
 /workspace/tasks/{task-name}/{domain}-reviewer-report.json
 /workspace/tasks/{task-name}/{domain}-reviewer-report.md
 
 Examples:
-/workspace/tasks/add-api/architecture-reviewer-requirements.md
-/workspace/tasks/add-api/style-reviewer-violations.json
-/workspace/tasks/add-api/quality-reviewer-refactoring.json
+/workspace/tasks/add-api/architect-requirements.md
+/workspace/tasks/add-api/style-violations.json
+/workspace/tasks/add-api/quality-refactoring.json
 ```
 
 **Task requirements** (generated by main agent):
@@ -657,7 +657,7 @@ Full `./mvnw verify` is slow (30-60 seconds). Validate incrementally during deve
 
 ### Pattern: Reading Reviewer Feedback {#pattern-reading-reviewer-feedback}
 
-**Updater agents** must read reviewer feedback after REJECTED decision:
+**Agents in implementation mode** must read reviewer feedback after REJECTED decision:
 
 ```bash
 # Check reviewer decision
@@ -689,7 +689,7 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
   "task": "{TASK}",
   "status": "BLOCKED",
   "work_remaining": "Cannot proceed: missing dependency",
-  "blocked_by": "Requires FormatterApi interface from architecture-updater",
+  "blocked_by": "Requires FormatterApi interface from architect",
   "updated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 }
 EOF
@@ -703,20 +703,20 @@ Architecture change affects multiple agents:
 
 ```
 Round 1:
-- architecture-updater: Create new FormatterApi interface
-- architecture-updater: Merge to task branch
-- quality-updater: BLOCKED (waiting for FormatterApi)
-- style-updater: BLOCKED (waiting for FormatterApi)
+- architect: Create new FormatterApi interface
+- architect: Merge to task branch
+- quality: BLOCKED (waiting for FormatterApi)
+- style: BLOCKED (waiting for FormatterApi)
 
-Round 2 (after architecture-updater completes):
-- quality-updater: Implement FormatterApiImpl using new interface
-- style-updater: Apply style rules to FormatterApi
+Round 2 (after architect completes):
+- quality: Implement FormatterApiImpl using new interface
+- style: Apply style rules to FormatterApi
 - Both merge to task branch
 
 Round 3 (review):
-- architecture-reviewer: Review FormatterApi → APPROVED
-- quality-reviewer: Review FormatterApiImpl → APPROVED
-- style-reviewer: Review style → APPROVED
+- architect: Review FormatterApi → APPROVED
+- quality: Review FormatterApiImpl → APPROVED
+- style: Review style → APPROVED
 ```
 
 ## Summary: Agent Checklist {#summary-agent-checklist}

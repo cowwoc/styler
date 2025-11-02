@@ -73,19 +73,19 @@ EOF
 
 # Step 3: Create agent worktrees
 mkdir -p /workspace/tasks/{task-name}/agents
-git worktree add /workspace/tasks/{task-name}/agents/architecture-updater/code \
-  -b {task-name}-architecture-updater
-git worktree add /workspace/tasks/{task-name}/agents/quality-updater/code \
-  -b {task-name}-quality-updater
+git worktree add /workspace/tasks/{task-name}/agents/architect/code \
+  -b {task-name}-architect
+git worktree add /workspace/tasks/{task-name}/agents/quality/code \
+  -b {task-name}-quality
 
 # Step 4: Invoke agents (NOT implement directly)
-Task tool: architecture-updater
+Task tool: architect
   requirements: "..."
-  worktree: /workspace/tasks/{task-name}/agents/architecture-updater/code
+  worktree: /workspace/tasks/{task-name}/agents/architect/code
 
 # Step 5: Merge agent work after completion
 cd /workspace/tasks/{task-name}/code
-git merge {task-name}-architecture-updater
+git merge {task-name}-architect
 ```
 
 **Worktree Creation Helper**:
@@ -180,8 +180,8 @@ During IMPLEMENTATION state, main agent and stakeholder agents have STRICTLY SEP
 mechanical and trivial → main agent may fix after VALIDATION state begins.
 
 **Coordination (PERMITTED during IMPLEMENTATION)**:
-✅ Launching architecture-reviewer agent: "Implement FormatterApi interface with transform() method"
-✅ Monitoring agent status: Reading `/workspace/tasks/add-api/agents/architecture-updater/status.json`
+✅ Launching architect agent: "Implement FormatterApi interface with transform() method"
+✅ Monitoring agent status: Reading `/workspace/tasks/add-api/agents/architect/status.json`
 ✅ Updating lock file state: `jq '.state = "VALIDATION"' task.json`
 ✅ Creating task infrastructure: Writing `/workspace/tasks/add-api/task.md` with requirements
 
@@ -230,15 +230,15 @@ Technical-architect implements new integration tests requiring Mockito → agent
 
 ❌ **Using Edit/Write tools on ANY .java files** (source OR test)
 - Violation: `Edit: FormatterAPI.java` to fix compilation error
-- Correct: Delegate to quality-updater with error description
+- Correct: Delegate to quality with error description
 
 ❌ **Using Edit/Write tools on module-info.java**
 - Violation: `Edit: module-info.java` to add `requires transitive`
-- Correct: Delegate to architecture-updater with JPMS requirement
+- Correct: Delegate to architect with JPMS requirement
 
 ❌ **Using Edit/Write tools on pom.xml for dependency changes**
 - Violation: `Edit: pom.xml` to add missing dependency
-- Correct: Report to architecture-updater for dependency analysis
+- Correct: Report to architect for dependency analysis
 
 ❌ **Making compilation fixes directly**
 - Violation: Main agent adding `import java.util.List;` to fix compile error
@@ -246,12 +246,12 @@ Technical-architect implements new integration tests requiring Mockito → agent
 
 ❌ **Creating ANY source code files directly**
 - Violation: `Write: TransformationContext.java` to implement interface
-- Correct: Task tool invocation to architecture-updater
+- Correct: Task tool invocation to architect
 
 **CORRECT DELEGATION PATTERN**:
 
-✅ Delegate ALL code changes to updater agents
-✅ Report compilation issues back to updater agents
+✅ Delegate ALL code changes to agents in implementation mode
+✅ Report compilation issues back to agents in implementation mode
 ✅ Monitor status.json for agent completion
 ✅ Verify build success after agent updates
 ✅ Use Task tool exclusively for implementation work
@@ -271,7 +271,7 @@ git commit -m "Fix compilation"   # Committing violations!
 
 ```bash
 # Main agent during IMPLEMENTATION state
-Task: quality-updater
+Task: quality
   prompt: "Fix compilation error in FormatterAPI.java:
 
   Error: package io.github.cowwoc.styler.ast.core does not exist
@@ -282,7 +282,7 @@ Task: quality-updater
   - Verify build success with ./mvnw compile -pl formatter"
 
 # Wait for agent completion
-Read: /workspace/tasks/{task}/agents/quality-updater/status.json
+Read: /workspace/tasks/{task}/agents/quality/status.json
 
 # Verify build after agent completes
 Bash: ./mvnw clean verify -pl formatter
@@ -312,16 +312,16 @@ When presenting implementation work for protocol compliance review, session summ
 ## Implementation Phase Summary {#implementation-phase-summary}
 
 ### Agent Invocations (Parallel Launch): {#agent-invocations-parallel-launch}
-- architecture-updater: Task tool invoked in Message 15
-- quality-updater: Task tool invoked in Message 15 (parallel)
-- style-updater: Task tool invoked in Message 15 (parallel)
-- test-updater: Task tool invoked in Message 15 (parallel)
+- architect: Task tool invoked in Message 15
+- quality: Task tool invoked in Message 15 (parallel)
+- style: Task tool invoked in Message 15 (parallel)
+- test: Task tool invoked in Message 15 (parallel)
 
 ### Agent Commits to Task Branch: {#agent-commits-to-task-branch}
-- architecture-updater: abc123def (merged FormattingRule interfaces)
-- quality-updater: def456ghi (applied design patterns)
-- style-updater: ghi789jkl (code style compliance)
-- test-updater: jkl012mno (test suite implementation)
+- architect: abc123def (merged FormattingRule interfaces)
+- quality: def456ghi (applied design patterns)
+- style: ghi789jkl (code style compliance)
+- test: jkl012mno (test suite implementation)
 
 ### Verification: {#verification}
 ✅ Parallel agent launch pattern confirmed (all agents invoked in single message)
@@ -382,41 +382,41 @@ When presenting implementation work for protocol compliance review, session summ
 
 ### Agent Invocations {#agent-invocations}
 **Round 1 - Initial Implementation** (Message 15, 2025-10-19T14:32:00Z):
-- architecture-updater: Launched (parallel)
-- quality-updater: Launched (parallel)
-- style-updater: Launched (parallel)
-- test-updater: Launched (parallel)
+- architect: Launched (parallel)
+- quality: Launched (parallel)
+- style: Launched (parallel)
+- test: Launched (parallel)
 
 **Round 1 - Review** (Message 22, 2025-10-19T14:45:00Z):
-- architecture-reviewer: Launched (parallel)
-- quality-reviewer: Launched (parallel)
-- style-reviewer: Launched (parallel)
-- test-reviewer: Launched (parallel)
+- architect: Launched (parallel)
+- quality: Launched (parallel)
+- style: Launched (parallel)
+- test: Launched (parallel)
 
 **Round 2 - Fixes** (Message 28, 2025-10-19T15:02:00Z):
-- style-updater: Re-launched for violation fixes
-- architecture-updater: Re-launched for interface clarifications
+- style: Re-launched for violation fixes
+- architect: Re-launched for interface clarifications
 ```
 
 
 ```markdown
 CORRECT SEQUENCE:
 1. User approves implementation plan
-2. Main agent: "Launching updater agents for parallel implementation..."
+2. Main agent: "Launching agents in implementation mode for parallel implementation..."
 3. Main agent launches UPDATER agents in SINGLE MESSAGE (parallel):
-   - Task tool (architecture-updater): "Implement FormattingRule interfaces per requirements..."
-   - Task tool (quality-updater): "Apply refactoring and design patterns per requirements..."
-   - Task tool (style-updater): "Implement code following project style guidelines..."
-   - Task tool (test-updater): "Implement test suite per test strategy..."
-4. Updater agents implement in THEIR worktrees, validate locally, then merge to task branch
-5. Main agent: "Updaters have merged. Launching reviewer agents for parallel review..."
+   - Task tool (architect): "Implement FormattingRule interfaces per requirements..."
+   - Task tool (quality): "Apply refactoring and design patterns per requirements..."
+   - Task tool (style): "Implement code following project style guidelines..."
+   - Task tool (test): "Implement test suite per test strategy..."
+4. Agents in implementation mode implement in THEIR worktrees, validate locally, then merge to task branch
+5. Main agent: "Updaters have merged. Launching agents in review mode for parallel review..."
 6. Main agent launches REVIEWER agents in SINGLE MESSAGE (parallel):
-   - Task tool (architecture-reviewer): "Review merged architecture on task branch..."
-   - Task tool (quality-reviewer): "Review merged code quality on task branch..."
-   - Task tool (style-reviewer): "Review merged style compliance on task branch..."
-   - Task tool (test-reviewer): "Review merged test coverage on task branch..."
-7. Reviewer agents analyze and report APPROVED or REJECTED with feedback
-8. If any REJECTED → launch updater agents with feedback → re-review (repeat 5-7 until all APPROVED)
+   - Task tool (architect): "Review merged architecture on task branch..."
+   - Task tool (quality): "Review merged code quality on task branch..."
+   - Task tool (style): "Review merged style compliance on task branch..."
+   - Task tool (test): "Review merged test coverage on task branch..."
+7. Agents in review mode analyze and report APPROVED or REJECTED with feedback
+8. If any REJECTED → launch agents in implementation mode with feedback → re-review (repeat 5-7 until all APPROVED)
 9. When ALL reviewers report APPROVED → main agent updates lock file: state = "VALIDATION"
 10. Main agent NOW PERMITTED to fix minor issues (style violations, imports, etc.)
 11. Main agent runs final build verification: ./mvnw verify
@@ -429,7 +429,7 @@ CORRECT SEQUENCE:
 
     **Summary**:
     - [Key deliverables]
-    - All reviewer agents approved
+    - All agents in review mode approved
     - Build passing
 
     May I proceed to COMPLETE and merge to main?
@@ -494,7 +494,7 @@ CORRECT SEQUENCE:
 
 **Key Transition Point**: Step 9 (VALIDATION state) is when main agent permissions change from PROHIBITED to
 PERMITTED for minor fixes. Steps 5-8 are iterative rounds within IMPLEMENTATION state using both reviewer and
-updater agents until all reviewers approve.
+agents in implementation mode until all reviewers approve.
 
 **VIOLATION PATTERN** (NEVER DO THIS):
 ```markdown
@@ -653,19 +653,19 @@ IF (issue_type == "compilation_error"):
     IF (simple_fix like missing_import OR unused_variable):
         ✅ Main agent fixes directly
     ELSE:
-        ❌ Re-delegate to architecture-updater agent
+        ❌ Re-delegate to architect agent
 
 ELSE IF (issue_type == "style_violation"):
     IF (count <= 5 violations total across all files AND fixes are mechanical like whitespace/imports):
         ✅ Main agent fixes directly
     ELSE:
-        ❌ Re-delegate to style-updater agent
+        ❌ Re-delegate to style agent
 
 ELSE IF (issue_type == "test_failure"):
     IF (simple_fix like assertion_update):
         ✅ Main agent fixes directly
     ELSE:
-        ❌ Re-delegate to test-updater agent
+        ❌ Re-delegate to test agent
 
 ELSE IF (issue_type == "architecture_issue" OR "security_issue"):
     ❌ ALWAYS re-delegate to appropriate domain expert
@@ -719,9 +719,9 @@ When main agent determines fixes require agent delegation (count > 5, complexity
 **Example - Option A (Iterative)**:
 ```markdown
 # During VALIDATION, found 12 style violations
-# Decision: Exceeds threshold (5), delegate to style-updater
+# Decision: Exceeds threshold (5), delegate to style
 
-Task tool (style-updater): "Fix 12 style violations in FormattingRule.java:
+Task tool (style), model: haiku, prompt: "Fix 12 style violations in FormattingRule.java:
 - Lines 45-52: Missing JavaDoc on public methods
 - Lines 78-83: SeparatorWrap violations (closing parentheses)
 - Line 102: Unused import statement
@@ -745,7 +745,7 @@ Please fix in your worktree, validate with checkstyle, and merge to task branch.
 jq '.state = "IMPLEMENTATION"' /workspace/tasks/{task-name}/task.json
 
 # Document in task.md and launch full round
-Task tool (architecture-updater): "Address architectural issues found during validation..."
+Task tool (architect), model: haiku, prompt: "Address architectural issues found during validation..."
 ```
 
 ## 🚨 TASK PROTOCOL SUMMARY {#task-protocol}
@@ -1246,20 +1246,20 @@ tracking
 
 ❌ **Anti-Pattern (Sequential Launches - wastes ~20,000 tokens)**:
 ```markdown
-Message 1: Task(architecture-reviewer)
+Message 1: Task(architect)
 [wait for completion]
-Message 2: Task(quality-reviewer)
+Message 2: Task(quality)
 [wait for completion]
-Message 3: Task(style-reviewer)
+Message 3: Task(style)
 [wait for completion]
 ```
 
 ✅ **Required Pattern (Parallel Launch in Single Message)**:
 ```markdown
 Single Message:
-  Task(architecture-reviewer): "Analyze architecture requirements..."
-  Task(quality-reviewer): "Review quality standards..."
-  Task(style-reviewer): "Validate style requirements..."
+  Task(architect): "Analyze architecture requirements..."
+  Task(quality): "Review quality standards..."
+  Task(style): "Validate style requirements..."
 [all agents run concurrently, wait for all completions]
 ```
 
@@ -1269,9 +1269,9 @@ Single Message:
 - **Savings: ~8,000 tokens (67% reduction) per agent invocation round**
 
 **When to Use Parallel Invocation**:
-- ✅ REQUIREMENTS phase: Launch all reviewer agents simultaneously (architecture, quality, style, test)
-- ✅ IMPLEMENTATION phase: Launch all updater agents simultaneously when implementing parallel components
-- ✅ REVIEW phase: Launch all reviewer agents simultaneously for final validation
+- ✅ REQUIREMENTS phase: Launch all agents in review mode simultaneously (architecture, quality, style, test)
+- ✅ IMPLEMENTATION phase: Launch all agents in implementation mode simultaneously when implementing parallel components
+- ✅ REVIEW phase: Launch all agents in review mode simultaneously for final validation
 - ❌ Do NOT parallelize agents with dependencies (e.g., architecture must complete before implementation)
 
 **Tool Call Syntax**:
@@ -1281,24 +1281,24 @@ All Task calls must appear in the same `<function_calls>` block to execute in pa
 
 ✅ **CORRECT** (Single message with 4 parallel Task calls - saves ~24,000 tokens):
 ```
-Main agent launches all reviewer agents in ONE message:
-- Task(architecture-reviewer): Gather architecture requirements
-- Task(style-reviewer): Gather style requirements
-- Task(quality-reviewer): Gather quality requirements
-- Task(test-reviewer): Gather test requirements
+Main agent launches all agents in review mode in ONE message:
+- Task(architect): Gather architecture requirements
+- Task(style): Gather style requirements
+- Task(quality): Gather quality requirements
+- Task(test): Gather test requirements
 
 Result: All 4 agents execute concurrently, single round-trip
 ```
 
 ❌ **VIOLATION** (Sequential launches - wastes ~24,000 tokens):
 ```
-Message 1: Task(architecture-reviewer)
+Message 1: Task(architect)
 [Wait for response...]
-Message 2: Task(style-reviewer)
+Message 2: Task(style)
 [Wait for response...]
-Message 3: Task(quality-reviewer)
+Message 3: Task(quality)
 [Wait for response...]
-Message 4: Task(test-reviewer)
+Message 4: Task(test)
 
 Result: 4 sequential round-trips, 3x more latency
 ```
@@ -1309,7 +1309,7 @@ Result: 4 sequential round-trips, 3x more latency
 - Compilation errors (blocking all other checks)
 - JPMS module resolution failures
 - Missing dependencies (cannot proceed without)
-- Architecture violations detected by build-reviewer
+- Architecture violations detected by build
 
 **Use BATCH COLLECTION (collect all, fix together)**:
 - Style violations (checkstyle, PMD)
@@ -1413,19 +1413,24 @@ cd /workspace/tasks/my-task/code
 
 ❌ **PROHIBITED (Sequential - wastes 8000+ tokens)**:
 ```markdown
-Message 1: Task tool (architecture-updater) with implementation instructions
+Message 1: Task tool (architect) with implementation instructions
 [Wait for response]
-Message 2: Task tool (style-updater) with review instructions
+Message 2: Task tool (style) with review instructions
 [Wait for response]
-Message 3: Task tool (quality-updater) with quality check
+Message 3: Task tool (quality) with quality check
 ```
 
 ✅ **REQUIRED (Parallel - efficient)**:
 ```markdown
-Single Message:
-Task tool (architecture-updater): "Implement FormattingRule interfaces..."
-Task tool (style-updater): "Review implementation for style compliance..."
-Task tool (quality-updater): "Audit code quality and design patterns..."
+Single Message - Implementation Mode:
+Task tool (architect), model: haiku, prompt: "Implement FormattingRule interfaces..."
+Task tool (style), model: haiku, prompt: "Apply style guidelines to implementation..."
+Task tool (quality), model: haiku, prompt: "Apply design patterns per requirements..."
+
+Single Message - Review Mode:
+Task tool (architect), model: sonnet, prompt: "Review implementation for completeness..."
+Task tool (style), model: sonnet, prompt: "Review implementation for style compliance..."
+Task tool (quality), model: sonnet, prompt: "Audit code quality and design patterns..."
 ```
 
 **When Parallel Execution is NOT Appropriate**:
@@ -1477,9 +1482,9 @@ Message 1 (Setup phase):
   Read README.md
 
 Message 2 (Parallel implementation):
-  Task (architecture-updater): "Implement FormattingRule..."
-  Task (style-updater): "Review for style compliance..."
-  Task (quality-updater): "Audit design patterns..."
+  Task (architect): "Implement FormattingRule..."
+  Task (style): "Review for style compliance..."
+  Task (quality): "Audit design patterns..."
 
 Message 3 (Verification - sequential after Message 2):
   Bash: ./mvnw verify

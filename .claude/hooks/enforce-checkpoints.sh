@@ -42,11 +42,11 @@ SESSION_ID=$(get_session_id "$INPUT")
 if [[ -n "$SESSION_ID" ]]; then
 	TRIGGER_TYPE="UserPromptSubmit"
 else
-	# Try to parse as PreToolUse hook (has tool and parameters)
-	TOOL_NAME=$(echo "$INPUT" | jq -r '.tool // empty' 2>/dev/null || echo "")
+	# Try to parse as PreToolUse hook (has tool_name and tool_input)
+	TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name // empty' 2>/dev/null || echo "")
 	if [[ -n "$TOOL_NAME" ]]; then
 		TRIGGER_TYPE="PreToolUse"
-		TOOL_PARAMS=$(echo "$INPUT" | jq -r '.parameters // {}' 2>/dev/null || echo "{}")
+		TOOL_PARAMS=$(echo "$INPUT" | jq -r '.tool_input // {}' 2>/dev/null || echo "{}")
 	fi
 fi
 
@@ -94,6 +94,10 @@ if [[ "$TRIGGER_TYPE" == "UserPromptSubmit" ]]; then
 
 		# Only validate IMPLEMENTATION state transitions
 		if [[ "$CURRENT_STATE" != "IMPLEMENTATION" ]]; then
+			# Diagnostic: Explain why checkpoint not enforced
+			if [[ "$CURRENT_STATE" == "INIT" ]] || [[ "$CURRENT_STATE" == "CLASSIFIED" ]] || [[ "$CURRENT_STATE" == "SYNTHESIS" ]]; then
+				log_hook_info "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: Checkpoint not enforced (state=$CURRENT_STATE, expected IMPLEMENTATION for synthesis approval checkpoint)"
+			fi
 			continue
 		fi
 
@@ -223,6 +227,10 @@ if [[ "$TRIGGER_TYPE" == "UserPromptSubmit" ]]; then
 
 		# Only validate COMPLETE state transitions
 		if [[ "$CURRENT_STATE" != "COMPLETE" ]]; then
+			# Diagnostic: Explain why checkpoint not enforced
+			if [[ "$CURRENT_STATE" == "INIT" ]] || [[ "$CURRENT_STATE" == "IMPLEMENTATION" ]] || [[ "$CURRENT_STATE" == "VALIDATION" ]] || [[ "$CURRENT_STATE" == "AWAITING_USER_APPROVAL" ]]; then
+				log_hook_info "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: Checkpoint not enforced (state=$CURRENT_STATE, expected COMPLETE for change approval checkpoint)"
+			fi
 			continue
 		fi
 

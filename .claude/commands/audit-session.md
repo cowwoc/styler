@@ -13,14 +13,14 @@ efficiency opportunities, and documentation improvements.
 The audit pipeline consists of multiple agents and skills with conditional branching:
 
 ```
-process-recorder → process-compliance-reviewer → CONDITIONAL BRANCH:
+parse-conversation-timeline skill → audit-protocol-compliance skill → CONDITIONAL BRANCH:
     (facts)         (compliance + violations)       ├─ [CRITICAL/HIGH violations] → learn-from-mistakes
                                                     │   (root cause analysis + prevention)
                                                     │
-                                                    └─ [PASSED] → process-efficiency-reviewer
+                                                    └─ [PASSED] → audit-protocol-efficiency skill
                                                         (optimizations + recommendations)
                     ↓
-                config-updater → Apply fixes (immediate + preventive)
+                config → Apply fixes (immediate + preventive)
                 (apply changes)
 ```
 
@@ -31,17 +31,17 @@ enabling systematic prevention rather than just fixing individual instances.
 
 ### Phase 1: Conversation Parsing (Timeline Generation)
 
-**Agent**: process-recorder
+**Agent**: parse-conversation-timeline skill
 **Purpose**: Transform 6MB raw conversation into 100-300KB structured timeline for reviewer queries
 **Output**: Comprehensive structured timeline JSON with chronological events, git status, task state, statistics
 
-**Design Philosophy**: process-recorder provides comprehensive timeline that ANY reviewer can query. It doesn't pre-filter based on specific compliance checks - reviewers extract what they need.
+**Design Philosophy**: parse-conversation-timeline skill provides comprehensive timeline that ANY reviewer can query. It doesn't pre-filter based on specific compliance checks - reviewers extract what they need.
 
 **Architecture Benefits**:
 - **Token Efficient**: Parses 6MB conversation ONCE, multiple reviewers share 300KB timeline
-- **Extensible**: Adding new reviewers doesn't require updating process-recorder
+- **Extensible**: Adding new reviewers doesn't require updating parse-conversation-timeline skill
 - **Complete**: Timeline contains ALL events - no missing data for unexpected queries
-- **Independent**: Main agent cannot filter data before process-recorder accesses it
+- **Independent**: Main agent cannot filter data before parse-conversation-timeline skill accesses it
 
 **Launch Sequence**:
 
@@ -49,8 +49,8 @@ enabling systematic prevention rather than just fixing individual instances.
 # Step 1: Main agent invokes read-conversation-history skill
 Skill: read-conversation-history
 
-# Step 2: Launch process-recorder to parse conversation into structured timeline
-Task tool (process-recorder): "Parse raw conversation from read-conversation-history skill into comprehensive structured timeline. Timeline must include:
+# Step 2: Launch parse-conversation-timeline skill to parse conversation into structured timeline
+Task tool (parse-conversation-timeline skill): "Parse raw conversation from read-conversation-history skill into comprehensive structured timeline. Timeline must include:
 
 - session_metadata: session ID, task name, timestamps, conversation file location
 - timeline: chronological array of ALL events (user messages, tool uses, tool results, state transitions)
@@ -67,7 +67,7 @@ For each timeline event, include:
 Use methods from read-conversation-history skill to access conversation.jsonl. Output comprehensive structured timeline JSON that reviewers can query for ANY compliance or efficiency check."
 ```
 
-**Timeline Schema** (see process-recorder.md for full spec):
+**Timeline Schema** (see parse-conversation-timeline skill.md for full spec):
 - 100-300KB structured JSON
 - Chronological events with full context
 - Pre-computed statistics and aggregations
@@ -75,16 +75,16 @@ Use methods from read-conversation-history skill to access conversation.jsonl. O
 
 ### Phase 2: Compliance Review (Always Runs)
 
-**Agent**: process-compliance-reviewer
+**Agent**: audit-protocol-compliance skill
 **Purpose**: Query structured timeline for protocol violations and recommend preventive changes
-**Input**: Structured timeline from process-recorder
+**Input**: Structured timeline from parse-conversation-timeline skill
 **Output**: Violations list with recommended protocol changes
 
 **ALWAYS RUNS** - compliance review happens for every audit
 
 **Review Process**: Compliance reviewer queries the structured timeline for specific checks. Timeline is comprehensive - reviewer extracts compliance-relevant data.
 
-**Query Examples** (executed by process-compliance-reviewer):
+**Query Examples** (executed by audit-protocol-compliance skill):
 
 ```bash
 # Check 0.0: User Approval Checkpoints
@@ -105,10 +105,10 @@ jq '.timeline[] | select(.actor == "main" and .file_classification.worktree_type
 
 # Check 0.5: Complete REQUIREMENTS Phase
 jq '.task_state.agent_outputs' timeline.json
-→ Missing architecture-reviewer output → VIOLATION
+→ Missing architect output → VIOLATION
 ```
 
-**Compliance Checks** (process-compliance-reviewer queries timeline for each):
+**Compliance Checks** (audit-protocol-compliance skill queries timeline for each):
 
 **Check 0.0**: User approval checkpoints (query statistics.approval_checkpoints)
 **Check 0.1**: Task merge to main (query git_status.branches, task_state.module_in_main)
@@ -118,9 +118,9 @@ jq '.task_state.agent_outputs' timeline.json
 **Check 0.5**: Complete REQUIREMENTS phase (query task_state.agent_outputs)
 **Check 1.0-3.0**: Additional protocol checks (query timeline as needed)
 
-Launch the process-compliance-reviewer agent:
+Launch the audit-protocol-compliance skill agent:
 ```
-Task tool (process-compliance-reviewer): "Query structured timeline from process-recorder to execute MANDATORY compliance checks. Timeline contains comprehensive event data - extract what you need for each check.
+Task tool (audit-protocol-compliance skill): "Query structured timeline from parse-conversation-timeline skill to execute MANDATORY compliance checks. Timeline contains comprehensive event data - extract what you need for each check.
 
 CRITICAL checks to query:
 - Check 0.0: Query statistics.approval_checkpoints for user approval after SYNTHESIS/REVIEW
@@ -134,23 +134,23 @@ For each violation found, provide severity, evidence from timeline queries, reco
 
 ### Phase 3: Efficiency Review (Conditional)
 
-**Agent**: process-efficiency-reviewer
+**Agent**: audit-protocol-efficiency skill
 **Purpose**: Query structured timeline for efficiency opportunities and recommend improvements
-**Input**: Structured timeline from process-recorder + process-compliance-reviewer results
+**Input**: Structured timeline from parse-conversation-timeline skill + audit-protocol-compliance skill results
 **Condition**: ONLY runs if no CRITICAL or HIGH severity violations detected
 
 **Decision Logic**:
 ```
-IF process-compliance-reviewer contains CRITICAL or HIGH severity violations:
-  → SKIP process-efficiency-reviewer (fix major violations first)
+IF audit-protocol-compliance skill contains CRITICAL or HIGH severity violations:
+  → SKIP audit-protocol-efficiency skill (fix major violations first)
 
 ELSE:
-  → Launch process-efficiency-reviewer
+  → Launch audit-protocol-efficiency skill
 ```
 
 **Review Process**: Efficiency reviewer queries the same structured timeline for different patterns - parallelization opportunities, redundant operations, token usage optimization.
 
-**Query Examples** (executed by process-efficiency-reviewer):
+**Query Examples** (executed by audit-protocol-efficiency skill):
 
 ```bash
 # Find sequential Task calls that could be parallel
@@ -170,9 +170,9 @@ jq '.timeline[] | select(.type == "tool_result" and .estimated_tokens > 5000)' t
 → Verbose outputs consuming tokens → Summarization opportunity
 ```
 
-Launch the process-efficiency-reviewer agent (if no major violations):
+Launch the audit-protocol-efficiency skill agent (if no major violations):
 ```
-Task tool (process-efficiency-reviewer): "Query structured timeline from process-recorder to identify protocol efficiency opportunities. Timeline contains comprehensive event data - extract patterns for efficiency analysis.
+Task tool (audit-protocol-efficiency skill): "Query structured timeline from parse-conversation-timeline skill to identify protocol efficiency opportunities. Timeline contains comprehensive event data - extract patterns for efficiency analysis.
 
 Focus areas to query:
 - Execution time: Query timeline for sequential Task calls that could be parallel
@@ -184,33 +184,33 @@ Quantify impact of each opportunity (token savings, time reduction). Recommend s
 
 ### Phase 4: Apply Recommendations
 
-**Agent**: config-updater
+**Agent**: config
 **Purpose**: Apply recommended changes from both reviewers
-**Input**: Aggregated recommendations from process-compliance-reviewer + process-efficiency-reviewer (if ran)
+**Input**: Aggregated recommendations from audit-protocol-compliance skill + audit-protocol-efficiency skill (if ran)
 **Output**: Applied changes with verification status
 
 **Aggregation Logic**:
 ```
-recommendations = process-compliance-reviewer.recommended_changes
-IF process-efficiency-reviewer ran:
-  recommendations += process-efficiency-reviewer.recommended_changes
+recommendations = audit-protocol-compliance skill.recommended_changes
+IF audit-protocol-efficiency skill ran:
+  recommendations += audit-protocol-efficiency skill.recommended_changes
 ```
 
-Launch the config-updater agent:
+Launch the config agent:
 ```
-Task tool (config-updater): "Apply Claude Code configuration changes. Input: [aggregated recommendations from reviewers]. For each recommendation: read current state, apply using Edit tool, verify by reading updated file."
+Task tool (config): "Apply Claude Code configuration changes. Input: [aggregated recommendations from reviewers]. For each recommendation: read current state, apply using Edit tool, verify by reading updated file."
 ```
 
 ### Phase 4a: Root Cause Analysis (Conditional - For Violations)
 
 **Skill**: learn-from-mistakes
 **Purpose**: Deep root cause analysis and systematic prevention for violations
-**Input**: Violation details from process-compliance-reviewer
+**Input**: Violation details from audit-protocol-compliance skill
 **Condition**: ONLY runs if CRITICAL or HIGH severity violations detected
 
 **Decision Logic**:
 ```
-IF process-compliance-reviewer contains CRITICAL or HIGH severity violations:
+IF audit-protocol-compliance skill contains CRITICAL or HIGH severity violations:
   → Launch learn-from-mistakes skill with violation details
   → Get deeper root cause analysis
   → Update protocol/hooks to prevent recurrence systematically
@@ -245,7 +245,7 @@ After all agents complete, synthesize a comprehensive report:
 ## Session Audit Report
 
 ### Compliance Status: [PASSED/FAILED]
-- **Overall Verdict**: [process-compliance-reviewer verdict]
+- **Overall Verdict**: [audit-protocol-compliance skill verdict]
 - **Violations**: [count] ([severity breakdown])
 - **Compliant Checks**: [passed]/[total]
 
@@ -254,8 +254,8 @@ After all agents complete, synthesize a comprehensive report:
 - **Check ID**: [check number]
 - **Severity**: [CRITICAL/HIGH/MEDIUM]
 - **Rule**: [protocol rule violated]
-- **Evidence**: [actual behavior from process-recorder]
-- **Recovery Options**: [numbered list from process-compliance-reviewer]
+- **Evidence**: [actual behavior from parse-conversation-timeline skill]
+- **Recovery Options**: [numbered list from audit-protocol-compliance skill]
 
 ### Root Cause Analysis (if CRITICAL/HIGH violations)
 [From learn-from-mistakes skill:]
@@ -293,11 +293,11 @@ After all agents complete, synthesize a comprehensive report:
 ## Agent Configuration References
 
 **Agent Locations**:
-- `/workspace/main/.claude/agents/process-recorder.md`
-- `/workspace/main/.claude/agents/process-compliance-reviewer.md`
-- `/workspace/main/.claude/agents/process-efficiency-reviewer.md`
-- `/workspace/main/.claude/agents/config-reviewer.md`
-- `/workspace/main/.claude/agents/config-updater.md`
+- `/workspace/main/.claude/agents/parse-conversation-timeline skill.md`
+- `/workspace/main/.claude/agents/audit-protocol-compliance skill.md`
+- `/workspace/main/.claude/agents/audit-protocol-efficiency skill.md`
+- `/workspace/main/.claude/agents/config.md`
+- `/workspace/main/.claude/agents/config.md`
 
 **Methodology Reference**:
 - `/workspace/main/docs/project/multi-agent-process-governance.md`
@@ -305,19 +305,19 @@ After all agents complete, synthesize a comprehensive report:
 ## Success Criteria
 
 **Audit Execution Completed When**:
-- [ ] process-recorder produced structured JSON output
-- [ ] process-compliance-reviewer provided binary verdict (PASSED/FAILED)
-- [ ] process-efficiency-reviewer ran (if PASSED) or skipped (if FAILED)
+- [ ] parse-conversation-timeline skill produced structured JSON output
+- [ ] audit-protocol-compliance skill provided binary verdict (PASSED/FAILED)
+- [ ] audit-protocol-efficiency skill ran (if PASSED) or skipped (if FAILED)
 - [ ] learn-from-mistakes ran (if CRITICAL/HIGH violations) or skipped (if no major violations)
-- [ ] config-reviewer identified configuration gaps
-- [ ] config-updater applied proposed fixes
+- [ ] config identified configuration gaps
+- [ ] config applied proposed fixes
 - [ ] Comprehensive report synthesized and presented
 
 **Quality Gates**:
-- process-recorder output includes actual task state from task.json
-- process-compliance-reviewer executes Check 0.1 and 0.2 FIRST
-- No rationalizations in process-compliance-reviewer output
-- process-efficiency-reviewer only runs on PASSED sessions
+- parse-conversation-timeline skill output includes actual task state from task.json
+- audit-protocol-compliance skill executes Check 0.1 and 0.2 FIRST
+- No rationalizations in audit-protocol-compliance skill output
+- audit-protocol-efficiency skill only runs on PASSED sessions
 - Report includes actionable recovery options for violations
 
 ## Expected Output Format
@@ -336,14 +336,14 @@ Present the audit report to the user with:
 
 **Decision Logic**:
 ```
-IF process-compliance-reviewer.overall_verdict == "FAILED":
+IF audit-protocol-compliance skill.overall_verdict == "FAILED":
   IF (auto-apply fixes available AND fixes address violation root causes):
     → Execute Phase 5 (fix violations first, then re-audit)
   ELSE:
     → SKIP Phase 5 (manual intervention required)
 
-ELSE IF process-compliance-reviewer.overall_verdict == "PASSED":
-  IF (config-reviewer OR process-efficiency-reviewer identified fixable issues):
+ELSE IF audit-protocol-compliance skill.overall_verdict == "PASSED":
+  IF (config OR audit-protocol-efficiency skill identified fixable issues):
     → Execute Phase 5 (preventive improvements)
   ELSE:
     → SKIP Phase 5 (no fixes needed)
@@ -396,7 +396,7 @@ Refer to [main-agent-coordination.md § Post-Implementation Issue Handling Decis
 After presenting the audit report:
 
 1. **Categorize Fixes**:
-   - List all recommended fixes from process-compliance-reviewer and config-reviewer
+   - List all recommended fixes from audit-protocol-compliance skill and config
    - Classify each as auto-apply or manual-review
    - Provide rationale for classification
    - **Prioritize fixes** using this order:
@@ -467,16 +467,16 @@ After presenting the audit report:
 
 ## Execution Instructions
 
-1. **Launch process-recorder** to gather session facts
+1. **Launch parse-conversation-timeline skill** to gather session facts
 2. **Wait for completion** and capture JSON output
-3. **Launch process-compliance-reviewer** with recorder output as input
+3. **Launch audit-protocol-compliance skill** with recorder output as input
 4. **Wait for compliance verdict**
 5. **Conditional launch based on verdict**:
    - **If CRITICAL/HIGH violations found**: Launch learn-from-mistakes skill for root cause analysis
-   - **If PASSED (no major violations)**: Launch process-efficiency-reviewer
+   - **If PASSED (no major violations)**: Launch audit-protocol-efficiency skill
    - **If FAILED with only MEDIUM/LOW violations**: Skip both (fix violations first)
-6. **Launch config-reviewer** to identify configuration gaps
-7. **Launch config-updater** to apply proposed fixes
+6. **Launch config** to identify configuration gaps
+7. **Launch config** to apply proposed fixes
 8. **Synthesize report** combining all agent/skill outputs
 9. **Present report** to user with clear next steps
 10. **Apply automatic fixes** (Phase 5):
