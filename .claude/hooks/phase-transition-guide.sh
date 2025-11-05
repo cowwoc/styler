@@ -114,10 +114,10 @@ REQUIRED ACTIONS:
    - LOW-RISK: general docs, todo.md, README
 
 2. ✅ Identify required stakeholder agents
-   - HIGH-RISK: architecture-reviewer, security-reviewer, quality-reviewer,
-                performance-reviewer, style-reviewer, test-reviewer
+   - HIGH-RISK: architect, hacker, engineer,
+                optimizer, formatter, tester
    - MEDIUM-RISK: domain-specific subset
-   - LOW-RISK: build-reviewer only (if build changes)
+   - LOW-RISK: builder only (if build changes)
 
 3. ✅ Write task.md with classification
    - Risk level
@@ -155,7 +155,7 @@ REQUIRED ACTIONS:
 1. ✅ Invoke ALL identified stakeholder agents IN PARALLEL
    - Use single message with multiple Task tool calls
    - Pass task.md as input context
-   - Example: Task("architecture-reviewer", "..."), Task("quality-reviewer", "...")
+   - Example: Task("architect", "..."), Task("engineer", "...")
 
 2. ✅ Wait for ALL agents to complete
    - Monitor agent completion status
@@ -195,9 +195,9 @@ EOF
 
 REQUIRED ACTIONS:
 1. ✅ Read ALL stakeholder requirement reports
-   - {task-name}-architecture-reviewer-requirements.md
-   - {task-name}-quality-reviewer-requirements.md
-   - {task-name}-style-reviewer-requirements.md
+   - {task-name}-architect-requirements.md
+   - {task-name}-engineer-requirements.md
+   - {task-name}-formatter-requirements.md
    - etc.
 
 2. ✅ Create comprehensive implementation plan
@@ -253,9 +253,9 @@ EOF
 			if [[ "$RISK_LEVEL" == "HIGH-RISK" ]]; then
 				cat << 'EOF'
 ⚠️  HIGH-RISK IMPLEMENTATION - MANDATORY DELEGATION:
-1. ✅ DELEGATE to updater agents (NOT implement yourself)
-   - Invoke {domain}-updater agents based on requirements
-   - Each agent works in: /workspace/tasks/{task}/agents/{agent}-updater/code/
+1. ✅ DELEGATE to stakeholder agents in IMPLEMENTATION mode (NOT implement yourself)
+   - Invoke stakeholder agents based on requirements
+   - Each agent works in: /workspace/tasks/{task}/agents/{agent}/code/
    - Agents implement, validate, then merge to task branch
 
 2. ❌ PROHIBITED ACTIONS
@@ -264,7 +264,7 @@ EOF
    - Main agent COORDINATES only
 
 3. ✅ COORDINATION PATTERN
-   - Invoke updater agents in parallel
+   - Invoke stakeholder agents in IMPLEMENTATION mode in parallel
    - Monitor status.json files for completion
    - Collect merged changes on task branch
    - Iterate rounds until all agents report COMPLETE
@@ -366,28 +366,28 @@ EOF
    (Section: "VALIDATION → REVIEW")
 
 REQUIRED ACTIONS:
-1. ✅ Invoke ALL stakeholder reviewer agents IN PARALLEL
+1. ✅ Invoke ALL stakeholder agents in VALIDATION mode IN PARALLEL
    - Same agents from REQUIREMENTS phase
    - Each reviews implementation against their requirements
-   - Pattern: Task("architecture-reviewer", "..."), Task("quality-reviewer", "...")
+   - Pattern: Task("architect", "..."), Task("engineer", "...")
 
 2. ✅ Collect review reports
    - Each agent writes status.json with decision: APPROVED or REJECTED
-   - Location: /workspace/tasks/{task-name}/agents/{agent}-reviewer/status.json
+   - Location: /workspace/tasks/{task-name}/agents/{agent}/status.json
 
 3. ✅ Check for unanimous approval
    - ALL agents must have decision: "APPROVED"
-   - ANY "REJECTED" → Invoke corresponding updater agents
-   - Updaters fix issues, merge, reviewers re-review
+   - ANY "REJECTED" → Invoke corresponding stakeholder agents in IMPLEMENTATION mode
+   - Implementation agents fix issues, merge, validation agents re-review
    - Repeat until all APPROVED
 
 4. ✅ Iterative rounds until consensus
-   - Round N: Reviewers review → some REJECT with feedback
-   - Round N+1: Updaters fix → merge → reviewers re-review
+   - Round N: Validation agents review → some REJECT with feedback
+   - Round N+1: Implementation agents fix → merge → validation agents re-review
    - Continue until unanimous approval
 
 ✅ PHASE COMPLETE WHEN:
-   - All reviewer agents report decision: APPROVED
+   - All stakeholder agents in VALIDATION mode report decision: APPROVED
    - No REJECTED decisions remain
 
 ➡️  NEXT PHASE: COMPLETE

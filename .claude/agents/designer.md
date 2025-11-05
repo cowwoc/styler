@@ -1,5 +1,5 @@
 ---
-name: usability
+name: designer
 description: >
   **MANDATORY after completing major features** - Reviews user experience and identifies opportunities for improvement.
   Can analyze usability (analysis mode) or implement improvements (implementation mode) based on invocation instructions.

@@ -1,5 +1,5 @@
 ---
-name: style
+name: formatter
 description: >
   Reviews code against MANUAL-ONLY style patterns from docs/code-style/. Can review style compliance
   (analysis mode) or implement corrections (implementation mode) based on invocation instructions.

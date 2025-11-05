@@ -4,8 +4,6 @@
 > **Audience:** All sub-agents (reviewers and updaters)
 > **Purpose:** Agent coordination protocol, worktree structure, and status tracking
 
-Essential task protocol for sub-agent coordination with main agent and other sub-agents during task execution.
-
 ## 🚨 MANDATORY: Read This Document at Startup {#mandatory-read-this-document-at-startup}
 
 ALL sub-agents MUST read this document BEFORE performing any work to ensure proper coordination, worktree usage, status tracking, and iterative collaboration.
@@ -46,16 +44,16 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
 
 ### Critical Path Distinctions {#critical-path-distinctions}
 
-**Updater Agents**:
+**Stakeholder Agents in IMPLEMENTATION Mode**:
 - **YOUR worktree**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
 - **Work here**: Implement changes in isolation
 - **Validate here**: Run `./mvnw verify` in YOUR worktree
 - **Merge to**: Task branch at `/workspace/tasks/{task-name}/code/`
 
-**Reviewer Agents**:
-- **Review location**: `/workspace/tasks/{task-name}/code/` (task branch, NOT updater worktrees)
+**Stakeholder Agents in VALIDATION Mode**:
+- **Review location**: `/workspace/tasks/{task-name}/code/` (task branch, NOT agent worktrees)
 - **What to review**: Changes that have been merged to task branch by agents in implementation mode
-- **DO NOT review**: Individual updater worktrees (those are WIP)
+- **DO NOT review**: Individual agent worktrees (those are WIP)
 
 **Main Agent**:
 - **Task worktree**: `/workspace/tasks/{task-name}/code/`
@@ -74,7 +72,7 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
 
 ### Status File Formats {#status-file-formats}
 
-**For Reviewer Agents**:
+**For Stakeholder Agents in REQUIREMENTS/VALIDATION Mode**:
 
 ```json
 {
@@ -90,11 +88,11 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
 }
 ```
 
-**Required reviewer fields**:
+**Required fields for REQUIREMENTS/VALIDATION mode**:
 - `decision`: Main agent checks this to determine completion (APPROVED/REJECTED/PENDING)
-- `feedback`: Detailed feedback for updater when REJECTED
+- `feedback`: Detailed feedback for implementation agent when REJECTED
 
-**For Updater Agents**:
+**For Stakeholder Agents in IMPLEMENTATION Mode**:
 
 ```json
 {
@@ -138,10 +136,11 @@ Implementation complete. Here is the code:
 
 ```bash
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
-cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
+cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
 {
-  "agent": "{AGENT}-updater",
+  "agent": "{AGENT}",
   "task": "{TASK}",
+  "mode": "implementation",
   "status": "COMPLETE",
   "work_remaining": "none",
   "round": ${CURRENT_ROUND},
@@ -151,14 +150,15 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
 EOF
 ```
 
-**Agent (review mode) after reviewing**:
+**Stakeholder Agents in REQUIREMENTS/VALIDATION Mode after reviewing**:
 
 ```bash
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
-cat > /workspace/tasks/{TASK}/agents/{AGENT}-reviewer/status.json <<EOF
+cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
 {
-  "agent": "{AGENT}-reviewer",
+  "agent": "{AGENT}",
   "task": "{TASK}",
+  "mode": "validation",
   "status": "COMPLETE",
   "decision": "APPROVED",
   "work_remaining": "none",
@@ -234,6 +234,54 @@ Round 2 - Re-review Fixes:
 
 Main agent checks all reviewer status.json files:
 - All have decision=APPROVED → Transition to VALIDATION state
+```
+
+### Agent Deliverable Verification {#agent-deliverable-verification}
+
+**MANDATORY**: Agents in IMPLEMENTATION mode MUST verify their deliverables before reporting completion.
+
+**Compilation Requirement**:
+- **MUST compile code after creating each file**: `./mvnw test-compile -pl :module-name`
+- **MUST fix compilation errors immediately** before proceeding to next file
+- **Prevents cascading errors** across multiple files
+- **Ensures fresh context** for error fixes (not stale context)
+
+**Pattern** (Incremental Validation):
+```bash
+# After creating/editing each source file
+./mvnw test-compile -pl :module-name
+
+# If compilation fails:
+#   1. Fix the error immediately
+#   2. Retry compilation
+#   3. Proceed only when clean
+
+# After all files created
+./mvnw clean verify -pl :module-name
+```
+
+**Rationale**:
+- Early error detection prevents 20+ cascading fixes
+- Fresh context = 30% faster error resolution
+- Follows quality-guide.md § Incremental Test Validation Strategy
+- Prevents main agent rework during VALIDATION phase
+
+**Example** (Engineer Agent):
+```bash
+# Create FormattingViolation.java
+Write: FormattingViolation.java
+
+# Compile immediately
+./mvnw test-compile -pl :styler-formatter
+# → Detects wrong requireThat() import immediately
+# → Fix now with fresh context
+
+# Create FileMetadata.java
+Write: FileMetadata.java
+
+# Compile immediately
+./mvnw test-compile -pl :styler-formatter
+# → Catches any new errors early
 ```
 
 ### Round Completion Criteria {#round-completion-criteria}
@@ -351,17 +399,7 @@ Implement FormattingRule interface
 feat: Add new feature
 ```
 
-**Audit Verification**:
-
-Commit signatures enable post-completion audit to distinguish agent commits from main agent commits and detect protocol violations.
-
-```bash
-# Verify proper agent usage
-agent_commits=$(git log task-branch --not main --grep '\[.*-updater\]' | wc -l)
-[ "$agent_commits" -eq 0 ] && echo "VIOLATION: No agent signatures found"
-```
-
-### For Updater Agents: Merging to Task Branch {#for-updater-agents-merging-to-task-branch}
+### For Stakeholder Agents in IMPLEMENTATION Mode: Merging to Task Branch {#for-implementation-agents-merging-to-task-branch}
 
 **Step 1: Verify your worktree**
 
@@ -422,9 +460,9 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
 EOF
 ```
 
-### For Reviewer Agents: Reviewing Task Branch {#for-reviewer-agents-reviewing-task-branch}
+### For Stakeholder Agents in VALIDATION Mode: Reviewing Task Branch {#for-validation-agents-reviewing-task-branch}
 
-**Step 1: Review the task branch (NOT updater worktrees)**
+**Step 1: Review the task branch (NOT implementation agent worktrees)**
 
 ```bash
 # Change to task branch worktree
@@ -482,7 +520,7 @@ EOF
 
 ## Validation Commands {#validation-commands}
 
-### For Updater Agents {#for-updater-agents}
+### For Stakeholder Agents in IMPLEMENTATION Mode {#for-implementation-agents-validation}
 
 **Local validation in YOUR worktree** (before merging):
 
@@ -507,9 +545,9 @@ cd /workspace/tasks/{task-name}/code
 ./mvnw verify
 ```
 
-### For Reviewer Agents {#for-reviewer-agents}
+### For Stakeholder Agents in VALIDATION Mode {#for-validation-agents}
 
-**Review task branch** (where updaters have merged):
+**Review task branch** (where implementation agents have merged):
 
 ```bash
 cd /workspace/tasks/{task-name}/code
@@ -552,7 +590,6 @@ public interface FormattingRule {
 - Use file references instead of full code blocks
 - Include code snippets ONLY for highlighting specific issues (max 5-10 lines)
 - Prefer structured lists over prose explanations
-- Updaters will read full files anyway - redundant code blocks waste tokens
 
 ## File Locations {#file-locations}
 
@@ -653,7 +690,7 @@ Full `./mvnw verify` is slow (30-60 seconds). Validate incrementally during deve
 - Build state corruption suspected
 - Fresh verification needed after major changes
 
-**Default**: Use `./mvnw verify` for normal validation. Maven's incremental compilation is reliable.
+**Default**: Use `./mvnw verify` for normal validation.
 
 ### Pattern: Reading Reviewer Feedback {#pattern-reading-reviewer-feedback}
 
@@ -695,8 +732,6 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
 EOF
 ```
 
-**Main agent will detect BLOCKED status and resolve dependency.**
-
 ### Pattern: Multi-Round Collaboration {#pattern-multi-round-collaboration}
 
 Architecture change affects multiple agents:
@@ -721,11 +756,11 @@ Round 3 (review):
 
 ## Summary: Agent Checklist {#summary-agent-checklist}
 
-### Updater Agent Checklist {#updater-agent-checklist}
+### Stakeholder Agent Checklist (IMPLEMENTATION Mode) {#implementation-agent-checklist}
 
 Before starting work:
 - [ ] Read task-protocol-agents.md (this document)
-- [ ] Read reviewer report/specifications
+- [ ] Read requirements/specifications from REQUIREMENTS phase
 - [ ] Verify worktree location: `/workspace/tasks/{task}/agents/{agent}/code`
 
 During implementation:
@@ -746,14 +781,14 @@ If reviewer rejects:
 - [ ] Re-merge to task branch
 - [ ] Update status.json
 
-### Reviewer Agent Checklist {#reviewer-agent-checklist}
+### Stakeholder Agent Checklist (VALIDATION Mode) {#validation-agent-checklist}
 
 Before starting work:
 - [ ] Read task-protocol-agents.md (this document)
 - [ ] Verify review location: `/workspace/tasks/{task}/code` (task branch)
 
 During review:
-- [ ] Review task branch (NOT individual updater worktrees)
+- [ ] Review task branch (NOT individual implementation agent worktrees)
 - [ ] Analyze merged changes
 - [ ] Run domain-specific validation tools
 - [ ] Make decision: APPROVED or REJECTED

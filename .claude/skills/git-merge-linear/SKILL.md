@@ -1,12 +1,14 @@
 ---
-name: merge-linear
-description: Merge task branch to main with linear (fast-forward only) history, enforcing project conventions
+name: git-merge-linear
+description: Merge task branch to main with linear history and pre/post-merge verification
 allowed-tools: Bash, Read
 ---
 
-# Linear Merge Skill
+# Git Linear Merge Skill
 
-**Purpose**: Merge a task branch to main with linear (fast-forward only) history, enforcing project conventions.
+<!-- PATTERN EVOLUTION:
+     - 2025-11-02: Added pre-merge and post-merge verification to prevent broken code in main
+-->
 
 **When to Use**:
 - After task branch has passed REVIEW phase

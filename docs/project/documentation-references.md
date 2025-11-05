@@ -109,49 +109,44 @@ git commit -m "Update documentation"
 ### Manual Index Regeneration
 
 ```bash
-./scripts/generate-doc-index.sh
+./.claude/scripts/generate-doc-index.sh
 ```
 
 ### Testing References
 
 ```bash
-# Test a reference
-./scripts/resolve-doc-reference.sh "task-protocol-core.md#init-classified"
+# In a hook or script, source the library and test a reference
+source .claude/hooks/lib/doc-reference-resolver.sh
+DOC_REF=$(resolve_doc_ref "task-protocol-core.md#init-classified")
+echo "$DOC_REF"
 # Output: Read /workspace/main/docs/project/task-protocol-core.md lines 1590-1634
 
-# Check if anchor exists
-./scripts/resolve-doc-reference.sh "task-protocol-core.md#nonexistent"
-# Output: ERROR: Reference not found in index
+# Test if anchor exists (function returns error if not found)
+resolve_doc_ref "task-protocol-core.md#nonexistent" || echo "Reference not found"
 ```
 
-## Migration Guide
+## Usage in Hooks and Scripts
 
-### Finding Old References
+### Converting Hard-Coded References to Anchor-Based
 
-```bash
-# Find hard-coded line number references
-./scripts/find-hardcoded-references.sh
+When you need to reference documentation in a hook or script:
 
-# Shows files with old-style references:
-# .claude/hooks/my-hook.sh:45: Read task-protocol-core.md lines 1583-1626
-```
-
-### Converting to Anchor-Based
-
-1. Find the section being referenced
+1. Find the section you want to reference
 2. Check if it has an anchor ID `{#anchor-id}`
 3. If no anchor exists, add one following naming conventions
-4. Replace hard-coded reference with `resolve_doc_ref` call
+4. Use `resolve_doc_ref()` function to get line numbers
 
-**Before:**
+**Example - Before (hard-coded):**
 ```bash
 echo "Read /workspace/main/docs/project/task-protocol-core.md lines 1583-1626"
 ```
 
-**After:**
+**Example - After (anchor-based):**
 ```bash
+source .claude/hooks/lib/doc-reference-resolver.sh
 DOC_REF=$(resolve_doc_ref "task-protocol-core.md#init-classified")
 echo "$DOC_REF"
+# Output: Read /workspace/main/docs/project/task-protocol-core.md lines 1590-1634
 ```
 
 ## Troubleshooting
@@ -164,7 +159,7 @@ ERROR: Reference not found in index: task-protocol-core.md#my-anchor
 
 **Solutions:**
 1. Check anchor exists in the file: `grep "{#my-anchor}" docs/project/task-protocol-core.md`
-2. Regenerate index: `./scripts/generate-doc-index.sh`
+2. Regenerate index: `./.claude/scripts/generate-doc-index.sh`
 3. Verify anchor syntax: `{#lowercase-kebab-case}` not `{#CamelCase}`
 
 ### Index Out of Date
@@ -175,7 +170,7 @@ ERROR: Reference not found in index: task-protocol-core.md#my-anchor
 
 **Solution:**
 ```bash
-./scripts/generate-doc-index.sh
+./.claude/scripts/generate-doc-index.sh
 git add docs/.index.json
 git commit -m "Update documentation index"
 ```
@@ -193,18 +188,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/lib/doc-reference-resolver.sh"
 ```
 
-## Benefits
-
-✅ **Stable References**: Anchor names rarely change, line numbers constantly do
-✅ **Auto-Maintenance**: Pre-commit hook keeps index up-to-date
-✅ **Performance**: Instant index lookups vs full file scans
-✅ **Readable**: `#lock-ownership` is clearer than `lines 1583-1626`
-✅ **Tooling Support**: Standard markdown anchor links work everywhere
-✅ **Graceful Degradation**: Falls back to section-only reference if index missing
-
 ## See Also
 
-- [scripts/generate-doc-index.sh](../../scripts/generate-doc-index.sh) - Index generator
-- [scripts/resolve-doc-reference.sh](../../scripts/resolve-doc-reference.sh) - Reference resolver
-- [.claude/hooks/lib/doc-reference-resolver.sh](../../.claude/hooks/lib/doc-reference-resolver.sh) - Resolver library
-- [.git/hooks/pre-commit](../../.git/hooks/pre-commit) - Auto-update hook
+- [.claude/scripts/generate-doc-index.sh](../../.claude/scripts/generate-doc-index.sh) - Index generator (auto-runs on commit)
+- [.claude/hooks/lib/doc-reference-resolver.sh](../../.claude/hooks/lib/doc-reference-resolver.sh) - Reference resolver library
+- [.git/hooks/pre-commit](../../.git/hooks/pre-commit) - Auto-update hook for index regeneration

@@ -1,5 +1,5 @@
 ---
-name: config
+name: configurator
 description: >
   Configuration quality specialist for Claude Code configuration files. Can identify ambiguities,
   contradictions, and missing guidance (review mode) or apply configuration fixes automatically
@@ -53,8 +53,8 @@ but your assignment varies:
 
 **MANDATORY SEQUENCE**:
 
-1. **Receive Input from process-reviewer**
-   - Read process-reviewer violations list
+1. **Receive Input from audit-protocol-compliance skill**
+   - Read audit violations list from audit output
    - For each violation, identify documentation gap
 
 2. **Load Protocol Documentation**
@@ -84,7 +84,7 @@ but your assignment varies:
 
 **Pattern 1: Violation-Driven Analysis**
 
-For each violation from process-reviewer:
+For each violation from audit-protocol-compliance:
 1. What rule was violated?
 2. Why might the agent have violated it?
 3. What documentation would have prevented this?

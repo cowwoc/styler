@@ -33,20 +33,56 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLE
 **CRITICAL: REQUIREMENTS Phase is MANDATORY**
 
 ❌ **WRONG**: Main agent writes implementation plan directly from todo.md
-✅ **CORRECT**: Invoke reviewer agents → Read reports → Synthesize plan
+✅ **CORRECT**: Invoke stakeholder agents → Read reports → Synthesize plan
 
-**Required reviewers** (invoke in parallel):
-- `architecture-reviewer` - Analyzes dependencies, design patterns, integration points
-- `quality-reviewer` - Defines testing strategy, quality metrics, validation criteria
-- `style-reviewer` - Specifies documentation requirements, code style standards
+**Required stakeholder agents** (invoke in parallel for requirements gathering):
+- `architect` - Analyzes dependencies, design patterns, integration points
+- `engineer` - Analyzes code quality, identifies duplication and complexity issues, defines refactoring criteria
+- `formatter` - Specifies documentation requirements, code style standards
 
 **Workflow**:
-1. CLASSIFIED state: Invoke ALL reviewer agents in parallel (single message, multiple Task calls)
+1. CLASSIFIED state: **MANDATORY** - Invoke ALL stakeholder agents in REQUIREMENTS mode with parallel coordination
+
+   **⚠️ CLARIFICATION: "Parallel" Agent Invocation Patterns**
+
+   **PREFERRED** (Best Practice - True Parallel):
+   - Single message with 3 Task tool calls (architect, engineer, formatter)
+   - Example: One assistant message containing three `<invoke name="Task">` blocks
+   - This is the optimal pattern for maximum parallelization
+
+   **ACCEPTABLE** (Achieves Coordination Goal):
+   - Rapid succession within same conversation turn (all within <30 seconds)
+   - No user messages between invocations
+   - Example: Three consecutive Task calls at 17:00:14, 17:00:23, 17:00:32 (18-second spread)
+   - **Key criterion**: All within same conversation turn, no user interruption
+
+   **VIOLATION** (Prevents Coordination):
+   - Sequential calls across multiple user interactions
+   - User interruption between agent invocations
+   - Example: Task call, user response, Task call, user response
+
+   **Clarification on Timing**:
+   - Focus on avoiding user interruptions, not microsecond timing
+   - 6-30 second gaps within same turn = ACCEPTABLE (achieves coordination)
+   - >30 second delays suggest sequential work rather than parallel coordination
+   - Evidence: Session 3fa4e964 had 17-31 second spreads, marked COMPLIANT
+
+   **Rationale**: The goal is rapid concurrent requirements gathering to avoid multi-hour sequential delays. Both PREFERRED and ACCEPTABLE patterns achieve this outcome by ensuring all agents start work concurrently.
+
+   - **CRITICAL**: Prompts MUST specify output file: `/workspace/tasks/{task}/{task}-{agent}-requirements.md`
+   - **CRITICAL**: Prompts MUST emphasize: "You are in REQUIREMENTS mode. ONLY write requirements report. DO NOT implement code."
 2. Wait for completion: Each writes `{task-name}-{agent}-requirements.md`
-3. READ all reports: Main agent synthesizes into unified plan
-4. SYNTHESIS state: Write implementation plan to task.md
-5. Get user approval
-6. IMPLEMENTATION state: Invoke updater agents
+3. **VERIFY reports exist** (MANDATORY before SYNTHESIS):
+   ```bash
+   ls -la /workspace/tasks/{task}/*-requirements.md
+   # Must show all 3 files: architect-requirements.md, engineer-requirements.md, formatter-requirements.md
+   ```
+4. READ all reports: Main agent synthesizes into unified plan
+5. SYNTHESIS state: Write implementation plan to task.md
+6. Get user approval
+7. IMPLEMENTATION state: **MANDATORY** - Invoke ALL stakeholder agents in IMPLEMENTATION mode with parallel coordination
+   - Follow same patterns as REQUIREMENTS phase (PREFERRED: single message, ACCEPTABLE: rapid succession <10s)
+   - All agents working concurrently reduces implementation time from days to hours
 
 **Checkpoint 1: SYNTHESIS → IMPLEMENTATION** (Plan Approval)
    - **SYNTHESIS state**: Create implementation plan in task.md
@@ -64,9 +100,42 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLE
    - **WAIT for user approval**: User must say "approved", "merge it", "LGTM"
    - **ONLY THEN**: Create `/workspace/tasks/{task}/user-approved-changes.flag`
    - **Transition to COMPLETE**: `jq '.state = "COMPLETE"' task.json`
-   - **NOW merge to main**: From /workspace/main
+   - **NOW squash and merge to main**:
+     ```bash
+     cd /workspace/main
+     git merge --squash {task-branch}
+     # Update todo.md and changelog.md
+     git add -A
+     git commit -m "Task implementation
+
+     - Implementation details
+     - Updated todo.md: Mark task complete
+     - Updated changelog.md: Document changes
+
+     🤖 Generated with Claude Code
+     Co-Authored-By: Claude <noreply@anthropic.com>"
+     ```
+   - **CRITICAL**: Use `--squash` to create ONE commit (not multiple)
    - Hook will BLOCK merges to main without approval flag
    - Hook will BLOCK merges from wrong working directory
+
+**Final Step: COMPLETE → CLEANUP** (Clean Repository)
+   - **After merge to main**: Execute CLEANUP to delete branches and worktrees
+   - **Transition to CLEANUP**: `jq '.state = "CLEANUP"' task.json`
+   - **Delete all task branches**:
+     ```bash
+     cd /workspace/main
+     git branch -D {task-name} {task-name}-architect {task-name}-engineer {task-name}-formatter
+     ```
+   - **Remove all worktrees**:
+     ```bash
+     git worktree remove /workspace/tasks/{task-name}/code
+     git worktree remove --force /workspace/tasks/{task-name}/agents/*/code
+     ```
+   - **Verify cleanup**: `git branch | grep {task-name}` should return nothing
+   - **Preserves**: Task directory with audit files (task.json, task.md, approval flags)
+   - **Why**: Prevents branch accumulation, reclaims disk space, maintains clean repository
+   - **Reference**: See [task-protocol-core.md § COMPLETE → CLEANUP Transition](docs/project/task-protocol-core.md#complete-cleanup-transition)
 
 **NEVER**:
 - ❌ Skip state progression (staying in INIT throughout task)
@@ -75,10 +144,12 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLE
 - ❌ Merge to main without presenting changes
 - ❌ Assume silence or bypass mode means approval
 - ❌ Skip checkpoints because "plan is straightforward"
+- ❌ Use `git merge` without `--squash` when merging task to main (creates multiple commits instead of one)
 
 **Enforcement**:
 - `pre-tool-use-task-invoke.sh` blocks Task tool from INIT state
-- `enforce-merge-workflow.sh` validates merge location and approval
+- `pre-tool-use-task-invoke.sh` blocks SYNTHESIS/IMPLEMENTATION states without requirements reports
+- `enforce-merge-workflow.sh` validates merge location, approval, and squash requirement
 - `enforce-checkpoints.sh` validates state transitions and approval flags
 
 **Why State Machine Matters**:
@@ -86,11 +157,11 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLE
 - Bypassing states disables protocol enforcement
 - User approval checkpoints are state-transition-dependent
 
-**SUB-AGENTS**: If you are a sub-agent (reviewer or updater), this file contains universal guidance only. You MUST also read `/workspace/main/docs/project/task-protocol-agents.md`
+**SUB-AGENTS**: If you are a stakeholder agent (architect, engineer, formatter), this file contains universal guidance only. You MUST also read `/workspace/main/docs/project/task-protocol-agents.md`
 
 **Domain-Specific Agents**: Additionally read domain-specific guides:
-- **Style agents** (style): `Read /workspace/main/docs/project/style-guide.md`
-- **Quality agents** (quality, test): `Read /workspace/main/docs/project/quality-guide.md`
+- **Formatter agents** (formatter): `Read /workspace/main/docs/project/style-guide.md`
+- **Engineer agents** (engineer, tester): `Read /workspace/main/docs/project/quality-guide.md`
 
 ## Universal Guidance
 
@@ -139,6 +210,37 @@ Prioritize technical accuracy over validating user beliefs. Provide direct, obje
 ❌ "Given token constraints, I'll implement a basic version" (token budget does not override quality requirements)
 ❌ "This edge case is too hard to handle properly" (without stakeholder consultation)
 ❌ "The existing pattern is suboptimal but I'll follow it" (without improvement attempt)
+❌ **"Asking user to choose between options when optimal solution is clear"** (pursue optimal directly)
+❌ **"Presenting Option A (optimal), Option B (suboptimal), Option C (workaround) - which do you prefer?"** (just do Option A)
+
+### Correct Pattern: Pursue Optimal Solution Proactively
+
+**When you identify the optimal solution, IMPLEMENT IT immediately. Do not ask permission.**
+
+✅ **CORRECT**:
+```
+Tests need rework to use actual types from ast-core. Fixing them now...
+
+[Proceeds to fix tests with Edit tool]
+```
+
+❌ **WRONG**:
+```
+Tests need rework. How would you like to proceed?
+- Option A: Fix the tests now
+- Option B: Merge as-is
+- Option C: Remove failing tests
+```
+
+**Only ask user if**:
+- Multiple approaches have genuinely equal merit (architectural decision)
+- Requirements are ambiguous and you need clarification
+- User preference matters (e.g., naming conventions, style choices)
+
+**Do NOT ask if**:
+- Optimal solution is clear (just implement it)
+- One option is obviously better than others
+- You're seeking permission to do the right thing
 
 ### Required Justification Process
 
@@ -244,9 +346,7 @@ echo "Read /workspace/main/docs/project/task-protocol-core.md lines 1583-1626"
 
 **System Maintenance**:
 - Index auto-regenerates on commit (pre-commit hook)
-- Manual: `./scripts/generate-doc-index.sh`
-- Validate: `./scripts/find-hardcoded-references.sh`
-- Migration help: `./scripts/suggest-anchor-migration.sh`
+- Manual: `./.claude/scripts/generate-doc-index.sh`
 
 **Complete Guide**: See [documentation-references.md](docs/project/documentation-references.md)
 
@@ -331,6 +431,68 @@ trap 'echo "ERROR in <script-name>.sh at line $LINENO: Command failed: $BASH_COM
 
 **Locks**: Multi-instance coordination via lock files at `/workspace/tasks/{task-name}/task.json`
 
+**Branch Management**:
+
+> ⚠️ **CRITICAL: Version Branch Preservation**
+>
+> **NEVER delete version-numbered branches (v1, v13, v14, v15, v18, v19, v20, v21, etc.)**
+>
+> **Common Mistake**: Deleting v-branches during git cleanup operations
+>
+> **Recognition Pattern**: Branches matching `v[0-9]+` are version markers, NOT temporary branches
+
+**Version Branches**:
+- Pattern: `v{number}` (e.g., v1, v13, v21)
+- Purpose: Mark significant project milestones or release points
+- Lifecycle: Permanent - never delete during cleanup
+- Update strategy: Move pointer forward with `git branch -f v21 <new-commit>`, never delete
+
+**Temporary Branches**:
+- Pattern: Task-specific or date-stamped (e.g., `implement-api`, `backup-before-reorder-20251102`)
+- Purpose: Isolate development work
+- Lifecycle: Delete after merge to main
+- Cleanup: Safe to delete with `git branch -D <branch>`
+
+**Pre-Deletion Validation** (MANDATORY before `git branch -D`):
+```bash
+# Step 1: List all branches to identify patterns
+git branch -v
+
+# Step 2: Check if branch matches version pattern
+if [[ "$BRANCH_NAME" =~ ^v[0-9]+$ ]]; then
+  echo "❌ ERROR: Cannot delete version branch $BRANCH_NAME"
+  echo "Version branches are permanent project markers"
+  echo "To update: git branch -f $BRANCH_NAME <new-commit>"
+  exit 1
+fi
+
+# Step 3: For non-version branches, verify purpose before deletion
+# - backup-* branches: Temporary, safe to delete after verification
+# - task-* branches: Delete only after merge to main
+# - feature-* branches: Check with user before deletion
+```
+
+**Examples**:
+
+✅ **CORRECT - Updating Version Branch**:
+```bash
+# After rebase/squash, update version branch to new commit
+git branch -f v21 HEAD
+# Version branch now points to clean history
+```
+
+❌ **WRONG - Deleting Version Branch**:
+```bash
+# DON'T delete version branches during cleanup
+git branch -D v21  # ← MISTAKE: Lost project milestone marker
+```
+
+✅ **CORRECT - Deleting Temporary Branch**:
+```bash
+# Temporary backup branch can be deleted after verification
+git branch -D backup-before-reorder-20251102-001057
+```
+
 **Multi-Agent Architecture**:
 
 > 🚨 **ZERO TOLERANCE RULE - IMMEDIATE VIOLATION**
@@ -338,9 +500,27 @@ trap 'echo "ERROR in <script-name>.sh at line $LINENO: Command failed: $BASH_COM
 > Main agent creating ANY .java/.ts/.py file with Write/Edit = PROTOCOL VIOLATION
 >
 > **IMPLEMENTATION STATE**: ALL source code creation delegated to stakeholder agents
-> **VALIDATION STATE**: Main agent may edit ONLY to fix violations found during validation
+> **VALIDATION STATE**: Main agent may edit ONLY to fix violations found during validation (see decision tree below)
 > **INFRASTRUCTURE FIXES**: Main agent may create infrastructure files (module-info.java, package-info.java) in VALIDATION state to fix build failures
 > **BEFORE creating ANY .java file**: Ask "Is this IMPLEMENTATION or VALIDATION state?"
+
+> ⚠️ **VALIDATION STATE FIX BOUNDARIES** {#validation-state-fix-boundaries}
+>
+> Main agent MAY fix directly during VALIDATION:
+> - ✅ **Compilation errors**: Missing imports, incorrect package paths, type resolution failures
+> - ✅ **Infrastructure configuration**: module-info.java, pom.xml, build.gradle
+> - ✅ **Trivial syntax errors**: Missing semicolons, typos in identifiers
+> - ✅ **Build system issues**: Missing dependencies, incorrect artifact versions
+>
+> Main agent MUST RE-INVOKE agents for:
+> - ❌ **Style violations** (Checkstyle, PMD) → Re-invoke formatter agent
+> - ❌ **Test failures** → Re-invoke engineer agent
+> - ❌ **Logic errors or design flaws** → Re-invoke architect agent
+> - ❌ **Complex refactoring needs** → Re-invoke appropriate stakeholder agent
+>
+> **Decision Criterion**: Can the fix be applied mechanically without changing logic?
+> - YES → Main agent may fix directly
+> - NO → Re-invoke agent
 
 ## Infrastructure File Exceptions {#infrastructure-file-exceptions}
 
@@ -389,7 +569,11 @@ Write: formatter/src/main/java/module-info.java
 - Each agent has own worktree: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
 - Main agent coordinates via Task tool, monitors status.json, manages state transitions
 - Flow: Main agent delegates → Agents implement in parallel → Merge to task branch → Iterate until complete
-- Models: Reviewers use Sonnet 4.5 (analysis/decisions), updaters use Haiku 4.5 (implementation)
+- Models: REQUIREMENTS phase uses Sonnet 4.5 (analysis/decisions), IMPLEMENTATION phase uses Haiku 4.5 (code generation)
+- **Agent Spawning**: Agents spawn FRESH for each phase (do NOT use Task tool `resume` parameter across phases)
+  - REQUIREMENTS phase: New agent instances for requirements gathering
+  - IMPLEMENTATION phase: New agent instances for implementation
+  - Rationale: Different phases use different models and have different objectives (clean separation)
 
 **⚠️ CRITICAL PROTOCOL VIOLATIONS**:
 
@@ -463,9 +647,13 @@ git merge implement-formatter-api-architect
 
 **Stakeholder Reports** (at task root, one level up from code directory):
 - Temporary workflow artifacts for task protocol
-- Examples: `{task-name}-architect-requirements.md`, `{task-name}-style-violations.json`
+- Examples: `{task-name}-architect-requirements.md`, `{task-name}-formatter-violations.json`, `status.json`, `*-IMPLEMENTATION-PLAN.md`
 - Lifecycle: Created during execution, cleaned up with worktrees in CLEANUP
 - Location: `/workspace/tasks/{task-name}/` (accessible to all agents)
+- ⚠️ **CRITICAL**: Task artifacts must NEVER be committed to main repository
+  - `.gitignore` excludes these files automatically
+  - Pre-commit hook blocks accidental commits
+  - Keep artifacts in `/workspace/tasks/{task}/` NOT `/workspace/main/`
 
 **Empirical Studies** (`docs/studies/{topic}.md`):
 - Temporary research cache for pending implementation tasks
@@ -493,6 +681,24 @@ Do NOT create retrospective documentation chronicling fixes, problems, or develo
 ❌ **Decision chronicles** documenting past decision-making phases
 ❌ Documents with "Evidence-Based Decision Process" sections
 ❌ Multi-phase retrospectives ("Phase 1: Requirements", "Phase 2: Evidence", etc.)
+❌ **Safety analysis documents** chronicling what went wrong and how to fix it
+
+**COMMON MISTAKE PATTERN**:
+When analyzing complex issues, you may default to "create structured document" to organize thinking.
+STOP and ask BEFORE creating any .md file:
+1. "Is this documenting what happened (retrospective) or what to do (forward-looking)?"
+2. "Could this go in a commit message instead?" (yes → put it there, not in file)
+3. "Could this go in inline comments instead?" (yes → put it there, not in file)
+4. "Will this be useful after the fix, or only during?" (only during → don't create file)
+
+**Example of Mistake** (SAFETY-ANALYSIS.md created 2025-11-02):
+- **Trigger**: Thought "Given the complexity and length of fixing both skills completely, let me create a summary document"
+- **Root cause**: Defaulted to "create structured document" when task felt complex
+- **Violation**: Used complexity as excuse to avoid doing work directly (violates Token Usage Policy)
+- Documented "what went wrong" in git skills instead of just fixing them
+- Should have gone in: commit message + inline comments in skills
+- File was deleted immediately after fixes applied - proof it was retrospective
+- **Lesson**: Complexity NEVER justifies creating intermediate retrospective documents
 
 **SPECIFIC ANTI-PATTERNS**:
 ```markdown
@@ -535,9 +741,92 @@ Successfully executed benchmarks revealing...
 ✅ Technical design documents for upcoming features
 
 **ENFORCEMENT**:
-- Pre-commit hook warns about retrospective patterns
-- Detection script: `./scripts/detect-retrospective-docs.sh`
-- Manual scan before creating `.md` files in `/docs/`
+- Pre-commit hook blocks retrospective file creation
+- Pre-tool-use hook detects retrospective content patterns
+
+## 🔧 MANDATORY MISTAKE HANDLING
+
+**CRITICAL**: When ANY agent (including main agent) makes a mistake or protocol deviation, you MUST invoke the learn-from-mistakes skill for systematic prevention.
+
+### What Constitutes a Mistake
+
+**Mistakes include** (invoke learn-from-mistakes for ANY of these):
+- Protocol violations (any severity: CRITICAL, HIGH, MEDIUM, or LOW)
+- Process deviations (incorrect commit patterns, missing steps)
+- Rework required (had to redo work due to error)
+- Build failures (compilation, test, or quality gate failures)
+- Incorrect assumptions (led to wrong implementation)
+- Tool misuse (wrong tool, incorrect parameters, validation gaps)
+- Working directory errors (wrong worktree, incorrect paths)
+- State machine violations (skipped states, wrong sequence)
+
+**Examples**:
+- ❌ Split commits (todo.md separate from implementation) → INVOKE learn-from-mistakes
+- ❌ Main agent creates source files during IMPLEMENTATION → INVOKE learn-from-mistakes
+- ❌ Checkstyle violations found late → INVOKE learn-from-mistakes
+- ❌ Agent worked in wrong worktree → INVOKE learn-from-mistakes
+- ❌ Missing user approval checkpoint → INVOKE learn-from-mistakes
+
+### When to Invoke
+
+**IMMEDIATELY after identifying the mistake**:
+
+```markdown
+# ❌ WRONG Pattern:
+"I notice I split the commits incorrectly. Let me just note that for next time."
+
+# ✅ CORRECT Pattern:
+"I notice I split the commits incorrectly. This is a protocol deviation.
+Invoking learn-from-mistakes skill to analyze and prevent recurrence."
+
+Skill: learn-from-mistakes
+Context: Split commit pattern - todo.md updated in separate commit instead
+of atomic commit with implementation.
+```
+
+### Why This is Mandatory
+
+**Prevents recurrence**:
+- One-time acknowledgment → Likely to repeat
+- Systematic analysis → Configuration updates prevent recurrence
+- Root cause fixes → Entire category of mistakes prevented
+
+**Examples of systematic prevention**:
+- Hook added → Blocks mistake automatically
+- Documentation clarified → Clear guidance prevents confusion
+- Examples added → Shows correct pattern explicitly
+- Validation enhanced → Catches mistake earlier
+
+### Enforcement
+
+**During audits**:
+- Audit identifies protocol deviations
+- Audit MUST invoke learn-from-mistakes for ANY violation
+- No exceptions for "minor" or "low severity" violations
+
+**During normal work**:
+- Agent recognizes own mistake → MUST invoke learn-from-mistakes
+- Agent recognizes other agent's mistake → MUST invoke learn-from-mistakes
+- User points out mistake → MUST invoke learn-from-mistakes
+
+**Bypass NOT permitted**:
+- ❌ "This is a small mistake, not worth invoking skill"
+- ❌ "I already know what went wrong, no need for analysis"
+- ❌ "This mistake is obvious, I'll just fix it"
+- ✅ "Mistake identified → Invoke learn-from-mistakes → Systematic prevention"
+
+### Integration with Audit
+
+**Audit pipeline automatically invokes learn-from-mistakes**:
+- Protocol compliance audit detects violations
+- IF any violations found (any severity) → Invoke learn-from-mistakes
+- Root cause analysis identifies systemic issues
+- Configuration updates prevent recurrence
+
+**Manual invocation required**:
+- When mistake discovered outside audit
+- When recognizing pattern of repeated mistakes
+- When user points out deviation
 
 ---
 
