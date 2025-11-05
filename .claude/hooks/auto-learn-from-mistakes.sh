@@ -10,7 +10,11 @@ trap 'echo "ERROR in auto-learn-from-mistakes.sh at line $LINENO: Command failed
 # triggers the learn-from-mistakes skill for root cause analysis.
 #
 # Triggered on: PostToolUse (all tools)
-# Detects: Build failures, test failures, validation errors, protocol violations
+# Detects: Build failures, test failures, validation errors, protocol violations,
+#          skill step failures, git operation failures, merge conflicts, edit failures
+#
+# PATTERN EVOLUTION:
+#   - 2025-11-05: Added Pattern 6 (skill step failures) and Pattern 7 (git operation failures)
 
 # Read input from stdin (hook context JSON for PostToolUse)
 HOOK_CONTEXT=$(cat)
@@ -51,6 +55,18 @@ fi
 if echo "$TOOL_RESULT" | grep -qi "String to replace not found\|old_string not found"; then
   MISTAKE_TYPE="edit_failure"
   MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B5 -A2 -i "string to replace not found\|old_string not found" | head -15)
+fi
+
+# Pattern 6: Skill step failures (HIGH)
+if [[ "$TOOL_NAME" == "Skill" ]] && echo "$TOOL_RESULT" | grep -qiE "\bERROR\b|\bFAILED\b|failed to|step.*(failed|failure)|operation.*(failed|failure)|could not|unable to"; then
+  MISTAKE_TYPE="skill_step_failure"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B3 -A5 -iE "error|failed|could not|unable to" | head -20)
+fi
+
+# Pattern 7: Git operation failures (HIGH)
+if echo "$TOOL_RESULT" | grep -qiE "fatal:|error:|git.*failed|rebase.*failed|merge.*failed"; then
+  MISTAKE_TYPE="git_operation_failure"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B2 -A3 -iE "fatal:|error:|failed" | head -15)
 fi
 
 # If no mistake detected, pass through
