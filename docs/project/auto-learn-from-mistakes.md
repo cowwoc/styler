@@ -6,10 +6,6 @@
 
 **Trigger**: PostToolUse (all tools)
 
-## Overview
-
-The auto-learn-from-mistakes hook monitors all tool results for error patterns and automatically suggests invoking the learn-from-mistakes skill when significant mistakes are detected. This creates a proactive learning loop that helps prevent recurring mistakes.
-
 ## Detected Mistake Patterns
 
 ### 1. Build Failures (CRITICAL)
@@ -21,11 +17,6 @@ The auto-learn-from-mistakes hook monitors all tool results for error patterns a
 [ERROR] /path/to/File.java:[42,5] cannot find symbol
 ```
 
-**Action**: Immediately suggests learn-from-mistakes invocation to analyze:
-- Why did the build fail?
-- Was this a missing dependency, syntax error, or API misuse?
-- How can we prevent similar failures?
-
 ### 2. Test Failures (CRITICAL)
 **Pattern**: `Tests run: X Failures: Y`, `test.*failed`
 
@@ -33,11 +24,6 @@ The auto-learn-from-mistakes hook monitors all tool results for error patterns a
 ```
 Tests run: 15, Failures: 3, Errors: 0, Skipped: 0
 ```
-
-**Action**: Suggests root cause analysis:
-- What assumptions were incorrect?
-- Are tests properly isolated?
-- Is this a regression or new failure?
 
 ### 3. Protocol Violations (CRITICAL)
 **Pattern**: `PROTOCOL VIOLATION`, `🚨.*VIOLATION`
@@ -47,11 +33,6 @@ Tests run: 15, Failures: 3, Errors: 0, Skipped: 0
 🚨 PROTOCOL VIOLATION: Main agent created source file during IMPLEMENTATION state
 ```
 
-**Action**: Triggers deep analysis:
-- Why was the protocol violated?
-- Was the guidance unclear?
-- Should hooks be enhanced?
-
 ### 4. Merge Conflicts (HIGH)
 **Pattern**: `CONFLICT`, `merge conflict`
 
@@ -60,11 +41,6 @@ Tests run: 15, Failures: 3, Errors: 0, Skipped: 0
 CONFLICT (content): Merge conflict in src/main/java/Foo.java
 ```
 
-**Action**: Analyzes conflict causes:
-- Were branches properly synchronized?
-- Should merge strategy be different?
-- Can conflicts be prevented?
-
 ### 5. High-Volume Quality Violations (MEDIUM)
 **Pattern**: More than 5 checkstyle or PMD violations
 
@@ -72,11 +48,6 @@ CONFLICT (content): Merge conflict in src/main/java/Foo.java
 ```
 You have 12 Checkstyle violations
 ```
-
-**Action**: When violations exceed threshold, suggests pattern analysis:
-- Are these new or legacy violations?
-- Is there a systemic style issue?
-- Should auto-formatters be configured?
 
 ## Rate Limiting
 
@@ -128,17 +99,9 @@ When a significant mistake is detected, the hook:
 - No logging or output
 - Zero performance overhead
 
-## Integration with learn-from-mistakes Skill
+## Manual Invocation
 
-The hook complements the learn-from-mistakes skill:
-
-- **Hook**: Detects mistakes automatically during execution
-- **Skill**: Performs deep root cause analysis and prevention planning
-- **Together**: Creates a continuous learning loop
-
-### Manual Invocation Still Supported
-
-You can still manually invoke learn-from-mistakes at any time:
+Manual invocation supported anytime:
 
 ```
 Skill: learn-from-mistakes
@@ -147,8 +110,6 @@ Context: [Describe the mistake or pattern observed]
 
 Please perform root cause analysis.
 ```
-
-The automatic detection is supplemental, not a replacement for manual analysis.
 
 ## Configuration
 
@@ -213,64 +174,22 @@ jq --arg cutoff "$(date -d '1 hour ago' -Iseconds)" \
 
 ## Best Practices
 
-### When to Invoke learn-from-mistakes
-
-**DO invoke when**:
-- Multiple similar mistakes occur (pattern detected)
+**Invoke when**:
+- Multiple similar mistakes (pattern detected)
 - Critical mistakes block progress
-- Protocol violations happen despite hooks
-- Root cause is unclear
+- Protocol violations despite hooks
+- Root cause unclear
 
-**DON'T invoke when**:
-- Mistake is a simple typo (fix directly)
-- Root cause is obvious (fix and move on)
-- Already analyzing a recent mistake (avoid parallel analyses)
+**Skip when**:
+- Simple typo (fix directly)
+- Obvious root cause (fix and move on)
+- Already analyzing recent mistake (avoid parallel analyses)
 
-### Leveraging Automatic Detection
-
-1. **Pay attention to prompts**: When the hook suggests invocation, consider doing it
-2. **Review the log periodically**: Look for patterns in `/tmp/mistake-detection-log.json`
-3. **Adjust thresholds**: If you get too many/few prompts, tune the rate limit
-4. **Enhance patterns**: Add project-specific error patterns to the hook
-
-## Example Workflow
-
-### Scenario: Build Failure Detected
-
-1. **Developer runs build**:
-   ```bash
-   ./mvnw clean compile
-   ```
-
-2. **Build fails** with compilation error
-
-3. **Hook detects failure** and outputs:
-   ```
-   📚 MISTAKE DETECTED: build_failure
-
-   Recommendation: Invoke learn-from-mistakes skill...
-   ```
-
-4. **Agent invokes skill**:
-   ```
-   Skill: learn-from-mistakes
-
-   Context: Build failed with "cannot find symbol: NodeIndex"
-
-   Please analyze root cause.
-   ```
-
-5. **Skill analyzes**:
-   - Root cause: AST core module-info.java missing
-   - Contributing factor: Module wasn't exporting package
-   - Prevention: Add pre-commit hook to verify module exports
-
-6. **Prevention measures applied**:
-   - Create module-info.java for AST core
-   - Update build to validate module structure
-   - Document JPMS requirements
-
-7. **Future builds**: Similar mistakes prevented
+**Leverage automatic detection**:
+1. Consider prompts when hook suggests invocation
+2. Review log periodically: `/tmp/mistake-detection-log.json`
+3. Adjust rate limit if too many/few prompts
+4. Add project-specific error patterns
 
 ## See Also
 

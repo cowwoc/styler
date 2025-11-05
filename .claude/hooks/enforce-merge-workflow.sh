@@ -53,7 +53,11 @@ fi
 
 # Determine branch type
 BRANCH_TYPE="unknown"
-if [[ "$MERGE_BRANCH" =~ -architect$ ]] || [[ "$MERGE_BRANCH" =~ -quality$ ]] || [[ "$MERGE_BRANCH" =~ -style$ ]] || [[ "$MERGE_BRANCH" =~ -updater$ ]]; then
+# Modern agent branch pattern: {task-name}-{agent-name}
+if [[ "$MERGE_BRANCH" =~ -(architect|engineer|formatter|tester|builder|designer|optimizer|hacker|configurator)$ ]]; then
+	BRANCH_TYPE="agent"
+# Legacy patterns for backward compatibility
+elif [[ "$MERGE_BRANCH" =~ -quality$ ]] || [[ "$MERGE_BRANCH" =~ -style$ ]] || [[ "$MERGE_BRANCH" =~ -updater$ ]] || [[ "$MERGE_BRANCH" =~ -reviewer$ ]]; then
 	BRANCH_TYPE="agent"
 elif [[ "$MERGE_BRANCH" =~ ^implement- ]]; then
 	BRANCH_TYPE="task"
@@ -193,6 +197,78 @@ You attempted to merge task branch to main without user approval.
 ## Protocol Reference
 
 See: /workspace/main/CLAUDE.md § MANDATORY USER APPROVAL CHECKPOINTS"
+
+		output_hook_error "PreToolUse" "$MESSAGE"
+		exit 0
+	fi
+fi
+
+# RULE 3: Task branches merging to main must use --squash
+# ADDED: 2025-11-03 after main agent merged task branch without squashing,
+# creating 11 incremental commits instead of 1 atomic commit
+if [[ "$BRANCH_TYPE" == "task" ]] && [[ "$CURRENT_DIR" == "/workspace/main" ]]; then
+	# Check if merge command includes --squash flag
+	if [[ ! "$COMMAND" =~ --squash ]]; then
+		log_hook_blocked "enforce-merge-workflow" "PreToolUse" "Task branch merge blocked - missing --squash flag"
+
+		MESSAGE="## 🚨 SQUASH REQUIREMENT VIOLATION
+
+**Task Branch**: \`$MERGE_BRANCH\`
+**Violation**: Task branch merge to main requires --squash flag
+
+## ⚠️ MANDATORY SQUASH REQUIREMENT
+
+You attempted to merge task branch to main without squashing commits into ONE atomic commit.
+
+**AUTOMATIC ACTION TAKEN**:
+- Git merge blocked
+- Violation logged
+
+**WHY THIS MATTERS**:
+- Main branch history must be clean: ONE commit per task
+- Each commit on main should be an atomic, complete task unit
+- Multiple incremental commits belong in task branch, not main
+
+**REQUIRED ACTION**:
+
+Use \`--squash\` flag to combine all task commits into one:
+
+\`\`\`bash
+# CORRECT: Squash all task commits into ONE commit
+cd /workspace/main
+git merge --squash ${MERGE_BRANCH}
+
+# Update project documentation (MANDATORY)
+# Edit todo.md: Mark task complete
+# Edit changelog.md: Document changes
+
+# Create single atomic commit with ALL changes
+git add -A
+git commit -m \"Task implementation
+
+- Implementation details here
+- Updated todo.md: Mark task complete
+- Updated changelog.md: Document changes
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+Co-Authored-By: Claude <noreply@anthropic.com>\"
+\`\`\`
+
+**INCORRECT** (what you tried):
+\`\`\`bash
+git merge ${MERGE_BRANCH} --no-edit  # ← Missing --squash!
+# Creates multiple commits on main (VIOLATION)
+\`\`\`
+
+## Protocol Reference
+
+See:
+- CLAUDE.md § Checkpoint 2: AWAITING_USER_APPROVAL → COMPLETE
+- git-workflow.md § Task Branch Squashing (line 43)
+
+**Git Workflow Requirement**:
+\"MANDATORY REQUIREMENT: Before merging a task branch to main, ALL commits
+on the task branch MUST be squashed into a single commit.\""
 
 		output_hook_error "PreToolUse" "$MESSAGE"
 		exit 0

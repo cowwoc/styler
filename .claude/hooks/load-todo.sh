@@ -1,9 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-trap 'echo "[HOOK DEBUG] load-todo.sh FAILED at line $LINENO" >&2; exit 1' ERR
-
-echo "[HOOK DEBUG] load-todo.sh START" >&2
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in load-todo.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
 # Load todo.md tasks into TodoWrite list before first TodoWrite tool usage
 # This script provides context to automatically initialize the TodoWrite tool
@@ -46,10 +45,10 @@ if [[ "$TOOL_NAME" == "TodoWrite" ]]; then
 		exit 0
 	fi
 
-	# Count tasks
-	total_tasks=$(grep -c "^- \[[x ]\]" "$TODO_FILE")
-	completed_tasks=$(grep -c "^- \[x\]" "$TODO_FILE")
-	pending_tasks=$(grep -c "^- \[ \]" "$TODO_FILE")
+	# Count tasks (grep -c returns 0 if no matches, but exit code might be 1, so use || true)
+	total_tasks=$(grep -c "^- \[[x ]\]" "$TODO_FILE" || echo "0")
+	completed_tasks=$(grep -c "^- \[x\]" "$TODO_FILE" || echo "0")
+	pending_tasks=$(grep -c "^- \[ \]" "$TODO_FILE" || echo "0")
 
 	# Create context message
 	context="Auto-loading TODO tasks from $TODO_FILE: Found $total_tasks tasks ($completed_tasks completed, $pending_tasks pending). IMPORTANT: You must immediately use the TodoWrite tool to load all tasks from $TODO_FILE by converting each '- [x]' task to 'completed' status and each '- [ ]' task to 'pending' status. This ensures session continuity as required by claude.md."
@@ -64,5 +63,3 @@ else
 	# Not a TodoWrite call, return empty response
 	echo '{}'
 fi
-
-echo "[HOOK DEBUG] load-todo.sh END" >&2

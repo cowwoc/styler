@@ -1,13 +1,10 @@
 # Styler - Java Code Formatter Architecture
 
-This document provides a comprehensive technical architecture overview for Styler - an unopinionated Java code
-formatter that supports 100% of JDK 25's features with multi-threaded file processing capabilities.
+Styler architecture: unopinionated Java code formatter supporting 100% of JDK 25 features with multi-threaded file processing.
 
 ## 🎯 Core Architecture Objective {#core-architecture-objective}
 
-Styler uses a modular, plugin-based architecture to provide configurable Java code formatting while
-maintaining optimal performance through parallel processing and preserving developer intent through
-intelligent AST manipulation.
+Modular, plugin-based architecture providing configurable formatting with parallel processing and intent-preserving AST manipulation.
 
 ## 🏗️ System Architecture Overview {#system-architecture-overview}
 
@@ -251,11 +248,7 @@ public class BracePlacementFormatter implements FormatterPlugin {
 }
 ```
 
-**Migration from Existing Checkstyle Fixers**:
-- Extract existing fixer logic from checkstyle/fixers module
-- Adapt to plugin architecture with proper interfaces
-- Maintain test coverage and validation logic
-- Preserve performance optimizations
+**Migration from Existing Checkstyle Fixers**: See [Phase 3: Formatter Migration](#phase-3-formatter-migration)
 
 ### 5. styler-config {#5-styler-config}
 
@@ -378,8 +371,7 @@ public class FormattingPipeline {
 
 **Threading Model**:
 
-Styler uses a sophisticated multi-level threading model designed for optimal performance across different
-scales:
+Multi-level threading model optimized for performance across different scales:
 
 *Current Implementation: Sequential Per File*
 - **File-Level Parallelism**: Multiple files processed concurrently across CPU cores

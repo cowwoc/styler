@@ -42,12 +42,6 @@ without losing unrelated work.
 
 **MANDATORY REQUIREMENT**: Before merging a task branch to main, ALL commits on the task branch MUST be squashed into a single commit.
 
-**Why This Requirement**:
-- Maintains atomic task units in main branch history
-- Each commit on main represents one complete task
-- Simplifies history navigation and bisecting
-- Prevents main branch pollution with implementation details
-
 **Procedure** (from task worktree, before merge to main):
 
 ```bash
@@ -155,6 +149,25 @@ git checkout main
 git merge <task-branch> --ff-only
 # Fast-forward merge preserves linear history
 ```
+
+**Cleanup After Squash Merge** (Task Protocol):
+
+When using squash merge in task protocol (`git merge --squash`), the original task branch commits become unreferenced:
+
+```bash
+# After: git merge --squash task-branch && git commit
+# Result: New commit on main, original task-branch commits are orphaned
+
+# MANDATORY cleanup steps:
+git branch -D task-branch              # Delete branch (use -D, squash makes it unreachable)
+git branch | grep "task-branch-" | xargs -r git branch -D  # Delete agent branches
+git gc --prune=now                     # Remove orphaned commits immediately
+
+# Verify cleanup
+git log --all --oneline | grep <original-commit-sha>  # Should return nothing
+```
+
+See: [task-protocol-operations.md § CLEANUP](task-protocol-operations.md#cleanup-final-state) for complete task protocol cleanup procedure.
 
 ## Interactive Rebase (PRIMARY METHOD) {#interactive-rebase-primary-method}
 
@@ -520,32 +533,24 @@ echo "CHRONOLOGICAL VIOLATION DETECTED - Restarting with corrected plan"
 # Return to Step 2 and create proper chronological plan
 ```
 
-#### 9. Error Recovery and Critical Failure Analysis {#9-error-recovery-and-critical-failure-analysis}
+#### 9. Error Recovery {#9-error-recovery}
 
-**🚨 CRITICAL FAILURE ANALYSIS FRAMEWORK**
+**Interactive Rebase Issues**:
 
-**Never Blame the Tool for Execution Failures**
-
-Common pattern of incorrect failure attribution:
-1. Interactive rebase "fails" (usually due to environment/editor issues)  
-2. User incorrectly concludes "interactive rebase doesn't work"
-3. User switches to alternative methods (reset, cherry-pick)
-4. Alternative methods cause data loss or chronological violations
-5. **Root cause was execution environment, not the rebase method**
-
-**Correct Response to Interactive Rebase Issues:**
 ```bash
-# ❌ WRONG: "Interactive rebase failed, let me try git reset instead"
-# ✅ CORRECT: "Interactive rebase didn't complete, let me fix the editor/environment issue"
+# If interactive rebase doesn't complete, debug environment before switching methods
 
 # Debug steps:
 git config --get core.editor
 echo $EDITOR
 git rebase --abort  # Reset to clean state
-# Fix editor configuration, then retry with same method
+# Fix editor configuration, then retry
+
+# ❌ PROHIBITED: Switching to git reset or other destructive methods
+# ✅ CORRECT: Fix environment issue, retry same method
 ```
 
-**Emergency Abort and Recovery**
+**Emergency Abort and Recovery**:
 ```bash
 # ABORT entire rebase and return to original state
 git rebase --abort
@@ -586,12 +591,6 @@ git branch -D backup-before-squash-YYYYMMDD-HHMMSS
 - ❌ Assuming git automatically maintains chronological sequence
 - ❌ Skipping post-rebase chronological validation
 - ❌ Accepting chronological violations as "acceptable side effects"
-
-**Why Chronological Preservation Matters:**
-- **Historical Accuracy**: Maintains true development timeline
-- **Debugging Context**: Preserves problem-solving sequence for future reference
-- **Code Review**: Ensures logical development progression remains intact
-- **Blame Analysis**: Maintains accurate attribution timeline
 
 ### Handling Non-Contiguous Commits {#handling-non-contiguous-commits}
 

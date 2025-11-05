@@ -1,5 +1,5 @@
 ---
-name: build
+name: builder
 description: >
   Build system specialist with authority over build execution, failure analysis, and remediation.
   Can execute builds and analyze failures (review mode) or implement fixes for build failures

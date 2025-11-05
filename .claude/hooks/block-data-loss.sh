@@ -1,9 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-trap 'echo "[HOOK DEBUG] block-data-loss.sh FAILED at line $LINENO" >&2; exit 1' ERR
-
-echo "[HOOK DEBUG] block-data-loss.sh START" >&2
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in block-data-loss.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
 # Git Init Blocker Hook - Fixed version for both PreToolUse and UserPromptSubmit
 # Prevents git repository creation per task-protocol.md
@@ -13,6 +12,7 @@ echo "[HOOK DEBUG] block-data-loss.sh START" >&2
 JSON_INPUT=""
 if [ -t 0 ]; then
 	# No input available, exit gracefully
+	echo '{}'
 	exit 0
 else
 	JSON_INPUT="$(timeout 5s cat 2>/dev/null)" || JSON_INPUT=""
@@ -53,6 +53,7 @@ handle_pre_tool_use()
 
 	# Only check Bash tool calls
 	if [ "$TOOL_NAME" != "Bash" ] && [ "$TOOL_NAME" != "bash" ]; then
+	    echo '{}'
 	    exit 0
 	fi
 
@@ -118,6 +119,7 @@ handle_pre_tool_use()
 	esac
 
 	# Allow all other commands
+	echo '{}'
 	exit 0
 }
 
@@ -232,9 +234,7 @@ case "$HOOK_EVENT" in
 	*)
 	    # Unknown event or no event detected, allow it
 	    echo "$(date): Unknown or missing hook event: '$HOOK_EVENT'" >> /tmp/consolidated-debug.log 2>/dev/null || true
-	    echo "[HOOK DEBUG] block-data-loss.sh END" >&2
+	    echo '{}'
 	    exit 0
 	    ;;
 esac
-
-echo "[HOOK DEBUG] block-data-loss.sh END" >&2

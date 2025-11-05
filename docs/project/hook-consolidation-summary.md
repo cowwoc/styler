@@ -50,7 +50,7 @@ Successfully consolidated 6 protocol enforcement hooks into 2 streamlined hooks 
 
 - **Documentation**: `*.md` (except `task.md`)
 - **Hooks**: `.claude/hooks/**`
-- **Scripts**: `scripts/**`
+- **Scripts**: `.claude/scripts/**`
 - **Build files**: `**/pom.xml`, `build.*`, `.mvn/**`, `mvnw*`
 - **Git configs**: `.gitignore`, `.gitattributes`
 - **Exploratory studies**: `docs/studies/*.md` (not matching todo.md tasks)
@@ -168,24 +168,6 @@ All tests passed:
   }
 ]
 ```
-
-## Benefits
-
-### Consolidation Benefits
-- **Reduced complexity**: 6 hooks → 2 hooks (67% reduction)
-- **Single source of truth**: All Category A/B rules in one place (pattern-matcher.sh)
-- **Easier maintenance**: Centralized pattern matching logic
-- **Better error messages**: Contextual guidance with remediation steps
-
-### Improved Accuracy
-- **Eliminated false positives**: Task names containing "test" or "src" no longer trigger Category B
-- **Comprehensive coverage**: Single matcher `path:/workspace/tasks/**` covers all task work
-- **Specific patterns**: Distinguishes `src/test/` from arbitrary `/test/` in paths
-
-### Enhanced User Experience
-- **Clearer guidance**: Unified SessionStart message explains both protocol scope and role boundaries
-- **Better error messages**: Detailed explanations with specific remediation steps
-- **Consistent enforcement**: Same logic for all Category A/B decisions
 
 ## Documentation
 

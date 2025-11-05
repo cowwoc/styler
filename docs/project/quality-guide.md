@@ -97,6 +97,44 @@ Flag duplicated logic as HIGH priority:
 - **Concerning**: 50-100 lines (consider extraction)
 - **Rejected**: > 100 lines (must extract methods)
 
+### Parameter Validation - requireThat() Usage {#parameter-validation-require-that}
+
+**MANDATORY**: Use `requireThat()` from requirements-java library for ALL parameter validation.
+
+**Correct Import**:
+```java
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+```
+
+**❌ WRONG Imports** (DO NOT USE):
+```java
+// WRONG - Internal API
+import static io.github.cowwoc.requirements.java.internal.implementation.ClassAssertions.requireThat;
+```
+
+**Parameter Order**: `requireThat(value, "name")`
+- **First parameter**: The actual value to validate
+- **Second parameter**: String name of the parameter (for error messages)
+
+**✅ CORRECT Examples**:
+```java
+requireThat(filePath, "filePath").isNotNull();
+requireThat(count, "count").isGreaterThan(0);
+requireThat(name, "name").isNotNull().isNotEmpty();
+requireThat(endPosition, "endPosition").isGreaterThanOrEqualTo(startPosition);
+```
+
+**❌ WRONG Examples** (reversed parameter order):
+```java
+requireThat("filePath", filePath).isNotNull();  // WRONG - name before value
+requireThat("count", count).isGreaterThan(0);    // WRONG - name before value
+```
+
+**Common Mistake**: Confusing with other validation libraries that use (name, value) order.
+The requirements-java library uses (value, name) order.
+
+**Reference**: See existing usage in security/ExecutionTimeoutManager.java
+
 ### Refactoring Patterns {#refactoring-patterns}
 
 **Extract Method**:
@@ -204,8 +242,6 @@ mvn test -Dtest=FirstTest -pl :module-name
 mvn clean verify
 # Results in 53 violations across all files - must fix all at once
 ```
-
-**Benefits**: Earlier error detection, prevent cascading errors, faster feedback (5-10s vs 60s), reduced token usage.
 
 **Targeted Builds**:
 ```bash

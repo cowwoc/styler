@@ -412,37 +412,6 @@ color: blue
 
 ---
 
-## Benefits of Multi-Agent Architecture
-
-### 1. Separation of Concerns
-- **parse-conversation-timeline skill**: Facts only (no bias)
-- **audit-protocol-compliance skill**: Strict enforcement (no rationalization)
-- **audit-protocol-efficiency skill**: Helpful suggestions (no violation detection)
-- **config**: Clarity improvements (no compliance checking)
-
-### 2. No Conflicting Responsibilities
-- Auditor can't rationalize violations (not its job)
-- Optimizer can't flag violations (assumes correctness)
-- Each agent has single, clear purpose
-
-### 3. Sequential Dependencies
-- Tracer runs first (provides facts)
-- Auditor uses tracer facts (objective audit)
-- Optimizer only runs if compliant (no wasted effort)
-- Documentation auditor identifies root causes (improves protocol)
-
-### 4. Failure Isolation
-- If auditor finds violations, optimizer skips (fix first)
-- If tracer fails, whole pipeline stops (need facts)
-- Each agent can fail independently
-
-### 5. Accountability
-- Clear attribution: "audit-protocol-compliance skill flagged violation"
-- No ambiguity about who found what
-- Easier to debug agent failures
-
----
-
 ## Migration Path
 
 ### Phase 1: Deprecate audit-protocol-efficiency skill
@@ -522,8 +491,6 @@ SKIPPED (violations must be fixed first)
   ]
 }
 ```
-
-**Result**: Clear violation detection with no rationalization
 
 ---
 

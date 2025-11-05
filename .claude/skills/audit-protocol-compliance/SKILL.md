@@ -177,7 +177,7 @@ For EACH violation, recommend specific protocol changes:
       "check_id": "1.1",
       "rule": "Main agent must coordinate stakeholder agents",
       "verdict": "COMPLIANT",
-      "evidence": "Task tool invoked for architect, quality, style"
+      "evidence": "Task tool invoked for architect, engineer, formatter"
     }
   ],
   "summary": {

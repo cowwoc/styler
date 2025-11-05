@@ -43,13 +43,6 @@ The `echo-session-id.sh` hook is registered in `.claude/settings.json` for `Sess
 ✅ Session ID: b6933609-ab67-467e-af26-e48c3c8c129e
 ```
 
-**Advantages**:
-- Automatic - no manual invocation needed
-- Available from first user message
-- Auto-recovers after `/compact` (SessionStart fires after compaction)
-- Minimal overhead (only runs at session start and after compaction)
-- Direct from Claude Code stdin JSON (most reliable)
-
 ## Usage Examples
 
 ### Example 1: Get Current Session ID

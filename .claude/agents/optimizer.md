@@ -1,5 +1,5 @@
 ---
-name: performance
+name: optimizer
 description: >
   Analyzes code for performance bottlenecks, memory issues, algorithmic efficiency, and optimization
   opportunities. Can review performance characteristics (analysis mode) or implement optimizations

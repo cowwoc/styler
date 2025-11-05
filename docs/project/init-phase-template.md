@@ -17,9 +17,6 @@ Read docs/project/architecture.md + \
 Glob "docs/code-style/*-claude.md"
 ```
 
-**Result**: All resources loaded in 1 round-trip (vs 8-10 sequential)
-**Savings**: 7-9 messages, 30-45 seconds, ~5k tokens
-
 ## Usage Instructions
 
 1. **Identify Task Keywords**: Extract keywords from task name

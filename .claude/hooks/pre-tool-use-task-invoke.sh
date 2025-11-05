@@ -68,9 +68,90 @@ while IFS= read -r TASK_JSON; do
 		CURRENT_STATE="$STATE"
 		break
 	fi
+
+	# CRITICAL: If transitioning FROM REQUIREMENTS to SYNTHESIS or later,
+	# verify all three requirements reports exist
+	# ADDED: 2025-11-03 after requirements phase bypassed during implement-formatter-api
+	# PREVENTS: Protocol violation where agents implement without requirements analysis
+	if [[ "$STATE" == "SYNTHESIS" ]] || [[ "$STATE" == "IMPLEMENTATION" ]] || \
+	   [[ "$STATE" == "VALIDATION" ]] || [[ "$STATE" == "AWAITING_USER_APPROVAL" ]] || \
+	   [[ "$STATE" == "COMPLETE" ]]; then
+		TASK_ROOT=$(dirname "$TASK_JSON")
+		ARCHITECT_REQ="${TASK_ROOT}/${TASK_NAME}-architect-requirements.md"
+		ENGINEER_REQ="${TASK_ROOT}/${TASK_NAME}-engineer-requirements.md"
+		FORMATTER_REQ="${TASK_ROOT}/${TASK_NAME}-formatter-requirements.md"
+
+		# Check if all requirements reports exist
+		if [[ ! -f "$ARCHITECT_REQ" ]] || [[ ! -f "$ENGINEER_REQ" ]] || [[ ! -f "$FORMATTER_REQ" ]]; then
+			VIOLATION_FOUND=true
+			VIOLATING_TASK="$TASK_NAME"
+			CURRENT_STATE="$STATE (missing requirements reports)"
+			break
+		fi
+	fi
 done <<< "$TASK_JSON_FILES"
 
 if [[ "$VIOLATION_FOUND" == true ]]; then
+	if [[ "$CURRENT_STATE" == *"missing requirements reports"* ]]; then
+		log_hook_blocked "pre-tool-use-task-invoke" "PreToolUse" "Task tool blocked - missing requirements reports"
+
+		MESSAGE="## 🚨 REQUIREMENTS PHASE BYPASS DETECTED
+
+**Task**: \`$VIOLATING_TASK\`
+**Current State**: \`$CURRENT_STATE\`
+**Violation**: Missing requirements reports from stakeholder agents
+
+## ⚠️ CRITICAL - REQUIREMENTS PHASE IS MANDATORY
+
+You are in ${CURRENT_STATE%% (*} state but the required requirements reports do not exist.
+
+**Missing Reports**:
+- \`${TASK_NAME}-architect-requirements.md\`
+- \`${TASK_NAME}-engineer-requirements.md\`
+- \`${TASK_NAME}-formatter-requirements.md\`
+
+**AUTOMATIC ACTION TAKEN**:
+- Task tool invocation blocked
+- Violation logged
+
+**REQUIRED ACTION - Complete REQUIREMENTS Phase**:
+
+1. **Return to REQUIREMENTS state**:
+   \`\`\`bash
+   jq '.state = \"REQUIREMENTS\"' /workspace/tasks/${VIOLATING_TASK}/task.json > /tmp/task.tmp
+   mv /tmp/task.tmp /workspace/tasks/${VIOLATING_TASK}/task.json
+   \`\`\`
+
+2. **Invoke stakeholder agents in REQUIREMENTS mode**:
+   - Use Task tool with THREE parallel invocations (architect, engineer, formatter)
+   - Set model to \"sonnet\" for REQUIREMENTS phase
+   - Emphasize in prompts: \"You are in REQUIREMENTS mode. ONLY write requirements report. DO NOT implement code.\"
+   - Specify output file: \`/workspace/tasks/${VIOLATING_TASK}/${VIOLATING_TASK}-{agent}-requirements.md\`
+
+3. **Verify all reports exist**:
+   \`\`\`bash
+   ls -la /workspace/tasks/${VIOLATING_TASK}/*-requirements.md
+   \`\`\`
+
+4. **Read and synthesize reports**:
+   - Read all three requirements reports
+   - Create implementation plan in task.md based on stakeholder input
+
+5. **Transition to SYNTHESIS** (only after reports exist)
+
+## Protocol Reference
+
+See: /workspace/main/docs/project/task-protocol-core.md § REQUIREMENTS Phase
+
+**Why This Matters**:
+- Implementation without stakeholder analysis skips critical design/testing/style decisions
+- Requirements reports inform synthesis of implementation plan
+- Multi-agent coordination value lost if requirements phase bypassed"
+
+		output_hook_error "PreToolUse" "$MESSAGE"
+		exit 0
+	fi
+
 	log_hook_blocked "pre-tool-use-task-invoke" "PreToolUse" "Task tool invocation blocked - state=INIT (requires CLASSIFIED or IMPLEMENTATION)"
 
 	MESSAGE="## 🚨 TASK TOOL INVOCATION BLOCKED
