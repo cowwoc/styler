@@ -453,8 +453,6 @@ Before reporting completion:
 
 **⚠️ CRITICAL: Create Rollback Point Before Changes**
 
-Before applying any updates, create a rollback point:
-
 ```bash
 # Create backup branch with timestamp
 BACKUP_BRANCH="learn-from-mistakes-backup-$(date +%s)"
@@ -521,9 +519,7 @@ rm /tmp/learn-from-mistakes-rollback.txt
    echo "⚠️ IMPORTANT: settings.json was modified. Please restart Claude Code for hook to take effect." >&2
    ```
 
-   **⚠️ CRITICAL: Restart Required**
-
-   When settings.json is modified, you MUST notify the user:
+   **⚠️ CRITICAL: When settings.json is modified, you MUST notify the user:**
 
    ```
    ⚠️ IMPORTANT: I've updated .claude/settings.json to register the new hook.

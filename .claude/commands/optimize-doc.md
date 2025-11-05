@@ -1,12 +1,47 @@
 ---
 description: >
-  Optimize documentation for conciseness and clarity by strengthening vague instructions and removing
-  redundancy
+  Optimize documentation using two-agent workflow: optimizer removes redundancy, independent validator
+  verifies preservation of critical content
 ---
 
 # Optimize Documentation Command
 
 **Task**: Optimize the documentation file: `{{arg}}`
+
+**Two-Agent Workflow**:
+1. **Optimizer Agent** (you): Strengthen instructions, remove redundancy, apply conciseness strategies
+2. **Validator Agent** (independent): Verify no meaning loss, vagueness, or execution ability reduction
+
+## ⚠️ BASH COMMAND EXECUTION REQUIREMENT
+
+**CRITICAL**: Bash commands in this document that use parameter expansion like `${BACKUP_FILE##*.backup-}` will fail with parse errors when executed directly via the Bash tool.
+
+**Required Pattern** (use for ALL bash blocks containing `##` parameter expansion):
+
+```bash
+# ❌ FAILS: Direct execution
+BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
+VALIDATION_ID="${BACKUP_FILE##*.backup-}"
+# Error: (eval):1: parse error near `('
+
+# ✅ CORRECT: Execute via script file
+cat > /tmp/script-name.sh << 'EOF'
+#!/bin/bash
+BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
+VALIDATION_ID="${BACKUP_FILE##*.backup-}"
+# ... rest of commands
+EOF
+bash /tmp/script-name.sh
+```
+
+**Apply this pattern to these sections**:
+- Step 6: Self-review rollback
+- Step 7: Phase 1 candidate creation
+- Step 7: Store agent ID
+- Step 7: Phase 1 checkpoint
+- Step 7: Phase 2 baseline creation
+- Step 7B: Iterative refinement rollback
+- Step 8: Remove backup
 
 ## 🚨 DOCUMENT TYPE VALIDATION
 
@@ -38,9 +73,6 @@ description: >
    This command only optimizes Claude-facing documentation.
 
    The file `{{arg}}` appears to be human-facing documentation (README, changelog, studies, etc.).
-
-   Human-facing documents should not be optimized by this command as they serve external
-   audiences and may require specific formatting, marketing language, or pedagogical content.
    ```
 
 2. **If path matches allowed patterns, PROCEED** with optimization
@@ -58,14 +90,9 @@ Make documentation more concise and clear without introducing vagueness.
 2. **Increase conciseness**: Remove redundancy while preserving all necessary information
 3. **Preserve clarity AND meaning**: Never sacrifice understanding or semantic accuracy for brevity
 
-**Critical Constraint**: Instructions (text + examples) should only be updated if the new version retains BOTH
-the same meaning AND the same clarity as the old version. If optimization reduces clarity or changes meaning,
-reject the change.
-
-**Idempotent Design**: This command can be run multiple times on the same document:
-- **First pass**: Strengthens vague instructions, removes obvious redundancy
-- **Second pass**: Further conciseness improvements if instructions are now self-sufficient
-- **Subsequent passes**: No changes if already optimized
+**Idempotent Design**: Multiple runs on same document:
+- **First pass**: Strengthen vague instructions, remove obvious redundancy
+- **Second/subsequent passes**: Further optimization or no changes if optimal
 
 ## Analysis Methodology
 
@@ -124,7 +151,7 @@ ALL 4 tests pass?
 └─ NO → Instruction is VAGUE → Proceed to Step 4 (strengthen instruction)
 ```
 
-**If ANY test fails, the instruction is VAGUE**, not clear.
+**If ANY test fails, the instruction is VAGUE.**
 
 ### Step 3: If Clear (Examples Not Needed for Understanding)
 
@@ -133,8 +160,7 @@ ALL 4 tests pass?
 1. Identify examples following the instruction
 2. **Apply Execution Test**: Can Claude execute correctly without this example?
    - If NO (example defines ambiguous term) → **KEEP**
-   - If YES → Proceed to step 3
-3. Determine if examples serve operational purpose:
+   - If YES → Determine if examples serve operational purpose:
    - ✅ Defines what "correct" looks like → **KEEP**
    - ✅ Shows exact commands with success criteria → **KEEP**
    - ✅ Sequential workflows where order matters → **KEEP**
@@ -192,22 +218,6 @@ ALL 4 tests pass?
 **Common Mistake**:
 ❌ WRONG: Treating "Reference the mistake" as explanatory context
 ✅ RIGHT: Recognizing this specifies required output content
-
-**In Practice**:
-```markdown
-Before optimization:
-3. **Draft Update**:
-   - Write clear, specific guidance
-   - Include concrete examples (✅ vs ❌)
-   - Reference the mistake that prompted the update  ← CONTENT SPECIFICATION
-   - Add validation steps
-   - Use consistent terminology
-
-After optimization (CORRECT):
-3. **Draft** clear guidance with ✅/❌ examples, validation steps,
-   consistent terminology, reference triggering mistake
-   ^^^ Keep "reference triggering mistake" - specifies required content
-```
 
 ### 2. Methodology Guidance (PRESERVE PEDAGOGICAL VALUE)
 
@@ -348,8 +358,7 @@ After:
 
 ## 🚨 EXECUTION-CRITICAL CONTENT (NEVER CONDENSE)
 
-The following content types are necessary for CORRECT EXECUTION - preserve even if instructions are
-technically clear:
+Content types necessary for correct execution:
 
 ### 1. **Concrete Examples Defining "Correct"**
 - Examples showing EXACT correct vs incorrect patterns when instruction uses abstract terms
@@ -360,14 +369,13 @@ technically clear:
 ```bash
 # ❌ WRONG: Marking complete in todo.md
 vim todo.md  # Changed - [ ] to - [x]
-git commit -m "..." todo.md  # Result: Still in todo.md
 
 # ✅ CORRECT: Delete from todo.md, add to changelog.md
 vim todo.md  # DELETE entire task entry
 vim changelog.md  # ADD under ## 2025-10-08
 ```
 
-**REMOVE if instruction already says "remove entire entry" explicitly** - example becomes redundant.
+**REMOVE if instruction explicitly says "remove entire entry"**.
 
 ### 2. **Sequential Steps for State Machines**
 - Numbered workflows where order matters for correctness
@@ -383,7 +391,7 @@ vim changelog.md  # ADD under ## 2025-10-08
 5. On approval: Update lock to `CONTEXT` and proceed
 ```
 
-**REMOVE numbering** if steps are independent checks that can run in any order.
+**REMOVE numbering** if steps are independent.
 
 ### 3. **Inline Comments That Specify WHAT to Verify**
 - Comments explaining what output to expect or check
@@ -397,16 +405,14 @@ vim changelog.md  # ADD under ## 2025-10-08
 # Compare counts - should match unless you explicitly intended to drop commits
 ```
 
-**REMOVE comments explaining WHY** (e.g., "This prevents data loss because..." is educational, not
-operational).
+**REMOVE comments explaining WHY** (e.g., "This prevents data loss because..." - educational, not operational).
 
 ### 4. **Disambiguation Examples**
 - Multiple examples showing boundary between prohibited/permitted when rule uses subjective terms
 - Examples that resolve ambiguity in instruction wording
 - **Test**: Can the instruction be misinterpreted without this example?
 
-**KEEP examples that clarify ambiguous instructions**.
-**REMOVE examples that just restate clear instructions**.
+**KEEP** examples clarifying ambiguous instructions. **REMOVE** examples restating clear instructions.
 
 ### 5. **Pattern Extraction Rules**
 - Annotations that generalize specific examples into reusable decision principles
@@ -433,8 +439,7 @@ Generic praise without extracting a reusable decision rule.
 - ✅ **KEEP**: "→ Claude doesn't need to know why" (generalizes when to remove content)
 - ❌ **REMOVE**: "This is important because it prevents errors" (explains WHY, not WHAT)
 
-**Test**: If removed, would Claude lose the ability to apply this reasoning to NEW examples not in the
-document? If YES → KEEP (it's pattern extraction, not commentary).
+**Test**: If removed, would Claude lose ability to apply this reasoning to new examples? If YES → KEEP (pattern extraction, not commentary).
 
 ## 🚨 REFERENCE-BASED CONDENSING RULES
 
@@ -656,11 +661,11 @@ Validation Checklist:
    - Does this reduce line count?
    - Does this tighten prose?
 
-**Rule**: Never sacrifice correctness for conciseness. Always sacrifice conciseness for correctness.
+**Rule**: Correctness always takes priority over conciseness.
 
 ## Conciseness Strategies
 
-**Apply these techniques to make instructions more concise:**
+**Techniques for concise instructions:**
 
 1. **Eliminate Redundancy**:
    - Remove repeated information across sections
@@ -683,7 +688,7 @@ Validation Checklist:
    - Keep all boundary demonstrations (wrong vs right)
    - Keep all measurable criteria and success definitions
 
-**Warning**: Do NOT sacrifice these for conciseness:
+**Never sacrifice for conciseness:**
 - **Semantic metadata headers**: Labels like "**TARGET AUDIENCE**:", "**OUTPUT FORMAT**:", "**INPUT REQUIREMENT**:" provide explicit categorization and scannability
 - **Scannability**: Vertical lists are clearer than comma-separated concatenations
 - **Pattern recognition**: Checkmarks/bullets for required actions are clearer than prose
@@ -692,7 +697,7 @@ Validation Checklist:
 - Prevention patterns (prohibited vs required)
 - Error condition definitions
 
-**Anti-Pattern Examples** (clarity violations to avoid):
+**Anti-patterns to avoid:**
 - ❌ Removing semantic metadata headers: "**TARGET AUDIENCE**: Claude AI" → "Claude AI" (loses explicit categorization)
 - ❌ Converting vertical list of prohibited phrases to slash-separated concatenation
 - ❌ Converting checkmarked action items (✅) to comma-separated prose
@@ -704,17 +709,12 @@ Validation Checklist:
 
 ## Redundancy Taxonomy (Formalized)
 
-**Purpose**: Systematic identification and classification of redundant content types.
-
-**Structure**: Each category includes Pattern, Detection, Fix, and Clarity Impact.
+Systematic classification of redundant content. Each category: Pattern, Detection, Fix, Clarity Impact.
 
 ### Category 1: Narrative Redundancy
 **Pattern**: Instruction followed by explanation restating the same information
 
-**Detection**:
-- Paragraph structure: Statement → "This means..." → Restatement
-- Trigger phrases: "In other words", "That is to say", "This means that"
-- Semantic test: Second sentence adds no new information
+**Detection**: Statement → "This means..." → Restatement. Trigger phrases: "In other words", "That is to say". Second sentence adds no information.
 
 **Examples**:
 ```markdown
@@ -728,16 +728,13 @@ run the script prior to making a commit. In other words, always validate first."
 → Single clear instruction
 ```
 
-**Fix**: Remove explanation sentences, keep instruction
-**Clarity Impact**: None (instruction is self-sufficient)
+**Fix**: Remove explanation, keep instruction
+**Clarity Impact**: None
 
 ### Category 2: Example Redundancy
 **Pattern**: Multiple examples demonstrating identical principle without added value
 
-**Detection**:
-- 3+ code blocks showing same concept with trivial variations
-- Examples differ only in variable names, not behavior
-- No boundary demonstration (all examples clearly permitted or all clearly prohibited)
+**Detection**: 3+ code blocks showing same concept with trivial variations. Examples differ only in names, not behavior. No boundary demonstration.
 
 **Examples**:
 ```markdown
@@ -751,16 +748,13 @@ Example 3: `git status` lists uncommitted files
 Example: `git status` shows uncommitted changes
 ```
 
-**Fix**: Keep 1-2 best examples that show range, remove redundant instances
-**Clarity Impact**: Verify via Execution Test - if principle still clear, safe to remove
+**Fix**: Keep 1-2 best examples showing range, remove redundant instances
+**Clarity Impact**: Verify via Execution Test
 
 ### Category 3: Definition Redundancy
 **Pattern**: Term defined multiple times in different sections
 
-**Detection**:
-- Same term (e.g., "OPTIMAL", "SAFE", "VALIDATION") defined in multiple places
-- Definitions are semantically equivalent (not context-specific)
-- No reference between definitions
+**Detection**: Same term defined in multiple places. Definitions semantically equivalent. No reference between definitions.
 
 **Examples**:
 ```markdown
@@ -776,15 +770,12 @@ Section B: "Use OPTIMAL solution (see terminology definition)"
 ```
 
 **Fix**: Keep definition in primary location, replace others with reference
-**Clarity Impact**: ONLY if reference doesn't interrupt workflow (see Reference-Based Condensing Rules)
+**Clarity Impact**: Only if reference doesn't interrupt workflow
 
 ### Category 4: Procedural Redundancy
 **Pattern**: Same procedure described in multiple places with equivalent steps
 
-**Detection**:
-- Identical step sequences (1→2→3) in different sections
-- Same commands, just rephrased
-- No contextual difference justifying duplication
+**Detection**: Identical step sequences in different sections. Same commands, rephrased. No contextual difference justifying duplication.
 
 **Examples**:
 ```markdown
@@ -806,15 +797,12 @@ Section "Quality Gates": "Follow validation procedure (see Validation section)"
 ```
 
 **Fix**: Keep detailed procedure in one place, reference from others
-**Clarity Impact**: Safe IF reference is at section boundary, UNSAFE if mid-execution
+**Clarity Impact**: Safe at section boundary, unsafe mid-execution
 
 ### Category 5: Rationale Redundancy (ALWAYS REMOVABLE)
 **Pattern**: Explanations of WHY something is required (educational content)
 
-**Detection**:
-- Paragraphs starting with "This is because...", "The reason is...", "This helps by..."
-- Describes benefits or historical context
-- Doesn't specify WHAT to do or HOW to do it
+**Detection**: Paragraphs starting "This is because...", "The reason is...". Describes benefits/context. Doesn't specify WHAT or HOW.
 
 **Examples**:
 ```markdown
@@ -835,15 +823,12 @@ only reliable way to ensure no data loss."
 ```
 
 **Fix**: Remove RATIONALE sections, keep instruction + success criteria
-**Clarity Impact**: None (Claude doesn't need to know WHY to execute correctly)
+**Clarity Impact**: None
 
 ### Category 6: Pedagogical Redundancy (CONTEXT-DEPENDENT)
 **Pattern**: Key rules stated multiple times for emphasis or learning
 
-**Detection**:
-- Same rule appears in summary, section header, and instruction body
-- Repetition serves learning/memory (not execution)
-- Common in tutorial-style documents
+**Detection**: Same rule in summary, header, and body. Repetition serves learning, not execution. Common in tutorials.
 
 **Examples**:
 ```markdown
@@ -863,12 +848,8 @@ Instruction: "Before committing, run tests"
 [Same as redundant example - repetition aids learning]
 ```
 
-**Fix**:
-- Reference documents: Remove pedagogical repetition
-- Tutorials/guides: Keep repetition for learning
-- Decision: Based on document type
-
-**Clarity Impact**: None for reference docs, potentially harmful for tutorials
+**Fix**: Remove in reference docs, keep in tutorials
+**Clarity Impact**: None for reference docs, harmful removal in tutorials
 
 ### Detection Decision Tree
 
@@ -893,48 +874,29 @@ Found repeated content?
 
 ### Application Workflow
 
-For each section during optimization:
-
-1. **Identify redundancy type** using detection patterns above
-2. **Apply category-specific fix** (remove, consolidate, or reference)
-3. **Verify clarity preserved** using 4-part test
-4. **Document in reporting**: Track which categories eliminated
+Per section: Identify redundancy type → Apply fix (remove/consolidate/reference) → Verify clarity (4 Tests) → Document elimination
 
 ## Optimization Strategy
 
-**Single-Pass Approach** (when possible):
-- Strengthen vague instructions AND remove obvious redundancy in one pass
-- Commit: "Optimize [filename] for conciseness and clarity"
+**Single-Pass**: Strengthen instructions + remove redundancy in one pass. Commit: "Optimize [filename] for conciseness and clarity"
 
-**Multi-Pass Approach** (for complex documents):
-- **First pass**: Strengthen vague instructions + remove obvious redundancy
-- **Second pass**: Further conciseness improvements now that instructions are self-sufficient
-- **Subsequent passes**: No changes if already optimized
+**Multi-Pass** (complex docs): First pass strengthens + removes redundancy. Second/subsequent passes optimize further or no changes if optimal.
 
-**User Workflow**:
-```bash
-# First invocation: Strengthens and removes redundancy
-/optimize-doc docs/some-file.md
-
-# Review changes, then optional second invocation for further optimization
-/optimize-doc docs/some-file.md
-
-# Subsequent invocations: No changes if already optimized
-/optimize-doc docs/some-file.md
-```
+**User Workflow**: Run `/optimize-doc docs/file.md` → Review → Optional re-run → No changes when optimal
 
 ## Execution Instructions
 
 1. **Read** the document specified: `{{arg}}`
 2. **Create Backup** (MANDATORY before making changes):
    ```bash
+   # Create unique ID for this optimization
+   VALIDATION_ID="$(date +%s)-$$"
+
    # Create backup with timestamp
-   BACKUP_FILE="{{arg}}.backup-$(date +%s)"
+   BACKUP_FILE="{{arg}}.backup-${VALIDATION_ID}"
    cp "{{arg}}" "$BACKUP_FILE"
    echo "Created backup: $BACKUP_FILE"
-
-   # Store backup path for later cleanup
-   echo "$BACKUP_FILE" > /tmp/optimize-doc-backup.txt
+   echo "Validation ID: $VALIDATION_ID"
    ```
 3. **Analyze** each section using the methodology above
 4. **Optimize** directly:
@@ -994,18 +956,12 @@ After condensing content, apply validation specific to redundancy type being rem
 - [ ] Mixed: Keep in learning sections, remove in reference sections
 - **Test**: Does document type justify repetition?
 
-**Validation Failure Recovery**:
-
-If category-specific validation fails:
-1. Identify which check failed
-2. Restore sufficient content to pass check
-3. Re-run validation until all checks pass
-4. Document in self-review: "Partial removal, preserved X due to Y"
+**Validation Failure Recovery**: Identify failed check → Restore content → Re-validate → Document: "Partial removal, preserved X due to Y"
 
 6. **Self-Review Changes** (MANDATORY before reporting):
    - **Stage changes**: `git add {{arg}}`
    - **Review diff**: `git diff --cached {{arg}} | head -200`
-   - **Apply Critical Questions to ALL changes**:
+   - **Apply Critical Questions to ALL changes** (review each deleted/modified section in diff output):
 
      **Question 1: Was any meaning lost?**
      - Review each deleted line/section in the diff
@@ -1032,46 +988,430 @@ If category-specific validation fails:
 
    - **Rollback if needed** (if major issues found that can't be easily fixed):
      ```bash
+     # Find backup file and extract VALIDATION_ID
+     BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
+     VALIDATION_ID="${BACKUP_FILE##*.backup-}"
+
      # Restore from backup
-     BACKUP_FILE=$(cat /tmp/optimize-doc-backup.txt)
      cp "$BACKUP_FILE" "{{arg}}"
      echo "Restored from backup: $BACKUP_FILE"
      # Return to step 4 to try again
      ```
 
-7. **Remove Backup** (once self-review confirms changes are safe):
-   ```bash
-   # Read backup path
-   BACKUP_FILE=$(cat /tmp/optimize-doc-backup.txt)
+7. **Independent Validation** (MANDATORY for all documents):
 
-   # Remove backup
-   rm "$BACKUP_FILE"
-   rm /tmp/optimize-doc-backup.txt
-   echo "Backup removed: Changes confirmed safe"
+   **Protocol Summary** (two-phase separation):
+   ```
+   Phase 1                          Phase 2
+   ┌─────────────────────┐         ┌─────────────────────┐
+   │ Create candidate    │         │ Create baseline     │
+   │ Invoke validator    │    →    │ Resume validator    │
+   │ Store agent ID      │         │ Compare files       │
+   │ NO baseline exists  │         │ Report violations   │
+   └─────────────────────┘         └─────────────────────┘
+        Agent analyzes                  Agent compares
+        candidate blind                 with full context
    ```
 
-8. **Report** changes made AND self-review results:
+   **Key Constraint**: Baseline file MUST NOT exist during Phase 1. Validator sees candidate only, establishing genuine confusions before comparison.
+
+   **⚠️ CRITICAL: Two-Phase Separation is MANDATORY**
+
+   **❌ WRONG - Single-Phase Validation** (what NOT to do):
+   ```bash
+   # Creating both files at once - VIOLATES PROTOCOL
+   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
+   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
+   cp "{{arg}}" "/tmp/candidate-${VALIDATION_ID}"
+   git show HEAD:{{arg}} > "/tmp/baseline-${VALIDATION_ID}"  # ← WRONG: Baseline created too early
+
+   # Invoking validator with both file paths - VIOLATES PROTOCOL
+   Task tool: general-purpose
+   Prompt: "Compare /tmp/candidate-${VALIDATION_ID} with /tmp/baseline-${VALIDATION_ID}..."
+   # ← WRONG: Validator can see both files, no genuine Phase 1 analysis
+   ```
+
+   **✅ CORRECT - Two-Phase Validation** (what TO do):
+   - Phase 1: Create candidate ONLY → Invoke validator → Store agent ID
+   - Phase 2: Create baseline → Resume validator with baseline path
+   - Validator cannot cheat because baseline doesn't exist during Phase 1
+
+   **Phase 1: Analyze Candidate Only**
+
+   ```bash
+   # Extract VALIDATION_ID from backup filename
+   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
+   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
+
+   # Create candidate file
+   CANDIDATE_FILE="/tmp/candidate-${VALIDATION_ID}"
+   cp "{{arg}}" "$CANDIDATE_FILE"
+
+   # Invoke validator with literal file path (validator sees expanded path like /tmp/candidate-1762328795-3595)
+   Task tool: general-purpose
+   Model: sonnet
+   Description: Validate optimization Phase 1
+   Prompt: "You are an independent validator analyzing a documentation file.
+
+   **FILE TO ANALYZE**: $CANDIDATE_FILE
+
+   Read the above file completely from start to finish.
+
+   **Document Your Questions**
+
+   As you read, document genuine confusions that impact your ability to execute:
+   - What is unclear or ambiguous?
+   - Where do you feel uncertain about how to proceed?
+   - What specific information seems unclear for execution?
+
+   **Only document execution-impacting confusions** - not theoretical edge cases, rationale questions, or implementation details you don't need.
+
+   **OUTPUT FORMAT**:
+
+   ## Phase 1: Candidate Analysis
+
+   ### Execution-Impacting Confusions
+
+   If you have confusions, list them numbered (1, 2, 3...).
+   If you have NO confusions, write only: "None"
+
+   Do not write both."
+   ```
+
+   Store the agent ID for resume:
+   ```bash
+   # Extract agent ID using get-agent-id skill pattern
+   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
+   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
+
+   bash -c 'SESSION_ID="<session-id-from-context>" && VALIDATION_ID="'"$VALIDATION_ID"'" && AGENT_ID=$(jq -r "select(.toolUseResult.agentId) | .toolUseResult.agentId" /home/node/.config/projects/-workspace/${SESSION_ID}.jsonl 2>/dev/null | tail -1) && echo "$AGENT_ID" > "/tmp/validator-id-'"$VALIDATION_ID"'" && echo "Stored agent ID: $AGENT_ID"'
+   ```
+
+   See **get-agent-id** skill documentation for details and troubleshooting.
+
+   **Checkpoint: Phase 1 Complete** (execute this bash script before Phase 2):
+   ```bash
+   # Extract VALIDATION_ID from backup filename
+   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
+   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
+
+   # Verify Phase 1 completed correctly
+   BASELINE_FILE="/tmp/baseline-${VALIDATION_ID}"
+
+   if [ -f "$BASELINE_FILE" ]; then
+     echo "❌ ERROR: Baseline file exists during Phase 1 - protocol violation"
+     exit 1
+   fi
+
+   VALIDATOR_AGENT_ID=$(cat "/tmp/validator-id-${VALIDATION_ID}" 2>/dev/null)
+   if [ -z "$VALIDATOR_AGENT_ID" ]; then
+     echo "❌ ERROR: Agent ID not stored - cannot resume for Phase 2"
+     exit 1
+   fi
+
+   echo "✅ Phase 1 complete - proceeding to Phase 2"
+   ```
+
+   **ONLY AFTER** checkpoint script succeeds proceed to Phase 2.
+
+   **Phase 2: Compare with Baseline** (REQUIRES Phase 1 completion)
+
+   **Prerequisites** (verify ALL before proceeding):
+   - ✅ Phase 1 validator completed and returned results
+   - ✅ Checkpoint script succeeded (see previous step)
+
+   **If checkpoint failed**: Return to Phase 1, do NOT proceed.
+
+   ```bash
+   # Extract VALIDATION_ID from backup filename
+   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
+   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
+
+   # NOW create baseline file (validator already completed Phase 1)
+   BASELINE_FILE="/tmp/baseline-${VALIDATION_ID}"
+   CANDIDATE_FILE="/tmp/candidate-${VALIDATION_ID}"
+   git show HEAD:{{arg}} > "$BASELINE_FILE"
+
+   # Load validator agent ID
+   VALIDATOR_AGENT_ID=$(cat "/tmp/validator-id-${VALIDATION_ID}")
+
+   # Resume validator for Phase 2 with literal file paths (validator sees expanded paths)
+   # CRITICAL: Use neutral language - do NOT reveal file relationship or optimization context
+   # WRONG: "baseline (original)" or "candidate (optimized)" - creates confirmation bias
+   # RIGHT: "File A" and "File B" - maintains neutrality
+   Task tool: general-purpose
+   Model: sonnet
+   Description: Validate optimization Phase 2
+   Resume: $VALIDATOR_AGENT_ID
+   Prompt: "You are comparing two documentation files.
+
+   **Files**:
+   - File A: $BASELINE_FILE
+   - File B: $CANDIDATE_FILE
+
+   **Task**: Identify all differences, then evaluate for violations.
+
+   **Step 1 - Find Differences**: List every change with line numbers and quoted content.
+
+   **Step 2 - Classify Redundancy Type**: For each difference, determine if removed content matches a redundancy category:
+   - **Category 1 (Narrative)**: Instruction followed by prose restatement of same logic?
+   - **Category 2 (Example)**: Multiple examples showing identical principle without added value?
+   - **Category 3 (Definition)**: Same term defined in multiple sections?
+   - **Category 4 (Procedural)**: Same procedure in multiple places?
+   - **Category 5 (Rationale)**: WHY explanations (educational, not operational)?
+   - **Category 6 (Pedagogical)**: Repetition for emphasis in reference doc (not tutorial)?
+
+   **Step 3 - Apply Taxonomy Rules**:
+   - Categories 1, 5, 6 in reference docs → ACCEPTABLE removal (intended optimization)
+   - Categories 2, 3, 4 → ACCEPTABLE if consolidated version preserves all information
+   - If NOT redundancy category → Evaluate for violations below
+
+   **Step 4 - Evaluate Non-Redundancy Changes**: For differences that don't match redundancy categories, check:
+   - Content loss (instructions, steps, conditions, parameters removed)?
+   - Clarity loss (is File A meaningfully clearer for execution)?
+   - Emphasis shift (MANDATORY → optional-sounding)?
+   - Phase 1 confusion resolution (does File A clarify confusion that File B doesn't)?
+
+   If difference is redundancy removal (Categories 1-6) → ACCEPTABLE.
+   If File B loses content/clarity/emphasis not classified as redundancy → VIOLATION.
+
+   **Output Format**:
+
+   ## Phase 2: File Comparison
+
+   ### Differences
+   [List each: Location (lines), Change description, Quoted content for both files, Redundancy classification if applicable]
+
+   ### Redundancy Analysis
+   [For each difference classified as redundancy: Category number, Why it matches, Verdict (ACCEPTABLE)]
+
+   ### Violations
+   [For non-redundancy differences only: Type, Impact, Verdict (VIOLATION/ACCEPTABLE), Severity if violation]
+
+   ### Assessment
+   - Overall: PASS/FAIL
+   - Content: ✅/❌ | Clarity: ✅/❌ | Emphasis: ✅/❌ | Execution: ✅/❌
+   - Differences: [count] | Redundancy Removals: [count] | Violations: [count] | Phase 1 Confusions Resolved by File A Only: [count if >0 → VIOLATIONS]"
+   ```
+
+   **After validation**:
+   - If FAIL → Fix violations, re-run both phases until PASS
+   - If PASS with execution-impacting confusions → Proceed to step 7B (Iterative Refinement)
+   - If PASS with zero confusions → Proceed to step 8 (cleanup)
+
+7B. **Iterative Clarity Refinement** (address execution-impacting confusions):
+
+   **Trigger**: Validator reports PASS but documents execution-impacting confusions
+
+   **Decision Criteria - Clarify ONLY if confusion impacts execution**:
+
+   ✅ **Clarify these confusions**:
+   - Unclear what command to run
+   - Unclear what parameter to use
+   - Unclear what condition to check
+   - Unclear what "success" looks like
+   - Ambiguous term with multiple interpretations affecting action
+   - Missing step or requirement needed for correct execution
+
+   ❌ **Do NOT clarify these**:
+   - Wondering why a design choice was made (rationale)
+   - Theoretical edge cases not needed for execution
+   - Implementation details not relevant to task
+   - Historical context or background information
+   - Curiosity about alternatives not affecting execution
+
+   **Refinement Process**:
+
+   1. **Extract Execution-Impacting Confusions** (review validator report to identify which confusions are execution-impacting and document their line numbers)
+
+   2. **Classify Each Confusion**:
+      For each confusion, determine:
+      - Does this prevent correct execution? (YES → clarify)
+      - Is this just curiosity/rationale? (NO → skip)
+      - Can validator still execute correctly despite confusion? (YES → skip)
+
+   3. **Add Minimal Clarifications** (using Edit tool to modify {{arg}}):
+
+      **Principles**:
+      - Add ONLY enough text to resolve the specific confusion
+      - Prefer inline examples over explanatory paragraphs
+      - Prefer parenthetical clarifications over new sections
+      - Do NOT re-introduce removed redundancy
+      - Do NOT add rationale or educational content
+
+      **Good Clarification Patterns**:
+      ```markdown
+      ✅ GOOD - Inline example:
+      Delete the task from todo.md (remove entire line, not mark [x])
+
+      ✅ GOOD - Parenthetical clarification:
+      Run the build (mvn clean install)
+
+      ✅ GOOD - Concrete example:
+      Check if tests pass:
+      ```bash
+      mvn test
+      # Exit code 0 = success, non-zero = failure
+      ```
+
+      ❌ BAD - Too much explanation:
+      Delete the task from todo.md. By "delete" we mean completely remove
+      the line from the file, as opposed to marking it complete with [x].
+      This is because completed tasks should move to changelog.md instead
+      of staying in todo.md. The deletion process involves opening todo.md,
+      finding the task line, removing it, and saving the file.
+      ```
+
+   4. **Update Candidate File** (copy modified {{arg}} to candidate for re-validation)
+
+   5. **Re-validate** (start fresh validation - Phase 1 then Phase 2):
+      ```bash
+      # Update candidate copy - reload paths from temp files
+      VALIDATION_ID=$(cat /tmp/optimize-doc-validation-id.txt)
+      CANDIDATE_FILE="/tmp/candidate-${VALIDATION_ID}"
+      cp "{{arg}}" "$CANDIDATE_FILE"
+
+      # Now invoke fresh validator agent for Phase 1 (see step 7)
+      # Then proceed to Phase 2 with same baseline
+      # Check if previous confusions are resolved
+      ```
+
+   6. **Iteration Control**:
+      - Track iteration count (initialize at 0, increment after each refinement)
+      - Maximum 3 iterations
+      - After each iteration:
+        - If validator reports no execution-impacting confusions → Proceed to step 8
+        - If confusions resolved → Proceed to step 8
+        - If confusions persist but iteration < 3 → Return to step 2
+        - If iteration = 3 and execution-impacting confusions persist → **ROLLBACK** - Optimization failed, restore from backup
+
+   **Decision Tree**:
+   ```
+   Validator reports confusions?
+   ├─ NO → Proceed to step 8
+   └─ YES → Are any execution-impacting?
+      ├─ NO → Proceed to step 8 (theoretical/rationale only)
+      └─ YES → Iteration count?
+         ├─ 0-2 → Add minimal clarifications → Re-validate → Increment iteration
+         └─ 3 → ROLLBACK - Restore from backup, optimization failed
+   ```
+
+   **CRITICAL**: Execution-impacting confusions MUST be resolved. If 3 iterations of clarification cannot resolve them, the optimization introduced ambiguity that wasn't in the original, so the optimization must be abandoned.
+
+   **Example Refinement Cycle**:
+
+   **Iteration 1**:
+   - Validator confusion: "What does 'delete' mean - remove line or mark complete?"
+   - Classification: Execution-impacting (affects action taken)
+   - Clarification added: "Delete from todo.md (remove entire line, not mark [x])"
+   - Re-validate → Check if resolved
+
+   **Iteration 2** (if confusion persists):
+   - Validator still confused about deletion scope
+   - Enhanced clarification: Added concrete example showing before/after
+   - Re-validate → Check if resolved
+
+   **Iteration 3** (if still confused):
+   - Final attempt with most explicit clarification possible
+   - Re-validate → If still confused, **ROLLBACK**
+
+   **Rollback Procedure** (if 3 iterations fail):
+   ```bash
+   # Extract VALIDATION_ID from backup filename
+   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
+   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
+
+   # Restore original file
+   cp "$BACKUP_FILE" "{{arg}}"
+
+   # Report failure
+   echo "❌ OPTIMIZATION FAILED: Could not resolve execution-impacting confusions after 3 iterations"
+   echo "File restored to original state"
+
+   # Cleanup
+   rm "$BACKUP_FILE"
+   rm "/tmp/candidate-${VALIDATION_ID}" "/tmp/baseline-${VALIDATION_ID}"
+   rm "/tmp/validator-id-${VALIDATION_ID}"
+   exit 1
+   ```
+
+   **After refinement complete**:
+   - Commit clarifications with message: "Add clarifications from validation feedback"
+   - Proceed to step 8
+
+8. **Remove Backup** (after validation and refinement complete):
+   ```bash
+   # Extract VALIDATION_ID from backup filename
+   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
+   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
+
+   # Remove backup and validation temp files
+   rm "$BACKUP_FILE"
+   rm "/tmp/candidate-${VALIDATION_ID}" "/tmp/baseline-${VALIDATION_ID}"
+   rm "/tmp/validator-id-${VALIDATION_ID}"
+   echo "Backup removed: Changes confirmed safe by independent validator"
+   ```
+
+9. **Report** changes made AND validation results:
    ```
    ## Optimization Summary
-   [Standard summary format]
+
+   **Changes Made**:
+   1. [Section Name] (Lines X-Y): [Brief description]
+      - Before: [Key issue]
+      - After: [How improved]
+
+   **Metrics**:
+   - Lines removed: N
+   - Net reduction: N lines (X%)
+   - Sections optimized: M
+
+   ## Independent Validation
+
+   **Validator Assessment**: ✅ PASS / ❌ FAIL
+   **Differences Found**: [count]
+   **Redundancy Removals**: [count] (Categories: [list])
+   **Violations Found**: [count]
+   **Execution-Impacting Confusions**: [count]
+
+   **Validation Summary**:
+   - Content Preservation: ✅ / ❌
+   - Clarity Maintained: ✅ / ❌
+   - Emphasis Preserved: ✅ / ❌
+   - Execution Equivalence: ✅ / ❌
+
+   [If redundancy removals accepted:]
+   **Redundancy Removals Accepted**:
+   - Removal #1: [Category X - description]
+
+   [If violations found and fixed:]
+   **Violations Fixed**:
+   - Violation #1: [description and fix]
+
+   ## Iterative Refinement
+
+   **Refinement Iterations**: [count] (max 3)
+
+   [If refinements were made:]
+   **Confusions Addressed**:
+   - Confusion #1: [description]
+     - Clarification added: [what was added]
+     - Resolution: ✅ Resolved / ⚠️ Acceptable ambiguity
+
+   [If no refinements needed:]
+   **Refinement Status**: No execution-impacting confusions reported
 
    ## Self-Review
 
-   **Meaning Preservation**: ✅ No operational instructions lost
-   **Vagueness Check**: ✅ All condensed sections pass 4 Clarity Tests
-   **Executability**: ✅ All workflows remain executable
+   **Optimizer's Assessment**:
+   - Meaning Preservation: ✅ No operational instructions lost
+   - Vagueness Check: ✅ All condensed sections pass 4 Clarity Tests
+   - Executability: ✅ All workflows remain executable
 
-   [Or if issues found and fixed:]
-
-   **Issues Found and Fixed**:
-   - Line X: Restored "Reference the mistake" (content specification)
-   - Line Y: Added parenthetical methodology guidance
-   - Line Z: Restored sequencing "Once X passes, do Y"
-
-   **Backup Status**: ✅ Removed (changes confirmed safe)
+   **Backup Status**: ✅ Removed (changes confirmed safe by independent validator)
    ```
 
-9. **Commit** the optimized document with descriptive message
+10. **Commit** the optimized document with descriptive message
 
 ## Quality Standards
 
@@ -1082,9 +1422,9 @@ If category-specific validation fails:
 - ✅ **Ambiguity resolved**: Any ambiguous terms still have defining examples
 - ✅ **Conciseness increased**: Redundancy eliminated or prose tightened
 
-**Verification Happens at TWO Stages**:
+**Verification Happens at FOUR Stages**:
 
-### Stage 1: Per-Section Validation (Step 4)
+### Stage 1: Per-Section Validation (Step 5)
 
 Apply during optimization as each section is modified:
 
@@ -1099,9 +1439,9 @@ Apply during optimization as each section is modified:
 - Ask: "Could I execute this correctly without the original?"
 - If NO for any → Restore content until YES
 
-### Stage 2: Final Self-Review (Step 5 - MANDATORY)
+### Stage 2: Optimizer Self-Review (Step 6 - MANDATORY)
 
-After ALL changes complete, review the full git diff:
+After ALL changes complete, optimizer reviews the full git diff:
 
 **The 3 Critical Questions**:
 1. **Was any meaning lost?** (operational instructions, content specs, methodology, sequencing)
@@ -1112,26 +1452,60 @@ After ALL changes complete, review the full git diff:
 
 **Result**: Self-review report with ✅ confirmations or list of issues found and fixed
 
-**Change Summary Format** (in your response):
+### Stage 3: Independent Validation (Step 7 - MANDATORY for all docs)
+
+**Independent validator agent** (fresh context, no bias) compares candidate against baseline:
+
+**Two-Phase Approach with Difference-First Focus**:
+1. **Phase 1 - Blind Candidate Analysis**: Document execution-impacting confusions without baseline access
+2. **Phase 2 - Difference-Focused Comparison**:
+   - **Step 1**: Identify ALL differences between baseline and candidate (what changed?)
+   - **Step 2**: Evaluate each difference for violations (is the change acceptable?)
+
+**Why Two Phases**:
+- Baseline path hidden until Phase 2 (agent cannot access baseline during Phase 1)
+- Full candidate read first establishes genuine confusions
+- Difference-first priming prevents "they look the same" false negatives
+- Two-step evaluation ensures thorough comparison
+
+**Validator receives in Phase 1**: `/tmp/candidate-${ID}` path only, validation criteria
+**Validator receives in Phase 2**: Both `/tmp/baseline-${ID}` and `/tmp/candidate-${ID}` paths with neutral labels (File A, File B)
+**Validator does NOT receive**: File relationship context (which is "original"), optimization rationale, or biased labels like "(original)" or "(optimized)"
+**Cannot cheat**: Baseline file path not provided until Phase 2 instructions
+**Neutrality requirement**: Use "File A" and "File B" in prompts, not "baseline (original)" or "candidate (optimized)"
+
+**Validation Process**:
+1. Phase 1: Read candidate fully → Document confusions
+2. Phase 2 Step 1: Read both files → List ALL differences with line numbers and quoted text
+3. Phase 2 Step 2: For each difference → Evaluate for violations → Report verdict
+
+**Result**: Independent validation report - PASS (proceed) or FAIL (fix violations and re-validate)
+
+### Stage 4: Iterative Clarity Refinement (Step 7B - CONDITIONAL)
+
+**Trigger**: Validator reports PASS but documents execution-impacting confusions
+
+**Process**:
+1. Extract confusions from validator report
+2. Classify: Execution-impacting vs theoretical/rationale
+3. For execution-impacting confusions: Add minimal clarifications
+4. Re-validate to confirm resolution
+5. Iterate up to 3 times maximum
+
+**Principles**:
+- Only clarify execution-impacting confusions
+- Add minimal text (inline examples, parentheticals)
+- Do NOT re-introduce removed redundancy
+- Do NOT add rationale or educational content
+
+**Result**: Either confusions resolved, or optimization rolled back
+
+**Change Summary Format**:
 ```
 ## Optimization Summary
-
-**Changes Made**:
-1. [Section Name] (Lines X-Y): [Brief description of change]
-   - Before: [Key issue - vagueness, redundancy, verbosity]
-   - After: [How it was improved]
-
-2. [Section Name] (Lines A-B): [Brief description]
-   - ...
-
-**Metrics**:
-- Lines removed: N
-- Sections strengthened: M
-- Redundancy eliminated: [specific examples]
-
-**Next Steps**:
-- [If further optimization possible] Run /optimize-doc again
-- [If complete] Document fully optimized
+**Changes Made**: [Section] (Lines X-Y): [description] - Before: [issue] - After: [improvement]
+**Metrics**: Lines removed: N | Sections strengthened: M | Redundancy: [examples]
+**Next Steps**: [Run again if needed | Complete if optimal]
 ```
 
 ## Success Criteria
