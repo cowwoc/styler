@@ -298,177 +298,181 @@
     }
   },
   "docs/project/git-workflow.md": {
-    "git-working-directory-requirements": {
+    "commit-message-format": {
       "start": 5,
-      "end": 20
+      "end": 107
+    },
+    "git-working-directory-requirements": {
+      "start": 108,
+      "end": 123
     },
     "commit-squashing-procedures": {
-      "start": 21,
-      "end": 22
+      "start": 124,
+      "end": 125
     },
     "overview": {
-      "start": 23,
-      "end": 33
+      "start": 126,
+      "end": 136
     },
     "task-branch-squashing-task-protocol": {
-      "start": 34,
-      "end": 118
+      "start": 137,
+      "end": 221
     },
     "squash-enforcement-workflow": {
-      "start": 119,
-      "end": 171
+      "start": 222,
+      "end": 274
     },
     "interactive-rebase-primary-method": {
-      "start": 172,
-      "end": 176
+      "start": 275,
+      "end": 279
     },
     "interactive-rebase-procedure": {
-      "start": 177,
-      "end": 178
+      "start": 280,
+      "end": 281
     },
     "1-create-backup-branch": {
-      "start": 748,
-      "end": 756
+      "start": 851,
+      "end": 859
     },
     "2-create-chronological-rebase-plan": {
-      "start": 188,
-      "end": 260
+      "start": 291,
+      "end": 363
     },
     "3-configure-squash-operations-with-chronological-validation": {
-      "start": 261,
-      "end": 314
+      "start": 364,
+      "end": 417
     },
     "4-handle-conflicts-during-rebase": {
-      "start": 315,
-      "end": 356
+      "start": 418,
+      "end": 459
     },
     "5-advanced-conflict-resolution-strategies": {
-      "start": 357,
-      "end": 411
+      "start": 460,
+      "end": 514
     },
     "6-advanced-conflict-handling-scenarios": {
-      "start": 412,
-      "end": 453
+      "start": 515,
+      "end": 556
     },
     "7-error-recovery-during-rebase": {
-      "start": 454,
-      "end": 487
+      "start": 557,
+      "end": 590
     },
     "8-verify-results-with-chronological-validation": {
-      "start": 488,
-      "end": 535
+      "start": 591,
+      "end": 638
     },
     "9-error-recovery": {
-      "start": 536,
-      "end": 560
+      "start": 639,
+      "end": 663
     },
     "10-finalization": {
-      "start": 561,
-      "end": 572
+      "start": 664,
+      "end": 675
     },
     "10-cleanup-backup-branch": {
-      "start": 573,
-      "end": 580
+      "start": 676,
+      "end": 683
     },
     "critical-success-factors-for-complex-squash-operations": {
-      "start": 581,
-      "end": 594
+      "start": 684,
+      "end": 697
     },
     "handling-non-contiguous-commits": {
-      "start": 595,
-      "end": 599
+      "start": 698,
+      "end": 702
     },
     "decision-matrix-for-non-contiguous-commits": {
-      "start": 600,
-      "end": 611
-    },
-    "strategy-1-interactive-rebase-for-non-contiguous-historical-commits": {
-      "start": 612,
-      "end": 662
-    },
-    "strategy-2-fixup-workflow-for-future-development": {
-      "start": 663,
-      "end": 691
-    },
-    "critical-success-factors-for-non-contiguous-squashing": {
-      "start": 692,
+      "start": 703,
       "end": 714
     },
-    "when-interactive-rebase-may-not-be-suitable": {
+    "strategy-1-interactive-rebase-for-non-contiguous-historical-commits": {
       "start": 715,
-      "end": 726
+      "end": 765
     },
-    "cherry-pick-method-advancedfallback-approach": {
-      "start": 727,
-      "end": 730
+    "strategy-2-fixup-workflow-for-future-development": {
+      "start": 766,
+      "end": 794
     },
-    "critical-user-request-validation": {
-      "start": 731,
-      "end": 745
+    "critical-success-factors-for-non-contiguous-squashing": {
+      "start": 795,
+      "end": 817
     },
-    "procedure": {
-      "start": 746,
-      "end": 747
-    },
-    "2-analyze-commit-structure-and-validate-user-request": {
-      "start": 757,
-      "end": 791
-    },
-    "3-create-working-branch": {
-      "start": 792,
-      "end": 802
-    },
-    "4-perform-targeted-soft-reset": {
-      "start": 803,
+    "when-interactive-rebase-may-not-be-suitable": {
+      "start": 818,
       "end": 829
     },
-    "5-handle-staging-area-for-exact-target-commits": {
+    "cherry-pick-method-advancedfallback-approach": {
       "start": 830,
+      "end": 833
+    },
+    "critical-user-request-validation": {
+      "start": 834,
       "end": 848
     },
-    "6-create-squashed-commit": {
+    "procedure": {
       "start": 849,
-      "end": 865
+      "end": 850
     },
-    "7-restore-all-non-target-commits": {
-      "start": 866,
-      "end": 884
+    "2-analyze-commit-structure-and-validate-user-request": {
+      "start": 860,
+      "end": 894
     },
-    "8-verify-result": {
-      "start": 885,
-      "end": 906
+    "3-create-working-branch": {
+      "start": 895,
+      "end": 905
     },
-    "9-test-build-integrity": {
-      "start": 907,
-      "end": 915
+    "4-perform-targeted-soft-reset": {
+      "start": 906,
+      "end": 932
     },
-    "10-user-approval": {
-      "start": 916,
-      "end": 919
+    "5-handle-staging-area-for-exact-target-commits": {
+      "start": 933,
+      "end": 951
     },
-    "11-replace-original-branch-if-approved": {
-      "start": 920,
-      "end": 931
-    },
-    "12-cleanup-backup-branch-if-approved": {
-      "start": 932,
-      "end": 941
-    },
-    "important-notes": {
-      "start": 942,
-      "end": 949
-    },
-    "critical-data-loss-prevention": {
-      "start": 950,
+    "6-create-squashed-commit": {
+      "start": 952,
       "end": 968
     },
-    "when-to-use-this-procedure": {
+    "7-restore-all-non-target-commits": {
       "start": 969,
-      "end": 976
+      "end": 987
+    },
+    "8-verify-result": {
+      "start": 988,
+      "end": 1009
+    },
+    "9-test-build-integrity": {
+      "start": 1010,
+      "end": 1018
+    },
+    "10-user-approval": {
+      "start": 1019,
+      "end": 1022
+    },
+    "11-replace-original-branch-if-approved": {
+      "start": 1023,
+      "end": 1034
+    },
+    "12-cleanup-backup-branch-if-approved": {
+      "start": 1035,
+      "end": 1044
+    },
+    "important-notes": {
+      "start": 1045,
+      "end": 1052
+    },
+    "critical-data-loss-prevention": {
+      "start": 1053,
+      "end": 1071
+    },
+    "when-to-use-this-procedure": {
+      "start": 1072,
+      "end": 1079
     },
     "when-not-to-use": {
-      "start": 977,
-      "end": 988
+      "start": 1080,
+      "end": 1091
     }
   },
   "docs/project/hook-consolidation-summary.md": {},

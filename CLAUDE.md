@@ -110,7 +110,7 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLE
      git merge --squash {task-branch}
      # Update todo.md and changelog.md
      git add -A
-     git commit -m "Task implementation
+     git commit -m "[feat] Task implementation
 
      - Implementation details
      - Updated todo.md: Mark task complete
@@ -632,7 +632,7 @@ git merge implement-formatter-api-architect
 [docs/project/architecture.md](docs/project/architecture.md) - Project architecture and features
 [docs/project/scope.md](docs/project/scope.md) - Family configuration and development philosophy
 [docs/project/build-system.md](docs/project/build-system.md) - Build configuration and commands
-[docs/project/git-workflow.md](docs/project/git-workflow.md) - Git workflows and commit squashing procedures
+[docs/project/git-workflow.md](docs/project/git-workflow.md) - Git workflows, commit message format, and commit squashing procedures
 [docs/project/style-guide.md](docs/project/style-guide.md) - Style validation and JavaDoc requirements
 [docs/project/quality-guide.md](docs/project/quality-guide.md) - Code quality and testing standards
 [docs/code-style-human.md](docs/code-style-human.md) - Code style master guide

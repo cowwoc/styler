@@ -390,7 +390,7 @@ Co-Authored-By: quality <noreply@anthropic.com>
 Implement FormattingRule interface
 
 # ❌ VIOLATION - Generic signature not specific to agent
-feat: Add new feature
+[feat] Add new feature
 ```
 
 ### For Stakeholder Agents in IMPLEMENTATION Mode: Merging to Task Branch {#for-implementation-agents-merging-to-task-branch}
