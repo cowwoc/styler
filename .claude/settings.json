@@ -88,26 +88,16 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "tool:Bash && (command:*git* || command:*rm*)",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/block-data-loss.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "tool:Bash && command:*cd*",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/detect-worktree-violation.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "tool:Bash && command:*git*merge*",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/enforce-merge-workflow.sh"
@@ -119,39 +109,36 @@
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/enforce-checkpoints.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/validate-git-filter-branch.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/verify-convergence-entry.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/enforce-requirements-phase.sh"
           }
         ]
       },
       {
-        "matcher": "(tool:Write || tool:Edit) && path:/workspace/tasks/**",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/require-task-protocol.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "(tool:Write || tool:Edit)",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/pre-tool-use-implementation-guard.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "tool:Write && path:**.md",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/detect-retrospective-docs.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "tool:Edit && path:**/task.json",
-        "hooks": [
+          },
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/validate-state-transition.sh"
@@ -159,7 +146,7 @@
         ]
       },
       {
-        "matcher": "tool:Task",
+        "matcher": "Task",
         "hooks": [
           {
             "type": "command",
@@ -168,24 +155,6 @@
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/validate-agent-invocation.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "tool:Bash && command:*jq*state*CONVERGENCE*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/verify-convergence-entry.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "tool:Bash && command:*jq*state*SYNTHESIS*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/enforce-requirements-phase.sh"
           }
         ]
       },
