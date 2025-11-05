@@ -10,14 +10,14 @@
 
 ### Core States
 ```
-INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLEMENTATION → VALIDATION → REVIEW → [CHANGE REVIEW] → COMPLETE → CLEANUP
+INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLEMENTATION → VALIDATION → REVIEW → AWAITING_USER_APPROVAL → COMPLETE → CLEANUP
                                       ↑                                                          ↓
                                       └─────────────────── SCOPE_NEGOTIATION ←──────────────────┘
 ```
 
 **User Approval Checkpoints:**
 - **[PLAN APPROVAL]**: After SYNTHESIS, before IMPLEMENTATION - User reviews and approves implementation plan
-- **[CHANGE REVIEW]**: After REVIEW (unanimous stakeholder approval), before COMPLETE - User reviews actual changes
+- **[CHANGE REVIEW]**: After REVIEW (unanimous stakeholder approval) - Transition to AWAITING_USER_APPROVAL state
 
 ### State Definitions
 - **INIT**: Task selected, locks acquired, session validated
@@ -26,7 +26,8 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 - **SYNTHESIS**: Requirements consolidated into unified architecture plan, **USER APPROVAL CHECKPOINT: Present plan to user, wait for explicit user approval**
 - **IMPLEMENTATION**: Code and tests created according to user-approved synthesis plan
 - **VALIDATION**: Build verification and automated quality gates passed
-- **REVIEW**: All stakeholder agents provide unanimous approval, **USER REVIEW CHECKPOINT: Present changes to user, wait for review approval before proceeding**
+- **REVIEW**: All stakeholder agents provide unanimous approval
+- **AWAITING_USER_APPROVAL**: **CHECKPOINT STATE - Implementation commit created, changes presented to user, waiting for explicit approval before COMPLETE**
 - **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns (ONLY when resolution effort > 2x task scope AND agent consensus permits deferral - NEVER ask user for permission)
 - **COMPLETE**: Work preserved to main branch, todo.md updated (only after user approves changes)
 - **CLEANUP**: Worktrees removed, locks released, temporary files cleaned
@@ -59,47 +60,6 @@ Before REVIEW → COMPLETE:
 - [ ] Did I present the completed changes with commit SHA?
 - [ ] Did the user explicitly approve proceeding to finalization?
 - [ ] Did I assume approval from agent consensus alone? (VIOLATION if yes)
-
-### 🛑 MANDATORY STOP POINT - USER APPROVAL CHECKPOINT #2
-
-**YOU MUST STOP HERE** after completing REVIEW state and receiving unanimous stakeholder approval.
-
-**DO NOT PROCEED TO COMPLETE STATE** until you have:
-
-1. ✅ **COMMITTED** all changes to task branch
-2. ✅ **RECORDED** commit SHA for user reference
-3. ✅ **PRESENTED** change summary to user including:
-   - Commit SHA
-   - Files modified (git show --stat)
-   - Key implementation decisions
-   - Test results (all passing)
-   - Quality gates status (checkstyle, PMD, build)
-4. ✅ **WAITED** for explicit user approval message
-5. ✅ **RECEIVED** approval keywords: "approved", "LGTM", "looks good", "proceed"
-
-**PROHIBITED ACTIONS AT THIS CHECKPOINT:**
-❌ Proceeding to COMPLETE state autonomously
-❌ Assuming approval from stakeholder consensus
-❌ Interpreting silence as approval
-❌ Skipping checkpoint due to bypass mode
-❌ Treating "continue" without approval context as approval
-
-**REQUIRED PATTERN:**
-```
-All stakeholder agents have approved the implementation.
-
-**Commit SHA**: [commit-sha]
-**Files changed**: [list]
-**Implementation summary**: [key decisions]
-**Test results**: [all passing]
-**Quality gates**: [checkstyle: PASS, PMD: PASS, build: SUCCESS]
-
-Please review these changes. Would you like me to proceed with finalizing (COMPLETE → CLEANUP)?
-```
-
-**WAIT** for user response before ANY further action.
-
-**ENFORCEMENT**: The `enforce-user-approval.sh` hook will block COMPLETE state transition if approval marker file does not exist.
 
 ### Automated Checkpoint Enforcement
 
@@ -860,11 +820,84 @@ update_lock_state "create-maven-plugin" "SYNTHESIS"
 - `IMPLEMENTATION` - Writing code
 - `VALIDATION` - Build verification
 - `REVIEW` - Stakeholder reviews
+- `AWAITING_USER_APPROVAL` - Checkpoint state waiting for user approval
 - `SCOPE_NEGOTIATION` - Resolving scope issues
 - `COMPLETE` - Merging to main
 - `CLEANUP` - Final cleanup (lock will be deleted)
 
 **IMPORTANT**: Update lock state at the START of each phase transition to maintain accurate recovery state.
+
+### Enhanced Lock File Format with Checkpoint Tracking
+
+**Standard Lock File** (basic task execution):
+```json
+{
+  "session_id": "unique-session-identifier",
+  "task_name": "task-name-matching-filename",
+  "state": "current-protocol-phase",
+  "created_at": "ISO-8601-timestamp"
+}
+```
+
+**Lock File with Active Checkpoint** (when presenting for user approval):
+```json
+{
+  "session_id": "unique-session-identifier",
+  "task_name": "task-name-matching-filename",
+  "state": "AWAITING_USER_APPROVAL",
+  "created_at": "ISO-8601-timestamp",
+  "checkpoint": {
+    "type": "USER_APPROVAL_POST_REVIEW",
+    "commit_sha": "abc123def456",
+    "presented_at": "ISO-8601-timestamp",
+    "approved": false
+  }
+}
+```
+
+**Checkpoint Field Structure**:
+- `type`: Always "USER_APPROVAL_POST_REVIEW" for Checkpoint 2
+- `commit_sha`: The commit hash presented to user for review
+- `presented_at`: ISO-8601 timestamp when changes were presented
+- `approved`: Boolean flag (false = pending, true = approved)
+
+**Creating Checkpoint State**:
+```bash
+# After REVIEW state with unanimous approval, create commit and update lock
+COMMIT_SHA=$(git rev-parse HEAD)
+TASK_NAME="your-task-name"
+LOCK_FILE="/workspace/locks/${TASK_NAME}.json"
+
+# Update lock to AWAITING_USER_APPROVAL state with checkpoint data
+jq --arg sha "$COMMIT_SHA" \
+   --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   '.state = "AWAITING_USER_APPROVAL" |
+    .checkpoint = {
+      "type": "USER_APPROVAL_POST_REVIEW",
+      "commit_sha": $sha,
+      "presented_at": $timestamp,
+      "approved": false
+    }' "$LOCK_FILE" > "${LOCK_FILE}.tmp" && mv "${LOCK_FILE}.tmp" "$LOCK_FILE"
+```
+
+**Marking Checkpoint as Approved**:
+```bash
+# After user provides explicit approval
+LOCK_FILE="/workspace/locks/${TASK_NAME}.json"
+jq '.checkpoint.approved = true' "$LOCK_FILE" > "${LOCK_FILE}.tmp" && mv "${LOCK_FILE}.tmp" "$LOCK_FILE"
+```
+
+**Checking Checkpoint Status Before Phase 7**:
+```bash
+# Mandatory verification before COMPLETE state transition
+CHECKPOINT_APPROVED=$(jq -r '.checkpoint.approved // false' "$LOCK_FILE")
+
+if [ "$CHECKPOINT_APPROVED" != "true" ]; then
+    echo "❌ CHECKPOINT VIOLATION: User approval not obtained"
+    echo "Cannot proceed to COMPLETE state"
+    exit 1
+fi
+```
 
 ### CLASSIFIED → REQUIREMENTS
 **Mandatory Conditions:**
