@@ -1065,6 +1065,58 @@ jq '.mistake_types | to_entries |
 
 ### Integration with auto-learn-from-mistakes Hook
 
+**Automatic Detection**: The `.claude/hooks/auto-learn-from-mistakes.sh` hook runs on PostToolUse for ALL tools and automatically detects common mistake patterns, recommending invocation of this skill.
+
+**Currently Detected Patterns** (as of 2025-11-05):
+
+1. **Pattern 1: Build failures** (CRITICAL)
+   - Triggers: "BUILD FAILURE", "COMPILATION ERROR", "compilation failure"
+   - Context: Maven/Gradle build output with errors
+
+2. **Pattern 2: Test failures** (CRITICAL)
+   - Triggers: "Tests run:.*Failures: [1-9]", "test.*failed"
+   - Context: Test execution results with failures
+
+3. **Pattern 3: Protocol violations** (CRITICAL)
+   - Triggers: "PROTOCOL VIOLATION", "🚨.*VIOLATION"
+   - Context: Hook-detected protocol breaches
+
+4. **Pattern 4: Merge conflicts** (HIGH)
+   - Triggers: "CONFLICT", "merge conflict"
+   - Context: Git merge operations
+
+5. **Pattern 5: Edit tool failures** (MEDIUM)
+   - Triggers: "String to replace not found", "old_string not found"
+   - Context: Edit tool string matching failures
+
+6. **Pattern 6: Skill step failures** (HIGH) - *Added 2025-11-05*
+   - Triggers: Tool is "Skill" AND (\bERROR\b, \bFAILED\b, "failed to", "step.*(failed|failure)", "operation.*(failed|failure)", "could not", "unable to")
+   - Context: Skill execution encountering errors during steps
+   - Example: Git-squash skill step failing, git-rebase operation error
+   - False Positive Prevention: Uses word boundaries to avoid matching "finished"
+
+7. **Pattern 7: Git operation failures** (HIGH) - *Added 2025-11-05*
+   - Triggers: "fatal:", "error:", "git.*failed", "rebase.*failed", "merge.*failed"
+   - Context: Git command failures
+   - Example: Rebase conflicts, merge failures, invalid git operations
+
+**Rate Limiting**: Hook enforces 5-minute cooldown between reminders to prevent spam.
+
+**Hook Output**: When mistake detected, outputs recommendation to stderr:
+```
+📚 MISTAKE DETECTED: skill_step_failure
+
+A significant mistake was detected in the Skill tool result.
+
+**Recommendation**: Invoke the learn-from-mistakes skill:
+
+Skill: learn-from-mistakes
+
+Context: Detected skill_step_failure during Skill execution.
+```
+
+**Metrics Integration**: Hook can record metrics to track prevention effectiveness (see Metrics section above).
+
 Update `.claude/hooks/auto-learn-from-mistakes.sh` to record metrics:
 
 ```bash
