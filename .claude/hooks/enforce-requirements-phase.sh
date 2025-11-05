@@ -102,26 +102,26 @@ Task: ${TASK_NAME}
 ❌ MISSING: Stakeholder requirement reports
 
 Expected files in ${TASK_DIR}/:
-  - ${TASK_NAME}-architecture-reviewer-requirements.md
-  - ${TASK_NAME}-quality-reviewer-requirements.md
-  - ${TASK_NAME}-style-reviewer-requirements.md
+  - ${TASK_NAME}-architect-requirements.md
+  - ${TASK_NAME}-engineer-requirements.md
+  - ${TASK_NAME}-formatter-requirements.md
 
 REQUIRED ACTIONS:
 
 1. Stay in CLASSIFIED state
-2. Invoke stakeholder reviewer agents IN PARALLEL:
+2. Invoke stakeholder agents in REQUIREMENTS mode IN PARALLEL:
 
-   Task tool (architecture-reviewer): "Review task requirements from
+   Task tool (architect): "Review task requirements from
    architectural perspective. Analyze dependencies, design patterns,
-   integration points. Output: ${TASK_NAME}-architecture-reviewer-requirements.md"
+   integration points. Output: ${TASK_NAME}-architect-requirements.md"
 
-   Task tool (quality-reviewer): "Review task requirements from quality
+   Task tool (engineer): "Review task requirements from quality
    perspective. Define testing strategy, quality metrics, validation criteria.
-   Output: ${TASK_NAME}-quality-reviewer-requirements.md"
+   Output: ${TASK_NAME}-engineer-requirements.md"
 
-   Task tool (style-reviewer): "Review task requirements from style perspective.
+   Task tool (formatter): "Review task requirements from style perspective.
    Specify documentation requirements, code style standards, naming conventions.
-   Output: ${TASK_NAME}-style-reviewer-requirements.md"
+   Output: ${TASK_NAME}-formatter-requirements.md"
 
 3. After ALL reviewers complete, READ their reports
 4. SYNTHESIZE unified implementation plan in task.md

@@ -24,12 +24,6 @@ Work that can be performed directly on main branch without task protocol isolati
 - `/workspace/main/.gitignore`
 - `/workspace/main/.gitattributes`
 
-**Rationale**: Documentation and configuration changes are:
-- Low risk (no code execution)
-- Frequently iterative
-- Often improved based on immediate feedback
-- Don't benefit from isolation/review cycles
-
 ### Hook Scripts & Automation
 
 **Files**:
@@ -37,12 +31,7 @@ Work that can be performed directly on main branch without task protocol isolati
 - `/workspace/main/.claude/settings.json`
 - `/workspace/main/.claude/commands/**/*`
 - `/workspace/main/.claude/agents/**/*`
-- `/workspace/main/scripts/**/*`
-
-**Rationale**: Meta-protocol work:
-- Protocol improvements shouldn't require protocol
-- Rapid iteration needed for debugging hooks
-- Self-contained changes with immediate testability
+- `/workspace/main/.claude/scripts/**/*`
 
 ### Build Infrastructure (Root Level)
 
@@ -54,11 +43,6 @@ Work that can be performed directly on main branch without task protocol isolati
 - `/workspace/main/config/pmd.xml`
 - `/workspace/main/config/pmd-main.xml`
 
-**Rationale**: Build infrastructure:
-- Affects all modules uniformly
-- Often needs immediate fixes for broken builds
-- Changes validated by build system itself
-
 ### Git Operations
 
 **Operations**:
@@ -67,16 +51,12 @@ Work that can be performed directly on main branch without task protocol isolati
 - Working on main branch for non-protocol files
 - `.git/` directory operations
 
-**Rationale**: Version control operations are orthogonal to protocol
-
 ### IDE & Personal Settings
 
 **Files**:
 - `/workspace/main/.idea/**/*`
 - `/workspace/main/**/*.iml`
 - Any IDE-specific configuration
-
-**Rationale**: Personal settings, not committed to repo
 
 ### Audit & Meta-Protocol Activities
 
@@ -86,14 +66,10 @@ Work that can be performed directly on main branch without task protocol isolati
 - Fixing protocol violations detected by audits
 - Hook testing and debugging
 
-**Rationale**: Meta-protocol work shouldn't require the protocol it's improving
-
 ### Research Documentation (Exploratory)
 
 **Files**:
 - `/workspace/main/docs/studies/**/*.md` (research only, see Category B for implementation)
-
-**Rationale**: Exploratory research for understanding, NOT implementation planning
 
 **CRITICAL**: If study leads to implementation task, the IMPLEMENTATION requires task protocol.
 
@@ -109,12 +85,6 @@ Work that MUST use full task protocol with task.json, state transitions, and age
 - ANY file under `*/src/main/java/**`
 - ANY file under `*/src/test/java/**`
 
-**Rationale**: Source code requires:
-- Stakeholder agent review
-- Quality validation
-- Test coverage
-- Isolation for parallel work
-
 ### Test Files & Fixtures
 
 **Files**:
@@ -122,19 +92,12 @@ Work that MUST use full task protocol with task.json, state transitions, and age
 - `/workspace/main/tests/integration/**`
 - Test fixtures, test data files
 
-**Rationale**: Tests are code and require same quality standards
-
 ### Module Build Files
 
 **Files**:
 - `*/pom.xml` (module pom.xml, NOT root)
 - `*/module-info.java`
 - Module-specific build configuration
-
-**Rationale**: Module changes require:
-- Architecture review
-- Dependency validation
-- Integration testing
 
 ### Module Structure Changes
 
@@ -144,8 +107,6 @@ Work that MUST use full task protocol with task.json, state transitions, and age
 - Adding/removing module dependencies
 - Refactoring module boundaries
 
-**Rationale**: Architectural changes require stakeholder coordination
-
 ### Tasks from todo.md
 
 **Scope**:
@@ -153,8 +114,6 @@ Work that MUST use full task protocol with task.json, state transitions, and age
 - Implementing features from roadmap
 - Fixing bugs from task list
 - Refactoring work from technical debt list
-
-**Rationale**: todo.md tasks are pre-planned work requiring full protocol
 
 ### Studies for Implementation Planning
 
@@ -176,11 +135,6 @@ Work that MUST use full task protocol with task.json, state transitions, and age
 - Quick patches
 - Emergency hotfixes
 
-**Rationale**: Even small code changes require:
-- Quality validation (checkstyle, PMD, tests)
-- Stakeholder review
-- Proper attribution in commits
-
 **Note**: Fast-track protocol available for emergencies (see § Emergency Protocol)
 
 ### Refactoring Work
@@ -198,8 +152,6 @@ Work that MUST use full task protocol with task.json, state transitions, and age
 - Planned architectural refactoring tasks
 - Technical debt items from task list
 
-**Rationale**: Opportunistic improvement shouldn't require protocol overhead
-
 ### Performance Work
 
 **Category A** (Non-Protocol):
@@ -212,8 +164,6 @@ Work that MUST use full task protocol with task.json, state transitions, and age
 - Modifying benchmark code
 - Performance optimization implementations (new code/logic)
 
-**Rationale**: Analysis is non-protocol, but creating benchmark code requires validation
-
 ### Dependency Updates
 
 **Decision**: Non-Protocol (Category A)
@@ -222,12 +172,6 @@ Work that MUST use full task protocol with task.json, state transitions, and age
 - Root `pom.xml` `<dependencyManagement>` version updates
 - Module `pom.xml` dependency version changes
 - Adding/removing dependencies in any pom.xml
-
-**Rationale**: Dependency updates are:
-- Infrastructure maintenance
-- Validated by build system
-- Often routine security/bug fix updates
-- Don't change code logic
 
 **Note**: If dependency update breaks build, fix with non-protocol work. If dependency update requires code changes (API migration), those code changes are Category B.
 
@@ -243,20 +187,11 @@ Work that MUST use full task protocol with task.json, state transitions, and age
 - Modifying code generator templates (affects future generation)
 - Creating new code generators
 
-**Rationale**: Generated code that's never manually edited doesn't need protocol (regenerate anytime). Manually modified generated code becomes source code requiring validation.
-
 ## Category C: Resolved Ambiguous Cases {#resolved-cases}
-
-Previously ambiguous cases now categorized with rationale.
 
 ### Build System Debugging → Category A
 
 **Decision**: Non-protocol
-
-**Rationale**:
-- Temporary diagnostic changes
-- Root pom.xml edits for troubleshooting
-- Reverted after diagnosis
 
 **Exception**: If debug reveals need for module code changes → Category B
 
@@ -264,18 +199,11 @@ Previously ambiguous cases now categorized with rationale.
 
 **Decision**: Protocol-required
 
-**Rationale**:
-- No exceptions for code quality
-- Even one-line changes need validation
-- Fast-track protocol available for urgency
-
 ### Checkstyle/PMD Config → Category A
 
 **Decision**: Non-protocol
 
 **Files**: `config/checkstyle.xml`, `config/pmd.xml`
-
-**Rationale**: Build infrastructure, not source code
 
 ### Studies/Research → Category B (for implementation)
 
@@ -335,7 +263,6 @@ fi
 - `todo.md`
 - `docs/**/*.md` (except implementation planning studies)
 - `.claude/**/*`
-- `scripts/**/*`
 - `**/*.xml` (all pom.xml, checkstyle.xml, pmd.xml)
 - `.editorconfig`, `.gitignore`, `.gitattributes`
 - `.idea/**/*`, `**/*.iml`

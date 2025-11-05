@@ -125,7 +125,7 @@ exit 0
    ├─ Category A (Allowed WITHOUT protocol):
    │  • Documentation: *.md (except task.md)
    │  • Hooks: .claude/hooks/**
-   │  • Scripts: scripts/**
+   │  • Scripts: .claude/scripts/**
    │  • Build: **/pom.xml, build.*, .mvn/**, mvnw*
    │  • Git: .gitignore, .gitattributes
    │  ↓ MATCH → Allow
@@ -155,7 +155,7 @@ exit 0
 CATEGORY_A_PATTERNS=(
   "*.md"                          # Documentation (except task.md, handled specially)
   ".claude/hooks/**"              # Hook scripts
-  "scripts/**"                    # Utility scripts
+  ".claude/scripts/**"            # Utility scripts
   "**/pom.xml"                    # Build files (ALL pom.xml per user clarification)
   "build.*"                       # Build configs
   ".mvn/**"                       # Maven wrapper
@@ -363,7 +363,7 @@ match_category_a() {
   fi
 
   # Scripts
-  if [[ "$path" =~ ^scripts/ ]]; then
+  if [[ "$path" =~ ^\.claude/scripts/ ]]; then
     return 0
   fi
 
@@ -612,22 +612,4 @@ rm /workspace/main/.claude/hooks/validate-lock-location.sh
 2. Keep old hook files until confidence in new system
 3. Use git revert to restore previous state
 
-## Performance Considerations
-
-**Pattern Matching**: Bash pattern matching with case statements is fast for small pattern sets
-**File I/O**: Only reads task.json when path is under /workspace/tasks/
-**Grep Performance**: todo.md grep only runs for docs/studies/*.md paths
-
 **Expected Hook Execution Time**: <50ms per tool use
-
-## Future Enhancements
-
-1. **Cache todo.md parsing**: Read once per session instead of per-hook-call
-2. **Structured logging**: JSON log output for audit trails
-3. **Hook metrics**: Track block rate, allow rate, pattern match performance
-4. **Auto-correction suggestions**: "Did you mean to initialize task protocol? Run: [command]"
-
----
-
-**Design Status**: ✅ COMPLETE - Ready for implementation
-**Next Step**: Implement `lib/pattern-matcher.sh` helper library

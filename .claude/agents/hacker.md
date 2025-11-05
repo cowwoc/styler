@@ -1,5 +1,5 @@
 ---
-name: security
+name: hacker
 description: >
   Reviews code for security vulnerabilities, attack vectors, and compliance issues. Can review security
   (analysis mode) or implement fixes (implementation mode) based on invocation instructions.

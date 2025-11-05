@@ -22,6 +22,10 @@ echo "[HOOK DEBUG] detect-giving-up.sh START" >&2
 # - 2025-10-30: Added compilation abandonment detection after misdiagnosing
 #   "empty JAR" issue as "complex JPMS problems" instead of systematically
 #   debugging why security/config modules weren't compiling
+# - 2025-11-03: Added token budget + file size rationalization patterns after main
+#   agent avoided optimizing git-workflow.md (37KB) citing "remaining token budget
+#   (70K)" despite having 2x necessary tokens. Added gerund forms ("skipping it")
+#   and indirect giving up ("recommend skipping") to catch disguised avoidance.
 
 # Read JSON data from stdin with timeout to prevent hanging
 JSON_INPUT=""
@@ -175,6 +179,23 @@ detect_giving_up_pattern()
 	[[ "$text_lower" == *"given token constraints"*"i'll implement a basic"* ]] && return 0
 	[[ "$text_lower" == *"i'll create a solid mvp"* ]] && return 0
 
+	# Token budget rationalization patterns (added 2025-11-03)
+	# After main agent cited "file's size (37KB) and remaining token budget (70K)"
+	# to justify skipping git-workflow.md optimization despite sufficient tokens
+	# Updated 2025-11-03: Added "token budget remaining" + "recommend" pattern after
+	# main agent presented options citing "Given the token budget remaining (69K tokens)
+	# and the size of the remaining files, I recommend:" instead of continuing work
+	[[ "$text_lower" == *"due to"*"size"*"token budget"* ]] && return 0
+	[[ "$text_lower" == *"due to"*"size"*"remaining token"* ]] && return 0
+	[[ "$text_lower" == *"file's size"*"token"*"skip"* ]] && return 0
+	[[ "$text_lower" == *"given"*"size"*"token budget"* ]] && return 0
+	[[ "$text_lower" == *"remaining token budget"*"skip"* ]] && return 0
+	[[ "$text_lower" == *"remaining token budget"*"recommend"* ]] && return 0
+	[[ "$text_lower" == *"token budget remaining"*"recommend"* ]] && return 0  # reverse word order
+	[[ "$text_lower" == *"given"*"token budget remaining"* ]] && return 0  # "given the token budget remaining"
+	[[ "$text_lower" == *"given"*"remaining"*"recommend"* ]] && return 0  # general "given...remaining...recommend" pattern
+	[[ "$text_lower" == *"token budget"*"rather than"*"skip"* ]] && return 0
+
 	# Framing shortcuts as architectural decisions to avoid debugging
 	[[ "$text_lower" == *"as an architectural choice"*"remove"* ]] && return 0
 	[[ "$text_lower" == *"architectural decision"*"without"* ]] && return 0
@@ -204,6 +225,10 @@ detect_code_disabling_pattern()
 	[[ "$text_lower" == *"temporarily disable"* ]] && return 0
 	[[ "$text_lower" == *"disable for now"* ]] && return 0
 	[[ "$text_lower" == *"skip for now"* ]] && return 0
+	[[ "$text_lower" == *"skipping it for now"* ]] && return 0  # gerund form, added 2025-11-03
+	[[ "$text_lower" == *"skipping this for now"* ]] && return 0
+	[[ "$text_lower" == *"recommend skipping"* ]] && return 0  # indirect giving up
+	[[ "$text_lower" == *"i recommend"*"skip"* ]] && return 0
 	[[ "$text_lower" == *"comment out"*"temporarily"* ]] && return 0
 
 	# Pattern: Removing exception handlers to "fix" compilation

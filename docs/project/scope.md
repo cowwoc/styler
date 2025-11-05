@@ -16,15 +16,6 @@ Styler supports these primary use cases across two integration modes:
 **Objective**: Drive AI agent behavior through structured violation feedback that provides immediate
 actionable guidance for code improvement.
 
-**Evidence-Based Approach**: Analysis shows output-driven integration enables AI agents to learn and adapt
-without requiring comprehensive upfront documentation:
--  **Feedback-Driven Learning**: AI agents learn style patterns from structured violation output with specific
-  fix strategies
-- **Immediate Actionability**: Each violation includes context-specific suggestions and rule explanations
--  **Priority-Guided Attention**: Violations sorted by severity × frequency to focus AI agent corrections on
-  high-impact issues
-- **Automatic Context Detection**: System detects AI vs human usage without manual flags
-
 **Flow**:
 - AI agent generates code using current understanding
 - Code validation via CLI tool provides structured violation feedback
@@ -65,12 +56,6 @@ intent.
 
 ### 4. Integrated Violation Detection and Context-Aware Reporting {#4-integrated-violation-detection-and-context-aware-reporting}
 **Objective**: Track style violations during parsing with automatic output adaptation for different audiences.
-
-**Evidence-Based Implementation**:
-- **Parser Integration**: Violations detected during AST construction for immediate feedback
-- **Automatic Context Detection**: Heuristic detection of AI agent vs human developer usage
-- **Progressive Disclosure**: Information architecture adapted to audience needs
-- **Prioritization**: Frequency-based scoring system for violation priority
 
 **Dual-Audience Output Architecture**:
 - **AI Agent Format**: Structured output with rule IDs, violation counts, fix strategies
@@ -161,24 +146,11 @@ system should be **flexible** and support any combination of formatting rules.
 
 ### YAGNI + No-Stubbing Synergy {#yagni-no-stubbing-synergy}
 
-**These principles work together harmoniously:**
-
-1. **YAGNI**: Choose minimal scenarios to implement
-2. **No-Stubbing**: Implement chosen scenarios completely end-to-end
-3. **Incremental Growth**: Add more scenarios in later iterations
-4. **Honest Boundaries**: Clearly communicate what is/isn't supported
-
 **Example Implementation Approach:**
 - ✅ **AST Parser V1**: Support JDK 25 features completely (working end-to-end)
 - ✅ **Clear Boundaries**: Return "JDK 26+ features not yet supported" error for newer syntax
 - ✅ **Future Growth**: V2 adds newer JDK support when needed
 - ❌ **Stub Approach**: Return "TODO: implement parsing" for all files
-
-**Practical Guidelines:**
-1. **Scope Selection**: Choose scenarios that provide immediate value (YAGNI)
-2. **Complete Implementation**: Make chosen scenarios work perfectly (No-Stubbing)
-3. **Error Boundaries**: Fail fast with clear messages for unsupported scenarios
-4. **Incremental Expansion**: Add scenarios based on actual need, not speculation
 
 ## Key Constraints and Rules {#key-constraints-and-rules}
 

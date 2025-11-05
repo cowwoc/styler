@@ -31,7 +31,7 @@ match_category_a() {
 	fi
 
 	# Scripts
-	if [[ "$path" =~ scripts/ ]]; then
+	if [[ "$path" =~ \.claude/scripts/ ]]; then
 		return 0
 	fi
 
@@ -212,7 +212,7 @@ get_category_reason() {
 		return 0
 	fi
 
-	if [[ "$path" =~ scripts/ ]]; then
+	if [[ "$path" =~ \.claude/scripts/ ]]; then
 		echo "Utility script"
 		return 0
 	fi

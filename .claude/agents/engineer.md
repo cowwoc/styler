@@ -1,8 +1,8 @@
 ---
-name: quality
+name: engineer
 description: >
-  Reviews code for quality issues, duplication, complexity, and maintainability concerns. Can review code quality
-  (analysis mode) or implement fixes (implementation mode) based on invocation instructions.
+  Improves class design by identifying and refactoring quality issues, duplication, complexity, and maintainability
+  concerns. Can review code quality (analysis mode) or implement fixes (implementation mode) based on invocation instructions.
 model: sonnet-4-5
 color: cyan
 tools: Read, Write, Edit, Grep, Glob, LS, Bash

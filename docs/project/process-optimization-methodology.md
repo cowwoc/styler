@@ -127,9 +127,9 @@ cd /workspace/tasks/{task-name}/code
 total_commits=$(git log --oneline task-{task-name} --not main | wc -l)
 
 # Step 2: Check for agent commit signatures
-agent_commits=$(git log task-{task-name} --not main --grep '\[.*-updater\]' | wc -l)
+agent_commits=$(git log task-{task-name} --not main --grep '\[architect\]\|\[engineer\]\|\[formatter\]\|\[tester\]' | wc -l)
 implementation_commits=$(git log task-{task-name} --not main \
-  --grep '\[architect\]\|\[quality\]\|\[style\]' | wc -l)
+  --grep '\[architect\]\|\[engineer\]\|\[formatter\]' | wc -l)
 
 # Step 3: Detect suspicious patterns
 if [ "$total_commits" -eq 1 ] && [ "$agent_commits" -eq 0 ]; then
@@ -153,7 +153,7 @@ fi
 ```bash
 # Verify git history matches audit-trail.json
 if [ -f /workspace/tasks/{task-name}/audit-trail.json ]; then
-  logged_agents=$(jq '[.agent_invocations[] | select(.agent_type | endswith("-updater"))] | length' \
+  logged_agents=$(jq '[.agent_invocations[] | select(.mode == "implementation")] | length' \
     /workspace/tasks/{task-name}/audit-trail.json)
 
   if [ "$logged_agents" -gt 0 ] && [ "$agent_commits" -eq 0 ]; then
