@@ -103,8 +103,6 @@ Task tool (quality), model: sonnet, prompt: "..."
 
 ### Predictive Prefetching (INIT) - **MANDATORY** {#predictive-prefetching-init---mandatory}
 
-**CRITICAL REQUIREMENT**: ALL predictable resources MUST be loaded in SINGLE message
-
 **DO** (predict and load upfront):
 ```bash
 # Analyze task to predict ALL dependencies
@@ -173,8 +171,6 @@ Edit Component3.java
 ### Pre-Validation Checklist (IMPLEMENTATION Exit) {#pre-validation-checklist-implementation-exit}
 
 **MANDATORY GATES BEFORE EXITING IMPLEMENTATION**
-
-Before transitioning from IMPLEMENTATION to VALIDATION, ALL criteria must be met:
 
 ```bash
 # IMPLEMENTATION Exit Checklist (verify-implementation-exit.sh enforces)

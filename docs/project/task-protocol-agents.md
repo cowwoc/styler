@@ -260,12 +260,6 @@ Main agent checks all reviewer status.json files:
 ./mvnw clean verify -pl :module-name
 ```
 
-**Rationale**:
-- Early error detection prevents 20+ cascading fixes
-- Fresh context = 30% faster error resolution
-- Follows quality-guide.md § Incremental Test Validation Strategy
-- Prevents main agent rework during VALIDATION phase
-
 **Example** (Engineer Agent):
 ```bash
 # Create FormattingViolation.java
