@@ -373,6 +373,79 @@ When presenting implementation work for protocol compliance review, session summ
 - [ ] Am I a stakeholder agent in my own worktree? → If YES, proceed with implementation
 - [ ] Am I in task worktree trying to implement? → STOP - This is a VIOLATION
 
+### Agent Role Assignment During SYNTHESIS {#agent-role-assignment-synthesis}
+
+**⚠️ CRITICAL**: When creating implementation plans in SYNTHESIS state, you MUST assign work to the CORRECT stakeholder agents based on their defined responsibilities.
+
+**Common Mistake**: Assigning test implementation to "engineer" agent instead of "tester" agent.
+
+**Agent Responsibility Reference**:
+
+| Agent | Primary Responsibility | Implementation Work |
+|-------|----------------------|-------------------|
+| **architect** | System architecture, interface design, integration patterns | Implements interfaces, core classes, architectural components |
+| **engineer** | Code quality, refactoring, duplication removal, complexity reduction | Implements quality improvements and refactoring (NOT tests) |
+| **tester** | Test coverage, test strategy, edge case identification | **Implements all test code** |
+| **formatter** | Documentation, code style, JavaDoc, checkstyle/PMD compliance | Validates and fixes style violations |
+| **builder** | Build systems, Maven/Gradle configuration, dependency management | Implements build configuration |
+| **configurator** | Configuration systems, TOML/YAML parsing, validation | Implements configuration handling |
+
+**MANDATORY Verification Before IMPLEMENTATION**:
+
+When assigning implementation work in your plan:
+
+- [ ] **Consult agent definitions**: Read `.claude/agents/{agent-name}.md` before assigning work
+- [ ] **Verify PRIMARY DOMAIN**: Check agent's "PRIMARY DOMAIN" section matches work type
+- [ ] **Common mistake check**:
+  - ❌ WRONG: "Engineer agent implements tests"
+  - ✅ CORRECT: "Tester agent implements tests"
+  - ❌ WRONG: "Formatter agent implements interfaces"
+  - ✅ CORRECT: "Architect agent implements interfaces"
+
+**Agent Assignment Examples**:
+
+✅ **CORRECT Assignments**:
+```markdown
+### Implementation Workflow
+
+1. **Architect agent** (implements interfaces and core classes):
+   - Create FormattingRule interface
+   - Create TransformationContext interface
+   - Implement SourcePosition record
+
+2. **Tester agent** (implements all test code):
+   - Create FormattingRuleTest
+   - Create TransformationContextTest
+   - Implement test module descriptor
+
+3. **Formatter agent** (validates documentation and style):
+   - Run checkstyle validation
+   - Review JavaDoc quality
+   - Report violations or approve
+```
+
+❌ **WRONG Assignments** (causes rework):
+```markdown
+### Implementation Workflow
+
+1. **Architect agent** (implements interfaces):
+   - Create FormattingRule interface
+
+2. **Engineer agent** (implements tests):  ← WRONG! Engineer does refactoring, NOT tests
+   - Create FormattingRuleTest
+   - Create TransformationContextTest
+
+3. **Formatter agent** (validates):
+   - Run checkstyle
+```
+
+**If Unsure About Agent Assignment**:
+
+1. **Read agent definition**: `Read: .claude/agents/{agent-name}.md`
+2. **Check PRIMARY DOMAIN section**: Verify work matches agent's primary domain
+3. **Look for similar tasks**: Search git history for similar work assignments
+4. **When in doubt**: architect = design, tester = tests, engineer = refactoring
+
 ### Required Pattern After SYNTHESIS Approval {#required-pattern-after-synthesis-approval}
 
 > **⚠️ MANDATORY USER APPROVAL CHECKPOINT**
@@ -441,16 +514,21 @@ CORRECT SEQUENCE:
 2. Main agent: "Launching stakeholder agents in implementation mode for parallel implementation..."
 3. Main agent launches stakeholder agents in IMPLEMENTATION mode in SINGLE MESSAGE (parallel):
    - Task tool (architect): "Implement FormattingRule interfaces per requirements..."
-   - Task tool (engineer): "Apply refactoring and design patterns per requirements..."
-   - Task tool (formatter): "Implement code following project style guidelines..."
    - Task tool (tester): "Implement test suite per test strategy..."
+   - Task tool (formatter): "Validate code style per requirements..."
+
+   NOTE: Standard agents are architect (design), tester (tests), formatter (style).
+   Add engineer only for refactoring tasks with existing code.
+
 4. Agents in implementation mode implement in THEIR worktrees, validate locally, then merge to task branch
 5. Main agent: "Implementation agents have merged. Launching stakeholder agents in validation mode for parallel review..."
 6. Main agent launches stakeholder agents in VALIDATION mode in SINGLE MESSAGE (parallel):
    - Task tool (architect): "Review merged architecture on task branch..."
-   - Task tool (engineer): "Review merged code quality on task branch..."
-   - Task tool (formatter): "Review merged style compliance on task branch..."
    - Task tool (tester): "Review merged test coverage on task branch..."
+   - Task tool (formatter): "Review merged style compliance on task branch..."
+
+   NOTE: Add engineer for code quality review if refactoring was performed.
+
 7. Agents in validation mode analyze and report APPROVED or REJECTED with feedback
 8. If any REJECTED → launch agents in implementation mode with feedback → re-review (repeat 5-7 until all APPROVED)
 9. When ALL validation agents report APPROVED → main agent updates lock file: state = "VALIDATION"
@@ -1428,10 +1506,12 @@ Single Message:
 - **Savings: ~8,000 tokens (67% reduction) per agent invocation round**
 
 **When to Use Parallel Invocation**:
-- ✅ REQUIREMENTS phase: Launch all agents in review mode simultaneously (architect, engineer, formatter, tester)
+- ✅ REQUIREMENTS phase: Launch all agents in review mode simultaneously (architect, tester, formatter)
 - ✅ IMPLEMENTATION phase: Launch all agents in implementation mode simultaneously when implementing parallel components
 - ✅ REVIEW phase: Launch all agents in review mode simultaneously for final validation
 - ❌ Do NOT parallelize agents with dependencies (e.g., architecture must complete before implementation)
+
+**Note**: Engineer agent may be added for refactoring tasks, but standard trio is architect (design), tester (tests), formatter (style)
 
 **Tool Call Syntax**:
 All Task calls must appear in the same `<function_calls>` block to execute in parallel.

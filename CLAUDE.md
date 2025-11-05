@@ -37,8 +37,12 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLE
 
 **Required stakeholder agents** (invoke in parallel for requirements gathering):
 - `architect` - Analyzes dependencies, design patterns, integration points
-- `engineer` - Analyzes code quality, identifies duplication and complexity issues, defines refactoring criteria
+- `tester` - Analyzes test coverage needs, test strategy, edge cases, business logic validation
 - `formatter` - Specifies documentation requirements, code style standards
+
+**⚠️ COMMON MISTAKE**: Do NOT invoke "engineer" for testing requirements
+- `engineer` = Code quality, refactoring, duplication (NOT testing)
+- `tester` = Test strategy, test coverage, edge cases (use this for testing)
 
 **Workflow**:
 1. CLASSIFIED state: **MANDATORY** - Invoke ALL stakeholder agents in REQUIREMENTS mode with parallel coordination
@@ -46,7 +50,7 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLE
    **⚠️ CLARIFICATION: "Parallel" Agent Invocation Patterns**
 
    **PREFERRED** (Best Practice - True Parallel):
-   - Single message with 3 Task tool calls (architect, engineer, formatter)
+   - Single message with 3 Task tool calls (architect, tester, formatter)
    - Example: One assistant message containing three `<invoke name="Task">` blocks
    - This is the optimal pattern for maximum parallelization
 
@@ -75,7 +79,7 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLE
 3. **VERIFY reports exist** (MANDATORY before SYNTHESIS):
    ```bash
    ls -la /workspace/tasks/{task}/*-requirements.md
-   # Must show all 3 files: architect-requirements.md, engineer-requirements.md, formatter-requirements.md
+   # Must show all 3 files: architect-requirements.md, tester-requirements.md, formatter-requirements.md
    ```
 4. READ all reports: Main agent synthesizes into unified plan
 5. SYNTHESIS state: Write implementation plan to task.md
