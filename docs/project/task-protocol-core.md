@@ -151,9 +151,6 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 
 ### User Approval Checkpoints - MANDATORY REGARDLESS OF BYPASS MODE {#user-approval-checkpoints---mandatory-regardless-of-bypass-mode}
 
-**CRITICAL**: The two user approval checkpoints are MANDATORY and MUST be respected REGARDLESS of whether the
-user is in "bypass permissions on" mode or any other automation mode.
-
 **🚨 BYPASS MODE DOES NOT BYPASS USER APPROVAL CHECKPOINTS**
 
 **AUTONOMY vs CHECKPOINTS CLARIFICATION**:
