@@ -463,11 +463,94 @@ git reset --soft 4d3e19e           # Now squashes ONLY 3ebecc4 and b732939
 - If HEAD is at wrong position, wrong range gets squashed
 - Checking out last commit FIRST ensures correct range
 
+## Squashing Non-Adjacent Commits
+
+**When commits to squash are NOT adjacent** (have other commits in between):
+
+### Strategy: Interactive Rebase with Reordering
+
+**Use Case**: Squashing a fix commit into the commit that introduced the issue, while preserving all commits in between.
+
+**Example**: Squash commit 285d9b9 (removes broken reference) into 977d7b9 (introduced broken reference), preserving 77 commits in between.
+
+**Procedure**:
+```bash
+# 1. Create backup
+BACKUP_BRANCH="backup-before-squash-$(date +%Y%m%d-%H%M%S)"
+git branch "$BACKUP_BRANCH"
+
+# 2. Identify the commits
+TARGET_COMMIT="977d7b9"           # Commit that introduced issue
+FIX_COMMIT="285d9b9"              # Commit that fixes issue
+BASE_COMMIT="${TARGET_COMMIT}^"   # Parent of target commit
+
+# 3. Start interactive rebase
+git rebase -i "$BASE_COMMIT"
+
+# 4. In the interactive editor:
+#    - FIND the fix commit line
+#    - MOVE it directly after the target commit line
+#    - CHANGE "pick" to "squash" (or "fixup" to discard fix message)
+#    - PRESERVE all other commits in their original order
+#    - Save and exit
+
+# Example transformation:
+# BEFORE:
+#   pick 977d7b9 Initial commit (TARGET)
+#   pick abc1234 Some other commit
+#   pick def5678 Another commit
+#   ...
+#   pick 285d9b9 Remove broken reference (FIX)
+#
+# AFTER:
+#   pick 977d7b9 Initial commit (TARGET)
+#   squash 285d9b9 Remove broken reference (FIX) ← MOVED & CHANGED
+#   pick abc1234 Some other commit
+#   pick def5678 Another commit
+#   ...
+
+# 5. Git will prompt for combined commit message
+#    - Edit to create unified message
+#    - Save and exit
+
+# 6. Verify result
+git log --oneline -10
+git diff "$BACKUP_BRANCH"  # Should show no differences
+
+# 7. Remove backup after verification
+git branch -D "$BACKUP_BRANCH"
+```
+
+**Critical Rules for Reordering**:
+- ✅ Only reorder the commits being squashed together
+- ✅ Preserve all other commits in their exact original positions
+- ❌ Never reorder commits that aren't being squashed
+- ❌ Never drop commits accidentally
+
+**Safety Verification**:
+```bash
+# After rebase, verify commit count
+ORIGINAL_COUNT=$(git rev-list --count "$BACKUP_BRANCH")
+NEW_COUNT=$(git rev-list --count HEAD)
+EXPECTED_NEW=$((ORIGINAL_COUNT - 1))  # One less due to squash
+
+if [[ "$NEW_COUNT" -ne "$EXPECTED_NEW" ]]; then
+  echo "❌ ERROR: Expected $EXPECTED_NEW commits, got $NEW_COUNT"
+  git rebase --abort
+  git reset --hard "$BACKUP_BRANCH"
+  exit 1
+fi
+
+echo "✅ Verification passed: $ORIGINAL_COUNT commits → $NEW_COUNT commits"
+```
+
+**See Also**: [git-workflow.md § Handling Non-Contiguous Commits](../../docs/project/git-workflow.md#handling-non-contiguous-commits) for complete documentation.
+
 ## Usage
 
 ### Interactive Mode (Recommended)
 
-**Step-by-step with prompts**:
+**For Adjacent Commits**:
 ```bash
 # 1. Identify commits to squash
 git log --oneline -10
@@ -495,6 +578,12 @@ Skill: git-squash
 # 5. After squash, update original branch if needed
 git branch -f main HEAD
 git checkout main
+```
+
+**For Non-Adjacent Commits**:
+```bash
+# Use interactive rebase with reordering (see section above)
+# This handles commits with other commits in between
 ```
 
 ### Direct Invocation
