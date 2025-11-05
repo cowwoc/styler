@@ -550,177 +550,181 @@
       "start": 369,
       "end": 375
     },
-    "required-pattern-after-synthesis-approval": {
+    "agent-role-assignment-synthesis": {
       "start": 376,
-      "end": 416
+      "end": 448
+    },
+    "required-pattern-after-synthesis-approval": {
+      "start": 449,
+      "end": 489
     },
     "implementation-status": {
-      "start": 417,
-      "end": 418
+      "start": 490,
+      "end": 491
     },
     "agent-invocations": {
-      "start": 419,
-      "end": 639
+      "start": 492,
+      "end": 717
     },
     "enforcement": {
-      "start": 640,
-      "end": 645
+      "start": 718,
+      "end": 723
     },
     "agent-tool-limitation-recovery-pattern": {
-      "start": 646,
-      "end": 664
+      "start": 724,
+      "end": 742
     },
     "edit-tool-whitespace-mismatch-recovery": {
-      "start": 665,
-      "end": 668
+      "start": 743,
+      "end": 746
     },
     "state-based-editwrite-tool-permissions": {
-      "start": 669,
-      "end": 686
+      "start": 747,
+      "end": 764
     },
     "init-state-permissions": {
-      "start": 687,
-      "end": 700
+      "start": 765,
+      "end": 778
     },
     "implementation-state-permissions": {
-      "start": 701,
-      "end": 712
+      "start": 779,
+      "end": 790
     },
     "validation-state-permissions": {
-      "start": 713,
-      "end": 749
+      "start": 791,
+      "end": 827
     },
     "post-implementation-issue-handling-decision-tree": {
-      "start": 750,
-      "end": 854
+      "start": 828,
+      "end": 932
     },
     "re-delegation-workflow-when-violations-exceed-threshold": {
-      "start": 855,
-      "end": 909
+      "start": 933,
+      "end": 987
     },
     "task-protocol": {
-      "start": 910,
-      "end": 928
+      "start": 988,
+      "end": 1006
     },
     "risk-based-protocol-selection": {
-      "start": 929,
-      "end": 952
+      "start": 1007,
+      "end": 1030
     },
     "stakeholder-consensus-enforcement": {
-      "start": 953,
-      "end": 961
+      "start": 1031,
+      "end": 1039
     },
     "autonomous-task-completion-requirement": {
-      "start": 962,
-      "end": 1012
+      "start": 1040,
+      "end": 1090
     },
     "user-approval-checkpoint-enforcement": {
-      "start": 1013,
-      "end": 1042
+      "start": 1091,
+      "end": 1120
     },
     "plan-approval-checkpoint": {
-      "start": 1043,
-      "end": 1072
+      "start": 1121,
+      "end": 1150
     },
     "approval-persistence-pattern": {
-      "start": 1073,
-      "end": 1147
+      "start": 1151,
+      "end": 1225
     },
     "task-unavailability-handling": {
-      "start": 1148,
-      "end": 1152
+      "start": 1226,
+      "end": 1230
     },
     "mandatory-availability-check": {
-      "start": 1153,
-      "end": 1160
+      "start": 1231,
+      "end": 1238
     },
     "required-response-when-no-tasks-available": {
-      "start": 1161,
-      "end": 1190
+      "start": 1239,
+      "end": 1268
     },
     "prohibited-patterns": {
-      "start": 1191,
-      "end": 1200
+      "start": 1269,
+      "end": 1278
     },
     "required-patterns": {
-      "start": 1201,
-      "end": 1209
+      "start": 1279,
+      "end": 1287
     },
     "long-term-solution-persistence": {
-      "start": 1210,
-      "end": 1214
+      "start": 1288,
+      "end": 1292
     },
     "critical-persistence-requirements": {
-      "start": 1215,
-      "end": 1228
+      "start": 1293,
+      "end": 1306
     },
     "prohibited-downgrade-patterns": {
-      "start": 1229,
-      "end": 1242
+      "start": 1307,
+      "end": 1320
     },
     "giving-up-detection-patterns": {
-      "start": 1243,
-      "end": 1249
+      "start": 1321,
+      "end": 1327
     },
     "unit-test-driven-bug-fixing": {
-      "start": 1250,
-      "end": 1280
+      "start": 1328,
+      "end": 1358
     },
     "stakeholder-agent-persistence-enforcement": {
-      "start": 1281,
-      "end": 1296
+      "start": 1359,
+      "end": 1374
     },
     "implementation-persistence-patterns": {
-      "start": 1297,
-      "end": 1317
+      "start": 1375,
+      "end": 1395
     },
     "scope-negotiation-persistence-integration": {
-      "start": 1318,
-      "end": 1341
+      "start": 1396,
+      "end": 1419
     },
     "success-metrics-and-validation": {
-      "start": 1342,
-      "end": 1359
+      "start": 1420,
+      "end": 1437
     },
     "repository-structure": {
-      "start": 1360,
-      "end": 1369
+      "start": 1438,
+      "end": 1447
     },
     "continuous-workflow-mode": {
-      "start": 1370,
-      "end": 1378
+      "start": 1448,
+      "end": 1456
     },
     "performance-optimization-requirements": {
-      "start": 1379,
-      "end": 1382
+      "start": 1457,
+      "end": 1460
     },
     "performance-optimization-patterns-mandatory": {
-      "start": 1383,
-      "end": 1401
+      "start": 1461,
+      "end": 1479
     },
     "parallel-agent-invocation-mandatory": {
-      "start": 1402,
-      "end": 1464
+      "start": 1480,
+      "end": 1544
     },
     "fail-fast-vs-batch-collection-decision-criteria": {
-      "start": 1465,
-      "end": 1478
-    },
-    "protocol-file-prefetching-pattern": {
-      "start": 1479,
-      "end": 1512
-    },
-    "incremental-validation-frequency": {
-      "start": 1513,
+      "start": 1545,
       "end": 1558
     },
-    "parallel-execution-enforcement": {
+    "protocol-file-prefetching-pattern": {
       "start": 1559,
-      "end": 1614
+      "end": 1592
+    },
+    "incremental-validation-frequency": {
+      "start": 1593,
+      "end": 1638
+    },
+    "parallel-execution-enforcement": {
+      "start": 1639,
+      "end": 1694
     },
     "combining-parallel-and-sequential-operations": {
-      "start": 1615,
-      "end": 1651
+      "start": 1695,
+      "end": 1731
     }
   },
   "docs/project/multi-agent-process-governance.md": {},
