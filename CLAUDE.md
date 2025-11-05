@@ -110,7 +110,7 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLE
      git merge --squash {task-branch}
      # Update todo.md and changelog.md
      git add -A
-     git commit -m "[feat] Task implementation
+     git commit -m "Task implementation
 
      - Implementation details
      - Updated todo.md: Mark task complete
@@ -387,8 +387,9 @@ trap 'echo "ERROR in <script-name>.sh at line $LINENO: Command failed: $BASH_COM
 1. ✅ Create hook script in `.claude/hooks/`
 2. ✅ Make hook executable: `chmod +x .claude/hooks/my-hook.sh`
 3. ✅ **Register in `.claude/settings.json`** under appropriate trigger event
-4. ✅ Test hook triggers correctly
-5. ✅ Commit both hook script AND settings.json update
+4. ✅ **RESTART Claude Code** (required for settings.json changes to take effect)
+5. ✅ Test hook triggers correctly
+6. ✅ Commit both hook script AND settings.json update
 
 **Common Trigger Events**:
 - `SessionStart` - Runs when session starts or resumes after compaction
@@ -411,7 +412,62 @@ trap 'echo "ERROR in <script-name>.sh at line $LINENO: Command failed: $BASH_COM
 ]
 ```
 
-**CRITICAL**: Hooks NOT registered in settings.json will NEVER execute, even if the script exists and is executable.
+**Matcher Syntax** (for PreToolUse/PostToolUse):
+
+Matchers determine which tools trigger hooks. **Filtering happens at tool level** - command/path filtering must be done inside hook scripts.
+
+**✅ CORRECT Matcher Syntax**:
+```json
+"PreToolUse": [
+  {
+    "matcher": "Bash",
+    "hooks": [{"type": "command", "command": "/workspace/.claude/hooks/my-bash-hook.sh"}]
+  },
+  {
+    "matcher": "Write|Edit",
+    "hooks": [{"type": "command", "command": "/workspace/.claude/hooks/my-file-hook.sh"}]
+  },
+  {
+    "matcher": "Task",
+    "hooks": [{"type": "command", "command": "/workspace/.claude/hooks/my-task-hook.sh"}]
+  },
+  {
+    "hooks": [{"type": "command", "command": "/workspace/.claude/hooks/runs-for-all-tools.sh"}]
+  }
+]
+```
+
+**❌ WRONG Matcher Syntax** (will never trigger):
+```json
+{
+  "matcher": "tool:Bash && command:*git*",  // WRONG: 'tool:' prefix not supported
+  "matcher": "command:*echo*",              // WRONG: command filtering not in matcher
+  "matcher": "path:**/*.java"               // WRONG: path filtering not in matcher
+}
+```
+
+**Matcher Patterns**:
+- **Simple tool name**: `"Bash"`, `"Write"`, `"Edit"`, `"Task"`
+- **Multiple tools (regex)**: `"Write|Edit"`, `"Notebook.*"`
+- **All tools**: `"*"` or omit matcher field entirely
+- **Case-sensitive**: Must match exact tool name
+
+**Command/Path Filtering**: Done INSIDE hook scripts by parsing JSON input:
+```bash
+# Inside hook script - extract command from JSON
+COMMAND=$(python3 -c "import sys, json; data = json.load(sys.stdin); print(data.get('tool_input', {}).get('command', ''))" <<< "$JSON_INPUT")
+
+# Now filter based on command content
+if [[ "$COMMAND" == *"git filter-branch"* ]]; then
+  echo "Blocking dangerous command" >&2
+  exit 2
+fi
+```
+
+**CRITICAL**:
+- Hooks NOT registered in settings.json will NEVER execute, even if the script exists and is executable
+- **Claude Code must be restarted** after modifying settings.json for changes to take effect
+- **PreToolUse hooks CAN block commands**: Return exit code 2 with JSON `permissionDecision: "deny"`
 
 ## Repository Structure
 
@@ -456,6 +512,17 @@ trap 'echo "ERROR in <script-name>.sh at line $LINENO: Command failed: $BASH_COM
 - Purpose: Isolate development work
 - Lifecycle: Delete after merge to main
 - Cleanup: Safe to delete with `git branch -D <branch>`
+
+**🚨 CRITICAL: Git History Rewriting Safety**
+
+**NEVER use `--all` or `--branches` with git history-rewriting commands.**
+
+Before any `git filter-branch`, `git rebase`, or history-rewriting operation:
+1. Check what branches exist: `git branch -a`
+2. Identify protected version branches: `git branch | grep -E "^  v[0-9]+"`
+3. Target SPECIFIC branch: `git filter-branch ... main` (NOT `--all`)
+
+**See**: [git-workflow.md § Git History Rewriting Safety](docs/project/git-workflow.md#git-history-rewriting-safety) for complete safety procedures and examples.
 
 **Pre-Deletion Validation** (MANDATORY before `git branch -D`):
 ```bash
@@ -632,7 +699,7 @@ git merge implement-formatter-api-architect
 [docs/project/architecture.md](docs/project/architecture.md) - Project architecture and features
 [docs/project/scope.md](docs/project/scope.md) - Family configuration and development philosophy
 [docs/project/build-system.md](docs/project/build-system.md) - Build configuration and commands
-[docs/project/git-workflow.md](docs/project/git-workflow.md) - Git workflows, commit message format, and commit squashing procedures
+[docs/project/git-workflow.md](docs/project/git-workflow.md) - Git workflows and commit squashing procedures
 [docs/project/style-guide.md](docs/project/style-guide.md) - Style validation and JavaDoc requirements
 [docs/project/quality-guide.md](docs/project/quality-guide.md) - Code quality and testing standards
 [docs/code-style-human.md](docs/code-style-human.md) - Code style master guide
