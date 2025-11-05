@@ -8,6 +8,7 @@ allowed-tools: Bash, Read, Edit
 
 <!-- PATTERN EVOLUTION:
      - 2025-11-02: Fixed hardcoded v21 bug (line 117), enforced backup creation, added inline safety reminders
+     - 2025-11-05: Added Scenario 4 (reorder and squash) with real example, documented GIT_SEQUENCE_EDITOR pattern, captured anti-pattern from failed shell script approach
 -->
 
 **Purpose**: Safely perform git rebases to reorder commits, squash history, or update branch base, with automatic backup and validation.
@@ -53,6 +54,20 @@ Before using this skill, verify:
 **Goal**: Rebase feature branch onto latest main
 
 **Use Case**: Main has moved ahead, need to update feature branch
+
+### Scenario 4: Reorder and Squash Commits
+
+**Goal**: Move a commit to a different position in history AND squash it with another commit
+
+**Use Case**: Archive commit (db9eee3) needs to move before style commit (27c4674) and squash with implementation commit (23b5ee3)
+
+**✅ RECOMMENDED APPROACH**: Pre-create todo file + GIT_SEQUENCE_EDITOR
+
+**Why**: Simple, reliable, easy to verify before execution
+
+**❌ ANTI-PATTERN**: Complex shell scripting to manipulate git-rebase-todo in-flight
+
+**Why fails**: Timing issues, rebase completes without applying modifications, hard to debug
 
 ## Skill Workflow
 
@@ -170,6 +185,76 @@ git branch -f v21 HEAD
 # Step 5: Validate
 git log --oneline --graph -3
 ```
+
+### Example: Reorder and Squash (2025-11-05 Real Case)
+
+**✅ RECOMMENDED APPROACH - Pre-create Todo + GIT_SEQUENCE_EDITOR**:
+
+```bash
+# Goal: Move db9eee3 before 27c4674, then squash with 23b5ee3
+# Original order:
+#   23b5ee3 Add index-overlay parser module
+#   27c4674 Update style guide and tooling
+#   db9eee3 Archive task completion
+#   ... (42 more commits)
+#
+# Desired order:
+#   (23b5ee3 + db9eee3 squashed)
+#   27c4674 Update style guide and tooling
+#   ... (42 more commits)
+
+# Step 1: Backup
+BACKUP_BRANCH="backup-before-reorder-squash-$(date +%Y%m%d-%H%M%S)"
+git branch "$BACKUP_BRANCH"
+
+# Step 2: Create desired todo list
+cat > /tmp/rebase-todo-modified.txt <<'EOF'
+pick 23b5ee3 Add index-overlay parser module with comprehensive security controls
+squash db9eee3 Archive implement-index-overlay-parser task completion
+pick 27c4674 Update style guide and tooling for parser implementation
+pick 3a47920 Centralize agent scope enforcement and workflow patterns
+# ... (paste remaining 41 commits as-is)
+EOF
+
+# Step 3: Verify todo file before using
+cat /tmp/rebase-todo-modified.txt
+
+# Step 4: Execute rebase with GIT_SEQUENCE_EDITOR
+# BASE_COMMIT is the commit BEFORE 23b5ee3 (the first commit to modify)
+BASE_COMMIT="b9eb99d"
+GIT_SEQUENCE_EDITOR="cp /tmp/rebase-todo-modified.txt" git rebase -i "$BASE_COMMIT"
+
+# Step 5: Verify result
+git log --oneline -5
+# Should show:
+#   03d995d (squashed 23b5ee3 + db9eee3)
+#   27c4674 Update style guide...
+#   ... (other commits)
+
+# Step 6: Cleanup
+git branch -D "$BACKUP_BRANCH"
+```
+
+**❌ ANTI-PATTERN - Complex Shell Scripting (DO NOT USE)**:
+
+```bash
+# This approach FAILED - rebase completed but didn't apply changes
+# Kept for reference to avoid repeating mistake
+
+# DON'T: Try to manipulate git-rebase-todo in-flight with complex script
+git rebase -i --no-autosquash "$BASE_COMMIT" --edit-todo 2>/dev/null || true
+TODO_FILE="$(git rev-parse --git-dir)/rebase-merge/git-rebase-todo"
+awk '/^pick 23b5ee3/ { print $0; print "squash db9eee3"; next }
+     /^pick db9eee3/ { next }
+     {print}' /tmp/original-todo.txt > "$TODO_FILE"
+# Result: Rebase completes but modifications aren't applied
+```
+
+**Key Lessons**:
+- Pre-creating the todo file allows verification BEFORE execution
+- GIT_SEQUENCE_EDITOR is simpler and more reliable than in-flight manipulation
+- Complex shell scripts add timing dependencies and failure modes
+- Always verify the todo file content before executing rebase
 
 ## Safety Rules Summary
 
