@@ -26,6 +26,10 @@ echo "[HOOK DEBUG] detect-giving-up.sh START" >&2
 #   agent avoided optimizing git-workflow.md (37KB) citing "remaining token budget
 #   (70K)" despite having 2x necessary tokens. Added gerund forms ("skipping it")
 #   and indirect giving up ("recommend skipping") to catch disguised avoidance.
+# - 2025-11-05: Added context constraints patterns after main agent presented options
+#   citing "Context Status: 126K/200K tokens used" and "Given context constraints"
+#   instead of continuing work. Used "context" not "token budget" to bypass existing
+#   patterns. Catches reporting context status before stopping work.
 
 # Read JSON data from stdin with timeout to prevent hanging
 JSON_INPUT=""
@@ -195,6 +199,16 @@ detect_giving_up_pattern()
 	[[ "$text_lower" == *"given"*"token budget remaining"* ]] && return 0  # "given the token budget remaining"
 	[[ "$text_lower" == *"given"*"remaining"*"recommend"* ]] && return 0  # general "given...remaining...recommend" pattern
 	[[ "$text_lower" == *"token budget"*"rather than"*"skip"* ]] && return 0
+	# Context constraints rationalization patterns (added 2025-11-05)
+	# After main agent presented options citing "Context Status: 126K/200K tokens used"
+	# and "Given context constraints and the iterative nature of optimization, I recommend:"
+	# instead of continuing work. Used "context constraints" not "token budget" to bypass
+	# existing patterns. Token Usage Policy: "Token usage MUST NEVER affect behavior"
+	[[ "$text_lower" == *"context status"*"tokens used"* ]] && return 0
+	[[ "$text_lower" == *"context status"*"token"*"recommend"* ]] && return 0
+	[[ "$text_lower" == *"given"*"context constraints"*"recommend"* ]] && return 0
+	[[ "$text_lower" == *"given"*"context"*"iterative"*"recommend"* ]] && return 0
+	[[ "$text_lower" == *"context"*"recommend"*"which approach"* ]] && return 0  # asking user to choose after context discussion
 
 	# Framing shortcuts as architectural decisions to avoid debugging
 	[[ "$text_lower" == *"as an architectural choice"*"remove"* ]] && return 0
