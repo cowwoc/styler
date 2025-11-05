@@ -16,18 +16,18 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 
 ## Skill Workflow
 
-**Overview**: The skill follows an 8-phase process:
+8-phase process:
 
-1. **Mistake Identification** - Gather context about what went wrong
-2. **Conversation Analysis** - Review logs to understand mistake manifestation
-3. **Root Cause Analysis** - Categorize and investigate why it happened
-4. **Configuration Updates** - Create prevention measures (hooks, docs, examples)
-5. **Implement Updates** - Apply changes to agent configs and documentation
-6. **Validation** - Review updates for completeness and consistency
-7. **Apply Fixes and Test by Reproduction** - ⚠️ TEST by attempting to reproduce the mistake
-8. **Documentation** - Add inline comments and git commit messages
+1. **Mistake Identification** - Gather context
+2. **Conversation Analysis** - Review logs
+3. **Root Cause Analysis** - Categorize and investigate cause
+4. **Configuration Updates** - Design prevention measures
+5. **Implement Updates** - Apply changes
+6. **Validation** - Review completeness
+7. **Test by Reproduction** - ⚠️ Attempt to reproduce mistake to verify prevention
+8. **Documentation** - Add inline comments and commit messages
 
-**Critical Difference**: Unlike mental simulation, Phase 7 requires ACTUALLY attempting to reproduce the original mistake after applying fixes to verify they work.
+**Critical**: Phase 7 requires actually reproducing the mistake (not mental simulation) to verify fixes work.
 
 ### Phase 1: Mistake Identification
 
@@ -114,6 +114,108 @@ done
 
 ### Phase 3: Root Cause Analysis
 
+**⚠️ MANDATORY: Identify Triggering Thought Before Creating Fixes**
+
+Before Phase 4, MUST:
+
+1. Access `/home/node/.config/projects/-workspace/{session-id}.jsonl`
+2. Find assistant message immediately before mistake
+3. Extract exact text/thought before wrong decision
+4. Document triggering quote
+
+**Example**:
+
+```bash
+# Search for when file was created
+grep -i "safety-analysis" conversation.jsonl | jq '.timestamp'
+# Returns: 2025-11-02T04:31:37.673Z
+
+# Get messages before that timestamp
+jq 'select(.timestamp < "2025-11-02T04:31:37.673Z" and .timestamp > "2025-11-02T04:30:00.000Z")' conversation.jsonl
+
+# Find triggering thought
+jq 'select(.timestamp == "2025-11-02T04:31:10.998Z") | .message.content[].text' conversation.jsonl
+
+# Result: "Given the complexity and length of fixing both skills completely,
+#          let me create a summary document showing the critical fixes needed"
+```
+
+Root cause: Agent used "complexity and length" to justify creating summary instead of doing work (Token Usage Policy violation).
+
+**Without triggering thought, prevention will be ineffective.**
+
+**Automated Detection**:
+
+```bash
+#!/bin/bash
+# Helper: Find triggering thought automatically
+
+SESSION_ID="${1:-$(grep 'Session ID:' /tmp/session_context.txt | cut -d: -f2 | tr -d ' ')}"
+MISTAKE_INDICATOR="${2:-}"  # e.g., "SAFETY-ANALYSIS.md", "BUILD FAILURE", "PROTOCOL VIOLATION"
+
+if [[ -z "$SESSION_ID" || -z "$MISTAKE_INDICATOR" ]]; then
+  echo "Usage: $0 <session-id> <mistake-indicator>" >&2
+  echo "Example: $0 abc123 'SAFETY-ANALYSIS.md'" >&2
+  exit 1
+fi
+
+CONVERSATION="/home/node/.config/projects/-workspace/${SESSION_ID}.jsonl"
+
+if [[ ! -f "$CONVERSATION" ]]; then
+  echo "ERROR: Conversation file not found: $CONVERSATION" >&2
+  exit 1
+fi
+
+# Find timestamp when mistake occurred
+MISTAKE_TIMESTAMP=$(jq -r --arg indicator "$MISTAKE_INDICATOR" \
+  'select(.message.content | tostring | contains($indicator)) | .timestamp' \
+  "$CONVERSATION" | head -1)
+
+if [[ -z "$MISTAKE_TIMESTAMP" ]]; then
+  echo "ERROR: Could not find mistake indicator '$MISTAKE_INDICATOR' in conversation" >&2
+  exit 1
+fi
+
+echo "Mistake occurred at: $MISTAKE_TIMESTAMP"
+
+# Find last assistant message before mistake (within 5 minutes)
+FIVE_MINUTES_BEFORE=$(date -d "$MISTAKE_TIMESTAMP - 5 minutes" -Iseconds 2>/dev/null || \
+                      date -v-5M -jf "%Y-%m-%dT%H:%M:%S" "${MISTAKE_TIMESTAMP%+*}" "+%Y-%m-%dT%H:%M:%S" 2>/dev/null)
+
+TRIGGERING_THOUGHT=$(jq -r --arg before "$MISTAKE_TIMESTAMP" --arg after "$FIVE_MINUTES_BEFORE" \
+  'select(.timestamp < $before and .timestamp > $after and .message.role == "assistant") |
+   {timestamp, content: .message.content}' \
+  "$CONVERSATION" | jq -s 'last')
+
+if [[ -z "$TRIGGERING_THOUGHT" || "$TRIGGERING_THOUGHT" == "null" ]]; then
+  echo "WARNING: Could not find assistant message before mistake" >&2
+  exit 1
+fi
+
+echo ""
+echo "TRIGGERING THOUGHT:"
+echo "$TRIGGERING_THOUGHT" | jq -r '.content[] | select(.type == "text") | .text' | tail -20
+
+# Also check for thinking blocks (often contain the decision reasoning)
+echo ""
+echo "ASSOCIATED THINKING (if any):"
+echo "$TRIGGERING_THOUGHT" | jq -r '.content[] | select(.type == "thinking") | .thinking' | tail -20
+```
+
+**Usage**:
+```bash
+# Automatic detection
+./find-triggering-thought.sh "$SESSION_ID" "PROTOCOL VIOLATION"
+
+# Or inline
+SESSION_ID="abc-123"
+MISTAKE="wrong worktree"
+jq -r --arg indicator "$MISTAKE" \
+  'select(.message.content | tostring | contains($indicator))' \
+  /home/node/.config/projects/-workspace/${SESSION_ID}.jsonl | \
+  jq -r '.timestamp' | head -1
+```
+
 **Categorize the Mistake**:
 
 #### A. Missing Information
@@ -152,25 +254,11 @@ done
 - Anti-patterns not documented
 - Missing checklists
 
-**Root Cause Investigation**:
+**Investigate**:
 
-For each category, investigate:
-
-1. **What information was available to the agent?**
-   - Read the agent's invocation prompt
-   - Check what files they had access to
-   - Identify what context was missing
-
-2. **What should the agent have done instead?**
-   - Identify the correct action sequence
-   - Note what additional information was needed
-   - Determine what checks were missing
-
-3. **Why did the agent choose the wrong path?**
-   - Was the correct path documented?
-   - Were there ambiguous instructions?
-   - Was there a misleading example?
-   - Was there insufficient validation?
+1. **Available Information**: Agent prompt, files accessed, missing context
+2. **Correct Action**: Expected sequence, needed information, missing checks
+3. **Wrong Choice Reason**: Documentation gaps, ambiguous instructions, misleading examples, insufficient validation
 
 ### Phase 4: Configuration Updates
 
@@ -180,15 +268,11 @@ For each category, investigate:
 
 **File**: `.claude/agents/{agent-name}.md`
 
-**Update Section**: "Required Context" or "Before You Begin"
-
-**Add**:
-- Explicit checklist of information to verify
-- Required file reads before starting
-- Questions to ask if context unclear
-- Working directory verification steps
-
-**Example**:
+**Add to "Required Context" or "Before You Begin"**:
+- Checklist to verify information
+- Required file reads
+- Questions for unclear context
+- Working directory verification
 ```markdown
 ## Before You Begin - MANDATORY CHECKS
 
@@ -207,14 +291,12 @@ If ANY check fails: STOP and report the issue.
 
 **File**: `docs/project/{relevant-protocol}.md`
 
-**Updates**:
-- Add explicit requirement statements
-- Include concrete examples (✅ CORRECT vs ❌ WRONG)
-- Document edge cases
-- Add anti-pattern warnings
-- Create decision trees for complex scenarios
-
-**Example**:
+**Add**:
+- Explicit requirements
+- ✅/❌ examples
+- Edge cases
+- Anti-pattern warnings
+- Decision trees
 ```markdown
 ## Working Directory Requirements
 
@@ -240,16 +322,12 @@ Write: src/main/java/MyClass.java  # Creates in task worktree!
 
 **File**: `.claude/agents/{agent-name}.md`
 
-**Add Section**: "Tool Usage Patterns for {Agent Name}"
-
-**Include**:
+**Add "Tool Usage Patterns"**:
 - When to use each tool
 - Common pitfalls
-- Validation steps required
+- Validation steps
 - Example sequences
-- Error recovery procedures
-
-**Example**:
+- Error recovery
 ```markdown
 ## Tool Usage Patterns
 
@@ -271,13 +349,11 @@ Write: src/main/java/MyClass.java  # Creates in task worktree!
 **File**: `.claude/agents/{agent-name}.md`
 
 **Add**:
-- Worked examples for similar scenarios
-- Edge cases to consider
+- Worked examples
+- Edge cases
 - Validation checklist
 - Self-test questions
 - Common pitfalls
-
-**Example**:
 ```markdown
 ## Common Scenarios
 
@@ -307,13 +383,11 @@ Write: src/main/java/MyClass.java  # Creates in task worktree!
 
 **File**: `.claude/hooks/pre-{action}.sh`
 
-**Create Hook**:
+**Create**:
 - Pre-action validation
-- Check prerequisites
-- Verify state requirements
-- Block violation with helpful message
-
-**Example**:
+- Prerequisite checks
+- State verification
+- Helpful error messages
 ```bash
 #!/bin/bash
 # .claude/hooks/pre-write.sh
@@ -377,156 +451,265 @@ Before reporting completion:
 
 ### Phase 5: Implement Updates
 
-**For Each Update Identified**:
+**⚠️ CRITICAL: Create Rollback Point Before Changes**
 
-1. **Read Current Configuration**:
+Before applying any updates, create a rollback point:
+
+```bash
+# Create backup branch with timestamp
+BACKUP_BRANCH="learn-from-mistakes-backup-$(date +%s)"
+git branch "$BACKUP_BRANCH" HEAD
+echo "Created rollback point: $BACKUP_BRANCH"
+
+# Store backup branch name for potential rollback
+echo "$BACKUP_BRANCH" > /tmp/learn-from-mistakes-rollback.txt
+```
+
+**Rollback Procedure** (if Phase 7 testing fails):
+```bash
+# Read backup branch name
+BACKUP_BRANCH=$(cat /tmp/learn-from-mistakes-rollback.txt)
+
+# Reset to backup
+git reset --hard "$BACKUP_BRANCH"
+
+# Clean up
+git branch -D "$BACKUP_BRANCH"
+rm /tmp/learn-from-mistakes-rollback.txt
+```
+
+**For Each Update**:
+
+1. **Read** current config: `.claude/agents/{agent-name}.md` or `docs/project/{protocol-file}.md`
+2. **Locate** relevant section, check conflicts
+3. **Draft** clear guidance with ✅/❌ examples, validation steps, consistent terminology
+4. **Apply** with Edit tool
+5. **Hook Registration** (if creating hook):
+
    ```bash
-   Read: .claude/agents/{agent-name}.md
-   # or
-   Read: docs/project/{protocol-file}.md
+   # After creating hook file: .claude/hooks/{hook-name}.sh
+
+   # Step 1: Make executable
+   chmod +x .claude/hooks/{hook-name}.sh
+
+   # Step 2: Determine hook trigger event
+   # - SessionStart: Runs at session start
+   # - UserPromptSubmit: Runs when user submits prompt
+   # - PreToolUse: Runs before tool execution
+   # - PostToolUse: Runs after tool execution
+   # - PreCompact: Runs before context compaction
+
+   # Step 3: Auto-register in settings.json
+   HOOK_PATH="/workspace/.claude/hooks/{hook-name}.sh"
+   TRIGGER_EVENT="PreToolUse"  # Or appropriate trigger
+
+   # Read current settings
+   Read: .claude/settings.json
+
+   # Add hook registration using jq
+   jq --arg hook "$HOOK_PATH" --arg trigger "$TRIGGER_EVENT" \
+     '.[$trigger] += [{"hooks": [{"type": "command", "command": $hook}]}]' \
+     .claude/settings.json > .claude/settings.json.tmp
+
+   # Apply update
+   mv .claude/settings.json.tmp .claude/settings.json
+
+   # Verify registration
+   grep -A3 "{hook-name}" .claude/settings.json
+
+   # CRITICAL: Notify user to restart Claude Code
+   echo "⚠️ IMPORTANT: settings.json was modified. Please restart Claude Code for hook to take effect." >&2
    ```
 
-2. **Identify Update Location**:
-   - Find relevant section
-   - Determine if adding new section or enhancing existing
-   - Check for conflicts with existing guidance
+   **⚠️ CRITICAL: Restart Required**
 
-3. **Draft Update**:
-   - Write clear, specific guidance
-   - Include concrete examples (✅ vs ❌)
-   - Reference the mistake that prompted the update
-   - Add validation steps
-   - Use consistent terminology
+   When settings.json is modified, you MUST notify the user:
 
-4. **Apply Update**:
-   ```bash
-   Edit: .claude/agents/{agent-name}.md
-   # Add new section or enhance existing
+   ```
+   ⚠️ IMPORTANT: I've updated .claude/settings.json to register the new hook.
+   Please restart Claude Code for the hook to take effect.
    ```
 
-5. **Verify Update**:
-   - Read updated file
-   - Confirm changes are clear and actionable
-   - Check no conflicts with existing guidance
-   - Ensure examples are concrete
+   **Hook Registration by Pattern**:
 
-### Phase 6: Validation and Testing
+   - **Validation hooks** (pre-write.sh, pre-edit.sh): `PreToolUse` with tool matcher
+   - **Detection hooks** (detect-*.sh): `PostToolUse` or `UserPromptSubmit`
+   - **Enforcement hooks** (enforce-*.sh): `PreToolUse` with matcher
+   - **Setup hooks**: `SessionStart`
 
-**Validation Steps**:
+6. **Verify**: Read updated file, confirm clarity, check conflicts, verify hook registration
 
-1. **Completeness Check**:
-   - [ ] Update addresses root cause
-   - [ ] Examples are concrete and actionable
-   - [ ] Validation steps are clear
-   - [ ] Anti-patterns are explicit
-   - [ ] Self-test questions included
+### Phase 6: Validation
 
-2. **Consistency Check**:
-   - [ ] No conflicts with other agent configs
-   - [ ] Aligns with project conventions
-   - [ ] Terminology is consistent
-   - [ ] Format matches existing sections
+**Checklist**:
+- [ ] Addresses root cause
+- [ ] Concrete examples (✅/❌)
+- [ ] Clear validation steps
+- [ ] Explicit anti-patterns
+- [ ] Self-test questions
+- [ ] No conflicts with other configs
+- [ ] Consistent terminology
+- [ ] Matches existing format
 
-### Phase 7: Apply Fixes and Test by Reproduction
+### Phase 7: Test by Reproduction
 
-**⚠️ CRITICAL: Test fixes by attempting to reproduce the original mistake**
+**⚠️ CRITICAL: Verify prevention by reproducing mistake**
 
-This phase ensures your configuration updates actually prevent the mistake from recurring.
+**Workflow**:
 
-**Testing Workflow**:
-
-1. **Apply All Configuration Updates**:
+1. **Verify Updates**:
    ```bash
-   # Ensure all edits are saved
-   Read: .claude/agents/{agent-name}.md  # Verify changes applied
-   Read: .claude/hooks/{hook-name}.sh    # Verify hook created/updated
+   Read: .claude/agents/{agent-name}.md  # Confirm changes
+   Read: .claude/hooks/{hook-name}.sh    # Confirm hook
    ```
 
-2. **Make Hooks Executable** (if new hooks created):
+2. **Prepare Hook** (if created):
    ```bash
    chmod +x .claude/hooks/{hook-name}.sh
+   grep -A5 "{hook-name}" /workspace/.claude/settings.json  # Verify registration
    ```
 
-3. **Verify Hook Registration** (if applicable):
+3. **Reproduce Mistake**: Execute same action sequence that caused original mistake
+   - Wrong worktree → Try creating file in wrong location
+   - Missing validation → Try skipping validation step
+   - Tool misuse → Try using tool incorrectly
+   - Protocol violation → Try violating protocol
+
+   **Expected**: Hook blocks or guidance prevents
+
+4. **Verify Prevention**:
+   - **Hooks**: Test blocks incorrect action with clear error
+   - **Documentation**: Read config as agent, verify guidance prevents mistake
+
+5. **Interpret Results**:
+   - **✅ SUCCESS**: Hook blocks OR guidance directs correctly, error message clear
+   - **❌ FAILURE**: Mistake reproducible, hook doesn't trigger, guidance unclear
+
+   **On Failure**: Return to Phase 4, refine
+
+6a. **Automated Test Suite** (Optional but Recommended):
+
+   Create reusable automated tests for hooks to enable regression testing:
+
    ```bash
-   # Check hook is registered in settings.json
-   grep -A5 "{hook-name}" /workspace/.claude/settings.json
+   #!/bin/bash
+   # .claude/hooks/tests/test-{hook-name}.sh
+   # Automated test suite for {hook-name}.sh
+
+   set -euo pipefail
+
+   HOOK_PATH="/workspace/.claude/hooks/{hook-name}.sh"
+   TEST_RESULTS="/tmp/hook-test-results.txt"
+
+   echo "Testing: ${HOOK_PATH##*/}" > "$TEST_RESULTS"
+
+   # Test 1: Hook blocks invalid scenario
+   test_blocks_invalid() {
+     echo "Test 1: Hook blocks invalid scenario..." >> "$TEST_RESULTS"
+
+     # Set up invalid scenario (e.g., wrong worktree)
+     cd /workspace/invalid/location 2>/dev/null || mkdir -p /workspace/invalid/location && cd /workspace/invalid/location
+
+     # Simulate hook execution with invalid context
+     MOCK_CONTEXT='{"tool": {"name": "Write"}, "actor": "sub-agent"}'
+     echo "$MOCK_CONTEXT" | bash "$HOOK_PATH" 2>&1 | grep -q "ERROR"
+
+     if [[ $? -eq 0 ]]; then
+       echo "  ✅ PASS: Hook correctly blocked invalid scenario" >> "$TEST_RESULTS"
+       return 0
+     else
+       echo "  ❌ FAIL: Hook did not block invalid scenario" >> "$TEST_RESULTS"
+       return 1
+     fi
+   }
+
+   # Test 2: Hook allows valid scenario
+   test_allows_valid() {
+     echo "Test 2: Hook allows valid scenario..." >> "$TEST_RESULTS"
+
+     # Set up valid scenario
+     cd /workspace/tasks/test/agents/architect/code 2>/dev/null || {
+       mkdir -p /workspace/tasks/test/agents/architect/code
+       cd /workspace/tasks/test/agents/architect/code
+     }
+
+     # Simulate hook execution with valid context
+     MOCK_CONTEXT='{"tool": {"name": "Write"}, "actor": "architect"}'
+     echo "$MOCK_CONTEXT" | bash "$HOOK_PATH" 2>&1 | grep -q "ERROR"
+
+     if [[ $? -ne 0 ]]; then
+       echo "  ✅ PASS: Hook correctly allowed valid scenario" >> "$TEST_RESULTS"
+       return 0
+     else
+       echo "  ❌ FAIL: Hook incorrectly blocked valid scenario (false positive)" >> "$TEST_RESULTS"
+       return 1
+     fi
+   }
+
+   # Test 3: Error message quality
+   test_error_message_quality() {
+     echo "Test 3: Error message clarity..." >> "$TEST_RESULTS"
+
+     cd /workspace/invalid/location
+     MOCK_CONTEXT='{"tool": {"name": "Write"}, "actor": "sub-agent"}'
+     ERROR_MSG=$(echo "$MOCK_CONTEXT" | bash "$HOOK_PATH" 2>&1)
+
+     # Check error message contains key elements
+     if echo "$ERROR_MSG" | grep -q "ERROR" && \
+        echo "$ERROR_MSG" | grep -q "Expected:" && \
+        echo "$ERROR_MSG" | grep -q "Current:"; then
+       echo "  ✅ PASS: Error message is clear and actionable" >> "$TEST_RESULTS"
+       return 0
+     else
+       echo "  ❌ FAIL: Error message lacks clarity" >> "$TEST_RESULTS"
+       echo "  Message: $ERROR_MSG" >> "$TEST_RESULTS"
+       return 1
+     fi
+   }
+
+   # Run all tests
+   FAILED=0
+   test_blocks_invalid || FAILED=$((FAILED + 1))
+   test_allows_valid || FAILED=$((FAILED + 1))
+   test_error_message_quality || FAILED=$((FAILED + 1))
+
+   # Summary
+   echo "" >> "$TEST_RESULTS"
+   if [[ $FAILED -eq 0 ]]; then
+     echo "✅ All tests passed" >> "$TEST_RESULTS"
+     cat "$TEST_RESULTS"
+     exit 0
+   else
+     echo "❌ $FAILED test(s) failed" >> "$TEST_RESULTS"
+     cat "$TEST_RESULTS"
+     exit 1
+   fi
    ```
 
-4. **Attempt to Reproduce the Original Mistake**:
+   **Test Suite Benefits**:
+   - Regression testing: Verify fixes still work after code changes
+   - Edge case coverage: Systematically test boundary conditions
+   - False positive detection: Ensure legitimate use cases aren't blocked
+   - Documentation: Tests serve as executable examples of hook behavior
 
-   **Goal**: Try to make the same mistake that triggered this skill invocation
-
-   **Method**: Execute the same action sequence that caused the original mistake
-
-   **Examples**:
-
-   - **If mistake was wrong worktree**: Try to create a file in the wrong worktree
-   - **If mistake was missing validation**: Try to skip the validation step
-   - **If mistake was incorrect tool usage**: Try to use the tool incorrectly
-   - **If mistake was protocol violation**: Try to violate the protocol
-
-   **Expected Outcome**: Hook should BLOCK the mistake or guidance should prevent it
-
-5. **Verify Prevention Mechanism**:
-
-   **For Hook-Based Prevention**:
+   **Running Tests**:
    ```bash
-   # Example: Testing pre-write hook prevents wrong worktree
-   cd /workspace/tasks/test-task/code  # Wrong worktree for sub-agent
+   # Run specific hook test
+   bash .claude/hooks/tests/test-pre-write.sh
 
-   # Try to trigger Write tool (should be blocked by hook)
-   # Hook should output error message and prevent the action
+   # Run all hook tests
+   for test in .claude/hooks/tests/test-*.sh; do
+     echo "Running $test..."
+     bash "$test" || echo "FAILED: $test"
+   done
    ```
 
-   **For Documentation-Based Prevention**:
-   - Read the updated agent config as if you were that agent
-   - Follow the workflow described
-   - Verify the guidance is clear enough to prevent the mistake
-   - Check that examples show the correct path
+7. **Iteration** (if test fails):
+   - Diagnose: Hook too narrow? Guidance unclear? Edge case?
+   - Refine: Broaden patterns, add ⚠️ CRITICAL markers, more examples
+   - Re-test until success
 
-6. **Interpret Test Results**:
-
-   **✅ SUCCESS - Fix is Effective**:
-   - Hook blocks the incorrect action with clear error message
-   - OR guidance clearly directs agent to correct approach
-   - Error message explains what went wrong and how to fix it
-
-   **❌ FAILURE - Fix is Ineffective**:
-   - Mistake can still be reproduced
-   - Hook doesn't trigger or has wrong condition
-   - Guidance is unclear or ambiguous
-   - Error message is confusing
-
-   **Action on Failure**: Return to Phase 4 (Configuration Updates) and refine
-
-7. **Iteration on Failed Tests**:
-
-   If the test fails (mistake can still be reproduced):
-
-   a. **Diagnose Why Fix Failed**:
-      - Was hook condition too narrow?
-      - Was guidance not prominent enough?
-      - Did agent have a valid reason to bypass?
-      - Is there an edge case not covered?
-
-   b. **Refine the Fix**:
-      - Broaden hook detection patterns
-      - Make guidance more prominent (⚠️ CRITICAL)
-      - Add more specific examples
-      - Cover the edge case
-
-   c. **Re-test**: Repeat reproduction attempt
-
-   d. **Iterate**: Continue until test succeeds
-
-8. **Test Edge Cases**:
-
-   Once basic reproduction test passes, test variations:
-   - Different agents encountering same scenario
-   - Slight variations of the mistake pattern
-   - Legitimate use cases that should NOT be blocked
-   - Ensure no false positives
+8. **Edge Cases**: Test variations, different agents, legitimate use cases (no false positives)
 
 **Testing Checklist**:
 
@@ -539,95 +722,36 @@ This phase ensures your configuration updates actually prevent the mistake from 
 - [ ] Edge cases tested
 - [ ] If test failed: Iterated and refined until successful
 
-**Documentation of Test Results**:
-
-Include test results in git commit message:
-
+**Test Results in Commit Message**:
 ```
 Add worktree validation to pre-write hook
 
-**Fix Applied**: Created pre-write hook to verify agent worktree
+**Testing**: Attempted file in wrong worktree - hook blocked with clear error
 
-**Testing**: Attempted to create file in wrong worktree:
-- cd /workspace/tasks/test/code (task worktree, not agent worktree)
-- Attempted Write tool
-- ✅ Hook correctly blocked with error: "Agent must work in agent worktree"
-- ✅ Error message clearly explains expected path
-
-**Verified**: Fix prevents recurrence of original mistake
+**Verified**: Fix prevents recurrence
 ```
 
 ### Phase 8: Documentation
 
-**⚠️ CRITICAL: NO RETROSPECTIVE DOCUMENTS**
+**⚠️ NO RETROSPECTIVE DOCUMENTS** (per CLAUDE.md policy)
 
-Per CLAUDE.md "RETROSPECTIVE DOCUMENTATION POLICY": Do NOT create standalone retrospective documents chronicling mistakes or fixes.
+**Document via**:
+1. **Inline Comments**: Pattern evolution, context, history
+2. **Git Commits**: What fixed, why prevents recurrence, original mistake context
+3. **Code Comments**: Rationale, alternatives, edge cases
 
-**CORRECT Documentation Approach**:
-
-1. **Inline Comments in Updated Files** ✅
-   - Add comments to hook/config files explaining pattern evolution
-   - Document context for why specific patterns were added
-   - Include brief history of what problems patterns prevent
-
-   **Example** (in `.claude/hooks/detect-giving-up.sh`):
-   ```bash
-   # PATTERN EVOLUTION HISTORY:
-   # - Initial patterns: Explicit giving-up phrases ("too hard", "let's skip")
-   # - 2025-10-30: Added rationalization patterns after main agent attempted to
-   #   remove dependencies using "pragmatic decision" language to disguise
-   #   giving up on compilation debugging
-   ```
-
-2. **Git Commit Message** ✅
-   - Detailed explanation of what was fixed
-   - Why the change prevents recurrence
-   - Context about the original mistake
-
-   **Example**:
-   ```
-   Add rationalization pattern detection to prevent-giving-up hook
-
-   Added 9 new patterns to detect disguised giving-up using "pragmatic"
-   language. Prevents: attempting to remove dependencies instead of
-   debugging compilation issues while framing it as "architectural choice"
-   or "considering time constraints".
-
-   Context: Main agent encountered empty JAR issue and attempted to
-   simplify formatter API instead of investigating why security/config
-   modules weren't compiling.
-   ```
-
-3. **Code Comments for Rationale** ✅
-   - Explain WHY certain approaches exist
-   - Document alternatives considered
-   - Note edge cases handled
-
-**PROHIBITED**:
-- ❌ `docs/project/lessons-learned.md` (retrospective chronicle)
-- ❌ Standalone markdown files documenting development process
-- ❌ "Lessons learned" documents
-- ❌ Multi-phase retrospective reports
-
-**Summary of Documentation**:
-- Inline comments: Pattern evolution and context
-- Git commits: Detailed rationale
-- CLAUDE.md: Universal guidance if broadly applicable
-- Protocol docs: If protocol-specific changes needed
+**Prohibited**:
+- ❌ lessons-learned.md
+- ❌ Standalone retrospectives
+- ❌ Development process chronicles
 
 ## Implementation Example
 
-### Example: Architecture-Updater Created Files in Wrong Worktree
+**Mistake**: Agent created files in task worktree instead of agent worktree (protocol violation)
 
-**Mistake**: Agent created source files in task worktree instead of agent worktree, causing protocol violation.
+**Root Cause**: Prompt mentioned "working directory" without emphasizing agent worktree distinction
 
-**Root Cause Analysis**:
-1. **Category**: E. Protocol Violations (wrong worktree)
-2. **Available Information**: Agent prompt mentioned working directory but didn't emphasize the distinction
-3. **What Happened**: Agent used `cd /workspace/tasks/{task}/code/` instead of `cd /workspace/tasks/{task}/agents/architect/code/`
-4. **Why**: Prompt said "working directory" but didn't make the agent worktree requirement critical
-
-**Updates Applied**:
+**Updates**:
 
 1. **Agent Config** (`.claude/agents/architect.md`):
    ```markdown
@@ -807,28 +931,198 @@ This skill complements the audit system:
 Execute Task → Audit → Learn → Update → Improved Execution
 ```
 
-## Notes
+## Metrics Tracking for Prevention Effectiveness
 
-- **Focus on systemic improvements**, not one-off fixes
-- **Prioritize high-impact mistakes** (protocol violations, significant delays)
-- **Keep updates specific and actionable** with concrete examples
-- **Include examples from actual mistakes** not hypothetical scenarios
-- **Verify changes don't create conflicts** with existing guidance
-- **Document reasoning** for future reference
-- **Test hooks** if created to ensure they work correctly
+**Purpose**: Track mistake recurrence to measure prevention effectiveness and identify gaps.
 
-## When NOT to Use This Skill
+**Metrics Database**: `/tmp/mistake-prevention-metrics.json`
 
-❌ **Skip for**:
-- One-time errors unlikely to recur
-- Issues already well-documented with examples
-- Mistakes with no clear systemic fix
-- Minor delays (<10 minutes) with no pattern
-- User errors (not agent mistakes)
+### Schema
+
+```json
+{
+  "mistake_types": {
+    "build_failure": {
+      "last_occurrence": "2025-11-03T10:00:00Z",
+      "prevention_applied": "2025-11-02T15:30:00Z",
+      "prevention_method": "hook",
+      "hook_path": ".claude/hooks/validate-build.sh",
+      "recurrence_count_after_fix": 0,
+      "total_occurrences_before_fix": 3,
+      "effectiveness": "100%",
+      "time_to_fix_avg_before": "45min",
+      "time_to_fix_avg_after": "0min"
+    },
+    "wrong_worktree": {
+      "last_occurrence": "2025-11-01T14:22:00Z",
+      "prevention_applied": "2025-10-30T09:15:00Z",
+      "prevention_method": "hook",
+      "hook_path": ".claude/hooks/pre-write.sh",
+      "recurrence_count_after_fix": 0,
+      "total_occurrences_before_fix": 5,
+      "effectiveness": "100%",
+      "time_to_fix_avg_before": "30min",
+      "time_to_fix_avg_after": "0min"
+    }
+  },
+  "summary": {
+    "total_mistake_types": 2,
+    "total_preventions_applied": 2,
+    "average_effectiveness": "100%",
+    "total_time_saved": "3.75hr"
+  }
+}
+```
+
+### Recording Metrics
+
+**During Phase 8** (after successful prevention verification):
+
+```bash
+#!/bin/bash
+# Record prevention metrics
+
+METRICS_FILE="/tmp/mistake-prevention-metrics.json"
+MISTAKE_TYPE="wrong_worktree"  # From Phase 1
+PREVENTION_METHOD="hook"       # hook, documentation, or example
+PREVENTION_PATH=".claude/hooks/pre-write.sh"
+OCCURRENCES_BEFORE=5           # From conversation analysis
+AVG_TIME_BEFORE="30min"
+
+# Initialize metrics file if doesn't exist
+if [[ ! -f "$METRICS_FILE" ]]; then
+  echo '{"mistake_types": {}, "summary": {}}' > "$METRICS_FILE"
+fi
+
+# Record prevention
+jq --arg type "$MISTAKE_TYPE" \
+   --arg applied "$(date -Iseconds)" \
+   --arg method "$PREVENTION_METHOD" \
+   --arg path "$PREVENTION_PATH" \
+   --arg count "$OCCURRENCES_BEFORE" \
+   --arg time "$AVG_TIME_BEFORE" \
+   '.mistake_types[$type] = {
+     last_occurrence: $applied,
+     prevention_applied: $applied,
+     prevention_method: $method,
+     hook_path: $path,
+     recurrence_count_after_fix: 0,
+     total_occurrences_before_fix: ($count | tonumber),
+     effectiveness: "100%",
+     time_to_fix_avg_before: $time,
+     time_to_fix_avg_after: "0min"
+   }' "$METRICS_FILE" > "${METRICS_FILE}.tmp" && mv "${METRICS_FILE}.tmp" "$METRICS_FILE"
+```
+
+### Updating Metrics on Recurrence
+
+**If mistake recurs** (detected by auto-learn-from-mistakes hook):
+
+```bash
+#!/bin/bash
+# Update metrics when mistake recurs
+
+METRICS_FILE="/tmp/mistake-prevention-metrics.json"
+MISTAKE_TYPE="wrong_worktree"
+CURRENT_TIME=$(date -Iseconds)
+
+# Increment recurrence count
+jq --arg type "$MISTAKE_TYPE" \
+   --arg time "$CURRENT_TIME" \
+   '.mistake_types[$type].recurrence_count_after_fix += 1 |
+    .mistake_types[$type].last_occurrence = $time |
+    .mistake_types[$type].effectiveness =
+      (100 - (.mistake_types[$type].recurrence_count_after_fix /
+              .mistake_types[$type].total_occurrences_before_fix * 100) |
+       tostring + "%")' \
+   "$METRICS_FILE" > "${METRICS_FILE}.tmp" && mv "${METRICS_FILE}.tmp" "$METRICS_FILE"
+```
+
+### Viewing Metrics
+
+**Show all metrics**:
+```bash
+jq '.' /tmp/mistake-prevention-metrics.json
+```
+
+**Show effectiveness summary**:
+```bash
+jq '.mistake_types | to_entries | map({
+  type: .key,
+  effectiveness: .value.effectiveness,
+  recurrences: .value.recurrence_count_after_fix,
+  prevention: .value.prevention_method
+}) | sort_by(.effectiveness)' /tmp/mistake-prevention-metrics.json
+```
+
+**Find ineffective preventions** (recurrence rate > 20%):
+```bash
+jq '.mistake_types | to_entries |
+    map(select(.value.recurrence_count_after_fix > 0)) |
+    map({
+      type: .key,
+      effectiveness: .value.effectiveness,
+      recurrences: .value.recurrence_count_after_fix,
+      hook: .value.hook_path
+    })' /tmp/mistake-prevention-metrics.json
+```
+
+### Integration with auto-learn-from-mistakes Hook
+
+Update `.claude/hooks/auto-learn-from-mistakes.sh` to record metrics:
+
+```bash
+# After detecting mistake, record to metrics
+METRICS_FILE="/tmp/mistake-prevention-metrics.json"
+
+# Check if prevention exists for this mistake type
+if jq -e --arg type "$MISTAKE_TYPE" '.mistake_types[$type]' "$METRICS_FILE" >/dev/null 2>&1; then
+  # Prevention exists but mistake recurred - update metrics
+  echo "⚠️ RECURRENCE: Prevention exists for $MISTAKE_TYPE but mistake occurred again" >&2
+
+  # Increment recurrence counter (shown above)
+  # ...
+else
+  # First occurrence - will be handled by learn-from-mistakes skill
+  echo "📊 NEW MISTAKE TYPE: $MISTAKE_TYPE (no prevention yet)" >&2
+fi
+```
+
+### Metrics-Driven Improvement
+
+**Review metrics quarterly** to identify:
+
+1. **High-impact preventions**: Mistakes eliminated completely
+2. **Ineffective preventions**: High recurrence rate (>20%)
+3. **Common mistake patterns**: Types with many occurrences
+4. **Time savings**: Accumulated time saved by preventing rework
+
+**Action items based on metrics**:
+- Recurrence >20%: Re-invoke learn-from-mistakes to strengthen prevention
+- Zero recurrence: Document success pattern for reuse
+- High occurrence count: Prioritize systemic improvements
+
+## When to Use
 
 ✅ **Use for**:
 - Protocol violations requiring rework
 - Repeated mistakes across tasks
-- Missing documentation gaps
+- Documentation gaps
 - Systematic tool usage errors
 - Configuration ambiguities
+
+❌ **Skip for**:
+- One-time errors unlikely to recur
+- Well-documented issues
+- No clear systemic fix
+- Minor delays (<10 min) without pattern
+- User errors
+
+## Best Practices
+
+- Focus on systemic improvements, not one-off fixes
+- Prioritize high-impact mistakes (violations, significant delays)
+- Use specific, actionable examples from actual mistakes
+- Verify no conflicts with existing guidance
+- Test hooks to ensure correctness
+- Track metrics for effectiveness

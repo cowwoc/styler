@@ -1,8 +1,5 @@
 # Build System & Project Structure
 
-This file contains all build system configuration, commands, and project structure documentation for Styler
-Java Code Formatter.
-
 ## Environment Setup {#environment-setup}
 
 ```bash
@@ -144,36 +141,13 @@ across environments.
 - Filtered output: ~1000-2000 tokens (errors/warnings only)
 - **Savings**: ~70% token reduction per validation build
 
-**Example Comparison**:
-```bash
-# Full output (8000 tokens)
-./mvnw clean verify
-# [INFO] Scanning for projects...
-# [INFO] Building module X
-# [INFO] Compiling 47 source files...
-# [INFO] Tests run: 50, Failures: 0, Errors: 0, Skipped: 0
-# [INFO] BUILD SUCCESS
-# ... 300 lines of output ...
-
-# Filtered output (1500 tokens)
-./mvnw -q clean verify 2>&1 | grep -E "(ERROR|WARN|FAIL|BUILD SUCCESS)"
-# [WARNING] Parameter 'foo' should be final
-# [ERROR] Compilation failure: missing semicolon
-# BUILD SUCCESS
-```
-
-**Note**: For successful builds with no violations, filtered output will only show `BUILD SUCCESS`, which is exactly what you need for validation purposes.
+**Note**: For successful builds with no violations, filtered output will only show `BUILD SUCCESS`.
 
 ## Maven Multi-Module Setup {#maven-multi-module-setup}
 
 ### pom.xml Style Guidelines {#pomxml-style-guidelines}
 
 **RULE**: Do not add explanatory comments above dependencies or plugins that simply describe what they are.
-
-**Rationale**:
-- The groupId, artifactId, and context make the purpose clear
-- Explanatory comments create maintenance burden without adding value
-- Self-documenting dependency declarations are preferred
 
 **❌ PROHIBITED**:
 ```xml
@@ -295,15 +269,9 @@ across environments.
 
 **Standard Timeouts** (for Bash tool integration):
 - **./mvnw verify**: 300,000ms (5 minutes) - Full validation
-- **./mvnw clean verify**: 300,000ms (5 minutes) - Clean builds  
+- **./mvnw clean verify**: 300,000ms (5 minutes) - Clean builds
 - **./mvnw exec:exec**: 1,800,000ms (30 minutes) - Simulation execution
 - **./mvnw compile**: 300,000ms (5 minutes) - Compilation only
-
-**Why Long Timeouts Required**:
-- Dependency downloads (first-time builds)
-- Full compilation cycles (Java parser and AST implementation)
-- Comprehensive test execution (parser and formatter test suites)
-- Maven builds commonly exceed 2-3 minutes on first run
 
 ## Formatter Execution Modes {#formatter-execution-modes}
 

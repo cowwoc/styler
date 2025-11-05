@@ -1,6 +1,6 @@
 #!/bin/bash
 # Validates that agent invocations occur in appropriate task states
-# This hook prevents premature agent invocation (e.g., updater agents before IMPLEMENTATION)
+# This hook prevents premature agent invocation (e.g., agents in IMPLEMENTATION mode before IMPLEMENTATION state)
 #
 # TRIGGER: PreToolUse for Task tool invocations
 # CHECKS: Agent type vs current task state validity
@@ -79,11 +79,41 @@ fi
 
 # Determine agent type from name
 AGENT_TYPE="unknown"
-if [[ "$AGENT_NAME" == *"-reviewer" ]]; then
-	AGENT_TYPE="reviewer"
-elif [[ "$AGENT_NAME" == *"-updater" ]]; then
-	AGENT_TYPE="updater"
-elif [[ "$AGENT_NAME" == "process-recorder" ]] || [[ "$AGENT_NAME" == "process-compliance-reviewer" ]] || [[ "$AGENT_NAME" == "process-efficiency-reviewer" ]]; then
+
+# Stakeholder agents (can operate in REQUIREMENTS/VALIDATION or IMPLEMENTATION modes)
+# Note: The mode is determined by state + model parameter, not agent name
+STAKEHOLDER_AGENTS=("architect" "engineer" "formatter" "tester" "builder" "designer" "optimizer" "hacker" "configurator")
+for stakeholder in "${STAKEHOLDER_AGENTS[@]}"; do
+	if [[ "$AGENT_NAME" == "$stakeholder" ]]; then
+		# Determine mode based on model parameter if available, otherwise allow all states
+		MODEL=$(echo "$INPUT" | jq -r '.tool_input.model // empty')
+		if [[ "$MODEL" == "haiku" ]] || [[ "$MODEL" == *"haiku"* ]]; then
+			AGENT_TYPE="updater"  # Implementation mode (Haiku)
+		elif [[ "$MODEL" == "sonnet" ]] || [[ "$MODEL" == *"sonnet"* ]]; then
+			AGENT_TYPE="reviewer"  # Requirements/Validation mode (Sonnet)
+		else
+			# No model specified, infer from state
+			if [[ "$CURRENT_STATE" == "REQUIREMENTS" ]] || [[ "$CURRENT_STATE" == "VALIDATION" ]] || [[ "$CURRENT_STATE" == "REVIEW" ]]; then
+				AGENT_TYPE="reviewer"
+			elif [[ "$CURRENT_STATE" == "IMPLEMENTATION" ]]; then
+				AGENT_TYPE="updater"
+			fi
+		fi
+		break
+	fi
+done
+
+# Legacy pattern support (for backward compatibility with old tests)
+if [[ "$AGENT_TYPE" == "unknown" ]]; then
+	if [[ "$AGENT_NAME" == *"-reviewer" ]]; then
+		AGENT_TYPE="reviewer"
+	elif [[ "$AGENT_NAME" == *"-updater" ]]; then
+		AGENT_TYPE="updater"
+	fi
+fi
+
+# Audit agents
+if [[ "$AGENT_NAME" == "process-recorder" ]] || [[ "$AGENT_NAME" == "process-compliance-reviewer" ]] || [[ "$AGENT_NAME" == "process-efficiency-reviewer" ]]; then
 	AGENT_TYPE="audit"
 fi
 
@@ -92,23 +122,23 @@ VIOLATION=""
 
 case "$AGENT_TYPE" in
 	"reviewer")
-		# Reviewer agents can be invoked in REQUIREMENTS, VALIDATION, REVIEW states
+		# Stakeholder agents in REQUIREMENTS/VALIDATION mode can be invoked in REQUIREMENTS, VALIDATION, REVIEW states
 		if [[ "$CURRENT_STATE" != "REQUIREMENTS" ]] && [[ "$CURRENT_STATE" != "VALIDATION" ]] && [[ "$CURRENT_STATE" != "REVIEW" ]]; then
 			if [[ "$CURRENT_STATE" == "SYNTHESIS" ]] || [[ "$CURRENT_STATE" == "IMPLEMENTATION" ]]; then
-				# Allow reviewer re-invocation during synthesis/implementation for clarification
+				# Allow re-invocation during synthesis/implementation for clarification
 				# but log as unusual
 				LOG_FILE="/workspace/tasks/${TASK_NAME}/agent-invocations.log"
-				echo "[$(date -Iseconds)] WARNING: Reviewer ${AGENT_NAME} invoked in ${CURRENT_STATE} state (unusual but permitted)" >> "$LOG_FILE"
+				echo "[$(date -Iseconds)] WARNING: Agent ${AGENT_NAME} in REQUIREMENTS/VALIDATION mode invoked in ${CURRENT_STATE} state (unusual but permitted)" >> "$LOG_FILE"
 			else
-				VIOLATION="Reviewer agents should be invoked in REQUIREMENTS, VALIDATION, or REVIEW states. Current state: ${CURRENT_STATE}"
+				VIOLATION="Stakeholder agents in REQUIREMENTS/VALIDATION mode should be invoked in REQUIREMENTS, VALIDATION, or REVIEW states. Current state: ${CURRENT_STATE}"
 			fi
 		fi
 		;;
 
 	"updater")
-		# Updater agents MUST only be invoked in IMPLEMENTATION state
+		# Stakeholder agents in IMPLEMENTATION mode MUST only be invoked in IMPLEMENTATION state
 		if [[ "$CURRENT_STATE" != "IMPLEMENTATION" ]]; then
-			VIOLATION="Updater agents can ONLY be invoked in IMPLEMENTATION state. Current state: ${CURRENT_STATE}"
+			VIOLATION="Stakeholder agents in IMPLEMENTATION mode can ONLY be invoked in IMPLEMENTATION state. Current state: ${CURRENT_STATE}"
 		fi
 		;;
 
@@ -138,12 +168,12 @@ if [[ -n "$VIOLATION" ]]; then
 
 ## ⚠️ AGENT INVOCATION RULES
 
-**Reviewer Agents** (*-reviewer):
+**Stakeholder Agents in REQUIREMENTS/VALIDATION Mode** (*-reviewer):
 - ✅ Invoked during: REQUIREMENTS, VALIDATION, REVIEW
 - ⚠️  Allowed but unusual: SYNTHESIS, IMPLEMENTATION (for clarifications)
 - ❌ Invalid: INIT, CLASSIFIED, AWAITING_USER_APPROVAL, COMPLETE, CLEANUP
 
-**Updater Agents** (*-updater):
+**Stakeholder Agents in IMPLEMENTATION Mode** (*-updater):
 - ✅ Invoked during: IMPLEMENTATION ONLY
 - ❌ Invalid: All other states (including SYNTHESIS before user approval)
 
@@ -160,13 +190,13 @@ if [[ -n "$VIOLATION" ]]; then
    \`\`\`
 
 2. **Transition to appropriate state** (if needed):
-   - For reviewer agents: Ensure state is REQUIREMENTS, VALIDATION, or REVIEW
-   - For updater agents: MUST be in IMPLEMENTATION state
+   - For stakeholder agents in REQUIREMENTS/VALIDATION mode: Ensure state is REQUIREMENTS, VALIDATION, or REVIEW
+   - For stakeholder agents in IMPLEMENTATION mode: MUST be in IMPLEMENTATION state
 
-3. **For updater agents specifically**:
+3. **For stakeholder agents in IMPLEMENTATION mode specifically**:
    - Verify user approved implementation plan (see enforce-synthesis-checkpoint.sh)
    - Verify state is IMPLEMENTATION
-   - Then invoke updater agent
+   - Then invoke agent
 
 ## Protocol Reference
 

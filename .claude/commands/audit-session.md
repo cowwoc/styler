@@ -14,7 +14,7 @@ The audit pipeline consists of multiple agents and skills with conditional branc
 
 ```
 parse-conversation-timeline skill → audit-protocol-compliance skill → CONDITIONAL BRANCH:
-    (facts)         (compliance + violations)       ├─ [CRITICAL/HIGH violations] → learn-from-mistakes
+    (facts)         (compliance + violations)       ├─ [ANY violations] → learn-from-mistakes
                                                     │   (root cause analysis + prevention)
                                                     │
                                                     └─ [PASSED] → audit-protocol-efficiency skill
@@ -24,14 +24,17 @@ parse-conversation-timeline skill → audit-protocol-compliance skill → CONDIT
                 (apply changes)
 ```
 
-**Key Innovation**: learn-from-mistakes skill provides deep root cause analysis for serious violations,
-enabling systematic prevention rather than just fixing individual instances.
+**Key Innovation**: learn-from-mistakes skill provides deep root cause analysis for ALL violations
+(any severity), enabling systematic prevention rather than just fixing individual instances.
 
 ## Execution Sequence
 
+**IMPORTANT**: Skills execute synchronously, NOT in the background. When you invoke a skill with `Skill: skill-name`, it runs to completion before returning control. Do not treat skills as asynchronous background processes.
+
 ### Phase 1: Conversation Parsing (Timeline Generation)
 
-**Agent**: parse-conversation-timeline skill
+**Skill**: parse-conversation-timeline
+**Execution**: Synchronous - runs to completion before proceeding
 **Purpose**: Transform 6MB raw conversation into 100-300KB structured timeline for reviewer queries
 **Output**: Comprehensive structured timeline JSON with chronological events, git status, task state, statistics
 
@@ -43,14 +46,19 @@ enabling systematic prevention rather than just fixing individual instances.
 - **Complete**: Timeline contains ALL events - no missing data for unexpected queries
 - **Independent**: Main agent cannot filter data before parse-conversation-timeline skill accesses it
 
-**Launch Sequence**:
+**Invocation Pattern** (synchronous execution):
 
 ```
-# Step 1: Main agent invokes read-conversation-history skill
+# Step 1: Invoke read-conversation-history skill (executes synchronously)
 Skill: read-conversation-history
+# Skill runs to completion and returns before continuing
 
-# Step 2: Launch parse-conversation-timeline skill to parse conversation into structured timeline
-Task tool (parse-conversation-timeline skill): "Parse raw conversation from read-conversation-history skill into comprehensive structured timeline. Timeline must include:
+# Step 2: Invoke parse-conversation-timeline skill (executes synchronously)
+Skill: parse-conversation-timeline
+# Skill runs to completion and returns before continuing
+# Note: Skills execute code directly, not via Task tool
+
+The skill will parse conversation into structured timeline. Timeline must include:
 
 - session_metadata: session ID, task name, timestamps, conversation file location
 - timeline: chronological array of ALL events (user messages, tool uses, tool results, state transitions)
@@ -75,9 +83,10 @@ Use methods from read-conversation-history skill to access conversation.jsonl. O
 
 ### Phase 2: Compliance Review (Always Runs)
 
-**Agent**: audit-protocol-compliance skill
+**Skill**: audit-protocol-compliance
+**Execution**: Synchronous - runs to completion before proceeding
 **Purpose**: Query structured timeline for protocol violations and recommend preventive changes
-**Input**: Structured timeline from parse-conversation-timeline skill
+**Input**: Structured timeline from parse-conversation-timeline skill (already completed)
 **Output**: Violations list with recommended protocol changes
 
 **ALWAYS RUNS** - compliance review happens for every audit
@@ -118,9 +127,12 @@ jq '.task_state.agent_outputs' timeline.json
 **Check 0.5**: Complete REQUIREMENTS phase (query task_state.agent_outputs)
 **Check 1.0-3.0**: Additional protocol checks (query timeline as needed)
 
-Launch the audit-protocol-compliance skill agent:
+Invoke the audit-protocol-compliance skill (synchronous):
 ```
-Task tool (audit-protocol-compliance skill): "Query structured timeline from parse-conversation-timeline skill to execute MANDATORY compliance checks. Timeline contains comprehensive event data - extract what you need for each check.
+Skill: audit-protocol-compliance
+# Skill executes synchronously and returns compliance results
+
+The skill will query structured timeline from parse-conversation-timeline to execute MANDATORY compliance checks. Timeline contains comprehensive event data - extract what you need for each check.
 
 CRITICAL checks to query:
 - Check 0.0: Query statistics.approval_checkpoints for user approval after SYNTHESIS/REVIEW
@@ -134,18 +146,19 @@ For each violation found, provide severity, evidence from timeline queries, reco
 
 ### Phase 3: Efficiency Review (Conditional)
 
-**Agent**: audit-protocol-efficiency skill
+**Skill**: audit-protocol-efficiency
+**Execution**: Synchronous - runs to completion before proceeding (if invoked)
 **Purpose**: Query structured timeline for efficiency opportunities and recommend improvements
-**Input**: Structured timeline from parse-conversation-timeline skill + audit-protocol-compliance skill results
-**Condition**: ONLY runs if no CRITICAL or HIGH severity violations detected
+**Input**: Structured timeline from parse-conversation-timeline skill + audit-protocol-compliance skill results (both already completed)
+**Condition**: ONLY runs if NO violations detected (session fully compliant)
 
 **Decision Logic**:
 ```
-IF audit-protocol-compliance skill contains CRITICAL or HIGH severity violations:
-  → SKIP audit-protocol-efficiency skill (fix major violations first)
+IF audit-protocol-compliance skill contains ANY violations:
+  → SKIP audit-protocol-efficiency skill (fix violations first via learn-from-mistakes)
 
 ELSE:
-  → Launch audit-protocol-efficiency skill
+  → Launch audit-protocol-efficiency skill (session compliant, optimize for efficiency)
 ```
 
 **Review Process**: Efficiency reviewer queries the same structured timeline for different patterns - parallelization opportunities, redundant operations, token usage optimization.
@@ -170,9 +183,12 @@ jq '.timeline[] | select(.type == "tool_result" and .estimated_tokens > 5000)' t
 → Verbose outputs consuming tokens → Summarization opportunity
 ```
 
-Launch the audit-protocol-efficiency skill agent (if no major violations):
+Invoke the audit-protocol-efficiency skill (if no violations - synchronous):
 ```
-Task tool (audit-protocol-efficiency skill): "Query structured timeline from parse-conversation-timeline skill to identify protocol efficiency opportunities. Timeline contains comprehensive event data - extract patterns for efficiency analysis.
+Skill: audit-protocol-efficiency
+# Skill executes synchronously and returns efficiency recommendations
+
+The skill will query structured timeline from parse-conversation-timeline to identify protocol efficiency opportunities. Timeline contains comprehensive event data - extract patterns for efficiency analysis.
 
 Focus areas to query:
 - Execution time: Query timeline for sequential Task calls that could be parallel
@@ -201,34 +217,40 @@ Launch the config agent:
 Task tool (config): "Apply Claude Code configuration changes. Input: [aggregated recommendations from reviewers]. For each recommendation: read current state, apply using Edit tool, verify by reading updated file."
 ```
 
-### Phase 4a: Root Cause Analysis (Conditional - For Violations)
+### Phase 4a: Root Cause Analysis (MANDATORY - For ANY Violations)
 
 **Skill**: learn-from-mistakes
+**Execution**: Synchronous - runs to completion before proceeding
 **Purpose**: Deep root cause analysis and systematic prevention for violations
-**Input**: Violation details from audit-protocol-compliance skill
-**Condition**: ONLY runs if CRITICAL or HIGH severity violations detected
+**Input**: Violation details from audit-protocol-compliance skill (already completed)
+**Condition**: MANDATORY for ANY violations (all severities: CRITICAL, HIGH, MEDIUM, LOW)
 
 **Decision Logic**:
 ```
-IF audit-protocol-compliance skill contains CRITICAL or HIGH severity violations:
+IF audit-protocol-compliance skill contains ANY violations (any severity):
   → Launch learn-from-mistakes skill with violation details
   → Get deeper root cause analysis
   → Update protocol/hooks to prevent recurrence systematically
 
 ELSE:
-  → SKIP Phase 4a (no critical violations to analyze)
+  → SKIP Phase 4a (no violations found - session fully compliant)
 ```
 
 **Invocation Pattern**:
 ```
 Skill: learn-from-mistakes
 
-Context: During /audit-session, detected [count] CRITICAL/HIGH violations:
-- [Violation 1: Brief description]
-- [Violation 2: Brief description]
+Context: During /audit-session, detected [count] violations:
+- [Violation 1: Brief description with severity]
+- [Violation 2: Brief description with severity]
 
 Please perform root cause analysis and recommend systematic prevention measures.
 ```
+
+**Rationale**: ALL violations indicate opportunities for systematic improvement.
+Even LOW severity violations reveal gaps in documentation, examples, or validation
+that should be fixed to prevent recurrence. Systematic prevention is mandatory
+for continuous improvement.
 
 **Integration with Phase 5**:
 - learn-from-mistakes identifies root causes and prevention strategies
@@ -307,8 +329,8 @@ After all agents complete, synthesize a comprehensive report:
 **Audit Execution Completed When**:
 - [ ] parse-conversation-timeline skill produced structured JSON output
 - [ ] audit-protocol-compliance skill provided binary verdict (PASSED/FAILED)
-- [ ] audit-protocol-efficiency skill ran (if PASSED) or skipped (if FAILED)
-- [ ] learn-from-mistakes ran (if CRITICAL/HIGH violations) or skipped (if no major violations)
+- [ ] learn-from-mistakes ran (if ANY violations) or skipped (if PASSED)
+- [ ] audit-protocol-efficiency skill ran (if PASSED) or skipped (if violations found)
 - [ ] config identified configuration gaps
 - [ ] config applied proposed fixes
 - [ ] Comprehensive report synthesized and presented
@@ -317,7 +339,8 @@ After all agents complete, synthesize a comprehensive report:
 - parse-conversation-timeline skill output includes actual task state from task.json
 - audit-protocol-compliance skill executes Check 0.1 and 0.2 FIRST
 - No rationalizations in audit-protocol-compliance skill output
-- audit-protocol-efficiency skill only runs on PASSED sessions
+- learn-from-mistakes invoked for ANY violations (not just CRITICAL/HIGH)
+- audit-protocol-efficiency skill only runs on fully compliant sessions (zero violations)
 - Report includes actionable recovery options for violations
 
 ## Expected Output Format
@@ -467,18 +490,28 @@ After presenting the audit report:
 
 ## Execution Instructions
 
-1. **Launch parse-conversation-timeline skill** to gather session facts
-2. **Wait for completion** and capture JSON output
-3. **Launch audit-protocol-compliance skill** with recorder output as input
-4. **Wait for compliance verdict**
-5. **Conditional launch based on verdict**:
-   - **If CRITICAL/HIGH violations found**: Launch learn-from-mistakes skill for root cause analysis
-   - **If PASSED (no major violations)**: Launch audit-protocol-efficiency skill
-   - **If FAILED with only MEDIUM/LOW violations**: Skip both (fix violations first)
-6. **Launch config** to identify configuration gaps
-7. **Launch config** to apply proposed fixes
-8. **Synthesize report** combining all agent/skill outputs
-9. **Present report** to user with clear next steps
+**CRITICAL**: Skills execute synchronously, NOT in background. Each skill invocation blocks until completion.
+
+1. **Invoke parse-conversation-timeline skill** (synchronous - waits for completion)
+   ```
+   Skill: parse-conversation-timeline
+   ```
+2. **Invoke audit-protocol-compliance skill** (synchronous - waits for compliance verdict)
+   ```
+   Skill: audit-protocol-compliance
+   ```
+3. **Conditional invocation based on verdict**:
+   - **If ANY violations found (any severity)**: Invoke learn-from-mistakes skill (synchronous)
+     ```
+     Skill: learn-from-mistakes
+     ```
+   - **If PASSED (zero violations)**: Invoke audit-protocol-efficiency skill (synchronous)
+     ```
+     Skill: audit-protocol-efficiency
+     ```
+   - **NOTE**: learn-from-mistakes is MANDATORY for ALL violations, not just critical ones
+4. **Synthesize report** combining all skill outputs (all skills have completed by this point)
+5. **Present report** to user with clear next steps
 10. **Apply automatic fixes** (Phase 5):
     - Categorize all recommended fixes (including learn-from-mistakes prevention measures)
     - Auto-apply safe fixes (build, style, docs, prevention updates)
@@ -490,5 +523,6 @@ After presenting the audit report:
     - Confirm all auto-fixes successful
     - Provide summary of what was fixed and prevented
 
-Execute the full pipeline sequentially and provide comprehensive session audit results with automatic fix
-application and systematic violation prevention.
+Execute the full pipeline sequentially (each skill invocation is synchronous) and provide comprehensive session audit results with automatic fix application and systematic violation prevention.
+
+**Execution Model**: Skills are synchronous, not background processes. When you invoke a skill, it runs to completion before you continue. Do not attempt to "wait for" or "check status of" skills - they complete before returning control to you.

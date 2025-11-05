@@ -29,26 +29,33 @@ if [ -z "$TASK_NAME" ]; then
     if [ -z "$TASK_NAME" ]; then
         # Not in a task worktree path - check if any tasks are in CLEANUP state
         # This handles hook invocation from /workspace or other directories
-        CLEANUP_LOCKS=""
+        CLEANUP_TASKS=""
         if [ -d "/workspace/tasks" ]; then
-            CLEANUP_LOCKS=$(find /workspace/tasks -name "task.json" -type f 2>/dev/null | while read -r lock; do
+            CLEANUP_TASKS=$(find /workspace/tasks -name "task.json" -type f 2>/dev/null | while read -r lock; do
                 state=$(jq -r '.state // ""' "$lock" 2>/dev/null)
                 if [ "$state" = "CLEANUP" ]; then
-                    basename "$lock" .json
+                    # Extract task name from path: /workspace/tasks/{task-name}/task.json
+                    dirname "$lock" | xargs basename
                 fi
             done)
         fi
 
-        if [ -z "$CLEANUP_LOCKS" ]; then
+        if [ -z "$CLEANUP_TASKS" ]; then
             # No tasks in CLEANUP state - archival check not applicable
             exit 0
         fi
 
-        # Found task(s) in CLEANUP state - cannot determine which one to verify
-        echo "ERROR: Cannot determine task name - no argument provided and not in task worktree" >&2
-        echo "Usage: $0 <task-name>" >&2
-        echo "Or run from within /workspace/tasks/{task-name}/code/" >&2
-        exit 2
+        # Found exactly one task in CLEANUP state - use it
+        TASK_COUNT=$(echo "$CLEANUP_TASKS" | wc -l)
+        if [ "$TASK_COUNT" -eq 1 ]; then
+            TASK_NAME="$CLEANUP_TASKS"
+        else
+            # Multiple tasks in CLEANUP state - cannot determine which one to verify
+            echo "ERROR: Multiple tasks in CLEANUP state - specify which to verify" >&2
+            echo "Usage: $0 <task-name>" >&2
+            echo "Tasks in CLEANUP: $CLEANUP_TASKS" >&2
+            exit 2
+        fi
     fi
 
     if [ "$TASK_NAME" = "main" ]; then

@@ -83,6 +83,12 @@ fi
 
 # Check if source file in task worktree (already confirmed above)
 if [[ "$TARGET_PATH" =~ \.(java|ts|py|js|jsx|tsx|cpp|c|h|hpp|rs|go)$ ]]; then
+    # Exception: Infrastructure files are allowed even during IMPLEMENTATION
+    # See: CLAUDE.md § Infrastructure File Exceptions
+    if [[ "$TARGET_PATH" =~ (module-info\.java|package-info\.java)$ ]]; then
+        exit 0
+    fi
+
     # Check if this is an agent worktree path (should be allowed)
     # Use regex pattern matching instead of glob
     if [[ "$TARGET_PATH" =~ /workspace/tasks/$TASK_NAME/agents/[^/]+/code/ ]]; then
@@ -100,6 +106,10 @@ if [[ "$TARGET_PATH" =~ \.(java|ts|py|js|jsx|tsx|cpp|c|h|hpp|rs|go)$ ]]; then
         echo "" >&2
         echo "CORRECT APPROACH: Use Task tool to delegate implementation to stakeholder agents." >&2
         echo "Stakeholder agents create files in agent worktrees, then merge to task branch." >&2
+        echo "" >&2
+        echo "ALLOWED EXCEPTIONS (infrastructure files):" >&2
+        echo "  - module-info.java (JPMS module descriptor)" >&2
+        echo "  - package-info.java (package documentation)" >&2
         echo "" >&2
         echo "See: /workspace/main/CLAUDE.md § CRITICAL PROTOCOL VIOLATIONS #1" >&2
         exit 2

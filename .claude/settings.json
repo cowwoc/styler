@@ -204,10 +204,28 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "(tool:Write || tool:Edit) && path:**.java",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/post-tool-use-write-java-validation.sh"
+          }
+        ]
+      },
+      {
         "hooks": [
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/auto-learn-from-mistakes.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "tool:Bash && command:*git*merge*--squash*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/enforce-post-merge-cleanup.sh"
           }
         ]
       },
@@ -217,6 +235,10 @@
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/post-tool-use-task-invoke.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/post-tool-use-task-complete.sh"
           }
         ]
       },

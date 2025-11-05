@@ -176,12 +176,6 @@ These are NOT contradictory. Understanding the distinction:
 - Allow user to validate direction before major work (plan approval) and review results after completion (change approval)
 - These are EXPECTED parts of the workflow, NOT violations of autonomous completion
 
-**Why Checkpoints Do NOT Violate Autonomous Completion**:
-- Checkpoints are at DEFINED state transitions (not random mid-protocol stops)
-- Checkpoints serve OVERSIGHT function (not "help me decide what to do" function)
-- Agent arrives at checkpoint WITH COMPLETED WORK (plan drafted, implementation finished)
-- Agent does NOT need help to continue - only needs approval to proceed
-
 **Examples: Autonomous Completion WITH Checkpoints**:
 
 ✅ **CORRECT Autonomous Behavior**:
@@ -412,9 +406,6 @@ Agent Response:
 - User message contains approval keywords: "yes", "approved", "approve", "proceed", "looks good", "LGTM"
 - AND message references review context: "review", "changes", "commit", "finalize"
 
-**Why User Instructions Don't Override**: Protocol line 36: "MANDATORY REGARDLESS of bypass mode or automation
-mode". Checkpoints are quality gates, not permission gates.
-
 ### State Transitions {#state-transitions}
 Each transition requires **ALL** specified conditions to be met. **NO EXCEPTIONS.**
 
@@ -544,10 +535,10 @@ COMPLETE → CLEANUP
 COMPLETE → CLEANUP
 **Stakeholder Agents**: Based on change characteristics
 - Base: architect (always required)
-- +style: If style/formatting files modified
+- +formatter: If style/formatting files modified
 - +security: If any configuration or resource files modified
 - +performance: If test performance or benchmarks affected
-- +quality: Always included for code quality validation
+- +engineer: Always included for code quality validation
 **Isolation**: Worktree isolation for multi-file changes
 **Review**: Domain-appropriate stakeholder validation
 **Use Case**: Test files, style documentation, configuration files
@@ -611,7 +602,7 @@ def determine_state_path(risk_level, change_type):
 ### Comprehensive Agent Selection Framework {#comprehensive-agent-selection-framework}
 **Input**: Task description and file modification patterns
 **Available Agents**: architect, usability, performance, security,
-style, quality, test, build
+formatter, engineer, tester, builder
 
 **Processing Logic:**
 
@@ -619,8 +610,8 @@ style, quality, test, build
 - **architect**: MANDATORY for ALL file modification tasks (provides implementation requirements)
 
 **🔍 FUNCTIONAL AGENTS (Code Implementation):**
-- IF NEW CODE created: add style, quality, build
-- IF IMPLEMENTATION (not just config): add test
+- IF NEW CODE created: add formatter, engineer, builder
+- IF IMPLEMENTATION (not just config): add tester
 - IF MAJOR FEATURES completed: add usability (MANDATORY after completion)
 
 **🛡️ SECURITY AGENTS (Actual Security Concerns):**
@@ -636,8 +627,8 @@ style, quality, test, build
 
 **🔧 FORMATTING AGENTS (Code Quality):**
 - IF PARSER LOGIC modified: add performance, security
-- IF AST TRANSFORMATION changed: add quality, test
-- IF FORMATTING RULES affected: add style
+- IF AST TRANSFORMATION changed: add engineer, tester
+- IF FORMATTING RULES affected: add formatter
 
 **❌ AGENTS NOT NEEDED FOR SIMPLE OPERATIONS:**
 - Maven module renames: NO performance
@@ -650,27 +641,27 @@ style, quality, test, build
 - IF PERFORMANCE ANALYSIS: add performance
 - IF UX/INTERFACE ANALYSIS: add usability
 - IF SECURITY ANALYSIS: add security
-- IF CODE QUALITY REVIEW: add quality
+- IF CODE QUALITY REVIEW: add engineer
 - IF PARSER/FORMATTER PERFORMANCE ANALYSIS: add performance
 
 **Agent Selection Verification Checklist:**
-- [ ] NEW CODE task → style included?
-- [ ] Source files created/modified → build included?
+- [ ] NEW CODE task → formatter included?
+- [ ] Source files created/modified → builder included?
 - [ ] Performance-critical code → performance included?
 - [ ] Security-sensitive features → security included?
 - [ ] User-facing interfaces → usability included?
-- [ ] Post-implementation refactoring → quality included?
+- [ ] Post-implementation refactoring → engineer included?
 - [ ] AST parsing/code formatting → performance included?
 
 **Special Agent Usage Patterns:**
--  **style**: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and
+-  **formatter**: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and
   language-specific patterns)
--  **build**: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through build
+-  **builder**: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through builder
   system
--  **build**: Use alongside style to ensure comprehensive validation (automated + manual
+-  **builder**: Use alongside formatter to ensure comprehensive validation (automated + manual
   rules)
-- **quality**: Post-implementation refactoring and best practices enforcement
-- **test**: Business logic validation and comprehensive test creation
+- **engineer**: Post-implementation refactoring and best practices enforcement
+- **tester**: Business logic validation and comprehensive test creation
 - **security**: Data handling and storage compliance review
 - **performance**: Algorithmic efficiency and resource optimization
 - **usability**: User experience design and interface evaluation
@@ -686,13 +677,13 @@ style, quality, test, build
    - `PMD`: Code quality and best practices
    - `ESLint`: JavaScript/TypeScript style (if applicable)
 
-2. **Manual Style Rules** (via style):
+2. **Manual Style Rules** (via formatter):
    - Apply ALL detection patterns from `docs/code-style/*-claude.md`
    - Java-specific patterns (naming, structure, comments)
    - Common patterns (cross-language consistency)
    - Language-specific patterns as applicable
 
-3. **Build Integration** (via build):
+3. **Build Integration** (via builder):
    - Automated fixing when conflicts detected (LineLength vs UnderutilizedLines)
    - Use `checkstyle/fixers` module for AST-based consolidate-then-split strategy
    - Comprehensive testing validates fixing logic before application
@@ -710,7 +701,7 @@ validate_complete_style_compliance() {
     ./mvnw checkstyle:check || return 1
     ./mvnw pmd:check || return 1
 
-    # Component 2: Manual style rules via style agent
+    # Component 2: Manual style rules via formatter agent
     echo "Validating manual style rules..."
     invoke_style_auditor_with_manual_detection_patterns || return 1
 
@@ -928,6 +919,69 @@ IF (audit-protocol-compliance skill returns FAILED):
 | **REVIEW → AWAITING_USER_APPROVAL** | Unanimous approval | All agents approved, no violations found |
 | **AWAITING_USER_APPROVAL → COMPLETE** | User approved | User approval flag exists, ready to merge |
 | **COMPLETE → CLEANUP** | Merge complete | Atomic commit: task + todo.md + changelog.md merged to main |
+
+### COMPLETE → CLEANUP Transition {#complete-cleanup-transition}
+
+**Trigger**: After successfully merging task to main branch with squash merge
+
+**Timing**: Execute CLEANUP immediately after COMPLETE state merge is verified on main
+
+**Transition Criteria**:
+- ✅ Task branch squash merged to main (`git merge --squash`)
+- ✅ Atomic commit created (task + todo.md + changelog.md)
+- ✅ Build verification passed on main branch
+- ✅ Module exists in main branch (for implementation tasks)
+
+**CLEANUP Execution Sequence**:
+
+```bash
+# Step 1: Verify merge to main completed
+cd /workspace/main
+git log -1 --oneline  # Should show task merge commit
+
+# Step 2: Transition task state to CLEANUP
+jq '.state = "CLEANUP" | .cleanup_timestamp = now | toISO8601' \
+  /workspace/tasks/{task-name}/task.json > /tmp/task.json.tmp
+mv /tmp/task.json.tmp /workspace/tasks/{task-name}/task.json
+
+# Step 3: Remove all worktrees
+git worktree remove /workspace/tasks/{task-name}/code
+for agent_dir in /workspace/tasks/{task-name}/agents/*/code; do
+  [ -d "$agent_dir" ] && git worktree remove --force "$agent_dir"
+done
+
+# Step 4: Delete ALL task branches
+git branch -D {task-name}
+git branch | grep "^  {task-name}-" | xargs -r git branch -D
+
+# Step 5: Verify cleanup complete
+git branch | grep "{task-name}" || echo "✅ All task branches deleted"
+git worktree list | grep "{task-name}" || echo "✅ All worktrees removed"
+
+# Step 6: Create archival marker (if not exists)
+[ -f /workspace/tasks/{task-name}/archival-complete.flag ] || \
+  touch /workspace/tasks/{task-name}/archival-complete.flag
+```
+
+**What Gets Deleted**:
+- Task branch (`{task-name}`)
+- All agent branches (`{task-name}-architect`, `{task-name}-engineer`, `{task-name}-formatter`)
+- Task worktree (`/workspace/tasks/{task-name}/code/`)
+- All agent worktrees (`/workspace/tasks/{task-name}/agents/*/code/`)
+
+**What Gets Preserved**:
+- Task directory (`/workspace/tasks/{task-name}/`) with audit files
+- `task.json` (with CLEANUP state)
+- `task.md` (requirements and plans)
+- Approval flags (user-approved-synthesis.flag, user-approved-changes.flag, archival-complete.flag)
+- Agent requirement reports (*-requirements.md)
+- Task is already in changelog.md (added during COMPLETE merge)
+- Task is already removed from todo.md (removed during COMPLETE merge)
+
+**Common Mistake**:
+❌ Forgetting to execute CLEANUP after COMPLETE
+- Result: Task branches accumulate
+- Fix: Execute CLEANUP sequence manually or via `/cleanup-task {task-name}` command
 
 ### Automated Protocol Enforcement {#automated-protocol-enforcement}
 
@@ -1956,8 +2010,8 @@ Result:
 **Example: Attempting to Add Agent During REVIEW (PROHIBITED)**
 
 ```markdown
-Scenario: During REVIEW, test rejects due to insufficient test coverage.
-Main agent considers adding additional test agent.
+Scenario: During REVIEW, tester rejects due to insufficient test coverage.
+Main agent considers adding additional tester agent.
 
 Decision: PROHIBITED
 
@@ -2180,10 +2234,10 @@ Recovery:
 2. Verify lock state = "REQUIREMENTS"
 3. Check agent status:
    - architect: COMPLETE (has requirements.md)
-   - quality: COMPLETE (has requirements.md)
-   - style: COMPLETE (has requirements.md)
-   - build: NOT STARTED
-   - test: NOT STARTED
+   - engineer: COMPLETE (has requirements.md)
+   - formatter: COMPLETE (has requirements.md)
+   - builder: NOT STARTED
+   - tester: NOT STARTED
    - security: NOT STARTED
    - performance: NOT STARTED
 4. Action: Invoke 4 incomplete agents in parallel
@@ -2270,7 +2324,7 @@ verify_agent_completion() {
 
 # Usage: Verify all agents before SYNTHESIS transition
 ALL_COMPLETE=true
-for agent in architect quality style build test security performance; do
+for agent in architect engineer formatter builder tester security performance; do
     if ! verify_agent_completion "${TASK_NAME}" "$agent"; then
         ALL_COMPLETE=false
     fi
@@ -3217,8 +3271,8 @@ task branch
 
 **Requirements Phase Tiers (REQUIREMENTS → SYNTHESIS)**:
 - **Tier 1 (Highest)**: architect - Final say on architecture decisions
-- **Tier 2**: quality, security - Override lower tiers on domain issues
-- **Tier 3**: style, performance, test, usability
+- **Tier 2**: engineer, security - Override lower tiers on domain issues
+- **Tier 3**: formatter, performance, tester, usability
 
 **Tier Usage**: Tiers break decision deadlocks when agents disagree during requirements negotiation. Explicit
 escalation path: Tier 3 → Tier 2 → Tier 1.
@@ -3314,12 +3368,12 @@ Round 1:
 ├─ architect: Review → REJECTED (ambiguous contracts)
 ├─ architect: Fix contracts → merge
 ├─ architect: Review → APPROVED ✓
-├─ quality: Apply refactoring → merge
-├─ quality: Review → APPROVED ✓
-├─ style: Apply style rules → merge
-├─ style: Review → REJECTED (12 violations)
-├─ style: Fix violations → merge
-├─ style: Review → APPROVED ✓
+├─ engineer: Apply refactoring → merge
+├─ engineer: Review → APPROVED ✓
+├─ formatter: Apply style rules → merge
+├─ formatter: Review → REJECTED (12 violations)
+├─ formatter: Fix violations → merge
+├─ formatter: Review → APPROVED ✓
 └─ All agents: Update status.json {"status": "COMPLETE", "decision": "APPROVED"}
 
 Transition to VALIDATION (all reviewers APPROVED, all status COMPLETE)
@@ -3377,10 +3431,11 @@ For agents in implementation mode:
 Agent (implementation mode) after merging:
 ```bash
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
-cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
+cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
 {
-  "agent": "{AGENT}-updater",
+  "agent": "{AGENT}",
   "task": "{TASK}",
+  "mode": "implementation",
   "status": "COMPLETE",
   "work_remaining": "none",
   "round": ${CURRENT_ROUND},
@@ -3390,13 +3445,14 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
 EOF
 ```
 
-Agent (review mode) after reviewing:
+Agent in REQUIREMENTS/VALIDATION mode after reviewing:
 ```bash
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
-cat > /workspace/tasks/{TASK}/agents/{AGENT}-reviewer/status.json <<EOF
+cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
 {
-  "agent": "{AGENT}-reviewer",
+  "agent": "{AGENT}",
   "task": "{TASK}",
+  "mode": "validation",
   "status": "COMPLETE",
   "decision": "APPROVED",
   "work_remaining": "none",
@@ -3409,52 +3465,52 @@ EOF
 
 **Validation Transition Trigger**:
 
-Main agent checks all REVIEWER agent statuses before proceeding to VALIDATION:
+Main agent checks all stakeholder agent statuses (in VALIDATION mode) before proceeding to VALIDATION state:
 ```bash
-check_all_reviewers_approved() {
+check_all_validation_agents_approved() {
     TASK=$1
     shift
-    REVIEWERS=("$@")
+    AGENTS=("$@")
 
-    # Check all agents in review mode for APPROVED status
-    for reviewer in "${REVIEWERS[@]}"; do
-        STATUS_FILE="/workspace/tasks/$TASK/agents/$reviewer/status.json"
+    # Check all agents in validation mode for APPROVED status
+    for agent in "${AGENTS[@]}"; do
+        STATUS_FILE="/workspace/tasks/$TASK/agents/$agent/status.json"
 
         # Verify status file exists
         [ ! -f "$STATUS_FILE" ] && {
-            echo "Reviewer $reviewer: status file missing"
+            echo "Agent $agent: status file missing"
             return 1
         }
 
-        # Check reviewer status and decision
+        # Check agent status and decision
         STATUS=$(jq -r '.status' "$STATUS_FILE")
         DECISION=$(jq -r '.decision' "$STATUS_FILE")
         WORK=$(jq -r '.work_remaining' "$STATUS_FILE")
 
         [ "$STATUS" != "COMPLETE" ] && {
-            echo "Reviewer $reviewer: status=$STATUS (not COMPLETE)"
+            echo "Agent $agent: status=$STATUS (not COMPLETE)"
             return 1
         }
 
         [ "$DECISION" != "APPROVED" ] && {
-            echo "Reviewer $reviewer: decision=$DECISION (not APPROVED)"
+            echo "Agent $agent: decision=$DECISION (not APPROVED)"
             return 1
         }
 
         [ "$WORK" != "none" ] && {
-            echo "Reviewer $reviewer: work_remaining=$WORK"
+            echo "Agent $agent: work_remaining=$WORK"
             return 1
         }
     done
 
-    echo "All reviewers report COMPLETE with APPROVED decision"
+    echo "All validation agents report COMPLETE with APPROVED decision"
     return 0
 }
 
-# Usage - check REVIEWER agents (not updaters)
-REVIEWERS=("architect" "quality" "style" "test")
-if check_all_reviewers_approved "implement-feature-x" "${REVIEWERS[@]}"; then
-    echo "✅ All all reviews approved - transitioning to VALIDATION state"
+# Usage - check stakeholder agents in VALIDATION mode
+VALIDATION_AGENTS=("architect" "engineer" "formatter" "tester")
+if check_all_validation_agents_approved "implement-feature-x" "${VALIDATION_AGENTS[@]}"; then
+    echo "✅ All validation agents approved - transitioning to VALIDATION state"
     transition_to_validation
 else
     echo "⏳ Continuing implementation rounds (reviewers have feedback or work pending)"
@@ -3573,11 +3629,11 @@ check_agent_needs_reinvocation() {
 **Agent Implementation Scope**:
 - Each agent implements ONLY their domain requirements
 - architect: Core implementation (src/main/java)
-- test: Test files (src/test/java)
-- style: Style configs and fixes
+- tester: Test files (src/test/java)
+- formatter: Style configs and fixes
 - security: Security features and validation
 - performance: Performance optimizations
-- quality: Refactoring and best practices
+- engineer: Refactoring and best practices
 - usability: UX improvements and documentation
 
 **Merge Conflict Resolution**:
@@ -3636,7 +3692,7 @@ PROHIBITED:
 ### IMPLEMENTATION → VALIDATION {#implementation-validation}
 **Mandatory Conditions:**
 - [ ] All implementation rounds completed
-- [ ] **🚨 CRITICAL: All REVIEWER agents report APPROVED decision**
+- [ ] **🚨 CRITICAL: All stakeholder agents in VALIDATION mode report APPROVED decision**
 - [ ] All agents in implementation mode have merged changes to task branch
 - [ ] All planned deliverables created in task branch
 - [ ] Implementation follows synthesis architecture plan
@@ -3716,9 +3772,9 @@ Implement FormattingRule system
 
 Contributing agents:
 - architect: Core interface design
-- quality: Design pattern application
-- style: Code style compliance
-- test: Test suite implementation
+- engineer: Design pattern application
+- formatter: Code style compliance
+- tester: Test suite implementation
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
@@ -3726,8 +3782,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```
-
-**Rationale**: Agent-attributed commits provide verifiable audit trail that multi-agent protocol was followed, not main-agent direct implementation.
 
 ### VALIDATION → REVIEW (Conditional Path) {#validation-review-conditional-path}
 
@@ -3817,7 +3871,6 @@ else
 fi
 ```
 
-**Rationale**: Uncommitted validation fixes will NOT be included in task branch merge to main, causing build failures after integration despite passing in VALIDATION state.
   - Other quality gates (PMD, checkstyle, etc.)
 - [ ] All quality gates show actual execution timestamps (not cache restoration)
 - [ ] Build output explicitly shows analysis results (not "restored from cache")

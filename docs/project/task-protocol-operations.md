@@ -313,16 +313,16 @@ Task tool (test), model: haiku, prompt: "Implement comprehensive test suite per 
 Agents have merged to task branch. Launching agents in review mode for parallel validation.
 
 Task tool (architect), model: sonnet, prompt: "Review merged architecture on task branch for completeness"
-Task tool (quality), model: sonnet, prompt: "Review merged code quality on task branch"
-Task tool (style), model: sonnet, prompt: "Review merged style compliance on task branch"
-Task tool (test), model: sonnet, prompt: "Review merged test coverage and quality on task branch"
+Task tool (engineer), model: sonnet, prompt: "Review merged code quality on task branch"
+Task tool (formatter), model: sonnet, prompt: "Review merged style compliance on task branch"
+Task tool (tester), model: sonnet, prompt: "Review merged test coverage and quality on task branch"
 ```
 
 **Round 2 - Apply Review Feedback (if rejections):**
 ```
 Reviews identified issues. Launching agents in implementation mode to fix.
 
-Task tool (style), model: haiku, prompt: "Fix 12 style violations identified in review"
+Task tool (formatter), model: haiku, prompt: "Fix 12 style violations identified in review"
 Task tool (architect), model: haiku, prompt: "Clarify interface contracts per review feedback"
 ```
 
@@ -330,7 +330,7 @@ Task tool (architect), model: haiku, prompt: "Clarify interface contracts per re
 ```
 Agents have merged fixes. Re-launching agents in review mode to verify.
 
-Task tool (style), model: sonnet, prompt: "Re-review style compliance on task branch"
+Task tool (formatter), model: sonnet, prompt: "Re-review style compliance on task branch"
 Task tool (architect), model: sonnet, prompt: "Re-review architecture fixes on task branch"
 ```
 
@@ -418,7 +418,7 @@ abc123d [architect] Add FormattingRule interface hierarchy
 **Verification Commands**:
 ```bash
 # Count agent commits to verify multi-agent implementation
-git log --oneline task-branch | grep -c '\[.*-updater\]'
+git log --oneline task-branch | grep -E '\[(architect|engineer|formatter|tester|builder)\]' | wc -l
 # Expected: 3+ (at least 3 different agents contributed)
 
 # List all contributing agents
@@ -455,7 +455,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - All commits by "main agent" or generic "Claude" attribution
 - Commits hours apart (suggests sequential, not parallel)
 - No agent names in commit messages
-- Commit messages don't identify which domain (architecture/quality/style/test)
+- Commit messages don't identify which domain (architecture/engineer/formatter/tester)
 
 **Green Flags - Compliant Implementation**:
 - 3+ commits with agent-specific attribution
@@ -991,17 +991,22 @@ recovery needed.
 
 **Phase 3: Worktree Removal (MUST succeed before lock removal)**
 - [ ] Remove all agent worktrees (with error handling, no silent failures)
-- [ ] Remove all agent branches
+- [ ] Remove all agent branches (use -D force delete, squash makes them unreachable)
 - [ ] Remove task worktree
-- [ ] Remove task branch
+- [ ] Remove task branch (use -D force delete)
 - [ ] Verify removal: `git worktree list | grep {TASK}` returns empty
 
-**Phase 4: Lock and Directory Removal (ONLY after Phase 3 succeeds)**
+**Phase 4: Garbage Collection (MANDATORY after squash merge)**
+- [ ] Run `git gc --prune=now` to remove orphaned commits from squash merge
+- [ ] Rationale: Squash merge creates new commit on main, original task commits become unreferenced
+- [ ] Without garbage collection, orphaned commits persist indefinitely
+
+**Phase 5: Lock and Directory Removal (ONLY after Phases 3-4 succeed)**
 - [ ] Remove lock file: `rm /workspace/tasks/{TASK}/task.json`
 - [ ] Remove entire task directory: `rm -rf /workspace/tasks/{TASK}`
 - [ ] Verify removal: `[ ! -d /workspace/tasks/{TASK} ]`
 
-**Phase 5: Temporary File Cleanup**
+**Phase 6: Temporary File Cleanup**
 - [ ] Remove temporary files (if any)
 - [ ] Archive state.json file (if needed for audit trail)
 
@@ -1039,7 +1044,7 @@ git worktree list | grep "/workspace/tasks/{TASK_NAME}/code" && {
 # IMPORTANT: Replace {AGENT_LIST} with space-separated list of agent names
 
 # Step 1: Verify all agents reached COMPLETE status
-AGENTS="{AGENT_LIST}"  # e.g., "architect quality style security"
+AGENTS="{AGENT_LIST}"  # e.g., "architect engineer formatter security"
 for agent in $AGENTS; do
   STATUS=$(jq -r '.status' "/workspace/tasks/{TASK_NAME}/agents/$agent/status.json" 2>/dev/null || echo "MISSING")
   if [ "$STATUS" != "COMPLETE" ]; then
@@ -1094,18 +1099,25 @@ done
 
 # Step 6: Remove task worktree and branch
 git worktree remove /workspace/tasks/{TASK_NAME}/code --force
-git branch -d {TASK_NAME}
+git branch -D {TASK_NAME}  # Use -D: squash merge makes branch unreachable from main
 
-# Step 7: Remove lock file (ONLY after worktrees successfully removed)
+# Step 7: MANDATORY - Garbage collect orphaned commits from squash merge
+# Why: git merge --squash creates new commit on main, leaving original task commits unreferenced
+# Without gc, these orphaned commits persist indefinitely
+echo "Running garbage collection to remove orphaned commits..."
+git gc --prune=now
+echo "✅ Orphaned commits removed"
+
+# Step 8: Remove lock file (ONLY after worktrees successfully removed)
 rm -f /workspace/tasks/{TASK_NAME}/task.json
 
-# Step 8: Remove entire task directory
+# Step 9: Remove entire task directory
 rm -rf /workspace/tasks/{TASK_NAME}
 
-# Step 9: Temporary file cleanup
+# Step 10: Temporary file cleanup
 TEMP_DIR=$(cat .temp_dir 2>/dev/null) && [ -n "$TEMP_DIR" ] && rm -rf "$TEMP_DIR"
 
-echo "✅ CLEANUP complete: All worktrees and branches removed"
+echo "✅ CLEANUP complete: All worktrees, branches, and orphaned commits removed"
 ```
 
 **Example for task "refactor-line-wrapping-architecture" with agents "architect quality
@@ -1134,7 +1146,7 @@ rm -f /workspace/tasks/refactor-line-wrapping-architecture/task.json
 
 # Remove all agent worktrees and branches
 # 🚨 SHELL REQUIREMENT: Execute in bash (not sh/dash)
-AGENTS="architect quality style"
+AGENTS="architect engineer formatter"
 
 # Variable $AGENTS MUST be UNQUOTED in the for loop
 for agent in $AGENTS; do
@@ -1146,12 +1158,17 @@ done
 
 # Remove task worktree and branch
 git worktree remove /workspace/tasks/refactor-line-wrapping-architecture/code --force
-git branch -d refactor-line-wrapping-architecture
+git branch -D refactor-line-wrapping-architecture  # Use -D: squash makes branch unreachable
+
+# MANDATORY: Garbage collect orphaned commits from squash merge
+echo "Running garbage collection to remove orphaned commits..."
+git gc --prune=now
+echo "✅ Orphaned commits removed"
 
 # Remove entire task directory
 rm -rf /workspace/tasks/refactor-line-wrapping-architecture
 
-echo "✅ CLEANUP complete: All worktrees and branches removed"
+echo "✅ CLEANUP complete: All worktrees, branches, and orphaned commits removed"
 ```
 
 ## TRANSITION VALIDATION FUNCTIONS {#transition-validation-functions}
@@ -1305,20 +1322,6 @@ validate_state_transition() {
 - **VALIDATION → SYNTHESIS**: Build failure triggers plan revision
 - **REVIEW → SCOPE_NEGOTIATION**: Scope too large, need to negotiate
 - **SCOPE_NEGOTIATION → SYNTHESIS**: Scope reduced, need to re-plan
-
-**Why Some Transitions Are Irreversible**:
-
-1. **Resource Commitment**: Worktrees created, locks acquired (INIT → CLASSIFIED)
-2. **User Approval Obtained**: User approved plan, cannot un-approve (SYNTHESIS → IMPLEMENTATION)
-3. **Work Committed**: Changes merged to main branch (COMPLETE → CLEANUP)
-4. **Evidence Gathered**: Requirements documented, agents invoked (CLASSIFIED → REQUIREMENTS)
-5. **Validation Passed**: Quality gates passed, moving forward (VALIDATION → REVIEW)
-
-**Why Some Transitions Are Reversible**:
-
-1. **Issue Discovery**: Problems found that require earlier state revisit (VALIDATION → SYNTHESIS)
-2. **Rejection Feedback**: Agents reject, need plan revision (IMPLEMENTATION → SYNTHESIS)
-3. **Scope Management**: Scope too large, negotiate and re-plan (REVIEW → SCOPE_NEGOTIATION → SYNTHESIS)
 
 **Decision Logic: Can I Go Back?**
 
@@ -2192,7 +2195,7 @@ recover_build_failure_partial_implementation() {
 
     # Step 1: Identify which merges succeeded
     echo "Analyzing git log for merged agent work..."
-    git log --oneline -20 | grep -E "(architect|code-quality|style)"
+    git log --oneline -20 | grep -E "(architect|engineer|formatter)"
 
     # Step 2: Run build to get specific error details
     echo "Running build to identify specific failures..."

@@ -4,8 +4,6 @@
 > **Audience:** Main coordination agent only
 > **Purpose:** Task protocol, lock management, approval checkpoints, and coordination patterns
 
-Main-agent-specific content covering task protocol coordination, lock ownership, worktree management, agent invocation, approval checkpoints, and performance optimization.
-
 **Sub-agents**: Read `task-protocol-agents.md` instead.
 
 ## 🚨 SOURCE CODE CREATION DECISION TREE {#source-code-creation}
@@ -299,6 +297,44 @@ Bash: ./mvnw clean verify -pl formatter
 
 **Working Directory**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
 
+### Fail-Fast Validation Pattern {#fail-fast-validation-pattern}
+
+**RECOMMENDED**: Validate after each agent merge, not after all implementation complete.
+
+**Why**: Validation with fresh context is 20% faster than late validation.
+
+**Evidence**: Session 3fa4e964-9cf2-4116-99ea-7a347b498a41 (implement-formatter-api) found 22 Checkstyle violations late, requiring 11 fix iterations. Early validation would have caught issues while agent context was still fresh.
+
+**Pattern**:
+
+```bash
+# After merging first agent (architect)
+cd /workspace/tasks/{task}/code
+git merge {task}-architect
+
+# Validate immediately (fresh context)
+./mvnw checkstyle:check -pl :{module-name}
+
+# Fix any violations NOW (context still fresh)
+# Fixes are 20% faster with agent work fresh in memory
+
+# Proceed to next agent
+git merge {task}-engineer
+
+# Validate immediately again
+./mvnw checkstyle:check -pl :{module-name}
+
+# Continue pattern for all agents
+```
+
+**Benefits**:
+- 20% faster fixes (fresh context)
+- Earlier error detection prevents cascading issues
+- Violations attributed to specific agent (easier to diagnose)
+- Reduced cognitive load (fixing small batches vs large batch at end)
+
+**Hook Support**: `post-tool-use-task-complete.sh` hook provides automatic reminder when agent completes.
+
 ### Session Summary Documentation Requirements {#session-summary-documentation-requirements}
 
 When presenting implementation work for protocol compliance review, session summaries MUST include:
@@ -402,22 +438,22 @@ When presenting implementation work for protocol compliance review, session summ
 ```markdown
 CORRECT SEQUENCE:
 1. User approves implementation plan
-2. Main agent: "Launching agents in implementation mode for parallel implementation..."
-3. Main agent launches UPDATER agents in SINGLE MESSAGE (parallel):
+2. Main agent: "Launching stakeholder agents in implementation mode for parallel implementation..."
+3. Main agent launches stakeholder agents in IMPLEMENTATION mode in SINGLE MESSAGE (parallel):
    - Task tool (architect): "Implement FormattingRule interfaces per requirements..."
-   - Task tool (quality): "Apply refactoring and design patterns per requirements..."
-   - Task tool (style): "Implement code following project style guidelines..."
-   - Task tool (test): "Implement test suite per test strategy..."
+   - Task tool (engineer): "Apply refactoring and design patterns per requirements..."
+   - Task tool (formatter): "Implement code following project style guidelines..."
+   - Task tool (tester): "Implement test suite per test strategy..."
 4. Agents in implementation mode implement in THEIR worktrees, validate locally, then merge to task branch
-5. Main agent: "Updaters have merged. Launching agents in review mode for parallel review..."
-6. Main agent launches REVIEWER agents in SINGLE MESSAGE (parallel):
+5. Main agent: "Implementation agents have merged. Launching stakeholder agents in validation mode for parallel review..."
+6. Main agent launches stakeholder agents in VALIDATION mode in SINGLE MESSAGE (parallel):
    - Task tool (architect): "Review merged architecture on task branch..."
-   - Task tool (quality): "Review merged code quality on task branch..."
-   - Task tool (style): "Review merged style compliance on task branch..."
-   - Task tool (test): "Review merged test coverage on task branch..."
-7. Agents in review mode analyze and report APPROVED or REJECTED with feedback
+   - Task tool (engineer): "Review merged code quality on task branch..."
+   - Task tool (formatter): "Review merged style compliance on task branch..."
+   - Task tool (tester): "Review merged test coverage on task branch..."
+7. Agents in validation mode analyze and report APPROVED or REJECTED with feedback
 8. If any REJECTED → launch agents in implementation mode with feedback → re-review (repeat 5-7 until all APPROVED)
-9. When ALL reviewers report APPROVED → main agent updates lock file: state = "VALIDATION"
+9. When ALL validation agents report APPROVED → main agent updates lock file: state = "VALIDATION"
 10. Main agent NOW PERMITTED to fix minor issues (style violations, imports, etc.)
 11. Main agent runs final build verification: ./mvnw verify
 12. If build passes → proceed to REVIEW state
@@ -439,19 +475,44 @@ CORRECT SEQUENCE:
 18. After user approves, create flag: `touch /workspace/tasks/{task-name}/user-approval-obtained.flag`
 19. Transition to COMPLETE state (hook will verify flag exists)
 19. **Pre-Merge Validation** (MANDATORY):
+
+    > 🚨 **CRITICAL GIT WORKFLOW VIOLATION PATTERN**
+    >
+    > **NEVER merge task branch without verifying exactly 1 commit**
+    >
+    > **Common Mistake**: Skipping validation → merging with 12+ commits → polluted main history
+    >
+    > **Requirement**: Task branch MUST have EXACTLY 1 commit before merge
+    >
+    > **Audit Finding**: Merging without squashing is a CRITICAL protocol violation
+
     ```bash
-    # Verify task branch has exactly 1 commit
+    # Step 19a: ALWAYS verify task branch has exactly 1 commit
     .claude/hooks/pre-task-merge-check.sh <task-branch> main
 
-    # If validation fails (>1 commit), squash before merge:
+    # Step 19b: If validation fails (>1 commit), squash ALL commits before merge:
     cd /workspace/main
     git checkout <task-branch>
     git reset --soft main
     git commit -m "Squashed task implementation"
 
-    # Re-run validation to confirm
+    # Step 19c: MANDATORY re-validation to confirm squash succeeded
     .claude/hooks/pre-task-merge-check.sh <task-branch> main
+    # MUST output: "✅ Task branch ready for merge: 1 commit"
     ```
+
+    **VERIFICATION CHECKPOINT**:
+    ```bash
+    # Verify commit count BEFORE proceeding to step 20
+    COMMIT_COUNT=$(git rev-list --count main..<task-branch>)
+    if [ "$COMMIT_COUNT" -ne 1 ]; then
+      echo "❌ VIOLATION: Cannot proceed - task branch has $COMMIT_COUNT commits (expected 1)"
+      echo "📖 See git-workflow.md § Task Branch Squashing for squash procedure"
+      exit 1
+    fi
+    echo "✅ Pre-merge validation PASSED: Exactly 1 commit on task branch"
+    ```
+
 20. **Merge to main with atomic documentation update** (MANDATORY - all changes in single commit):
     ```bash
     # Step 20a: Merge task branch to main
@@ -486,8 +547,78 @@ CORRECT SEQUENCE:
     # RESULT: Two commits instead of one atomic unit
     ```
 
-    **Rationale**: Atomic commits ensure task completion is indivisible - the task implementation and its documentation update happen together, preventing incomplete state where task is merged but documentation is stale.
-21. Transition to CLEANUP state
+21. **Transition to CLEANUP state** (AUTOMATIC - Execute Immediately):
+
+    > 🚨 **CRITICAL CLEANUP VIOLATION PATTERN**
+    >
+    > **NEVER wait or prompt user after COMPLETE - cleanup is AUTOMATIC**
+    >
+    > **Common Mistake**: Transitioning to COMPLETE → waiting for user prompt → user reminds about cleanup
+    >
+    > **Requirement**: CLEANUP MUST happen IMMEDIATELY after step 20 (merge to main)
+    >
+    > **Audit Finding**: Missing automatic cleanup is a CRITICAL protocol violation
+
+    **MANDATORY CLEANUP CHECKLIST** (execute ALL steps without pausing):
+
+    ```bash
+    # Step 21a: Transition to CLEANUP state
+    cd /workspace/main
+    jq '.state = "CLEANUP"' /workspace/tasks/{task-name}/task.json > /tmp/task.json.tmp
+    mv /tmp/task.json.tmp /workspace/tasks/{task-name}/task.json
+
+    # Step 21b: MANDATORY - Exit to main worktree BEFORE removing task worktree
+    # (Git cannot remove worktree while you are inside it)
+    cd /workspace/main
+    pwd | grep -q '/workspace/main$' || { echo "❌ Not in main worktree"; exit 1; }
+
+    # Step 21c: Remove task worktree
+    git worktree remove /workspace/tasks/{task-name}/code
+
+    # Step 21d: Remove ALL agent worktrees (if they exist)
+    for agent_dir in /workspace/tasks/{task-name}/agents/*/code; do
+      if [ -d "$agent_dir" ]; then
+        git worktree remove "$agent_dir" 2>/dev/null || true
+      fi
+    done
+
+    # Step 21e: Delete ALL task-related branches
+    # CRITICAL: Use -D (force delete) because squash merge makes branches unreachable
+    git branch -D {task-name} 2>/dev/null || true
+    git branch | grep "^  {task-name}-" | xargs -r git branch -D
+
+    # Step 21f: Verify complete branch cleanup
+    if git branch | grep -q "{task-name}"; then
+      echo "❌ VIOLATION: Task branches still exist after CLEANUP"
+      git branch | grep "{task-name}"
+      exit 1
+    fi
+
+    # Step 21g: Garbage collect unreferenced commits from squash merge
+    echo "Running garbage collection to remove orphaned commits from squash merge..."
+    git gc --prune=now
+    echo "✅ Orphaned commits from squash merge removed"
+
+    # Step 21h: Remove task directory (preserves audit trail if enabled)
+    rm -rf /workspace/tasks/{task-name}
+
+    # Step 21i: VERIFICATION - Confirm complete cleanup
+    echo "✅ CLEANUP complete:"
+    echo "   - Task worktree removed"
+    echo "   - Agent worktrees removed"
+    echo "   - All task branches deleted"
+    echo "   - Orphaned commits garbage collected"
+    echo "   - Task directory removed"
+    ```
+
+    **CRITICAL REQUIREMENTS**:
+    - ✅ Execute IMMEDIATELY after step 20 (no user prompt, no delay)
+    - ✅ Execute ALL cleanup steps in sequence
+    - ✅ Run garbage collection after deleting branches to remove orphaned commits
+    - ✅ Verify cleanup succeeded before finishing
+    - ❌ NEVER skip cleanup steps
+    - ❌ NEVER wait for user confirmation to cleanup
+
 ```
 
 **CRITICAL**: Steps 14-18 are MANDATORY and CANNOT be skipped. The sequence REVIEW → AWAITING_USER_APPROVAL → COMPLETE → CLEANUP is REQUIRED.
@@ -567,8 +698,6 @@ Main agent Edit/Write tool permissions vary by state.
 - Test implementation files (e.g., `*Test.java`, `*Tests.java`)
 - Feature implementation or functionality
 
-**Rationale**: INIT prepares infrastructure for agents to implement features.
-
 #### IMPLEMENTATION State {#implementation-state-permissions}
 
 ❌ **PROHIBITED** (Main Agent):
@@ -580,8 +709,6 @@ Main agent Edit/Write tool permissions vary by state.
 - Full source file creation in agent worktrees
 - Test implementation
 - Feature development
-
-**Rationale**: Clear separation of coordination (main agent) vs implementation (stakeholder agents).
 
 #### VALIDATION State {#validation-state-permissions}
 
@@ -596,8 +723,6 @@ Main agent Edit/Write tool permissions vary by state.
 - Architectural changes
 - High-volume style fixes (> 5 violations)
 - Test logic modifications
-
-**Rationale**: Main agent fixes integration issues, not missing features.
 
 **VALIDATION State Exit Requirements**:
 1. ✅ All quality gates pass (checkstyle, PMD, build)
@@ -646,6 +771,47 @@ A fix is 'mechanical' if ALL criteria met:
 - ❌ NOT Mechanical: Resolve checkstyle violation by refactoring method (design decision)
 - ❌ NOT Mechanical: Add null check to prevent NPE (requires understanding control flow)
 
+**Real-World Example: Missing Module Dependency (implement-formatter-api)** {#real-world-example-missing-module-dependency}
+
+**Situation**: Agent (architect) referenced AST types (NodeIndex, NodeArena) from ast-core module, but that module doesn't exist yet in the codebase (planned for future phase).
+
+**Build Error**:
+```
+[ERROR] cannot find symbol: class NodeIndex
+[ERROR] package io.github.cowwoc.styler.ast.core does not exist
+```
+
+**Main Agent Decision** (during VALIDATION state):
+1. **Infrastructure Fix**: Removed `requires io.github.cowwoc.styler.ast.core;` from module-info.java ✅ (always allowed)
+2. **Source File Fix**: Changed `NodeIndex` type references to `Object` as temporary placeholders ✅ (mechanical - no logic change)
+3. **Rationale**: This is a build infrastructure issue caused by missing dependency, not a logic error in agent's implementation
+
+**Why This Was Correct**:
+- Fix is mechanical: Simple type substitution (NodeIndex → Object)
+- No domain expertise required: Obvious workaround for missing module
+- Agent's logic was sound: They correctly identified what types were needed
+- Alternative (re-invoke architect): Would cause excessive rework for trivial type placeholders
+
+**Real-World Example: Incorrect Import Path (implement-formatter-api)** {#real-world-example-incorrect-import-path}
+
+**Situation**: Agent used incorrect package path for SecurityConfig import.
+
+**Build Error**:
+```
+[ERROR] package io.github.cowwoc.styler.security.api does not exist
+```
+
+**Correct Import Path**: `io.github.cowwoc.styler.security.SecurityConfig` (no `.api` subpackage)
+
+**Main Agent Decision** (during VALIDATION state):
+- **Source File Fix**: Changed import from `io.github.cowwoc.styler.security.api.SecurityConfig` to `io.github.cowwoc.styler.security.SecurityConfig` ✅
+
+**Why This Was Correct**:
+- Fix is mechanical: Simple path correction (remove `.api`)
+- No logic change: Same class, correct package path
+- Error message clearly identified the problem
+- Alternative (re-invoke architect): Wasteful for one-line import correction
+
 **After ALL agents report COMPLETE status, main agent discovers issues during VALIDATION:**
 
 ```
@@ -670,13 +836,6 @@ ELSE IF (issue_type == "test_failure"):
 ELSE IF (issue_type == "architecture_issue" OR "security_issue"):
     ❌ ALWAYS re-delegate to appropriate domain expert
 ```
-
-Re-launching agents for trivial fixes wastes 50-100 messages per round. Direct fixes for mechanical issues preserve protocol safety while maintaining efficiency.
-
-The '5 violation' threshold represents message cost efficiency:
-- Auto-fixing 5 violations: ~2-3 tool calls = 3-5 messages
-- Agent delegation: ~50-100 messages per round
-- Breakeven: When manual fixing approaches agent launch cost
 
 **Counting Rule**: Total violations across ALL files, ALL types combined.
 
@@ -1269,7 +1428,7 @@ Single Message:
 - **Savings: ~8,000 tokens (67% reduction) per agent invocation round**
 
 **When to Use Parallel Invocation**:
-- ✅ REQUIREMENTS phase: Launch all agents in review mode simultaneously (architecture, quality, style, test)
+- ✅ REQUIREMENTS phase: Launch all agents in review mode simultaneously (architect, engineer, formatter, tester)
 - ✅ IMPLEMENTATION phase: Launch all agents in implementation mode simultaneously when implementing parallel components
 - ✅ REVIEW phase: Launch all agents in review mode simultaneously for final validation
 - ❌ Do NOT parallelize agents with dependencies (e.g., architecture must complete before implementation)
@@ -1396,8 +1555,6 @@ cd /workspace/tasks/my-task/code
 # All components done
 ./mvnw verify   # Final validation: all quality gates
 ```
-
-**Rationale**: Validate at logical completion points to catch integration issues early while avoiding excessive build cycles.
 
 ### Parallel Execution Enforcement {#parallel-execution-enforcement}
 

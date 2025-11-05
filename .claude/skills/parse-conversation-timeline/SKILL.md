@@ -277,7 +277,7 @@ Compute aggregate statistics:
       "Read": 30
     },
     "state_transitions": 6,
-    "agents_invoked": ["architect", "quality", "style"],
+    "agents_invoked": ["architect", "engineer", "formatter"],
     "approval_checkpoints": {
       "after_synthesis": {
         "required": true,
@@ -309,19 +309,6 @@ Compute aggregate statistics:
 - ❌ Make recommendations (that's auditors' job)
 - ❌ Skip events to save tokens (timeline must be complete)
 - ❌ Interpret intent or make assumptions
-
-## Design Philosophy
-
-**Data parser, not a filter:**
-- This skill doesn't know what future auditors will need
-- Solution: Provide comprehensive structured timeline
-- Auditors query timeline for their specific needs
-- Adding new audit checks doesn't require updating this skill
-
-**Token Efficiency Through Structure:**
-- Raw conversation: 6MB (too large to analyze directly)
-- Pre-filtered facts: 10KB (too specific, not extensible)
-- Structured timeline: 100-300KB (comprehensive + efficient)
 
 ## Verification Checklist
 

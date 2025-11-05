@@ -13,9 +13,6 @@ Common patterns and requirements shared across all stakeholder agents.
 - **RESTRICTIONS**:
   - ABSOLUTELY FORBIDDEN to scan files outside context.md scope
   - No "related files", "dependency analysis", "architecture context gathering" outside scope
-  - Do NOT review the entire system
-  - Do NOT analyze files not mentioned in context.md
-  - Do NOT explore adjacent packages or modules unless explicitly listed
   - STOP IMMEDIATELY if attempting to access files outside authorized scope
 - **VERIFICATION**: Must include scope compliance verification in report
 
@@ -53,19 +50,17 @@ Before beginning analysis, agents MUST:
 
 4. **SCOPE VIOLATION CHECK**: If needing files NOT in context.md, STOP and report limitation
 
-5. **FORBIDDEN ACTIONS**: NEVER scan, read, or analyze files outside context.md scope
+5. Read ALL agent reports referenced in context.md to understand previous findings
 
-6. Read ALL agent reports referenced in context.md to understand previous findings
-
-7. **ARCHITECTURAL CONSTRAINT VERIFICATION**: Ensure recommendations align with:
+6. **ARCHITECTURAL CONSTRAINT VERIFICATION**: Ensure recommendations align with:
    - Stateless server architecture (docs/project/scope.md)
    - Client-side state management (docs/project/scope.md)
    - Java code formatter focus (docs/project/scope.md)
    - Prohibited technologies and patterns (docs/project/scope.md)
 
-8. After completing analysis, create detailed report using agent-report template
+7. After completing analysis, create detailed report using agent-report template
 
-9. Update context.md with summary and reference to your report
+8. Update context.md with summary and reference to your report
 
 ## 🗂️ TEMPORARY FILE MANAGEMENT
 
@@ -75,12 +70,7 @@ Before beginning analysis, agents MUST:
 # Get temporary directory (set up by task protocol)
 TEMP_DIR=$(cat .temp_dir 2>/dev/null || echo "/tmp/fallback-$$")
 
-# Use for agent-specific artifacts:
-# - Test data: "$TEMP_DIR/test_data_*.json"
-# - Analysis scripts: "$TEMP_DIR/analyze_*.sh"
-# - Benchmark data: "$TEMP_DIR/benchmark_*.log"
-# - Security test payloads: "$TEMP_DIR/payload_*.txt"
-# - Performance profiling: "$TEMP_DIR/profile_*.hprof"
+# Use for agent artifacts: test data, analysis scripts, benchmark data, security payloads, profiling
 ```
 
 **PROHIBITED**: Never create temporary files in:

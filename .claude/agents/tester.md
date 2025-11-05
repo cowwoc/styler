@@ -1,8 +1,8 @@
 ---
-name: test
+name: tester
 description: >
-  Analyzes code to identify business logic testing gaps, edge cases, and compliance validation needs. Can analyze
-  testing requirements (analysis mode) or implement tests (implementation mode) based on invocation instructions.
+  Improves test coverage by identifying and implementing tests for business logic gaps, edge cases, and compliance
+  validation needs. Can analyze testing requirements (analysis mode) or implement tests (implementation mode) based on invocation instructions.
 model: sonnet-4-5
 color: purple
 tools: Read, Write, Edit, Grep, Glob, LS, Bash
