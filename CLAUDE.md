@@ -333,37 +333,6 @@ cd /workspace/branches/main/code && git worktree remove /workspace/branches/{tas
 - Prevents accidental merges of unreviewed changes
 - Protects against misinterpreted user instructions
 
-### TodoWrite Checkpoint Task Requirement
-
-**MANDATORY PATTERN**: After REVIEW state completes with unanimous stakeholder approval, you MUST:
-
-1. **ADD** explicit "Wait for user approval" task to TodoWrite list
-2. **MARK** it as `in_progress` immediately
-3. **PRESENT** change summary to user
-4. **WAIT** for explicit user approval
-5. **ONLY THEN** mark approval task as `completed`
-6. **THEN** proceed to COMPLETE phase
-
-**Required TodoWrite Pattern:**
-```
-✅ Execute REVIEW phase - Stakeholder approval (completed)
-⏸️ **Wait for user review and approval of changes** (in_progress) ← EXPLICIT TASK
-⏸️ Execute COMPLETE phase - Merge to main (pending, blocked until above completes)
-⏸️ Execute CLEANUP phase (pending)
-```
-
-**Prohibited TodoWrite Pattern:**
-```
-✅ Execute REVIEW phase - Stakeholder approval
-⏩ Execute COMPLETE phase - Merge to main  ← MISSING checkpoint task
-```
-
-**Why This Works**:
-- Makes checkpoint explicit and visible in task tracking
-- Prevents autonomous skip from REVIEW → COMPLETE
-- Creates clear pause point requiring user interaction
-- Blocks subsequent phases until approval obtained
-
 ## 🚨 TASK UNAVAILABILITY HANDLING
 
 **CRITICAL**: When user requests "work on the next task" or similar, you MUST verify task availability before attempting to start any work.

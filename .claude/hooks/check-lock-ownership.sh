@@ -103,6 +103,77 @@ if [ ! -d "$TASK_WORKTREE" ]; then
   exit 0
 fi
 
+# Check for AWAITING_USER_APPROVAL checkpoint state
+if [ "$TASK_STATE" = "AWAITING_USER_APPROVAL" ]; then
+  # Extract checkpoint details
+  COMMIT_SHA=$(jq -r '.checkpoint.commit_sha // "unknown"' "$LOCK_FILE" 2>/dev/null)
+  CHECKPOINT_APPROVED=$(jq -r '.checkpoint.approved // false' "$LOCK_FILE" 2>/dev/null)
+
+  MESSAGE="## 🚨 CHECKPOINT ACTIVE - USER APPROVAL REQUIRED
+
+**Task**: \`$TASK_NAME\`
+**Current State**: \`AWAITING_USER_APPROVAL\` ⏸️
+**Lock File**: \`$LOCK_FILE\`
+**Worktree**: \`$TASK_WORKTREE\`
+**Commit Presented**: \`$COMMIT_SHA\`
+**Approval Status**: \`$CHECKPOINT_APPROVED\`
+
+## ⚠️ CRITICAL - MANDATORY USER APPROVAL CHECKPOINT
+
+The implementation has been completed and changes have been committed.
+**YOU ARE AT CHECKPOINT 2** - This state exists because:
+1. All stakeholder agents returned ✅ APPROVED
+2. Implementation commit was created with SHA: \`$COMMIT_SHA\`
+3. Changes were presented to user for review
+4. **WAITING FOR USER APPROVAL** before proceeding to merge
+
+## 🔴 REQUIRED ACTION - DO NOT BYPASS
+
+**You MUST:**
+1. Navigate to task worktree: \`cd $TASK_WORKTREE\`
+2. Show the commit to remind user: \`git show --stat $COMMIT_SHA\`
+3. Show the diff: \`git diff ${COMMIT_SHA}~1 $COMMIT_SHA\`
+4. Present implementation summary to user
+5. **WAIT for explicit user approval** (\"Approved\", \"LGTM\", \"Proceed\")
+
+**PROHIBITED:**
+❌ Proceeding to COMPLETE state without user approval
+❌ Assuming \"continue\" means approval
+❌ Bypassing checkpoint because agent approvals exist
+❌ Interpreting silence as approval
+❌ Treating bypass mode as checkpoint override
+
+## 🛑 ENFORCEMENT
+
+This checkpoint is **MANDATORY REGARDLESS** of:
+- Bypass mode settings
+- Automation mode
+- User instructions to \"continue\" or \"finish\"
+- Previous context or conversation
+
+**ONLY explicit approval words allow Phase 7 transition:**
+✅ \"Approved\" / \"LGTM\" / \"Looks good\" / \"Proceed\" / \"Yes, merge it\"
+
+## Navigation Commands
+
+\`\`\`bash
+cd $TASK_WORKTREE
+git show --stat $COMMIT_SHA
+git diff ${COMMIT_SHA}~1 $COMMIT_SHA
+\`\`\`"
+
+  jq -n \
+    --arg event "SessionStart" \
+    --arg context "$MESSAGE" \
+    '{
+      "hookSpecificOutput": {
+        "hookEventName": $event,
+        "additionalContext": $context
+      }
+    }'
+  exit 0
+fi
+
 MESSAGE="## ⚠️ ACTIVE TASK DETECTED
 
 **Task**: \`$TASK_NAME\`
@@ -141,18 +212,38 @@ git status
 2. Complete all remaining protocol phases
 3. Only after Phase 8 (CLEANUP) may you select a new task
 
-${APPROVAL_STATUS:+${APPROVAL_STATUS/NOT OBTAINED/## 🚨 USER APPROVAL CHECKPOINT REQUIRED:
+${APPROVAL_STATUS:+${APPROVAL_STATUS/NOT OBTAINED/## 🛑 MANDATORY USER APPROVAL CHECKPOINT #2
 
-**BEFORE proceeding to COMPLETE state, you MUST**:
-1. Present completed changes with commit SHA to user
-2. Show: Files changed, test results, quality gates
-3. Ask: \"Would you like me to proceed with finalizing?\"
-4. Wait for explicit user approval (\"yes\", \"approved\", \"proceed\", \"LGTM\")
+**YOU MUST STOP AFTER REVIEW** and present changes for user approval.
 
-**DO NOT** assume approval from:
-- \"Continue without asking\" instructions
-- Bypass mode settings
-- Lack of objection}}
+**CRITICAL**: Proceeding to COMPLETE state without user approval is a PROTOCOL VIOLATION.
+
+**REQUIRED STEPS BEFORE COMPLETE**:
+1. ✅ Commit all changes to task branch (if not already committed)
+2. ✅ Record commit SHA: \`git rev-parse HEAD\`
+3. ✅ Present to user:
+   - Commit SHA for review
+   - Files changed: \`git show --stat HEAD\`
+   - Key implementation decisions
+   - Test results (all passing)
+   - Quality gates (checkstyle: PASS, PMD: PASS, build: SUCCESS)
+4. ✅ Ask: \"Please review these changes. Would you like me to proceed with finalizing (COMPLETE → CLEANUP)?\"
+5. ✅ WAIT for explicit approval keywords: \"yes\", \"approved\", \"LGTM\", \"proceed\", \"looks good\"
+
+**ADD TODOWRITE CHECKPOINT TASK**:
+\`\`\`
+✅ Execute REVIEW phase - Stakeholder approval (completed)
+⏸️ **Wait for user review and approval of changes** (in_progress) ← ADD THIS
+⏸️ Execute COMPLETE phase - Merge to main (pending)
+\`\`\`
+
+**PROHIBITED ASSUMPTIONS**:
+❌ \"Continue without asking\" instructions - DOES NOT skip checkpoint
+❌ Bypass mode settings - DOES NOT skip checkpoint
+❌ Stakeholder approval alone - DOES NOT equal user approval
+❌ Silence or lack of objection - DOES NOT mean approval
+
+**ENFORCEMENT**: \`enforce-user-approval.sh\` hook will BLOCK COMPLETE transition without approval marker}}
 
 ## CRITICAL - AUTONOMOUS COMPLETION REQUIREMENT:
 
