@@ -2,18 +2,15 @@
 
 ## 🚀 READY TO WORK NOW (Multi-Instance Coordination)
 
-**Current Status**: All tasks blocked until A0 completes
+**Current Status**: A0 complete! Phase A tasks now available
 
-**IMMEDIATE ACTION REQUIRED**:
-- **A0: Build System Setup** ← START HERE (no dependencies, blocks everything else)
+**READY TO START** (4 parallel instances possible):
+- A1: AST Parser Foundation ← 5-7 days, implements Index-Overlay parser
+- A2: TOML Configuration ← 2-3 days, implements config system
+- A3: CLI Arguments ← 1-2 days, implements argument parsing
+- A4: Security Framework ← 2-3 days, implements security controls
 
-**After A0 Completes** (4 parallel instances possible):
-- A1: AST Parser Foundation
-- A2: TOML Configuration
-- A3: CLI Arguments
-- A4: Security Framework
-
-**Phase B/C/D**: Blocked until Phase A completes
+**Phase B/C/D**: Blocked until all Phase A tasks (A1-A4) complete
 
 ---
 
@@ -69,8 +66,8 @@
 **Coordination**: A0 must complete first. After A0, tasks A1-A4 can run in parallel (4 instances possible).
 
 ### A1. AST Parser Foundation
-- [ ] **BLOCKED:** `implement-index-overlay-parser` - Index-Overlay AST parser for JDK 25
-  - **Dependencies**: A0 (build system - need styler-parser, styler-ast-core modules)
+- [ ] **READY:** `implement-index-overlay-parser` - Index-Overlay AST parser for JDK 25
+  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-parser, styler-ast-core modules)
   - **Blocks**: B2 (pipeline), all formatters (B1, C3), C4 (concurrency benchmark)
   - **Parallelizable With**: A2, A3, A4 (after A0 completes)
   - **Estimated Effort**: 5-7 days
@@ -95,8 +92,8 @@
   - **Estimated Effort**: 5-7 days
 
 ### A2. Configuration System
-- [ ] **BLOCKED:** `implement-toml-configuration` - TOML-based configuration with file discovery
-  - **Dependencies**: A0 (build system - need styler-config module)
+- [ ] **READY:** `implement-toml-configuration` - TOML-based configuration with file discovery
+  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-config module)
   - **Blocks**: B2 (pipeline), B5 (CLI integration)
   - **Parallelizable With**: A1, A3, A4 (after A0 completes)
   - **Estimated Effort**: 2-3 days
@@ -112,26 +109,9 @@
   - **Quality**: Thread-safe caching, comprehensive validation, clear error messages
   - **Estimated Effort**: 2-3 days
 
-### A3. CLI Argument Parsing
-- [ ] **BLOCKED:** `implement-cli-arguments` - Command-line argument parsing without file processing
-  - **Dependencies**: A0 (build system - need styler-cli module)
-  - **Blocks**: B5 (CLI integration)
-  - **Parallelizable With**: A1, A2, A4 (after A0 completes)
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Parse CLI arguments for file paths, config overrides, output options
-  - **Scope**: Argument parser with --config, --check, --fix, --help, --version flags
-  - **Components**:
-    - ArgumentParser: Parse command-line arguments (picocli or jcommander)
-    - CLIOptions: Immutable options object
-    - HelpFormatter: Generate usage help text
-  - **Arguments**: file/directory paths, --config <path>, --check (validate only), --fix (auto-fix), output format
-  - **Integration**: Self-contained, no dependencies on parser or config loading
-  - **Quality**: Clear help text, validation errors, exit codes
-  - **Estimated Effort**: 1-2 days
-
 ### A4. Security Framework
-- [ ] **BLOCKED:** `implement-security-controls` - Essential security for CLI tool
-  - **Dependencies**: A0 (build system - need styler-security module)
+- [ ] **READY:** `implement-security-controls` - Essential security for CLI tool
+  - **Dependencies**: A0 ✅ COMPLETE (build system - need styler-security module)
   - **Blocks**: B2 (pipeline), C1 (file discovery)
   - **Parallelizable With**: A1, A2, A3 (after A0 completes)
   - **Estimated Effort**: 2-3 days
