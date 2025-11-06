@@ -90,6 +90,28 @@ return new ParseResult(
 
 **Good parsing exception**: "Unexpected token 'void' at position 45, expected identifier in method declaration"
 
+### Class Declaration - Missing final Modifier
+**Why final matters for design clarity**: Classes should be explicitly marked `final` unless they are designed for extension. This makes design intent clear and prevents accidental inheritance.
+
+**Parser API context**: Most formatter and parser classes are implementation details that shouldn't be extended. Marking them `final` prevents misuse and signals they are complete, standalone implementations.
+
+**Design principle**: Inheritance requires careful design - protected methods, documented extension points, stable contracts. Most classes don't need this complexity. Making them `final` is the safe default.
+
+**When NOT to use final**: Abstract classes, explicit base classes with documented extension points, classes with protected methods designed for overriding, or framework integration points requiring subclassing.
+
+**Practical example**:
+```java
+// ✅ CORRECT - Implementation class not designed for extension
+public final class ArgumentParser {
+    // Complete, standalone implementation
+}
+
+// ✅ CORRECT - Designed for extension with protected hooks
+public class BaseFormatter {
+    protected void preProcess(SourceFile file) { }
+}
+```
+
 ## 💡 TIER 3 QUALITY - Best Practices
 
 ### Error Handling - Default Return Values

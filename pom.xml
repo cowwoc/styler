@@ -11,6 +11,10 @@
 	<name>Styler Java Code Formatter</name>
 	<description>An unopinionated Java code formatter</description>
 
+	<modules>
+		<module>cli</module>
+	</modules>
+
 	<properties>
 		<project.root.basedir>${project.basedir}</project.root.basedir>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -63,6 +67,11 @@
 				<artifactId>testng</artifactId>
 				<version>7.8.0</version>
 			</dependency>
+		<dependency>
+			<groupId>info.picocli</groupId>
+			<artifactId>picocli</artifactId>
+			<version>4.7.6</version>
+		</dependency>
 		</dependencies>
 	</dependencyManagement>
 
