@@ -991,6 +991,63 @@ ELSE:
 - Test execution results showing all tests pass
 - Performance baseline comparison (if performance-critical changes)
 
+**🚨 CRITICAL BUILD CACHE VERIFICATION REQUIREMENTS:**
+
+Maven Build Cache can create false positives by restoring cached quality gate results without actually executing analysis on modified code. This can allow violations to slip through VALIDATION phase undetected.
+
+**MANDATORY CACHE-BYPASSING PROCEDURES:**
+
+When running validation after code modifications:
+
+```bash
+# OPTION 1: Disable cache for critical validation (RECOMMENDED for final validation)
+./mvnw verify -Dmaven.build.cache.enabled=false
+
+# OPTION 2: If using default verify, verify quality gates actually executed
+./mvnw verify
+# Then verify PMD/checkstyle actually ran (not cached):
+grep -q "Skipping plugin execution (cached): pmd:check" && {
+  echo "❌ WARNING: PMD results were cached, not executed!"
+  echo "Re-running with cache disabled..."
+  ./mvnw verify -Dmaven.build.cache.enabled=false
+} || echo "✅ PMD executed fresh analysis"
+```
+
+**QUALITY GATE EXECUTION VERIFICATION CHECKLIST:**
+
+Before transitioning from VALIDATION → REVIEW:
+- [ ] Build executed with `-Dmaven.build.cache.enabled=false`, OR
+- [ ] Verified build output does NOT contain "Skipping plugin execution (cached)" for:
+  - `pmd:check`
+  - `checkstyle:check`
+  - Other quality gates (PMD, checkstyle, etc.)
+- [ ] All quality gates show actual execution timestamps (not cache restoration)
+- [ ] Build output explicitly shows analysis results (not "restored from cache")
+
+**CACHE-RELATED VIOLATION PATTERNS:**
+
+❌ **PROHIBITED**: Running `./mvnw verify` once and trusting cached results
+❌ **PROHIBITED**: Assuming "BUILD SUCCESS" means quality gates actually executed
+❌ **PROHIBITED**: Ignoring "Skipping plugin execution (cached)" messages in build output
+
+✅ **REQUIRED**: Verify quality gates executed fresh analysis on modified code
+✅ **REQUIRED**: Disable cache for final validation before REVIEW phase
+✅ **REQUIRED**: Check build logs for cache skip messages
+
+**WHY THIS MATTERS:**
+
+Real-world example from task `implement-cli-arguments`:
+1. Early in task: Ran unit tests without PMD violations
+2. Added `.toLowerCase()` call to line 304 (introduced PMD violation)
+3. Before merge: Ran `./mvnw clean verify`
+4. Cache matched checksum: `[INFO] Skipping plugin execution (cached): pmd:check`
+5. Reported SUCCESS without scanning new code
+6. Violation merged to main, broke build
+
+**PREVENTION:**
+
+The `-Dmaven.build.cache.enabled=false` flag forces fresh execution of all plugins, ensuring modified code is actually analyzed by quality gates.
+
 **Evidence Required (Skip Path):**
 - Documentation that no runtime behavior changes
 - Verification that only configuration/documentation modified
