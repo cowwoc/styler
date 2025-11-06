@@ -11,10 +11,12 @@ trap 'echo "ERROR in auto-learn-from-mistakes.sh at line $LINENO: Command failed
 #
 # Triggered on: PostToolUse (all tools)
 # Detects: Build failures, test failures, validation errors, protocol violations,
-#          skill step failures, git operation failures, merge conflicts, edit failures
+#          skill step failures, git operation failures, merge conflicts, edit failures,
+#          missing cleanup steps, self-acknowledged mistakes
 #
 # PATTERN EVOLUTION:
 #   - 2025-11-05: Added Pattern 6 (skill step failures) and Pattern 7 (git operation failures)
+#   - 2025-11-06: Added Pattern 8 (missing cleanup) and Pattern 9 (self-acknowledged mistakes)
 
 # Read input from stdin (hook context JSON for PostToolUse)
 HOOK_CONTEXT=$(cat)
@@ -67,6 +69,20 @@ fi
 if echo "$TOOL_RESULT" | grep -qiE "fatal:|error:|git.*failed|rebase.*failed|merge.*failed"; then
   MISTAKE_TYPE="git_operation_failure"
   MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B2 -A3 -iE "fatal:|error:|failed" | head -15)
+fi
+
+# Pattern 8: Missing cleanup after successful operations (MEDIUM)
+# Detects when user asks "Why didn't you [cleanup action]?"
+if echo "$TOOL_RESULT" | grep -qiE "why didn't you (remove|delete|clean|cleanup)|didn't you (remove|delete|clean)"; then
+  MISTAKE_TYPE="missing_cleanup"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B5 -A2 -iE "why didn't you|didn't you" | head -15)
+fi
+
+# Pattern 9: Self-acknowledged mistakes (HIGH)
+# Detects when assistant acknowledges "You're right - I should have..."
+if echo "$TOOL_RESULT" | grep -qiE "(you're|you are) (right|correct|absolutely right).*(should have|should've|ought to have)|I should have.*instead"; then
+  MISTAKE_TYPE="self_acknowledged_mistake"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B2 -A5 -iE "(you're|you are) right|should have|ought to" | head -20)
 fi
 
 # If no mistake detected, pass through
