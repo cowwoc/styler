@@ -469,6 +469,53 @@ fi
 - **Claude Code must be restarted** after modifying settings.json for changes to take effect
 - **PreToolUse hooks CAN block commands**: Return exit code 2 with JSON `permissionDecision: "deny"`
 
+## 🔄 GIT OPERATION WORKFLOWS
+
+**MANDATORY**: When performing git operations with backups, follow COMPLETE workflow including cleanup.
+
+### Backup-Verify-Cleanup Pattern
+
+**ALL git operations that create backups MUST follow this pattern**:
+
+1. **Create Backup**: Timestamped branch before operation
+2. **Execute Operation**: Perform the git operation (squash, rebase, split, etc.)
+3. **Verify Success**: Confirm operation completed correctly
+4. **✅ CLEANUP BACKUP**: Delete backup branch after verification
+
+**❌ VIOLATION Pattern** (what I did wrong):
+```bash
+git branch backup-before-squash-20251106-170909  # 1. Create backup ✅
+# ... perform squash ...                         # 2. Execute ✅
+# ... verify files match ...                     # 3. Verify ✅
+# Report to user: "Squash complete!"            # 4. Cleanup ❌ MISSING
+```
+
+**✅ CORRECT Pattern**:
+```bash
+git branch backup-before-squash-20251106-170909  # 1. Create backup
+# ... perform squash ...                         # 2. Execute
+# ... verify files match ...                     # 3. Verify
+git branch -D backup-before-squash-20251106-170909  # 4. ✅ CLEANUP
+# NOW report to user: "Squash complete!"
+```
+
+### When to Use Formal Skills vs Manual Operations
+
+**Use git-squash/git-rebase skills** (via Skill tool):
+- Complex multi-step operations
+- Need guidance on exact commands
+- Want automatic safety checks
+
+**Manual operations acceptable IF**:
+- Follow documented workflow in git-workflow.md
+- Include ALL steps (especially cleanup)
+- Have internalized backup-verify-cleanup pattern
+
+**⚠️ COMMON MISTAKE**: Performing operations manually but forgetting cleanup step
+- Documentation exists in git-squash skill (Step 10) and git-workflow.md
+- Hook detects user asking "Why didn't you cleanup?"
+- Prevention: Always complete ALL workflow steps
+
 ## Repository Structure
 
 **⚠️ NEVER** initialize new repositories
