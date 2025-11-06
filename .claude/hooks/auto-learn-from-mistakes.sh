@@ -12,11 +12,12 @@ trap 'echo "ERROR in auto-learn-from-mistakes.sh at line $LINENO: Command failed
 # Triggered on: PostToolUse (all tools)
 # Detects: Build failures, test failures, validation errors, protocol violations,
 #          skill step failures, git operation failures, merge conflicts, edit failures,
-#          missing cleanup steps, self-acknowledged mistakes
+#          missing cleanup steps, self-acknowledged mistakes, restore from backup
 #
 # PATTERN EVOLUTION:
 #   - 2025-11-05: Added Pattern 6 (skill step failures) and Pattern 7 (git operation failures)
-#   - 2025-11-06: Added Pattern 8 (missing cleanup) and Pattern 9 (self-acknowledged mistakes)
+#   - 2025-11-06: Added Pattern 8 (missing cleanup), Pattern 9 (self-acknowledged mistakes),
+#                 and Pattern 10 (restore from backup)
 
 # Read input from stdin (hook context JSON for PostToolUse)
 HOOK_CONTEXT=$(cat)
@@ -83,6 +84,13 @@ fi
 if echo "$TOOL_RESULT" | grep -qiE "(you're|you are) (right|correct|absolutely right).*(should have|should've|ought to have)|I should have.*instead"; then
   MISTAKE_TYPE="self_acknowledged_mistake"
   MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B2 -A5 -iE "(you're|you are) right|should have|ought to" | head -20)
+fi
+
+# Pattern 10: Restore from backup (HIGH)
+# Detects when assistant says "let me restore from backup" indicating failed operation
+if echo "$TOOL_RESULT" | grep -qiE "(let me|I'll|I will|going to) (restore|reset).*(from|using|to).{0,10}backup|restoring from.{0,10}backup"; then
+  MISTAKE_TYPE="restore_from_backup"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B5 -A3 -iE "restore|reset|backup" | head -20)
 fi
 
 # If no mistake detected, pass through
