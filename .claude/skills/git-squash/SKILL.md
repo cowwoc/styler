@@ -544,6 +544,98 @@ fi
 echo "✅ Verification passed: $ORIGINAL_COUNT commits → $NEW_COUNT commits"
 ```
 
+### Automating Reorder with GIT_SEQUENCE_EDITOR
+
+**⚠️ CRITICAL: Commit Order Assumptions**
+
+When automating rebase with `GIT_SEQUENCE_EDITOR`, git presents commits in **chronological order** (oldest first). Scripts MUST NOT assume they will encounter commits in any particular order.
+
+**❌ WRONG Pattern - Assumes Order**:
+```python
+#!/usr/bin/env python3
+# ❌ BUG: Assumes commit B comes BEFORE commit A
+import sys
+
+with open(sys.argv[1], 'r') as f:
+    lines = f.readlines()
+
+result = []
+moved_commit = None
+
+for line in lines:
+    if 'commit-B' in line:  # Try to save this commit
+        moved_commit = line.replace('pick', 'squash', 1)
+    elif 'commit-A' in line:  # Try to insert saved commit here
+        result.append(line)
+        if moved_commit:  # ❌ Won't work if commit-A comes first!
+            result.append(moved_commit)
+            moved_commit = None
+    else:
+        result.append(line)
+
+# ❌ BUG: If commit-A comes before commit-B chronologically,
+# moved_commit will never be appended, silently dropping commit-B!
+```
+
+**✅ CORRECT Pattern - Process All, Then Reorder**:
+```python
+#!/usr/bin/env python3
+# ✅ CORRECT: Process all lines first, then reorder
+import sys
+
+with open(sys.argv[1], 'r') as f:
+    lines = f.readlines()
+
+# Step 1: Extract commits (don't assume order)
+commits = []
+for line in lines:
+    if line.startswith('#') or not line.strip():
+        continue
+    commits.append(line)
+
+# Step 2: Find specific commits
+commit_a = None
+commit_b = None
+other_commits = []
+
+for commit in commits:
+    if 'commit-A' in commit:
+        commit_a = commit
+    elif 'commit-B' in commit:
+        commit_b = commit.replace('pick', 'squash', 1)
+    else:
+        other_commits.append(commit)
+
+# Step 3: Verify both found
+if not commit_a or not commit_b:
+    print(f"ERROR: Commits not found", file=sys.stderr)
+    sys.exit(1)
+
+# Step 4: Build new order
+result = []
+if commit_a:
+    result.append(commit_a)
+if commit_b:
+    result.append(commit_b)
+result.extend(other_commits)
+
+# Step 5: Verify count (defensive programming)
+if len(result) != len(commits):
+    print(f"ERROR: Commit count mismatch! {len(commits)} → {len(result)}", file=sys.stderr)
+    sys.exit(1)
+
+# Write result
+with open(sys.argv[1], 'w') as f:
+    f.writelines(result)
+```
+
+**Key Principles**:
+1. **Never assume commit order** in git rebase todo list
+2. **Process all lines first**, extract what you need
+3. **Then reorder** based on requirements
+4. **Verify count** before writing (defensive check)
+5. **Exit with error** if commits not found or count mismatch
+
 **See Also**: [git-workflow.md § Handling Non-Contiguous Commits](../../docs/project/git-workflow.md#handling-non-contiguous-commits) for complete documentation.
 
 ## Usage

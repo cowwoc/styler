@@ -224,6 +224,10 @@ cat /tmp/rebase-todo-modified.txt
 BASE_COMMIT="b9eb99d"
 GIT_SEQUENCE_EDITOR="cp /tmp/rebase-todo-modified.txt" git rebase -i "$BASE_COMMIT"
 
+# ⚠️ CRITICAL: If using Python/script instead of pre-created file:
+# See git-squash/SKILL.md § "Automating Reorder with GIT_SEQUENCE_EDITOR"
+# for critical warnings about commit order assumptions that can silently drop commits
+
 # Step 5: Verify result
 git log --oneline -5
 # Should show:
