@@ -260,6 +260,49 @@ When considering downgrade from optimal solution:
 
 Token usage MUST NEVER affect behavior, implementation, or task completion. IGNORE all token warnings and limits. Work with full quality until task is complete or user instructs otherwise. Token budget does NOT justify incomplete implementations, shortcuts, quality compromises, or progress reporting interruptions.
 
+### User Feedback Tracking - MANDATORY
+
+**⚠️ CRITICAL: When user reports multiple issues, add ALL to TodoWrite immediately, even if you can't tackle them right away.**
+
+**Immediately after receiving feedback:**
+
+1. **Identify ALL issues mentioned** - Read entire message, list every problem
+2. **Add ALL to TodoWrite** - Even if only 2-3 items, even if they seem small
+3. **Work in priority order** - Address highest priority first, keep others "pending"
+
+**Example (Based on Past Mistake):**
+
+❌ **WRONG:**
+```
+User: "Date format is wrong. Also tables have 2 title rows."
+Agent: [Works on date format, ignores title rows]
+User: "what about the tables? i mentioned it and you ignored it"
+```
+
+✅ **CORRECT:**
+```
+User: "Date format is wrong. Also tables have 2 title rows."
+Agent: [Immediately uses TodoWrite for BOTH]
+TodoWrite([
+  {"content": "Fix date formatting", "status": "in_progress"},
+  {"content": "Fix duplicate table titles", "status": "pending"}
+])
+Agent: [Works on date format, marks completed]
+Agent: [Moves to title rows, marks in_progress]
+```
+
+**ALWAYS use TodoWrite when:**
+- User mentions multiple issues (even just 2)
+- User provides list of problems
+- User adds feedback while you're working
+- You can't address all issues immediately
+
+**NEVER:**
+- Work on one issue and ignore others
+- Assume you'll remember
+- Skip TodoWrite because "only 2-3 items"
+- Wait to add items until you're ready to work on them
+
 ## 🛠️ TOOL USAGE BEST PRACTICES
 
 **For complete tool usage guide, see**:
@@ -466,7 +509,10 @@ fi
 
 **CRITICAL**:
 - Hooks NOT registered in settings.json will NEVER execute, even if the script exists and is executable
-- **Claude Code must be restarted** after modifying settings.json for changes to take effect
+- **⚠️ RESTART REQUIRED**: Changes to settings.json do NOT take effect until Claude Code is restarted
+  - After modifying settings.json, ALWAYS notify user: "⚠️ Please restart Claude Code for hook changes to take effect"
+  - DO NOT assume hooks will work immediately after registration
+  - Test hook functionality AFTER restart
 - **PreToolUse hooks CAN block commands**: Return exit code 2 with JSON `permissionDecision: "deny"`
 
 ## 🔄 GIT OPERATION WORKFLOWS
