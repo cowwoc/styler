@@ -1,9 +1,10 @@
 ---
 name: optimizer
 description: >
-  Analyzes code for performance bottlenecks, memory issues, algorithmic efficiency, and optimization
-  opportunities. Can review performance characteristics (analysis mode) or implement optimizations
-  (implementation mode) based on invocation instructions.
+  Analyzes SOURCE CODE for performance bottlenecks, memory issues, algorithmic efficiency, and
+  optimization opportunities. Can review performance characteristics (analysis mode) or implement
+  optimizations (implementation mode). FOR CODE ONLY - not for documentation, configuration, or
+  general validation tasks.
 model: sonnet-4-5
 color: orange
 tools: Read, Write, Edit, Grep, Glob, LS, Bash, WebSearch, WebFetch
