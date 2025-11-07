@@ -770,9 +770,115 @@ git merge implement-formatter-api-architect
 **Key Distinction**: Main agent COORDINATES (via Task tool), agents IMPLEMENT (via Write/Edit in agent worktrees)
 
 **VIOLATION #2: Missing Agent Worktrees**
-- Requirement: BEFORE invoking stakeholder agents, main agent MUST create agent worktrees
-- Command: `git worktree add /workspace/tasks/{task-name}/agents/{agent-name}/code -b {task-name}-{agent-name}`
-- Enforcement: Pre-tool-use hook blocks source file creation without task.json
+- BEFORE invoking agents, create worktrees: `git worktree add /workspace/tasks/{task-name}/agents/{agent-name}/code -b {task-name}-{agent-name}`
+- Enforcement: Hook blocks source creation without task.json
+
+## File Organization
+
+### Report Types and Lifecycle
+
+**Task Requirements & Plans** (`task.md` at task root):
+- Location: `/workspace/tasks/{task-name}/task.md`
+- Contains agent requirements and implementation plans
+- Created: CLASSIFIED state (by main agent, before stakeholder invocation)
+- Updated: REQUIREMENTS (agent reports), SYNTHESIS (implementation plans)
+- Lifecycle: Persists through task execution, removed during CLEANUP
+
+**Stakeholder Reports** (at task root):
+- Examples: `{task-name}-architect-requirements.md`, `status.json`, `*-IMPLEMENTATION-PLAN.md`
+- Location: `/workspace/tasks/{task-name}/` (accessible to all agents)
+- Lifecycle: Cleaned up in CLEANUP
+- ⚠️ **CRITICAL**: NEVER commit to main (`.gitignore` + pre-commit hook enforce)
+
+**Empirical Studies** (`docs/studies/{topic}.md`): Temporary research cache, persist until consumed by todo.md tasks
+
+**Project Code**: Task code directory (`src/`, `pom.xml`, etc.)
+
+### Report File Naming Convention
+
+See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/project/task-protocol-core.md) and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for exact agent report naming conventions by phase.
+
+**Note**: Reports are written to `/workspace/tasks/{task-name}/` (task root), not inside the code directory.
+
+## 📝 RETROSPECTIVE DOCUMENTATION POLICY
+
+Do NOT create retrospective documentation chronicling fixes, problems, or development process.
+
+**PROHIBITED PATTERNS**:
+- ❌ Post-implementation analysis reports
+- ❌ "Lessons learned" documents
+- ❌ Debugging chronicles or problem-solving narratives
+- ❌ Development process retrospectives
+- ❌ Fix documentation duplicating information in code/commits
+- ❌ Decision chronicles documenting past decision-making phases
+- ❌ Evidence-based decision process sections
+- ❌ Multi-phase retrospectives ("Phase 1: Requirements", etc.)
+- ❌ Safety analysis documents chronicling what went wrong
+- ❌ Inline comments chronicling WHEN added or WHAT PROBLEM prompted (chronology belongs in commits)
+
+**COMMON MISTAKE**: When analyzing complex issues, defaulting to "create structured document" to organize thinking. STOP and ask BEFORE creating any .md file:
+1. "Is this documenting what happened (retrospective) or what to do (forward-looking)?"
+2. "Could this go in a commit message instead?" (YES → put it there, not in file)
+3. "Could this go in inline comments instead?" (YES → put it there, not in file)
+4. "Will this be useful after the fix, or only during?" (only during → don't create file)
+
+**MANDATORY PRE-CREATION CHECKLIST**: Before using Write tool to create any .md file, verify:
+
+- [ ] **Not retrospective**: File documents HOW TO USE, not WHAT WAS DONE
+- [ ] **Filename check**: Avoid "summary", "lessons-learned", "retrospective", "postmortem", "analysis" in names
+- [ ] **Content check**: No sections like "What Was Implemented", "Files Created", "Success Criteria Achieved"
+- [ ] **Alternative check**: Could this content go in commit message? (If YES → use commit, not file)
+- [ ] **Utility check**: Will this be useful 6 months from now? (If NO → don't create)
+- [ ] **Duplication check**: Does forward-looking content already exist in another doc?
+
+**LESSON**: Complexity NEVER justifies intermediate retrospective documents. Correct approach: commit message + inline comments.
+
+**Document**: Rationale (commits), approach (code comments), benchmarks (architecture.md), alternatives (code comments)
+
+**Inline Comment Policy**:
+- ✅ **CORRECT**: Explain WHAT code does, WHY pattern exists (forward-looking)
+  - Example: `# Validates worktree location to prevent protocol violations`
+  - Example: `# Use exact match to avoid false positives with similar paths`
+- ❌ **WRONG**: Chronicle WHEN added, WHAT PROBLEM prompted it (retrospective)
+  - Example: `# ADDED: 2025-11-07 after agent violated protocol`
+  - Example: `# ROOT CAUSE: Agent didn't check working directory`
+  - Put chronology in commit message, not inline comments
+
+**Permitted**: User/task requires it, forward-looking architecture/API/design docs
+
+**Enforcement**: Hooks block retrospective patterns
+
+## 🔧 MANDATORY MISTAKE HANDLING
+
+**CRITICAL**: When ANY agent makes a mistake or protocol deviation, invoke the learn-from-mistakes skill for systematic prevention.
+
+**What Constitutes a Mistake**:
+- Protocol violations (any severity: CRITICAL, HIGH, MEDIUM, LOW)
+- Process deviations (incorrect commit patterns, missing steps)
+- Rework required (had to redo work due to error)
+- Build/test/quality failures (compilation, testing, gate failures)
+- Incorrect assumptions (led to wrong implementation)
+- Tool misuse (wrong tool, incorrect parameters, validation gaps)
+- Working directory errors (wrong worktree, incorrect paths)
+- State machine violations (skipped states, wrong sequence)
+
+**Examples**:
+- ❌ Split commits (todo.md separate from implementation) → INVOKE learn-from-mistakes
+- ❌ Main agent creates source files during IMPLEMENTATION → INVOKE learn-from-mistakes
+- ❌ Style violations found late → INVOKE learn-from-mistakes
+- ❌ Agent worked in wrong worktree → INVOKE learn-from-mistakes
+
+**When to Invoke**: IMMEDIATELY after identifying the mistake:
+
+```markdown
+"I notice I split the commits incorrectly. This is a protocol deviation.
+Invoking learn-from-mistakes skill to analyze and prevent recurrence."
+```
+
+**Enforcement**:
+- **Audits**: Invoke for ANY violation
+- **Normal work**: Invoke for own/other/user-reported mistakes
+- **No bypass**: No "small mistake" or "already know" excuses
 
 ## Essential References
 
@@ -789,200 +895,3 @@ git merge implement-formatter-api-architect
 [docs/code-style-human.md](docs/code-style-human.md) - Code style master guide
 [docs/code-style/](docs/code-style/) - Code style files (\*-claude.md detection patterns, \*-human.md explanations)
 
-## File Organization
-
-### Report Types and Lifecycle
-
-**Task Requirements & Plans** (`task.md` at task root):
-- Location: `/workspace/tasks/{task-name}/task.md`
-- Contains agent requirements and implementation plans
-- Created: CLASSIFIED state (by main agent, before stakeholder invocation)
-- Updated: REQUIREMENTS (agent reports), SYNTHESIS (implementation plans)
-- Lifecycle: Persists through task execution, removed during CLEANUP
-
-**Stakeholder Reports** (at task root, one level up from code directory):
-- Temporary workflow artifacts for task protocol
-- Examples: `{task-name}-architect-requirements.md`, `{task-name}-formatter-violations.json`, `status.json`, `*-IMPLEMENTATION-PLAN.md`
-- Lifecycle: Created during execution, cleaned up with worktrees in CLEANUP
-- Location: `/workspace/tasks/{task-name}/` (accessible to all agents)
-- ⚠️ **CRITICAL**: Task artifacts must NEVER be committed to main repository
-  - `.gitignore` excludes these files automatically
-  - Pre-commit hook blocks accidental commits
-  - Keep artifacts in `/workspace/tasks/{task}/` NOT `/workspace/main/`
-
-**Empirical Studies** (`docs/studies/{topic}.md`):
-- Temporary research cache for pending implementation tasks
-- Examples: `docs/studies/claude-cli-interface.md`, `docs/studies/claude-startup-sequence.md`
-- Lifecycle: Persist until all dependent todo.md tasks consume them, then remove
-
-**Project Code**: Task code directory (`src/`, `pom.xml`, etc.)
-
-### Report File Naming Convention
-
-See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/project/task-protocol-core.md) and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for exact agent report naming conventions by phase.
-
-**Note**: Reports are written to `/workspace/tasks/{task-name}/` (task root), not inside the code directory.
-
-## 📝 RETROSPECTIVE DOCUMENTATION POLICY
-
-Do NOT create retrospective documentation chronicling fixes, problems, or development process.
-
-**PROHIBITED PATTERNS**:
-❌ Post-implementation analysis reports
-❌ "Lessons learned" documents
-❌ Debugging chronicles or problem-solving narratives
-❌ Development process retrospectives
-❌ Fix documentation duplicating information in code/commits
-❌ **Decision chronicles** documenting past decision-making phases
-❌ Documents with "Evidence-Based Decision Process" sections
-❌ Multi-phase retrospectives ("Phase 1: Requirements", "Phase 2: Evidence", etc.)
-❌ **Safety analysis documents** chronicling what went wrong and how to fix it
-
-**COMMON MISTAKE PATTERN**:
-When analyzing complex issues, you may default to "create structured document" to organize thinking.
-STOP and ask BEFORE creating any .md file:
-1. "Is this documenting what happened (retrospective) or what to do (forward-looking)?"
-2. "Could this go in a commit message instead?" (yes → put it there, not in file)
-3. "Could this go in inline comments instead?" (yes → put it there, not in file)
-4. "Will this be useful after the fix, or only during?" (only during → don't create file)
-
-**Example of Mistake** (SAFETY-ANALYSIS.md created 2025-11-02):
-- **Trigger**: Thought "Given the complexity and length of fixing both skills completely, let me create a summary document"
-- **Root cause**: Defaulted to "create structured document" when task felt complex
-- **Violation**: Used complexity as excuse to avoid doing work directly (violates Token Usage Policy)
-- Documented "what went wrong" in git skills instead of just fixing them
-- Should have gone in: commit message + inline comments in skills
-- File was deleted immediately after fixes applied - proof it was retrospective
-- **Lesson**: Complexity NEVER justifies creating intermediate retrospective documents
-
-**SPECIFIC ANTI-PATTERNS**:
-```markdown
-❌ BAD - Retrospective Decision Chronicle:
-# Final Decision: Arena API Adoption
-
-## Evidence-Based Decision Process
-### Phase 1: Stakeholder Requirements
-- Technical-Architect initially recommended...
-### Phase 2: JMH Benchmark Evidence
-Successfully executed benchmarks revealing...
-### Phase 3: Stakeholder Validation
-- Technical-Architect: ✅ APPROVED...
-```
-
-```markdown
-✅ GOOD - Forward-Looking Architecture:
-# Parser Memory Management
-
-## Design Choice: Arena API
-
-**Rationale**: Provides 3x performance improvement and meets
-512MB target with 96.9% safety margin (benchmarked on JDK 25).
-
-**Implementation**:
-[Shows HOW to use it going forward]
-```
-
-**WHERE TO DOCUMENT**:
-- Rationale: Git commit message with the change
-- Why this approach: Code comments inline with implementation
-- Benchmark results: Reference in architecture.md design section
-- Alternatives considered: Brief note in code comment
-- **Lessons learned**: Inline comments in hook/config files explaining pattern evolution
-
-**PERMITTED** (only when explicitly required):
-✅ Task or user explicitly requires specific documentation
-✅ Forward-looking architecture documentation
-✅ API documentation and user guides
-✅ Technical design documents for upcoming features
-
-**ENFORCEMENT**:
-- Pre-commit hook blocks retrospective file creation
-- Pre-tool-use hook detects retrospective content patterns
-
-## 🔧 MANDATORY MISTAKE HANDLING
-
-**CRITICAL**: When ANY agent (including main agent) makes a mistake or protocol deviation, you MUST invoke the learn-from-mistakes skill for systematic prevention.
-
-### What Constitutes a Mistake
-
-**Mistakes include** (invoke learn-from-mistakes for ANY of these):
-- Protocol violations (any severity: CRITICAL, HIGH, MEDIUM, or LOW)
-- Process deviations (incorrect commit patterns, missing steps)
-- Rework required (had to redo work due to error)
-- Build failures (compilation, test, or quality gate failures)
-- Incorrect assumptions (led to wrong implementation)
-- Tool misuse (wrong tool, incorrect parameters, validation gaps)
-- Working directory errors (wrong worktree, incorrect paths)
-- State machine violations (skipped states, wrong sequence)
-
-**Examples**:
-- ❌ Split commits (todo.md separate from implementation) → INVOKE learn-from-mistakes
-- ❌ Main agent creates source files during IMPLEMENTATION → INVOKE learn-from-mistakes
-- ❌ Checkstyle violations found late → INVOKE learn-from-mistakes
-- ❌ Agent worked in wrong worktree → INVOKE learn-from-mistakes
-- ❌ Missing user approval checkpoint → INVOKE learn-from-mistakes
-
-### When to Invoke
-
-**IMMEDIATELY after identifying the mistake**:
-
-```markdown
-# ❌ WRONG Pattern:
-"I notice I split the commits incorrectly. Let me just note that for next time."
-
-# ✅ CORRECT Pattern:
-"I notice I split the commits incorrectly. This is a protocol deviation.
-Invoking learn-from-mistakes skill to analyze and prevent recurrence."
-
-Skill: learn-from-mistakes
-Context: Split commit pattern - todo.md updated in separate commit instead
-of atomic commit with implementation.
-```
-
-### Why This is Mandatory
-
-**Prevents recurrence**:
-- One-time acknowledgment → Likely to repeat
-- Systematic analysis → Configuration updates prevent recurrence
-- Root cause fixes → Entire category of mistakes prevented
-
-**Examples of systematic prevention**:
-- Hook added → Blocks mistake automatically
-- Documentation clarified → Clear guidance prevents confusion
-- Examples added → Shows correct pattern explicitly
-- Validation enhanced → Catches mistake earlier
-
-### Enforcement
-
-**During audits**:
-- Audit identifies protocol deviations
-- Audit MUST invoke learn-from-mistakes for ANY violation
-- No exceptions for "minor" or "low severity" violations
-
-**During normal work**:
-- Agent recognizes own mistake → MUST invoke learn-from-mistakes
-- Agent recognizes other agent's mistake → MUST invoke learn-from-mistakes
-- User points out mistake → MUST invoke learn-from-mistakes
-
-**Bypass NOT permitted**:
-- ❌ "This is a small mistake, not worth invoking skill"
-- ❌ "I already know what went wrong, no need for analysis"
-- ❌ "This mistake is obvious, I'll just fix it"
-- ✅ "Mistake identified → Invoke learn-from-mistakes → Systematic prevention"
-
-### Integration with Audit
-
-**Audit pipeline automatically invokes learn-from-mistakes**:
-- Protocol compliance audit detects violations
-- IF any violations found (any severity) → Invoke learn-from-mistakes
-- Root cause analysis identifies systemic issues
-- Configuration updates prevent recurrence
-
-**Manual invocation required**:
-- When mistake discovered outside audit
-- When recognizing pattern of repeated mistakes
-- When user points out deviation
-
----
-
-**For agent-specific guidance, see the documents listed in the Mandatory Startup Protocol section above.**
