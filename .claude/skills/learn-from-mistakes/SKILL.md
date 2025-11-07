@@ -262,6 +262,45 @@ jq -r --arg indicator "$MISTAKE" \
 
 ### Phase 4: Configuration Updates
 
+**⚠️ CRITICAL: Active Enforcement vs Passive Policies**
+
+**When policies exist but are violated, implement ACTIVE ENFORCEMENT (hooks), not just passive documentation.**
+
+**Decision Tree**:
+1. **Policy exists AND was violated?**
+   - ✅ YES → Create enforcement hook (PreToolUse/PostToolUse)
+   - ❌ NO (new issue) → Document policy first, then add hook if violations likely
+
+2. **Policy enforceability:**
+   - ✅ Can be checked mechanically → MUST create hook
+   - ❌ Requires judgment → Document with examples, consider detection hook
+
+**Why Active Enforcement Matters**:
+- Passive policies (text in config) rely on agents reading and remembering
+- Active hooks (validation scripts) prevent violations automatically
+- **If it violated once, it WILL violate again without enforcement**
+
+**Examples**:
+
+✅ **CORRECT - Active Enforcement**:
+```
+Issue: Agent created files in wrong worktree (policy exists in docs)
+Fix: Create pre-write.sh hook that validates worktree before Write tool
+Result: Future violations automatically blocked
+```
+
+❌ **WRONG - Passive Policy Only**:
+```
+Issue: Agent created files in wrong worktree (policy exists in docs)
+Fix: Add more warnings to documentation, bold the text
+Result: Violation will recur because agent may not read/remember
+```
+
+**Hook Creation Priority**:
+1. **HIGH**: Protocol violations (state machine, worktree, approval gates)
+2. **MEDIUM**: Tool misuse (wrong parameters, missing validation)
+3. **LOW**: Style preferences (can be post-hoc validated)
+
 **Update Strategy by Category**:
 
 #### A. Missing Information → Update Agent Prompt Template
