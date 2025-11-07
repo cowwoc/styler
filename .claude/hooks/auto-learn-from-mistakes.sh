@@ -12,12 +12,15 @@ trap 'echo "ERROR in auto-learn-from-mistakes.sh at line $LINENO: Command failed
 # Triggered on: PostToolUse (all tools)
 # Detects: Build failures, test failures, validation errors, protocol violations,
 #          skill step failures, git operation failures, merge conflicts, edit failures,
-#          missing cleanup steps, self-acknowledged mistakes, restore from backup
+#          missing cleanup steps, self-acknowledged mistakes, restore from backup,
+#          critical self-acknowledgments ("CRITICAL DISASTER", "catastrophic", etc.)
 #
 # PATTERN EVOLUTION:
 #   - 2025-11-05: Added Pattern 6 (skill step failures) and Pattern 7 (git operation failures)
 #   - 2025-11-06: Added Pattern 8 (missing cleanup), Pattern 9 (self-acknowledged mistakes),
 #                 and Pattern 10 (restore from backup)
+#   - 2025-11-07: Added Pattern 11 (critical self-acknowledgments) for detecting phrases
+#                 like "CRITICAL DISASTER", "CRITICAL MISTAKE", "CRITICAL ERROR"
 
 # Read input from stdin (hook context JSON for PostToolUse)
 HOOK_CONTEXT=$(cat)
@@ -91,6 +94,14 @@ fi
 if echo "$TOOL_RESULT" | grep -qiE "(let me|I'll|I will|going to) (restore|reset).*(from|using|to).{0,10}backup|restoring from.{0,10}backup"; then
   MISTAKE_TYPE="restore_from_backup"
   MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B5 -A3 -iE "restore|reset|backup" | head -20)
+fi
+
+# Pattern 11: Critical self-acknowledgments (CRITICAL)
+# Detects when assistant uses phrases like "CRITICAL DISASTER", "CRITICAL MISTAKE", "CRITICAL ERROR"
+# indicating awareness of a major problem
+if echo "$TOOL_RESULT" | grep -qiE "CRITICAL (DISASTER|MISTAKE|ERROR|FAILURE|BUG|PROBLEM|ISSUE)|catastrophic|devastating"; then
+  MISTAKE_TYPE="critical_self_acknowledgment"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B3 -A5 -iE "CRITICAL|catastrophic|devastating" | head -20)
 fi
 
 # If no mistake detected, pass through
