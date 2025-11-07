@@ -557,20 +557,32 @@ Generic praise without extracting a reusable decision rule.
 
 8. **Does this content extract a general decision rule from a specific example?**
    - If YES → KEEP (pattern extraction for future cases)
-   - If NO → May remove if redundant
+   - If NO → Proceed to question 9
 
-**Critical**: Questions 2-5 are NEW protections added to prevent loss of operational instructions, methodology, sequencing, and distinct validation criteria.
+9. **Does this WHY principle enable generalization to novel situations?**
+   - Examples: "Parallel invocation avoids delays", "Exact matching required for Edit tool"
+   - Test: If agent encounters similar-but-different situation, does this help decide how to proceed?
+   - If YES → KEEP (concise principle, 1 sentence max)
+   - If NO → May remove (verbose rationale without decision value)
+
+**Critical**: Questions 2-5, 9 protect against loss of operational instructions, methodology, sequencing, distinct validation criteria, and judgment-enabling principles.
 
 ### Examples Applying the Test
 
-**REMOVE THIS** (explains WHY):
+**REMOVE THIS** (verbose WHY - Question 9 fails):
 ```
 **RATIONALE**: Git history rewriting can silently drop commits or changes,
 especially during interactive rebases where "pick" lines might be accidentally
 deleted or conflicts might be resolved incorrectly. Manual verification is the
 only reliable way to ensure no data loss occurred.
 ```
-→ Claude doesn't need to know why; just needs to know to verify.
+→ Long explanation doesn't help with novel situations; just needs to verify.
+
+**KEEP THIS** (concise principle - Question 9 passes):
+```
+Verify commit count before/after history rewriting (prevents silent data loss)
+```
+→ Brief principle helps agent recognize OTHER history-rewriting scenarios (git filter-branch, etc.)
 
 **KEEP THIS** (defines WHAT "correct" means):
 ```
@@ -799,22 +811,50 @@ Section "Quality Gates": "Follow validation procedure (see Validation section)"
 **Fix**: Keep detailed procedure in one place, reference from others
 **Clarity Impact**: Safe at section boundary, unsafe mid-execution
 
-### Category 5: Rationale Redundancy (ALWAYS REMOVABLE)
-**Pattern**: Explanations of WHY something is required (educational content)
+### Category 5: Rationale Redundancy (CONTEXT-DEPENDENT)
+**Pattern**: Explanations of WHY something is required (educational content vs principles for judgment)
 
 **Detection**: Paragraphs starting "This is because...", "The reason is...". Describes benefits/context. Doesn't specify WHAT or HOW.
 
+**CRITICAL DISTINCTION**:
+
+**Verbose Rationale** (REMOVE - doesn't enable generalization):
+- Long explanations of benefits, mechanisms, or background
+- Technical details about why approach works
+- Educational narrative that doesn't inform decisions
+- Example: "The validation library generates consistent error messages automatically and reduces boilerplate code"
+
+**Concise Principles** (KEEP - enables judgment in novel situations):
+- Brief statements explaining core purpose that guide application
+- Help agent decide WHEN rule applies to new situations
+- Enable generalization to similar-but-different problems
+- Example: "Parallel invocation avoids delays" (helps decide when to parallelize)
+
+**Test for Generalization Value**:
+```
+Ask: "If agent encounters similar-but-not-exactly-same situation,
+does this WHY help them decide how to proceed?"
+
+If YES → Keep as concise principle (aids judgment)
+If NO → Remove as verbose rationale (pure education)
+```
+
 **Examples**:
 ```markdown
-❌ REDUNDANT (explanatory):
+❌ REMOVE (verbose rationale - no decision value):
 "Verify commit count before and after rebase.
 
 RATIONALE: Git history rewriting can silently drop commits, especially during
-interactive rebases where lines might be deleted. Manual verification is the
-only reliable way to ensure no data loss."
-→ Instruction + WHY explanation
+interactive rebases where lines might be deleted or conflicts might be resolved
+incorrectly. Manual verification is the only reliable way to ensure no data loss
+occurred. This protects against silent corruption..."
+→ Long technical explanation
 
-✅ CONDENSED (operational only):
+✅ KEEP (concise principle - enables generalization):
+"Verify commit count before/after history rewriting (prevents silent data loss)"
+→ Brief principle helps agent recognize OTHER history-rewriting scenarios
+
+✅ ALSO CORRECT (pure operational - no WHY at all):
 "Verify commit count before and after rebase:
   # Before: git rev-list --count HEAD
   # After: git rev-list --count HEAD
@@ -822,8 +862,14 @@ only reliable way to ensure no data loss."
 → Instruction + WHAT to check
 ```
 
-**Fix**: Remove RATIONALE sections, keep instruction + success criteria
-**Clarity Impact**: None
+**Fix**:
+- Remove verbose RATIONALE paragraphs
+- Keep concise principles (1 sentence max) if they enable judgment
+- Always keep instruction + success criteria
+
+**Clarity Impact**:
+- Verbose removal: None
+- Principle removal: May reduce ability to generalize to novel situations
 
 ### Category 6: Pedagogical Redundancy (CONTEXT-DEPENDENT)
 **Pattern**: Key rules stated multiple times for emphasis or learning
@@ -865,7 +911,9 @@ Found repeated content?
 │  ├─ YES → Category 2 (Example)
 │  └─ NO → Continue
 ├─ Explains WHY (rationale/benefits)?
-│  ├─ YES → Category 5 (Rationale) - ALWAYS REMOVE
+│  ├─ YES → Category 5 (Rationale) - TEST FOR GENERALIZATION VALUE
+│  │  ├─ Verbose explanation → REMOVE
+│  │  └─ Concise principle → KEEP (enables judgment)
 │  └─ NO → Continue
 └─ Repetition for emphasis/learning?
    ├─ YES → Category 6 (Pedagogical) - CONTEXT-DEPENDENT
@@ -1171,9 +1219,16 @@ After condensing content, apply validation specific to redundancy type being rem
    - Clarity loss (is File A meaningfully clearer for execution)?
    - Emphasis shift (MANDATORY → optional-sounding)?
    - Phase 1 confusion resolution (does File A clarify confusion that File B doesn't)?
+   - Generalization loss (did File A have concise WHY principle helping apply rule to novel situations)?
+
+   **Special Check for Removed WHY Content**:
+   If File A contained brief principle (1 sentence) explaining WHY rule applies:
+   - Test: "If I encounter similar-but-not-exactly-same situation, does File A's WHY help me decide how to proceed?"
+   - If YES → File B loses generalization ability → VIOLATION
+   - If NO → Verbose rationale without decision value → ACCEPTABLE (Category 5)
 
    If difference is redundancy removal (Categories 1-6) → ACCEPTABLE.
-   If File B loses content/clarity/emphasis not classified as redundancy → VIOLATION.
+   If File B loses content/clarity/emphasis/generalization not classified as redundancy → VIOLATION.
 
    **Output Format**:
 
