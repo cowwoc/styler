@@ -186,6 +186,10 @@
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/auto-learn-from-mistakes.sh"
+          },
+          {
+            "type": "command",
+            "command": "/workspace/.claude/hooks/post-tool-use-detect-assistant-giving-up.sh"
           }
         ]
       },
