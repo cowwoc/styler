@@ -349,16 +349,7 @@ cat -A /path/to/file.java | grep -A2 "method()"
 # Shows ^I for tabs, $ for line endings, · for spaces
 ```
 
-**Bash Tool - Path Handling**:
-
-- Always quote file paths that contain spaces with double quotes
-- Use absolute paths or combine `cd` with command (e.g., `cd /path && command`)
-- Try to maintain your current working directory throughout the session by using absolute paths and avoiding usage of `cd`
-
-**Pattern Matching**:
-- Preview before replacing with dangerous operations
-- Use specific patterns to avoid unintended matches
-- Test regex patterns with grep before using in sed
+**Pattern Matching**: Preview before dangerous operations, use specific patterns, test regex with grep before sed
 
 ### Documentation Reference System
 
