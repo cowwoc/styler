@@ -14,6 +14,49 @@ allowed-tools: Bash, Read
 - Simplifying pull request history
 - Preparing feature branch for main merge
 
+## Supports Both Tip and Mid-History Squashing
+
+**This skill now handles both scenarios**:
+
+### ✅ Tip Squashing (commits at branch HEAD)
+```bash
+# Current state:
+# HEAD → 043a992 (commit 7) ← Last to squash
+#        ...     (commits 1-6) ← Squash these
+#        61edb5a (base)
+
+# Simple case: No commits after squash range
+# Workflow: Squash → Move branch pointer
+```
+
+### ✅ Mid-History Squashing (commits have others after them)
+```bash
+# Current state:
+# HEAD → 39f3981 (commit 10)
+#        a25506b (commit 9)
+#        4a2e49a (commit 8)
+#        043a992 (commit 7) ← Last to squash
+#        ...     (commits 1-6) ← Squash these
+#        61edb5a (base)
+
+# Mid-history case: Commits exist after squash range
+# Workflow: Squash → Rebase commits after → Move branch pointer
+# Commits 8-10 are automatically rebased on top of squashed commit
+```
+
+**The skill automatically detects which scenario and handles it appropriately.**
+
+**Alternative: Interactive Rebase**
+
+You can also use interactive rebase for mid-history squashing:
+```bash
+git rebase -i <base-commit>
+# Change "pick" to "squash" for commits to combine
+```
+
+Both approaches work. git-squash provides more safety checks and verification,
+while interactive rebase is the traditional git approach.
+
 ## ⚠️ Critical Safety Rules
 
 **MANDATORY BACKUP**: Always create timestamped backup before squashing
@@ -118,6 +161,32 @@ if [[ -n "$EXPECTED_LAST_COMMIT" ]]; then
     exit 1
   fi
   echo "✅ HEAD positioned at expected last commit"
+
+  # Check for commits AFTER the squash range (mid-history squashing)
+  if git rev-parse --verify "$ORIGINAL_BRANCH" >/dev/null 2>&1; then
+    COMMITS_AFTER_COUNT=$(git rev-list --count HEAD.."$ORIGINAL_BRANCH" 2>/dev/null || echo "0")
+    if [[ "$COMMITS_AFTER_COUNT" -gt 0 ]]; then
+      echo "⚠️  Mid-history squash detected: $COMMITS_AFTER_COUNT commits exist after squash range"
+      echo "   Will automatically rebase them after squashing"
+      echo ""
+
+      # Record the original branch HEAD and commits after squash range
+      ORIGINAL_BRANCH_HEAD=$(git rev-parse "$ORIGINAL_BRANCH")
+      NEED_REBASE="true"
+      echo "ORIGINAL_BRANCH_HEAD=$ORIGINAL_BRANCH_HEAD" >> /tmp/squash-vars.sh
+      echo "NEED_REBASE=true" >> /tmp/squash-vars.sh
+      echo "COMMITS_AFTER_COUNT=$COMMITS_AFTER_COUNT" >> /tmp/squash-vars.sh
+
+      echo "   Commits to preserve after squash:"
+      git log --oneline HEAD.."$ORIGINAL_BRANCH"
+      echo ""
+    else
+      echo "✅ No commits after squash range (tip squashing)"
+      echo "NEED_REBASE=false" >> /tmp/squash-vars.sh
+    fi
+  else
+    echo "NEED_REBASE=false" >> /tmp/squash-vars.sh
+  fi
 fi
 
 # Show commits to be squashed
@@ -205,13 +274,50 @@ echo "✅ Verification passed: No changes lost or added"
 
 ### Step 7: Create Squashed Commit
 
-**Commit with Combined Message**:
-```bash
-# Create new commit with all squashed changes
-git commit -m "$(cat <<'EOF'
-<Combined commit message>
+**⚠️ CRITICAL: Write Meaningful Commit Message**
 
-[Include relevant details from all squashed commits]
+The commit message must describe WHAT the changes DO, not just say "squashed".
+
+**Step 7a: Review Commits Being Squashed**:
+```bash
+# Review all commits to understand their combined purpose
+echo "Commits being squashed:"
+git log --format="%h %s" "$BASE_COMMIT..HEAD"
+```
+
+**Step 7b: Craft Message Following git-commit Skill Guidelines**:
+
+See `git-commit` skill for complete guidance on writing commit messages.
+
+**Key principles for squashed commits**:
+- Subject line: Summarize the combined purpose (imperative mood, 50-72 chars)
+- Body: List key changes from all squashed commits (use bullet points)
+- Rationale: Explain why these changes work together
+
+❌ **WRONG - Generic placeholder**:
+```bash
+git commit -m "Squashed: feature improvements"
+```
+
+✅ **CORRECT - Describes what the code does**:
+```bash
+# After reviewing commits, synthesize meaningful message
+git commit -m "$(cat <<'EOF'
+Enhance optimize-doc with iterative loop and session ID
+
+Adds multi-pass optimization capability with proper session
+management for agent continuity between optimization phases.
+
+Changes:
+- Add iterative optimization loop for multi-pass document refinement
+- Integrate session ID capture from Phase 1 agent for Phase 2 resume
+- Clarify that main agent optimizes directly (not via Task tool)
+- Strengthen to use general-purpose agent only for both phases
+- Fix Phase 2 to resume Phase 1 agent (not create new agent)
+- Remove unnecessary agent ID file storage
+
+These enhancements enable proper multi-pass optimization with agent
+continuity between phases while maintaining session context.
 
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 
@@ -221,6 +327,78 @@ EOF
 
 echo "✅ Squashed commit created"
 ```
+
+**Reference**: See `git-commit` skill for detailed examples and anti-patterns
+
+**Step 7c: Rewriting Squashed Commit Message (If Needed)**
+
+**⚠️ CRITICAL: Do NOT use `git commit --amend` after rebase completes**
+
+If you need to rewrite the squashed commit message after the rebase has finished:
+
+**❌ WRONG - Amends wrong commit**:
+```bash
+# Rebase completes, HEAD is at branch tip
+git commit --amend -m "New message"  # ← Amends HEAD, NOT the squashed commit!
+```
+
+**Why this fails**:
+- Interactive rebase with squashing creates the squashed commit
+- Rebase continues, rebasing commits that came after the squash range
+- When rebase completes, HEAD is at the branch tip (last commit)
+- The squashed commit is back in history, NOT at HEAD
+- `git commit --amend` modifies commit at HEAD, not a historical commit
+
+**✅ CORRECT - Use interactive rebase with edit**:
+```bash
+# After rebase completes, identify the squashed commit
+git log --oneline -10
+# Example output:
+# aa4f0c6 Latest commit (HEAD)
+# ...
+# 28b1631 Add bash-to-script skill  ← The squashed commit (back in history)
+# af98b4f Base commit
+
+# Create script to mark squashed commit for editing
+cat > /tmp/edit-squash.sh << 'EOF'
+#!/bin/bash
+# Change pick to edit for the squashed commit
+sed -i 's/^pick 28b1631/edit 28b1631/' "$1"
+EOF
+chmod +x /tmp/edit-squash.sh
+
+# Start interactive rebase from base of squashed commit
+BASE_COMMIT="af98b4f"  # Parent of squashed commit
+GIT_SEQUENCE_EDITOR=/tmp/edit-squash.sh git rebase -i "$BASE_COMMIT"
+
+# Rebase stops at squashed commit
+# Now you can amend it
+git commit --amend -m "$(cat <<'EOF'
+New commit message
+...
+EOF
+)"
+
+# Continue rebase to reapply subsequent commits
+git rebase --continue
+```
+
+**Alternative - Use reword in original interactive rebase**:
+
+Instead of fixing the message after rebase completes, you can specify "reword" during the initial rebase:
+
+```bash
+# During initial squash rebase, the todo list looks like:
+# pick 2df90f4 First commit
+# squash edbf606 Second commit
+# squash e98d3b0 Third commit
+# squash 625cc88 Fourth commit
+#
+# Git will prompt for combined message after squashing
+# This is the BEST time to write the final message
+```
+
+**Best Practice**: Write the final commit message during the initial squash operation when Git prompts you. This avoids the need for a second interactive rebase.
 
 ### Step 8: Verify Non-Squashed Commits Unchanged
 
@@ -266,12 +444,85 @@ git log --oneline -3
 echo "✅ Squash successful: $COMMIT_COUNT commits → 1 commit"
 ```
 
-### Step 10: Remove Backup
+### Step 10: Rebase Commits After Squash Range (Mid-History Only)
+
+**If commits existed after the squash range, rebase them on top**:
+
+```bash
+source /tmp/squash-vars.sh
+
+if [[ "$NEED_REBASE" == "true" ]]; then
+  echo ""
+  echo "═══════════════════════════════════════"
+  echo "Mid-history squash: Rebasing $COMMITS_AFTER_COUNT commits on top"
+  echo "═══════════════════════════════════════"
+
+  # Current state: We're at the squashed commit
+  SQUASHED_COMMIT=$(git rev-parse HEAD)
+
+  # Rebase commits that came after the squash range onto the squashed commit
+  # Uses --onto to replay commits from (last-to-squash) to (original-branch-head)
+  # onto the squashed commit
+  echo "Rebasing commits from $EXPECTED_LAST_COMMIT to $ORIGINAL_BRANCH_HEAD"
+  echo "onto squashed commit $SQUASHED_COMMIT"
+  echo ""
+
+  if ! git rebase --onto "$SQUASHED_COMMIT" "$EXPECTED_LAST_COMMIT" "$ORIGINAL_BRANCH_HEAD"; then
+    echo "" >&2
+    echo "❌ ERROR: Rebase encountered conflicts!" >&2
+    echo "" >&2
+    echo "   Squashed commit created successfully: $SQUASHED_COMMIT" >&2
+    echo "   But rebasing commits after squash range failed." >&2
+    echo "" >&2
+    echo "   MANUAL RESOLUTION REQUIRED:" >&2
+    echo "   1. Resolve conflicts: git status" >&2
+    echo "   2. Stage resolved files: git add <files>" >&2
+    echo "   3. Continue rebase: git rebase --continue" >&2
+    echo "   4. Or abort: git rebase --abort && git reset --hard $BACKUP_BRANCH" >&2
+    echo "" >&2
+    echo "   Backup available: $BACKUP_BRANCH" >&2
+    exit 1
+  fi
+
+  echo "✅ Successfully rebased $COMMITS_AFTER_COUNT commits"
+  echo ""
+
+  # Update branch pointer to the final rebased state
+  if [[ -n "$ORIGINAL_BRANCH" ]]; then
+    git branch -f "$ORIGINAL_BRANCH" HEAD
+    git checkout "$ORIGINAL_BRANCH"
+    echo "✅ Updated $ORIGINAL_BRANCH to final state"
+  fi
+
+  # Verify final commit count
+  FINAL_COUNT=$(git rev-list --count "$BASE_COMMIT..HEAD")
+  EXPECTED_FINAL=$((COMMITS_AFTER_COUNT + 1))  # Squashed commit + commits after
+  if [[ "$FINAL_COUNT" -ne "$EXPECTED_FINAL" ]]; then
+    echo "⚠️  WARNING: Expected $EXPECTED_FINAL commits, got $FINAL_COUNT" >&2
+    echo "   This may indicate an issue - verify history" >&2
+  fi
+
+  echo ""
+  echo "Final history:"
+  git log --oneline "$BASE_COMMIT..HEAD"
+else
+  # Tip squashing - just update branch pointer
+  if [[ -n "$ORIGINAL_BRANCH" ]] && [[ "$(git rev-parse --abbrev-ref HEAD)" == "HEAD" ]]; then
+    git branch -f "$ORIGINAL_BRANCH" HEAD
+    git checkout "$ORIGINAL_BRANCH"
+    echo "✅ Updated $ORIGINAL_BRANCH to squashed commit"
+  fi
+fi
+```
+
+### Step 11: Remove Backup
 
 **⚠️ Only After Verification Passes**:
 ```bash
 # Delete backup branch (verification passed)
+source /tmp/squash-vars.sh
 git branch -D "$BACKUP_BRANCH"
+rm -f /tmp/squash-vars.sh
 echo "✅ Backup removed after successful verification"
 ```
 
@@ -465,9 +716,100 @@ git reset --soft 4d3e19e           # Now squashes ONLY 3ebecc4 and b732939
 
 ## Squashing Non-Adjacent Commits
 
-**When commits to squash are NOT adjacent** (have other commits in between):
+**When commits to squash are NOT adjacent** (separated by other commits in between):
 
-### Strategy: Interactive Rebase with Reordering
+### General Pattern: Reorder First, Then Squash
+
+**Use Case**: You want to squash multiple commits together, but they're currently separated by other commits in the history.
+
+**Two-Step Workflow**:
+1. **Reorder**: Use interactive rebase to move commits adjacent to each other
+2. **Squash**: Change "pick" to "squash" to combine them into one commit
+
+**Example Command Interpretation**:
+
+When you say: "Squash commits A, B, C into commit X"
+- Means: Move commits A, B, C to be adjacent to commit X, then squash them together
+- Workflow: Interactive rebase moves A, B, C next to X, marks them as "squash"
+- Result: One combined commit at X's position
+
+**Concrete Example**:
+```bash
+# Current history:
+# 625cc88 - Commit C (separated)
+# e98d3b0 - Commit B (separated)
+# ...     - Many other commits
+# 2df90f4 - Commit A (separated)
+# edbf606 - Target commit X
+# ...     - Earlier commits
+
+# Goal: Squash A, B, C into X
+# Result after rebase:
+# edbf606 - Combined commit (X + A + B + C)
+# ...     - Earlier commits
+# (All other commits preserved in original positions)
+```
+
+### General Procedure: Multiple Separated Commits
+
+**Procedure for squashing multiple non-adjacent commits**:
+
+```bash
+# 1. Create backup
+BACKUP_BRANCH="backup-before-squash-$(date +%Y%m%d-%H%M%S)"
+git branch "$BACKUP_BRANCH"
+
+# 2. Identify commits to squash
+TARGET_COMMIT="edbf606"          # Base commit (all others squash into this)
+COMMITS_TO_SQUASH=(              # Commits currently separated in history
+  "2df90f4"
+  "e98d3b0"
+  "625cc88"
+)
+BASE_COMMIT="${TARGET_COMMIT}^"  # Parent of target commit
+
+# 3. Start interactive rebase from base
+git rebase -i "$BASE_COMMIT"
+
+# 4. In the interactive editor:
+#    - FIND each commit in COMMITS_TO_SQUASH array
+#    - MOVE them to be directly after TARGET_COMMIT
+#    - CHANGE their "pick" to "squash"
+#    - PRESERVE all other commits in original order
+#    - Save and exit
+
+# Example transformation for "Squash 2df90f4, e98d3b0, 625cc88 into edbf606":
+# BEFORE:
+#   pick edbf606 Target commit
+#   pick abc1234 Other commit
+#   pick 2df90f4 Commit A to squash
+#   pick def5678 Other commit
+#   pick e98d3b0 Commit B to squash
+#   pick ghi9012 Other commit
+#   pick 625cc88 Commit C to squash
+#
+# AFTER:
+#   pick edbf606 Target commit
+#   squash 2df90f4 Commit A to squash    ← MOVED & CHANGED
+#   squash e98d3b0 Commit B to squash    ← MOVED & CHANGED
+#   squash 625cc88 Commit C to squash    ← MOVED & CHANGED
+#   pick abc1234 Other commit
+#   pick def5678 Other commit
+#   pick ghi9012 Other commit
+
+# 5. Git prompts for combined commit message
+#    - Edit to create unified message
+#    - Save and exit
+
+# 6. Verify result
+git log --oneline -10
+git diff "$BACKUP_BRANCH"  # Should show no differences
+
+# 7. Remove backup after verification
+git branch -D "$BACKUP_BRANCH"
+```
+
+### Specific Example: Fix Commit Into Original
 
 **Use Case**: Squashing a fix commit into the commit that introduced the issue, while preserving all commits in between.
 
