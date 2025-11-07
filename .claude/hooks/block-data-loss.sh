@@ -86,10 +86,11 @@ handle_pre_tool_use()
 	        echo "❌ **VIOLATION** - This operation would destroy the entire workspace" >&2
 	        exit 2
 	        ;;
-	    *"rm -rf /workspace/main"*|*"rm /workspace/main"*)
-	        echo "⛔ BLOCKED: Deletion of /workspace/main is not allowed to prevent data loss" >&2
+	    *"rm -rf /workspace/main"|*"rm -rf /workspace/main "*|*"rm -rf /workspace/main/"*|*"rm /workspace/main"|*"rm /workspace/main "*)
+	        echo "⛔ BLOCKED: Deletion of /workspace/main directory is not allowed to prevent data loss" >&2
 	        echo "🚨 DATA PROTECTION: The code directory must not be deleted" >&2
 	        echo "❌ **VIOLATION** - This operation would destroy the entire project" >&2
+	        echo "ℹ️  NOTE: To delete files WITHIN /workspace/main/, use full path: rm /workspace/main/filename" >&2
 	        exit 2
 	        ;;
 	    *"rm -rf /workspace/tasks/main/.git"|*"rm /workspace/tasks/main/.git"|*"rmdir /workspace/tasks/main/.git"*)
