@@ -1,59 +1,33 @@
 ---
 description: >
-  Optimize documentation using two-agent workflow: optimizer removes redundancy, independent validator
-  verifies preservation of critical content
+  Optimize documentation for conciseness using fact-based validation: remove redundancy while preserving all information
 ---
 
 # Optimize Documentation Command
 
 **Task**: Optimize the documentation file: `{{arg}}`
 
-**Two-Agent Workflow**:
-1. **Optimizer Agent** (you): Strengthen instructions, remove redundancy, apply conciseness strategies
-2. **Validator Agent** (independent): Verify no meaning loss, vagueness, or execution ability reduction
+**Idempotent Design**: Can run multiple times - each pass makes further improvements until document is optimally concise.
 
-## ⚠️ BASH COMMAND EXECUTION REQUIREMENT
+**⚠️ CRITICAL - Agent Type Restriction**:
+- **MUST use** `subagent_type: "general-purpose"` for ALL Task tool invocations
+- **DO NOT use** any other agent type (optimizer, hacker, designer, builder, etc.)
+- This command is specifically designed for general-purpose agents only
+- Using other agent types will cause execution failures or suboptimal behavior
 
-**CRITICAL**: Bash commands in this document that use parameter expansion like `${BACKUP_FILE##*.backup-}` will fail with parse errors when executed directly via the Bash tool.
+---
 
-**Required Pattern** (use for ALL bash blocks containing `##` parameter expansion):
+## Part 1: Scope & Principles
 
-```bash
-# ❌ FAILS: Direct execution
-BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
-VALIDATION_ID="${BACKUP_FILE##*.backup-}"
-# Error: (eval):1: parse error near `('
+### 🚨 DOCUMENT TYPE VALIDATION
 
-# ✅ CORRECT: Execute via script file
-cat > /tmp/script-name.sh << 'EOF'
-#!/bin/bash
-BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
-VALIDATION_ID="${BACKUP_FILE##*.backup-}"
-# ... rest of commands
-EOF
-bash /tmp/script-name.sh
-```
-
-**Apply this pattern to these sections**:
-- Step 6: Self-review rollback
-- Step 7: Phase 1 candidate creation
-- Step 7: Store agent ID
-- Step 7: Phase 1 checkpoint
-- Step 7: Phase 2 baseline creation
-- Step 7B: Iterative refinement rollback
-- Step 8: Remove backup
-
-## 🚨 DOCUMENT TYPE VALIDATION
-
-**Optimizes ONLY Claude-facing documentation. Refuse human-facing documents.**
-
-### Claude-Facing Documents (ALLOWED)
+#### Claude-Facing Documents (ALLOWED)
 - `.claude/` configuration files (agents, commands, hooks, settings)
 - `CLAUDE.md` and project instructions for Claude
 - `docs/project/` development protocol documentation (task-protocol-*, agent-*, *-guide.md)
 - `docs/code-style/*-claude.md` style detection patterns for Claude
 
-### Human-Facing Documents (FORBIDDEN)
+#### Human-Facing Documents (FORBIDDEN)
 - `README.md` files (user-facing project documentation)
 - `changelog.md`, `CHANGELOG.md` (user-facing release notes)
 - `docs/studies/` research and analysis documents
@@ -64,7 +38,7 @@ bash /tmp/script-name.sh
 - `docs/code-style/*-human.md` human explanations
 - Any documentation in project root intended for human developers
 
-### Validation Procedure
+#### Validation Procedure
 
 **BEFORE optimizing, check the file path:**
 
@@ -77,1495 +51,1484 @@ bash /tmp/script-name.sh
 
 2. **If path matches allowed patterns, PROCEED** with optimization
 
-**Detection Patterns**:
-- FORBIDDEN: `**/README.md`, `**/changelog.md`, `**/CHANGELOG.md`, `docs/studies/**`, `docs/decisions/**`, `docs/performance/**`, `docs/optional-modules/**`, `todo.md`, `**/*-human.md`
-- ALLOWED: `.claude/**`, `CLAUDE.md`, `docs/project/task-protocol-*`, `docs/project/agent-*`, `docs/project/*-guide.md`, `docs/code-style/*-claude.md`
+### Core Objective
 
-## Objective
-
-Make documentation more concise and clear without introducing vagueness.
-
-**Optimization Goals** (in priority order):
-1. **Eliminate vagueness**: Strengthen instructions with explicit criteria and measurable steps
-2. **Increase conciseness**: Remove redundancy while preserving all necessary information
-3. **Preserve clarity AND meaning**: Never sacrifice understanding or semantic accuracy for brevity
-
-**Idempotent Design**: Multiple runs on same document:
-- **First pass**: Strengthen vague instructions, remove obvious redundancy
-- **Second/subsequent passes**: Further optimization or no changes if optimal
-
-## Analysis Methodology
-
-For each instruction section in the document:
-
-### Step 1: Distinguish Instructions from Examples (DO THIS FIRST)
-
-**First, identify INSTRUCTION vs EXAMPLE:**
-
-**INSTRUCTION** (NEVER remove):
-- Commands to execute: `grep -i "keywords" file.md`
-- Questions to ask: "Ask: 'Is there an imported data sheet?'"
-- Specific actions: "Close Excel, wait 2 seconds, retry"
-- Conditions to check: "If grep returns results → do X"
-
-**EXAMPLE** (May remove if instruction clear):
-- Demonstrations of the instruction: "For example: grep -i 'foo'"
-- Sample outputs: "You should see: [output]"
-- Illustrative scenarios: "Like this: [scenario]"
-
-**Test**: Would removing this eliminate a concrete action/command/check?
-- YES → It's an INSTRUCTION, keep it
-- NO → It's an EXAMPLE, evaluate per Step 2
-
-**Common mistake to avoid:**
-❌ WRONG: Treating "grep -i 'keywords' file.md" as an example of grepping
-✅ RIGHT: Recognizing this IS the instruction (what command to run)
-
-### Step 2: Evaluate for Vagueness/Ambiguity
-
-**Is the instruction clear WITHOUT the examples?**
-
-Cover the examples and read ONLY the instruction. Then apply these tests:
-
-**Clarity Tests** (ALL must pass):
-1. **Completeness**: Are all parameters/inputs specified?
-   - ❌ FAIL: "Check grep" (which grep command? which file?)
-   - ✅ PASS: "Run `grep -i 'keywords' file.md`"
-
-2. **Unambiguous**: Could this be interpreted in only ONE way?
-   - ❌ FAIL: "Fix if possible" (what determines possible?)
-   - ✅ PASS: "Fix if deterministic (formula bug, wrong reference)"
-
-3. **Self-sufficient**: Can Claude execute without guessing or inferring?
-   - ❌ FAIL: "Use the script" (which script? what parameters?)
-   - ✅ PASS: "Use `claude/scripts/recalculate_excel.ps1 workbook.xlsx`"
-
-4. **Preserved context**: Is when/why to apply this clear?
-   - ❌ FAIL: "Import first" (import what? when?)
-   - ✅ PASS: "Before creating ACB schedule: Import transaction data to separate sheet"
-
-**Decision Tree**:
-```
-ALL 4 tests pass?
-├─ YES → Instruction is CLEAR → Proceed to Step 3 (may remove examples)
-└─ NO → Instruction is VAGUE → Proceed to Step 4 (strengthen instruction)
-```
-
-**If ANY test fails, the instruction is VAGUE.**
-
-### Step 3: If Clear (Examples Not Needed for Understanding)
-
-**Proceed only if instruction is clear without examples.**
-
-1. Identify examples following the instruction
-2. **Apply Execution Test**: Can Claude execute correctly without this example?
-   - If NO (example defines ambiguous term) → **KEEP**
-   - If YES → Determine if examples serve operational purpose:
-   - ✅ Defines what "correct" looks like → **KEEP**
-   - ✅ Shows exact commands with success criteria → **KEEP**
-   - ✅ Sequential workflows where order matters → **KEEP**
-   - ✅ Resolves ambiguity in instruction wording → **KEEP**
-   - ✅ Data structures (JSON formats) → **KEEP**
-   - ❌ Explains WHY (educational/rationale) → **REMOVE**
-   - ❌ Only restates already-clear instruction → **REMOVE**
-
-### Step 4: If Vague (Examples Needed for Understanding)
-
-**DO NOT REMOVE EXAMPLES YET - Strengthen instruction first.**
-
-1. Identify the source of vagueness:
-   - Subjective terms without definition
-   - Missing criteria or measurements
-   - Unclear boundaries or edge cases
-   - Narrative description instead of explicit steps
-
-2. Strengthen the instruction:
-   - Replace subjective terms with explicit criteria
-   - Convert narrative to numbered steps
-   - Add measurable thresholds or boundaries
-   - Define what "success" looks like
-
-3. **KEEP all examples** - They're needed until instruction is strengthened
-
-4. **Mark for next pass**: After strengthening, examples can be re-evaluated in next optimization pass
-
-## Categories of Examples to KEEP (Even with Clear Instructions)
-
-1. **Executable Commands**: Bash scripts, jq commands, git workflows
-2. **Data Structures**: JSON formats, configuration schemas, API contracts
-3. **Boundary Demonstrations**: Prohibited vs permitted patterns, edge cases
-4. **Concept Illustrations**: Examples that show what a vague term means (e.g., "contextual" JavaDoc)
-5. **Templates**: Reusable formats for structured responses
-6. **Prevention Examples**: Wrong vs right patterns for frequently violated rules
-7. **Pattern Extraction Rules**: Annotations that generalize examples into reusable decision principles
-
-## 🚨 ADDITIONAL PROTECTED CONTENT TYPES
-
-### 1. Content Specification Instructions (NEVER REMOVE)
-
-**Instructions that specify what content to include in outputs are OPERATIONAL, not explanatory.**
-
-**Examples**:
-- "Reference the mistake that prompted the update" ← Specifies required content
-- "Include brief history of what problems patterns prevent" ← Specifies required content
-- "Document context for why specific patterns were added" ← Specifies required content
-- "Add inline comments explaining pattern evolution" ← Specifies required content
-
-**Test**: Does this instruction tell the agent what content to produce/include?
-- YES → It's a content specification, KEEP IT
-- NO → It may be condensable
-
-**Common Mistake**:
-❌ WRONG: Treating "Reference the mistake" as explanatory context
-✅ RIGHT: Recognizing this specifies required output content
-
-### 2. Methodology Guidance (PRESERVE PEDAGOGICAL VALUE)
-
-**Sub-bullets that show HOW to execute are different from sub-bullets that list WHAT to collect.**
-
-**Methodology Guidance** (shows process/method):
-- Questions that guide thinking: "Was the correct path documented?"
-- First step instructions: "Read the agent's invocation prompt"
-- Process steps: "Check what files they had access to"
-- Diagnostic questions: "Was guidance not prominent enough?"
-
-**Simple Lists** (just enumerates items):
-- "Agent prompt, files accessed, missing context" ← Just a list
-- No guidance about process or methodology
-
-**Test**: Does this show HOW to think about or approach the task?
-- YES → It's methodology guidance, preserve pedagogical value
-- NO → It's just a list, may be condensable
-
-**Example**:
-
-❌ **TOO AGGRESSIVE** (loses methodology):
-```markdown
-Before:
-**What information was available to the agent?**
-- Read the agent's invocation prompt  ← First step
-- Check what files they had access to  ← Second step
-- Identify what context was missing    ← Third step
-
-After (LOSES PROCESS):
-**Available Information**: Agent prompt, files accessed, missing context
-^^^ Lost: The sequential process of HOW to investigate
-```
-
-✅ **BETTER** (preserves methodology):
-```markdown
-Before:
-**What information was available to the agent?**
-- Read the agent's invocation prompt
-- Check what files they had access to
-- Identify what context was missing
-
-After (ACCEPTABLE):
-**Available Information** (read prompt, check file access, identify gaps):
-Agent prompt, files accessed, missing context
-^^^ Preserved: The process in parenthetical guidance
-```
-
-✅ **BEST** (keeps sub-bullets when they show process):
-```markdown
-**Available Information**:
-1. Read the agent's invocation prompt
-2. Check what files they had access to
-3. Identify what context was missing
-^^^ Preserved: Clear sequential process
-```
-
-### 3. Sequencing and Ordering Information (NEVER REMOVE)
-
-**Temporal ordering and prerequisites are execution-critical.**
-
-**Sequencing Indicators** (ALWAYS PRESERVE):
-- "Once basic test passes, test variations" ← Sequence: do X, THEN Y
-- "Before doing X, verify Y" ← Prerequisite
-- "After applying fixes, attempt reproduction" ← Order dependency
-- "First... then... finally..." ← Explicit sequence
-- "Step 1... Step 2... Step 3..." ← Numbered workflow
-
-**Test**: Does this specify WHEN to do something relative to other steps?
-- YES → It's sequencing information, KEEP IT
-- NO → May be condensable
-
-**Examples**:
-
-❌ **WRONG** (loses sequencing):
-```markdown
-Before:
-8. **Test Edge Cases**:
-   Once basic reproduction test passes, test variations:
-   ^^^ WHEN to do this
-   - Different agents encountering same scenario
-   - Slight variations of the mistake pattern
-
-After (LOSES TIMING):
-8. **Edge Cases**: Test variations, different agents
-^^^ Lost: Do this AFTER basic test passes
-```
-
-✅ **CORRECT** (preserves sequencing):
-```markdown
-After:
-8. **Edge Cases** (after basic test passes): Test variations, different agents
-^^^ Preserved: Temporal ordering
-```
-
-### 4. Checklist Item Distinctness (PRESERVE UNIQUE CRITERIA)
-
-**Each checklist item should represent a distinct validation criterion.**
-
-**Before Merging/Removing Checklist Items, Verify**:
-1. Is this criterion covered by another item?
-   - "Concrete examples" vs "Examples are concrete" → Same criterion
-   - "Aligns with project conventions" vs "Matches existing format" → Different criteria
-2. Does removing this lose a validation angle?
-3. Can the remaining items fully cover this check?
-
-**Example**:
-
-⚠️ **QUESTIONABLE** (may lose coverage):
-```markdown
-Before:
-- [ ] No conflicts with other agent configs
-- [ ] Aligns with project conventions  ← Broader than just format
-- [ ] Terminology is consistent
-- [ ] Format matches existing sections
-
-After (POTENTIALLY INCOMPLETE):
-- [ ] No conflicts with other configs
-- [ ] Consistent terminology
-- [ ] Matches existing format
-^^^ Lost: "Aligns with project conventions" is broader than format matching
-```
-
-✅ **BETTER** (preserves all criteria):
-```markdown
-After:
-- [ ] No conflicts with other configs
-- [ ] Aligns with conventions (terminology, format, structure)
-^^^ Preserved: Broader convention alignment concept
-```
-
-## Categories of Examples to REMOVE
-
-1. **Redundant Clarification**: Examples that restate the instruction in different words
-2. **Obvious Applications**: Examples showing trivial applications of clear rules
-3. **Duplicate Templates**: Multiple versions of the same template
-4. **Verbose Walkthroughs**: Step-by-step narratives when numbered instructions exist
-
-## 🚨 EXECUTION-CRITICAL CONTENT (NEVER CONDENSE)
-
-Content types necessary for correct execution:
-
-### 1. **Concrete Examples Defining "Correct"**
-- Examples showing EXACT correct vs incorrect patterns when instruction uses abstract terms
-- Specific file paths, line numbers, or command outputs showing what success looks like
-- **Test**: Does the example define something ambiguous in the instruction?
-
-**KEEP when instruction says "delete" but example shows this means "remove entire entry, not mark complete"**:
-```bash
-# ❌ WRONG: Marking complete in todo.md
-vim todo.md  # Changed - [ ] to - [x]
-
-# ✅ CORRECT: Delete from todo.md, add to changelog.md
-vim todo.md  # DELETE entire task entry
-vim changelog.md  # ADD under ## 2025-10-08
-```
-
-**REMOVE if instruction explicitly says "remove entire entry"**.
-
-### 2. **Sequential Steps for State Machines**
-- Numbered workflows where order matters for correctness
-- State transition sequences where skipping/reordering causes failures
-- **Test**: Can steps be executed in different order and still work?
-
-**KEEP numbered sequence** when order is mandatory:
-```
-1. Complete SYNTHESIS phase
-2. Present plan to user
-3. Update lock: `jq '.state = "SYNTHESIS_AWAITING_APPROVAL"'`
-4. STOP - wait for user
-5. On approval: Update lock to `CONTEXT` and proceed
-```
-
-**REMOVE numbering** if steps are independent.
-
-### 3. **Inline Comments That Specify WHAT to Verify**
-- Comments explaining what output to expect or check
-- Annotations specifying exact conditions for success/failure
-- **Test**: Does comment specify success criteria not in the instruction?
-
-**KEEP comments specifying criteria**:
-```bash
-# Before rewriting: git rev-list --count HEAD
-# After rewriting: git rev-list --count HEAD
-# Compare counts - should match unless you explicitly intended to drop commits
-```
-
-**REMOVE comments explaining WHY** (e.g., "This prevents data loss because..." - educational, not operational).
-
-### 4. **Disambiguation Examples**
-- Multiple examples showing boundary between prohibited/permitted when rule uses subjective terms
-- Examples that resolve ambiguity in instruction wording
-- **Test**: Can the instruction be misinterpreted without this example?
-
-**KEEP** examples clarifying ambiguous instructions. **REMOVE** examples restating clear instructions.
-
-### 5. **Pattern Extraction Rules**
-- Annotations that generalize specific examples into reusable decision principles
-- Text that teaches how to apply the same reasoning to future cases
-- **Test**: Does this text extract a general rule from a specific example?
-
-**KEEP pattern extraction annotations**:
-```
-[Specific example code block]
-→ Shows that "delete" means remove lines, not change checkbox.
-```
-The arrow extracts the general principle (what "delete" means) from the specific example.
-
-**REMOVE pure commentary**:
-```
-[Example code block]
-→ This is a good practice to follow.
-```
-Generic praise without extracting a reusable decision rule.
-
-**Critical Distinction**:
-- ✅ **KEEP**: "→ Specifies exactly what success looks like" (teaches pattern recognition)
-- ❌ **REMOVE**: "This example helps you understand the concept" (generic educational)
-- ✅ **KEEP**: "→ Claude doesn't need to know why" (generalizes when to remove content)
-- ❌ **REMOVE**: "This is important because it prevents errors" (explains WHY, not WHAT)
-
-**Test**: If removed, would Claude lose ability to apply this reasoning to new examples? If YES → KEEP (pattern extraction, not commentary).
-
-## 🚨 REFERENCE-BASED CONDENSING RULES
-
-**When consolidating duplicate content via references:**
-
-### ❌ NEVER Replace with References
-
-1. **Content within sequential workflows** (Steps 1→2→3)
-   - Jumping mid-workflow breaks execution flow
-   - Keep operational content inline even if duplicated elsewhere
-
-2. **Quick-reference lists in methodology sections**
-   - Simple scannable lists serve different purpose than detailed explanations
-   - Both can coexist: brief list for scanning, detailed section for depth
-
-3. **Success criteria at decision points**
-   - Content needed AT THE MOMENT of decision must be inline
-   - Don't force jumping to verify each criterion
-
-### ✅ OK to Replace with References
-
-1. **Explanatory content that appears in multiple places**
-   - Rationale sections
-   - Background information
-   - Historical context
-
-2. **Content at document boundaries** (intro/conclusion)
-   - References acceptable when introducing/summarizing
-   - User not mid-execution at these points
-
-3. **Cross-referencing related but distinct concepts**
-   - "See also" style references
-   - Not replacing direct duplication
-
-### 🔍 Semantic Equivalence Test
-
-**Before replacing content with reference, verify:**
-
-1. **Same information**: Referenced section contains EXACT same information
-   - ❌ WRONG: Replace "Goals: A, B, C" with reference to "Priority: C > B > A"
-   - ✅ RIGHT: Replace duplicate "Goals: A, B, C" with reference to other "Goals: A, B, C"
-
-2. **Same context**: Referenced section serves same purpose
-   - ❌ WRONG: Replace "do X" with reference to "when to do X"
-   - ✅ RIGHT: Replace "do X" with reference to "do X"
-
-3. **Same level of detail**: No precision lost in referenced content
-   - ❌ WRONG: Replace 7-item checklist with reference to 3-item summary
-   - ✅ RIGHT: Replace 7-item checklist with reference to same 7-item checklist
-
-### 📋 Duplication Taxonomy
-
-**Type 1: Quick-Reference + Detailed** (KEEP BOTH)
-- Simple list (3-5 words per item) for fast scanning
-- Detailed section with tests, examples, edge cases
-- **Purpose**: Different use cases - quick lookup vs deep understanding
-
-**Type 2: Exact Duplication** (CONSOLIDATE)
-- Same information, same level of detail, same context
-- Appearing in multiple places with no contextual justification
-- **Purpose**: Genuine redundancy - consolidate to single source
-
-**Type 3: Pedagogical Repetition** (CONTEXT-DEPENDENT)
-- Key rules stated multiple times for emphasis
-- Summary + detailed explanation
-- **Purpose**: Learning/retention - keep if document is pedagogical, remove if reference doc
-
-### 🔍 Pre-Consolidation Verification
-
-**Before removing ANY content for consolidation:**
-
-1. ✅ Content is byte-for-byte duplicate OR semantically equivalent
-2. ✅ Replacement reference doesn't interrupt sequential workflow
-3. ✅ Referenced section is same level of detail
-4. ✅ Consolidation doesn't remove quick-reference value
-5. ✅ Verify by test: Can user execute task with reference-based version as easily as inline version?
-
-**If ANY check fails → Keep duplicate inline**
-
-## 🚨 DECISION RULE: The Execution Test
-
-**Before removing ANY content, ask ALL questions in sequence:**
-
-1. **Can Claude execute the instruction CORRECTLY without this content?**
-   - If NO → KEEP (execution-critical)
-   - If YES → Proceed to question 2
-
-2. **Does this specify what CONTENT to include in outputs?** (NEW)
-   - Examples: "Reference the mistake", "Include brief history", "Document context"
-   - If YES → KEEP (content specification instruction)
-   - If NO → Proceed to question 3
-
-3. **Does this show HOW to execute (methodology), not just WHAT to collect?** (NEW)
-   - Examples: First step instructions, diagnostic questions, process guidance
-   - If YES → KEEP (methodology guidance) OR preserve in parenthetical
-   - If NO → Proceed to question 4
-
-4. **Does this specify WHEN to do something (sequencing/ordering)?** (NEW)
-   - Examples: "Once X passes, do Y", "Before doing X", "After applying fixes"
-   - If YES → KEEP (temporal ordering)
-   - If NO → Proceed to question 5
-
-5. **Is this a distinct checklist criterion not covered by other items?** (NEW)
-   - Check: Does removing this lose a unique validation angle?
-   - If YES → KEEP (distinct criterion)
-   - If NO → Proceed to question 6
-
-6. **Does this content explain WHY (rationale/educational)?**
-   - If YES → REMOVE (not needed for execution)
-   - If NO → KEEP (operational detail)
-
-7. **Does this content show WHAT "correct" looks like (success criteria)?**
-   - If YES → KEEP (execution-critical)
-   - If NO → Proceed to question 8
-
-8. **Does this content extract a general decision rule from a specific example?**
-   - If YES → KEEP (pattern extraction for future cases)
-   - If NO → Proceed to question 9
-
-9. **Does this WHY principle enable generalization to novel situations?**
-   - Examples: "Parallel invocation avoids delays", "Exact matching required for Edit tool"
-   - Test: If agent encounters similar-but-different situation, does this help decide how to proceed?
-   - If YES → KEEP (concise principle, 1 sentence max)
-   - If NO → May remove (verbose rationale without decision value)
-
-**Critical**: Questions 2-5, 9 protect against loss of operational instructions, methodology, sequencing, distinct validation criteria, and judgment-enabling principles.
-
-### Examples Applying the Test
-
-**REMOVE THIS** (verbose WHY - Question 9 fails):
-```
-**RATIONALE**: Git history rewriting can silently drop commits or changes,
-especially during interactive rebases where "pick" lines might be accidentally
-deleted or conflicts might be resolved incorrectly. Manual verification is the
-only reliable way to ensure no data loss occurred.
-```
-→ Long explanation doesn't help with novel situations; just needs to verify.
-
-**KEEP THIS** (concise principle - Question 9 passes):
-```
-Verify commit count before/after history rewriting (prevents silent data loss)
-```
-→ Brief principle helps agent recognize OTHER history-rewriting scenarios (git filter-branch, etc.)
-
-**KEEP THIS** (defines WHAT "correct" means):
-```
-**ARCHIVAL SUCCESS CRITERIA**:
-- `git diff todo.md` shows ONLY deletions
-- `git diff changelog.md` shows ONLY additions under today's date
-- Both files in SAME commit
-- `grep task-name todo.md` returns no matches
-```
-→ Specifies exactly what success looks like; needed for correct execution.
-
-**REMOVE THIS** (restates clear instruction):
-```
-When lock acquisition fails, you should not delete the lock file.
-Instead, select an alternative task to work on.
-```
-→ If instruction already says "If lock acquisition fails: Select alternative task, do NOT delete lock"
-
-**KEEP THIS** (resolves ambiguity in "delete"):
-```bash
-# ❌ WRONG: Marking complete in todo.md
-vim todo.md  # Changed - [ ] to - [x]
-
-# ✅ CORRECT: Delete from todo.md
-vim todo.md  # DELETE entire task entry
-```
-→ Shows that "delete" means remove lines, not change checkbox.
-
-### Examples Applying NEW Tests (Questions 2-5)
-
-**KEEP THIS** (Question 2: Content specification):
-```markdown
-3. **Draft Update**:
-   - Write clear, specific guidance
-   - Include concrete examples (✅ vs ❌)
-   - Reference the mistake that prompted the update  ← CONTENT SPECIFICATION
-   - Add validation steps
-```
-→ "Reference the mistake" specifies required output content, not just explanation.
-
-**KEEP THIS** (Question 3: Methodology guidance):
-```markdown
-**What information was available to the agent?**
-- Read the agent's invocation prompt     ← First step (HOW)
-- Check what files they had access to    ← Second step (HOW)
-- Identify what context was missing      ← Third step (HOW)
-```
-→ Sub-bullets show sequential process, not just list of items.
-
-**ACCEPTABLE CONDENSATION** (Question 3: Methodology preserved in parenthetical):
-```markdown
-**Available Information** (read prompt, check file access, identify gaps):
-Agent prompt, files accessed, missing context
-```
-→ Process guidance preserved in parenthetical form.
-
-**KEEP THIS** (Question 4: Sequencing information):
-```markdown
-8. **Test Edge Cases**:
-   Once basic reproduction test passes, test variations:
-   ^^^ WHEN to do this (temporal ordering)
-```
-→ Specifies to do edge cases AFTER basic test passes.
-
-**KEEP THIS** (Question 5: Distinct checklist criterion):
-```markdown
-Validation Checklist:
-- [ ] No conflicts with other agent configs
-- [ ] Aligns with project conventions  ← Broader than just format
-- [ ] Terminology is consistent
-- [ ] Format matches existing sections
-```
-→ "Aligns with project conventions" is distinct from and broader than "Format matches".
-
-## 🚨 CONCISENESS vs CORRECTNESS HIERARCHY
-
-**Priority order** when deciding optimizations:
+**Conciseness vs Correctness Hierarchy** (priority order):
 
 1. **CORRECTNESS** (highest priority)
-   - Can Claude execute the instruction correctly without this?
-   - Does this resolve ambiguity that would cause wrong execution?
-
+   - Can Claude execute correctly without this content?
+   - Does removing this introduce ambiguity or misinterpretation?
 2. **EFFICIENCY** (medium priority)
    - Does removing this make instructions faster to scan?
    - Does condensing reduce cognitive load?
-
 3. **CONCISENESS** (lowest priority)
    - Does this reduce line count?
    - Does this tighten prose?
 
-**Rule**: Correctness always takes priority over conciseness.
+**🚨 PRIORITY RULE**: Never sacrifice correctness for conciseness. Always sacrifice conciseness for correctness.
 
-## Conciseness Strategies
+### Success Criteria: Optimal State
 
-**Techniques for concise instructions:**
+Document is optimally concise when ALL measurable criteria pass:
 
-1. **Eliminate Redundancy**:
-   - Remove repeated information across sections
-   - Consolidate overlapping instructions
-   - Replace verbose phrases with precise terms
+1. **Zero Narrative Redundancy**
+   - Test: `grep -n 'command will' {{arg}} | wc -l` = 0 (explanations restating commands)
+   - No instruction immediately followed by "This command...", "This will...", "This means..."
 
-2. **Tighten Language**:
-   - Replace "you MUST execute" with "execute"
-   - Replace "in order to" with "to"
-   - Remove filler words ("clearly", "obviously", "simply")
+2. **Minimal Pure Rationale**
+   - Test: Count "Benefits:", "This is important because" not in execution-critical sections
+   - Threshold: ≤3 pure rationale blocks (Type A from Category 5)
+   - Execution-critical context (Type B) is protected
 
-3. **Use Structure Over Prose**:
-   - Convert narrative paragraphs to bulleted lists
-   - Use numbered steps for sequential processes
-   - Use tables for multi-dimensional information
+3. **Maximum 2 Examples Per Concept**
+   - Test: No concept demonstrated 3+ times with trivial variations
+   - Distinct boundaries (❌ vs ✅) exempt from limit
+   - Each example must show different edge case or parameter combination
 
-4. **Preserve Essential Elements**:
-   - Keep all executable commands (bash, jq)
-   - Keep all data structure formats (JSON)
-   - Keep all boundary demonstrations (wrong vs right)
-   - Keep all measurable criteria and success definitions
+4. **Zero Duplicate Definitions**
+   - Test: Each term defined once only (grep for "**X**: " or "**X** -")
+   - Exception: Contextually different aspects are not duplicates
 
-**Never sacrifice for conciseness:**
-- **Semantic metadata headers**: Labels like "**TARGET AUDIENCE**:", "**OUTPUT FORMAT**:", "**INPUT REQUIREMENT**:" provide explicit categorization and scannability
-- **Scannability**: Vertical lists are clearer than comma-separated concatenations
-- **Pattern recognition**: Checkmarks/bullets for required actions are clearer than prose
-- Explicit criteria ("ALL", "at least ONE", "NEVER")
-- Measurable thresholds (counts, file paths, exact strings)
-- Prevention patterns (prohibited vs required)
-- Error condition definitions
+5. **Zero Pedagogical Repetition**
+   - Test: Key rules stated once in reference docs
+   - Convergence boundary: If same line range cataloged 2+ iterations → stop removing
 
-**Anti-patterns to avoid:**
-- ❌ Removing semantic metadata headers: "**TARGET AUDIENCE**: Claude AI" → "Claude AI" (loses explicit categorization)
-- ❌ Converting vertical list of prohibited phrases to slash-separated concatenation
-- ❌ Converting checkmarked action items (✅) to comma-separated prose
-- ❌ Removing section headers that aid navigation
-- ❌ Consolidating distinct concepts into single run-on sentences
-- ❌ Replacing inline workflow criteria with "see section X" mid-execution
-- ❌ Replacing "Goals: A, B, C" with reference to "Priority: C > B > A" (not semantically equivalent)
-- ❌ Removing quick-reference lists because detailed section exists elsewhere
+---
 
-## Redundancy Taxonomy (Formalized)
+## Part 2: Understanding Content Types
 
-Systematic classification of redundant content. Each category: Pattern, Detection, Fix, Clarity Impact.
+### Content Classification: Instructions vs Examples
 
-### Category 1: Narrative Redundancy
+#### INSTRUCTION (NEVER remove)
+These are the actionable requirements that Claude must execute:
+
+- **Commands to execute**: `grep -i "keywords" file.md`
+- **Questions to ask**: "Ask: 'Is there an imported data sheet?'"
+- **Specific actions**: "Close Excel, wait 2 seconds, retry"
+- **Conditions to check**: "If grep returns results → do X"
+
+**Identifying test**: Would removing this prevent execution? (i.e., lose a command to run, condition to check, or action to perform)
+- YES → It's an INSTRUCTION, keep it
+- NO → It's an EXAMPLE, evaluate further
+
+#### EXAMPLE (May remove if instruction is already clear)
+- **Demonstrations**: "For example: grep -i 'foo'"
+- **Sample outputs**: "You should see: [output]"
+- **Illustrative scenarios**: "Like this: [scenario]"
+
+### Protected Content Categories
+
+#### 1. Executable Syntax
+Always keep content that provides exact syntax needed for execution:
+
+- **Commands**: Bash, jq, git workflows
+- **Data formats**: JSON schemas, file paths, configuration structures
+- **Numeric constraints**: Thresholds ("6-30 seconds"), limits ("100MB max"), counts ("at least 3")
+
+#### 2. Decision Boundaries
+Always keep examples that show where rules start/stop applying:
+
+- **Wrong vs correct patterns**: Shows what NOT to do vs what TO do
+- **Edge cases**: Demonstrates boundary location (where rule starts/stops applying)
+- **Ambiguity resolvers**: Examples defining vague terms in instructions
+
+#### 3. Workflow Sequences
+Always keep content that defines execution order:
+
+- **Sequential steps**: Numbered lists where order matters for correctness
+- **Temporal dependencies**: Before/after relationships, WHEN conditions
+- **Blocking checkpoints**: STOP, WAIT, ONLY THEN, NOW markers
+
+#### 4. Pattern Extraction
+- **Recognition rules**: "This shows that X means Y", "When you see A, it indicates B"
+- **Generalization**: Extracts reusable decision principle from specific example
+- **NOT rationale**: Does NOT explain WHY rule exists, only HOW to recognize pattern
+
+**Examples**:
+- ✅ KEEP: "→ Shows that 'delete' means remove lines, not change checkbox"
+- ❌ REMOVE: "This is important because it prevents errors"
+
+### 🚨 Reference Replacement Rules
+
+#### ❌ NEVER Replace with References
+
+1. **Content within sequential workflows** (Steps 1→2→3)
+2. **Success criteria at decision points**
+
+#### ✅ OK to Replace with References
+
+1. **Explanatory content that appears in multiple places**
+2. **Content at document boundaries** (intro/conclusion)
+3. **Cross-referencing related but distinct concepts**
+
+---
+
+## Part 3: Evaluation Framework
+
+### Redundancy Categories
+
+#### Category 1: Narrative Redundancy
 **Pattern**: Instruction followed by explanation restating the same information
 
-**Detection**: Statement → "This means..." → Restatement. Trigger phrases: "In other words", "That is to say". Second sentence adds no information.
-
-**Examples**:
-```markdown
-❌ REDUNDANT:
-"Execute the validation script before committing. This means that you must
-run the script prior to making a commit. In other words, always validate first."
-→ 3 sentences saying same thing
-
-✅ CONDENSED:
-"Execute the validation script before committing."
-→ Single clear instruction
+**Example**:
+```
+Run `grep -i 'keywords' file.md` to search the file.
+This command will search the file for keywords in a case-insensitive manner.
 ```
 
-**Fix**: Remove explanation, keep instruction
-**Clarity Impact**: None
+**Fix**: Remove the explanatory restatement, keep the instruction
 
-### Category 2: Example Redundancy
-**Pattern**: Multiple examples demonstrating identical principle without added value
+---
 
-**Detection**: 3+ code blocks showing same concept with trivial variations. Examples differ only in names, not behavior. No boundary demonstration.
+#### Category 2: Example Redundancy
+**Pattern**: Multiple examples demonstrating same principle
 
-**Examples**:
-```markdown
-❌ REDUNDANT (3 examples of same thing):
-Example 1: `git status` shows changes
-Example 2: `git status` displays modifications
-Example 3: `git status` lists uncommitted files
-→ All three show: git status reveals uncommitted work
+**Detection**: 3+ code blocks showing same concept
 
-✅ CONDENSED (1 example sufficient):
-Example: `git status` shows uncommitted changes
-```
+**Fix Strategy**:
 
-**Fix**: Keep 1-2 best examples showing range, remove redundant instances
-**Clarity Impact**: Verify via Execution Test
+**For Identical Examples** (zero meaningful variation):
+- Keep the 1 BEST example using these criteria (in order):
+  1. Most complete? (shows all parameters, full workflow)
+  2. Shows success criteria? (what output/result to expect)
+  3. Demonstrates boundary? (wrong vs right, when to apply)
+- First example satisfying ALL 3 criteria wins
+- If none satisfy all 3, keep first example encountered
 
-### Category 3: Definition Redundancy
+**For Similar Examples** (variations present):
+- Check if variations are meaningful:
+  - **Meaningful variations** (distinct edge cases/boundaries) → Keep all distinct
+  - **Trivial variations** (just rephrasing same idea) → Keep max 2
+
+---
+
+#### Category 3: Definition Redundancy
 **Pattern**: Term defined multiple times in different sections
 
-**Detection**: Same term defined in multiple places. Definitions semantically equivalent. No reference between definitions.
+**Detection**: Compare definitions - are they identical, similar with different detail, or contextually different?
+
+**Fix Strategy**:
+- **Identical definitions** → Keep in primary location, replace others with reference (unless mid-workflow)
+- **One detailed, one brief** → Remove brief version (just inferior), keep detailed, then optimize detailed
+- **Contextually different** (different aspects/use cases) → Keep both (not redundant)
+
+---
+
+#### Category 4: Procedural Redundancy
+**Pattern**: Same procedure described in multiple places
+
+**Fix**: Keep detailed procedure in one place, reference from others (unless interrupts workflow)
+
+---
+
+#### Category 5: Rationale Redundancy
+**Pattern**: Explanations of WHY something is required
+
+**CRITICAL DISTINCTION** - Two types of "WHY" content:
+
+**Type A: Pure Rationale (REMOVABLE)**
+- Explains benefits/importance AFTER stating the rule
+- Pedagogical emphasis without execution impact
+- Examples:
+  - "This is important because it prevents errors"
+  - "Benefits: Reduces false positives, improves accuracy"
+  - "This matters because..." (when rule is already clear)
+
+**Type B: Execution-Critical Context (PROTECTED)**
+- Explains WHEN to apply a rule (conditional execution)
+- Explains HOW to distinguish between options (decision logic)
+- Clarifies ambiguous terms in instructions
+- Examples:
+  - "Purpose: Distinguish protected pattern instances from removable text" (explains WHAT to distinguish)
+  - "Problem: Pattern matching alone produces false positives" (explains WHEN workaround needed)
+  - "Why Both Needed: Positive alone means agent might guess..." (explains decision boundary)
+
+**Detection Test**:
+1. Remove the "WHY" content
+2. Q: "Can Claude still execute correctly?"
+   - If execution is clear → Type A (remove)
+   - If execution becomes ambiguous → Type B (keep)
+
+**Fix**: Remove Type A (pure rationale), keep Type B (execution-critical context)
+
+---
+
+#### Category 6: Pedagogical Redundancy
+**Pattern**: Key rules stated multiple times for emphasis
+
+**Fix**: Remove in reference docs - state rules once
+
+---
+
+### Instruction Clarity Evaluation
+
+#### Test 1: Completeness
+Are all parameters/inputs specified?
+
+- ❌ FAIL: "Check grep" (which grep command? which file?)
+- ✅ PASS: "Run `grep -i 'keywords' file.md`"
+
+#### Test 2: Unambiguous
+Could this be interpreted in only ONE way?
+
+- ❌ FAIL: "Fix if possible" (what determines possible?)
+- ✅ PASS: "Fix if deterministic (formula bug, wrong reference)"
+
+#### Test 3: Self-sufficient
+Can Claude execute without guessing or inferring?
+
+- ❌ FAIL: "Use the script" (which script? what parameters?)
+- ✅ PASS: "Use `claude/scripts/recalculate_excel.ps1 workbook.xlsx`"
+
+#### Test 4: Preserved context
+Is when/why to apply this clear?
+
+- ❌ FAIL: "Import first" (import what? when?)
+- ✅ PASS: "Before creating ACB schedule: Import transaction data to separate sheet"
+
+### Removal Decision Process
+
+#### Decision Tree
+
+```
+1. Is this an INSTRUCTION?
+   YES → KEEP (never remove instructions)
+   NO → Continue to question 2
+
+2. Is this part of a Negative Constraint Pair?
+   → Search within ±5 lines for paired positive/negative constraints
+   → Check if both mention same concept (see Negative Constraint Pairing Rule)
+   YES → KEEP BOTH (removing one breaks decision boundary)
+   NO → Continue to question 3
+
+3. Is this protected content? (Executable syntax, decision boundaries, workflow sequences, pattern extraction)
+   YES → KEEP (automatic preservation)
+   NO → Continue to question 4
+
+4. Can Claude execute correctly without this content?
+   NO → KEEP (execution-critical)
+   YES → Continue to question 5
+
+5. Does the instruction pass all 4 Clarity Tests without this content?
+   NO → KEEP (needed for clarity)
+   YES → Continue to question 6
+
+6. Does this content explain WHY (rationale/educational)?
+   YES → Check for protected patterns within this content:
+         → Scan for: Sequential emphasis (STOP, WAIT, CRITICAL, MANDATORY, etc.)
+         → Scan for: Template variables ({{...}})
+         → Scan for: Boundary demonstrations (❌ paired with ✅)
+         → Scan for: Decision criteria patterns (Test:, Ask:, Check:)
+         → Scan for: Negative constraints (DO NOT, NEVER, FORBIDDEN)
+         IF protected patterns found → KEEP (protected content takes precedence)
+         IF no protected patterns → REMOVE (pure rationale)
+   NO → Continue to question 7
+
+7. Does this content show WHAT "correct" looks like OR teach HOW to recognize patterns?
+   YES → KEEP (success criteria or pattern extraction)
+   NO → Continue to question 8
+
+8. Is this redundant content? (Categories 1-6)
+   NO → KEEP (unique content)
+   YES → Check for protected patterns (same as question 6)
+         IF protected patterns found → KEEP (protected content takes precedence)
+         IF no protected patterns → Safe to remove, proceed with removal
+```
+
+#### Special Cases
+
+**If instruction is VAGUE** (fails any Clarity Test):
+1. DO NOT REMOVE EXAMPLES YET
+2. First strengthen the instruction:
+   - Replace subjective terms with explicit criteria
+   - Convert narrative to numbered steps
+   - Add measurable thresholds or boundaries
+   - Define what "success" looks like
+3. KEEP all examples until instruction is strengthened
+4. Re-evaluate after strengthening
+
+**If removing would interrupt workflow**:
+- Don't replace with reference if content is within sequential steps (Steps 1→2→3)
+- Don't replace with reference if content is success criteria at decision point
+- See "Reference Replacement Rules" above
+
+**Common Protection Examples**:
+- ✅ KEEP: "**⚠️ CRITICAL - Agent Type Restriction**" (Sequential emphasis #4, Agent type restrictions #13)
+- ✅ KEEP: "How Convergence Works: The iterative process naturally converges..." (Correctness guarantees #11)
+- ✅ KEEP: "MUST use `subagent_type: general-purpose`" (Decision criteria #2, Agent type restrictions #13)
+
+### Never-Remove List (Automatic Preservation)
+
+The following 7 content categories are NEVER removed, regardless of redundancy:
+
+**1. Executable Specifications**
+All content needed to execute commands correctly:
+- Template variables: `{{arg}}`, `{{...}}`
+- Commands, file paths, jq expressions (in backticks/code blocks)
+- Numeric thresholds: "6-30 seconds", "at least 3", "maximum 100MB"
+- Data formats: JSON schemas, configuration structures
+- Concrete benchmarks: "17-second gap", specific test results
+
+**2. Decision Logic**
+All content that guides choices and conditionals:
+- Decision criteria: "Test:", "Ask:", "Check:", "Q:", "A:"
+- Conditional patterns: "If X → Y", "When X, do Y"
+- Boundary demonstrations: "❌ WRONG" paired with "✅ CORRECT"
+- Agent/tool restrictions: "MUST use X", "DO NOT use Y" (both if paired)
+- Special case handling: "If [condition] fails:" + numbered steps
+- **Pairing Rule**: If positive + negative constraints about same topic → KEEP BOTH
+
+**3. Execution Flow Control**
+All content that defines sequence and timing:
+- Sequential emphasis (context-aware): "STOP", "WAIT", "ONLY THEN", "NOW", "FIRST", "BEFORE", "AFTER"
+- Workflow steps: "Step N:", numbered lists with dependencies
+- Blocking checkpoints: "⚠️ CRITICAL", "MANDATORY"
+- **Context-aware**: Only count in code blocks, headers, emphasis markers, pattern demonstrations
+- **Exclude**: Plain text like "This is critical for success"
+
+**4. Success Verification**
+All content that defines correct outcomes:
+- Expected outputs: "Expected output:", "Should see:", "Result:"
+- Exit codes and states: "Exit code:", file state criteria
+- Pattern extraction: "This shows that X means Y" (teaches recognition)
+- Correctness guarantees: "Convergence", "Termination guarantee"
+
+**5. Execution Context** (NEW - Prevents Oscillation)
+All content that explains WHEN/HOW to apply instructions:
+- Purpose statements: "**Purpose**: Distinguish X from Y"
+- Problem statements: "**Problem**: X alone produces false positives"
+- When-to-apply: "**When to use**:", prerequisite relationships
+- Detection strategies: "**Detection**:" rules for pattern recognition
+- Decision boundaries: "Why Both Needed: X alone means..."
+- **Test**: Remove it - does execution become ambiguous? If yes → PROTECTED
+
+**6. Workflow Phase Dependencies**
+All content explaining prerequisite relationships between phases:
+- Phase purpose: Headers with "Phase", workflow dependency explanations
+- Convergence mechanisms: How iterative processes terminate
+- Safety mechanisms: Prevents infinite loops, data loss
+- Conditional workflows: Headers "Special Cases", "Edge Cases", "Exceptions" + all branches
+
+**7. Structural Metadata**
+All content that labels algorithmic structure and coordinated improvements:
+- OPTION labels: "OPTION N IMPROVEMENT:", "Step X.Y (OPTION N IMPROVEMENT)"
+- Algorithmic markers showing coordinated features that work together
+- **NOT alternatives**: All OPTION improvements execute together, not mutually exclusive
+- **Distinguish from retrospective metadata**: OPTION labels show algorithm structure (forward-looking), not historical "why added" (retrospective)
+
+### 🚨 Negative Constraint Pairing Rule
+
+**Pattern**: Positive requirement + negative constraint about same topic
 
 **Examples**:
+- "MUST use X" + "DO NOT use Y" (where Y = alternatives to X)
+- "Include A" + "Never include B" (where B = anti-pattern of A)
+- "Allowed: X, Y, Z" + "Forbidden: A, B, C"
+
+**Detection**:
+1. Find positive constraint (MUST, REQUIRED, ALWAYS)
+2. Find negative constraint (DO NOT, NEVER, FORBIDDEN) in nearby lines (within 5 lines)
+3. Both mention same concept (agent types, file patterns, commands, etc.)
+
+**Rule**:
+- If both constraints exist → Both are PROTECTED (Never-Remove List #13)
+- Removing positive while keeping negative → Creates vague prohibition
+- Removing negative while keeping positive → Loses boundary information
+
+**Why Both Needed**:
+- Positive alone: Agent might guess alternatives are allowed
+- Negative alone: Agent doesn't know what TO do, only what NOT to do
+- Together: Creates unambiguous decision boundary
+
+**Validation Test**:
+- Q: "What are ALL valid options?"
+- A: Must be answerable from positive constraint alone
+- Q: "What are ALL invalid options?"
+- A: Must be answerable from negative constraint alone
+- If either answer is "Cannot determine from document" → Missing constraint
+
+**Examples in Practice**:
+
+✅ CORRECT (both present):
+```
+MUST use `subagent_type: "general-purpose"`
+DO NOT use optimizer, hacker, designer, builder
+```
+→ Valid options: {general-purpose}
+→ Invalid options: {optimizer, hacker, designer, builder}
+
+❌ INCOMPLETE (positive only):
+```
+MUST use `subagent_type: "general-purpose"`
+```
+→ Valid options: {general-purpose}
+→ Invalid options: Cannot determine from document (are other types forbidden or just not preferred?)
+
+❌ INCOMPLETE (negative only):
+```
+DO NOT use optimizer, hacker, designer, builder
+```
+→ Valid options: Cannot determine from document
+→ Invalid options: {optimizer, hacker, designer, builder}
+
+### Context-Aware Pattern Detection
+
+**Purpose**: Distinguish truly protected pattern instances from removable explanatory text.
+
+**Problem**: Pattern matching alone produces false positives:
+- "CRITICAL" in code block → Actually protected (controls execution)
+- "The word CRITICAL signals importance" → Just explanation (can be removed if redundant)
+
+**Protected Contexts** (pattern instance MUST be preserved):
+
+1. **Code blocks**: Text within triple backticks (\`\`\`)
+   ```bash
+   if [ "$STATUS" = "CRITICAL" ]; then  # ← Protected
+   ```
+
+2. **Inline code**: Text within single backticks (\`)
+   - Example: \`CRITICAL\` in command syntax ← Protected
+
+3. **Block quotes**: Text within `>` markers
+   - Example: `> STOP and verify` ← Protected
+
+4. **Command syntax**: Part of command structure
+   - Example: `git commit -m "MANDATORY review"` ← Protected
+
+5. **Headers**: Section titles (lines starting with `#`)
+   - Example: `### CRITICAL Requirements` ← Protected
+
+6. **Pattern demonstrations**: Teaching what patterns mean
+   - Example: `- Detection: "CRITICAL", "MANDATORY"` ← Protected (defines pattern)
+   - Example: Lines containing "Pattern:", "Detection:", "Example:" ← Protected
+
+7. **Emphasis markers**: Styled text
+   - Example: `**CRITICAL**:` or `⚠️ CRITICAL` ← Protected
+
+**Removable Contexts** (pattern instance CAN be removed if redundant):
+
+1. **Plain explanatory text**: Regular prose explaining concept
+   - Example: "This approach is critical for success" ← Can remove if redundant
+   - Example: "Remember to stop before proceeding" ← Can remove if pedagogical
+
+2. **Narrative transitions**: Connecting text between sections
+   - Example: "Now that we've covered the critical points..." ← Can remove
+
+3. **Pedagogical rationale**: Explaining WHY something matters
+   - Example: "This is critical because it prevents errors" ← Can remove if WHY redundant
+
+**Detection Strategy** (in proactive pattern scanning):
+
+1. Extract line containing pattern instance
+2. Check context:
+   ```
+   IF line contains backticks → Protected
+   IF line starts with ">" → Protected
+   IF line starts with "#" → Protected
+   IF line contains "Detection:", "Pattern:", "Example:" → Protected
+   IF line contains "**" or "⚠️" → Protected
+   IF none of above → Removable (subject to redundancy check)
+   ```
+3. Count only protected instances for pattern validation
+4. Allow removal of pedagogical/explanatory instances
+
+**Benefits**:
+- Reduces false positives in pattern detection
+- Allows removal of explanatory text that happens to contain keywords
+- Still protects actual functional usage of patterns
+- More accurate optimization with fewer violations
+
+**Example Application**:
+
 ```markdown
-❌ REDUNDANT:
-Section A: "OPTIMAL: Complete, maintainable, follows best practices"
-Section B: "OPTIMAL solution means: Complete implementation, maintainable code, best practices"
-→ Same definition in two sections
+### Protected Instances (count toward validation):
 
-✅ CONSOLIDATED:
-Section A: "OPTIMAL: Complete, maintainable, follows best practices"
-Section B: "Use OPTIMAL solution (see terminology definition)"
-→ Define once, reference elsewhere
+- Detection: "STOP", "CRITICAL" (← teaching pattern syntax)
+- `if [ "$STATUS" = "CRITICAL" ]` (← in code block)
+- **CRITICAL**: Verify first (← emphasis marker)
+
+### Removable Instances (don't count):
+
+- This approach is critical for success (← plain text explanation)
+- Remember to stop before proceeding (← pedagogical narrative)
 ```
 
-**Fix**: Keep definition in primary location, replace others with reference
-**Clarity Impact**: Only if reference doesn't interrupt workflow
+In this example:
+- Pattern count = 3 (only protected instances)
+- If "critical for success" removed → No violation (wasn't counted)
+- If \`CRITICAL\` in code removed → Violation (was counted)
 
-### Category 4: Procedural Redundancy
-**Pattern**: Same procedure described in multiple places with equivalent steps
+---
 
-**Detection**: Identical step sequences in different sections. Same commands, rephrased. No contextual difference justifying duplication.
+## Part 4: Execution Workflow
 
-**Examples**:
-```markdown
-❌ REDUNDANT:
-Section "Validation":
-1. Run checkstyle
-2. Fix violations
-3. Re-run to verify
+**Workflow Phases**:
+- **Preparation Phase** (Steps 1-3): Setup and initialization
+- **Optimization Phase** (Steps 4-7): Identify and remove redundancy
+- **Validation Phase** (Steps 8-11): Verify facts preserved, validate protected patterns, restore if needed
+- **Completion Phase** (Steps 12-13): Commit and report
 
-Section "Quality Gates":
-1. Execute checkstyle
-2. Address violations
-3. Verify all pass
-→ Same 3-step procedure, different wording
+### Preparation Phase
 
-✅ CONSOLIDATED:
-Section "Validation": [Full procedure]
-Section "Quality Gates": "Follow validation procedure (see Validation section)"
+#### Step 1: Read Document
+
+**Read** the document: `{{arg}}`
+
+---
+
+#### Step 2: Extract Session ID and Create Backup
+
+**📋 Session ID Usage**:
+- Extract session ID from system reminder context
+- Use for all temp file naming: `/tmp/*-${SESSION_ID}`
+
+**SESSION ID EXTRACTION** (from conversation context):
+
+1. Search conversation for text `Session ID:` (appears in system reminder messages)
+2. Extract the 36-character UUID following `Session ID:` (format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+3. Assign UUID to SESSION_ID variable below
+
+**Where to look** (check in order until found):
+1. System reminder messages at conversation start (first 10 messages)
+2. Messages containing "SessionStart hook additional context"
+3. SlashCommand tool output for this optimize-doc command
+
+**Fallback if not found**: Generate timestamp-based ID using `date +%Y%m%d-%H%M%S` (e.g., "20251109-183045")
+
+**Example**: `Session ID: a3457736-ae82-46c9-b098-3146a66e2506` → Extract `a3457736-ae82-46c9-b098-3146a66e2506`
+
+```bash
+# Assign session ID extracted from system reminder above
+# Replace the example UUID below with actual session ID from YOUR conversation
+SESSION_ID="a3457736-ae82-46c9-b098-3146a66e2506"  # ← REPLACE with your session ID
+
+BACKUP_FILE="{{arg}}.backup-${SESSION_ID}"
+cp "{{arg}}" "$BACKUP_FILE"
+echo "Backup created: $BACKUP_FILE"
+echo "Session ID: $SESSION_ID"
 ```
 
-**Fix**: Keep detailed procedure in one place, reference from others
-**Clarity Impact**: Safe at section boundary, unsafe mid-execution
+---
 
-### Category 5: Rationale Redundancy (CONTEXT-DEPENDENT)
-**Pattern**: Explanations of WHY something is required (educational content vs principles for judgment)
+#### Step 3: Initialize Iteration Tracking
 
-**Detection**: Paragraphs starting "This is because...", "The reason is...". Describes benefits/context. Doesn't specify WHAT or HOW.
+```bash
+ITERATION=1
+MAX_ITERATIONS=10
+RECOVERY_ATTEMPT=0
+MAX_RECOVERY_ATTEMPTS=10
 
-**CRITICAL DISTINCTION**:
+# Capture original line count before optimization begins
+ORIGINAL_LINE_COUNT=$(wc -l < "{{arg}}")
 
-**Verbose Rationale** (REMOVE - doesn't enable generalization):
-- Long explanations of benefits, mechanisms, or background
-- Technical details about why approach works
-- Educational narrative that doesn't inform decisions
-- Example: "The validation library generates consistent error messages automatically and reduces boilerplate code"
+# Track candidates that caused violations (smart recovery strategy)
+# Format: Comma-separated list of candidate numbers
+# Example: "2,4,7" means candidates 2, 4, and 7 caused violations in previous attempts
+EXCLUDED_CANDIDATES=""
 
-**Concise Principles** (KEEP - enables judgment in novel situations):
-- Brief statements explaining core purpose that guide application
-- Help agent decide WHEN rule applies to new situations
-- Enable generalization to similar-but-different problems
-- Example: "Parallel invocation avoids delays" (helps decide when to parallelize)
+# OPTION 4 IMPROVEMENT: Candidate Deduplication (Convergence Detection)
+# Prevents oscillation where same candidates are cataloged repeatedly across iterations
+# Track candidate line ranges across iterations
+# If same lines cataloged 2+ iterations → Stop removing (boundary case - neither clearly removable nor protected)
+PREVIOUS_CANDIDATE_RANGES=""  # Format: "45-48,102-105,234-240" (comma-separated)
+OSCILLATION_THRESHOLD=2  # How many times same candidate can repeat before marking as boundary
 
-**Test for Generalization Value**:
-```
-Ask: "If agent encounters similar-but-not-exactly-same situation,
-does this WHY help them decide how to proceed?"
-
-If YES → Keep as concise principle (aids judgment)
-If NO → Remove as verbose rationale (pure education)
-```
-
-**Examples**:
-```markdown
-❌ REMOVE (verbose rationale - no decision value):
-"Verify commit count before and after rebase.
-
-RATIONALE: Git history rewriting can silently drop commits, especially during
-interactive rebases where lines might be deleted or conflicts might be resolved
-incorrectly. Manual verification is the only reliable way to ensure no data loss
-occurred. This protects against silent corruption..."
-→ Long technical explanation
-
-✅ KEEP (concise principle - enables generalization):
-"Verify commit count before/after history rewriting (prevents silent data loss)"
-→ Brief principle helps agent recognize OTHER history-rewriting scenarios
-
-✅ ALSO CORRECT (pure operational - no WHY at all):
-"Verify commit count before and after rebase:
-  # Before: git rev-list --count HEAD
-  # After: git rev-list --count HEAD
-  # Should match unless you intended to drop commits"
-→ Instruction + WHAT to check
+# How it works:
+# - Step 6 checks each candidate's line range against PREVIOUS_CANDIDATE_RANGES
+# - If range found in history → Skip (convergence boundary detected)
+# - Step 6 appends current iteration's ranges to PREVIOUS_CANDIDATE_RANGES
+# - This guarantees convergence: repeated candidates eventually get skipped
 ```
 
-**Fix**:
-- Remove verbose RATIONALE paragraphs
-- Keep concise principles (1 sentence max) if they enable judgment
-- Always keep instruction + success criteria
+---
 
-**Clarity Impact**:
-- Verbose removal: None
-- Principle removal: May reduce ability to generalize to novel situations
+### Optimization Phase
 
-### Category 6: Pedagogical Redundancy (CONTEXT-DEPENDENT)
-**Pattern**: Key rules stated multiple times for emphasis or learning
+#### Step 4: Check Optimal State (Idempotency Gate)
 
-**Detection**: Same rule in summary, header, and body. Repetition serves learning, not execution. Common in tutorials.
+```bash
+echo "=== STEP 4: OPTIMAL STATE CHECK ==="
 
-**Examples**:
-```markdown
-❌ REDUNDANT (pedagogical emphasis):
-Summary: "Never commit without testing"
-Section: "Pre-Commit Requirements: Never commit without testing"
-Instruction: "Before committing, run tests (never commit without testing)"
-→ Rule stated 3 times for emphasis
+# Convergence check: On iteration 2+, check if previous iteration made changes
+# Skip this check on iteration 1 (backup just created, always identical)
+if [ "$ITERATION" -gt 1 ]; then
+  if diff -q "{{arg}}" "$BACKUP_FILE" > /dev/null 2>&1; then
+    echo "✅ CONVERGENCE DETECTED"
+    echo "File unchanged from previous iteration - optimization complete"
+    echo "Document reached optimal state after $((ITERATION - 1)) iteration(s)"
 
-✅ FOR REFERENCE DOC (condensed):
-Summary: "Testing required before commits"
-Section: "Pre-Commit Requirements"
-Instruction: "Before committing, run tests"
-→ Rule stated once per context
+    # Set metrics for convergence case
+    LINES_AFTER=$ORIGINAL_LINE_COUNT
+    LINES_REMOVED=0
+    OPTIMAL_STATE="OPTIMAL"
 
-✅ FOR TUTORIAL (keep repetition):
-[Same as redundant example - repetition aids learning]
+    echo "Proceeding to Step 12 (Cleanup and Commit)..."
+    # Skip to Step 12 - no more changes to make
+  fi
+fi
+
+# If not converged, invoke agent to evaluate
+if [ "$OPTIMAL_STATE" != "OPTIMAL" ]; then
+  # Invoke Task tool with these parameters:
+  #   subagent_type: "general-purpose"
+  #   model: "sonnet"
+  #   description: "Evaluate optimal state"
+  #   prompt: <full prompt below>
+
+  Prompt: "You are evaluating whether a documentation file is optimally concise.
+
+  **FILE TO EVALUATE**: {{arg}}
+
+  Read the file completely. Evaluate against the 5 optimal state criteria:
+  1. Narrative Redundancy: Instruction followed by restatement
+  2. Verbose Rationale: WHY explanations >2 sentences
+  3. Example Excess: 3+ similar examples per concept (unless showing distinct boundaries)
+  4. Duplicate Definitions: Same term defined multiple times
+  5. Pedagogical Repetition: Key rules stated 3+ times
+
+  **OPTION 2 IMPROVEMENT: Complete Cataloging Requirement**
+
+  When evaluating, you MUST identify ALL instances of each failing criterion, not just examples.
+  Your assessment should provide:
+  - Total count of violations for each criterion
+  - List of specific line ranges for ALL violations (not just a few examples)
+
+  This ensures cataloging in Step 6 can find ALL removal candidates in a single pass.
+
+  **OUTPUT FORMAT**:
+
+  ## Optimal State Evaluation
+
+  ### Overall Assessment
+  OPTIMAL / SUBOPTIMAL
+
+  [If SUBOPTIMAL, list which criteria fail with counts AND complete list of line ranges]"
+
+  # Extract assessment from agent response
+  OPTIMAL_STATE="SUBOPTIMAL"  # ← REPLACE with OPTIMAL or SUBOPTIMAL from agent response
+
+  if [ "$OPTIMAL_STATE" = "OPTIMAL" ]; then
+    echo "✅ DOCUMENT ALREADY OPTIMAL"
+    echo "No redundancy found - document is optimally concise"
+
+    # Set metrics (no changes made this iteration)
+    LINES_AFTER=$ORIGINAL_LINE_COUNT
+    LINES_REMOVED=0
+
+    echo "Proceeding to Step 12 (Cleanup and Commit)..."
+    # Skip to Step 12 - iteration loop terminates
+  else
+    echo "⚠️ DOCUMENT SUBOPTIMAL: Optimization needed"
+    echo "Proceeding to Step 5 (Pre-Cataloging Validation)..."
+  fi
+fi
 ```
 
-**Fix**: Remove in reference docs, keep in tutorials
-**Clarity Impact**: None for reference docs, harmful removal in tutorials
+---
 
-### Detection Decision Tree
+#### Step 5: Pre-Cataloging Validation (Never-Remove List Enforcement)
 
-```
-Found repeated content?
-├─ Same instruction in multiple places?
-│  ├─ YES → Category 3 (Definition) or 4 (Procedural)
-│  └─ NO → Continue
-├─ Instruction + explanation restating it?
-│  ├─ YES → Category 1 (Narrative)
-│  └─ NO → Continue
-├─ Multiple examples of same concept?
-│  ├─ YES → Category 2 (Example)
-│  └─ NO → Continue
-├─ Explains WHY (rationale/benefits)?
-│  ├─ YES → Category 5 (Rationale) - TEST FOR GENERALIZATION VALUE
-│  │  ├─ Verbose explanation → REMOVE
-│  │  └─ Concise principle → KEEP (enables judgment)
-│  └─ NO → Continue
-└─ Repetition for emphasis/learning?
-   ├─ YES → Category 6 (Pedagogical) - CONTEXT-DEPENDENT
-   └─ NO → Not redundancy, likely serves distinct purpose
-```
+**Before cataloging any removal candidates, validate document for protected patterns**:
 
-### Application Workflow
+**⚠️ IMPORTANT: Context-Aware Counting**
 
-Per section: Identify redundancy type → Apply fix (remove/consolidate/reference) → Verify clarity (4 Tests) → Document elimination
+Count ONLY patterns in protected contexts (see Context-Aware Pattern Detection in Part 3):
+- ✅ Count: In code blocks, headers, inline code, quotes, pattern demonstrations, emphasis markers
+- ❌ Don't count: In plain explanatory text, narrative transitions, pedagogical rationale
 
-## Optimization Strategy
+**Why**: Allows removal of explanatory text containing keywords while protecting functional usage.
 
-**Single-Pass**: Strengthen instructions + remove redundancy in one pass. Commit: "Optimize [filename] for conciseness and clarity"
+```bash
+echo "=== STEP 5: PRE-CATALOGING VALIDATION ==="
 
-**Multi-Pass** (complex docs): First pass strengthens + removes redundancy. Second/subsequent passes optimize further or no changes if optimal.
+# Count protected patterns in current document with context-aware filtering
 
-**User Workflow**: Run `/optimize-doc docs/file.md` → Review → Optional re-run → No changes when optimal
+# Template variables (always in protected context)
+TEMPLATE_VARS=$(grep -oE '\{\{[^}]+\}\}' "{{arg}}" | wc -l)
 
-## Execution Instructions
+# Decision criteria (line-start patterns)
+DECISION_CRITERIA=$(grep -E '^(Test:|Ask:|Check:|Q:)' "{{arg}}" | wc -l)
 
-1. **Read** the document specified: `{{arg}}`
-2. **Create Backup** (MANDATORY before making changes):
-   ```bash
-   # Create unique ID for this optimization
-   VALIDATION_ID="$(date +%s)-$$"
+# Sequential emphasis - CONTEXT-AWARE IMPLEMENTATION
+# Count only in protected contexts: code blocks, headers, emphasis markers, pattern demonstrations
+# Exclude plain text explanations
+SEQUENTIAL_EMPHASIS=$(grep -n 'STOP\|WAIT\|ONLY THEN\|NOW\|FIRST\|BEFORE\|AFTER\|CRITICAL\|MANDATORY' "{{arg}}" | \
+  grep '`\|^[0-9]*:#\|^\*\*\|⚠️\|Detection:\|Pattern:\|Example:' | wc -l)
 
-   # Create backup with timestamp
-   BACKUP_FILE="{{arg}}.backup-${VALIDATION_ID}"
-   cp "{{arg}}" "$BACKUP_FILE"
-   echo "Created backup: $BACKUP_FILE"
-   echo "Validation ID: $VALIDATION_ID"
-   ```
-3. **Analyze** each section using the methodology above
-4. **Optimize** directly:
-   - Strengthen vague instructions with explicit criteria
-   - Remove redundant content while preserving clarity
-   - Apply conciseness strategies where beneficial
-5. **Validate** each condensed section:
-   - **Re-read the condensed instruction independently** (without context of original)
-   - **Apply the 4 Clarity Tests** from Step 2
-   - **If any test fails**: Restore enough content to pass all 4 tests
-   - **Document validation**: Note which sections were validated and passed
+# Boundary demonstrations (always paired)
+BOUNDARY_DEMOS=$(grep -c '❌.*:' "{{arg}}")
 
-5B. **Category-Specific Validation** (Enhanced):
+# Negative constraints
+NEGATIVE_CONSTRAINTS=$(grep -c 'DO NOT\|NEVER\|FORBIDDEN' "{{arg}}")
 
-After condensing content, apply validation specific to redundancy type being removed:
+# Execution context markers (Purpose, Problem, When sections that explain WHEN to apply rules)
+EXECUTION_CONTEXT=$(grep -c '^\*\*Purpose\*\*:\|^\*\*Problem\*\*:\|^\*\*When to\|^\*\*Detection\*\*:' "{{arg}}")
 
-**For Narrative Redundancy Removal**:
-- [ ] Is instruction still complete without explanation?
-- [ ] All parameters specified
-- [ ] Success criteria clear
-- [ ] No ambiguous terms undefined
-- **Test**: Can Claude execute instruction without explanation?
+echo "Protected pattern inventory (context-aware):"
+echo "  Template variables: $TEMPLATE_VARS"
+echo "  Decision criteria: $DECISION_CRITERIA"
+echo "  Sequential emphasis (protected contexts only): $SEQUENTIAL_EMPHASIS"
+echo "  Boundary demonstrations: $BOUNDARY_DEMOS"
+echo "  Negative constraints: $NEGATIVE_CONSTRAINTS"
+echo "  Execution context markers: $EXECUTION_CONTEXT"
 
-**For Example Redundancy Removal**:
-- [ ] Does remaining example(s) demonstrate full concept range?
-- [ ] Shows boundary between correct/incorrect (if applicable)
-- [ ] Covers edge cases (if applicable)
-- [ ] Pattern extraction still possible
-- **Test**: Can Claude recognize this pattern in new contexts?
-
-**For Definition Redundancy Consolidation**:
-- [ ] Is reference clear and non-disruptive?
-- [ ] Reference at section boundary (not mid-workflow)
-- [ ] Referenced definition is complete
-- [ ] No circular references
-- **Test**: Can Claude find definition without frustration?
-
-**For Procedural Redundancy Consolidation**:
-- [ ] Does consolidated procedure cover all use cases?
-- [ ] Primary procedure has all steps from duplicates
-- [ ] Context differences documented
-- [ ] References don't break workflow
-- **Test**: Can Claude execute from consolidated version?
-
-**For Rationale Redundancy Removal**:
-- [ ] Does instruction still convey success criteria?
-- [ ] WHAT to do: Clear
-- [ ] HOW to do it: Clear
-- [ ] WHAT "correct" looks like: Clear
-- [ ] WHY to do it: Removed (not needed)
-- **Test**: Can Claude execute without understanding rationale?
-
-**For Pedagogical Redundancy Removal**:
-- [ ] Document type appropriate for removal?
-- [ ] Reference document: Safe to remove repetition
-- [ ] Tutorial/guide: Keep repetition for learning
-- [ ] Mixed: Keep in learning sections, remove in reference sections
-- **Test**: Does document type justify repetition?
-
-**Validation Failure Recovery**: Identify failed check → Restore content → Re-validate → Document: "Partial removal, preserved X due to Y"
-
-6. **Self-Review Changes** (MANDATORY before reporting):
-   - **Stage changes**: `git add {{arg}}`
-   - **Review diff**: `git diff --cached {{arg}} | head -200`
-   - **Apply Critical Questions to ALL changes** (review each deleted/modified section in diff output):
-
-     **Question 1: Was any meaning lost?**
-     - Review each deleted line/section in the diff
-     - Check: Does removed content specify what to produce, how to execute, or when to do it?
-     - Check: Are any content specifications, methodology steps, or sequencing indicators removed?
-     - If YES → **RESTORE** that content
-
-     **Question 2: Was any vagueness introduced?**
-     - Review each condensed instruction
-     - Apply 4 Clarity Tests (Completeness, Unambiguous, Self-sufficient, Context preserved)
-     - Check: Can this be interpreted in only ONE way without the original?
-     - If NO → **RESTORE** specificity or add clarifying details
-
-     **Question 3: Was any ability to execute properly lost?**
-     - Review each modified workflow, checklist, or command sequence
-     - Check: Can Claude execute this correctly without removed content?
-     - Check: Are all parameters, file paths, and success criteria present?
-     - Check: Is temporal ordering preserved (before/after/once relationships)?
-     - If NO → **RESTORE** execution-critical content
-
-   - **If ANY question reveals issues**: Use Edit tool to restore necessary content
-   - **Validation**: Re-run self-review after fixes until all 3 questions pass
-   - **Unstage if major issues found**: `git reset {{arg}}` and return to step 4
-
-   - **Rollback if needed** (if major issues found that can't be easily fixed):
-     ```bash
-     # Find backup file and extract VALIDATION_ID
-     BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
-     VALIDATION_ID="${BACKUP_FILE##*.backup-}"
-
-     # Restore from backup
-     cp "$BACKUP_FILE" "{{arg}}"
-     echo "Restored from backup: $BACKUP_FILE"
-     # Return to step 4 to try again
-     ```
-
-7. **Independent Validation** (MANDATORY for all documents):
-
-   **Protocol Summary** (two-phase separation):
-   ```
-   Phase 1                          Phase 2
-   ┌─────────────────────┐         ┌─────────────────────┐
-   │ Create candidate    │         │ Create baseline     │
-   │ Invoke validator    │    →    │ Resume validator    │
-   │ Store agent ID      │         │ Compare files       │
-   │ NO baseline exists  │         │ Report violations   │
-   └─────────────────────┘         └─────────────────────┘
-        Agent analyzes                  Agent compares
-        candidate blind                 with full context
-   ```
-
-   **Key Constraint**: Baseline file MUST NOT exist during Phase 1. Validator sees candidate only, establishing genuine confusions before comparison.
-
-   **⚠️ CRITICAL: Two-Phase Separation is MANDATORY**
-
-   **❌ WRONG - Single-Phase Validation** (what NOT to do):
-   ```bash
-   # Creating both files at once - VIOLATES PROTOCOL
-   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
-   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
-   cp "{{arg}}" "/tmp/candidate-${VALIDATION_ID}"
-   git show HEAD:{{arg}} > "/tmp/baseline-${VALIDATION_ID}"  # ← WRONG: Baseline created too early
-
-   # Invoking validator with both file paths - VIOLATES PROTOCOL
-   Task tool: general-purpose
-   Prompt: "Compare /tmp/candidate-${VALIDATION_ID} with /tmp/baseline-${VALIDATION_ID}..."
-   # ← WRONG: Validator can see both files, no genuine Phase 1 analysis
-   ```
-
-   **✅ CORRECT - Two-Phase Validation** (what TO do):
-   - Phase 1: Create candidate ONLY → Invoke validator → Store agent ID
-   - Phase 2: Create baseline → Resume validator with baseline path
-   - Validator cannot cheat because baseline doesn't exist during Phase 1
-
-   **Phase 1: Analyze Candidate Only**
-
-   ```bash
-   # Extract VALIDATION_ID from backup filename
-   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
-   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
-
-   # Create candidate file
-   CANDIDATE_FILE="/tmp/candidate-${VALIDATION_ID}"
-   cp "{{arg}}" "$CANDIDATE_FILE"
-
-   # Invoke validator with literal file path (validator sees expanded path like /tmp/candidate-1762328795-3595)
-   Task tool: general-purpose
-   Model: sonnet
-   Description: Validate optimization Phase 1
-   Prompt: "You are an independent validator analyzing a documentation file.
-
-   **FILE TO ANALYZE**: $CANDIDATE_FILE
-
-   Read the above file completely from start to finish.
-
-   **Document Your Questions**
-
-   As you read, document genuine confusions that impact your ability to execute:
-   - What is unclear or ambiguous?
-   - Where do you feel uncertain about how to proceed?
-   - What specific information seems unclear for execution?
-
-   **Only document execution-impacting confusions** - not theoretical edge cases, rationale questions, or implementation details you don't need.
-
-   **OUTPUT FORMAT**:
-
-   ## Phase 1: Candidate Analysis
-
-   ### Execution-Impacting Confusions
-
-   If you have confusions, list them numbered (1, 2, 3...).
-   If you have NO confusions, write only: "None"
-
-   Do not write both."
-   ```
-
-   Store the agent ID for resume:
-   ```bash
-   # Extract agent ID using get-agent-id skill pattern
-   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
-   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
-
-   bash -c 'SESSION_ID="<session-id-from-context>" && VALIDATION_ID="'"$VALIDATION_ID"'" && AGENT_ID=$(jq -r "select(.toolUseResult.agentId) | .toolUseResult.agentId" /home/node/.config/projects/-workspace/${SESSION_ID}.jsonl 2>/dev/null | tail -1) && echo "$AGENT_ID" > "/tmp/validator-id-'"$VALIDATION_ID"'" && echo "Stored agent ID: $AGENT_ID"'
-   ```
-
-   See **get-agent-id** skill documentation for details and troubleshooting.
-
-   **Checkpoint: Phase 1 Complete** (execute this bash script before Phase 2):
-   ```bash
-   # Extract VALIDATION_ID from backup filename
-   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
-   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
-
-   # Verify Phase 1 completed correctly
-   BASELINE_FILE="/tmp/baseline-${VALIDATION_ID}"
-
-   if [ -f "$BASELINE_FILE" ]; then
-     echo "❌ ERROR: Baseline file exists during Phase 1 - protocol violation"
-     exit 1
-   fi
-
-   VALIDATOR_AGENT_ID=$(cat "/tmp/validator-id-${VALIDATION_ID}" 2>/dev/null)
-   if [ -z "$VALIDATOR_AGENT_ID" ]; then
-     echo "❌ ERROR: Agent ID not stored - cannot resume for Phase 2"
-     exit 1
-   fi
-
-   echo "✅ Phase 1 complete - proceeding to Phase 2"
-   ```
-
-   **ONLY AFTER** checkpoint script succeeds proceed to Phase 2.
-
-   **Phase 2: Compare with Baseline** (REQUIRES Phase 1 completion)
-
-   **Prerequisites** (verify ALL before proceeding):
-   - ✅ Phase 1 validator completed and returned results
-   - ✅ Checkpoint script succeeded (see previous step)
-
-   **If checkpoint failed**: Return to Phase 1, do NOT proceed.
-
-   ```bash
-   # Extract VALIDATION_ID from backup filename
-   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
-   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
-
-   # NOW create baseline file (validator already completed Phase 1)
-   BASELINE_FILE="/tmp/baseline-${VALIDATION_ID}"
-   CANDIDATE_FILE="/tmp/candidate-${VALIDATION_ID}"
-   git show HEAD:{{arg}} > "$BASELINE_FILE"
-
-   # Load validator agent ID
-   VALIDATOR_AGENT_ID=$(cat "/tmp/validator-id-${VALIDATION_ID}")
-
-   # Resume validator for Phase 2 with literal file paths (validator sees expanded paths)
-   # CRITICAL: Use neutral language - do NOT reveal file relationship or optimization context
-   # WRONG: "baseline (original)" or "candidate (optimized)" - creates confirmation bias
-   # RIGHT: "File A" and "File B" - maintains neutrality
-   Task tool: general-purpose
-   Model: sonnet
-   Description: Validate optimization Phase 2
-   Resume: $VALIDATOR_AGENT_ID
-   Prompt: "You are comparing two documentation files.
-
-   **Files**:
-   - File A: $BASELINE_FILE
-   - File B: $CANDIDATE_FILE
-
-   **Task**: Identify all differences, then evaluate for violations.
-
-   **Step 1 - Find Differences**: List every change with line numbers and quoted content.
-
-   **Step 2 - Classify Redundancy Type**: For each difference, determine if removed content matches a redundancy category:
-   - **Category 1 (Narrative)**: Instruction followed by prose restatement of same logic?
-   - **Category 2 (Example)**: Multiple examples showing identical principle without added value?
-   - **Category 3 (Definition)**: Same term defined in multiple sections?
-   - **Category 4 (Procedural)**: Same procedure in multiple places?
-   - **Category 5 (Rationale)**: WHY explanations (educational, not operational)?
-   - **Category 6 (Pedagogical)**: Repetition for emphasis in reference doc (not tutorial)?
-
-   **Step 3 - Apply Taxonomy Rules**:
-   - Categories 1, 5, 6 in reference docs → ACCEPTABLE removal (intended optimization)
-   - Categories 2, 3, 4 → ACCEPTABLE if consolidated version preserves all information
-   - If NOT redundancy category → Evaluate for violations below
-
-   **Step 4 - Evaluate Non-Redundancy Changes**: For differences that don't match redundancy categories, check:
-   - Content loss (instructions, steps, conditions, parameters removed)?
-   - Clarity loss (is File A meaningfully clearer for execution)?
-   - Emphasis shift (MANDATORY → optional-sounding)?
-   - Phase 1 confusion resolution (does File A clarify confusion that File B doesn't)?
-   - Generalization loss (did File A have concise WHY principle helping apply rule to novel situations)?
-
-   **Special Check for Removed WHY Content**:
-   If File A contained brief principle (1 sentence) explaining WHY rule applies:
-   - Test: "If I encounter similar-but-not-exactly-same situation, does File A's WHY help me decide how to proceed?"
-   - If YES → File B loses generalization ability → VIOLATION
-   - If NO → Verbose rationale without decision value → ACCEPTABLE (Category 5)
-
-   If difference is redundancy removal (Categories 1-6) → ACCEPTABLE.
-   If File B loses content/clarity/emphasis/generalization not classified as redundancy → VIOLATION.
-
-   **Output Format**:
-
-   ## Phase 2: File Comparison
-
-   ### Differences
-   [List each: Location (lines), Change description, Quoted content for both files, Redundancy classification if applicable]
-
-   ### Redundancy Analysis
-   [For each difference classified as redundancy: Category number, Why it matches, Verdict (ACCEPTABLE)]
-
-   ### Violations
-   [For non-redundancy differences only: Type, Impact, Verdict (VIOLATION/ACCEPTABLE), Severity if violation]
-
-   ### Assessment
-   - Overall: PASS/FAIL
-   - Content: ✅/❌ | Clarity: ✅/❌ | Emphasis: ✅/❌ | Execution: ✅/❌
-   - Differences: [count] | Redundancy Removals: [count] | Violations: [count] | Phase 1 Confusions Resolved by File A Only: [count if >0 → VIOLATIONS]"
-   ```
-
-   **After validation**:
-   - If FAIL → Fix violations, re-run both phases until PASS
-   - If PASS with execution-impacting confusions → Proceed to step 7B (Iterative Refinement)
-   - If PASS with zero confusions → Proceed to step 8 (cleanup)
-
-7B. **Iterative Clarity Refinement** (address execution-impacting confusions):
-
-   **Trigger**: Validator reports PASS but documents execution-impacting confusions
-
-   **Decision Criteria - Clarify ONLY if confusion impacts execution**:
-
-   ✅ **Clarify these confusions**:
-   - Unclear what command to run
-   - Unclear what parameter to use
-   - Unclear what condition to check
-   - Unclear what "success" looks like
-   - Ambiguous term with multiple interpretations affecting action
-   - Missing step or requirement needed for correct execution
-
-   ❌ **Do NOT clarify these**:
-   - Wondering why a design choice was made (rationale)
-   - Theoretical edge cases not needed for execution
-   - Implementation details not relevant to task
-   - Historical context or background information
-   - Curiosity about alternatives not affecting execution
-
-   **Refinement Process**:
-
-   1. **Extract Execution-Impacting Confusions** (review validator report to identify which confusions are execution-impacting and document their line numbers)
-
-   2. **Classify Each Confusion**:
-      For each confusion, determine:
-      - Does this prevent correct execution? (YES → clarify)
-      - Is this just curiosity/rationale? (NO → skip)
-      - Can validator still execute correctly despite confusion? (YES → skip)
-
-   3. **Add Minimal Clarifications** (using Edit tool to modify {{arg}}):
-
-      **Principles**:
-      - Add ONLY enough text to resolve the specific confusion
-      - Prefer inline examples over explanatory paragraphs
-      - Prefer parenthetical clarifications over new sections
-      - Do NOT re-introduce removed redundancy
-      - Do NOT add rationale or educational content
-
-      **Good Clarification Patterns**:
-      ```markdown
-      ✅ GOOD - Inline example:
-      Delete the task from todo.md (remove entire line, not mark [x])
-
-      ✅ GOOD - Parenthetical clarification:
-      Run the build (mvn clean install)
-
-      ✅ GOOD - Concrete example:
-      Check if tests pass:
-      ```bash
-      mvn test
-      # Exit code 0 = success, non-zero = failure
-      ```
-
-      ❌ BAD - Too much explanation:
-      Delete the task from todo.md. By "delete" we mean completely remove
-      the line from the file, as opposed to marking it complete with [x].
-      This is because completed tasks should move to changelog.md instead
-      of staying in todo.md. The deletion process involves opening todo.md,
-      finding the task line, removing it, and saving the file.
-      ```
-
-   4. **Update Candidate File** (copy modified {{arg}} to candidate for re-validation)
-
-   5. **Re-validate** (start fresh validation - Phase 1 then Phase 2):
-      ```bash
-      # Update candidate copy - reload paths from temp files
-      VALIDATION_ID=$(cat /tmp/optimize-doc-validation-id.txt)
-      CANDIDATE_FILE="/tmp/candidate-${VALIDATION_ID}"
-      cp "{{arg}}" "$CANDIDATE_FILE"
-
-      # Now invoke fresh validator agent for Phase 1 (see step 7)
-      # Then proceed to Phase 2 with same baseline
-      # Check if previous confusions are resolved
-      ```
-
-   6. **Iteration Control**:
-      - Track iteration count (initialize at 0, increment after each refinement)
-      - Maximum 3 iterations
-      - After each iteration:
-        - If validator reports no execution-impacting confusions → Proceed to step 8
-        - If confusions resolved → Proceed to step 8
-        - If confusions persist but iteration < 3 → Return to step 2
-        - If iteration = 3 and execution-impacting confusions persist → **ROLLBACK** - Optimization failed, restore from backup
-
-   **Decision Tree**:
-   ```
-   Validator reports confusions?
-   ├─ NO → Proceed to step 8
-   └─ YES → Are any execution-impacting?
-      ├─ NO → Proceed to step 8 (theoretical/rationale only)
-      └─ YES → Iteration count?
-         ├─ 0-2 → Add minimal clarifications → Re-validate → Increment iteration
-         └─ 3 → ROLLBACK - Restore from backup, optimization failed
-   ```
-
-   **CRITICAL**: Execution-impacting confusions MUST be resolved. If 3 iterations of clarification cannot resolve them, the optimization introduced ambiguity that wasn't in the original, so the optimization must be abandoned.
-
-   **Example Refinement Cycle**:
-
-   **Iteration 1**:
-   - Validator confusion: "What does 'delete' mean - remove line or mark complete?"
-   - Classification: Execution-impacting (affects action taken)
-   - Clarification added: "Delete from todo.md (remove entire line, not mark [x])"
-   - Re-validate → Check if resolved
-
-   **Iteration 2** (if confusion persists):
-   - Validator still confused about deletion scope
-   - Enhanced clarification: Added concrete example showing before/after
-   - Re-validate → Check if resolved
-
-   **Iteration 3** (if still confused):
-   - Final attempt with most explicit clarification possible
-   - Re-validate → If still confused, **ROLLBACK**
-
-   **Rollback Procedure** (if 3 iterations fail):
-   ```bash
-   # Extract VALIDATION_ID from backup filename
-   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
-   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
-
-   # Restore original file
-   cp "$BACKUP_FILE" "{{arg}}"
-
-   # Report failure
-   echo "❌ OPTIMIZATION FAILED: Could not resolve execution-impacting confusions after 3 iterations"
-   echo "File restored to original state"
-
-   # Cleanup
-   rm "$BACKUP_FILE"
-   rm "/tmp/candidate-${VALIDATION_ID}" "/tmp/baseline-${VALIDATION_ID}"
-   rm "/tmp/validator-id-${VALIDATION_ID}"
-   exit 1
-   ```
-
-   **After refinement complete**:
-   - Commit clarifications with message: "Add clarifications from validation feedback"
-   - Proceed to step 8
-
-8. **Remove Backup** (after validation and refinement complete):
-   ```bash
-   # Extract VALIDATION_ID from backup filename
-   BACKUP_FILE=$(ls "{{arg}}".backup-* 2>/dev/null | tail -1)
-   VALIDATION_ID="${BACKUP_FILE##*.backup-}"
-
-   # Remove backup and validation temp files
-   rm "$BACKUP_FILE"
-   rm "/tmp/candidate-${VALIDATION_ID}" "/tmp/baseline-${VALIDATION_ID}"
-   rm "/tmp/validator-id-${VALIDATION_ID}"
-   echo "Backup removed: Changes confirmed safe by independent validator"
-   ```
-
-9. **Report** changes made AND validation results:
-   ```
-   ## Optimization Summary
-
-   **Changes Made**:
-   1. [Section Name] (Lines X-Y): [Brief description]
-      - Before: [Key issue]
-      - After: [How improved]
-
-   **Metrics**:
-   - Lines removed: N
-   - Net reduction: N lines (X%)
-   - Sections optimized: M
-
-   ## Independent Validation
-
-   **Validator Assessment**: ✅ PASS / ❌ FAIL
-   **Differences Found**: [count]
-   **Redundancy Removals**: [count] (Categories: [list])
-   **Violations Found**: [count]
-   **Execution-Impacting Confusions**: [count]
-
-   **Validation Summary**:
-   - Content Preservation: ✅ / ❌
-   - Clarity Maintained: ✅ / ❌
-   - Emphasis Preserved: ✅ / ❌
-   - Execution Equivalence: ✅ / ❌
-
-   [If redundancy removals accepted:]
-   **Redundancy Removals Accepted**:
-   - Removal #1: [Category X - description]
-
-   [If violations found and fixed:]
-   **Violations Fixed**:
-   - Violation #1: [description and fix]
-
-   ## Iterative Refinement
-
-   **Refinement Iterations**: [count] (max 3)
-
-   [If refinements were made:]
-   **Confusions Addressed**:
-   - Confusion #1: [description]
-     - Clarification added: [what was added]
-     - Resolution: ✅ Resolved / ⚠️ Acceptable ambiguity
-
-   [If no refinements needed:]
-   **Refinement Status**: No execution-impacting confusions reported
-
-   ## Self-Review
-
-   **Optimizer's Assessment**:
-   - Meaning Preservation: ✅ No operational instructions lost
-   - Vagueness Check: ✅ All condensed sections pass 4 Clarity Tests
-   - Executability: ✅ All workflows remain executable
-
-   **Backup Status**: ✅ Removed (changes confirmed safe by independent validator)
-   ```
-
-10. **Commit** the optimized document with descriptive message
-
-## Quality Standards
-
-**Every change must satisfy ALL criteria:**
-- ✅ **Meaning preserved**: Instructions mean exactly the same thing
-- ✅ **Executability preserved**: Claude can execute correctly without removed content
-- ✅ **Success criteria intact**: What "correct" looks like is still clear
-- ✅ **Ambiguity resolved**: Any ambiguous terms still have defining examples
-- ✅ **Conciseness increased**: Redundancy eliminated or prose tightened
-
-**Verification Happens at FOUR Stages**:
-
-### Stage 1: Per-Section Validation (Step 5)
-
-Apply during optimization as each section is modified:
-
-1. ✅ **Completeness preserved**: All commands, file paths, parameters present
-2. ✅ **Unambiguous**: Can only be interpreted one way
-3. ✅ **Self-sufficient**: No guessing required to execute
-4. ✅ **Context preserved**: When/why to apply is clear
-
-**Spot-check method**:
-- Pick 5 random condensed sections
-- Read ONLY the condensed version (cover original)
-- Ask: "Could I execute this correctly without the original?"
-- If NO for any → Restore content until YES
-
-### Stage 2: Optimizer Self-Review (Step 6 - MANDATORY)
-
-After ALL changes complete, optimizer reviews the full git diff:
-
-**The 3 Critical Questions**:
-1. **Was any meaning lost?** (operational instructions, content specs, methodology, sequencing)
-2. **Was any vagueness introduced?** (4 Clarity Tests: Completeness, Unambiguous, Self-sufficient, Context)
-3. **Was any ability to execute properly lost?** (workflows, parameters, success criteria, temporal ordering)
-
-**Apply the 8-question Execution Test** (see "DECISION RULE: The Execution Test" section above) **to each change. If ANY test fails for execution-critical content → RESTORE**
-
-**Result**: Self-review report with ✅ confirmations or list of issues found and fixed
-
-### Stage 3: Independent Validation (Step 7 - MANDATORY for all docs)
-
-**Independent validator agent** (fresh context, no bias) compares candidate against baseline:
-
-**Two-Phase Approach with Difference-First Focus**:
-1. **Phase 1 - Blind Candidate Analysis**: Document execution-impacting confusions without baseline access
-2. **Phase 2 - Difference-Focused Comparison**:
-   - **Step 1**: Identify ALL differences between baseline and candidate (what changed?)
-   - **Step 2**: Evaluate each difference for violations (is the change acceptable?)
-
-**Why Two Phases**:
-- Baseline path hidden until Phase 2 (agent cannot access baseline during Phase 1)
-- Full candidate read first establishes genuine confusions
-- Difference-first priming prevents "they look the same" false negatives
-- Two-step evaluation ensures thorough comparison
-
-**Validator receives in Phase 1**: `/tmp/candidate-${ID}` path only, validation criteria
-**Validator receives in Phase 2**: Both `/tmp/baseline-${ID}` and `/tmp/candidate-${ID}` paths with neutral labels (File A, File B)
-**Validator does NOT receive**: File relationship context (which is "original"), optimization rationale, or biased labels like "(original)" or "(optimized)"
-**Cannot cheat**: Baseline file path not provided until Phase 2 instructions
-**Neutrality requirement**: Use "File A" and "File B" in prompts, not "baseline (original)" or "candidate (optimized)"
-
-**Validation Process**:
-1. Phase 1: Read candidate fully → Document confusions
-2. Phase 2 Step 1: Read both files → List ALL differences with line numbers and quoted text
-3. Phase 2 Step 2: For each difference → Evaluate for violations → Report verdict
-
-**Result**: Independent validation report - PASS (proceed) or FAIL (fix violations and re-validate)
-
-### Stage 4: Iterative Clarity Refinement (Step 7B - CONDITIONAL)
-
-**Trigger**: Validator reports PASS but documents execution-impacting confusions
-
-**Process**:
-1. Extract confusions from validator report
-2. Classify: Execution-impacting vs theoretical/rationale
-3. For execution-impacting confusions: Add minimal clarifications
-4. Re-validate to confirm resolution
-5. Iterate up to 3 times maximum
-
-**Principles**:
-- Only clarify execution-impacting confusions
-- Add minimal text (inline examples, parentheticals)
-- Do NOT re-introduce removed redundancy
-- Do NOT add rationale or educational content
-
-**Result**: Either confusions resolved, or optimization rolled back
-
-**Change Summary Format**:
-```
-## Optimization Summary
-**Changes Made**: [Section] (Lines X-Y): [description] - Before: [issue] - After: [improvement]
-**Metrics**: Lines removed: N | Sections strengthened: M | Redundancy: [examples]
-**Next Steps**: [Run again if needed | Complete if optimal]
+# These counts will be validated after removals in Step 10
+# If counts decrease → Protected content was removed (restoration required)
 ```
 
-## Success Criteria
+---
 
-- Document is more concise (fewer lines, tighter prose)
-- Instructions are clearer (explicit criteria, measurable steps)
-- All necessary information preserved (no loss of meaning)
-- User can execute instructions without ambiguity
+#### Step 6: Catalog Removals with Fact Extraction
+
+**⚠️ CRITICAL - Fact Extraction Decision Tree** (read this BEFORE cataloging):
+
+```
+Before extracting facts, categorize the removal candidate:
+
+Q: Does this content contain FACTUAL information?
+   (commands, thresholds, counts, parameters, syntax, patterns)
+
+   YES → FACTUAL CONTENT
+         - Extract facts as questions/answers
+         - Mark for fact-based validation
+         - Example: "Retry 3-5 times" → Q: "How many retries?" A: "3-5"
+
+   NO → NON-FACTUAL CONTENT
+        - Mark "Facts: NONE"
+        - Skip fact-based validation
+        - Remove if passes Decision Tree
+        - Example: "This is important because it prevents errors"
+
+Non-factual patterns to recognize:
+- Rationale: "This is important because..."
+- Narrative: "Let's now move to..."
+- Transitions: "Having covered X, we now..."
+- Pedagogical emphasis: "Remember that..."
+```
+
+**Cataloging Procedure** - For EACH removal candidate:
+1. **CHECK EXCLUSION LIST**: If candidate number is in EXCLUDED_CANDIDATES, skip it (do not catalog for removal)
+   - This candidate caused violations in previous attempt
+   - Example: If EXCLUDED_CANDIDATES="2,4,7", skip candidates 2, 4, and 7
+2. **CHECK CONVERGENCE**: If this line range appeared in PREVIOUS_CANDIDATE_RANGES, skip it
+   - Example: If candidate is "Lines 403-410" and PREVIOUS_CANDIDATE_RANGES contains "403-410" → SKIP
+   - Rationale: Same content cataloged 2+ iterations = boundary case (neither clearly removable nor clearly protected)
+   - Mark as "CONVERGENCE BOUNDARY" in notes
+3. Identify redundancy type (Categories 1-6, see Part 3)
+4. Apply Decision Tree (see Part 3) - skip if should be kept
+5. **BEFORE extracting facts**: Categorize as factual or non-factual (use decision tree above)
+6. Extract testable facts from content (what information does this convey?)
+7. Record: line range, content, category, facts
+
+```bash
+echo "=== STEP 6: CATALOGING WITH FACT EXTRACTION ==="
+echo "Iteration $ITERATION of $MAX_ITERATIONS"
+
+# Report excluded candidates from previous violations
+if [ -n "$EXCLUDED_CANDIDATES" ]; then
+  echo "Excluding candidates from previous violations: $EXCLUDED_CANDIDATES"
+  echo "These candidates will NOT be cataloged for removal in this attempt"
+fi
+
+# Build list of removal candidates with extracted facts
+# STRATEGY: Maintain catalog in working memory (mental notes) within this response
+# Optional: Use temporary file /tmp/catalog-${SESSION_ID}.txt if persistence needed
+# Format:
+#
+# Candidate 1 (Lines 45-48):
+#   Content: "Retry 3-5 times with 2-second delays"
+#   Category: Narrative Redundancy
+#   Type: FACTUAL
+#   Facts:
+#     Q: What is the minimum number of retries?
+#     A: 3
+#     Q: What is the maximum number of retries?
+#     A: 5
+#     Q: How long to wait between retries?
+#     A: 2 seconds
+#
+# Candidate 2 (Lines 102-105):
+#   Content: "Use grep -i for case-insensitive search"
+#   Category: Example Redundancy
+#   Type: FACTUAL
+#   Facts:
+#     Q: Which grep flag enables case-insensitive search?
+#     A: -i
+#
+# Candidate 3 (Lines 150-152):
+#   Content: "This approach is important because it prevents errors."
+#   Category: Rationale (WHY explanation)
+#   Type: NON-FACTUAL
+#   Facts: NONE (skip validation)
+#
+# [Continue for all candidates...]
+
+# Count candidates and facts
+# Replace <count> placeholders below with actual numeric values:
+CANDIDATE_COUNT=<count>  # Replace with number of removal candidates identified
+TOTAL_FACTS=<count>      # Replace with total facts extracted (from FACTUAL candidates only)
+
+echo "Identified $CANDIDATE_COUNT removal candidates"
+echo "Extracted $TOTAL_FACTS testable facts"
+
+# Update convergence tracking for next iteration
+# Extract line ranges from cataloged candidates and append to tracking variable
+# Example: If cataloged "Lines 403-410" and "Lines 500-505", add "403-410,500-505"
+# Format: Comma-separated list of line ranges
+CURRENT_RANGES="<line-ranges>"  # Replace with actual ranges: "45-48,102-105,234-240"
+if [ -n "$PREVIOUS_CANDIDATE_RANGES" ]; then
+  PREVIOUS_CANDIDATE_RANGES="$PREVIOUS_CANDIDATE_RANGES,$CURRENT_RANGES"
+else
+  PREVIOUS_CANDIDATE_RANGES="$CURRENT_RANGES"
+fi
+
+echo "Convergence tracking: Added $CANDIDATE_COUNT ranges to history"
+```
+
+---
+
+#### Step 6.5: Pre-Removal Protected Pattern Scan (OPTION 1 IMPROVEMENT)
+
+**Purpose**: Validate each candidate for protected patterns BEFORE removal to eliminate remove-restore cycles.
+
+**Rationale**: In previous runs, 5 out of 7 candidates had to be restored after removal due to protected pattern violations. This step prevents those violations by pre-scanning candidates.
+
+```bash
+echo "=== STEP 6.5: PRE-REMOVAL PROTECTED PATTERN SCAN ==="
+
+# For each cataloged candidate, extract content and check for protected patterns
+# If ANY protected patterns found, mark candidate as EXCLUDED (don't remove)
+
+# This replaces the remove-then-restore cycle with proactive filtering
+
+# Pattern checks to run on each candidate's extracted text:
+# 1. Template variables: \{\{[^}]+\}\}
+# 2. Decision criteria: ^(Test:|Ask:|Check:|Q:|A:)
+# 3. Sequential emphasis (context-aware): STOP|WAIT|ONLY THEN|NOW|FIRST|BEFORE|AFTER|CRITICAL|MANDATORY in protected contexts
+# 4. Boundary demonstrations: ❌.*:
+# 5. Negative constraints: DO NOT|NEVER|FORBIDDEN
+# 6. Execution context markers: ^\*\*Purpose\*\*:|^\*\*Problem\*\*:|^\*\*When to|^\*\*Detection\*\*:
+
+# Example implementation for each candidate:
+#
+# CANDIDATE_TEXT=$(sed -n "${START_LINE},${END_LINE}p" "{{arg}}")
+#
+# # Check for template variables
+# TEMPLATE_VARS_IN_CANDIDATE=$(echo "$CANDIDATE_TEXT" | grep -oE '\{\{[^}]+\}\}' | wc -l)
+#
+# # Check for decision criteria
+# DECISION_CRITERIA_IN_CANDIDATE=$(echo "$CANDIDATE_TEXT" | grep -E '^(Test:|Ask:|Check:|Q:|A:)' | wc -l)
+#
+# # Check for sequential emphasis (context-aware - only in protected contexts)
+# SEQUENTIAL_EMPHASIS_IN_CANDIDATE=$(echo "$CANDIDATE_TEXT" | grep -n 'STOP\|WAIT\|ONLY THEN\|NOW\|FIRST\|BEFORE\|AFTER\|CRITICAL\|MANDATORY' | grep '`\|^[0-9]*:#\|^\*\*\|⚠️\|Detection:\|Pattern:\|Example:' | wc -l)
+#
+# # Check for boundary demonstrations
+# BOUNDARY_DEMOS_IN_CANDIDATE=$(echo "$CANDIDATE_TEXT" | grep -c '❌.*:')
+#
+# # Check for negative constraints
+# NEGATIVE_CONSTRAINTS_IN_CANDIDATE=$(echo "$CANDIDATE_TEXT" | grep -c 'DO NOT\|NEVER\|FORBIDDEN')
+#
+# # Check for execution context markers
+# EXECUTION_CONTEXT_IN_CANDIDATE=$(echo "$CANDIDATE_TEXT" | grep -c '^\*\*Purpose\*\*:\|^\*\*Problem\*\*:\|^\*\*When to\|^\*\*Detection\*\*:')
+#
+# # If ANY protected patterns found, exclude this candidate
+# if [ "$TEMPLATE_VARS_IN_CANDIDATE" -gt 0 ] || \
+#    [ "$DECISION_CRITERIA_IN_CANDIDATE" -gt 0 ] || \
+#    [ "$SEQUENTIAL_EMPHASIS_IN_CANDIDATE" -gt 0 ] || \
+#    [ "$BOUNDARY_DEMOS_IN_CANDIDATE" -gt 0 ] || \
+#    [ "$NEGATIVE_CONSTRAINTS_IN_CANDIDATE" -gt 0 ] || \
+#    [ "$EXECUTION_CONTEXT_IN_CANDIDATE" -gt 0 ]; then
+#   echo "⚠️  Candidate $N contains protected patterns - EXCLUDING from removal"
+#   echo "  - Template variables: $TEMPLATE_VARS_IN_CANDIDATE"
+#   echo "  - Decision criteria: $DECISION_CRITERIA_IN_CANDIDATE"
+#   echo "  - Sequential emphasis: $SEQUENTIAL_EMPHASIS_IN_CANDIDATE"
+#   echo "  - Boundary demonstrations: $BOUNDARY_DEMOS_IN_CANDIDATE"
+#   echo "  - Negative constraints: $NEGATIVE_CONSTRAINTS_IN_CANDIDATE"
+#   echo "  - Execution context markers: $EXECUTION_CONTEXT_IN_CANDIDATE"
+#
+#   # Add to exclusion list
+#   if [ -n "$EXCLUDED_CANDIDATES" ]; then
+#     EXCLUDED_CANDIDATES="${EXCLUDED_CANDIDATES},${N}"
+#   else
+#     EXCLUDED_CANDIDATES="${N}"
+#   fi
+# else
+#   echo "✅ Candidate $N passed protected pattern check - safe to remove"
+# fi
+
+# After scanning all candidates:
+SAFE_CANDIDATE_COUNT=<count>  # Number of candidates that passed pre-scan
+EXCLUDED_COUNT=<count>         # Number of candidates excluded due to protected patterns
+
+echo "Pre-scan complete:"
+echo "  - Safe to remove: $SAFE_CANDIDATE_COUNT candidates"
+echo "  - Excluded (protected patterns): $EXCLUDED_COUNT candidates"
+echo "  - Success rate: $((SAFE_CANDIDATE_COUNT * 100 / CANDIDATE_COUNT))%"
+
+# Update CANDIDATE_COUNT to only include safe candidates
+CANDIDATE_COUNT=$SAFE_CANDIDATE_COUNT
+
+echo "Proceeding to Step 7 with $CANDIDATE_COUNT safe candidates..."
+```
+
+**Expected Impact**: This step should eliminate the 29% success rate problem observed in previous runs. By filtering out protected patterns before removal, we should achieve near 100% success rate.
+
+---
+
+#### Step 7: Execute All Removals
+
+```bash
+echo "=== STEP 7: EXECUTING REMOVALS ==="
+
+# Count lines before editing
+LINES_BEFORE=$(wc -l < "{{arg}}")
+
+# Read current document state
+# Use Read tool: {{arg}}
+
+# Perform all removals from Step 6 catalog
+# APPROACH: Reconstruct document in memory, omitting cataloged sections
+# 1. Process document line by line from Read output above
+# 2. Skip lines identified in removal candidates
+# 3. Preserve all other content exactly as-is
+# 4. Write optimized version in ONE atomic Write operation (below)
+# Use Write tool: {{arg}}
+
+LINES_AFTER=$(wc -l < "{{arg}}")
+LINES_REMOVED=$((LINES_BEFORE - LINES_AFTER))
+
+echo "Removed $LINES_REMOVED lines ($CANDIDATE_COUNT candidates)"
+
+# Generate diff for audit
+git diff "{{arg}}"
+```
+
+---
+
+### Validation Phase
+
+#### Step 8: Fact-Based Validation
+
+```bash
+echo "=== STEP 8: FACT-BASED VALIDATION ==="
+
+# Edge case: No facts to validate (all removals were narrative/rationale)
+if [ "$TOTAL_FACTS" -eq 0 ]; then
+  echo "No facts to validate (all removals are narrative/rationale)"
+  echo "Skipping fact validation - proceeding to Step 9 (Protected Pattern Validation)..."
+  # Skip to Step 9 - no validator invocation needed
+else
+  # Invoke validator via Task tool
+  # Parameters:
+  #   subagent_type: "general-purpose"
+  #   model: "sonnet"
+  #   description: "Fact-based validation"
+  #   prompt: <full prompt below>
+
+  Prompt: "You are validating information preservation in a documentation file.
+
+**FILE TO ANALYZE**: {{arg}}
+
+**YOUR TASK**: Answer specific questions testing information preservation.
+
+Read the file completely. For each question below, answer ONLY from information in the file:
+
+[List all questions from Step 6 here, numbered. Example questions shown below - replace with actual:]
+
+1. What is the minimum number of retries?
+2. What is the maximum number of retries?
+3. How long should you wait between retries?
+4. Which grep flag enables case-insensitive search?
+[... continue for all $TOTAL_FACTS questions from your Step 6 catalog ...]
+
+**OUTPUT FORMAT**:
+
+For EACH question, provide:
+- Question number
+- Answer (from document, or \"Cannot determine from document\")
+- Confidence: HIGH / MEDIUM / LOW
+
+**CRITICAL**:
+- If information is clear and explicit: Provide answer with confidence HIGH
+- If information is present but requires interpretation: Provide answer with confidence MEDIUM
+- If information is unclear or requires inference: Provide answer with confidence LOW
+- If information is NOT in the document: Answer \"Cannot determine from document\" with confidence LOW
+- Do NOT guess or infer - answer only from explicit information
+
+**Example**:
+1. What is the minimum number of retries?
+   Answer: 3
+   Confidence: HIGH
+
+2. What is the maximum number of retries?
+   Answer: Cannot determine from document
+   Confidence: LOW
+
+3. How long to wait between retries?
+   Answer: 2 seconds
+   Confidence: LOW"
+
+  # Extract validator response and count unanswerable questions
+  echo "Proceeding to Step 9 (Compare Expected vs Actual Answers)..."
+fi
+```
+
+---
+
+#### Step 9: Compare Expected vs Actual Answers
+
+```bash
+echo "=== STEP 9: COMPARING ANSWERS ==="
+
+# IMPLEMENTATION PROCEDURE:
+# 1. Extract validator response from Step 8 Task tool output
+# 2. For EACH question, parse validator's answer and confidence level
+# 3. Compare to expected answer from Step 6 catalog
+# 4. Categorize each comparison result:
+#
+#    MATCH (fact preserved):
+#    - Validator answer == expected answer AND confidence HIGH/MEDIUM
+#
+#    CLARITY ISSUE (fact preserved but needs improvement):
+#    - Validator answer == expected answer AND confidence LOW
+#    - Section is CORRECT but UNCLEAR - flag for refactoring
+#
+#    MISMATCH (fact lost):
+#    - Validator answer != expected answer
+#    - OR answer == "Cannot determine from document"
+#    - Content must be restored
+#
+# 5. For MISMATCH results, record which question failed and from which
+#    removal candidate (for restoration in Step 11)
+
+# Count results
+# Replace <count> placeholders below with actual numeric values:
+MATCH_COUNT=<count>           # Replace with number of correctly preserved facts
+CLARITY_COUNT=<count>         # Replace with number needing clarity improvement
+MISMATCH_COUNT=<count>        # Replace with number of lost facts requiring restoration
+
+echo "Facts preserved: $MATCH_COUNT / $TOTAL_FACTS"
+echo "Facts needing clarity improvement: $CLARITY_COUNT"
+echo "Facts lost: $MISMATCH_COUNT"
+
+# List lost facts (for restoration):
+# Example:
+# Lost facts:
+#   - Q2: "What is the maximum number of retries?" (from Candidate 1, Lines 45-48)
+#   - Q7: "How long before timeout?" (from Candidate 3, Lines 150-152)
+
+echo "Proceeding to Step 10 (Protected Pattern Validation)..."
+```
+
+---
+
+#### Step 10: Protected Pattern Validation
+
+```bash
+echo "=== STEP 10: PROTECTED PATTERN VALIDATION ==="
+
+# Re-count protected patterns after removals
+TEMPLATE_VARS_AFTER=$(grep -oE '\{\{[^}]+\}\}' "{{arg}}" | wc -l)
+DECISION_CRITERIA_AFTER=$(grep -E '^(Test:|Ask:|Check:|Q:)' "{{arg}}" | wc -l)
+SEQUENTIAL_EMPHASIS_AFTER=$(grep -oE '(STOP|WAIT|ONLY THEN|NOW|FIRST|BEFORE|AFTER|CRITICAL|MANDATORY)' "{{arg}}" | wc -l)
+BOUNDARY_DEMOS_AFTER=$(grep -c '❌.*:' "{{arg}}")
+NEGATIVE_CONSTRAINTS_AFTER=$(grep -c 'DO NOT\|NEVER\|FORBIDDEN' "{{arg}}")
+
+# Compare before/after
+PATTERN_VIOLATIONS=0
+
+if [ "$TEMPLATE_VARS_AFTER" -lt "$TEMPLATE_VARS" ]; then
+  echo "⚠️  Template variables removed ($TEMPLATE_VARS → $TEMPLATE_VARS_AFTER)"
+  PATTERN_VIOLATIONS=$((PATTERN_VIOLATIONS + 1))
+fi
+
+if [ "$DECISION_CRITERIA_AFTER" -lt "$DECISION_CRITERIA" ]; then
+  echo "⚠️  Decision criteria removed ($DECISION_CRITERIA → $DECISION_CRITERIA_AFTER)"
+  PATTERN_VIOLATIONS=$((PATTERN_VIOLATIONS + 1))
+fi
+
+if [ "$SEQUENTIAL_EMPHASIS_AFTER" -lt "$SEQUENTIAL_EMPHASIS" ]; then
+  echo "⚠️  Sequential emphasis removed ($SEQUENTIAL_EMPHASIS → $SEQUENTIAL_EMPHASIS_AFTER)"
+  PATTERN_VIOLATIONS=$((PATTERN_VIOLATIONS + 1))
+fi
+
+if [ "$BOUNDARY_DEMOS_AFTER" -lt "$BOUNDARY_DEMOS" ]; then
+  echo "⚠️  Boundary demonstrations removed ($BOUNDARY_DEMOS → $BOUNDARY_DEMOS_AFTER)"
+  PATTERN_VIOLATIONS=$((PATTERN_VIOLATIONS + 1))
+fi
+
+if [ "$NEGATIVE_CONSTRAINTS_AFTER" -lt "$NEGATIVE_CONSTRAINTS" ]; then
+  echo "⚠️  Negative constraints removed ($NEGATIVE_CONSTRAINTS → $NEGATIVE_CONSTRAINTS_AFTER)"
+  PATTERN_VIOLATIONS=$((PATTERN_VIOLATIONS + 1))
+fi
+
+# If violations detected, identify specific missing patterns
+if [ "$PATTERN_VIOLATIONS" -gt 0 ]; then
+  echo ""
+  echo "Identifying specific missing patterns..."
+
+  # Invoke pattern comparison agent via Task tool
+  # Parameters:
+  #   subagent_type: "general-purpose"
+  #   model: "sonnet"
+  #   description: "Identify missing protected patterns"
+  #   prompt: <full prompt below>
+
+  Prompt: "You are identifying specific protected patterns that were removed during optimization.
+
+**TASK**: Compare backup file with current file to identify exact missing pattern instances.
+
+**FILES TO COMPARE**:
+- Backup file: $BACKUP_FILE
+- Current file: {{arg}}
+
+**PROTECTED PATTERNS TO CHECK**:
+
+1. **Template variables**: Pattern \`{{.*}}\`
+2. **Decision criteria**: Lines starting with \"Test:\", \"Ask:\", \"Check:\", \"Q:\", \"A:\"
+3. **Sequential emphasis**: Words STOP, WAIT, ONLY THEN, NOW, FIRST, BEFORE, AFTER, CRITICAL, MANDATORY
+4. **Boundary demonstrations**: Lines matching \"❌.*:\"
+5. **Negative constraints**: Lines containing \"DO NOT\", \"NEVER\", \"FORBIDDEN\"
+
+**INSTRUCTIONS**:
+
+1. Read backup file completely
+2. Read current file completely
+3. For EACH pattern type with count decrease:
+   - Extract ALL instances from backup file (with line numbers)
+   - Extract ALL instances from current file (with line numbers)
+   - Identify which specific instances are missing
+   - For each missing instance, record:
+     - Pattern type
+     - Missing instance (exact text)
+     - Line number in backup
+     - Full line content
+     - 2-3 lines of context before
+     - 2-3 lines of context after
+     - **ANALYZE**: Why was this pattern likely removed? (root cause)
+     - **SUGGEST**: How to prevent this type of violation in future?
+
+**OUTPUT FORMAT** (JSON):
+
+{
+  \"violations\": [
+    {
+      \"pattern_type\": \"sequential_emphasis\",
+      \"missing_instance\": \"CRITICAL\",
+      \"line_in_backup\": 308,
+      \"line_content\": \"- ✅ KEEP: \\\"**⚠️ CRITICAL - Agent Type Restriction**\\\" (Sequential emphasis #4)\",
+      \"context_before\": [
+        \"### Never-Remove List (Automatic Preservation)\",
+        \"\",
+        \"The following content types are NEVER removed:\"
+      ],
+      \"context_after\": [
+        \"- ✅ KEEP: \\\"How Convergence Works\\\" (Correctness guarantees #11)\",
+        \"- ✅ KEEP: \\\"MUST use subagent_type: general-purpose\\\" (Agent type restrictions #13)\"
+      ],
+      \"likely_cause\": \"Line was in pedagogical example section demonstrating protected patterns. Agent categorized entire example section as redundant without scanning individual lines for protected patterns.\",
+      \"suggestion\": \"Enhance Decision Tree question 8 (redundancy check) to scan content for protected patterns before removal. If redundant content contains protected patterns, mark as KEEP instead of REMOVE.\"
+    }
+  ]
+}
+
+**CRITICAL**: Output ONLY the JSON structure, no additional text."
+
+  # Extract pattern violations from agent response and count
+  # Replace <count> placeholder below with actual value:
+  PATTERN_VIOLATION_COUNT=<count>  # Replace with number of specific violations identified
+
+  echo "Identified $PATTERN_VIOLATION_COUNT specific pattern violations"
+
+  # Pattern violations will be handled in Step 11 along with fact mismatches
+else
+  echo "✅ All protected patterns preserved"
+  PATTERN_VIOLATION_COUNT=0
+fi
+
+echo "Proceeding to Step 11 (Handle Lost Facts and Pattern Violations)..."
+```
+
+---
+
+#### Step 11: Handle Lost Facts and Pattern Violations
+
+```bash
+echo "=== STEP 11: HANDLING LOST FACTS AND PATTERN VIOLATIONS ==="
+
+# Calculate total violations needing restoration
+TOTAL_VIOLATIONS=$((MISMATCH_COUNT + PATTERN_VIOLATION_COUNT))
+
+if [ "$TOTAL_VIOLATIONS" -eq 0 ]; then
+  echo "✅ ALL FACTS PRESERVED AND ALL PATTERNS PRESERVED"
+
+  # Check if we should continue optimizing or stop
+  if [ "$ITERATION" -lt "$MAX_ITERATIONS" ]; then
+    ITERATION=$((ITERATION + 1))
+    RECOVERY_ATTEMPT=0  # Reset recovery counter for next optimization pass
+    echo "Iteration $ITERATION: Looking for more optimizations..."
+    echo "Returning to Step 4 (Check Optimal State)..."
+    # Loop back to Step 4 to find more redundancies
+  else
+    echo "✅ MAX ITERATIONS REACHED: Optimization complete"
+    echo "Proceeding to Step 12 (Cleanup and Commit)..."
+    # Terminate iteration process - skip to Step 12
+  fi
+fi
+
+if [ "$TOTAL_VIOLATIONS" -gt 0 ]; then
+  if [ "$RECOVERY_ATTEMPT" -lt "$MAX_RECOVERY_ATTEMPTS" ]; then
+    RECOVERY_ATTEMPT=$((RECOVERY_ATTEMPT + 1))
+    echo "⚠️ $MISMATCH_COUNT facts lost, $PATTERN_VIOLATION_COUNT patterns lost - performing selective restoration (recovery attempt $RECOVERY_ATTEMPT/$MAX_RECOVERY_ATTEMPTS)..."
+
+    # SELECTIVE RESTORATION STRATEGY:
+    #
+    # Instead of restoring entire file from backup, surgically restore ONLY the
+    # specific removal candidates that caused violations. Keep all successful removals.
+    #
+    # Benefits:
+    # - Preserves optimization work from successful removals
+    # - Only reverts problematic removals
+    # - Faster convergence to optimal state
+    # - Leverages surgical restoration capability built in Step 10
+
+    # STEP A: IDENTIFY VIOLATED CANDIDATES
+    #
+    # Build list of candidates that need restoration:
+    # - From fact violations (Step 8): Validator agent identifies "Candidate N"
+    # - From pattern violations (Step 10): Map line numbers back to candidates using catalog
+    #
+    # Example:
+    # VIOLATED_CANDIDATES=(1 3 5)  # Candidates 1, 3, and 5 contained violations
+    # KEEP_REMOVED=(2 4 6 7)       # Candidates 2, 4, 6, 7 were successfully removed
+
+    echo "Analyzing violations to identify affected candidates..."
+
+    # Parse validator agent response to extract candidate numbers
+    # Pattern: Look for "Candidate N" in mismatch responses
+    # Example: "Cannot find in document: What is retry count? (from Candidate 1)"
+
+    # Parse pattern comparison agent response to map line numbers to candidates
+    # Use the catalog from Step 6 to determine which candidate covered which line range
+    # Example: If violation at line 308, check catalog: "Candidate 2 (Lines 305-310)"
+    #
+    # Report diagnostic information from pattern violations:
+    # - For each violation, display: likely_cause and suggestion
+    # - This helps understand WHY violations occurred
+    # - Suggestions can be used to improve Decision Tree or Never-Remove List
+    #
+    # Example output:
+    # "Violation: CRITICAL at line 308 (Candidate 2)"
+    # "  Likely cause: Pedagogical example section not scanned for protected patterns"
+    # "  Suggestion: Enhance Decision Tree question 8 with pattern scanning"
+
+    # STEP B: RESTORE VIOLATED CANDIDATES ONLY
+    #
+    # For each violated candidate:
+    # 1. EXTRACT: Read backup file to get original content for that candidate
+    #    - Use line range from catalog: "Candidate N (Lines X-Y)"
+    # 2. LOCATE INSERTION POINT using contextual search:
+    #    a) Identify 2-3 lines BEFORE the removed section (from backup)
+    #    b) Identify 2-3 lines AFTER the removed section (from backup)
+    #    c) Search current file using Grep to find context markers
+    #    d) Insertion point = between these context markers
+    # 3. RESTORE: Use Edit tool to insert content at correct location
+    #    - Match existing indentation/formatting
+    #    - Preserve surrounding whitespace
+    # 4. VERIFY: Confirm restoration succeeded
+    #
+    # IMPORTANT: Do NOT restore candidates that weren't violated
+    # - Those removals were successful and should remain removed
+    # - This preserves optimization progress
+    #
+    # Example restoration sequence:
+    # - Candidate 1 contained lost fact → RESTORE
+    # - Candidate 2 successfully removed → KEEP REMOVED
+    # - Candidate 3 contained protected pattern → RESTORE
+    # - Candidate 4 successfully removed → KEEP REMOVED
+
+    # RESTORATION PROCEDURE for lost facts:
+    #
+    # 1. IDENTIFY: Which removal candidate from Step 6 contained this fact
+    #    - Parse validator agent response for "Candidate N" references
+    #    - Add N to violated candidates list
+    # 2. EXTRACT: Read backup file to get original content for that candidate
+    #    - Use line range from catalog: "Candidate N (Lines X-Y)"
+    # 3. LOCATE INSERTION POINT using contextual search strategy:
+    #    a) Identify 2-3 lines BEFORE the removed section (from backup)
+    #    b) Identify 2-3 lines AFTER the removed section (from backup)
+    #    c) Search current file using Grep to find the before/after context
+    #    d) Insertion point = between these context markers
+    # 4. RESTORE: Use Edit tool to insert content at correct location
+    #    - Match existing indentation/formatting
+    #    - Preserve surrounding whitespace
+    #
+    # HANDLING AMBIGUOUS CONTEXT:
+    # - If context appears multiple times, use additional surrounding lines
+    # - If context was also removed, use nearest available markers
+    # - Verify restoration with targeted grep after Edit
+
+    # Example restoration:
+    # Lost fact: "What is the maximum number of retries?" (from Candidate 1)
+    # 1. Extract from backup lines 45-48: "Retry 3-5 times with 2-second delays"
+    # 2. Context before (lines 43-44): "## Error Handling\n\nWhen errors occur:"
+    # 3. Context after (lines 49-50): "After retries exhausted, report failure."
+    # 4. Grep current file for "When errors occur:" to find insertion point
+    # 5. Edit to insert between context markers
+    # 6. Candidate 1 now restored, but Candidates 2, 4, 6, 7 remain removed
+
+    # RESTORATION PROCEDURE for pattern violations:
+    #
+    # For each pattern violation from Step 10 agent response:
+    # 1. MAP TO CANDIDATE: Use catalog to find which candidate covered this line
+    #    - Pattern violation at line 308
+    #    - Check catalog: "Candidate 2 (Lines 305-310)" → Violation in Candidate 2
+    #    - Add Candidate 2 to violated candidates list
+    # 2. EXTRACT: Get line_content, context_before, context_after from violation JSON
+    # 3. LOCATE INSERTION POINT:
+    #    a) Search current file for context_before lines using Grep
+    #    b) Search current file for context_after lines using Grep
+    #    c) Insertion point = between these context markers
+    # 4. RESTORE: Use Edit tool to insert line_content at correct location
+    #    - Match existing indentation/formatting
+    #    - Preserve surrounding whitespace
+    #
+    # HANDLING AMBIGUOUS CONTEXT:
+    # - If context appears multiple times, use line numbers as hint
+    # - If context was also removed, use adjacent available markers
+    # - Verify restoration by re-running Step 10 pattern counts
+    #
+    # Example restoration:
+    # Pattern violation: sequential_emphasis "CRITICAL" at line 308 (in Candidate 2)
+    # Line content: "- ✅ KEEP: \"**⚠️ CRITICAL - Agent Type Restriction**\""
+    # Context before: "The following content types are NEVER removed:"
+    # Context after: "- ✅ KEEP: \"How Convergence Works\""
+    # 1. Grep for "The following content types" to find insertion area
+    # 2. Grep for "How Convergence Works" to confirm location
+    # 3. Edit to insert line between context markers
+    # 4. Candidate 2 now restored, but Candidates 1, 3, 4, 5 remain removed
+
+    # STEP C: TRACK EXCLUDED CANDIDATES FOR NEXT ITERATION
+    #
+    # After restoration, mark violated candidates as "problematic"
+    # In next recovery attempt, these candidates should be EXCLUDED from removal
+    # This implements smart recovery strategy (task #2 from pending list)
+    #
+    # Example:
+    # - First attempt: Remove candidates 1-5
+    # - Violations: Candidates 2, 4 caused violations
+    # - Second attempt: Remove only candidates 1, 3, 5 (exclude 2, 4)
+    # - If still violations: Remove only candidates 1, 3 (progressively narrow)
+    #
+    # Implementation:
+    # 1. Build list of violated candidate numbers from Steps A and B
+    #    Example: VIOLATED_CANDIDATES="2 4"
+    # 2. Merge with existing EXCLUDED_CANDIDATES (if any)
+    #    Example: If EXCLUDED_CANDIDATES="7" and new violations "2 4"
+    #             → EXCLUDED_CANDIDATES="2 4 7"
+    # 3. These candidates will be skipped in next iteration's Step 6 cataloging
+    #
+    # Update EXCLUDED_CANDIDATES variable:
+    # EXCLUDED_CANDIDATES="$EXCLUDED_CANDIDATES 2 4"  # Add violated candidates
+    # EXCLUDED_CANDIDATES=$(echo "$EXCLUDED_CANDIDATES" | tr ' ' '\n' | sort -u | tr '\n' ' ')  # Deduplicate
+
+    echo "Selective restoration complete - only violated candidates restored"
+    echo "Updated exclusion list for next attempt: $EXCLUDED_CANDIDATES"
+    echo "Successful removals preserved"
+    echo "Re-validating after restoration..."
+    echo "Returning to Step 4 (Check Optimal State)..."
+    # Loop back to Step 4 with recovery attempt tracked
+    # Step 4 will re-check if document is optimal, then proceed to Step 5 if not
+
+  else
+    echo "❌ RECOVERY LIMIT REACHED ($MAX_RECOVERY_ATTEMPTS attempts)"
+    echo "Facts still lost: $MISMATCH_COUNT"
+    echo "Patterns still lost: $PATTERN_VIOLATION_COUNT"
+    echo "Restoring from backup..."
+    cp "$BACKUP_FILE" "{{arg}}"
+    echo "Optimization failed - file restored to original"
+    exit 1
+  fi
+fi
+```
+
+**How Convergence Works**:
+
+The command uses two iteration mechanisms:
+
+1. **Optimization iterations** (max 10): After each successful removal pass, loops back to Step 4 to find more redundancies. Continues until document is OPTIMAL or max iterations reached.
+
+2. **Recovery attempts** (max 10): When facts are lost, attempts to restore content and retry. If recovery fails after 10 attempts, restores entire file from backup.
+
+**Termination guarantees**:
+- Normal completion: Step 4 returns OPTIMAL (no more redundancies found)
+- Safety limits: 10 optimization iterations or 10 recovery attempts
+- All paths preserve information or restore from backup
+
+
+---
+
+### Completion Phase
+
+#### Step 12: Cleanup and Commit
+
+```bash
+echo "=== STEP 12: CLEANUP AND COMMIT ==="
+
+# Check if file actually changed
+if diff -q "{{arg}}" "$BACKUP_FILE" > /dev/null 2>&1; then
+  echo "✅ No changes needed - document already optimal"
+  rm "$BACKUP_FILE"
+  exit 0
+fi
+
+# Calculate metrics for commit message
+TOTAL_REDUCTION=$((ORIGINAL_LINE_COUNT - LINES_AFTER))
+
+# Build commit message
+COMMIT_MSG="Optimize {{arg}} (fact-based validation)
+
+Removed redundancy while preserving all information.
+
+Iterations: $ITERATION
+Total line change: $ORIGINAL_LINE_COUNT → $LINES_AFTER lines ($TOTAL_REDUCTION lines removed)
+Validation: PASS
+- All facts preserved
+- 0 information loss
+
+🤖 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# Commit changes
+git add "{{arg}}"
+git commit -m "$COMMIT_MSG"
+
+# Remove backup
+rm "$BACKUP_FILE"
+
+echo "✅ Changes committed"
+```
+
+---
+
+#### Step 13: Report
+
+**⚠️ IMPORTANT**: Replace ALL placeholders `[N]`, `[count]`, `[X]` with actual numeric values from your execution. Do NOT output literal placeholders.
+
+```
+## Document Optimization Summary
+
+**Optimization**: Fact-based validation
+- Iterations: [N]               ← Replace with actual iteration count
+- Candidates cataloged: [count] ← Replace with CANDIDATE_COUNT
+- Facts extracted: [count]      ← Replace with TOTAL_FACTS
+- Facts preserved: [count]/[count] ← Replace with MATCH_COUNT/TOTAL_FACTS
+
+**Metrics**:
+- Lines removed: [N]            ← Replace with LINES_REMOVED
+- Net reduction: [N] lines ([X]%) ← Calculate percentage
+
+**Validation**:
+- Information loss: 0
+- All facts preserved: ✓
+```
