@@ -691,8 +691,8 @@ if [ "$ITERATION" -gt 1 ]; then
     LINES_REMOVED=0
     OPTIMAL_STATE="OPTIMAL"
 
-    echo "Proceeding to Step 12 (Cleanup and Commit)..."
-    # Skip to Step 12 - no more changes to make
+    echo "Proceeding to Step 14 (Cleanup and Commit)..."
+    # Skip to Step 14 - no more changes to make
   fi
 fi
 
@@ -744,8 +744,8 @@ if [ "$OPTIMAL_STATE" != "OPTIMAL" ]; then
     LINES_AFTER=$ORIGINAL_LINE_COUNT
     LINES_REMOVED=0
 
-    echo "Proceeding to Step 12 (Cleanup and Commit)..."
-    # Skip to Step 12 - iteration loop terminates
+    echo "Proceeding to Step 14 (Cleanup and Commit)..."
+    # Skip to Step 14 - iteration loop terminates
   else
     echo "⚠️ DOCUMENT SUBOPTIMAL: Optimization needed"
     echo "Proceeding to Step 5 (Pre-Cataloging Validation)..."
@@ -801,7 +801,7 @@ echo "  Boundary demonstrations: $BOUNDARY_DEMOS"
 echo "  Negative constraints: $NEGATIVE_CONSTRAINTS"
 echo "  Execution context markers: $EXECUTION_CONTEXT"
 
-# These counts will be validated after removals in Step 10
+# These counts will be validated after removals in Step 11
 # If counts decrease → Protected content was removed (restoration required)
 ```
 
@@ -916,14 +916,14 @@ echo "Convergence tracking: Added $CANDIDATE_COUNT ranges to history"
 
 ---
 
-#### Step 6.5: Pre-Removal Protected Pattern Scan (OPTION 1 IMPROVEMENT)
+#### Step 7: Pre-Removal Protected Pattern Scan (OPTION 1 IMPROVEMENT)
 
 **Purpose**: Validate each candidate for protected patterns BEFORE removal to eliminate remove-restore cycles.
 
 **Rationale**: In previous runs, 5 out of 7 candidates had to be restored after removal due to protected pattern violations. This step prevents those violations by pre-scanning candidates.
 
 ```bash
-echo "=== STEP 6.5: PRE-REMOVAL PROTECTED PATTERN SCAN ==="
+echo "=== STEP 7: PRE-REMOVAL PROTECTED PATTERN SCAN ==="
 
 # For each cataloged candidate, extract content and check for protected patterns
 # If ANY protected patterns found, mark candidate as EXCLUDED (don't remove)
@@ -997,17 +997,17 @@ echo "  - Success rate: $((SAFE_CANDIDATE_COUNT * 100 / CANDIDATE_COUNT))%"
 # Update CANDIDATE_COUNT to only include safe candidates
 CANDIDATE_COUNT=$SAFE_CANDIDATE_COUNT
 
-echo "Proceeding to Step 7 with $CANDIDATE_COUNT safe candidates..."
+echo "Proceeding to Step 8 with $CANDIDATE_COUNT safe candidates..."
 ```
 
 **Expected Impact**: This step should eliminate the 29% success rate problem observed in previous runs. By filtering out protected patterns before removal, we should achieve near 100% success rate.
 
 ---
 
-#### Step 7: Execute All Removals
+#### Step 8: Execute All Removals
 
 ```bash
-echo "=== STEP 7: EXECUTING REMOVALS ==="
+echo "=== STEP 8: EXECUTING REMOVALS ==="
 
 # Count lines before editing
 LINES_BEFORE=$(wc -l < "{{arg}}")
@@ -1036,16 +1036,16 @@ git diff "{{arg}}"
 
 ### Validation Phase
 
-#### Step 8: Fact-Based Validation
+#### Step 9: Fact-Based Validation
 
 ```bash
-echo "=== STEP 8: FACT-BASED VALIDATION ==="
+echo "=== STEP 9: FACT-BASED VALIDATION ==="
 
 # Edge case: No facts to validate (all removals were narrative/rationale)
 if [ "$TOTAL_FACTS" -eq 0 ]; then
   echo "No facts to validate (all removals are narrative/rationale)"
-  echo "Skipping fact validation - proceeding to Step 9 (Protected Pattern Validation)..."
-  # Skip to Step 9 - no validator invocation needed
+  echo "Skipping fact validation - proceeding to Step 11 (Protected Pattern Validation)..."
+  # Skip to Step 11 - no validator invocation needed
 else
   # Invoke validator via Task tool
   # Parameters:
@@ -1098,19 +1098,19 @@ For EACH question, provide:
    Confidence: LOW"
 
   # Extract validator response and count unanswerable questions
-  echo "Proceeding to Step 9 (Compare Expected vs Actual Answers)..."
+  echo "Proceeding to Step 10 (Compare Expected vs Actual Answers)..."
 fi
 ```
 
 ---
 
-#### Step 9: Compare Expected vs Actual Answers
+#### Step 10: Compare Expected vs Actual Answers
 
 ```bash
-echo "=== STEP 9: COMPARING ANSWERS ==="
+echo "=== STEP 10: COMPARING ANSWERS ==="
 
 # IMPLEMENTATION PROCEDURE:
-# 1. Extract validator response from Step 8 Task tool output
+# 1. Extract validator response from Step 9 Task tool output
 # 2. For EACH question, parse validator's answer and confidence level
 # 3. Compare to expected answer from Step 6 catalog
 # 4. Categorize each comparison result:
@@ -1128,7 +1128,7 @@ echo "=== STEP 9: COMPARING ANSWERS ==="
 #    - Content must be restored
 #
 # 5. For MISMATCH results, record which question failed and from which
-#    removal candidate (for restoration in Step 11)
+#    removal candidate (for restoration in Step 13)
 
 # Count results
 # Replace <count> placeholders below with actual numeric values:
@@ -1146,15 +1146,15 @@ echo "Facts lost: $MISMATCH_COUNT"
 #   - Q2: "What is the maximum number of retries?" (from Candidate 1, Lines 45-48)
 #   - Q7: "How long before timeout?" (from Candidate 3, Lines 150-152)
 
-echo "Proceeding to Step 10 (Protected Pattern Validation)..."
+echo "Proceeding to Step 11 (Protected Pattern Validation)..."
 ```
 
 ---
 
-#### Step 10: Protected Pattern Validation
+#### Step 11: Protected Pattern Validation
 
 ```bash
-echo "=== STEP 10: PROTECTED PATTERN VALIDATION ==="
+echo "=== STEP 11: PROTECTED PATTERN VALIDATION ==="
 
 # Re-count protected patterns after removals
 TEMPLATE_VARS_AFTER=$(grep -oE '\{\{[^}]+\}\}' "{{arg}}" | wc -l)
@@ -1269,23 +1269,23 @@ if [ "$PATTERN_VIOLATIONS" -gt 0 ]; then
 
   echo "Identified $PATTERN_VIOLATION_COUNT specific pattern violations"
 
-  # Pattern violations will be handled in Step 11 along with fact mismatches
+  # Pattern violations will be handled in Step 13 along with fact mismatches
 else
   echo "✅ All protected patterns preserved"
   PATTERN_VIOLATION_COUNT=0
 fi
 
-echo "Proceeding to Step 10.5 (Generalization Validation)..."
+echo "Proceeding to Step 12 (Generalization Validation)..."
 ```
 
 ---
 
-#### Step 10.5: Generalization Validation
+#### Step 12: Generalization Validation
 
 **Purpose**: Test if agent can still generalize category principles after removing preambles/explanations.
 
 ```bash
-echo "=== STEP 10.5: GENERALIZATION VALIDATION ==="
+echo "=== STEP 12: GENERALIZATION VALIDATION ==="
 
 # This tests whether the agent can apply category principles to novel examples
 # (not listed in document) after optimization removed preambles/explanations
@@ -1367,15 +1367,15 @@ else
   echo "✅ Generalization capability preserved: Agent can apply principles to novel cases"
 fi
 
-echo "Proceeding to Step 11 (Handle Lost Facts and Pattern Violations)..."
+echo "Proceeding to Step 13 (Handle Lost Facts and Pattern Violations)..."
 ```
 
 ---
 
-#### Step 11: Handle Lost Facts and Pattern Violations
+#### Step 13: Handle Lost Facts and Pattern Violations
 
 ```bash
-echo "=== STEP 11: HANDLING LOST FACTS AND PATTERN VIOLATIONS ==="
+echo "=== STEP 13: HANDLING LOST FACTS AND PATTERN VIOLATIONS ==="
 
 # Calculate total violations needing restoration
 TOTAL_VIOLATIONS=$((MISMATCH_COUNT + PATTERN_VIOLATION_COUNT + GENERALIZATION_VIOLATIONS))
@@ -1392,8 +1392,8 @@ if [ "$TOTAL_VIOLATIONS" -eq 0 ]; then
     # Loop back to Step 4 to find more redundancies
   else
     echo "✅ MAX ITERATIONS REACHED: Optimization complete"
-    echo "Proceeding to Step 12 (Cleanup and Commit)..."
-    # Terminate iteration process - skip to Step 12
+    echo "Proceeding to Step 14 (Cleanup and Commit)..."
+    # Terminate iteration process - skip to Step 14
   fi
 fi
 
@@ -1411,13 +1411,13 @@ if [ "$TOTAL_VIOLATIONS" -gt 0 ]; then
     # - Preserves optimization work from successful removals
     # - Only reverts problematic removals
     # - Faster convergence to optimal state
-    # - Leverages surgical restoration capability built in Step 10
+    # - Leverages surgical restoration capability built in Step 11
 
     # STEP A: IDENTIFY VIOLATED CANDIDATES
     #
     # Build list of candidates that need restoration:
-    # - From fact violations (Step 8): Validator agent identifies "Candidate N"
-    # - From pattern violations (Step 10): Map line numbers back to candidates using catalog
+    # - From fact violations (Step 9): Validator agent identifies "Candidate N"
+    # - From pattern violations (Step 11): Map line numbers back to candidates using catalog
     #
     # Example:
     # VIOLATED_CANDIDATES=(1 3 5)  # Candidates 1, 3, and 5 contained violations
@@ -1500,7 +1500,7 @@ if [ "$TOTAL_VIOLATIONS" -gt 0 ]; then
 
     # RESTORATION PROCEDURE for pattern violations:
     #
-    # For each pattern violation from Step 10 agent response:
+    # For each pattern violation from Step 11 agent response:
     # 1. MAP TO CANDIDATE: Use catalog to find which candidate covered this line
     #    - Pattern violation at line 308
     #    - Check catalog: "Candidate 2 (Lines 305-310)" → Violation in Candidate 2
@@ -1517,7 +1517,7 @@ if [ "$TOTAL_VIOLATIONS" -gt 0 ]; then
     # HANDLING AMBIGUOUS CONTEXT:
     # - If context appears multiple times, use line numbers as hint
     # - If context was also removed, use adjacent available markers
-    # - Verify restoration by re-running Step 10 pattern counts
+    # - Verify restoration by re-running Step 11 pattern counts
     #
     # Example restoration:
     # Pattern violation: sequential_emphasis "CRITICAL" at line 308 (in Candidate 2)
@@ -1591,10 +1591,10 @@ The command uses two iteration mechanisms:
 
 ### Completion Phase
 
-#### Step 12: Cleanup and Commit
+#### Step 14: Cleanup and Commit
 
 ```bash
-echo "=== STEP 12: CLEANUP AND COMMIT ==="
+echo "=== STEP 14: CLEANUP AND COMMIT ==="
 
 # Check if file actually changed
 if diff -q "{{arg}}" "$BACKUP_FILE" > /dev/null 2>&1; then
@@ -1632,7 +1632,7 @@ echo "✅ Changes committed"
 
 ---
 
-#### Step 13: Report
+#### Step 15: Report
 
 **⚠️ IMPORTANT**: Replace ALL placeholders `[N]`, `[count]`, `[X]` with actual numeric values from your execution. Do NOT output literal placeholders.
 
