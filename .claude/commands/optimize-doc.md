@@ -313,26 +313,30 @@ Is when/why to apply this clear?
    NO → KEEP (needed for clarity)
    YES → Continue to question 6
 
-6. Does this content explain WHY (rationale/educational)?
+6. Does this content use structural headers (Purpose, Problem, Fix, How it works, Where to look, Detection)?
+   YES → KEEP (execution context marker - see Never-Remove List #5)
+   NO → Continue to question 7
+
+7. Does this content explain WHY (rationale/educational)?
    YES → Check for protected patterns within this content:
          → Scan for: Sequential emphasis (STOP, WAIT, CRITICAL, MANDATORY, etc.)
          → Scan for: Template variables ({{...}})
          → Scan for: Boundary demonstrations (❌ paired with ✅)
          → Scan for: Decision criteria patterns (Test:, Ask:, Check:)
          → Scan for: Negative constraints (DO NOT, NEVER, FORBIDDEN)
-         → Scan for: Execution context (How it works:, Where to look:, Fix:)
+         → Scan for: Structural headers (Purpose:, Problem:, Fix:, How it works:, Where to look:, Detection:)
          → Scan for: Decision hierarchy questions (priority, correctness checks)
          → Scan for: Meta-categorization headers (Protected Content Categories, etc.)
          → Scan for: Category preambles (Always keep content that..., All content that...)
          IF protected patterns found → KEEP (protected content takes precedence)
          IF no protected patterns → REMOVE (pure rationale)
-   NO → Continue to question 7
-
-7. Does this content show WHAT "correct" looks like OR teach HOW to recognize patterns?
-   YES → KEEP (success criteria or pattern extraction)
    NO → Continue to question 8
 
-8. Is this redundant content? (Categories 1-6)
+8. Does this content show WHAT "correct" looks like OR teach HOW to recognize patterns?
+   YES → KEEP (success criteria or pattern extraction)
+   NO → Continue to question 9
+
+9. Is this redundant content? (Categories 1-6)
    NO → KEEP (unique content)
    YES → Check for protected patterns within this content:
          → Scan for: Sequential emphasis (STOP, WAIT, CRITICAL, MANDATORY, etc.)
@@ -340,7 +344,7 @@ Is when/why to apply this clear?
          → Scan for: Boundary demonstrations (❌ paired with ✅)
          → Scan for: Decision criteria patterns (Test:, Ask:, Check:)
          → Scan for: Negative constraints (DO NOT, NEVER, FORBIDDEN)
-         → Scan for: Execution context (How it works:, Where to look:, Fix:)
+         → Scan for: Structural headers (Purpose:, Problem:, Fix:, How it works:, Where to look:, Detection:)
          → Scan for: Decision hierarchy questions (priority, correctness checks)
          → Scan for: Meta-categorization headers (Protected Content Categories, etc.)
          → Scan for: Category preambles (Always keep content that..., All content that...)
@@ -416,6 +420,9 @@ All content that explains WHEN/HOW to apply instructions:
 - Mechanism descriptions: "**How it works**:", "**How Convergence Works**:"
 - Search instructions: "**Where to look**:" (executable search steps)
 - Fix strategies: "**Fix**:", "**Fix Strategy**:" (actionable solutions)
+  - ✅ KEEP: "**Fix**: Remove Type A, keep Type B" (tells WHICH parts to remove)
+  - ✅ KEEP: "**Fix**: Keep in one place, reference from others (unless interrupts workflow)" (includes exception)
+  - ❌ WRONG: Classify as "pedagogical restatement" (actually provides non-obvious guidance)
 - Decision hierarchy questions: Questions that guide priority decisions (e.g., "Can Claude execute correctly?")
 - Meta-categorization sections: Headers that categorize decision logic (e.g., "Protected Content Categories", "Redundancy Categories")
 - **Test**: Remove it - does execution become ambiguous? If yes → PROTECTED
@@ -500,6 +507,55 @@ DO NOT use optimizer, hacker, designer, builder
 → Valid options: Cannot determine from document
 → Invalid options: {optimizer, hacker, designer, builder}
 
+### 🚨 Fix Strategy Protection Rule
+
+**Pattern**: Redundancy category followed by **Fix**: or **Fix Strategy**: statement
+
+**Why Protected**: Fix strategies provide actionable solutions that aren't always obvious from pattern description alone.
+
+**Examples**:
+
+✅ **CORRECT** (both present):
+```
+Category 5: Rationale Redundancy
+**Pattern**: Explanations of WHY something is required
+
+**Fix**: Remove Type A (pure rationale), keep Type B (execution-critical context)
+```
+→ Pattern describes WHAT to look for
+→ Fix describes WHICH parts to remove vs keep
+
+❌ **INCOMPLETE** (fix removed):
+```
+Category 5: Rationale Redundancy
+**Pattern**: Explanations of WHY something is required
+```
+→ Pattern describes WHAT to look for
+→ Missing: HOW to distinguish Type A from Type B
+
+**Another Example**:
+
+✅ **CORRECT** (includes exception):
+```
+Category 4: Procedural Redundancy
+**Pattern**: Same procedure described in multiple places
+
+**Fix**: Keep detailed procedure in one place, reference from others (unless interrupts workflow)
+```
+→ Pattern identifies redundancy
+→ Fix provides solution WITH critical exception
+
+❌ **INCOMPLETE** (fix removed):
+```
+Category 4: Procedural Redundancy
+**Pattern**: Same procedure described in multiple places
+```
+→ Missing: Reference strategy and workflow exception
+
+**Detection**: Search for "**Fix**:" or "**Fix Strategy**:" headers following redundancy category descriptions
+
+**Protection**: Fix strategies are execution context (Never-Remove List #5) - they explain HOW to resolve problems, not just WHAT problems exist.
+
 ### Context-Aware Pattern Detection
 
 **Purpose**: Distinguish truly protected pattern instances from removable explanatory text.
@@ -534,6 +590,16 @@ DO NOT use optimizer, hacker, designer, builder
 7. **Emphasis markers**: Styled text
    - Example: `**CRITICAL**:` or `⚠️ CRITICAL` ← Protected
 
+8. **Structural headers**: Problem-solving framework components
+   - Example: `**Purpose**: Distinguish X from Y` ← Protected
+   - Example: `**Problem**: X alone produces false positives` ← Protected
+   - Example: `**Fix**: Remove Y, keep Z` ← Protected
+   - Example: `**Fix Strategy**: Map violations to candidates` ← Protected
+   - Example: `**How it works**: Iterative convergence...` ← Protected
+   - Example: `**Where to look**: Check Step X output` ← Protected
+   - Example: `**Detection**: Pattern matching rules` ← Protected
+   - Example: `**When to use**: Before attempting Y` ← Protected
+
 **Removable Contexts** (pattern instance CAN be removed if redundant):
 
 1. **Plain explanatory text**: Regular prose explaining concept
@@ -556,6 +622,7 @@ DO NOT use optimizer, hacker, designer, builder
    IF line starts with "#" → Protected
    IF line contains "Detection:", "Pattern:", "Example:" → Protected
    IF line contains "**" or "⚠️" → Protected
+   IF line matches "**[A-Z][a-z]+( [a-z]+)***: " → Protected (structural header)
    IF none of above → Removable (subject to redundancy check)
    ```
 3. Count only protected instances for pattern validation
@@ -936,7 +1003,7 @@ echo "=== STEP 7: PRE-REMOVAL PROTECTED PATTERN SCAN ==="
 # 3. Sequential emphasis (context-aware): STOP|WAIT|ONLY THEN|NOW|FIRST|BEFORE|AFTER|CRITICAL|MANDATORY in protected contexts
 # 4. Boundary demonstrations: ❌.*:
 # 5. Negative constraints: DO NOT|NEVER|FORBIDDEN
-# 6. Execution context markers: ^\*\*Purpose\*\*:|^\*\*Problem\*\*:|^\*\*When to|^\*\*Detection\*\*:
+# 6. Structural headers: ^\*\*Purpose\*\*:|^\*\*Problem\*\*:|^\*\*Fix\*\*:|^\*\*Fix Strategy\*\*:|^\*\*How it works\*\*:|^\*\*Where to look\*\*:|^\*\*Detection\*\*:|^\*\*When to use\*\*:
 
 # Example implementation for each candidate:
 #
@@ -957,8 +1024,8 @@ echo "=== STEP 7: PRE-REMOVAL PROTECTED PATTERN SCAN ==="
 # # Check for negative constraints
 # NEGATIVE_CONSTRAINTS_IN_CANDIDATE=$(echo "$CANDIDATE_TEXT" | grep -c 'DO NOT\|NEVER\|FORBIDDEN')
 #
-# # Check for execution context markers
-# EXECUTION_CONTEXT_IN_CANDIDATE=$(echo "$CANDIDATE_TEXT" | grep -c '^\*\*Purpose\*\*:\|^\*\*Problem\*\*:\|^\*\*When to\|^\*\*Detection\*\*:')
+# # Check for structural headers
+# STRUCTURAL_HEADERS_IN_CANDIDATE=$(echo "$CANDIDATE_TEXT" | grep -cE '^\*\*(Purpose|Problem|Fix|Fix Strategy|How it works|Where to look|Detection|When to use)\*\*:')
 #
 # # If ANY protected patterns found, exclude this candidate
 # if [ "$TEMPLATE_VARS_IN_CANDIDATE" -gt 0 ] || \
@@ -966,14 +1033,14 @@ echo "=== STEP 7: PRE-REMOVAL PROTECTED PATTERN SCAN ==="
 #    [ "$SEQUENTIAL_EMPHASIS_IN_CANDIDATE" -gt 0 ] || \
 #    [ "$BOUNDARY_DEMOS_IN_CANDIDATE" -gt 0 ] || \
 #    [ "$NEGATIVE_CONSTRAINTS_IN_CANDIDATE" -gt 0 ] || \
-#    [ "$EXECUTION_CONTEXT_IN_CANDIDATE" -gt 0 ]; then
+#    [ "$STRUCTURAL_HEADERS_IN_CANDIDATE" -gt 0 ]; then
 #   echo "⚠️  Candidate $N contains protected patterns - EXCLUDING from removal"
 #   echo "  - Template variables: $TEMPLATE_VARS_IN_CANDIDATE"
 #   echo "  - Decision criteria: $DECISION_CRITERIA_IN_CANDIDATE"
 #   echo "  - Sequential emphasis: $SEQUENTIAL_EMPHASIS_IN_CANDIDATE"
 #   echo "  - Boundary demonstrations: $BOUNDARY_DEMOS_IN_CANDIDATE"
 #   echo "  - Negative constraints: $NEGATIVE_CONSTRAINTS_IN_CANDIDATE"
-#   echo "  - Execution context markers: $EXECUTION_CONTEXT_IN_CANDIDATE"
+#   echo "  - Structural headers: $STRUCTURAL_HEADERS_IN_CANDIDATE"
 #
 #   # Add to exclusion list
 #   if [ -n "$EXCLUDED_CANDIDATES" ]; then
