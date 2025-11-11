@@ -43,31 +43,14 @@ fi
 # Exit if no JSON input
 [[ -z "$JSON_INPUT" ]] && exit 0
 
-# Simple JSON value extraction without jq dependency
-extract_json_value()
-{
-	local json="$1"
-	local key="$2"
-	# Use grep and sed for basic JSON parsing (allow grep to fail without triggering set -e)
-	echo "$json" | grep -o "\"$key\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | sed "s/\"$key\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\"/\1/" || true
-}
+# Source JSON parsing library
+source "/workspace/.claude/hooks/lib/json-parser.sh"
 
-# Extract hook event type
-HOOK_EVENT=$(extract_json_value "$JSON_INPUT" "hook_event_name")
+# Parse all common fields at once
+parse_hook_json "$JSON_INPUT"
 
 # Only handle UserPromptSubmit events
 [[ "$HOOK_EVENT" != "UserPromptSubmit" ]] && exit 0
-
-# Extract user message - try multiple possible fields
-USER_PROMPT=$(extract_json_value "$JSON_INPUT" "message")
-
-if [[ -z "$USER_PROMPT" ]]; then
-	USER_PROMPT=$(extract_json_value "$JSON_INPUT" "user_message")
-fi
-
-if [[ -z "$USER_PROMPT" ]]; then
-	USER_PROMPT=$(extract_json_value "$JSON_INPUT" "prompt")
-fi
 
 # Skip if no prompt provided
 [[ -z "$USER_PROMPT" ]] && exit 0
@@ -136,6 +119,10 @@ fi
 remove_quoted_sections()
 {
 	local text="$1"
+
+	# Early exit if no quotes present (common case optimization)
+	[[ "$text" != *\"* ]] && { echo "$text"; return; }
+
 	local quote_count=$(echo "$text" | tr -cd '"' | wc -c)
 
 	# Only remove quotes if balanced (even number)

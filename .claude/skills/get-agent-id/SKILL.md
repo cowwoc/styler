@@ -117,7 +117,7 @@ bash -c 'SESSION_ID="..." && OUTPUT_FILE="/tmp/phase2-agent.txt" && AGENT_ID=$(j
 ## Related Skills
 
 - **get-session-id**: Provides session ID needed for this skill
-- **read-conversation-history**: Read full conversation log for debugging
+- **get-history**: Read full conversation log for debugging
 
 ## Common Use Cases
 

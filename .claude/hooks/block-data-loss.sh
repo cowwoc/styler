@@ -24,14 +24,8 @@ mkdir -p /tmp 2>/dev/null || true
 # Debug: Log what we received (with timestamp)
 echo "$(date): Consolidated hook received: $JSON_INPUT" >> /tmp/consolidated-debug.log 2>/dev/null || true
 
-# Simple JSON value extraction without jq dependency
-extract_json_value()
-{
-	local json="$1"
-	local key="$2"
-	# Use grep and sed for basic JSON parsing
-	echo "$json" | grep -o "\"$key\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | sed "s/\"$key\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\"/\1/"
-}
+# Source JSON parsing library
+source "/workspace/.claude/hooks/lib/json-parser.sh"
 
 handle_pre_tool_use()
 {

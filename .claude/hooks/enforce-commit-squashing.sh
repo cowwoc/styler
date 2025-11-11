@@ -35,7 +35,15 @@ if [[ -z "$BRANCH_NAME" ]]; then
 fi
 
 # Only check merges to main branch
-CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+# Performance optimization: Cache git current branch with 5-second TTL
+BRANCH_CACHE="/tmp/git-current-branch-$(echo "$PWD" | md5sum | cut -d' ' -f1)"
+if [[ -f "$BRANCH_CACHE" ]] && [[ $(( $(date +%s) - $(stat -c %Y "$BRANCH_CACHE" 2>/dev/null || echo 0) )) -lt 5 ]]; then
+	CURRENT_BRANCH=$(cat "$BRANCH_CACHE")
+else
+	CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+	echo "$CURRENT_BRANCH" > "$BRANCH_CACHE"
+fi
+
 if [[ "$CURRENT_BRANCH" != "main" ]]; then
 	# Not merging to main, allow command
 	exit 0
@@ -130,7 +138,8 @@ if ! git rev-parse --verify "$BRANCH_NAME" >/dev/null 2>&1; then
 fi
 
 # Count commits on the branch relative to main
-COMMIT_COUNT=$(git rev-list --count main.."$BRANCH_NAME" 2>/dev/null || echo "0")
+# Performance optimization: Early exit counting (stops after finding 2 commits)
+COMMIT_COUNT=$(git rev-list main.."$BRANCH_NAME" 2>/dev/null | head -2 | wc -l || echo "0")
 
 if [[ "$COMMIT_COUNT" -gt 1 ]]; then
 	# VIOLATION: Multiple commits on task branch

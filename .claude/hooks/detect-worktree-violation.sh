@@ -21,14 +21,8 @@ else
 	JSON_INPUT="$(timeout 5s cat 2>/dev/null)" || JSON_INPUT=""
 fi
 
-# Simple JSON value extraction without jq dependency
-extract_json_value()
-{
-	local json="$1"
-	local key="$2"
-	# Use grep and sed for basic JSON parsing
-	echo "$json" | grep -o "\"$key\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | sed "s/\"$key\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\"/\1/"
-}
+# Source JSON parsing library
+source "/workspace/.claude/hooks/lib/json-parser.sh"
 
 # Extract tool name and command from JSON
 TOOL_NAME=$(extract_json_value "$JSON_INPUT" "tool_name")
@@ -49,13 +43,22 @@ if [ "$TOOL_NAME" != "Bash" ]; then
 fi
 
 # Check if we have an active task
-LOCK_FILE=$(find /workspace/tasks -name "task.json" -type f 2>/dev/null | head -1)
+# Performance optimization: Use glob pattern instead of find command
+LOCK_FILE=$( (
+  shopt -s nullglob
+  locks=(/workspace/tasks/*/task.json)
+  if [ ${#locks[@]} -gt 0 ]; then
+    echo "${locks[0]}"
+  fi
+) )
+
 if [ -z "$LOCK_FILE" ]; then
     exit 0  # No active task, no restriction
 fi
 
 # Extract task name from lock file
-TASK_NAME=$(basename "$LOCK_FILE" .json)
+# BUG FIX: Correctly extract task directory name, not just "task"
+TASK_NAME=$(basename "$(dirname "$LOCK_FILE")")
 EXPECTED_WORKTREE="/workspace/tasks/${TASK_NAME}/code"
 
 # Detect 'cd' commands that might leave task worktree

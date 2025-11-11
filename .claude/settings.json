@@ -163,14 +163,11 @@
         ]
       },
       {
+        "matcher": "TodoWrite",
         "hooks": [
           {
             "type": "command",
             "command": "/workspace/.claude/hooks/load-todo.sh"
-          },
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/debug-tool-use.sh"
           }
         ]
       }

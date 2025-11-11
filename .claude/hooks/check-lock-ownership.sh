@@ -27,8 +27,17 @@ CURRENT_DIR=$(pwd)
 # STEP 2: Check for invalid lock files (non-.json extensions) containing this session_id
 # Use fixed string match to prevent regex injection
 # Skip if tasks directory doesn't exist yet
+# Performance optimization: Use glob pattern instead of find command
 if [ -d /workspace/tasks ]; then
-  INVALID_LOCKS=$(find /workspace/tasks -type f -name "task.*" ! -name "*.json" -exec grep -lF "\"session_id\":\"$SESSION_ID\"" {} \; 2>/dev/null)
+  INVALID_LOCKS=$( (
+    shopt -s nullglob
+    for lock_candidate in /workspace/tasks/*/task.*; do
+      if [[ ! "$lock_candidate" =~ \.json$ ]] && grep -qF "\"session_id\":\"$SESSION_ID\"" "$lock_candidate" 2>/dev/null; then
+        echo "$lock_candidate"
+        break
+      fi
+    done
+  ) )
 else
   INVALID_LOCKS=""
 fi
@@ -68,8 +77,17 @@ fi
 # STEP 3: Search ALL lock files for this session_id
 # Use fixed string match to prevent regex injection
 # Skip if tasks directory doesn't exist yet
+# Performance optimization: Use grep -l to search all files in one pass
 if [ -d /workspace/tasks ]; then
-  LOCK_FILE=$(find /workspace/tasks -name "task.json" -type f -exec grep -lF "\"session_id\":\"$SESSION_ID\"" {} \; 2>/dev/null | head -1)
+  LOCK_FILE=$( (
+    shopt -s nullglob
+    for task_json in /workspace/tasks/*/task.json; do
+      if grep -qF "\"session_id\":\"$SESSION_ID\"" "$task_json" 2>/dev/null; then
+        echo "$task_json"
+        break
+      fi
+    done
+  ) )
 else
   LOCK_FILE=""
 fi

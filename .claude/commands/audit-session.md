@@ -49,8 +49,8 @@ parse-conversation-timeline skill → audit-protocol-compliance skill → CONDIT
 **Invocation Pattern** (synchronous execution):
 
 ```
-# Step 1: Invoke read-conversation-history skill (executes synchronously)
-Skill: read-conversation-history
+# Step 1: Invoke get-history skill (executes synchronously)
+Skill: get-history
 # Skill runs to completion and returns before continuing
 
 # Step 2: Invoke parse-conversation-timeline skill (executes synchronously)
@@ -72,7 +72,7 @@ For each timeline event, include:
 - context (working directory, git branch at time of event)
 - file_classification (for Edit/Write: source_file/test_file/infrastructure, worktree_type)
 
-Use methods from read-conversation-history skill to access conversation.jsonl. Output comprehensive structured timeline JSON that reviewers can query for ANY compliance or efficiency check."
+Use methods from get-history skill to access conversation.jsonl. Output comprehensive structured timeline JSON that reviewers can query for ANY compliance or efficiency check."
 ```
 
 **Timeline Schema** (see parse-conversation-timeline skill.md for full spec):

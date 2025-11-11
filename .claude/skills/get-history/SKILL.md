@@ -1,9 +1,9 @@
 ---
-name: read-conversation-history
+name: get-history
 description: Access raw conversation history from Claude Code session storage for audit and analysis
 ---
 
-# Read Conversation History Skill
+# Get History Skill
 
 **Purpose**: Provide direct access to raw, unfiltered conversation history stored by Claude Code for audit trails, compliance verification, and conversation analysis.
 
@@ -109,10 +109,10 @@ jq 'select(.type == "tool_use" and .name == "Task") |
 
 ```markdown
 **CRITICAL**: Main agent MUST NOT provide filtered summaries. parse-conversation-timeline skill uses
-read-conversation-history skill to access raw conversation independently.
+get-history skill to access raw conversation independently.
 
 **Mandatory Actions**:
-1. Use read-conversation-history skill to get current session conversation file
+1. Use get-history skill to get current session conversation file
 2. Parse conversation for:
    - User messages (approval checkpoints)
    - Tool uses (Edit/Write with working directory context)
@@ -295,7 +295,7 @@ Do NOT attempt to guess or calculate the session ID. Report the error to the use
 ## Integration with Existing Skills
 
 **Complements learn-from-mistakes**:
-- read-conversation-history: Provides raw conversation data
+- get-history: Provides raw conversation data
 - learn-from-mistakes: Analyzes mistakes and recommends fixes
 - Used together: Complete audit and improvement cycle
 
