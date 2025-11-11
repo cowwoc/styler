@@ -137,11 +137,7 @@
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/pre-tool-use-detect-retrospective.sh"
-          },
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/detect-retrospective-docs.sh"
+            "command": "/workspace/.claude/hooks/block-retrospective-docs.sh"
           },
           {
             "type": "command",
