@@ -949,7 +949,7 @@ After execution, expect these files to be created/modified:
 - Use session ID from system reminder: `✅ Session ID: {uuid}`
 - Required for accessing conversation logs in Phase 2
 
-**read-conversation-history**: Access raw conversation logs for analysis
+**get-history**: Access raw conversation logs for analysis
 - Uses session ID to locate: `/home/node/.config/projects/-workspace/{session-id}.jsonl`
 - Provides agent sidechain logs: `/home/node/.config/projects/-workspace/agent-*.jsonl`
 

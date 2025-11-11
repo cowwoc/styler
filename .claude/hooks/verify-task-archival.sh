@@ -29,15 +29,20 @@ if [ -z "$TASK_NAME" ]; then
     if [ -z "$TASK_NAME" ]; then
         # Not in a task worktree path - check if any tasks are in CLEANUP state
         # This handles hook invocation from /workspace or other directories
+        # Performance optimization: Use glob pattern instead of find command
         CLEANUP_TASKS=""
         if [ -d "/workspace/tasks" ]; then
-            CLEANUP_TASKS=$(find /workspace/tasks -name "task.json" -type f 2>/dev/null | while read -r lock; do
-                state=$(jq -r '.state // ""' "$lock" 2>/dev/null)
-                if [ "$state" = "CLEANUP" ]; then
-                    # Extract task name from path: /workspace/tasks/{task-name}/task.json
-                    dirname "$lock" | xargs basename
-                fi
-            done)
+            CLEANUP_TASKS=$( (
+                shopt -s nullglob
+                for lock in /workspace/tasks/*/task.json; do
+                    state=$(jq -r '.state // ""' "$lock" 2>/dev/null)
+                    if [ "$state" = "CLEANUP" ]; then
+                        # Extract task name from path: /workspace/tasks/{task-name}/task.json
+                        dirname "$lock" | xargs basename
+                        break  # Early exit
+                    fi
+                done
+            ) )
         fi
 
         if [ -z "$CLEANUP_TASKS" ]; then
