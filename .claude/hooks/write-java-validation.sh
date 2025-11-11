@@ -6,7 +6,7 @@
 # PREVENTS: Wrong requireThat() imports and parameter order violations
 
 set -euo pipefail
-trap 'echo "ERROR in post-tool-use-write-java-validation.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+trap 'echo "ERROR in write-java-validation.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
 # Get the file path from Write tool context (passed as environment variable)
 FILE_PATH="${CLAUDE_TOOL_FILE_PATH:-}"

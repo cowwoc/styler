@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Error handler - output helpful message to stderr on failure
-trap 'echo "ERROR in post-tool-use-task-invoke.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+trap 'echo "ERROR in task-invoke-post.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
 # Post-tool-use hook: Auto-create agent worktrees after Task tool invocation
 # Prevents VIOLATION #2: Missing Agent Worktrees

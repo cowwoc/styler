@@ -333,7 +333,7 @@ git merge {task}-engineer
 - Violations attributed to specific agent (easier to diagnose)
 - Reduced cognitive load (fixing small batches vs large batch at end)
 
-**Hook Support**: `post-tool-use-task-complete.sh` hook provides automatic reminder when agent completes.
+**Hook Support**: `task-complete.sh` hook provides automatic reminder when agent completes.
 
 ### Session Summary Documentation Requirements {#session-summary-documentation-requirements}
 
@@ -566,7 +566,7 @@ CORRECT SEQUENCE:
 
     ```bash
     # Step 19a: ALWAYS verify task branch has exactly 1 commit
-    .claude/hooks/pre-task-merge-check.sh <task-branch> main
+    .claude/hooks/task-merge-check.sh <task-branch> main
 
     # Step 19b: If validation fails (>1 commit), squash ALL commits before merge:
     cd /workspace/main
@@ -575,7 +575,7 @@ CORRECT SEQUENCE:
     git commit -m "Squashed task implementation"
 
     # Step 19c: MANDATORY re-validation to confirm squash succeeded
-    .claude/hooks/pre-task-merge-check.sh <task-branch> main
+    .claude/hooks/task-merge-check.sh <task-branch> main
     # MUST output: "✅ Task branch ready for merge: 1 commit"
     ```
 

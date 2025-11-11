@@ -12,7 +12,7 @@
 set -euo pipefail
 
 # Error handler - output helpful message to stderr on failure
-trap 'echo "ERROR in pre-tool-use-task-invoke.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+trap 'echo "ERROR in task-invoke-pre.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
 # Source helper scripts
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -30,12 +30,12 @@ if [[ "$TOOL_NAME" != "Task" ]]; then
 	exit 0
 fi
 
-log_hook_start "pre-tool-use-task-invoke" "PreToolUse"
+log_hook_start "task-invoke-pre" "PreToolUse"
 
 # Check if we're in a task context
 TASKS_DIR="/workspace/tasks"
 if [[ ! -d "$TASKS_DIR" ]]; then
-	log_hook_success "pre-tool-use-task-invoke" "PreToolUse" "No tasks directory, allowing Task invocation"
+	log_hook_success "task-invoke-pre" "PreToolUse" "No tasks directory, allowing Task invocation"
 	exit 0
 fi
 
@@ -43,7 +43,7 @@ fi
 TASK_JSON_FILES=$(find "$TASKS_DIR" -maxdepth 2 -name "task.json" 2>/dev/null || true)
 
 if [[ -z "$TASK_JSON_FILES" ]]; then
-	log_hook_success "pre-tool-use-task-invoke" "PreToolUse" "No task.json found, allowing Task invocation"
+	log_hook_success "task-invoke-pre" "PreToolUse" "No task.json found, allowing Task invocation"
 	exit 0
 fi
 
@@ -93,7 +93,7 @@ done <<< "$TASK_JSON_FILES"
 
 if [[ "$VIOLATION_FOUND" == true ]]; then
 	if [[ "$CURRENT_STATE" == *"missing requirements reports"* ]]; then
-		log_hook_blocked "pre-tool-use-task-invoke" "PreToolUse" "Task tool blocked - missing requirements reports"
+		log_hook_blocked "task-invoke-pre" "PreToolUse" "Task tool blocked - missing requirements reports"
 
 		MESSAGE="## 🚨 REQUIREMENTS PHASE BYPASS DETECTED
 
@@ -152,7 +152,7 @@ See: /workspace/main/docs/project/task-protocol-core.md § REQUIREMENTS Phase
 		exit 0
 	fi
 
-	log_hook_blocked "pre-tool-use-task-invoke" "PreToolUse" "Task tool invocation blocked - state=INIT (requires CLASSIFIED or IMPLEMENTATION)"
+	log_hook_blocked "task-invoke-pre" "PreToolUse" "Task tool invocation blocked - state=INIT (requires CLASSIFIED or IMPLEMENTATION)"
 
 	MESSAGE="## 🚨 TASK TOOL INVOCATION BLOCKED
 
@@ -231,5 +231,5 @@ INIT → CLASSIFIED (create task.md) → SYNTHESIS (plan) → user approval → 
 	exit 0
 fi
 
-log_hook_success "pre-tool-use-task-invoke" "PreToolUse" "Task tool invocation allowed - proper state"
+log_hook_success "task-invoke-pre" "PreToolUse" "Task tool invocation allowed - proper state"
 exit 0

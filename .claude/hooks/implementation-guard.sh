@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Error handler - output helpful message to stderr on failure
-trap 'echo "ERROR in pre-tool-use-implementation-guard.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+trap 'echo "ERROR in implementation-guard.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
 # Pre-tool-use hook: Block main agent from creating source files during IMPLEMENTATION state
 # Prevents VIOLATION #1: Main Agent Source File Creation
