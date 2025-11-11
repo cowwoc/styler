@@ -278,8 +278,9 @@ detect_compilation_abandonment()
 	return 1  # No compilation abandonment detected
 }
 
-# Detect mid-protocol abandonment patterns
-detect_protocol_abandonment()
+# Detect asking permission when work should continue autonomously
+# Applies to both task protocol and general work contexts (commands, optimizations, etc.)
+detect_asking_permission_to_continue()
 {
 	local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
@@ -292,6 +293,41 @@ detect_protocol_abandonment()
 			[[ "$text_lower" == *"select a different task"* ]] && return 0
 			[[ "$text_lower" == *"proceed with"* ]] && return 0
 			[[ "$text_lower" == *"or would you"* ]] && return 0
+		fi
+
+		# Pattern: presenting options after work should continue (non-task context)
+		# Added 2025-11-11 after main agent presented 3 options during optimize-doc
+		# command execution instead of proceeding with cataloging step
+		[[ "$text_lower" == *"proceed with"* ]] && return 0
+		[[ "$text_lower" == *"continue with"* ]] && return 0
+	fi
+
+	# Pattern: citing complexity/length before presenting options (added 2025-11-11)
+	# Catches "This is complex...would you like" pattern regardless of task context
+	# Triggered by: "This is a complex, multi-iteration optimization that will be quite lengthy. Would you like me to:"
+	if [[ "$text_lower" == *"complex"* ]] && [[ "$text_lower" == *"would you like"* ]]; then
+		return 0
+	fi
+	if [[ "$text_lower" == *"lengthy"* ]] && [[ "$text_lower" == *"would you like"* ]]; then
+		return 0
+	fi
+	if [[ "$text_lower" == *"will be quite"* ]] && [[ "$text_lower" == *"would you like"* ]]; then
+		return 0  # "will be quite [lengthy/complex/...]"
+	fi
+	# "Given the complexity and length" pattern (added 2025-11-11)
+	[[ "$text_lower" == *"given"*"complexity"*"length"* ]] && return 0
+	[[ "$text_lower" == *"given"*"complex"*"lengthy"* ]] && return 0
+
+	# Pattern: presenting numbered options when optimal path is clear (added 2025-11-11)
+	# Detects markdown-formatted option lists (1. **, 2. **, 3. **)
+	# Combined with justification language suggests asking instead of doing
+	if [[ "$text_lower" == *"1. "* ]] && [[ "$text_lower" == *"2. "* ]]; then
+		# Has numbered list - check for option-presenting language
+		if [[ "$text_lower" == *"would you like"* ]] || \
+		   [[ "$text_lower" == *"what's your preference"* ]] || \
+		   [[ "$text_lower" == *"which approach"* ]] || \
+		   [[ "$text_lower" == *"or would you prefer"* ]]; then
+			return 0
 		fi
 	fi
 
@@ -328,8 +364,8 @@ PROHIBITED: Abandoning complex problems for simpler alternatives without technic
 REMINDER
 fi
 
-# Detect protocol abandonment and inject completion requirement
-if detect_protocol_abandonment "$WORKING_TEXT"; then
+# Detect asking permission when work should continue and inject completion requirement
+if detect_asking_permission_to_continue "$WORKING_TEXT"; then
 	cat <<'REMINDER'
 <system-reminder>
 ❌ PROTOCOL VIOLATION DETECTED - AUTONOMOUS COMPLETION REQUIRED
