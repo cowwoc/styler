@@ -2,6 +2,10 @@
 # Library for resolving documentation references with anchor IDs
 # Source this file in hooks that need to reference documentation
 
+# Cache for documentation index to avoid repeated file reads
+_DOC_INDEX_CACHE=""
+_DOC_INDEX_FILE=""
+
 # Resolve a documentation reference to Read command format
 # Usage: resolve_doc_ref "file.md#anchor-id"
 # Returns: "Read /workspace/main/docs/project/file.md lines START-END"
@@ -37,9 +41,16 @@ resolve_doc_ref() {
         return 0
     fi
 
-    # Query index for line numbers
+    # Query index for line numbers with caching
     if command -v jq &> /dev/null; then
-        local result=$(jq -r ".\"$file\".\"$anchor\" // null" "$index_file" 2>/dev/null)
+        # Load index into cache if not already loaded or if index file changed
+        if [ -z "$_DOC_INDEX_CACHE" ] || [ "$_DOC_INDEX_FILE" != "$index_file" ]; then
+            _DOC_INDEX_CACHE=$(cat "$index_file" 2>/dev/null)
+            _DOC_INDEX_FILE="$index_file"
+        fi
+
+        # Parse from cache instead of re-reading file
+        local result=$(echo "$_DOC_INDEX_CACHE" | jq -r ".\"$file\".\"$anchor\" // null" 2>/dev/null)
 
         if [ "$result" != "null" ] && [ -n "$result" ]; then
             local start=$(echo "$result" | jq -r '.start')

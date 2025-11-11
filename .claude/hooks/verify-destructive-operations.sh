@@ -30,17 +30,11 @@ if [[ -z "$JSON_INPUT" ]]; then
 	exit 0  # Non-blocking exit
 fi
 
-# Simple JSON value extraction without jq dependency
-extract_json_value()
-{
-	local json="$1"
-	local key="$2"
-	# Use grep and sed for basic JSON parsing (allow grep to fail without triggering set -e)
-	echo "$json" | grep -o "\"$key\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | sed "s/\"$key\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\"/\1/" || true
-}
+# Source JSON parsing library
+source "/workspace/.claude/hooks/lib/json-parser.sh"
 
-# Extract hook event type
-HOOK_EVENT=$(extract_json_value "$JSON_INPUT" "hook_event_name")
+# Parse all common fields at once
+parse_hook_json "$JSON_INPUT"
 
 # Check if hook event was extracted
 if [[ -z "$HOOK_EVENT" ]]; then
@@ -55,16 +49,8 @@ if [[ "$HOOK_EVENT" != "UserPromptSubmit" ]]; then
 	exit 0
 fi
 
-# Extract user message - try multiple possible fields
-LAST_MESSAGE=$(extract_json_value "$JSON_INPUT" "message")
-
-if [[ -z "$LAST_MESSAGE" ]]; then
-	LAST_MESSAGE=$(extract_json_value "$JSON_INPUT" "user_message")
-fi
-
-if [[ -z "$LAST_MESSAGE" ]]; then
-	LAST_MESSAGE=$(extract_json_value "$JSON_INPUT" "prompt")
-fi
+# Use USER_PROMPT from parse_hook_json
+LAST_MESSAGE="$USER_PROMPT"
 
 # Check if message was extracted
 if [[ -z "$LAST_MESSAGE" ]]; then

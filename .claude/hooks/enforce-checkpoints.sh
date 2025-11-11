@@ -58,7 +58,8 @@ fi
 log_hook_start "enforce-checkpoints" "$TRIGGER_TYPE"
 
 # =============================================================================
-# CHECKPOINT 1: SYNTHESIS → IMPLEMENTATION (UserPromptSubmit trigger)
+# CHECKPOINTS 1 & 3: User Approval Validation (UserPromptSubmit trigger)
+# Consolidated: SYNTHESIS → IMPLEMENTATION and AWAITING_USER_APPROVAL → COMPLETE
 # =============================================================================
 if [[ "$TRIGGER_TYPE" == "UserPromptSubmit" ]]; then
 	if [[ -z "$SESSION_ID" ]]; then
@@ -71,7 +72,7 @@ if [[ "$TRIGGER_TYPE" == "UserPromptSubmit" ]]; then
 		exit 0
 	fi
 
-	# Check each task directory for locks owned by this session
+	# Check each task directory for locks owned by this session (consolidated loop)
 	for task_dir in "$TASKS_DIR"/*; do
 		if [[ ! -d "$task_dir" ]]; then
 			continue
@@ -92,18 +93,6 @@ if [[ "$TRIGGER_TYPE" == "UserPromptSubmit" ]]; then
 		TASK_NAME=$(basename "$task_dir")
 		CURRENT_STATE=$(jq -r '.state // "UNKNOWN"' "$LOCK_FILE")
 
-		# Only validate IMPLEMENTATION state transitions
-		if [[ "$CURRENT_STATE" != "IMPLEMENTATION" ]]; then
-			# Diagnostic: Explain why checkpoint not enforced
-			if [[ "$CURRENT_STATE" == "INIT" ]] || [[ "$CURRENT_STATE" == "CLASSIFIED" ]] || [[ "$CURRENT_STATE" == "SYNTHESIS" ]]; then
-				log_hook_info "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: Checkpoint not enforced (state=$CURRENT_STATE, expected IMPLEMENTATION for synthesis approval checkpoint)"
-			fi
-			continue
-		fi
-
-		# Check if user approval flag file exists
-		APPROVAL_FLAG="${task_dir}/user-approved-synthesis.flag"
-
 		# Check previous state from tracker
 		STATE_TRACKER="${task_dir}/.last-validated-state"
 		if [[ -f "$STATE_TRACKER" ]]; then
@@ -112,20 +101,31 @@ if [[ "$TRIGGER_TYPE" == "UserPromptSubmit" ]]; then
 			PREVIOUS_STATE="UNKNOWN"
 		fi
 
-		# If we just transitioned to IMPLEMENTATION without approval flag file, BLOCK
-		if [[ "$PREVIOUS_STATE" != "IMPLEMENTATION" ]] && [[ ! -f "$APPROVAL_FLAG" ]]; then
+		# Handle checkpoint validation based on current state
+		case "$CURRENT_STATE" in
+			IMPLEMENTATION)
+				# Checkpoint 1: SYNTHESIS → IMPLEMENTATION
+				APPROVAL_FLAG="${task_dir}/user-approved-synthesis.flag"
 
-			# Log the violation
-			log_hook_blocked "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: SYNTHESIS → IMPLEMENTATION without user approval"
-			LOG_FILE="${task_dir}/checkpoint-violations.log"
-			echo "[$(date -Iseconds)] CRITICAL: SYNTHESIS → IMPLEMENTATION transition without user approval" >> "$LOG_FILE"
+				# If we just transitioned to IMPLEMENTATION without approval flag file, BLOCK
+				if [[ "$PREVIOUS_STATE" == "IMPLEMENTATION" ]] || [[ -f "$APPROVAL_FLAG" ]]; then
+					# Already validated or has approval
+					echo "IMPLEMENTATION" > "$STATE_TRACKER"
+					log_hook_success "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: IMPLEMENTATION state validated with user approval"
+					continue
+				fi
 
-			# Revert state to SYNTHESIS
-			jq '.state = "SYNTHESIS"' "$LOCK_FILE" > /tmp/lock-revert.tmp
-			mv /tmp/lock-revert.tmp "$LOCK_FILE"
+				# Log the violation
+				log_hook_blocked "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: SYNTHESIS → IMPLEMENTATION without user approval"
+				LOG_FILE="${task_dir}/checkpoint-violations.log"
+				echo "[$(date -Iseconds)] CRITICAL: SYNTHESIS → IMPLEMENTATION transition without user approval" >> "$LOG_FILE"
 
-			# Display checkpoint requirement
-			MESSAGE="## 🚨 CHECKPOINT VIOLATION DETECTED AND BLOCKED
+				# Revert state to SYNTHESIS
+				jq '.state = "SYNTHESIS"' "$LOCK_FILE" > /tmp/lock-revert.tmp
+				mv /tmp/lock-revert.tmp "$LOCK_FILE"
+
+				# Display checkpoint requirement
+				MESSAGE="## 🚨 CHECKPOINT VIOLATION DETECTED AND BLOCKED
 
 **Task**: \`$TASK_NAME\`
 **Attempted Transition**: SYNTHESIS → IMPLEMENTATION
@@ -175,96 +175,39 @@ See: /workspace/main/docs/project/task-protocol-core.md § SYNTHESIS → IMPLEME
 ❌ Treating bypass mode as approval checkpoint override
 ❌ Proceeding because requirements are clear or plan is straightforward"
 
-			output_hook_error "UserPromptSubmit" "$MESSAGE"
+				output_hook_error "UserPromptSubmit" "$MESSAGE"
+				exit 0
+				;;
 
-			exit 0
-		fi
+			COMPLETE)
+				# Checkpoint 3: AWAITING_USER_APPROVAL → COMPLETE
+				APPROVAL_FLAG="${task_dir}/user-approved-changes.flag"
 
-		# Update tracker to record we've validated this IMPLEMENTATION state
-		echo "IMPLEMENTATION" > "$STATE_TRACKER"
-		log_hook_success "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: IMPLEMENTATION state validated with user approval"
+				# If we just transitioned to COMPLETE without approval flag file, BLOCK
+				if [[ "$PREVIOUS_STATE" == "COMPLETE" ]] || [[ -f "$APPROVAL_FLAG" ]]; then
+					# Already validated or has approval
+					echo "COMPLETE" > "$STATE_TRACKER"
+					log_hook_success "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: COMPLETE state validated with user approval"
+					continue
+				fi
 
-	done
-fi
+				# Log the violation
+				log_hook_blocked "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: AWAITING_USER_APPROVAL → COMPLETE without user approval"
+				LOG_FILE="${task_dir}/checkpoint-violations.log"
+				echo "[$(date -Iseconds)] CRITICAL: AWAITING_USER_APPROVAL → COMPLETE transition without user approval" >> "$LOG_FILE"
 
-# =============================================================================
-# CHECKPOINT 3: AWAITING_USER_APPROVAL → COMPLETE (UserPromptSubmit trigger)
-# =============================================================================
-# ADDED: 2025-10-31 after main agent skipped REVIEW checkpoint during
-# implement-formatter-api task, merging to main without presenting changes
-# or getting user approval
-if [[ "$TRIGGER_TYPE" == "UserPromptSubmit" ]]; then
-	if [[ -z "$SESSION_ID" ]]; then
-		exit 0
-	fi
+				# Revert state to AWAITING_USER_APPROVAL
+				jq '.state = "AWAITING_USER_APPROVAL"' "$LOCK_FILE" > /tmp/lock-revert.tmp
+				mv /tmp/lock-revert.tmp "$LOCK_FILE"
 
-	# Find task owned by this session
-	TASKS_DIR="/workspace/tasks"
-	if [[ ! -d "$TASKS_DIR" ]]; then
-		exit 0
-	fi
-
-	# Check each task directory for locks owned by this session
-	for task_dir in "$TASKS_DIR"/*; do
-		if [[ ! -d "$task_dir" ]]; then
-			continue
-		fi
-
-		LOCK_FILE="${task_dir}/task.json"
-		if [[ ! -f "$LOCK_FILE" ]]; then
-			continue
-		fi
-
-		# Check if this task is owned by current session
-		LOCK_SESSION=$(jq -r '.session_id // ""' "$LOCK_FILE" 2>/dev/null || echo "")
-		if [[ "$LOCK_SESSION" != "$SESSION_ID" ]]; then
-			continue
-		fi
-
-		# This task is owned by us - check state
-		TASK_NAME=$(basename "$task_dir")
-		CURRENT_STATE=$(jq -r '.state // "UNKNOWN"' "$LOCK_FILE")
-
-		# Only validate COMPLETE state transitions
-		if [[ "$CURRENT_STATE" != "COMPLETE" ]]; then
-			# Diagnostic: Explain why checkpoint not enforced
-			if [[ "$CURRENT_STATE" == "INIT" ]] || [[ "$CURRENT_STATE" == "IMPLEMENTATION" ]] || [[ "$CURRENT_STATE" == "VALIDATION" ]] || [[ "$CURRENT_STATE" == "AWAITING_USER_APPROVAL" ]]; then
-				log_hook_info "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: Checkpoint not enforced (state=$CURRENT_STATE, expected COMPLETE for change approval checkpoint)"
-			fi
-			continue
-		fi
-
-		# Check if user approval flag file exists
-		APPROVAL_FLAG="${task_dir}/user-approved-changes.flag"
-
-		# Check previous state from tracker
-		STATE_TRACKER="${task_dir}/.last-validated-state"
-		if [[ -f "$STATE_TRACKER" ]]; then
-			PREVIOUS_STATE=$(cat "$STATE_TRACKER")
-		else
-			PREVIOUS_STATE="UNKNOWN"
-		fi
-
-		# If we just transitioned to COMPLETE without approval flag file, BLOCK
-		if [[ "$PREVIOUS_STATE" != "COMPLETE" ]] && [[ ! -f "$APPROVAL_FLAG" ]]; then
-
-			# Log the violation
-			log_hook_blocked "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: AWAITING_USER_APPROVAL → COMPLETE without user approval"
-			LOG_FILE="${task_dir}/checkpoint-violations.log"
-			echo "[$(date -Iseconds)] CRITICAL: AWAITING_USER_APPROVAL → COMPLETE transition without user approval" >> "$LOG_FILE"
-
-			# Revert state to AWAITING_USER_APPROVAL
-			jq '.state = "AWAITING_USER_APPROVAL"' "$LOCK_FILE" > /tmp/lock-revert.tmp
-			mv /tmp/lock-revert.tmp "$LOCK_FILE"
-
-			# Display checkpoint requirement
-			MESSAGE="## 🚨 CHECKPOINT VIOLATION DETECTED AND BLOCKED
+				# Display checkpoint requirement
+				MESSAGE="## 🚨 CHECKPOINT VIOLATION DETECTED AND BLOCKED
 
 **Task**: \`$TASK_NAME\`
 **Attempted Transition**: AWAITING_USER_APPROVAL → COMPLETE
 **Violation**: User approval not obtained
 
-## ⚠️ CRITICAL - MANDATORY USER APPROVAL CHECKPOINT
+## ⚠️ CRITICAL - MANDATORY CHANGE REVIEW CHECKPOINT
 
 You attempted to transition from AWAITING_USER_APPROVAL to COMPLETE state without user approval.
 This violates the task protocol checkpoint requirement.
@@ -275,16 +218,10 @@ This violates the task protocol checkpoint requirement.
 
 **REQUIRED ACTION**:
 
-1. **Present the completed changes** to the user:
-   \`\`\`
-   Implementation complete. Task branch ready for review.
-
-   Commit SHA: <show git rev-parse HEAD>
-   Files changed: <show git diff --stat main..task-branch>
-
-   All agents have reviewed and approved (unanimous approval).
-   Please review the changes and confirm approval to merge to main.
-   Type 'approved', 'LGTM', 'looks good', or 'merge it' to proceed.
+1. **Show the changes to the user**:
+   \`\`\`bash
+   git log -1 --stat
+   git diff --stat main...HEAD
    \`\`\`
 
 2. **WAIT for explicit user approval** (do not merge automatically)
@@ -312,20 +249,18 @@ See: /workspace/main/docs/project/task-protocol-core.md § CHANGE REVIEW checkpo
 ❌ Merging to main without showing user what changed
 ❌ Proceeding because \"changes look correct\" without user confirmation"
 
-			output_hook_error "UserPromptSubmit" "$MESSAGE"
+				output_hook_error "UserPromptSubmit" "$MESSAGE"
+				exit 0
+				;;
 
-			exit 0
-		fi
-
-		# Update tracker to record we've validated this COMPLETE state
-		echo "COMPLETE" > "$STATE_TRACKER"
-		log_hook_success "enforce-checkpoints" "UserPromptSubmit" "Task $TASK_NAME: COMPLETE state validated with user approval"
+			*)
+				# Other states don't require checkpoint validation
+				continue
+				;;
+		esac
 
 	done
 fi
-
-log_hook_success "enforce-checkpoints" "UserPromptSubmit" "No violations detected"
-exit 0
 
 # =============================================================================
 # CHECKPOINT 2: POST_IMPLEMENTATION merge approval (PreToolUse trigger)

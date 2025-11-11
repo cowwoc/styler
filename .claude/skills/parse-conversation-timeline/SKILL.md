@@ -327,6 +327,6 @@ Before outputting structured timeline JSON:
 
 ## Related Skills
 
-- **read-conversation-history**: Access raw conversation logs
+- **get-history**: Access raw conversation logs
 - **audit-protocol-compliance**: Use timeline to check protocol violations
 - **audit-protocol-efficiency**: Use timeline to find efficiency improvements
