@@ -139,7 +139,7 @@ without losing unrelated work.
 > ⚠️ **CRITICAL VIOLATION PATTERN**: Merging task branch with multiple commits
 >
 > **REQUIREMENT**: Task branches MUST have exactly 1 squashed commit before merge
-> **ENFORCEMENT**: Pre-merge hook `.claude/hooks/pre-task-merge-check.sh` validates commit count
+> **ENFORCEMENT**: Pre-merge hook `.claude/hooks/task-merge-check.sh` validates commit count
 > **CORRECT**: `git rev-list --count main..<task-branch>` returns 1
 > **INCORRECT**: Merging with 2+ commits creates unclear history and violates protocol
 
@@ -225,7 +225,7 @@ Co-Authored-By: style <noreply@anthropic.com>
 
 ```bash
 # Validation hook checks commit count before merge
-.claude/hooks/pre-task-merge-check.sh <task-branch> main
+.claude/hooks/task-merge-check.sh <task-branch> main
 
 # If validation fails (>1 commit), squash required:
 cd /workspace/main

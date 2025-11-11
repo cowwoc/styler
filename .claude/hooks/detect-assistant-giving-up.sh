@@ -16,7 +16,7 @@ set -euo pipefail
 # Action: Inject persistence reminder if giving-up patterns detected in recent assistant messages
 
 # Error handler - output helpful message to stderr on failure
-trap 'echo "ERROR in post-tool-use-detect-assistant-giving-up.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 0' ERR
+trap 'echo "ERROR in detect-assistant-giving-up.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 0' ERR
 
 # Read JSON data from stdin with timeout
 JSON_INPUT=""
