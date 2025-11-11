@@ -320,6 +320,9 @@ Is when/why to apply this clear?
          → Scan for: Boundary demonstrations (❌ paired with ✅)
          → Scan for: Decision criteria patterns (Test:, Ask:, Check:)
          → Scan for: Negative constraints (DO NOT, NEVER, FORBIDDEN)
+         → Scan for: Execution context (How it works:, Where to look:, Fix:)
+         → Scan for: Decision hierarchy questions (priority, correctness checks)
+         → Scan for: Meta-categorization headers (Protected Content Categories, etc.)
          IF protected patterns found → KEEP (protected content takes precedence)
          IF no protected patterns → REMOVE (pure rationale)
    NO → Continue to question 7
@@ -330,7 +333,15 @@ Is when/why to apply this clear?
 
 8. Is this redundant content? (Categories 1-6)
    NO → KEEP (unique content)
-   YES → Check for protected patterns (same as question 6)
+   YES → Check for protected patterns within this content:
+         → Scan for: Sequential emphasis (STOP, WAIT, CRITICAL, MANDATORY, etc.)
+         → Scan for: Template variables ({{...}})
+         → Scan for: Boundary demonstrations (❌ paired with ✅)
+         → Scan for: Decision criteria patterns (Test:, Ask:, Check:)
+         → Scan for: Negative constraints (DO NOT, NEVER, FORBIDDEN)
+         → Scan for: Execution context (How it works:, Where to look:, Fix:)
+         → Scan for: Decision hierarchy questions (priority, correctness checks)
+         → Scan for: Meta-categorization headers (Protected Content Categories, etc.)
          IF protected patterns found → KEEP (protected content takes precedence)
          IF no protected patterns → Safe to remove, proceed with removal
 ```
@@ -400,6 +411,11 @@ All content that explains WHEN/HOW to apply instructions:
 - When-to-apply: "**When to use**:", prerequisite relationships
 - Detection strategies: "**Detection**:" rules for pattern recognition
 - Decision boundaries: "Why Both Needed: X alone means..."
+- Mechanism descriptions: "**How it works**:", "**How Convergence Works**:"
+- Search instructions: "**Where to look**:" (executable search steps)
+- Fix strategies: "**Fix**:", "**Fix Strategy**:" (actionable solutions)
+- Decision hierarchy questions: Questions that guide priority decisions (e.g., "Can Claude execute correctly?")
+- Meta-categorization sections: Headers that categorize decision logic (e.g., "Protected Content Categories", "Redundancy Categories")
 - **Test**: Remove it - does execution become ambiguous? If yes → PROTECTED
 
 **6. Workflow Phase Dependencies**
