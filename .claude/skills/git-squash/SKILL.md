@@ -299,6 +299,10 @@ echo "✅ Verification passed: No changes lost or added"
 
 The commit message must describe WHAT the changes DO, not just say "squashed".
 
+**⚠️ CRITICAL: Verify IMMEDIATELY After This Step**
+
+DO NOT mark task as "completed" or move to another todo item before verifying the squashed commit contains all expected changes. Verification must be ATOMIC with commit creation.
+
 **Step 7a: Review Commits Being Squashed**:
 ```bash
 # Review all commits to understand their combined purpose
@@ -420,6 +424,85 @@ Instead of fixing the message after rebase completes, you can specify "reword" d
 ```
 
 **Best Practice**: Write the final commit message during the initial squash operation when Git prompts you. This avoids the need for a second interactive rebase.
+
+### Step 7d: Immediate Post-Commit Verification (MANDATORY)
+
+**⚠️ CRITICAL: Verify squashed commit content IMMEDIATELY after creation**
+
+This verification MUST happen BEFORE marking the task as complete or moving to another todo item.
+
+```bash
+# Verify squashed commit exists
+SQUASHED_COMMIT=$(git rev-parse HEAD)
+echo "Squashed commit: $SQUASHED_COMMIT"
+
+# Verify commit message is meaningful (not generic)
+COMMIT_MSG=$(git log -1 --format=%B)
+if echo "$COMMIT_MSG" | grep -qiE "^(squash|fixup|wip|tmp)"; then
+  echo "⚠️  WARNING: Generic commit message detected"
+  echo "   Consider revising with more specific description"
+fi
+
+# CRITICAL: Verify squashed commit contains changes from ALL original commits
+# Method 1: Check file count matches
+FILES_IN_ORIGINAL=$(git diff --name-only "$BASE_COMMIT" "$BACKUP_BRANCH" | wc -l)
+FILES_IN_SQUASHED=$(git diff --name-only "$BASE_COMMIT" HEAD | wc -l)
+
+if [[ "$FILES_IN_ORIGINAL" -ne "$FILES_IN_SQUASHED" ]]; then
+  echo "❌ ERROR: File count mismatch!"
+  echo "   Original commits affected $FILES_IN_ORIGINAL files"
+  echo "   Squashed commit affects $FILES_IN_SQUASHED files"
+  echo "   Changes may have been lost!"
+  echo "ROLLBACK: git reset --hard $BACKUP_BRANCH"
+  exit 1
+fi
+
+echo "✅ File count matches: $FILES_IN_SQUASHED files"
+
+# Method 2: Compare actual content
+CONTENT_DIFF=$(git diff "$BACKUP_BRANCH" HEAD)
+if [[ -n "$CONTENT_DIFF" ]]; then
+  echo "❌ ERROR: Content doesn't match backup!"
+  echo "   Squashed commit has different changes than original commits"
+  echo "$CONTENT_DIFF" | head -20
+  echo "ROLLBACK: git reset --hard $BACKUP_BRANCH"
+  exit 1
+fi
+
+echo "✅ Content verification passed: Squashed commit matches original commits"
+
+# Method 3: Sample key changes (manual spot-check)
+echo ""
+echo "=== SPOT-CHECK: Review key changes in squashed commit ==="
+echo "Files changed:"
+git diff --name-status "$BASE_COMMIT" HEAD | head -10
+echo ""
+echo "Sample diff (first 30 lines):"
+git diff "$BASE_COMMIT" HEAD | head -30
+echo ""
+echo "⚠️  MANUAL VERIFICATION REQUIRED:"
+echo "   Review above output to confirm all expected changes present"
+echo "   If anything looks wrong, ROLLBACK: git reset --hard $BACKUP_BRANCH"
+echo ""
+read -p "Does the squashed commit look correct? (y/n) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  echo "Aborting due to user verification failure"
+  echo "ROLLBACK: git reset --hard $BACKUP_BRANCH"
+  exit 1
+fi
+
+echo "✅ Manual verification passed"
+```
+
+**Why Immediate Verification Matters**:
+- Catches lost changes BEFORE proceeding to next steps
+- Prevents marking task as "completed" with incomplete squash
+- Allows quick rollback before additional operations
+- Separating "squash" and "verify" into different todo items risks missing issues
+
+**Lesson from 2025-11-11 Mistake**:
+During non-adjacent commit squash, rebase completed successfully but changes from one commit were lost. Issue was discovered only after marking task complete and moving to separate "verification" phase, requiring full restoration from backup. **Always verify IMMEDIATELY after commit creation, not as separate todo item.**
 
 ### Step 8: Verify Non-Squashed Commits Unchanged
 
@@ -739,7 +822,79 @@ git reset --soft 4d3e19e           # Now squashes ONLY 3ebecc4 and b732939
 
 **When commits to squash are NOT adjacent** (separated by other commits in between):
 
-### General Pattern: Reorder First, Then Squash
+### Approach 1: Cherry-Pick Method (SAFER - RECOMMENDED)
+
+**When to use**: Non-adjacent commits with many intermediate commits (5+), or when rebase automation is complex.
+
+**Advantages**:
+- More explicit control over what gets combined
+- Easier to verify at each step
+- Lower risk of losing changes from automated reorder scripts
+- Better for complex histories
+
+**Procedure**:
+```bash
+# 1. Create backup
+BACKUP_BRANCH="backup-before-squash-$(date +%Y%m%d-%H%M%S)"
+git branch "$BACKUP_BRANCH"
+
+# 2. Identify commits to squash
+TARGET_COMMIT="2871c93"          # Base commit (others squash into this)
+COMMIT_TO_COMBINE="19bcf07"       # Commit to squash into target
+BASE_PARENT="2871c93~1"          # Parent of target commit
+
+# 3. Create working branch from parent of target
+git checkout -b temp-squash "$BASE_PARENT"
+
+# 4. Cherry-pick target commit
+git cherry-pick "$TARGET_COMMIT"
+# Resolves as normal commit
+
+# 5. Cherry-pick commit to combine WITHOUT committing
+git cherry-pick --no-commit "$COMMIT_TO_COMBINE"
+# Changes staged but not committed
+
+# 6. Resolve conflicts if any
+git status  # Check for conflicts
+# If conflicts: resolve, then git add <files>
+
+# 7. Amend target commit with combined changes
+git commit --amend --no-edit
+# Now target commit contains changes from both commits
+
+# 8. IMMEDIATE VERIFICATION (MANDATORY)
+# Verify combined commit has ALL expected changes
+git show --stat HEAD  # Review files changed
+git diff "$TARGET_COMMIT" HEAD  # Should show additions from second commit
+git diff "$COMMIT_TO_COMBINE" "$BASE_PARENT"  # Compare what was added
+
+# Manual spot-check of key changes
+git show HEAD | grep -A5 "key change pattern"
+
+# 9. Cherry-pick remaining commits in order
+git cherry-pick <commit-after-target>..HEAD  # Or specify individually
+
+# 10. Final verification
+git diff "$BACKUP_BRANCH" HEAD  # Should show NO differences in content
+git rev-list --count "$BASE_PARENT..HEAD"  # Verify commit count is N-1
+
+# 11. Update main branch
+git checkout main
+git reset --hard temp-squash
+git branch -D temp-squash
+
+# 12. Delete backup after verification
+git branch -D "$BACKUP_BRANCH"
+```
+
+**Why This Worked (2025-11-11 Example)**:
+- Interactive rebase with awk script LOST changes from 19bcf07
+- Cherry-pick approach: explicitly combined both commits, immediate verification caught issues
+- Result: All changes preserved correctly
+
+### Approach 2: Interactive Rebase with Reorder
+
+**When to use**: Few intermediate commits (1-3), simple history, comfortable with interactive rebase.
 
 **Use Case**: You want to squash multiple commits together, but they're currently separated by other commits in the history.
 
