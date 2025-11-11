@@ -323,6 +323,7 @@ Is when/why to apply this clear?
          → Scan for: Execution context (How it works:, Where to look:, Fix:)
          → Scan for: Decision hierarchy questions (priority, correctness checks)
          → Scan for: Meta-categorization headers (Protected Content Categories, etc.)
+         → Scan for: Category preambles (Always keep content that..., All content that...)
          IF protected patterns found → KEEP (protected content takes precedence)
          IF no protected patterns → REMOVE (pure rationale)
    NO → Continue to question 7
@@ -342,6 +343,7 @@ Is when/why to apply this clear?
          → Scan for: Execution context (How it works:, Where to look:, Fix:)
          → Scan for: Decision hierarchy questions (priority, correctness checks)
          → Scan for: Meta-categorization headers (Protected Content Categories, etc.)
+         → Scan for: Category preambles (Always keep content that..., All content that...)
          IF protected patterns found → KEEP (protected content takes precedence)
          IF no protected patterns → Safe to remove, proceed with removal
 ```
@@ -370,7 +372,7 @@ Is when/why to apply this clear?
 
 ### Never-Remove List (Automatic Preservation)
 
-The following 7 content categories are NEVER removed, regardless of redundancy:
+The following 8 content categories are NEVER removed, regardless of redundancy:
 
 **1. Executable Specifications**
 All content needed to execute commands correctly:
@@ -431,6 +433,17 @@ All content that labels algorithmic structure and coordinated improvements:
 - Algorithmic markers showing coordinated features that work together
 - **NOT alternatives**: All OPTION improvements execute together, not mutually exclusive
 - **Distinguish from retrospective metadata**: OPTION labels show algorithm structure (forward-looking), not historical "why added" (retrospective)
+
+**8. Category Definition Preambles**
+Definitional text that enables generalization from examples (prevents oscillation):
+- Category preambles: "Always keep content that...", "All content that...", "All content needed to..."
+- Pattern: Appears immediately after category headers (#### N. Category Name)
+- Purpose: Defines decision criteria for applying category to novel cases
+- Example: "Always keep content that provides exact syntax needed for execution:" (Category 1)
+- Example: "Always keep examples that show where rules start/stop applying:" (Category 2)
+- Example: "Always keep content that defines execution order:" (Category 3)
+- **Why protected**: Without preambles, agents pattern-match examples instead of generalizing principles
+- **Oscillation risk**: Looks like pedagogical redundancy, will be repeatedly catalogued for removal
 
 ### 🚨 Negative Constraint Pairing Rule
 
@@ -1262,6 +1275,98 @@ else
   PATTERN_VIOLATION_COUNT=0
 fi
 
+echo "Proceeding to Step 10.5 (Generalization Validation)..."
+```
+
+---
+
+#### Step 10.5: Generalization Validation
+
+**Purpose**: Test if agent can still generalize category principles after removing preambles/explanations.
+
+```bash
+echo "=== STEP 10.5: GENERALIZATION VALIDATION ==="
+
+# This tests whether the agent can apply category principles to novel examples
+# (not listed in document) after optimization removed preambles/explanations
+
+# Invoke generalization validator via Task tool
+# Parameters:
+#   subagent_type: "general-purpose"
+#   model: "sonnet"
+#   description: "Test generalization capability"
+#   prompt: <full prompt below>
+
+Prompt: "You are testing if an optimized document still enables generalization from examples to principles.
+
+**TASK**: Read the optimized document and answer questions about novel examples NOT in the document.
+
+**DOCUMENT**: {{arg}}
+
+**GENERALIZATION TESTS**:
+
+Test each question below. For each:
+- Read document to understand the category principles
+- Apply principles to the novel example
+- Provide your answer with confidence level (HIGH/MEDIUM/LOW)
+
+**Questions**:
+
+1. **Category 1 Test (Executable Specifications)**:
+   Novel example: \`grep -E '^v[0-9]+\$' branches.txt\`
+   Question: Should this be protected as \"Executable Specification\"? Why or why not?
+
+2. **Category 2 Test (Decision Boundaries)**:
+   Novel example: \"Use merge for feature branches. Use rebase for cleanup commits.\"
+   Question: Should this be protected as \"Decision Boundary\"? Why or why not?
+
+3. **Category 3 Test (Workflow Sequences)**:
+   Novel example: \"Run \`git stash\` BEFORE switching branches\"
+   Question: Should this be protected as \"Workflow Sequence\"? Why or why not?
+
+4. **Category 4 Test (Success Verification)**:
+   Novel example: \"Command should exit with code 0 on success\"
+   Question: Should this be protected as \"Success Verification\"? Why or why not?
+
+5. **Category 5 Test (Execution Context)**:
+   Novel example: \"When to use this approach: If file size exceeds 100MB\"
+   Question: Should this be protected as \"Execution Context\"? Why or why not?
+
+**CRITICAL**:
+- Base answers on PRINCIPLES extracted from document, not memorized knowledge
+- If you can derive the principle from examples alone → Answer with confidence HIGH
+- If you need the category preamble to understand principle → Answer with confidence LOW
+- Answer format:
+
+{
+  \"test_1\": {
+    \"answer\": \"Yes, this is executable specification because...\",
+    \"confidence\": \"HIGH\",
+    \"reasoning\": \"Document shows commands/syntax are protected. This is exact grep syntax.\"
+  },
+  \"test_2\": {
+    \"answer\": \"Yes, this is decision boundary because...\",
+    \"confidence\": \"LOW\",
+    \"reasoning\": \"Examples show boundaries but without preamble 'shows where rules start/stop', unclear if this qualifies.\"
+  },
+  ...
+}
+
+**Output ONLY JSON, no additional text.**"
+
+# Extract validator response and check confidence levels
+# If ANY test has confidence LOW → Generalization capability degraded
+# Count how many tests show LOW confidence:
+GENERALIZATION_VIOLATIONS=<count>  # Replace with number of LOW confidence answers
+
+if [ "$GENERALIZATION_VIOLATIONS" -gt 0 ]; then
+  echo "⚠️  Generalization capability degraded: $GENERALIZATION_VIOLATIONS tests show LOW confidence"
+  echo "Agent cannot reliably apply category principles to novel examples"
+  echo "This indicates category preambles or key explanations were removed"
+else
+  echo "✅ Generalization capability preserved: Agent can apply principles to novel cases"
+fi
+
 echo "Proceeding to Step 11 (Handle Lost Facts and Pattern Violations)..."
 ```
 
@@ -1273,10 +1378,10 @@ echo "Proceeding to Step 11 (Handle Lost Facts and Pattern Violations)..."
 echo "=== STEP 11: HANDLING LOST FACTS AND PATTERN VIOLATIONS ==="
 
 # Calculate total violations needing restoration
-TOTAL_VIOLATIONS=$((MISMATCH_COUNT + PATTERN_VIOLATION_COUNT))
+TOTAL_VIOLATIONS=$((MISMATCH_COUNT + PATTERN_VIOLATION_COUNT + GENERALIZATION_VIOLATIONS))
 
 if [ "$TOTAL_VIOLATIONS" -eq 0 ]; then
-  echo "✅ ALL FACTS PRESERVED AND ALL PATTERNS PRESERVED"
+  echo "✅ ALL FACTS PRESERVED, ALL PATTERNS PRESERVED, GENERALIZATION CAPABILITY MAINTAINED"
 
   # Check if we should continue optimizing or stop
   if [ "$ITERATION" -lt "$MAX_ITERATIONS" ]; then
