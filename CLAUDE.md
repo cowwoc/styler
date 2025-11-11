@@ -555,6 +555,72 @@ git branch -D backup-before-squash-20251106-170909  # 4. ✅ CLEANUP
 - Hook detects user asking "Why didn't you cleanup?"
 - Prevention: Always complete ALL workflow steps
 
+### Immediate Verification After Git Operations
+
+**⚠️ CRITICAL: Verify IMMEDIATELY after operation, not as separate phase**
+
+**The Mistake** (2025-11-11):
+- Squashed commits using interactive rebase
+- Marked task as "completed" and moved to separate "verification" todo
+- During verification phase, discovered changes were lost
+- Required full restore from backup and retry
+
+**Root Cause**: Separated "execute" and "verify" into different todo phases
+
+**❌ WRONG Pattern - Delayed Verification**:
+```
+TodoWrite([
+  {"content": "Rebase to squash commits", "status": "in_progress"},
+  {"content": "Verify changes preserved", "status": "pending"}
+])
+
+# Execute rebase
+git rebase ...
+# Mark complete WITHOUT verification
+TodoWrite: "Rebase" → "completed"
+
+# Later (separate phase)
+TodoWrite: "Verify" → "in_progress"
+git show HEAD  # ❌ Discover changes lost (too late!)
+```
+
+**✅ CORRECT Pattern - Immediate Atomic Verification**:
+```
+TodoWrite([
+  {"content": "Rebase and verify squashed commits", "status": "in_progress"}
+])
+
+# Execute rebase
+git rebase ...
+
+# IMMEDIATE verification (same todo item)
+git diff backup..HEAD  # Verify no content changes
+git show HEAD | grep "expected change"  # Spot-check key additions
+
+# ONLY mark complete after verification passes
+TodoWrite: "Rebase and verify" → "completed"
+```
+
+**Why Immediate Verification Matters**:
+- Catches issues BEFORE proceeding to other operations
+- Prevents false sense of completion
+- Allows quick rollback before state changes further
+- Maintains atomic operation semantics
+
+**Apply to All Git Operations**:
+- Squash/rebase: Verify commits contain expected changes
+- Merge: Verify no conflicts, expected files present
+- Cherry-pick: Verify changes applied correctly
+- Amend: Verify commit message and content updated
+
+**Verification Methods**:
+1. **Content diff**: `git diff backup..HEAD` (should be empty)
+2. **File count**: `git diff --name-only | wc -l` (verify expected count)
+3. **Spot-check**: `git show HEAD | grep "key pattern"` (verify critical changes)
+4. **Manual review**: `git show --stat HEAD` (visually confirm changes)
+
+**⚠️ Never Proceed to "Delete Backup" Todo Without Verification**
+
 ## Repository Structure
 
 **⚠️ NEVER** initialize new repositories
