@@ -31,17 +31,11 @@ if [[ -z "$JSON_INPUT" ]]; then
 	exit 0  # Non-blocking exit
 fi
 
-# Simple JSON value extraction without jq dependency
-extract_json_value()
-{
-	local json="$1"
-	local key="$2"
-	# Use grep and sed for basic JSON parsing (allow grep to fail without triggering set -e)
-	echo "$json" | grep -o "\"$key\"[[:space:]]*:[[:space:]]*\"[^\"]*\"" | sed "s/\"$key\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\"/\1/" || true
-}
+# Source JSON parsing library
+source "/workspace/.claude/hooks/lib/json-parser.sh"
 
-# Extract hook event type
-HOOK_EVENT=$(extract_json_value "$JSON_INPUT" "hook_event_name")
+# Parse all common fields at once
+parse_hook_json "$JSON_INPUT"
 
 # Check if hook event was extracted
 if [[ -z "$HOOK_EVENT" ]]; then
@@ -49,9 +43,6 @@ if [[ -z "$HOOK_EVENT" ]]; then
 	echo "   JSON received: ${JSON_INPUT:0:200}..." >&2
 	exit 0  # Non-blocking exit
 fi
-
-# Extract session ID from JSON input
-SESSION_ID=$(extract_json_value "$JSON_INPUT" "session_id")
 
 # Require session ID - fail fast if not provided
 if [ -z "$SESSION_ID" ]; then
@@ -78,32 +69,44 @@ mkdir -p "$SESSION_TRACK_DIR" 2>/dev/null || {
 }
 
 # Function to check and mark prompts per agent type to avoid duplicates
+# Uses single JSON state file instead of individual files per prompt type
 check_and_mark_prompt()
 {
 	local prompt_type="$1"
-	local prompt_file="$SESSION_TRACK_DIR/${CURRENT_AGENT_TYPE}-${prompt_type}"
+	local state_file="$SESSION_TRACK_DIR/prompt-state.json"
+	local key="${CURRENT_AGENT_TYPE}.${prompt_type}"
 
-	if [[ -f "$prompt_file" ]]; then
-		return 1  # Already prompted this agent type for this prompt type
+	# Initialize state file if it doesn't exist
+	if [[ ! -f "$state_file" ]]; then
+		echo '{}' > "$state_file" 2>/dev/null || return 1
 	fi
 
-	touch "$prompt_file" 2>/dev/null || return 1
-	return 0  # First time prompting this agent type for this prompt type
+	# Check if this prompt type has been shown to this agent
+	if command -v jq &> /dev/null; then
+		if jq -e ".\"$key\"" "$state_file" &>/dev/null; then
+			return 1  # Already prompted
+		fi
+
+		# Mark as prompted
+		jq ".\"$key\" = true" "$state_file" > "$state_file.tmp" 2>/dev/null || return 1
+		mv "$state_file.tmp" "$state_file" 2>/dev/null || return 1
+		return 0  # First time prompting
+	else
+		# Fallback: use individual files if jq not available
+		local prompt_file="$SESSION_TRACK_DIR/${CURRENT_AGENT_TYPE}-${prompt_type}"
+		if [[ -f "$prompt_file" ]]; then
+			return 1
+		fi
+		touch "$prompt_file" 2>/dev/null || return 1
+		return 0
+	fi
 }
 
 # Handle UserPromptSubmit events
 handle_user_prompt_submit()
 {
-	# Extract user message - try multiple possible fields
-	local user_message=$(extract_json_value "$JSON_INPUT" "message")
-
-	if [[ -z "$user_message" ]]; then
-		user_message=$(extract_json_value "$JSON_INPUT" "user_message")
-	fi
-
-	if [[ -z "$user_message" ]]; then
-		user_message=$(extract_json_value "$JSON_INPUT" "prompt")
-	fi
+	# Use USER_PROMPT from parse_hook_json (already tried all fields)
+	local user_message="$USER_PROMPT"
 
 	if [[ -z "$user_message" ]]; then
 		echo "⚠️  HOOK WARNING [$SCRIPT_PATH]: Could not extract user message from UserPromptSubmit JSON" >&2

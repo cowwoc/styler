@@ -88,7 +88,7 @@ Both methods read from the same stdin JSON provided by Claude Code.
 ## Related
 
 - **echo-session-id.sh**: Script that outputs session ID from Claude Code stdin JSON
-- **read-conversation-history**: Skill that uses session ID to access conversation
+- **get-history**: Skill that uses session ID to access conversation
 - **hook-logger.sh**: Library that uses session ID for session-specific logging
 
 ## Implementation Details

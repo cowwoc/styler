@@ -6,14 +6,73 @@ allowed-tools: Bash
 
 # Get Agent ID Skill
 
-**Purpose**: Extract the agent ID from the most recent Task tool invocation in the current session for use with the Task tool's `resume` parameter.
+**Purpose**: Retrieve the agent ID from a Task tool invocation for use with the Task tool's `resume` parameter.
 
-> **Note**: This skill is a workaround for [Claude Code issue #10864](https://github.com/anthropics/claude-code/issues/10864). Ideally, the Task tool would return the agent ID directly, eliminating the need for manual extraction from conversation logs.
+## Version-Specific Methods
+
+### Preferred Method: SubagentStop Hook (v2.0.42+)
+
+**As of Claude Code v2.0.42**, the `SubagentStop` hook provides `agent_id` directly, eliminating the need for conversation log parsing.
+
+**Setup**: Register a SubagentStop hook in `.claude/settings.json`:
+
+```json
+"SubagentStop": [
+  {
+    "hooks": [
+      {
+        "type": "command",
+        "command": "/workspace/.claude/hooks/save-agent-id.sh"
+      }
+    ]
+  }
+]
+```
+
+**Hook Implementation** (`save-agent-id.sh`):
+```bash
+#!/bin/bash
+# Automatically save agent_id when subagent stops
+
+# Read JSON from stdin
+JSON_INPUT=$(cat)
+
+# Extract agent_id and agent_transcript_path (available in v2.0.42+)
+AGENT_ID=$(echo "$JSON_INPUT" | jq -r '.agent_id // empty')
+TRANSCRIPT_PATH=$(echo "$JSON_INPUT" | jq -r '.agent_transcript_path // empty')
+
+if [[ -n "$AGENT_ID" ]]; then
+  # Store in standard location
+  echo "$AGENT_ID" > /tmp/last-agent-id.txt
+  echo "📋 Saved agent ID: $AGENT_ID" >&2
+
+  # Optionally store transcript path for debugging
+  if [[ -n "$TRANSCRIPT_PATH" ]]; then
+    echo "$TRANSCRIPT_PATH" > /tmp/last-agent-transcript.txt
+  fi
+fi
+```
+
+**Usage**:
+```bash
+# Agent ID is automatically saved when subagent completes
+# Simply read it when needed
+AGENT_ID=$(cat /tmp/last-agent-id.txt)
+
+# Use with Task tool resume
+Task tool: general-purpose
+Resume: $AGENT_ID
+Prompt: "Continue from previous analysis..."
+```
+
+### Fallback Method: Conversation Log Parsing (Pre-v2.0.42)
+
+> **Note**: This method is a workaround for [Claude Code issue #10864](https://github.com/anthropics/claude-code/issues/10864). Use the SubagentStop hook method for v2.0.42+.
 
 **When to Use**:
-- After invoking a Task tool that spawns an agent
-- When you need to resume an agent for multi-phase work (e.g., validation workflows)
-- Before calling Task tool with `resume` parameter
+- Claude Code version < 2.0.42
+- SubagentStop hook not configured
+- Need to retrieve agent ID from older session
 
 **What It Does**:
 1. Reads the current session's conversation log
@@ -21,7 +80,7 @@ allowed-tools: Bash
 3. Stores the agent ID in a specified file
 4. Outputs the agent ID for verification
 
-## Usage
+#### Execution Instructions (Fallback Method)
 
 **Input Required**:
 - Session ID (automatically available from SessionStart hook context)
@@ -30,8 +89,6 @@ allowed-tools: Bash
 **Output**:
 - Agent ID stored in specified file
 - Agent ID echoed to stdout for verification
-
-## Execution Instructions
 
 After invoking a Task tool, extract the agent ID with this bash command:
 
@@ -114,10 +171,32 @@ bash -c 'SESSION_ID="..." && OUTPUT_FILE="/tmp/phase2-agent.txt" && AGENT_ID=$(j
 
 **Important**: Always extract immediately after Task invocation to ensure you capture the correct agent ID.
 
+## Which Method Should I Use?
+
+**Decision Tree**:
+
+1. **Check Claude Code version**: Run `claude --version` or check system reminders for version info
+2. **If v2.0.42+**:
+   - ✅ Use SubagentStop hook method (preferred)
+   - Cleaner, automatic, no manual extraction needed
+   - Requires one-time hook setup in settings.json
+3. **If pre-v2.0.42**:
+   - Use conversation log parsing method (fallback)
+   - More manual but works on all versions
+
+**Migration Path**:
+- Existing projects using conversation log parsing: Continue working, optional upgrade to SubagentStop hook
+- New projects on v2.0.42+: Use SubagentStop hook from the start
+
+## Version History
+
+- **v2.0.42** (2024): Added `agent_id` and `agent_transcript_path` fields to SubagentStop hooks ([changelog](https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md))
+- **Pre-v2.0.42**: Manual extraction from conversation logs required
+
 ## Related Skills
 
-- **get-session-id**: Provides session ID needed for this skill
-- **read-conversation-history**: Read full conversation log for debugging
+- **get-session-id**: Provides session ID needed for conversation log parsing method
+- **get-history**: Read full conversation log for debugging
 
 ## Common Use Cases
 
