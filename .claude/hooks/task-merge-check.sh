@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Error handler - output helpful message to stderr on failure
-trap 'echo "ERROR in pre-task-merge-check.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+trap 'echo "ERROR in task-merge-check.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
 # Pre-Task Merge Validation Hook
 # Purpose: Verify task branch has exactly 1 commit before merging to main
@@ -13,7 +13,7 @@ BASE_BRANCH="${2:-main}"
 
 if [[ -z "$TASK_BRANCH" ]]; then
     echo "ERROR: Task branch not specified" >&2
-    echo "Usage: pre-task-merge-check.sh <task-branch> [base-branch]" >&2
+    echo "Usage: task-merge-check.sh <task-branch> [base-branch]" >&2
     exit 1
 fi
 

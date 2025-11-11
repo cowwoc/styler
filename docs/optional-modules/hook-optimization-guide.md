@@ -259,7 +259,7 @@ wait $PID1 $PID2 $PID3
 
 ## Complete Optimization Example
 
-See `/workspace/.claude/hooks/enforce-checkpoints-optimized.sh` for a fully optimized hook implementation.
+See `/workspace/.claude/hooks/enforce-checkpoints.sh` for a fully optimized hook implementation.
 
 **Key Optimizations Applied**:
 1. JSON caching for all input parsing
@@ -306,7 +306,7 @@ Benchmarking enforce-checkpoints (100 iterations)... Done
   Avg:   68ms | Min:   52ms | Max:   95ms | Total:  6800ms
 
 Optimized version:
-Benchmarking enforce-checkpoints-optimized (100 iterations)... Done
+Benchmarking enforce-checkpoints (100 iterations)... Done
   Avg:   23ms | Min:   18ms | Max:   35ms | Total:  2300ms
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

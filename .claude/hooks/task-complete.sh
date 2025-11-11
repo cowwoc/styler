@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Error handler - output helpful message to stderr on failure
-trap 'echo "ERROR in post-tool-use-task-complete.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+trap 'echo "ERROR in task-complete.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
 # This hook runs after Task tool completes to provide efficiency guidance
 # Purpose: Remind main agent to validate incrementally (fail-fast pattern)

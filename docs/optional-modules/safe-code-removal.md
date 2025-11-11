@@ -12,7 +12,7 @@ When removing instrumentation, debugging code, or other patterns from multiple f
 - **Task**: Remove timing instrumentation from 47 hooks
 - **Mistake**: Removal script was too aggressive
 - **Impact**: 7 hooks reduced to 3 lines (only `#!/bin/bash` and `set -euo pipefail`)
-- **Hooks destroyed**: auto-learn-from-mistakes.sh, block-data-loss.sh, detect-worktree-violation.sh, enforce-requirements-phase.sh, load-todo.sh, post-tool-use-detect-assistant-giving-up.sh, verify-convergence-entry.sh
+- **Hooks destroyed**: auto-learn-from-mistakes.sh, block-data-loss.sh, detect-worktree-violation.sh, enforce-requirements-phase.sh, load-todo.sh, detect-assistant-giving-up.sh, verify-convergence-entry.sh
 - **Recovery**: Restored from backups
 - **Root cause**: Didn't validate hooks after removal, declared task complete too early
 

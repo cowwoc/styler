@@ -151,8 +151,8 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLE
 - ❌ Use `git merge` without `--squash` when merging task to main (creates multiple commits instead of one)
 
 **Enforcement**:
-- `pre-tool-use-task-invoke.sh` blocks Task tool from INIT state
-- `pre-tool-use-task-invoke.sh` blocks SYNTHESIS/IMPLEMENTATION states without requirements reports
+- `task-invoke-pre.sh` blocks Task tool from INIT state
+- `task-invoke-pre.sh` blocks SYNTHESIS/IMPLEMENTATION states without requirements reports
 - `enforce-merge-workflow.sh` validates merge location, approval, and squash requirement
 - `enforce-checkpoints.sh` validates state transitions and approval flags
 
