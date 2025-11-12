@@ -415,6 +415,45 @@ Before saving the rebase plan, verify:
 3. **Order matters** - commits are applied top-to-bottom (chronologically)
 4. **🚨 NEW: NEVER reorder preserved commits** - maintain exact original sequence
 
+**⚠️ COMMON MISTAKE: Squashing Newer into Older**
+
+❌ **WRONG**: Trying to squash HEAD into an earlier commit using rebase
+```bash
+# Current state: A - B - C - D - E (HEAD)
+# Goal: Squash E into B
+
+git rebase -i B^  # ❌ This reorders history, doesn't squash E into B
+# Git shows: pick B, pick C, pick D, pick E
+# Changing E to "fixup" combines E into D, NOT B!
+```
+
+**Root Cause**: Interactive rebase rebases FROM a point TO HEAD. Commits are listed chronologically (oldest first). Marking a newer commit as "squash" combines it with the **previous** commit in the list, not with an arbitrary earlier commit.
+
+✅ **CORRECT**: Use manual method for non-adjacent squashing
+```bash
+# Method 1: Reset and amend (if E is HEAD)
+git reset --soft B
+git commit --amend  # E's changes now in B
+
+# Method 2: Cherry-pick specific changes
+git checkout B
+git cherry-pick E
+git commit --amend  # Combine E into B
+git cherry-pick C..HEAD  # Reapply remaining commits
+
+# Method 3: Manual edit + amend
+git checkout B
+# Manually apply E's changes to files
+git add -u
+git commit --amend  # Combine changes into B
+git cherry-pick C..original-HEAD  # Reapply remaining
+```
+
+**When to use each method**:
+- **Adjacent commits**: Interactive rebase with squash/fixup
+- **Non-adjacent commits**: Manual method (reset/cherry-pick/edit)
+- **Complex reordering**: Break into smaller adjacent squashes
+
 #### 4. Handle Conflicts During Rebase {#4-handle-conflicts-during-rebase}
 
 **When conflicts occur**, git will pause the rebase and display conflict information:
