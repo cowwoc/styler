@@ -870,7 +870,7 @@ See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/
 
 ## 📝 RETROSPECTIVE DOCUMENTATION POLICY
 
-Do NOT create retrospective documentation chronicling fixes, problems, or development process.
+**CRITICAL:** Do NOT create analysis, learning, or retrospective documents unless explicitly instructed by the user.
 
 **PROHIBITED PATTERNS**:
 - ❌ Post-implementation analysis reports
@@ -882,26 +882,29 @@ Do NOT create retrospective documentation chronicling fixes, problems, or develo
 - ❌ Evidence-based decision process sections
 - ❌ Multi-phase retrospectives ("Phase 1: Requirements", etc.)
 - ❌ Safety analysis documents chronicling what went wrong
+- ❌ Comparison studies (before/after, old/new architecture)
+- ❌ Refactoring analysis documents
+- ❌ "Why we chose X" documents (put in commit message)
 - ❌ Inline comments chronicling WHEN added or WHAT PROBLEM prompted (chronology belongs in commits)
 
-**COMMON MISTAKE**: When analyzing complex issues, defaulting to "create structured document" to organize thinking. STOP and ask BEFORE creating any .md file:
-1. "Is this documenting what happened (retrospective) or what to do (forward-looking)?"
-2. "Could this go in a commit message instead?" (YES → put it there, not in file)
-3. "Could this go in inline comments instead?" (YES → put it there, not in file)
-4. "Will this be useful after the fix, or only during?" (only during → don't create file)
+**COMMON MISTAKE**: When analyzing complex issues, defaulting to "create structured document" to organize thinking. **DO NOT** create documents for your own analysis unless user explicitly requests them.
 
 **MANDATORY PRE-CREATION CHECKLIST**: Before using Write tool to create any .md file, verify:
 
+- [ ] **User explicitly requested it**: User said "create document", "write analysis", or similar
 - [ ] **Not retrospective**: File documents HOW TO USE, not WHAT WAS DONE
-- [ ] **Filename check**: Avoid "summary", "lessons-learned", "retrospective", "postmortem", "analysis" in names
-- [ ] **Content check**: No sections like "What Was Implemented", "Files Created", "Success Criteria Achieved"
+- [ ] **Not analysis**: File documents WHAT EXISTS, not WHY WE DID IT
+- [ ] **Filename check**: Avoid "summary", "lessons-learned", "retrospective", "postmortem", "analysis", "comparison", "study" in names
+- [ ] **Content check**: No sections like "What Was Implemented", "Files Created", "Success Criteria Achieved", "Before/After", "Key Improvements"
 - [ ] **Alternative check**: Could this content go in commit message? (If YES → use commit, not file)
 - [ ] **Utility check**: Will this be useful 6 months from now? (If NO → don't create)
 - [ ] **Duplication check**: Does forward-looking content already exist in another doc?
 
-**LESSON**: Complexity NEVER justifies intermediate retrospective documents. Correct approach: commit message + inline comments.
-
-**Document**: Rationale (commits), approach (code comments), benchmarks (architecture.md), alternatives (code comments)
+**CORRECT APPROACH FOR ANALYSIS:**
+1. **Working through complexity**: Use working memory, not files
+2. **Documenting decisions**: Commit messages, not separate docs
+3. **Recording rationale**: Code comments, not analysis files
+4. **Explaining architecture**: Update existing docs, not new retrospectives
 
 **Inline Comment Policy**:
 - ✅ **CORRECT**: Explain WHAT code does, WHY pattern exists (forward-looking)
@@ -912,7 +915,11 @@ Do NOT create retrospective documentation chronicling fixes, problems, or develo
   - Example: `# ROOT CAUSE: Agent didn't check working directory`
   - Put chronology in commit message, not inline comments
 
-**Permitted**: User/task requires it, forward-looking architecture/API/design docs
+**PERMITTED (only with explicit user instruction)**:
+- User explicitly says: "Create a document analyzing..."
+- User explicitly says: "Write up the comparison..."
+- Task in todo.md specifically requires documentation
+- Forward-looking architecture/API/design docs (how system works, not how it was built)
 
 **Enforcement**: Hooks block retrospective patterns
 
