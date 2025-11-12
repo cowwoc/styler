@@ -21,6 +21,10 @@ trap 'echo "ERROR in auto-learn-from-mistakes.sh at line $LINENO: Command failed
 #                 and Pattern 10 (restore from backup)
 #   - 2025-11-07: Added Pattern 11 (critical self-acknowledgments) for detecting phrases
 #                 like "CRITICAL DISASTER", "CRITICAL MISTAKE", "CRITICAL ERROR"
+#   - 2025-11-12: Enhanced Pattern 11 to check assistant messages via conversation log
+#                 (inspired by detect-assistant-giving-up.sh approach)
+#                 Improved to track last checked line number, only parsing new messages
+#                 (eliminates missed messages and removes need for rate limiting)
 
 # Read input from stdin (hook context JSON for PostToolUse)
 HOOK_CONTEXT=$(cat)
@@ -28,6 +32,40 @@ HOOK_CONTEXT=$(cat)
 # Extract tool name and result from context
 TOOL_NAME=$(echo "$HOOK_CONTEXT" | jq -r '.tool.name // "unknown"')
 TOOL_RESULT=$(echo "$HOOK_CONTEXT" | jq -r '.result.output // .result.content // ""')
+
+# Extract session ID for conversation log access
+SESSION_ID=$(echo "$HOOK_CONTEXT" | jq -r '.session_id // ""')
+
+# Initialize assistant message content for Pattern 11 enhancement
+LAST_ASSISTANT_MESSAGE=""
+
+# Track last checked line number to only parse new messages
+# This prevents missing messages and is more efficient than rate limiting
+if [[ -n "$SESSION_ID" ]]; then
+  CONVERSATION_LOG="/home/node/.config/projects/-workspace/${SESSION_ID}.jsonl"
+  LAST_LINE_FILE="/tmp/auto-learn-mistakes-lastline-${SESSION_ID}.txt"
+
+  if [[ -f "$CONVERSATION_LOG" ]]; then
+    # Get current line count
+    CURRENT_LINE_COUNT=$(wc -l < "$CONVERSATION_LOG")
+
+    # Get last checked line number (default to 0 if file doesn't exist)
+    LAST_LINE_CHECKED=0
+    if [[ -f "$LAST_LINE_FILE" ]]; then
+      LAST_LINE_CHECKED=$(cat "$LAST_LINE_FILE" 2>/dev/null || echo "0")
+    fi
+
+    # Only check if there are new lines
+    if [[ $CURRENT_LINE_COUNT -gt $LAST_LINE_CHECKED ]]; then
+      # Extract only new assistant messages since last check
+      LINES_TO_CHECK=$((CURRENT_LINE_COUNT - LAST_LINE_CHECKED))
+      LAST_ASSISTANT_MESSAGE=$(tail -n "$LINES_TO_CHECK" "$CONVERSATION_LOG" | grep -F '"role":"assistant"' || echo "")
+
+      # Update last checked line number
+      echo "$CURRENT_LINE_COUNT" > "$LAST_LINE_FILE"
+    fi
+  fi
+fi
 
 # Initialize mistake detection
 MISTAKE_TYPE=""
@@ -99,9 +137,20 @@ fi
 # Pattern 11: Critical self-acknowledgments (CRITICAL)
 # Detects when assistant uses phrases like "CRITICAL DISASTER", "CRITICAL MISTAKE", "CRITICAL ERROR"
 # indicating awareness of a major problem
+#
+# ENHANCED 2025-11-12: Now also checks assistant text messages via conversation log
+# Searches both tool results AND recent assistant messages for error acknowledgments
 if echo "$TOOL_RESULT" | grep -qiE "CRITICAL (DISASTER|MISTAKE|ERROR|FAILURE|BUG|PROBLEM|ISSUE)|catastrophic|devastating"; then
   MISTAKE_TYPE="critical_self_acknowledgment"
   MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B3 -A5 -iE "CRITICAL|catastrophic|devastating" | head -20)
+fi
+
+# Also check last assistant message from conversation log (if rate limit allows)
+if [[ -z "$MISTAKE_TYPE" ]] && [[ -n "$LAST_ASSISTANT_MESSAGE" ]]; then
+  if echo "$LAST_ASSISTANT_MESSAGE" | grep -qiE "I made a critical (error|mistake)|CRITICAL (DISASTER|MISTAKE|ERROR|FAILURE)|catastrophic failure|devastating (error|failure|mistake)"; then
+    MISTAKE_TYPE="critical_self_acknowledgment"
+    MISTAKE_DETAILS=$(echo "$LAST_ASSISTANT_MESSAGE" | grep -iE "I made a critical|CRITICAL|catastrophic|devastating" | head -5)
+  fi
 fi
 
 # If no mistake detected, pass through
