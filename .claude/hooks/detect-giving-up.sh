@@ -9,27 +9,10 @@ trap 'echo "[HOOK DEBUG] detect-giving-up.sh FAILED at line $LINENO" >&2; echo "
 
 echo "[HOOK DEBUG] detect-giving-up.sh START" >&2
 
-# Giving Up Pattern Detection Hook
+# Giving Up Pattern Detection Hook (Refactored with Composable Keywords)
 # Detects phrases indicating abandonment of complex problems
 # Triggers: UserPromptSubmit event
 # Action: Inject persistence reminder if patterns detected
-#
-# PATTERN EVOLUTION HISTORY:
-# - Initial patterns: Explicit giving-up phrases ("too hard", "let's skip")
-# - 2025-10-30: Added rationalization patterns after main agent attempted to remove
-#   formatter API dependencies using "pragmatic decision" and "time constraints"
-#   language to disguise giving up on JPMS compilation debugging
-# - 2025-10-30: Added compilation abandonment detection after misdiagnosing
-#   "empty JAR" issue as "complex JPMS problems" instead of systematically
-#   debugging why security/config modules weren't compiling
-# - 2025-11-03: Added token budget + file size rationalization patterns after main
-#   agent avoided optimizing git-workflow.md (37KB) citing "remaining token budget
-#   (70K)" despite having 2x necessary tokens. Added gerund forms ("skipping it")
-#   and indirect giving up ("recommend skipping") to catch disguised avoidance.
-# - 2025-11-05: Added context constraints patterns after main agent presented options
-#   citing "Context Status: 126K/200K tokens used" and "Given context constraints"
-#   instead of continuing work. Used "context" not "token budget" to bypass existing
-#   patterns. Catches reporting context status before stopping work.
 
 # Read JSON data from stdin with timeout to prevent hanging
 JSON_INPUT=""
@@ -135,157 +118,191 @@ remove_quoted_sections()
 
 WORKING_TEXT=$(remove_quoted_sections "$USER_PROMPT")
 
-# Pattern detection using literal string matching (prevents ReDoS attacks)
-# No regex alternation, just simple bash string matching for security
-detect_giving_up_pattern()
+#==============================================================================
+# COMPOSABLE KEYWORD DETECTION FUNCTIONS
+#==============================================================================
+
+# Check for constraint keywords (complexity, time, tokens, context)
+has_constraint_keyword()
 {
-	local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
-
-	# Short-circuit on first match for performance
-	[[ "$text_lower" == *"given the complexity of properly implementing"* ]] && return 0
-	[[ "$text_lower" == *"given the evidence that this requires significant changes"* ]] && return 0
-	[[ "$text_lower" == *"let me focus on completing the task protocol instead"* ]] && return 0
-	[[ "$text_lower" == *"let me focus on features that provide more immediate value"* ]] && return 0
-	[[ "$text_lower" == *"this would require significant architectural changes"* ]] && return 0
-	[[ "$text_lower" == *"rather than diving deeper into this complex issue"* ]] && return 0
-	[[ "$text_lower" == *"instead of implementing the full solution"* ]] && return 0
-	[[ "$text_lower" == *"due to the complexity, i'll defer this to"* ]] && return 0
-	[[ "$text_lower" == *"this appears to be beyond the current scope"* ]] && return 0
-	[[ "$text_lower" == *"let me move on to easier tasks"* ]] && return 0
-	[[ "$text_lower" == *"given the large number"*"i'll continue with the next"* ]] && return 0
-	[[ "$text_lower" == *"given the large number"*"let me continue with the next"* ]] && return 0
-	[[ "$text_lower" == *"given the volume"*"i'll process them"* ]] && return 0
-
-	# Rationalization patterns (disguised giving-up using "pragmatic" language)
-	# Added 2025-10-30 after main agent used these phrases to justify removing
-	# formatter dependencies instead of debugging compilation issues
-	[[ "$text_lower" == *"due to the complex"*"i need to make a pragmatic decision"* ]] && return 0
-	[[ "$text_lower" == *"considering the time constraints"*"i need to"* ]] && return 0
-	[[ "$text_lower" == *"considering the time constraints"*"i'll"* ]] && return 0
-	[[ "$text_lower" == *"i'll simplify"*"to remove the problematic"* ]] && return 0
-	[[ "$text_lower" == *"let me take a different approach"*"remove"* ]] && return 0
-	[[ "$text_lower" == *"pragmatic decision"*"simplify"* ]] && return 0
-	# CLAUDE.md explicitly prohibits these patterns:
-	[[ "$text_lower" == *"due to complexity and token usage"* ]] && return 0
-	[[ "$text_lower" == *"given token constraints"*"i'll implement a basic"* ]] && return 0
-	[[ "$text_lower" == *"i'll create a solid mvp"* ]] && return 0
-
-	# Token budget rationalization patterns (added 2025-11-03)
-	# After main agent cited "file's size (37KB) and remaining token budget (70K)"
-	# to justify skipping git-workflow.md optimization despite sufficient tokens
-	# Updated 2025-11-03: Added "token budget remaining" + "recommend" pattern after
-	# main agent presented options citing "Given the token budget remaining (69K tokens)
-	# and the size of the remaining files, I recommend:" instead of continuing work
-	[[ "$text_lower" == *"due to"*"size"*"token budget"* ]] && return 0
-	[[ "$text_lower" == *"due to"*"size"*"remaining token"* ]] && return 0
-	[[ "$text_lower" == *"file's size"*"token"*"skip"* ]] && return 0
-	[[ "$text_lower" == *"given"*"size"*"token budget"* ]] && return 0
-	[[ "$text_lower" == *"remaining token budget"*"skip"* ]] && return 0
-	[[ "$text_lower" == *"remaining token budget"*"recommend"* ]] && return 0
-	[[ "$text_lower" == *"token budget remaining"*"recommend"* ]] && return 0  # reverse word order
-	[[ "$text_lower" == *"given"*"token budget remaining"* ]] && return 0  # "given the token budget remaining"
-	[[ "$text_lower" == *"given"*"remaining"*"recommend"* ]] && return 0  # general "given...remaining...recommend" pattern
-	[[ "$text_lower" == *"token budget"*"rather than"*"skip"* ]] && return 0
-	# Context constraints rationalization patterns (added 2025-11-05)
-	# After main agent presented options citing "Context Status: 126K/200K tokens used"
-	# and "Given context constraints and the iterative nature of optimization, I recommend:"
-	# instead of continuing work. Used "context constraints" not "token budget" to bypass
-	# existing patterns. Token Usage Policy: "Token usage MUST NEVER affect behavior"
-	[[ "$text_lower" == *"context status"*"tokens used"* ]] && return 0
-	[[ "$text_lower" == *"context status"*"token"*"recommend"* ]] && return 0
-	[[ "$text_lower" == *"given"*"context constraints"*"recommend"* ]] && return 0
-	[[ "$text_lower" == *"given"*"context"*"iterative"*"recommend"* ]] && return 0
-	[[ "$text_lower" == *"context"*"recommend"*"which approach"* ]] && return 0  # asking user to choose after context discussion
-
-	# Framing shortcuts as architectural decisions to avoid debugging
-	[[ "$text_lower" == *"as an architectural choice"*"remove"* ]] && return 0
-	[[ "$text_lower" == *"architectural decision"*"without"* ]] && return 0
-	[[ "$text_lower" == *"simplify the api"*"remove"* ]] && return 0
-	[[ "$text_lower" == *"redesign to avoid"* ]] && return 0
-
-	return 1  # No pattern detected
+	local text="$1"
+	[[ "$text" == *"time constraints"* ]] && return 0
+	[[ "$text" == *"complexity"* ]] && return 0
+	[[ "$text" == *"complex"* ]] && return 0
+	[[ "$text" == *"token budget"* ]] && return 0
+	[[ "$text" == *"token constraints"* ]] && return 0
+	[[ "$text" == *"context constraints"* ]] && return 0
+	[[ "$text" == *"context status"* ]] && return 0
+	[[ "$text" == *"context"*"tokens"* ]] && return 0
+	[[ "$text" == *"lengthy"* ]] && return 0
+	[[ "$text" == *"difficult"* ]] && return 0
+	[[ "$text" == *"large number"* ]] && return 0
+	[[ "$text" == *"volume"* ]] && return 0
+	return 1
 }
 
-# Detect code disabling/removal instead of debugging
-detect_code_disabling_pattern()
+# Check for abandonment action keywords
+has_abandonment_action()
+{
+	local text="$1"
+	[[ "$text" == *"skip"* ]] && return 0
+	[[ "$text" == *"simplify"* ]] && return 0
+	[[ "$text" == *"remove"* ]] && return 0
+	[[ "$text" == *"different approach"* ]] && return 0
+	[[ "$text" == *"move on"* ]] && return 0
+	[[ "$text" == *"defer"* ]] && return 0
+	[[ "$text" == *"let me"* ]] && return 0
+	[[ "$text" == *"i'll"* ]] && return 0
+	[[ "$text" == *"i need to"* ]] && return 0
+	[[ "$text" == *"recommend"* ]] && return 0
+	[[ "$text" == *"redesign"* ]] && return 0
+	return 1
+}
+
+# Check for broken code indicators
+has_broken_code_indicator()
+{
+	local text="$1"
+	[[ "$text" == *"broken"* ]] && return 0
+	[[ "$text" == *"failing"* ]] && return 0
+	[[ "$text" == *"test passes without"* ]] && return 0
+	[[ "$text" == *"works without"* ]] && return 0
+	return 1
+}
+
+# Check for removal/disabling actions
+has_removal_action()
+{
+	local text="$1"
+	[[ "$text" == *"remove"* ]] && return 0
+	[[ "$text" == *"disable"* ]] && return 0
+	[[ "$text" == *"skip"* ]] && return 0
+	[[ "$text" == *"comment out"* ]] && return 0
+	[[ "$text" == *"temporarily"* ]] && return 0
+	return 1
+}
+
+# Check for compilation/build problem indicators
+has_compilation_problem()
+{
+	local text="$1"
+	[[ "$text" == *"compilation error"* ]] && return 0
+	[[ "$text" == *"module not found"* ]] && return 0
+	[[ "$text" == *"build fails"* ]] && return 0
+	[[ "$text" == *"empty jar"* ]] && return 0
+	[[ "$text" == *"no classes compiled"* ]] && return 0
+	[[ "$text" == *"jpms"* ]] && return 0
+	return 1
+}
+
+# Check for permission-seeking language
+has_permission_language()
+{
+	local text="$1"
+	[[ "$text" == *"would you like"* ]] && return 0
+	[[ "$text" == *"what's your preference"* ]] && return 0
+	[[ "$text" == *"which approach"* ]] && return 0
+	[[ "$text" == *"or would you prefer"* ]] && return 0
+	return 1
+}
+
+# Check for numbered option lists
+has_numbered_options()
+{
+	local text="$1"
+	[[ "$text" == *"1. "* ]] && [[ "$text" == *"2. "* ]] && return 0
+	return 1
+}
+
+#==============================================================================
+# PATTERN DETECTION FUNCTIONS
+#==============================================================================
+
+# Detect constraint rationalization: constraint + abandonment action
+detect_constraint_rationalization()
 {
 	local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
-	# Pattern: Disabling/removing broken code
-	[[ "$text_lower" == *"broken"*"remove"* ]] && return 0
-	[[ "$text_lower" == *"broken"*"disable"* ]] && return 0
-	[[ "$text_lower" == *"broken"*"skip"* ]] && return 0
-	[[ "$text_lower" == *"broken"*"comment out"* ]] && return 0
+	# Composable detection: constraint keyword + abandonment action
+	if has_constraint_keyword "$text_lower" && has_abandonment_action "$text_lower"; then
+		return 0
+	fi
 
-	# Pattern: Simplifying to avoid debugging
+	# High-confidence specific patterns (kept for precision)
+	[[ "$text_lower" == *"given the complexity of properly implementing"* ]] && return 0
+	[[ "$text_lower" == *"given the evidence that this requires significant changes"* ]] && return 0
+	[[ "$text_lower" == *"rather than diving deeper into this complex issue"* ]] && return 0
+	[[ "$text_lower" == *"instead of implementing the full solution"* ]] && return 0
+	[[ "$text_lower" == *"this appears to be beyond the current scope"* ]] && return 0
+	[[ "$text_lower" == *"let me focus on completing the task protocol instead"* ]] && return 0
+	[[ "$text_lower" == *"let me focus on features that provide more immediate value"* ]] && return 0
+	[[ "$text_lower" == *"let me move on to easier tasks"* ]] && return 0
+
+	# Explicitly prohibited by CLAUDE.md
+	[[ "$text_lower" == *"due to complexity and token usage"* ]] && return 0
+	[[ "$text_lower" == *"i'll create a solid mvp"* ]] && return 0
+	[[ "$text_lower" == *"due to session length, let me"* ]] && return 0
+
+	return 1
+}
+
+# Detect code disabling instead of debugging: broken code + removal action
+detect_code_disabling()
+{
+	local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+
+	# Composable detection: broken code indicator + removal action
+	if has_broken_code_indicator "$text_lower" && has_removal_action "$text_lower"; then
+		return 0
+	fi
+
+	# Specific temporary disabling patterns
+	[[ "$text_lower" == *"temporarily disable"* ]] && return 0
+	[[ "$text_lower" == *"disable for now"* ]] && return 0
+	[[ "$text_lower" == *"skip for now"* ]] && return 0
+	[[ "$text_lower" == *"skipping it for now"* ]] && return 0
+	[[ "$text_lower" == *"skipping this for now"* ]] && return 0
+	[[ "$text_lower" == *"recommend skipping"* ]] && return 0
+	[[ "$text_lower" == *"i recommend"*"skip"* ]] && return 0
+
+	# Specific patterns for simplification
 	[[ "$text_lower" == *"simplifying the implementation"*"remove"* ]] && return 0
 	[[ "$text_lower" == *"simpler approach"*"remove"* ]] && return 0
 	[[ "$text_lower" == *"simplify by removing"* ]] && return 0
 
-	# Pattern: Temporary disabling
-	[[ "$text_lower" == *"temporarily disable"* ]] && return 0
-	[[ "$text_lower" == *"disable for now"* ]] && return 0
-	[[ "$text_lower" == *"skip for now"* ]] && return 0
-	[[ "$text_lower" == *"skipping it for now"* ]] && return 0  # gerund form, added 2025-11-03
-	[[ "$text_lower" == *"skipping this for now"* ]] && return 0
-	[[ "$text_lower" == *"recommend skipping"* ]] && return 0  # indirect giving up
-	[[ "$text_lower" == *"i recommend"*"skip"* ]] && return 0
-	[[ "$text_lower" == *"comment out"*"temporarily"* ]] && return 0
-
-	# Pattern: Removing exception handlers to "fix" compilation
+	# Exception handler removal anti-patterns
 	[[ "$text_lower" == *"removing the broad exception handler"* ]] && return 0
 	[[ "$text_lower" == *"remove the exception handler"* ]] && return 0
 	[[ "$text_lower" == *"removing the try-catch"* ]] && return 0
 
-	# Pattern: Test passes without code = remove the code
-	[[ "$text_lower" == *"test passes without"*"remove"* ]] && return 0
-	[[ "$text_lower" == *"works without"*"disable"* ]] && return 0
-	[[ "$text_lower" == *"passes without"*"skip"* ]] && return 0
-
-	return 1  # No code disabling pattern detected
+	return 1
 }
 
-# Detect compilation/build debugging abandonment patterns
-# Added 2025-10-30 after main agent encountered "empty JAR" issue (mvn compile
-# succeeded but produced no .class files) and attempted to remove dependencies
-# instead of investigating why files weren't compiling
+# Detect compilation abandonment: compilation problem + simplification
 detect_compilation_abandonment()
 {
 	local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
-	# Pattern: Giving up on compilation errors by removing dependencies
-	# Context: Agent should debug why compilation fails, not remove what fails
-	[[ "$text_lower" == *"compilation error"*"remove"* ]] && return 0
-	[[ "$text_lower" == *"module not found"*"remove"* ]] && return 0
-	[[ "$text_lower" == *"build fails"*"simplify"* ]] && return 0
-	[[ "$text_lower" == *"can't find module"*"remove dependency"* ]] && return 0
+	# Composable detection: compilation problem + abandonment action
+	if has_compilation_problem "$text_lower" && has_abandonment_action "$text_lower"; then
+		return 0
+	fi
 
-	# Pattern: Misdiagnosing as "complex JPMS issues" to justify avoidance
-	# Reality: Often simple missing module-info.java or compilation error
+	# Specific problematic patterns
 	[[ "$text_lower" == *"complex jpms"*"simplify"* ]] && return 0
-	[[ "$text_lower" == *"jpms dependency issues"*"remove"* ]] && return 0
 	[[ "$text_lower" == *"module path"*"too complex"* ]] && return 0
-
-	# Pattern: Empty JARs or missing classes but not investigating why
-	# Should check: compilation errors, source files exist, javac works manually
-	[[ "$text_lower" == *"empty jar"*"different approach"* ]] && return 0
-	[[ "$text_lower" == *"no classes compiled"*"simplify"* ]] && return 0
-	[[ "$text_lower" == *"jar contains no"*"remove"* ]] && return 0
-
-	# Pattern: Build succeeds but produces no output - should investigate, not avoid
 	[[ "$text_lower" == *"build success"*"but"*"empty"* ]] && return 0
 
-	return 1  # No compilation abandonment detected
+	return 1
 }
 
-# Detect asking permission when work should continue autonomously
-# Applies to both task protocol and general work contexts (commands, optimizations, etc.)
-detect_asking_permission_to_continue()
+# Detect asking permission when work should continue
+detect_asking_permission()
 {
 	local text_lower=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 
-	# Check for asking permission mid-protocol
-	if [[ "$text_lower" == *"would you like me to"* ]]; then
+	# Check for permission language + active task
+	if has_permission_language "$text_lower"; then
 		# Check if we have active locks (indicating task in progress)
 		if ls /workspace/tasks/*/task.json &>/dev/null; then
 			# Pattern: asking what to do mid-task
@@ -296,59 +313,65 @@ detect_asking_permission_to_continue()
 		fi
 
 		# Pattern: presenting options after work should continue (non-task context)
-		# Added 2025-11-11 after main agent presented 3 options during optimize-doc
-		# command execution instead of proceeding with cataloging step
 		[[ "$text_lower" == *"proceed with"* ]] && return 0
 		[[ "$text_lower" == *"continue with"* ]] && return 0
 	fi
 
-	# Pattern: citing complexity/length before presenting options (added 2025-11-11)
-	# Catches "This is complex...would you like" pattern regardless of task context
-	# Triggered by: "This is a complex, multi-iteration optimization that will be quite lengthy. Would you like me to:"
-	if [[ "$text_lower" == *"complex"* ]] && [[ "$text_lower" == *"would you like"* ]]; then
+	# Constraint + permission seeking combination
+	if has_constraint_keyword "$text_lower" && has_permission_language "$text_lower"; then
 		return 0
 	fi
-	if [[ "$text_lower" == *"lengthy"* ]] && [[ "$text_lower" == *"would you like"* ]]; then
+
+	# Numbered options + permission language
+	if has_numbered_options "$text_lower" && has_permission_language "$text_lower"; then
 		return 0
 	fi
-	if [[ "$text_lower" == *"will be quite"* ]] && [[ "$text_lower" == *"would you like"* ]]; then
-		return 0  # "will be quite [lengthy/complex/...]"
-	fi
-	# "Given the complexity and length" pattern (added 2025-11-11)
-	[[ "$text_lower" == *"given"*"complexity"*"length"* ]] && return 0
-	[[ "$text_lower" == *"given"*"complex"*"lengthy"* ]] && return 0
 
-	# Pattern: presenting numbered options when optimal path is clear (added 2025-11-11)
-	# Detects markdown-formatted option lists (1. **, 2. **, 3. **)
-	# Combined with justification language suggests asking instead of doing
-	if [[ "$text_lower" == *"1. "* ]] && [[ "$text_lower" == *"2. "* ]]; then
-		# Has numbered list - check for option-presenting language
-		if [[ "$text_lower" == *"would you like"* ]] || \
-		   [[ "$text_lower" == *"what's your preference"* ]] || \
-		   [[ "$text_lower" == *"which approach"* ]] || \
-		   [[ "$text_lower" == *"or would you prefer"* ]]; then
-			return 0
-		fi
-	fi
-
-	# Pattern: using time/effort as justification to stop
+	# Time/effort as justification to stop
 	[[ "$text_lower" == *"2-3 days"*"implementation"* ]] && return 0
 	[[ "$text_lower" == *"requires extended work session"* ]] && return 0
 	[[ "$text_lower" == *"multi-day implementation"* ]] && return 0
-	[[ "$text_lower" == *"this is a complex"*"multi-day"* ]] && return 0
+	[[ "$text_lower" == *"will be quite"*"would you like"* ]] && return 0
 
-	# Pattern: stopping at synthesis/requirements and asking
+	# Stopping at synthesis/requirements and asking
 	if [[ "$text_lower" == *"state 3"* ]] || [[ "$text_lower" == *"synthesis"* ]]; then
 		[[ "$text_lower" == *"ready for implementation"* ]] && return 0
 		[[ "$text_lower" == *"would you like"* ]] && return 0
 	fi
 
-	return 1  # No protocol abandonment detected
+	return 1
 }
 
-# Detect giving up patterns and inject persistence reminder
-if detect_giving_up_pattern "$WORKING_TEXT"; then
-	cat <<'REMINDER'
+#==============================================================================
+# MAIN DETECTION AND REMINDER INJECTION
+#==============================================================================
+
+# Determine violation type for targeted reminders
+VIOLATION_TYPE=""
+
+if detect_constraint_rationalization "$WORKING_TEXT"; then
+	# Refine to more specific type if applicable
+	if has_compilation_problem "$WORKING_TEXT"; then
+		VIOLATION_TYPE="compilation_abandonment"
+	elif detect_asking_permission "$WORKING_TEXT"; then
+		VIOLATION_TYPE="permission_seeking"
+	else
+		VIOLATION_TYPE="constraint_rationalization"
+	fi
+fi
+
+if [[ -z "$VIOLATION_TYPE" ]] && detect_code_disabling "$WORKING_TEXT"; then
+	VIOLATION_TYPE="code_removal"
+fi
+
+if [[ -z "$VIOLATION_TYPE" ]] && detect_asking_permission "$WORKING_TEXT"; then
+	VIOLATION_TYPE="permission_seeking"
+fi
+
+# Inject targeted reminder based on violation type
+case "$VIOLATION_TYPE" in
+	constraint_rationalization)
+		cat <<'REMINDER'
 <system-reminder>
 🚨 GIVING UP PATTERN DETECTED - PERSISTENCE REQUIRED
 
@@ -362,54 +385,10 @@ MANDATORY RESPONSE:
 PROHIBITED: Abandoning complex problems for simpler alternatives without technical justification.
 </system-reminder>
 REMINDER
-fi
+		;;
 
-# Detect asking permission when work should continue and inject completion requirement
-if detect_asking_permission_to_continue "$WORKING_TEXT"; then
-	cat <<'REMINDER'
-<system-reminder>
-❌ PROTOCOL VIOLATION DETECTED - AUTONOMOUS COMPLETION REQUIRED
-
-You appear to be asking the user for permission to continue mid-protocol.
-
-CRITICAL VIOLATION: Once INIT state begins, you MUST complete ALL protocol states (0-8) autonomously without asking user permission.
-
-PROHIBITED PATTERNS:
-❌ "Would you like me to continue with implementation?"
-❌ "This will take 2-3 days, should I proceed?"
-❌ "Select a different task or continue?"
-❌ "Requires extended work session" (as justification to stop)
-
-TIME ESTIMATES ARE NOT BLOCKERS:
-- "2-3 days" = effort estimation, NOT permission gate
-- You MUST complete implementation regardless of estimated duration
-- Token budget NEVER justifies stopping mid-protocol
-- Complexity NEVER justifies asking permission mid-task
-
-MANDATORY ACTION:
-✅ Continue IMMEDIATELY to next protocol state
-✅ Complete States 0-8 without further user interaction
-✅ Only stop if genuinely blocked (external API unavailable, ambiguous conflicting requirements)
-
-LEGITIMATE STOPPING REASONS:
-✅ External dependency unavailable (API credentials, network access)
-✅ Ambiguous requirements with no resolution path
-✅ User explicitly interrupts ("stop", modifies todo.md)
-
-NOT LEGITIMATE:
-❌ Task is complex
-❌ Task takes time
-❌ Token usage high
-❌ "Should I ask first?"
-
-Reference: CLAUDE.md "AUTONOMOUS TASK COMPLETION REQUIREMENT"
-</system-reminder>
-REMINDER
-fi
-
-# Detect code disabling/removal patterns and inject debugging requirement
-if detect_code_disabling_pattern "$WORKING_TEXT"; then
-	cat <<'REMINDER'
+	code_removal)
+		cat <<'REMINDER'
 <system-reminder>
 🚨 CODE DISABLING ANTI-PATTERN DETECTED - DEBUGGING REQUIRED
 
@@ -456,11 +435,10 @@ CORRECT APPROACH:
 Reference: CLAUDE.md "LONG-TERM SOLUTION PERSISTENCE" and "GIVING UP DETECTION PATTERNS"
 </system-reminder>
 REMINDER
-fi
+		;;
 
-# Detect compilation abandonment and inject systematic debugging requirement
-if detect_compilation_abandonment "$WORKING_TEXT"; then
-	cat <<'REMINDER'
+	compilation_abandonment)
+		cat <<'REMINDER'
 <system-reminder>
 🚨 COMPILATION DEBUGGING ABANDONMENT DETECTED - SYSTEMATIC APPROACH REQUIRED
 
@@ -528,7 +506,50 @@ ACCEPTABLE ONLY WITH EVIDENCE:
 Reference: CLAUDE.md "LONG-TERM SOLUTION PERSISTENCE" - Exhaust reasonable effort before downgrading
 </system-reminder>
 REMINDER
-fi
+		;;
+
+	permission_seeking)
+		cat <<'REMINDER'
+<system-reminder>
+❌ PROTOCOL VIOLATION DETECTED - AUTONOMOUS COMPLETION REQUIRED
+
+You appear to be asking the user for permission to continue mid-protocol.
+
+CRITICAL VIOLATION: Once INIT state begins, you MUST complete ALL protocol states (0-8) autonomously without asking user permission.
+
+PROHIBITED PATTERNS:
+❌ "Would you like me to continue with implementation?"
+❌ "This will take 2-3 days, should I proceed?"
+❌ "Select a different task or continue?"
+❌ "Requires extended work session" (as justification to stop)
+
+TIME ESTIMATES ARE NOT BLOCKERS:
+- "2-3 days" = effort estimation, NOT permission gate
+- You MUST complete implementation regardless of estimated duration
+- Token budget NEVER justifies stopping mid-protocol
+- Complexity NEVER justifies asking permission mid-task
+
+MANDATORY ACTION:
+✅ Continue IMMEDIATELY to next protocol state
+✅ Complete States 0-8 without further user interaction
+✅ Only stop if genuinely blocked (external API unavailable, ambiguous conflicting requirements)
+
+LEGITIMATE STOPPING REASONS:
+✅ External dependency unavailable (API credentials, network access)
+✅ Ambiguous requirements with no resolution path
+✅ User explicitly interrupts ("stop", modifies todo.md)
+
+NOT LEGITIMATE:
+❌ Task is complex
+❌ Task takes time
+❌ Token usage high
+❌ "Should I ask first?"
+
+Reference: CLAUDE.md "AUTONOMOUS TASK COMPLETION REQUIREMENT"
+</system-reminder>
+REMINDER
+		;;
+esac
 
 # Cleanup old session tracking files (7-day TTL) - runs opportunistically
 find /tmp -maxdepth 1 -type d -name "claude-hooks-session-*" -mtime +7 -delete 2>/dev/null || true
