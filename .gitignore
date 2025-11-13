@@ -68,6 +68,7 @@ __pycache__/
 *.pyo
 *.pyd
 /.claude/metrics/
+/.claude/experiments/
 
 ### User-specific files ###
 /.claude/settings.local.json
