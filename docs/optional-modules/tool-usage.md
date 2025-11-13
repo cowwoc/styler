@@ -118,6 +118,39 @@ cat /workspace/tasks/task-name/code/README.md
 - [ ] For multi-step commands, are they chained with `&&` (not separate invocations)?
 - [ ] For path-dependent operations, have I verified the path exists?
 
+### 5. Git Commands: Always Specify Repository
+
+**PROBLEM**: "fatal: not a git repository" errors when running git commands outside repository directory.
+
+**ROOT CAUSE**: Git commands assume current working directory is within a git repository. Scripts and slash commands may execute from various locations.
+
+**PREVENTION STRATEGIES**:
+
+```bash
+# ❌ BAD: Assumes current directory is in git repository
+git add .claude/commands/shrink-doc.md
+git commit -m "Update command"
+
+# ✅ GOOD: Use git -C to specify repository location
+git -C /workspace/main add .claude/commands/shrink-doc.md
+git -C /workspace/main commit -m "Update command"
+
+# ✅ ALSO GOOD: Combine cd with command
+cd /workspace/main && git add .claude/commands/shrink-doc.md && git commit -m "Update command"
+```
+
+**WHY git -C IS PREFERRED**:
+- Works regardless of current working directory
+- No side effects on working directory state
+- Clearer intent in scripts and commands
+- Prevents "not a git repository" errors
+
+**WHEN TO USE**:
+- **All git commands in slash commands** (use `git -C /workspace/main`)
+- **All git commands in hooks** (use `git -C /workspace/main`)
+- **Scripts that may run from various directories** (use `git -C`)
+- **Interactive sessions**: `cd` + git is acceptable (but git -C is safer)
+
 ## Pattern Matching and Replacement
 
 **PROBLEM**: Over-broad pattern matching causes unintended replacements (e.g., replacing inside helper methods
