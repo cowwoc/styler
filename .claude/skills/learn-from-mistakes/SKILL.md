@@ -114,9 +114,94 @@ done
 
 ### Phase 3: Root Cause Analysis
 
-**⚠️ MANDATORY: Identify Triggering Thought Before Creating Fixes**
+**⚠️ MANDATORY STEP 1: Check if Fix Already Exists (Temporal Analysis)**
 
-Before Phase 4, MUST:
+**CRITICAL**: Before creating new fixes, determine if this is a NEW mistake or an INEFFECTIVE EXISTING FIX.
+
+**Temporal Analysis Procedure**:
+
+1. **Identify the mistake pattern** (e.g., "timing boundary misclassification", "worktree violation")
+2. **Search git history for related fixes**:
+   ```bash
+   # Search commit messages for related keywords
+   git log --all --format="%H %ai %s" --grep="timing.*boundary\|Error 8\|misclassification" | head -20
+   ```
+3. **Get violation timestamp from session**:
+   ```bash
+   SESSION_ID="<from-system-reminder>"
+   VIOLATION_TIME=$(stat -c %y ~/.config/projects/-workspace/${SESSION_ID}.jsonl | cut -d' ' -f1-2)
+   echo "Violation occurred: $VIOLATION_TIME"
+   ```
+4. **Compare timestamps**:
+   ```bash
+   # For each potentially related commit
+   COMMIT_HASH="<from-git-log>"
+   COMMIT_TIME=$(git show -s --format=%ai $COMMIT_HASH)
+   echo "Fix implemented: $COMMIT_TIME"
+
+   # Temporal relationship
+   if [[ "$COMMIT_TIME" < "$VIOLATION_TIME" ]]; then
+     echo "⚠️ FIX PREDATES VIOLATION - Existing fix is INEFFECTIVE"
+   else
+     echo "✅ Fix implemented AFTER violation - Reactive fix"
+   fi
+   ```
+
+**Decision Matrix**:
+
+| Temporal Relationship | Classification | Action Required |
+|----------------------|----------------|-----------------|
+| Fix exists BEFORE violation | **INEFFECTIVE FIX** | Improve/replace existing fix, NOT create duplicate |
+| No related fix exists | **NEW MISTAKE** | Create new prevention measures |
+| Fix exists AFTER violation | **REACTIVE FIX** | Verify fix is comprehensive, test it |
+
+**Example Analysis**:
+
+```bash
+# Scenario: Timing boundary misclassification in session bc6b74a7
+
+# Step 1: Find related commits
+git log --all --format="%H %ai %s" --grep="timing\|Error 8" | head -5
+# Output:
+# 63f27ed 2025-11-13 07:39:04 -0500 Improve shrink-doc to prevent timing boundary misclassification
+# 39f8f39 2025-11-12 21:20:44 -0500 Strengthen shrink-doc to prevent repeated misclassification
+# 088e259 2025-11-12 16:39:56 -0500 Learn from shrink-doc mistake: Add Error 8
+
+# Step 2: Get violation time
+stat -c %y ~/.config/projects/-workspace/bc6b74a7*.jsonl
+# Output: 2025-11-13 03:38:41 (Nov 12 22:38 EST)
+
+# Step 3: Temporal analysis
+# 088e259: Nov 12 16:39 (6 hours BEFORE violation) ← INEFFECTIVE
+# 39f8f39: Nov 12 21:20 (1 hour BEFORE violation)  ← INEFFECTIVE
+# 63f27ed: Nov 13 07:39 (9 hours AFTER violation)  ← REACTIVE
+
+# Conclusion: Error 8 fix was implemented 6 hours before violation occurred
+#            The fix is INEFFECTIVE and needs to be improved/replaced
+```
+
+**Output Required**:
+
+Document the temporal analysis result:
+```
+TEMPORAL ANALYSIS RESULT:
+- Mistake pattern: <pattern-name>
+- Related commits: <commit-hash-list>
+- Fix implementation date: <date-time>
+- Violation date: <date-time>
+- Classification: INEFFECTIVE FIX | NEW MISTAKE | REACTIVE FIX
+- Evidence: <git-log-output-showing-timing>
+```
+
+If **INEFFECTIVE FIX** detected:
+- Read the existing fix to understand what was tried
+- Analyze why it didn't work (review conversation logs for agent behavior)
+- Design improvement or replacement (not duplicate)
+- Document in commit message: "Improve/Replace ineffective fix from commit <hash>"
+
+**⚠️ MANDATORY STEP 2: Identify Triggering Thought Before Creating Fixes**
+
+After temporal analysis, MUST:
 
 1. Access `/home/node/.config/projects/-workspace/{session-id}.jsonl`
 2. Find assistant message immediately before mistake
@@ -300,6 +385,83 @@ Result: Violation will recur because agent may not read/remember
 1. **HIGH**: Protocol violations (state machine, worktree, approval gates)
 2. **MEDIUM**: Tool misuse (wrong parameters, missing validation)
 3. **LOW**: Style preferences (can be post-hoc validated)
+
+**⚠️ SPECIAL CASE: Ineffective Existing Fix**
+
+**When temporal analysis identifies INEFFECTIVE FIX** (fix predates violation):
+
+**DO NOT create duplicate fixes.** Instead:
+
+1. **Analyze why existing fix failed**:
+   - Read the existing fix implementation (hook, documentation, validation)
+   - Review session logs to see agent behavior despite fix
+   - Identify the gap: What did the fix check? What did it miss?
+   - Example: Error 8 checked for section titles but not numeric boundary content
+
+2. **Root cause categories for fix ineffectiveness**:
+   - **Incomplete detection**: Fix checks for pattern A but violation uses pattern B
+   - **Weak enforcement**: Warning message instead of blocking
+   - **Coverage gap**: Fix only applies to subset of cases
+   - **Agent workaround**: Agent found way to bypass check
+   - **Documentation clarity**: Guidance exists but is buried/vague
+   - **Validation timing**: Check happens too late (after damage done)
+
+3. **Improvement strategies**:
+
+   **Strategy A: Strengthen detection logic**
+   ```bash
+   # Before (INEFFECTIVE - only checked titles):
+   if [[ "$SECTION_TITLE" =~ "Clarification"|"Why" ]]; then
+     echo "High risk keyword detected"
+   fi
+
+   # After (EFFECTIVE - checks content for numeric boundaries):
+   if [[ "$CONTENT" =~ [0-9]+-[0-9]+[[:space:]]*(seconds|retries|MB) ]]; then
+     echo "⚠️ Numeric boundary detected - VERY LIKELY CONTEXTUAL"
+     exit 2  # Block if classified as EXPLANATORY
+   fi
+   ```
+
+   **Strategy B: Add validation checkpoint**
+   ```bash
+   # Add validation BEFORE removal (not just during classification)
+   # Check if removed content contains execution-critical patterns
+   ```
+
+   **Strategy C: Multi-layered defense**
+   ```bash
+   # Layer 1: Red flag keywords in classification
+   # Layer 2: Content pattern analysis (numeric boundaries)
+   # Layer 3: Validation checkpoint before removal
+   # Layer 4: Post-removal semantic integrity check
+   ```
+
+4. **Commit message pattern**:
+   ```
+   Improve ineffective fix from commit <hash>: <pattern>
+
+   TEMPORAL ANALYSIS:
+   - Original fix: <commit-hash> on <date>
+   - Violation: session <session-id> on <date>
+   - Time delta: <fix-predates-violation-by-X-hours>
+
+   ROOT CAUSE OF FIX INEFFECTIVENESS:
+   - Original fix checked <what-it-checked>
+   - But violation occurred via <what-it-missed>
+   - Gap: <specific-gap-in-detection-logic>
+
+   IMPROVEMENT:
+   - <what-new-fix-does-differently>
+   - <why-this-should-work>
+
+   EVIDENCE FROM SESSION:
+   - <excerpt-showing-agent-behavior-despite-fix>
+   ```
+
+5. **Test the improvement**:
+   - Review session logs showing original violation
+   - Verify new fix would have caught it
+   - If possible, reproduce scenario with new fix active
 
 **Update Strategy by Category**:
 
