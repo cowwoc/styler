@@ -242,6 +242,7 @@ detect_constraint_rationalization()
 	[[ "$text_lower" == *"due to complexity and token usage"* ]] && return 0
 	[[ "$text_lower" == *"i'll create a solid mvp"* ]] && return 0
 	[[ "$text_lower" == *"due to session length, let me"* ]] && return 0
+	[[ "$text_lower" == *"given the"*"complexity and"*"token budget"* ]] && return 0
 
 	return 1
 }

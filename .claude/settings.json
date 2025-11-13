@@ -9,27 +9,27 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/echo-session-id.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/echo-session-id.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/check-lock-ownership.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-lock-ownership.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/protocol-and-role-reminder.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/protocol-and-role-reminder.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/todo-context-reminder.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/todo-context-reminder.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/critical-thinking.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/critical-thinking.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/reset-javadoc-warning.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/reset-javadoc-warning.sh"
           }
         ]
       }
@@ -39,39 +39,39 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/state-transition-detector.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/state-transition-detector.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/phase-transition-guide.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/phase-transition-guide.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/phase-guard-enforcement.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/phase-guard-enforcement.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/enforce-checkpoints.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-checkpoints.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/cleanup-verification.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/cleanup-verification.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/validate-git-status-on-transition.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-git-status-on-transition.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/detect-giving-up.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-giving-up.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/verify-destructive-operations.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify-destructive-operations.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/smart-doc-prompter.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/smart-doc-prompter.sh"
           }
         ]
       }
@@ -81,7 +81,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/critical-thinking.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/critical-thinking.sh"
           }
         ]
       }
@@ -92,35 +92,35 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/block-data-loss.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-data-loss.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/detect-worktree-violation.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-worktree-violation.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/enforce-merge-workflow.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-merge-workflow.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/enforce-commit-squashing.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-commit-squashing.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/enforce-checkpoints.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-checkpoints.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/validate-git-filter-branch.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-git-filter-branch.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/verify-convergence-entry.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify-convergence-entry.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/enforce-requirements-phase.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-requirements-phase.sh"
           }
         ]
       },
@@ -129,19 +129,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/require-task-protocol.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/require-task-protocol.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/implementation-guard.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/implementation-guard.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/block-retrospective-docs.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-retrospective-docs.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/validate-state-transition.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-state-transition.sh"
           }
         ]
       },
@@ -150,11 +150,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/task-invoke-pre.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/task-invoke-pre.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/validate-agent-invocation.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-agent-invocation.sh"
           }
         ]
       },
@@ -163,92 +163,86 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/load-todo.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/load-todo.sh"
           }
         ]
       }
     ],
     "PostToolUse": [
       {
-        "matcher": "(tool:Write || tool:Edit) && path:**.java",
+        "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/write-java-validation.sh"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/auto-learn-from-mistakes.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/write-java-validation.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/detect-assistant-giving-up.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "tool:Bash && command:*git*merge*--squash*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/enforce-post-merge-cleanup.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "tool:Task",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/task-invoke-post.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify-doc-sync.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/task-complete.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "(tool:Write || tool:Edit || tool:MultiEdit) && path:docs/",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/workspace/.claude/hooks/verify-doc-sync.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-meta-commentary.sh"
           },
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/detect-meta-commentary.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify-task-archival.sh"
           }
         ]
       },
       {
-        "matcher": "(tool:Edit && path:todo.md) || (tool:Edit && path:changelog.md)",
+        "matcher": "Task",
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/verify-task-archival.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-task-abbreviation.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/task-invoke-post.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/task-complete.sh"
           }
         ]
       },
       {
-        "matcher": "tool:Read || tool:Glob || tool:Grep || tool:WebFetch || tool:WebSearch",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/detect-sequential-tools.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/enforce-post-merge-cleanup.sh"
           }
         ]
       },
       {
-        "matcher": "tool:Edit && path:**/task.json",
+        "matcher": "Read|Glob|Grep|WebFetch|WebSearch",
         "hooks": [
           {
             "type": "command",
-            "command": "/workspace/.claude/hooks/measure-phase-metrics.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-sequential-tools.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/measure-phase-metrics.sh"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/auto-learn-from-mistakes.sh"
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-assistant-giving-up.sh"
           }
         ]
       }
@@ -257,7 +251,7 @@
   "model": "sonnet",
   "statusLine": {
     "type": "command",
-    "command": "/workspace/.claude/statusline-command.sh"
+    "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/statusline-command.sh"
   },
   "cleanupPeriodDays": 7
 }
