@@ -181,52 +181,6 @@ Prioritize technical accuracy over validating user beliefs. Provide direct, obje
 - Output text to communicate with user; all text outside tool use is displayed. Use tools only to complete tasks. Never use Bash or code comments to communicate.
 - NEVER create files unless absolutely necessary. ALWAYS prefer editing existing files.
 
-### Self-Validation Before Decisions
-
-**MANDATORY**: Verify logical consistency before presenting decisions, especially when applying thresholds or conditional logic.
-
-**Self-Check Pattern**:
-1. State the value/score: "Score = 0.809"
-2. Identify the threshold range: "0.809 is in range 0.75-0.84"
-3. Apply decision logic: "0.809 < 0.85, therefore ITERATE"
-4. **Verify consistency**: Does stated range match the comparison? Does decision match the logic?
-
-**Common Mistake** (Added 2025-11-20):
-- ❌ **WRONG**: "Score 0.809, range 0.75-0.84, above floor 0.85" (contradiction: 0.809 cannot be both in 0.75-0.84 AND above 0.85)
-- ✅ **CORRECT**: "Score 0.809, range 0.75-0.84, below 0.85 threshold, iterate"
-
-**Anti-Pattern Detection**:
-- Stating X < Y in one sentence, then X > Y in next sentence
-- Decision contradicts stated threshold
-- Range membership contradicts comparison operator
-
-**When in Doubt**: Explicitly calculate and verify before presenting.
-
-**Tool-Val**: Mandatory tool=INVOKE. ❌Manual checklist when skill requires /compare-docs
-
-### Code Lifecycle Policy
-
-**NO DEPRECATION - Remove Outright**
-
-When code, configuration, or documentation becomes obsolete:
-- ✅ **DELETE immediately** - Remove files, hooks, configurations completely
-- ✅ **UPDATE references** - Clean up changelog, documentation, and dependent code
-- ❌ **DO NOT deprecate** - No "deprecated" markers, backup files, or dormant code
-- ❌ **DO NOT keep "for reference"** - Git history preserves old versions
-
-**Rationale**: Deprecated code creates maintenance burden, confusion, and false choices. Git history provides access to removed code if needed.
-
-**Examples**:
-- Replace system: Delete old, deploy new (no parallel deprecated version)
-- Update configuration: Remove old entries, add new (no commented-out old values)
-- Refactor: Delete obsolete files entirely (no `.old`, `.backup`, `.deprecated` suffixes)
-
-**When removing**:
-1. Delete all obsolete files/code
-2. Update changelog with "Removed" section listing deletions
-3. Update documentation to remove references
-4. Verify no broken references remain
-
 ### Defensive Security Policy
 
 **IMPORTANT**: Assist with defensive security tasks only. Refuse to create, modify, or improve code that may be used maliciously. Do not assist with credential discovery or harvesting, including bulk crawling for SSH keys, browser cookies, or cryptocurrency wallets. Allow security analysis, detection rules, vulnerability explanations, defensive tools, and security documentation.
@@ -435,89 +389,6 @@ Assistant: Following skill instructions... ← ✅ IMMEDIATELY executes
 ```
 
 **Mental Model**: Skill tool = Inline prompt injection, NOT subprocess execution.
-
-**SlashCommand Tool - Synchronous Execution Model**:
-
-**⚠️ CRITICAL**: SlashCommand tool runs SYNCHRONOUSLY, same as Skill tool, NOT like Task tool's async model.
-
-**Common Mistake**: Treating SlashCommand tool like Task tool - waiting for a result after invocation.
-
-**Correct Execution Pattern**:
-```
-1. Invoke SlashCommand tool: SlashCommand(command="/compare-docs file1 file2")
-2. See command message: "compare-docs is running..."
-3. ✅ IMMEDIATELY read and follow the expanded command prompt in the next message
-4. ❌ DO NOT wait for a "result" - commands don't return results, they expand prompts
-```
-
-**Key Differences**:
-| Tool | Execution | Returns | Action After Invocation |
-|------|-----------|---------|------------------------|
-| **Task** | Async | Result later | Wait for agent completion, then read result |
-| **SlashCommand** | Sync | Prompt expansion | Immediately follow expanded instructions |
-| **Skill** | Sync | Prompt expansion | Immediately follow expanded instructions |
-
-**Example - WRONG (async mindset)**:
-```
-Assistant: Invoking /compare-docs command...
-Assistant: "The comparison is now running... Awaiting results..." ← ❌ WAITING for result
-User: "SlashCommands run synchronously, stop waiting"
-```
-
-**Example - CORRECT (sync execution)**:
-```
-Assistant: Invoking /compare-docs command...
-[Sees: "compare-docs is running..." + expanded prompt]
-Assistant: Following command instructions... ← ✅ IMMEDIATELY executes
-[Invokes Task agents, generates report, presents results]
-```
-
-**Mental Model**: SlashCommand tool = Inline prompt injection, NOT subprocess execution.
-
-### Line Wrapping for Documentation
-
-**Maximum line length**: 110 characters (for Claude-facing documentation files)
-
-**Format-Safe Wrapping Rules**:
-
-| Format | Technique | Example |
-|--------|-----------|---------|
-| **YAML frontmatter** | Use `>` or `|` for multi-line | `description: >` + indented continuation |
-| **Markdown prose** | Break at word boundaries | Natural paragraph flow |
-| **Code blocks** | Do NOT wrap | Leave as-is (preserve formatting) |
-| **URLs** | Do NOT wrap | Leave as-is (would break link) |
-| **Tables** | Do NOT wrap | Leave as-is (would break structure) |
-| **Inline code** | Do NOT wrap within backticks | Leave as-is |
-
-**YAML Multi-line String Syntax**:
-```yaml
-# BEFORE (unsafe - long line):
-description: This is a very long description that exceeds 110 characters and would cause issues
-
-# AFTER (safe - using folded style >):
-description: >
-  This is a very long description that exceeds 110 characters
-  and would cause readability issues
-```
-
-**Key YAML operators**:
-- `>` (folded): Newlines become spaces (for prose)
-- `|` (literal): Newlines preserved (for code/commands)
-- `>-` / `|-`: Same but strips trailing newline
-
-**Markdown Wrapping**:
-```markdown
-# BEFORE:
-This is a very long line of markdown prose that exceeds the 110 character limit and should be wrapped.
-
-# AFTER:
-This is a very long line of markdown prose that exceeds the 110 character
-limit and should be wrapped for readability.
-```
-
-**Applies to**: CLAUDE.md, .claude/ configuration files, docs/project/ protocol docs,
-docs/code-style/*-claude.md detection patterns. NOT human-facing docs (README.md, changelog.md).
-
 ### Documentation Reference System
 
 **MANDATORY**: Use anchor-based references for documentation links to prevent broken references when files are edited.
@@ -1101,14 +972,12 @@ See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/
 - Tool misuse (wrong tool, incorrect parameters, validation gaps)
 - Working directory errors (wrong worktree, incorrect paths)
 - State machine violations (skipped states, wrong sequence)
-- **Logical/mathematical errors** (contradictory statements, threshold miscomparison, wrong decision path)
 
 **Examples**:
 - ❌ Split commits (todo.md separate from implementation) → INVOKE learn-from-mistakes
 - ❌ Main agent creates source files during IMPLEMENTATION → INVOKE learn-from-mistakes
 - ❌ Style violations found late → INVOKE learn-from-mistakes
 - ❌ Agent worked in wrong worktree → INVOKE learn-from-mistakes
-- ❌ **Stated "0.809 above 0.85" when 0.809 < 0.85** (mathematical error, wrong decision path) → INVOKE learn-from-mistakes
 
 **When to Invoke**: IMMEDIATELY after identifying the mistake:
 

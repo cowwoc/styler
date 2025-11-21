@@ -494,4 +494,4 @@ To optimize an existing hook:
 
 - [Hook Script Standards](../../CLAUDE.md#hook-script-standards) - Error handling requirements
 - [Hook Registration](../../CLAUDE.md#hook-registration) - settings.json configuration
-- [Safe Code Removal](safe-code-removal.md) - Procedures for removing code patterns
+- `safe-remove-code` skill - Guided workflow for removing code patterns safely

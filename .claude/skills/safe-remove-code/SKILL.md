@@ -1,14 +1,28 @@
 ---
 name: safe-remove-code
-description: Safely remove code patterns from multiple files with validation and rollback
-allowed-tools: Bash, Read, Edit, Grep
+description: Safely remove code patterns from multiple files with validation and rollback (project)
+allowed-tools: Bash, Read, Edit, Grep, Glob
 ---
 
 # Safe Code Removal Skill
 
-**Purpose**: Safely remove code patterns (instrumentation, debugging code, etc.) from multiple files with strict validation to prevent accidentally gutting files.
+**Purpose**: Safely remove code patterns (instrumentation, debugging code, deprecated patterns) from multiple files with strict validation to prevent accidentally gutting files.
 
-**Performance**: Prevents catastrophic file damage, ensures code remains functional
+**Created**: 2025-11-07 after accidentally gutting 7 hooks during timing code removal
+
+**Performance**: Prevents catastrophic file damage through per-file validation, syntax checks, and functional testing
+
+## The Problem
+
+When removing instrumentation, debugging code, or other patterns from multiple files, aggressive removal scripts can accidentally delete functional code, leaving only boilerplate (shebang, set commands).
+
+**Real Example** (2025-11-07):
+- **Task**: Remove timing instrumentation from 47 hooks
+- **Mistake**: Removal script was too aggressive
+- **Impact**: 7 hooks reduced to 3 lines (only `#!/bin/bash` and `set -euo pipefail`)
+- **Hooks destroyed**: auto-learn-from-mistakes.sh, block-data-loss.sh, detect-worktree-violation.sh, enforce-requirements-phase.sh, load-todo.sh, detect-assistant-giving-up.sh, verify-convergence-entry.sh
+- **Recovery**: Restored from backups
+- **Root cause**: Didn't validate hooks after removal, declared task complete too early
 
 ## When to Use This Skill
 
@@ -18,6 +32,7 @@ allowed-tools: Bash, Read, Edit, Grep
 - Cleaning up debugging statements across codebase
 - Removing deprecated patterns systematically
 - Need validation that files remain functional after removal
+- Pattern removal affects 5+ files
 
 ### ❌ Do NOT Use When:
 
@@ -25,202 +40,550 @@ allowed-tools: Bash, Read, Edit, Grep
 - Changes are complex refactoring (not simple removal)
 - Pattern varies significantly across files
 - Need to preserve some instances of pattern
+- Pattern removal is part of larger refactoring task
 
-## What This Skill Does
+## ⚠️ Critical Safety Rules
 
-### 1. Creates Backup
+**MANDATORY BACKUP**: Always create timestamped backup before any removal
+**PER-FILE VALIDATION**: Validate each file individually (syntax, size, integrity)
+**FUNCTIONAL TESTING**: Run build and tests after all removals
+**IMMEDIATE VERIFICATION**: Don't declare complete without verification
+**AUTOMATIC CLEANUP**: Remove backups only after ALL validation passes
+**PRECISE PATTERNS**: Use specific patterns, not vague regex
+
+## Prerequisites
+
+Before using this skill, verify:
+- [ ] Working directory is clean: `git status` shows no uncommitted changes
+- [ ] Know exact pattern to remove (tested with grep)
+- [ ] Identified all files containing pattern
+- [ ] Pattern is consistent across files
+- [ ] Have test command available (build/test)
+
+## Skill Workflow
+
+### Phase 1: Identify Removal Patterns
+
+**❌ WRONG - Vague Pattern**:
+```bash
+# Dangerous: May match more than intended
+sed -i '/timing/,/end/d' *.sh
+```
+
+**✅ CORRECT - Precise Pattern**:
+```bash
+# Identify EXACT patterns to remove
+PATTERNS_TO_REMOVE=(
+  "HOOK_START="
+  "log_timing()"
+  "trap.*timing.*exit"
+)
+
+# Test pattern on one file first
+for pattern in "${PATTERNS_TO_REMOVE[@]}"; do
+  echo "Pattern: $pattern"
+  grep -n "$pattern" /workspace/.claude/hooks/example-hook.sh || echo "  No matches"
+done
+```
+
+**Preview Matches**:
+```bash
+# See what will be removed before removing
+for file in /workspace/.claude/hooks/*.sh; do
+  if grep -q "PATTERN" "$file"; then
+    echo "=== $(basename "$file") ==="
+    grep -n "PATTERN" "$file"
+  fi
+done
+```
+
+### Phase 2: Create Backups
+
+**MANDATORY before any removal**:
 
 ```bash
-# Timestamped backup branch before any removal
-git branch backup-before-removal-$(date +%Y%m%d-%H%M%S)
+# Create timestamped backups
+BACKUP_SUFFIX=".backup-$(date +%Y%m%d-%H%M%S)"
+
+for file in /workspace/.claude/hooks/*.sh; do
+  if [[ -f "$file" ]] && [[ ! "$file" =~ \.backup ]]; then
+    cp "$file" "${file}${BACKUP_SUFFIX}"
+  fi
+done
+
+echo "✅ Backups created with suffix: $BACKUP_SUFFIX"
+ls -la /workspace/.claude/hooks/*.backup-* | head -5
 ```
 
-### 2. Identifies Target Files
+**Verify Backups Created**:
+```bash
+# Count backups
+BACKUP_COUNT=$(find /workspace/.claude/hooks -name "*.backup-*" | wc -l)
+ORIGINAL_COUNT=$(find /workspace/.claude/hooks -name "*.sh" ! -name "*.backup-*" | wc -l)
+
+if [[ "$BACKUP_COUNT" -ne "$ORIGINAL_COUNT" ]]; then
+  echo "❌ ERROR: Backup count mismatch!"
+  echo "   Original files: $ORIGINAL_COUNT"
+  echo "   Backups created: $BACKUP_COUNT"
+  exit 1
+fi
+
+echo "✅ All $ORIGINAL_COUNT files backed up"
+```
+
+### Phase 3: Remove Code with Validation
+
+**Create removal script with per-file validation**:
 
 ```bash
-# Find all files containing pattern
-grep -l "pattern" **/*.java
+#!/bin/bash
+# safe-pattern-removal.sh
+# Removes specific patterns with per-file validation
+
+set -euo pipefail
+
+PATTERN="${1:-}"  # Pattern to remove
+TARGET_DIR="${2:-.claude/hooks}"
+MIN_LINES="${3:-10}"  # Minimum lines after removal (safety check)
+
+if [[ -z "$PATTERN" ]]; then
+  echo "Usage: $0 <pattern> [target-dir] [min-lines]" >&2
+  exit 1
+fi
+
+echo "Removing pattern: $PATTERN"
+echo "Target directory: $TARGET_DIR"
+echo "Minimum lines after removal: $MIN_LINES"
+echo ""
+
+EXIT_CODE=0
+
+for file in "$TARGET_DIR"/*.sh; do
+  if [[ ! -f "$file" ]] || [[ "$file" =~ \.backup ]]; then
+    continue
+  fi
+
+  filename=$(basename "$file")
+  lines_before=$(wc -l < "$file")
+
+  # Remove pattern
+  sed -i "/$PATTERN/d" "$file"
+
+  lines_after=$(wc -l < "$file")
+  lines_removed=$((lines_before - lines_after))
+
+  # Validate syntax
+  if ! bash -n "$file" 2>/dev/null; then
+    echo "❌ $filename: SYNTAX ERROR after removal" >&2
+    # Restore from backup
+    BACKUP=$(ls -t "${file}.backup-"* 2>/dev/null | head -1)
+    if [[ -n "$BACKUP" ]]; then
+      cp "$BACKUP" "$file"
+      echo "   Restored from $BACKUP" >&2
+    fi
+    EXIT_CODE=1
+    continue
+  fi
+
+  # Check if file was gutted
+  functional_lines=$(grep -v '^\s*#' "$file" | grep -v '^\s*$' | wc -l)
+  if [[ $functional_lines -lt $MIN_LINES ]]; then
+    echo "⚠️  $filename: SUSPICIOUSLY SMALL after removal ($functional_lines functional lines, removed $lines_removed)" >&2
+    echo "   Review manually to ensure functional code not removed" >&2
+    EXIT_CODE=1
+  else
+    echo "✅ $filename: Removed $lines_removed lines ($functional_lines functional lines remain)"
+  fi
+done
+
+if [[ $EXIT_CODE -eq 0 ]]; then
+  echo ""
+  echo "✅ Pattern removal complete with validation"
+else
+  echo ""
+  echo "❌ Some files failed validation - review manually"
+fi
+
+exit $EXIT_CODE
 ```
 
-### 3. Per-File Validation
-
-For EACH file:
+**Execute Removal**:
 ```bash
-# 1. Read original file
-# 2. Preview removal (show before/after context)
-# 3. Apply removal
-# 4. Validate file size reasonable (not gutted)
-# 5. Validate syntax if applicable
-# 6. Stage if valid
+# Save script
+cat > /tmp/safe-pattern-removal.sh <<'EOF'
+[Script content from above]
+EOF
+chmod +x /tmp/safe-pattern-removal.sh
+
+# Run with pattern
+/tmp/safe-pattern-removal.sh "PATTERN_TO_REMOVE" "/workspace/.claude/hooks" 10
 ```
 
-### 4. Functional Testing
+### Phase 4: Functional Testing
 
-```bash
-# Run build and tests after all removals
-mvn clean test
-```
-
-### 5. Cleanup or Rollback
-
-```bash
-# If all validations pass:
-git branch -D backup-before-removal-*
-
-# If any validation fails:
-git reset --hard backup-before-removal-*
-```
-
-## Usage
-
-### Basic Pattern Removal
-
-```bash
-# Remove specific code pattern from multiple files
-PATTERN='System\.out\.println.*instrumentation'
-FILES=$(grep -l "$PATTERN" src/**/*.java)
-
-/workspace/main/.claude/scripts/safe-remove-code.sh \
-  --pattern "$PATTERN" \
-  --files "$FILES" \
-  --test-command "mvn test"
-```
-
-### With File Size Validation
-
-```bash
-# Ensure files don't shrink more than 20%
-/workspace/main/.claude/scripts/safe-remove-code.sh \
-  --pattern "DEBUG_LOG\(.*\)" \
-  --files "src/**/*.java" \
-  --max-shrink-percent 20 \
-  --test-command "mvn test"
-```
-
-## Safety Features
-
-### Precondition Validation
-
-- ✅ Verifies clean working directory
-- ✅ Creates timestamped backup branch
-- ✅ Validates pattern format (regex)
-- ✅ Confirms files exist
-
-### Per-File Validation
-
-- ✅ File size check (prevents gutting)
-- ✅ Syntax validation (if language supports)
-- ✅ Preview before/after (manual verification)
-- ✅ Rollback on first failure
-
-### Post-Removal Validation
-
-- ✅ Build succeeds
-- ✅ Tests pass
-- ✅ No regressions introduced
-
-### Error Handling
-
-On any error:
-- Stops immediately
-- Rolls back to backup branch
-- Reports which file/validation failed
-- Leaves repository in clean state
-
-## Validation Thresholds
-
-### File Size Changes
+**BEFORE removing backups, run functional tests**:
 
 ```bash
-# Default thresholds:
-- Max shrink: 30% (prevents gutting)
-- Min shrink: 1% (ensures something removed)
-- Warn if no change (pattern not found)
+# 1. Syntax validation (quick check)
+echo "Running syntax validation..."
+for hook in /workspace/.claude/hooks/*.sh; do
+  if [[ -f "$hook" ]] && [[ ! "$hook" =~ \.backup ]]; then
+    if ! bash -n "$hook"; then
+      echo "❌ SYNTAX ERROR: $hook"
+      exit 1
+    fi
+  fi
+done
+echo "✅ All hooks pass syntax check"
+
+# 2. Integrity check (file size)
+echo ""
+echo "Running integrity check..."
+for hook in /workspace/.claude/hooks/*.sh; do
+  if [[ -f "$hook" ]] && [[ ! "$hook" =~ \.backup ]]; then
+    functional_lines=$(grep -v '^\s*#' "$hook" | grep -v '^\s*$' | wc -l)
+    if [[ $functional_lines -lt 10 ]]; then
+      echo "⚠️  $(basename "$hook"): Only $functional_lines functional lines"
+    fi
+  fi
+done
+
+# 3. Functional tests (if available)
+echo ""
+echo "Running functional tests..."
+if [[ -f /workspace/.claude/hooks/tests/test-hooks.sh ]]; then
+  bash /workspace/.claude/hooks/tests/test-hooks.sh || {
+    echo "❌ Functional tests FAILED"
+    exit 1
+  }
+  echo "✅ Functional tests passed"
+else
+  echo "⚠️  No functional tests available - manual verification required"
+fi
+
+# 4. Build test (if applicable)
+if [[ -f /workspace/main/mvnw ]]; then
+  echo ""
+  echo "Running build test..."
+  cd /workspace/main && ./mvnw clean verify -q || {
+    echo "❌ Build FAILED after code removal"
+    exit 1
+  }
+  echo "✅ Build passed"
+fi
 ```
 
-### Syntax Validation
+### Phase 5: Manual Review
+
+**Sample files before declaring complete**:
 
 ```bash
-# Language-specific validation:
-- Java: javac -Xlint:all
-- Python: python -m py_compile
-- TypeScript: tsc --noEmit
+# Check a few files to verify removal was clean
+SAMPLE_FILES=(
+  "/workspace/.claude/hooks/auto-learn-from-mistakes.sh"
+  "/workspace/.claude/hooks/enforce-commit-squashing.sh"
+  "/workspace/.claude/hooks/load-todo.sh"
+)
+
+echo "Manual review of sample files:"
+for file in "${SAMPLE_FILES[@]}"; do
+  if [[ -f "$file" ]]; then
+    echo ""
+    echo "=== $(basename "$file") ==="
+    echo "Lines: $(wc -l < "$file")"
+    echo "Functional lines: $(grep -v '^\s*#' "$file" | grep -v '^\s*$' | wc -l)"
+    echo ""
+    echo "First 20 lines:"
+    head -20 "$file"
+  fi
+done
+
+echo ""
+echo "⚠️  MANUAL VERIFICATION REQUIRED"
+echo "   Review above output to confirm removal was clean"
+echo "   If anything looks wrong, restore from backups"
+echo ""
+read -p "Do all files look correct? (y/n) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  echo "Aborting - restore from backups if needed"
+  exit 1
+fi
+
+echo "✅ Manual verification passed"
 ```
 
-## Workflow Integration
+### Phase 6: Cleanup Backups
 
-### Complete Safe Removal Workflow
-
-```markdown
-1. ✅ Identify pattern to remove
-2. ✅ Find all affected files
-3. ✅ Invoke safe-remove-code skill
-4. ✅ Skill creates backup
-5. ✅ Skill removes pattern with validation
-6. ✅ Skill runs tests
-7. ✅ Skill reports success/failure
-8. ✅ Cleanup backup if successful
-```
-
-## Output Format
-
-Script returns JSON:
-
-```json
-{
-  "status": "success",
-  "message": "Pattern removed safely from all files",
-  "pattern": "System\\.out\\.println.*instrumentation",
-  "files_processed": 15,
-  "files_modified": 12,
-  "files_skipped": 3,
-  "backup_branch": "backup-before-removal-20251111-123456",
-  "validation_results": {
-    "file_size_checks": "passed",
-    "syntax_checks": "passed",
-    "build_test": "passed"
-  },
-  "timestamp": "2025-11-11T12:34:56-05:00"
-}
-```
-
-## Related
-
-- **Edit tool**: For single-file modifications
-- **Grep tool**: For finding pattern occurrences
-- **git-workflow.md § Backup-Verify-Cleanup**: Git safety pattern
-- **docs/optional-modules/safe-code-removal.md**: Complete procedures
-
-## Troubleshooting
-
-### Error: "File gutted (>30% reduction)"
+**ONLY after validation passes**:
 
 ```bash
-# File shrank too much, likely removed too much code
-# Options:
-1. Refine pattern to be more specific
-2. Increase --max-shrink-percent if intentional
-3. Review file manually to see what was removed
+# Final confirmation
+echo "All validation passed:"
+echo "✅ Syntax check"
+echo "✅ Integrity check"
+echo "✅ Functional tests"
+echo "✅ Manual review"
+echo ""
+read -p "Remove all backups? (y/n) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  echo "Keeping backups for safety"
+  exit 0
+fi
+
+# Remove backups
+BACKUP_COUNT=$(find /workspace/.claude/hooks -name "*.backup-*" | wc -l)
+rm -f /workspace/.claude/hooks/*.backup-*
+
+echo "✅ Removed $BACKUP_COUNT backup files"
+echo ""
+echo "Code removal complete!"
 ```
 
-### Error: "Build failed after removal"
+## Validation Checklist
+
+Before declaring code removal complete:
+
+- [ ] **Backups created** with timestamp
+- [ ] **Patterns identified** precisely (not vague)
+- [ ] **Removal script** validates per-file
+- [ ] **Syntax check** passes for all files
+- [ ] **Integrity check** passes (no gutted files)
+- [ ] **Functional tests** pass (hooks/build still work)
+- [ ] **Manual review** of sample files
+- [ ] **No errors** in validation output
+- [ ] **Backups cleanup** only after all checks pass
+
+## Anti-Patterns to Avoid
+
+### ❌ WRONG: Bulk removal without validation
 
 ```bash
-# Removal broke compilation
-# Rollback applied automatically
-# Fix:
-1. Check which file caused failure
-2. Refine pattern to preserve necessary code
-3. Retry with updated pattern
+# Dangerous: No per-file validation
+sed -i '/pattern/d' *.sh
+echo "Done!"  # ← Declared complete without validation
 ```
 
-### Error: "Pattern not found in file"
+### ❌ WRONG: Removing backups too early
 
 ```bash
-# File listed but pattern doesn't match
-# Possible causes:
-1. Pattern already removed
-2. Regex incorrect
-3. Case sensitivity issue
-# Skip these files and continue
+# Removes backups before functional testing
+rm *.backup
+bash test.sh  # ← Too late if test fails
 ```
+
+### ❌ WRONG: Vague patterns
+
+```bash
+# May match more than intended
+sed -i '/^[[:space:]]*#/d' *.sh  # ← Removes ALL comments, including documentation
+```
+
+### ✅ CORRECT: Precise removal with validation
+
+```bash
+# Specific pattern with validation
+sed -i '/^[[:space:]]*# TIMING:/d' *.sh
+bash -n file.sh || { echo "Syntax error"; restore_backup; }
+bash test.sh || { echo "Functional test failed"; restore_backup; }
+```
+
+## Recovery Procedures
+
+If you discover files were gutted after removal:
+
+### Step 1: Stop immediately
+
+```bash
+# Don't make it worse - stop removal process
+echo "STOP: Gutted files detected"
+```
+
+### Step 2: Restore from backups
+
+```bash
+# Restore all files from most recent backup
+for backup in /workspace/.claude/hooks/*.backup-*; do
+  original="${backup%.backup-*}.sh"
+  if [[ -f "$backup" ]]; then
+    # Check if original was gutted
+    functional_lines=$(grep -v '^\s*#' "$original" | grep -v '^\s*$' | wc -l)
+    backup_lines=$(grep -v '^\s*#' "$backup" | grep -v '^\s*$' | wc -l)
+
+    if [[ $functional_lines -lt 10 ]] && [[ $backup_lines -gt 10 ]]; then
+      echo "Restoring $original from $backup"
+      cp "$backup" "$original"
+    fi
+  fi
+done
+
+echo "✅ Restoration complete"
+```
+
+### Step 3: Validate restoration
+
+```bash
+# Verify files restored correctly
+for hook in /workspace/.claude/hooks/*.sh; do
+  if [[ -f "$hook" ]] && [[ ! "$hook" =~ \.backup ]]; then
+    bash -n "$hook" || echo "❌ SYNTAX ERROR: $hook"
+  fi
+done
+
+echo "✅ All files restored and validated"
+```
+
+### Step 4: Analyze what went wrong
+
+```bash
+# Invoke learn-from-mistakes skill
+Skill: learn-from-mistakes
+
+# Document the mistake for prevention
+```
+
+## Complete Example
+
+### Example: Remove Timing Instrumentation
+
+```bash
+#!/bin/bash
+# Complete workflow for removing timing code
+
+set -euo pipefail
+
+echo "=== Safe Code Removal: Timing Instrumentation ==="
+echo ""
+
+# Phase 1: Identify patterns
+echo "Phase 1: Identifying patterns..."
+PATTERNS=(
+  "HOOK_START="
+  "log_timing"
+  "^[[:space:]]*# TIMING:"
+)
+
+# Preview what will be removed
+echo "Preview of matches:"
+for pattern in "${PATTERNS[@]}"; do
+  echo "  Pattern: $pattern"
+  grep -c "$pattern" /workspace/.claude/hooks/*.sh 2>/dev/null | grep -v ":0" || echo "    No matches"
+done
+echo ""
+
+read -p "Continue with removal? (y/n) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  echo "Aborted by user"
+  exit 0
+fi
+
+# Phase 2: Create backups
+echo ""
+echo "Phase 2: Creating backups..."
+BACKUP_SUFFIX=".backup-$(date +%Y%m%d-%H%M%S)"
+for file in /workspace/.claude/hooks/*.sh; do
+  if [[ -f "$file" ]] && [[ ! "$file" =~ \.backup ]]; then
+    cp "$file" "${file}${BACKUP_SUFFIX}"
+  fi
+done
+echo "✅ Backups created"
+
+# Phase 3: Remove patterns
+echo ""
+echo "Phase 3: Removing patterns with validation..."
+for pattern in "${PATTERNS[@]}"; do
+  /tmp/safe-pattern-removal.sh "$pattern" "/workspace/.claude/hooks" 10
+done
+
+# Phase 4: Functional testing
+echo ""
+echo "Phase 4: Running functional tests..."
+for hook in /workspace/.claude/hooks/*.sh; do
+  if [[ -f "$hook" ]] && [[ ! "$hook" =~ \.backup ]]; then
+    bash -n "$hook" || {
+      echo "❌ Syntax error in $(basename "$hook")"
+      exit 1
+    }
+  fi
+done
+echo "✅ All hooks pass syntax check"
+
+# Phase 5: Manual review
+echo ""
+echo "Phase 5: Manual review..."
+echo "Sample files:"
+head -30 /workspace/.claude/hooks/enforce-checkpoints.sh
+echo ""
+read -p "Does output look correct? (y/n) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  echo "Aborted - restore from backups"
+  exit 1
+fi
+
+# Phase 6: Cleanup
+echo ""
+echo "Phase 6: Cleaning up backups..."
+rm -f /workspace/.claude/hooks/*.backup-*
+echo "✅ Backups removed"
+
+echo ""
+echo "=== Code removal complete ==="
+```
+
+## Prevention via Automation
+
+**Create pre-commit hook to catch gutted files**:
+
+```bash
+#!/bin/bash
+# .git/hooks/pre-commit
+# Prevents committing gutted hook files
+
+HOOKS_DIR=".claude/hooks"
+MIN_LINES=10
+
+for hook in "$HOOKS_DIR"/*.sh; do
+  if [[ -f "$hook" ]] && git diff --cached --name-only | grep -q "$(basename "$hook")"; then
+    functional_lines=$(grep -v '^\s*#' "$hook" | grep -v '^\s*$' | wc -l)
+    if [[ $functional_lines -lt $MIN_LINES ]]; then
+      echo "❌ ERROR: Attempting to commit gutted hook: $(basename "$hook")" >&2
+      echo "   Only $functional_lines functional lines (expected at least $MIN_LINES)" >&2
+      echo "   File may have been accidentally damaged during code removal" >&2
+      exit 1
+    fi
+  fi
+done
+```
+
+## Summary
+
+**Key Principles**:
+1. **Precision over speed**: Use specific patterns, not vague ones
+2. **Validation per file**: Check each file individually
+3. **Test before cleanup**: Keep backups until ALL validation passes
+4. **Multiple validation layers**: Syntax + integrity + functional tests
+5. **Manual review**: Sample check before declaring complete
+
+**Remember**: It's better to be slow and careful than fast and destructive. Functional code is irreplaceable; removal can always wait for proper validation.
+
+## Related Documentation
+
+- [tool-usage.md](../../docs/optional-modules/tool-usage.md) - Pattern matching best practices
+- [git-workflow.md](../../docs/project/git-workflow.md) - Backup-Verify-Cleanup pattern
+
+## Success Criteria
+
+Code removal is successful when:
+1. ✅ Backups created before removal
+2. ✅ Patterns identified precisely
+3. ✅ Per-file validation passed
+4. ✅ Syntax checks passed
+5. ✅ Integrity checks passed (no gutted files)
+6. ✅ Functional tests passed
+7. ✅ Manual review completed
+8. ✅ Backups removed after all validation
+9. ✅ No errors in any validation step
+10. ✅ Files still work as intended
