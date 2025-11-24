@@ -310,6 +310,39 @@ echo "Commits being squashed:"
 git log --format="%h %s" "$BASE_COMMIT..HEAD"
 ```
 
+**⚠️ ANTI-PATTERN: Do NOT Include Commit Bodies in Bash Commands**
+
+<!-- ADDED: 2025-11-24 after encountering bash parse error with git log format
+     including commit bodies that contained parentheses. Original error:
+     "(eval):1: parse error near '('" when using %b in format string.
+     PREVENTS: Parse errors from special characters in commit messages. -->
+
+**❌ WRONG - Causes parse errors**:
+```bash
+# Including %b or %B outputs commit bodies with special characters
+git log --format="%h %s%n%b" "$BASE_COMMIT..HEAD"
+# ERROR: Parse errors if commit messages contain parentheses, quotes, etc.
+```
+
+**✅ CORRECT - Safe alternatives**:
+```bash
+# Option 1: Subject only (shown above)
+git log --format="%h %s" "$BASE_COMMIT..HEAD"
+
+# Option 2: Redirect to file first (if bodies needed)
+git log --format="%h %s%n%b" "$BASE_COMMIT..HEAD" > /tmp/commits.txt
+cat /tmp/commits.txt
+
+# Option 3: Use git show for individual commits
+for commit in $(git rev-list "$BASE_COMMIT..HEAD"); do
+  git show --stat "$commit"
+done
+```
+
+**Why this matters**: Commit message bodies may contain special characters
+(parentheses, quotes, backticks) that cause bash parse errors when output
+directly in command pipelines.
+
 **Step 7b: Craft Message Following git-commit Skill Guidelines**:
 
 See `git-commit` skill for complete guidance on writing commit messages.
