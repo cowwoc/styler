@@ -351,7 +351,7 @@ cat -A /path/to/file.java | grep -A2 "method()"
 
 **Pattern Matching**: Preview before dangerous operations, use specific patterns, test regex with grep before sed
 
-**Safe Code Removal**: When removing code patterns from multiple files (instrumentation, debugging code, etc.), follow strict validation procedures to prevent accidentally gutting files. Use the `safe-remove-code` skill (via Skill tool) for guided 6-phase workflow including backup creation, per-file validation, functional testing, and cleanup protocols.
+**Safe Code Removal**: When removing code patterns from multiple files, use the `safe-remove-code` skill (via Skill tool) to prevent accidentally gutting files.
 
 **Skill Tool - Synchronous Execution Model**:
 
