@@ -2,27 +2,21 @@
 
 ## 🚀 READY TO WORK NOW (Multi-Instance Coordination)
 
-**Current Status**: Phase A incomplete - A0 (styler-formatter) ready to implement
+**Current Status**: Phase A complete - Phase B ready to start
 
 **READY TO START**:
-- A0: Formatter API Module ← 1-2 days, defines FormattingRule interfaces
+- B1a: Line Length Formatter ← Ready (depends on completed A0)
+- B1b: Import Organization ← Ready (depends on completed A0)
 
-**BLOCKED UNTIL A0 COMPLETE**:
-- B1a: Line Length Formatter ← BLOCKED by missing styler-formatter module
-- B1b: Import Organization ← BLOCKED by missing styler-formatter module
-
-**Phase B (B2-B5)**: Blocked until A0 + B1 tasks complete
+**Phase B (B2-B5)**: Blocked until B1 tasks complete
 **Phase C/D**: Blocked until all Phase B tasks complete
 
-**Phase A - ⚠️ INCOMPLETE (4/5 tasks complete)**:
-- [ ] A0: styler-formatter module - **READY TO IMPLEMENT** (defines FormattingRule interfaces)
+**Phase A - ✅ COMPLETE (5/5 tasks)**:
+- ✅ A0: styler-formatter module (defines FormattingRule interfaces)
 - ✅ A1: Index-Overlay AST Parser (ast + parser modules)
 - ✅ A2: TOML Configuration (config module)
 - ✅ A3: CLI Arguments (cli module)
 - ✅ A4: Security Framework (security module)
-
-**Note**: A0 (styler-formatter) was incorrectly marked complete in previous versions but was never
-implemented. Task has been restored to todo.md with full specification. All B1 tasks depend on A0.
 
 ---
 
@@ -71,63 +65,12 @@ implemented. Task has been restored to todo.md with full specification. All B1 t
 
 ---
 
-## Phase A: Foundation (Zero External Dependencies)
+## Phase A: Foundation (Zero External Dependencies) ✅ COMPLETE
 
 **Goal**: Build core parsing, configuration, and security infrastructure without depending on formatters or AI
 integration.
 
-**Status**: A1-A4 complete. A0 (styler-formatter) was never implemented - MUST be completed before any Phase B
-work can begin.
-
-**Required Action**: Implement A0 (styler-formatter module) to unblock Phase B.
-
-### A0. Formatter API Module
--  [ ] **READY:** `implement-formatter-api` - Create styler-formatter Maven module with FormattingRule
-  interfaces
-  -  **Dependencies**: A1 ✅ COMPLETE (parser - AST nodes for transformation), A4 ✅ COMPLETE (security -
-    validation framework)
-  -  **Blocks**: B1 (both line length and import formatters implement FormattingRule), B2 (pipeline applies
-    formatting rules)
-  - **Parallelizable With**: None (only remaining Phase A task)
-  - **Estimated Effort**: 1-2 days
-  -  **Purpose**: Define the core API for formatting rules that will be implemented in Phase B, providing
-    contracts for rule implementation, violation reporting, and AST transformation
-  -  **Scope**: Complete API module with interfaces for formatting rules, transformation context, violation
-    reporting, and configuration management
-  - **Module Structure**:
-    - Module name: `styler-formatter` (standalone module)
-    - Location: `/workspace/main/formatter/`
-    - Artifact ID: `styler-formatter`
-    - Module descriptor: `module io.github.cowwoc.styler.formatter { exports io.github.cowwoc.styler.formatter; }`
-    - Package: `io.github.cowwoc.styler.formatter`
-  - **Core Interfaces**:
-    - `FormattingRule`: Base interface for all formatting rules with `analyze()` and `format()` methods
-    -  `TransformationContext`: Context API providing AST access, file metadata, and configuration during rule
-      application
-    -  `FormattingViolation`: Immutable violation representation with location, severity, rule ID, message,
-      and suggested fixes
-    - `FormattingConfiguration`: Base interface for rule-specific configuration with validation
-    - `ViolationSeverity`: Enum for severity levels (ERROR, WARNING, INFO)
-    - `FixStrategy`: Interface for suggested fix strategies with applicability checks
-  - **Features**:
-    - Thread-safe rule execution contract
-    - Immutable violation reporting with location tracking
-    - Pluggable configuration system for rule-specific settings
-    - Security-validated transformation context
-    - Support for auto-fix suggestions with applicability validation
-  - **Integration**:
-    - Uses AST node types from A1 (parser module) for transformation context
-    - Integrates with A4 (security module) for validation and resource constraints
-    - Provides foundation for B1 formatters (line length, import organization)
-    - Used by B2 pipeline to apply formatting rules in sequence
-  -  **Quality**: Proper JPMS module, comprehensive Javadoc on all public APIs, immutable types, thread-safe
-    contracts, zero violations
-  - **Deliverables**:
-    - Complete module with all interfaces
-    - module-info.java with proper exports
-    - pom.xml integration into parent reactor
-    - Unit tests for any utility methods
-    - Javadoc covering all public APIs with usage examples
+**Status**: All Phase A tasks complete (A0-A4).
 
 ---
 
@@ -136,14 +79,14 @@ work can begin.
 **Goal**: Build complete end-to-end pipeline from CLI → parse → format → AI feedback output. This phase
 delivers working AI agent integration.
 
-**Status**: BLOCKED - All Phase B tasks require A0 (styler-formatter) which doesn't exist.
+**Status**: READY - Phase A complete, B1 tasks can now run in parallel.
 
-**Coordination**: Once A0 is implemented, B1 tasks can run in parallel (2 instances). After B1 completes,
+**Coordination**: B1 tasks can run in parallel (2 instances). After B1 completes,
 B2-B5 have sequential dependencies.
 
 ### B1. Minimal Formatting Rules (MVP)
-- [ ] **BLOCKED:** `implement-line-length-formatter` - Line length violations and auto-fixing
-  - **Dependencies**: A0 [ ] READY (styler-formatter module - see Phase A), A1 ✅ COMPLETE (parser for AST)
+- [ ] **READY:** `implement-line-length-formatter` - Line length violations and auto-fixing
+  - **Dependencies**: A0 ✅ COMPLETE (styler-formatter module), A1 ✅ COMPLETE (parser for AST)
   - **Blocks**: B2 (pipeline needs formatters)
   - **Parallelizable With**: `implement-import-organization` (other B1 task)
   - **Estimated Effort**: 2-3 days
@@ -157,8 +100,8 @@ B2-B5 have sequential dependencies.
   - **Integration**: Plugs into format stage, uses AST for semantic wrapping
   - **Quality**: Comprehensive tests, respects code semantics
 
-- [ ] **BLOCKED:** `implement-import-organization` - Import grouping and unused import removal
-  - **Dependencies**: A0 [ ] READY (styler-formatter module - see Phase A), A1 ✅ COMPLETE (parser for AST)
+- [ ] **READY:** `implement-import-organization` - Import grouping and unused import removal
+  - **Dependencies**: A0 ✅ COMPLETE (styler-formatter module), A1 ✅ COMPLETE (parser for AST)
   - **Blocks**: B2 (pipeline needs formatters)
   - **Parallelizable With**: `implement-line-length-formatter` (other B1 task)
   - **Estimated Effort**: 2-3 days
