@@ -552,7 +552,11 @@ CORRECT SEQUENCE:
 17. User must respond with explicit approval (e.g., "approved", "yes", "proceed")
 18. After user approves, create flag: `touch /workspace/tasks/{task-name}/user-approval-obtained.flag`
 19. Transition to COMPLETE state (hook will verify flag exists)
-19. **Pre-Merge Validation** (MANDATORY):
+20. **Delete agent branches** (before squash to keep history clean):
+    ```bash
+    git branch -D {task-name}-architect {task-name}-tester {task-name}-formatter
+    ```
+21. **Pre-Merge Validation** (MANDATORY):
 
     > 🚨 **CRITICAL GIT WORKFLOW VIOLATION PATTERN**
     >
@@ -591,7 +595,7 @@ CORRECT SEQUENCE:
     echo "✅ Pre-merge validation PASSED: Exactly 1 commit on task branch"
     ```
 
-20. **Merge to main with atomic documentation update** (MANDATORY - all changes in single commit):
+22. **Merge to main with atomic documentation update** (MANDATORY - all changes in single commit):
     ```bash
     # Step 20a: Merge task branch to main
     cd /workspace/main
@@ -625,7 +629,7 @@ CORRECT SEQUENCE:
     # RESULT: Two commits instead of one atomic unit
     ```
 
-21. **Transition to CLEANUP state** (AUTOMATIC - Execute Immediately):
+23. **Transition to CLEANUP state** (AUTOMATIC - Execute Immediately):
 
     > 🚨 **CRITICAL CLEANUP VIOLATION PATTERN**
     >
