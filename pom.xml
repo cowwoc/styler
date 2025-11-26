@@ -15,6 +15,7 @@
 		<module>ast</module>
 		<module>cli</module>
 		<module>config</module>
+		<module>formatter</module>
 		<module>parser</module>
 		<module>security</module>
 	</modules>
@@ -30,6 +31,19 @@
 
 	<dependencyManagement>
 		<dependencies>
+			<!-- Internal dependencies -->
+			<dependency>
+				<groupId>io.github.cowwoc.styler</groupId>
+				<artifactId>core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.cowwoc.styler</groupId>
+				<artifactId>styler-security</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+
+			<!-- External dependencies -->
 			<dependency>
 				<groupId>tools.jackson.dataformat</groupId>
 				<artifactId>jackson-dataformat-toml</artifactId>

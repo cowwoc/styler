@@ -1,4 +1,6 @@
-package io.github.cowwoc.styler.parser;
+package io.github.cowwoc.styler.parser.test;
+
+import io.github.cowwoc.styler.parser.*;
 
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import org.testng.annotations.Test;
