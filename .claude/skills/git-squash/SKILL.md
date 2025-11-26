@@ -805,7 +805,71 @@ git reset --hard backup-before-squash-YYYYMMDD-HHMMSS
 
 ## Common Mistakes and How to Avoid Them
 
-### Mistake #1: Squashing Beyond Intended Range (MOST COMMON)
+### Mistake #1: Target Commit Hash Unchanged After Squash (DATA LOSS)
+
+**⚠️ CRITICAL: This is the most serious mistake - causes silent data loss**
+
+**Problem**: When squashing commits INTO another commit, the target commit's hash MUST change because
+its content changes. If the target hash remains the same, the squash DID NOT HAPPEN - commits were
+dropped instead of squashed.
+
+**Real Example from 2025-11-26**:
+```bash
+# Requested: Squash b325852, 3178bcb, 6a707bc INTO 778b26b
+# Used custom sed script with GIT_SEQUENCE_EDITOR
+# After rebase completed:
+git log --oneline | grep 778b26b
+# 778b26b [config] Comprehensive shrink-doc...  ← SAME HASH!
+
+# ❌ FAILURE: Hash unchanged means content unchanged
+# The commits were DROPPED, not squashed!
+# ~4400 lines of changes silently lost
+```
+
+**Why Hash Must Change**:
+- Squashing INTO a commit adds content to that commit
+- Git commits are content-addressed (SHA-1 hash of content)
+- Different content = different hash (always)
+- Same hash = same content = squash didn't happen
+
+**MANDATORY Validation After Squash**:
+```bash
+# Record target hash BEFORE squash
+TARGET_BEFORE="778b26b"
+TARGET_HASH_BEFORE=$(git rev-parse "$TARGET_BEFORE")
+
+# After squash operation...
+
+# Find the new commit at target's position
+# (It should have a DIFFERENT hash)
+TARGET_HASH_AFTER=$(git rev-parse HEAD~X)  # Position where target should be
+
+if [[ "$TARGET_HASH_BEFORE" == "$TARGET_HASH_AFTER" ]]; then
+  echo "❌ CRITICAL ERROR: Target commit hash unchanged!"
+  echo "   Squash DID NOT HAPPEN - commits were dropped, not squashed"
+  echo "   IMMEDIATE ROLLBACK REQUIRED"
+  git reset --hard "$BACKUP_BRANCH"
+  exit 1
+fi
+
+echo "✅ Target commit hash changed: squash successful"
+echo "   Before: $TARGET_HASH_BEFORE"
+echo "   After:  $TARGET_HASH_AFTER"
+```
+
+**Prevention**:
+1. **NEVER use untested sed/awk scripts** for GIT_SEQUENCE_EDITOR
+2. **ALWAYS verify target hash changed** immediately after squash
+3. **Prefer git-squash skill** over custom rebase scripts - it has built-in safety checks
+4. If using custom scripts, test on a throw-away branch first
+
+**Root Cause of 2025-11-26 Mistake**:
+- Custom sed script had flawed logic for moving and squashing commits
+- Script deleted commit lines but didn't properly reinsert them as squash
+- No immediate hash validation caught the silent failure
+- User correctly identified: "How is it possible you squashed if hash hasn't changed?"
+
+### Mistake #2: Squashing Beyond Intended Range (MOST COMMON)
 
 **Problem**: Running squash while HEAD is beyond the last commit you want to squash will include ALL commits from base to current HEAD, not just the commits you intended.
 
