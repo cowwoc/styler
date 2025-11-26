@@ -1,5 +1,41 @@
 # Changelog
 
+## 2025-11-26
+
+### A0: Styler Formatter Module - Core API Interfaces ✅
+
+**Completion Date**: 2025-11-26
+
+**Task**: `implement-formatter-api`
+
+**Problem Solved**:
+- Phase A was incomplete - styler-formatter module was missing
+- All Phase B tasks (B1a, B1b) were blocked waiting for formatting rule interfaces
+
+**Solution Implemented**:
+- New `styler-formatter` Maven module with core API interfaces
+- `FormattingRule`: Base interface for all formatting rules with `analyze()` and `format()` methods
+- `FormattingViolation`: Immutable violation representation with location, severity, rule ID, message
+- `FixStrategy`: Suggested fix strategies with applicability checks
+- `TransformationContext`: Secure access to AST and execution context
+- `FormattingConfiguration`: Base interface for rule-specific configuration
+- `ViolationSeverity`: Enum for severity levels (ERROR, WARNING, INFO)
+
+**JPMS Infrastructure**:
+- Added module-info.java to ast/core and parser modules
+- Moved test packages to `.test` suffix for JPMS split-package compliance
+- All modules now properly modularized
+
+**Files**: 31 files changed (+1072 / -10 lines)
+- `formatter/` - New module with 8 source files and 4 test files
+- `ast/core/src/main/java/module-info.java` - New
+- `parser/src/main/java/module-info.java` - New
+- Test package reorganization for JPMS compliance
+
+**Unblocks**: B1a (Line Length Formatter), B1b (Import Organization)
+
+---
+
 ## 2025-11-20
 
 ### /shrink-doc Command - Redesigned with Validation-Driven Workflow ✅
