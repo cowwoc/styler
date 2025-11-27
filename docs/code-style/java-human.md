@@ -23,6 +23,33 @@ and correctness are critical because:
 
 ## 🚨 TIER 1 CRITICAL - Build Blockers
 
+### JavaDoc Paragraph Formatting - Empty Line Before &lt;p&gt;
+**Why this matters**: JavaDoc formatting conventions require consistent paragraph separation. The `<p>` tag should appear immediately after the summary line without a blank JavaDoc line in between.
+
+**Standard convention**: The JavaDoc tool and documentation generators expect `<p>` tags to follow the summary description directly, maintaining clean separation between paragraphs without unnecessary blank lines.
+
+**Practical example**:
+```java
+// ✅ CORRECT - No blank line before <p>
+/**
+ * Represents a potential line break location within source code.
+ * <p>
+ * This record is immutable and thread-safe, containing all metadata needed to
+ * evaluate and apply a line break.
+ */
+
+// ❌ VIOLATION - Blank line before <p>
+/**
+ * Represents a potential line break location within source code.
+ *
+ * <p>
+ * This record is immutable and thread-safe, containing all metadata needed to
+ * evaluate and apply a line break.
+ */
+```
+
+**Why consistency matters**: Following standard JavaDoc formatting makes documentation more readable and ensures proper rendering in JavaDoc HTML output and IDE documentation views.
+
 ### External Source Documentation - Missing URLs
 **Why this matters**: Parser implementations must be traceable to official Java Language Specification
 sources. This rule ensures language compliance and makes JDK updates easier.
@@ -180,6 +207,46 @@ public class BaseFormatter {
     protected void preProcess(SourceFile file) { }
 }
 ```
+
+### Class Visibility - Prefer Non-Exported Packages Over Package-Protected
+**Why this approach is preferred**: Instead of using package-private (default) visibility for implementation
+classes, prefer declaring them as `public` in a package that is not exported by `module-info.java`. This
+leverages JPMS (Java Platform Module System) for stronger encapsulation.
+
+**Benefits of non-exported packages**:
+- **Stronger encapsulation**: Module boundaries are enforced at compile-time AND runtime
+- **Clearer visibility rules**: Package-private rules can be confusing across split packages
+- **Better tooling support**: IDEs and build tools understand module boundaries better
+- **Testability**: Test modules can access internal classes via `opens` directives without making them public API
+- **Reflection control**: Non-exported packages prevent deep reflection by default
+
+**Convention**: Use `.internal` suffix for implementation packages (e.g., `io.github.cowwoc.styler.formatter.internal`)
+
+**Practical examples**:
+```java
+// ✅ PREFERRED - Public class in non-exported package
+// In package: io.github.cowwoc.styler.formatter.internal
+public final class WrapContext {
+    // Implementation details hidden by module system
+}
+
+// In module-info.java:
+module io.github.cowwoc.styler.formatter {
+    exports io.github.cowwoc.styler.formatter;           // Public API
+    // io.github.cowwoc.styler.formatter.internal NOT exported - hidden from consumers
+}
+
+// ❌ AVOID - Package-private class for encapsulation
+// In package: io.github.cowwoc.styler.formatter
+final class WrapContext {  // Package-private visibility
+    // Relies only on Java's package-private rules
+}
+```
+
+**When package-private is still acceptable**:
+- Classes that are truly internal to a single package and will never be needed by tests
+- Legacy code not yet modularized
+- Very small helper classes used only within one file
 
 ### JavaDoc - Thread-Safety Documentation
 **Document only actual thread-safe classes**: Only classes that are genuinely thread-safe should contain
