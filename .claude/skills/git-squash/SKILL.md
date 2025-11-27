@@ -14,6 +14,53 @@ allowed-tools: Bash, Read
 - Simplifying pull request history
 - Preparing feature branch for main merge
 
+## Default Behavior: Squash Into Earliest Commit
+
+**When squashing multiple commits, the default is to squash into the EARLIEST (first) commit in the sequence.**
+
+**Example**: Given commits in chronological order:
+```
+abc123 First commit   ← EARLIEST (squash target)
+def456 Second commit  ← squashed into abc123
+ghi789 Third commit   ← squashed into abc123
+```
+
+Running `squash abc123 def456 ghi789` produces:
+```
+xyz999 Combined commit (contains changes from all three)
+```
+
+**Why earliest?**:
+- Preserves original authorship timestamp
+- Maintains logical sequence (feature start → incremental changes)
+- Matches git's native squash behavior in interactive rebase
+- The "base commit" in this skill is the PARENT of the earliest commit
+
+**To squash into a different commit**: Explicitly specify by reordering in interactive rebase, or use the cherry-pick approach documented in "Squashing Non-Adjacent Commits" section.
+
+## Multiple Independent Squash Requests
+
+**CRITICAL**: When multiple squash requests are received in sequence, treat each as an **independent operation** unless the user explicitly relates them.
+
+**Example**:
+```
+User: Squash commits A, B, C into one
+User: Squash commits X, Y into one
+```
+
+**Correct interpretation**: Two separate squash operations
+1. First squash: Combine A, B, C
+2. Second squash: Combine X, Y
+
+**Wrong interpretation**: ~~Second request replaces or modifies first request~~
+
+**When requests ARE related**: User will explicitly state the relationship:
+- "Actually, squash A, B, C, X, Y all together" (combines both requests)
+- "Instead of A, B, C, squash just A and B" (replaces first request)
+- "In addition to the previous squash, also squash..." (adds to previous)
+
+**Default assumption**: Each squash request is independent and should be executed separately.
+
 ## Supports Both Tip and Mid-History Squashing
 
 **This skill now handles both scenarios**:
@@ -310,6 +357,53 @@ echo "Commits being squashed:"
 git log --format="%h %s" "$BASE_COMMIT..HEAD"
 ```
 
+**⚠️ CRITICAL: Commit Message Must Describe FINAL STATE**
+
+<!-- ADDED: 2025-11-27 to clarify that squashed commit messages must describe
+     the final result of all changes combined, not just list individual commits.
+     PREVENTS: Commit messages that simply concatenate individual commit messages
+     without synthesizing what the final code actually does. -->
+
+The squashed commit message must describe what the **final code does** after all changes are
+applied, not just list what each individual commit did.
+
+**❌ WRONG - Lists individual commits**:
+```
+Fix typo in README
+Update model name from Sonnet to Opus
+Add missing import statement
+Fix test that was broken by import change
+```
+
+**✅ CORRECT - Describes final state**:
+```
+Update model configuration to use Opus for analysis phase
+
+Changes model selection from Sonnet to Opus in REQUIREMENTS phase to improve
+analysis quality. Includes necessary import updates and test fixes to support
+the model change.
+
+Changes:
+- Replace Sonnet 4.5 with Opus in model configuration
+- Add Opus-specific imports and remove deprecated Sonnet references
+- Fix test assertions to match Opus output format
+- Update README to reflect current model usage
+
+Final configuration uses Opus for analysis/decisions, Haiku for code generation.
+```
+
+**Key difference**: The second message tells you what the code **does now** (uses Opus for
+analysis), not just a chronological list of fixes. When someone reads this commit in 6 months,
+they understand the purpose, not just the implementation steps.
+
+**Workflow for Crafting Final-State Messages**:
+1. Review all commits being squashed
+2. **Look at the actual code changes** (not just commit messages)
+3. **Ask**: "What does this code do now that it didn't do before?"
+4. Write subject line answering that question
+5. Write body explaining why this matters and listing key changes
+6. **Verify**: Does message describe final capability, not just implementation steps?
+
 **⚠️ ANTI-PATTERN: Do NOT Include Commit Bodies in Bash Commands**
 
 <!-- ADDED: 2025-11-24 after encountering bash parse error with git log format
@@ -348,9 +442,11 @@ directly in command pipelines.
 See `git-commit` skill for complete guidance on writing commit messages.
 
 **Key principles for squashed commits**:
-- Subject line: Summarize the combined purpose (imperative mood, 50-72 chars)
-- Body: List key changes from all squashed commits (use bullet points)
-- Rationale: Explain why these changes work together
+- **MOST IMPORTANT**: Describe what the final code DOES, not what commits were made
+- Subject line: Summarize the final capability/change (imperative mood, 50-72 chars)
+- Body: Explain the final result and why it matters
+- Changes section: List key changes that achieve the final result (use bullet points)
+- Rationale: Explain why these changes work together and what problem they solve
 
 ❌ **WRONG - Generic placeholder**:
 ```bash
@@ -389,6 +485,11 @@ echo "✅ Squashed commit created"
 **Reference**: See `git-commit` skill for detailed examples and anti-patterns
 
 **Step 7c: Rewriting Squashed Commit Message (If Needed)**
+
+<!-- ADDED: 2025-11-27 to document simpler reset-amend-cherry-pick approach and
+     warn against exec command usage after mistake in session 79d387b4 where exec
+     approach created duplicate commits and history divergence.
+     PREVENTS: Using exec commands to amend commits (creates duplicates). -->
 
 **⚠️ CRITICAL: Do NOT use `git commit --amend` after rebase completes**
 
@@ -441,7 +542,7 @@ EOF
 git rebase --continue
 ```
 
-**Alternative - Use reword in original interactive rebase**:
+**Alternative 1 - Use reword in original interactive rebase**:
 
 Instead of fixing the message after rebase completes, you can specify "reword" during the initial rebase:
 
@@ -456,7 +557,86 @@ Instead of fixing the message after rebase completes, you can specify "reword" d
 # This is the BEST time to write the final message
 ```
 
-**Best Practice**: Write the final commit message during the initial squash operation when Git prompts you. This avoids the need for a second interactive rebase.
+**Alternative 2 - Reset-Amend-Cherry-pick (SIMPLER)**:
+
+If the squashed commit is in history with other commits after it, the simplest approach is:
+
+```bash
+# Step 1: Identify commits
+SQUASHED_COMMIT="07fe839"  # The squashed commit with wrong message
+COMMITS_AFTER=("c3132c8" "70bd297" "2c536b6")  # Commits that come after
+
+# Step 2: Create new message file
+cat > /tmp/new-message.txt << 'EOF'
+New unified commit message
+
+Describes what the final code does...
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+
+# Step 3: Reset to squashed commit
+git reset --hard "$SQUASHED_COMMIT"
+
+# Step 4: Amend the message
+git commit --amend -F /tmp/new-message.txt
+
+# Step 5: Cherry-pick commits that came after
+for commit in "${COMMITS_AFTER[@]}"; do
+  git cherry-pick "$commit"
+done
+
+# Step 6: Verify
+git log --oneline -5
+```
+
+**Why this is simpler**:
+- No interactive rebase complications
+- Clear, sequential steps
+- Easy to verify at each stage
+- No risk of rebase conflicts
+
+**⚠️ NEVER use exec commands to amend commits**:
+
+❌ **WRONG - Creates duplicate commits**:
+```bash
+# DON'T DO THIS - exec runs on wrong commit
+cat > /tmp/bad-script.sh << 'EOF'
+sed -i '/^pick 07fe839/c\exec git commit --amend -F /tmp/msg.txt\npick 07fe839' "$1"
+EOF
+GIT_SEQUENCE_EDITOR=/tmp/bad-script.sh git rebase -i BASE
+
+# Result: Creates NEW commit, doesn't modify 07fe839
+# You end up with 2 commits instead of 1!
+```
+
+**Why exec approach fails**:
+- exec runs commands at current HEAD position
+- When exec runs before pick, HEAD is at previous commit
+- Amend creates new commit instead of modifying target
+- Results in duplicate commits and history divergence
+
+**✅ Verification after message change**:
+```bash
+# Always verify immediately after changing commit message
+git log --oneline -5
+
+# Check commit count didn't increase
+EXPECTED_COUNT=4
+ACTUAL_COUNT=$(git rev-list --count BASE..HEAD)
+if [[ "$ACTUAL_COUNT" -ne "$EXPECTED_COUNT" ]]; then
+  echo "❌ ERROR: Expected $EXPECTED_COUNT commits, got $ACTUAL_COUNT"
+  echo "   Likely created duplicate - rollback and retry"
+  git reset --hard BACKUP_BRANCH
+  exit 1
+fi
+
+echo "✅ Commit message updated successfully"
+```
+
+**Best Practice**: Write the final commit message during the initial squash operation when Git prompts you. This avoids the need for any post-squash message changes.
 
 ### Step 7d: Immediate Post-Commit Verification (MANDATORY)
 
