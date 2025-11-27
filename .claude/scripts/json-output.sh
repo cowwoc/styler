@@ -38,3 +38,32 @@ output_hook_error() {
 	local message="$2"
 	output_hook_message "$event" "$message"
 }
+
+# Output JSON error message and exit
+# Args: error_message
+json_error() {
+	local message="$1"
+	jq -n \
+		--arg msg "$message" \
+		'{
+			"status": "error",
+			"message": $msg
+		}'
+	exit 1
+}
+
+# Output JSON success message
+# Args: message additional_fields_json
+json_success() {
+	local message="$1"
+	local additional="${2-}"
+
+	# Use empty object if no additional fields provided
+	if [[ -z "$additional" ]]; then
+		additional='{}'
+	fi
+
+	echo "$additional" | jq \
+		--arg msg "$message" \
+		'. + {"status": "success", "message": $msg}'
+}
