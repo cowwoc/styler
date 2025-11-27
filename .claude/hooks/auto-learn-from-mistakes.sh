@@ -13,7 +13,8 @@ trap 'echo "ERROR in auto-learn-from-mistakes.sh at line $LINENO: Command failed
 # Detects: Build failures, test failures, validation errors, protocol violations,
 #          skill step failures, git operation failures, merge conflicts, edit failures,
 #          missing cleanup steps, self-acknowledged mistakes, restore from backup,
-#          critical self-acknowledgments ("CRITICAL DISASTER", "catastrophic", etc.)
+#          critical self-acknowledgments ("CRITICAL DISASTER", "catastrophic", etc.),
+#          wrong working directory (not a git repo, missing pom.xml, path errors)
 #
 # PATTERN EVOLUTION:
 #   - 2025-11-05: Added Pattern 6 (skill step failures) and Pattern 7 (git operation failures)
@@ -25,6 +26,8 @@ trap 'echo "ERROR in auto-learn-from-mistakes.sh at line $LINENO: Command failed
 #                 (inspired by detect-assistant-giving-up.sh approach)
 #                 Improved to track last checked line number, only parsing new messages
 #                 (eliminates missed messages and removes need for rate limiting)
+#   - 2025-11-28: Added Pattern 12 (wrong working directory) for detecting commands
+#                 run from incorrect directories (not a git repo, missing pom.xml, etc.)
 
 # Read input from stdin (hook context JSON for PostToolUse)
 HOOK_CONTEXT=$(cat)
@@ -145,11 +148,36 @@ if echo "$TOOL_RESULT" | grep -qiE "CRITICAL (DISASTER|MISTAKE|ERROR|FAILURE|BUG
   MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B3 -A5 -iE "CRITICAL|catastrophic|devastating" | head -20)
 fi
 
+# Pattern 12: Wrong working directory (HIGH)
+# Detects when commands are run from the wrong directory
+# Common indicators: git "not a git repository", missing build files, path errors
+if echo "$TOOL_RESULT" | grep -qiE "fatal: not a git repository|not a git repository \(or any|fatal: not a git directory"; then
+  MISTAKE_TYPE="wrong_working_directory"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B2 -A3 -iE "not a git repository|not a git directory" | head -15)
+fi
+
+# Pattern 12b: Missing build configuration files (suggests wrong directory)
+if echo "$TOOL_RESULT" | grep -qiE "Could not (find|locate) (the )?pom\.xml|No pom\.xml found|pom\.xml.*does not exist|The goal you specified requires a project"; then
+  MISTAKE_TYPE="wrong_working_directory"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B2 -A3 -iE "pom\.xml|goal you specified" | head -15)
+fi
+
+# Pattern 12c: Directory-related path errors in Bash commands
+if [[ "$TOOL_NAME" == "Bash" ]] && echo "$TOOL_RESULT" | grep -qiE "No such file or directory.*(/workspace|/tasks)|cannot access.*/workspace|cd:.*no such file"; then
+  MISTAKE_TYPE="wrong_working_directory"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B2 -A3 -iE "No such file or directory|cannot access|cd:" | head -15)
+fi
+
 # Also check last assistant message from conversation log (if rate limit allows)
 if [[ -z "$MISTAKE_TYPE" ]] && [[ -n "$LAST_ASSISTANT_MESSAGE" ]]; then
+  # Check for critical acknowledgments first (higher priority)
   if echo "$LAST_ASSISTANT_MESSAGE" | grep -qiE "I made a critical (error|mistake)|CRITICAL (DISASTER|MISTAKE|ERROR|FAILURE)|catastrophic failure|devastating (error|failure|mistake)"; then
     MISTAKE_TYPE="critical_self_acknowledgment"
     MISTAKE_DETAILS=$(echo "$LAST_ASSISTANT_MESSAGE" | grep -iE "I made a critical|CRITICAL|catastrophic|devastating" | head -5)
+  # Check for general mistake acknowledgments (medium priority)
+  elif echo "$LAST_ASSISTANT_MESSAGE" | grep -qiE "I (made|created) (a|an) (mistake|error)|this (was|is) (a|an) (mistake|error)|I accidentally"; then
+    MISTAKE_TYPE="self_acknowledged_mistake"
+    MISTAKE_DETAILS=$(echo "$LAST_ASSISTANT_MESSAGE" | grep -iE "I (made|created).*(mistake|error)|this (was|is).*(mistake|error)|I accidentally" | head -5)
   fi
 fi
 
