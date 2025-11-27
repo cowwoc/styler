@@ -10,6 +10,17 @@
 **Violation**: `int maxDepth = 100; // No source reference`
 **Correct**: `// Based on JLS §14.4 block statement nesting limits\nint maxDepth = 100;`
 
+### JavaDoc Paragraph Formatting - Empty Line Before &lt;p&gt;
+**Detection Pattern**: `\* .*\n \*\n \* <p>` (blank JavaDoc line before `<p>` tag)
+**Violation**: `/**\n * Summary line.\n *\n * <p>\n * Detailed description.`
+**Correct**: `/**\n * Summary line.\n * <p>\n * Detailed description.`
+**Detection Commands**:
+```bash
+# Find JavaDoc with blank line before <p>
+grep -rn -B2 '^ \* <p>$' --include="*.java" . | grep -B1 '^ \*$'
+```
+**Rationale**: JavaDoc formatting convention requires `<p>` to appear immediately after summary line without blank lines. This maintains consistent paragraph separation and follows standard JavaDoc style.
+
 ### JavaDoc Exception Documentation - Missing @throws
 **Detection Pattern**: `public.*throws.*Exception.*\{` without corresponding `@throws`
 **Violation**: `public void process() throws ValidationException { // Missing @throws in JavaDoc`
@@ -191,6 +202,42 @@ code. This reduces visual clutter and makes non-default initializations more pro
 and make design intent explicit
 **Exception**: Abstract classes, base classes explicitly designed for extension, or classes with protected
 methods intended for overriding
+
+### Class Visibility - Prefer Non-Exported Packages Over Package-Protected
+**Detection Pattern**: Package-private class declarations in exported packages
+**Violation**: `final class WrapContext {` (package-private in exported package)
+**Correct**: `public final class WrapContext` in `.internal` package (not exported in module-info.java)
+**Detection Commands**:
+```bash
+# Find package-private classes (no access modifier before class)
+grep -rn -E '^\s*(final\s+)?class\s+[A-Z]' --include="*.java" . | grep -v '/test/'
+
+# Find classes in non-.internal packages that might need relocation
+grep -rn -E '^\s*(final\s+)?class\s+[A-Z]' --include="*.java" src/main/java/ | grep -v '\.internal\.'
+
+# Verify module-info.java exports (internal packages should NOT be listed)
+grep -E '^\s*exports\s+.*\.internal' src/main/java/module-info.java
+```
+**Examples**:
+```java
+// VIOLATION - Package-private class in exported package
+// File: src/main/java/io/github/cowwoc/styler/formatter/WrapContext.java
+package io.github.cowwoc.styler.formatter;
+final class WrapContext { ... }  // Encapsulation via package-private
+
+// CORRECT - Public class in non-exported internal package
+// File: src/main/java/io/github/cowwoc/styler/formatter/internal/WrapContext.java
+package io.github.cowwoc.styler.formatter.internal;
+public final class WrapContext { ... }  // Encapsulation via module system
+
+// module-info.java should NOT export the internal package:
+// exports io.github.cowwoc.styler.formatter;  // ✅ Public API exported
+// (no export for io.github.cowwoc.styler.formatter.internal)  // ✅ Hidden
+```
+**Rationale**: JPMS module encapsulation is stronger than package-private visibility. Non-exported packages
+provide compile-time AND runtime enforcement, better tooling support, and clearer separation between API
+and implementation.
+**Exception**: Very small helper classes used only within one file, or legacy non-modularized code.
 
 ### Control Flow - Multiple OR Comparisons Should Use Switch
 **Detection Pattern**: `return .+ == .+ \|\|` (3 or more equality comparisons chained with OR)

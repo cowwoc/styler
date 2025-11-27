@@ -103,6 +103,51 @@ public void testValidToken() {
 }
 ```
 
+### JavaDoc Formatting Rules {#javadoc-formatting-rules}
+
+**Paragraph Tags**: No empty line before `<p>` tags. The `<p>` tag should appear on the same line as the
+preceding content's closing.
+
+```java
+// ❌ BAD: Empty line before <p>
+/**
+ * First paragraph.
+ *
+ * <p>
+ * Second paragraph.
+ */
+
+// ✅ GOOD: No empty line before <p>
+/**
+ * First paragraph.
+ * <p>
+ * Second paragraph.
+ */
+```
+
+**Thread-safety Documentation**: Thread-safety notes must appear at the END of the class JavaDoc, after all
+other content including performance characteristics.
+
+```java
+// ❌ BAD: Thread-safety in the middle
+/**
+ * Description.
+ * <p>
+ * <b>Thread-safety</b>: This class is immutable.
+ * <p>
+ * <b>Performance</b>: O(n) lookup.
+ */
+
+// ✅ GOOD: Thread-safety at the end
+/**
+ * Description.
+ * <p>
+ * <b>Performance</b>: O(n) lookup.
+ * <p>
+ * <b>Thread-safety</b>: This class is immutable.
+ */
+```
+
 ### Enforcement {#enforcement}
 
 Pre-commit hook detects generic JavaDoc patterns. PMD.CommentRequired violations must be fixed, not suppressed.
@@ -176,6 +221,21 @@ Choose exception type based on cause:
       throw new IllegalArgumentException("Input cannot be null");
   }
   ```
+
+### Validation Method Chaining {#validation-method-chaining}
+
+Combine `requireThat()` invocations for the same parameter into a single chained call:
+
+```java
+// ❌ BAD: Separate calls for same parameter
+requireThat(tabWidth, "tabWidth").isGreaterThanOrEqualTo(MIN_TAB_WIDTH);
+requireThat(tabWidth, "tabWidth").isLessThanOrEqualTo(MAX_TAB_WIDTH);
+
+// ✅ GOOD: Combined into single chain
+requireThat(tabWidth, "tabWidth").isGreaterThanOrEqualTo(MIN_TAB_WIDTH).isLessThanOrEqualTo(MAX_TAB_WIDTH);
+```
+
+This reduces redundancy and makes the validation constraints clearer at a glance.
 
 ## References {#references}
 
