@@ -11,8 +11,11 @@
     "mistake_count_threshold": 10,
     "recurrence_threshold": 2,
     "recurrence_after_fix_threshold": 1,
-    "ineffective_action_escalation": true
+    "ineffective_action_escalation": true,
+    "effectiveness_monitoring_enabled": true,
+    "effectiveness_check_on_new_mistake": true
   },
+  "escalations": [],
   "last_retrospective": "2025-11-28T08:30:00-05:00",
   "mistake_count_since_last": 0,
   "retrospectives": [
@@ -138,7 +141,7 @@
         "post_fix_mistakes": [],
         "verdict": "effective"
       },
-      "note": "Proactive prevention based on temp/.claude patterns"
+      "note": "Proactive prevention based on identified TDD enforcement patterns"
     },
     {
       "id": "A003",

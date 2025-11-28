@@ -96,36 +96,36 @@ Use methods from get-history skill to access conversation.jsonl. Output comprehe
 **Query Examples** (executed by audit-protocol-compliance skill):
 
 ```bash
-# Check 0.0: User Approval Checkpoints
+# Check 1.0: User Approval Checkpoints
 jq '.statistics.approval_checkpoints' timeline.json
 → Required: true, Found: false → VIOLATION
 
-# Check 0.1: Task Merge to Main
+# Check 1.1: Task Merge to Main
 jq '.task_state.task_json.state, .git_status.branches[] | select(.task_complete_but_not_merged == true)' timeline.json
 → State = COMPLETE, merged_to_main = false → VIOLATION
 
-# Check 0.2: Main Agent Source File Creation
+# Check 1.2: Main Agent Source File Creation
 jq '.timeline[] | select(.actor == "main" and .file_classification.type == "source_file")' timeline.json
 → Found main agent editing source files → Check state and worktree
 
-# Check 0.3: Working Directory Violations
+# Check 1.3: Working Directory Violations
 jq '.timeline[] | select(.actor == "main" and .file_classification.worktree_type == "agent_worktree")' timeline.json
 → Found main agent in agent worktree → VIOLATION
 
-# Check 0.5: Complete REQUIREMENTS Phase
+# Check 1.5: Complete REQUIREMENTS Phase
 jq '.task_state.agent_outputs' timeline.json
 → Missing architect output → VIOLATION
 ```
 
 **Compliance Checks** (audit-protocol-compliance skill queries timeline for each):
 
-**Check 0.0**: User approval checkpoints (query statistics.approval_checkpoints)
-**Check 0.1**: Task merge to main (query git_status.branches, task_state.module_in_main)
-**Check 0.2**: Main agent source file creation (query timeline for Edit/Write by main on source_file)
-**Check 0.3**: Working directory violations (query timeline for main agent in agent_worktree)
-**Check 0.4**: Agent worktree creation (query timeline for worktree creation before Task calls)
-**Check 0.5**: Complete REQUIREMENTS phase (query task_state.agent_outputs)
-**Check 1.0-3.0**: Additional protocol checks (query timeline as needed)
+**Check 1.0**: User approval checkpoints (query statistics.approval_checkpoints)
+**Check 1.1**: Task merge to main (query git_status.branches, task_state.module_in_main)
+**Check 1.2**: Main agent source file creation (query timeline for Edit/Write by main on source_file)
+**Check 1.3**: Working directory violations (query timeline for main agent in agent_worktree)
+**Check 1.4**: Agent worktree creation (query timeline for worktree creation before Task calls)
+**Check 1.5**: Complete REQUIREMENTS phase (query task_state.agent_outputs)
+**Check 2.0-4.0**: Additional protocol checks (query timeline as needed)
 
 Invoke the audit-protocol-compliance skill (synchronous):
 ```
@@ -135,11 +135,11 @@ Skill: audit-protocol-compliance
 The skill will query structured timeline from parse-conversation-timeline to execute MANDATORY compliance checks. Timeline contains comprehensive event data - extract what you need for each check.
 
 CRITICAL checks to query:
-- Check 0.0: Query statistics.approval_checkpoints for user approval after SYNTHESIS/REVIEW
-- Check 0.1: Query git_status and task_state for merge-to-main before COMPLETE
-- Check 0.2: Query timeline for main agent Edit/Write on source files
-- Check 0.3: Query timeline for main agent operations in agent worktrees
-- Check 0.5: Query task_state.agent_outputs for complete REQUIREMENTS phase
+- Check 1.0: Query statistics.approval_checkpoints for user approval after SYNTHESIS/REVIEW
+- Check 1.1: Query git_status and task_state for merge-to-main before COMPLETE
+- Check 1.2: Query timeline for main agent Edit/Write on source files
+- Check 1.3: Query timeline for main agent operations in agent worktrees
+- Check 1.5: Query task_state.agent_outputs for complete REQUIREMENTS phase
 
 For each violation found, provide severity, evidence from timeline queries, recovery options, and recommended protocol changes. Output structured JSON with violations list and overall verdict."
 ```
@@ -337,7 +337,7 @@ After all agents complete, synthesize a comprehensive report:
 
 **Quality Gates**:
 - parse-conversation-timeline skill output includes actual task state from task.json
-- audit-protocol-compliance skill executes Check 0.1 and 0.2 FIRST
+- audit-protocol-compliance skill executes Check 1.1 and 1.2 FIRST
 - No rationalizations in audit-protocol-compliance skill output
 - learn-from-mistakes invoked for ANY violations (not just CRITICAL/HIGH)
 - audit-protocol-efficiency skill only runs on fully compliant sessions (zero violations)

@@ -127,12 +127,12 @@ get-history skill to access raw conversation independently.
 **Use raw conversation data for verification**:
 
 ```markdown
-**Check 0.0: User Approval Checkpoints**
+**Check 1.0: User Approval Checkpoints**
 - Input: Raw user messages from conversation
 - Search: Messages containing approval after SYNTHESIS/REVIEW states
 - Verdict: PASS if approval found, FAIL if proceeded without approval
 
-**Check 0.3: Working Directory Violations**
+**Check 1.3: Working Directory Violations**
 - Input: Bash cd commands + Edit/Write file paths
 - Correlate: Did main agent cd to agent worktree before Edit/Write?
 - Verdict: FAIL if any Edit/Write in /workspace/tasks/{task}/agents/{agent}/code

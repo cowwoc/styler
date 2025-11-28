@@ -22,8 +22,11 @@ STDIN=$(cat)
 # Extract subagent type using grep (faster than jq for simple extraction)
 SUBAGENT_TYPE=$(echo "$STDIN" | grep -oP '"subagent_type"\s*:\s*"\K[^"]+' 2>/dev/null || echo "unknown")
 
-# Find most recent timer file
-TIMER_FILE=$(ls -t /tmp/task_timer_*.tmp 2>/dev/null | head -1)
+# Find most recent timer file (handle case where no files exist)
+TIMER_FILE=""
+if compgen -G "/tmp/task_timer_*.tmp" > /dev/null 2>&1; then
+    TIMER_FILE=$(ls -t /tmp/task_timer_*.tmp 2>/dev/null | head -1)
+fi
 
 if [[ -n "$TIMER_FILE" ]]; then
     # Read start time from timer file
