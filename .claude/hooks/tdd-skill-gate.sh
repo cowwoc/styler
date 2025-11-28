@@ -1,12 +1,12 @@
 #!/bin/bash
 # TDD Skill Gate - Blocks production Java code edits without active TDD mode
 #
-# ADDED: 2025-11-28 based on temp/.claude tdd-implementation skill
+# ADDED: 2025-11-28
 # PURPOSE: Enforce TDD workflow by physically blocking production code edits
 #          unless TDD mode is active with verified state transitions
 #
-# This hook implements the gatekeeper pattern from temp/.claude/skills/tdd-implementation
-# which proved more effective than passive documentation.
+# This hook implements the gatekeeper pattern - active enforcement proved more
+# effective than passive documentation for preventing TDD violations.
 
 set -euo pipefail
 trap 'echo "ERROR in tdd-skill-gate.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
@@ -39,11 +39,11 @@ if [[ "$FILE_PATH" =~ (module-info|package-info)\.java$ ]]; then
     exit 0
 fi
 
-# Check for active TDD mode file
+# Check for active TDD mode file - each session has isolated TDD state
 TDD_MODE_FILE="/tmp/tdd_skill_active_${SESSION_ID}"
 
 if [[ ! -f "$TDD_MODE_FILE" ]]; then
-    # No TDD mode active - provide helpful error
+    # No TDD mode active for this session - provide helpful error
     cat >&2 << EOF
 
 ❌ TDD SKILL GATE - BLOCKED ❌
@@ -54,9 +54,9 @@ Production Java code edit attempted without active TDD mode.
 File: $FILE_PATH
 Tool: $TOOL_NAME
 
-To proceed, you MUST invoke the test-driven-bug-fix skill first:
+To proceed, you MUST invoke the tdd-implementation skill first:
 
-    Skill: test-driven-bug-fix
+    Skill: tdd-implementation
 
 This ensures:
 1. Test is written FIRST (fails initially)
@@ -87,35 +87,7 @@ Required file: $TDD_MODE_FILE
 EOF
 
     # Return deny decision
-    echo '{"decision": "block", "reason": "TDD mode not active. Invoke test-driven-bug-fix skill first."}'
-    exit 2
-fi
-
-# TDD mode file exists - verify session ID matches
-FILE_SESSION_ID=$(jq -r '.session_id // empty' "$TDD_MODE_FILE" 2>/dev/null || echo "")
-
-if [[ "$FILE_SESSION_ID" != "$SESSION_ID" && -n "$SESSION_ID" ]]; then
-    cat >&2 << EOF
-
-❌ TDD SESSION MISMATCH - BLOCKED ❌
-═══════════════════════════════════════════════════════════════════════════════
-
-TDD mode file exists but belongs to a different session.
-
-Current session: $SESSION_ID
-File session: $FILE_SESSION_ID
-
-This happens when a previous session's TDD mode wasn't cleaned up.
-
-To fix, remove stale file and reinitialize:
-
-    rm -f /tmp/tdd_skill_active_*
-    Skill: test-driven-bug-fix
-
-═══════════════════════════════════════════════════════════════════════════════
-EOF
-
-    echo '{"decision": "block", "reason": "TDD mode session mismatch. Clean up stale files."}'
+    echo '{"decision": "block", "reason": "TDD mode not active. Invoke tdd-implementation skill first."}'
     exit 2
 fi
 

@@ -99,6 +99,66 @@ jq --arg pattern "PATTERN-003" --arg completed "2025-11-28" '
    - Reference the ineffective action item
    - Propose deeper architectural change
 
+### Phase 3b: Escalation Protocol (for INEFFECTIVE fixes)
+
+When an action item is marked `ineffective` (2+ post-fix mistakes), escalation is **MANDATORY**.
+
+**Escalation Entry Format**:
+
+```json
+{
+  "id": "ESCALATE-YYYY-MM-DD-NNN",
+  "original_action_id": "A00X",
+  "original_fix_description": "What was tried",
+  "failure_analysis": {
+    "expected_result": "What the fix should have done",
+    "actual_result": "What actually happened",
+    "root_cause": "Why the fix didn't work",
+    "gap_identified": "What the fix missed"
+  },
+  "proposed_solution": {
+    "approach": "defense-in-depth | architectural-change | tool-improvement",
+    "description": "Detailed solution proposal",
+    "prevention_type": "code_fix | hook | validation (NOT config)",
+    "layers": ["Layer 1 description", "Layer 2 description"]
+  },
+  "priority": "critical",
+  "status": "open"
+}
+```
+
+**Escalation Decision Tree**:
+
+```
+Ineffective Fix Detected (2+ post-fix mistakes)
+    ↓
+1. WHY did the original fix fail?
+   - Incomplete detection? → Strengthen detection logic
+   - Wrong validation timing? → Add earlier checkpoint
+   - Coverage gap? → Expand scope
+   - Agent workaround? → Add multi-layer defense
+    ↓
+2. What PREVENTION TYPE is needed?
+   - If original was `config` → MUST escalate to `hook` or `code_fix`
+   - If original was `hook` → Consider `code_fix` or multi-layer hooks
+   - If original was `code_fix` → Deeper architectural analysis needed
+    ↓
+3. Propose DEFENSE-IN-DEPTH (if single fix keeps failing):
+   - Layer 1: PreToolUse validation (block before execution)
+   - Layer 2: PostToolUse detection (catch after execution)
+   - Layer 3: SessionStart reminder (proactive guidance)
+   - Layer 4: Build/test integration (final safety net)
+```
+
+**Key Principle**:
+
+> "Prevention requires active enforcement, not passive reporting."
+
+When fixes prove ineffective, the solution is NEVER "add more documentation". The solution is:
+1. Analyze why detection/prevention failed
+2. Implement stronger enforcement mechanism
+3. Add multiple layers of defense
+
 ### Phase 4: Cross-Retrospective Analysis
 
 Compare current patterns with ALL previous retrospectives:
@@ -112,6 +172,65 @@ Compare current patterns with ALL previous retrospectives:
 3. For RECURRING patterns:
    - Check `occurrences_after_fix` (mistakes after last action date)
    - If `occurrences_after_fix` >= `recurrence_after_fix_threshold`: escalate
+
+### Phase 4.7: Action Item Coverage Validation (MANDATORY)
+
+**⚠️ CRITICAL: Every recurring pattern with new occurrences MUST have an action item.**
+
+Before generating the report, validate action item coverage:
+
+1. **Identify patterns with new occurrences in this period**:
+   ```
+   patternsWithNewOccurrences = currentMistakes
+     .filter(m => m.pattern_id != null)
+     .groupBy(m => m.pattern_id)
+     .map(group => { pattern_id, count: group.length })
+   ```
+
+2. **Check each pattern has an action item**:
+   ```
+   for each pattern in patternsWithNewOccurrences:
+     if pattern.count >= 1:
+       // Pattern recurred - MUST have action item
+       existingAction = actionItems.find(a =>
+         a.pattern_id == pattern.pattern_id AND
+         a.status == "pending"
+       )
+       if NOT existingAction:
+         // ⚠️ VIOLATION: Missing action item for recurring pattern
+         createActionItem(pattern)
+   ```
+
+3. **Mandatory action item triggers**:
+
+   | Condition | Action Required |
+   |-----------|-----------------|
+   | Pattern has 3+ new occurrences | MUST create action item |
+   | Pattern is most frequent in period | MUST create action item |
+   | Previous action item marked INEFFECTIVE | MUST create escalation |
+   | Pattern has escalated status | MUST create action item |
+
+4. **Self-check before Phase 5**:
+   ```
+   □ Every pattern with 3+ new occurrences has a pending action item?
+   □ The most frequent pattern has an action item?
+   □ Every INEFFECTIVE action item has an escalation?
+   □ Every ESCALATED pattern with new mistakes has an action item?
+   ```
+
+5. **If validation fails**:
+   - DO NOT proceed to Phase 5
+   - Generate missing action items
+   - Re-validate
+   - Only proceed when all patterns are covered
+
+**Background (Session 2c58ba44):**
+RETRO-2025-12-01-001 missed creating action items for PATTERN-002 (Detection Gaps) despite:
+- 6 new occurrences (55% of all mistakes)
+- Previous escalation (ESCALATE-2025-11-29-001) marked INEFFECTIVE
+- Being the most frequent pattern
+
+This validation phase prevents that oversight.
 
 ### Phase 5: Action Item Generation
 

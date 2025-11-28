@@ -1,7 +1,7 @@
 #!/bin/bash
 # Detect Batch Read Opportunities
 #
-# ADDED: 2025-11-28 based on temp/.claude batch-read-files pattern database
+# ADDED: 2025-11-28 - Detects opportunities for batch file operations
 # PURPOSE: Track sequential Read operations and suggest batch-read skill when patterns detected
 #
 # This hook runs on PostToolUse for Read|Glob|Grep tools and tracks patterns

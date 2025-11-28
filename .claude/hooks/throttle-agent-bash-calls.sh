@@ -11,7 +11,7 @@ set -euo pipefail
 #
 # Prevention: Block agents after 30 Bash calls, warn at 20
 #
-# Adopted from temp/.claude 2025-11-28
+# ADDED: 2025-11-28
 
 # Error handler
 trap 'echo "ERROR in throttle-agent-bash-calls.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR

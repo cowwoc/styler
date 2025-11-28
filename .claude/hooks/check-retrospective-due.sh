@@ -6,8 +6,7 @@ set -euo pipefail
 # Trigger: SessionStart hook
 # Purpose: Remind about retrospectives when due based on time or mistake count
 #
-# Adopted from temp/.claude 2025-11-28
-# Original: Session 13d72857-362f-4b56-b706-94dfbd5d8207
+# ADDED: 2025-11-28
 
 # Error handler
 trap 'echo "ERROR in check-retrospective-due.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR

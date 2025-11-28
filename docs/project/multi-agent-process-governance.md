@@ -130,23 +130,23 @@ Adversarial compliance checker (strict, binary)
 
 **Audit Checklist** (from process-optimization-methodology.md):
 ```
-Category 0: MANDATORY STATE VERIFICATION
-  [0.1] Task state verification
-  [0.2] Main agent tool usage in IMPLEMENTATION state
+Category 1: MANDATORY STATE VERIFICATION
+  [1.1] Task state verification
+  [1.2] Main agent tool usage in IMPLEMENTATION state
 
-Category 1: Implementation Actor Verification
-  [1.1] Main agent direct implementation detection
-  [1.2] Stakeholder agent invocation pattern
-  [1.3] Role clarity verification
+Category 2: Implementation Actor Verification
+  [2.1] Main agent direct implementation detection
+  [2.2] Stakeholder agent invocation pattern
+  [2.3] Role clarity verification
 
-Category 2: Worktree Activity Analysis
-  [2.1] Worktree structure verification
-  [2.2] Working directory history
+Category 3: Worktree Activity Analysis
+  [3.1] Worktree structure verification
+  [3.2] Working directory history
 
-Category 3: Multi-Agent Architecture Compliance
-  [3.1] Parallel agent execution
-  [3.2] Iterative validation rounds
-  [3.3] Agent worktree integration
+Category 4: Multi-Agent Architecture Compliance
+  [4.1] Parallel agent execution
+  [4.2] Iterative validation rounds
+  [4.3] Agent worktree integration
 
 ... (all 25 checks)
 ```
@@ -314,7 +314,7 @@ Task tool (config): "Find doc ambiguities that caused violations. Input: audit-p
 - **Compliant Checks**: 24/25
 
 ### Critical Violation
-- **Check 0.2**: Main agent used Edit tool during IMPLEMENTATION state
+- **Check 1.2**: Main agent used Edit tool during IMPLEMENTATION state
 - **Evidence**: task.json state == IMPLEMENTATION, Edit tool on FormattingViolation.java
 - **Recovery Options**: (see audit-protocol-compliance skill output)
 
@@ -360,8 +360,8 @@ color: red
 **Role**: Check parse-conversation-timeline skill facts against protocol rules (strict, binary)
 
 **CRITICAL RULES**:
-1. Check task.json state FIRST (Check 0.1)
-2. If state == IMPLEMENTATION and main agent used Write/Edit on source files, FLAG IMMEDIATELY (Check 0.2)
+1. Check task.json state FIRST (Check 1.1)
+2. If state == IMPLEMENTATION and main agent used Write/Edit on source files, FLAG IMMEDIATELY (Check 1.2)
 3. Do NOT rationalize violations
 4. Binary verdicts: VIOLATION or COMPLIANT (no gray area)
 5. Provide evidence and recovery options

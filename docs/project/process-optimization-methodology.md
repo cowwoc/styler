@@ -13,11 +13,11 @@ Each check is numbered for TodoWrite tracking. Execute ALL checks before reporti
 
 ---
 
-## Category 0: MANDATORY STATE VERIFICATION
+## Category 1: MANDATORY STATE VERIFICATION
 
 Verify ACTUAL task state before analyzing any behavior (prevents post-hoc rationalization)
 
-### Check 0.1: Task State Verification (MANDATORY FIRST CHECK)
+### Check 1.1: Task State Verification (MANDATORY FIRST CHECK)
 
 Read task.json to determine ACTUAL current state before analyzing any session behavior
 
@@ -42,14 +42,14 @@ Read task.json to determine ACTUAL current state before analyzing any session be
 
 ---
 
-### Check 0.2: Main Agent Tool Usage in IMPLEMENTATION State (MANDATORY)
+### Check 1.2: Main Agent Tool Usage in IMPLEMENTATION State (MANDATORY)
 
 If task.json state == "IMPLEMENTATION", detect if main agent used Write/Edit tools on source files
 
 **CRITICAL**: This is a PROTOCOL VIOLATION, not a "workflow variation"
 
 **Verification Steps:**
-1. Verify Check 0.1 completed (task.json state known)
+1. Verify Check 1.1 completed (task.json state known)
 2. IF state == "IMPLEMENTATION":
    - Search conversation for Write/Edit tool usage by main agent
    - Check tool targets: .java, .ts, .py, .jsx, .tsx files
@@ -86,7 +86,7 @@ CRITICAL VIOLATION DETECTED:
 
 ---
 
-### Check 0.3: Git History Pattern Analysis (MANDATORY)
+### Check 1.3: Git History Pattern Analysis (MANDATORY)
 
 Detect suspicious single-commit patterns that suggest main agent implementation bypass
 
@@ -200,11 +200,11 @@ RECOMMENDED: Option 1 (proper protocol adherence)
 
 ---
 
-## Category 1: Implementation Actor Verification
+## Category 2: Implementation Actor Verification
 
 Verify WHO is implementing code matches protocol requirements
 
-### Check 1.1: Main Agent Direct Implementation Detection
+### Check 2.1: Main Agent Direct Implementation Detection
 
 Detect if main agent implemented code directly in task worktree
 
@@ -255,7 +255,7 @@ coordination
 
 ---
 
-### Check 1.2: Stakeholder Agent Invocation Pattern Analysis
+### Check 2.2: Stakeholder Agent Invocation Pattern Analysis
 
 Verify main agent invoked stakeholder agents for implementation
 
@@ -283,7 +283,7 @@ Main agent message contains:
 
 ---
 
-### Check 1.3: Role Clarity Verification
+### Check 2.3: Role Clarity Verification
 
 Ensure main agent understands role boundaries
 
@@ -308,11 +308,11 @@ Ensure main agent understands role boundaries
 
 ---
 
-## Category 2: Worktree Activity Analysis
+## Category 3: Worktree Activity Analysis
 
 Verify WHERE implementation occurs matches protocol requirements
 
-### Check 2.1: Worktree Structure Verification
+### Check 3.1: Worktree Structure Verification
 
 Verify proper worktree structure exists
 
@@ -341,7 +341,7 @@ Verify proper worktree structure exists
 
 ---
 
-### Check 2.2: Working Directory History Analysis
+### Check 3.2: Working Directory History Analysis
 
 Verify main agent worked in correct directories
 
@@ -364,11 +364,11 @@ Verify main agent worked in correct directories
 
 ---
 
-## Category 3: Multi-Agent Architecture Compliance
+## Category 4: Multi-Agent Architecture Compliance
 
 Verify multi-agent coordination pattern was followed
 
-### Check 3.1: Parallel Agent Execution
+### Check 4.1: Parallel Agent Execution
 
 Verify agents were launched in parallel
 
@@ -391,7 +391,7 @@ Verify agents were launched in parallel
 
 ---
 
-### Check 3.2: Iterative Validation Rounds
+### Check 4.2: Iterative Validation Rounds
 
 Verify iterative agent validation occurred
 
@@ -415,7 +415,7 @@ Verify iterative agent validation occurred
 
 ---
 
-### Check 3.3: Agent Worktree Integration
+### Check 4.3: Agent Worktree Integration
 
 Verify agent changes were merged to task branch
 
@@ -441,11 +441,11 @@ git log --oneline task-branch shows:
 
 ---
 
-## Category 4: Task.md Authorship Verification
+## Category 5: Task.md Authorship Verification
 
 Verify task.md is authored by main agent, not stakeholder agents implementing directly
 
-### Check 4.1: Task.md Creation Timing
+### Check 5.1: Task.md Creation Timing
 
 Verify task.md created during CLASSIFIED state
 
@@ -468,7 +468,7 @@ Verify task.md created during CLASSIFIED state
 
 ---
 
-### Check 4.2: Task.md Content Analysis
+### Check 5.2: Task.md Content Analysis
 
 Verify task.md contains requirements, not implementation details
 
@@ -491,11 +491,11 @@ Verify task.md contains requirements, not implementation details
 
 ---
 
-## Category 5: Protocol Interpretation Validation
+## Category 6: Protocol Interpretation Validation
 
 Ensure protocol sections are correctly interpreted
 
-### Check 5.1: Multi-Agent Architecture Section Compliance
+### Check 6.1: Multi-Agent Architecture Section Compliance
 
 Verify understanding of multi-agent architecture section in CLAUDE.md
 
@@ -525,7 +525,7 @@ Verify understanding of multi-agent architecture section in CLAUDE.md
 
 ---
 
-### Check 5.2: IMPLEMENTATION State Requirements Validation
+### Check 6.2: IMPLEMENTATION State Requirements Validation
 
 Verify IMPLEMENTATION state requirements from task-protocol-core.md
 
@@ -554,11 +554,11 @@ Verify IMPLEMENTATION state requirements from task-protocol-core.md
 
 ---
 
-## Category 6: Early Detection Triggers
+## Category 7: Early Detection Triggers
 
 Catch violations early before significant work is done
 
-### Check 6.1: Post-SYNTHESIS Early Warning
+### Check 7.1: Post-SYNTHESIS Early Warning
 
 After SYNTHESIS state approval, verify preparation for proper IMPLEMENTATION
 
@@ -583,7 +583,7 @@ After SYNTHESIS state approval, verify preparation for proper IMPLEMENTATION
 
 ---
 
-### Check 6.2: First File Creation Detection
+### Check 7.2: First File Creation Detection
 
 Detect first file creation and verify it's from agent, not main
 
@@ -606,11 +606,11 @@ Detect first file creation and verify it's from agent, not main
 
 ---
 
-## Category 7: Test Coverage Validation
+## Category 8: Test Coverage Validation
 
 Ensure test requirements are met during IMPLEMENTATION
 
-### Check 7.1: Test Count Verification
+### Check 8.1: Test Count Verification
 
 Verify minimum test count before IMPLEMENTATION exit
 
@@ -633,7 +633,7 @@ Verify minimum test count before IMPLEMENTATION exit
 
 ---
 
-### Check 7.2: Test-First Bug Fixing
+### Check 8.2: Test-First Bug Fixing
 
 Verify bugs discovered during implementation have corresponding tests
 
@@ -659,11 +659,11 @@ public void testSpecificBugScenario() {
 
 ---
 
-## Category 8: Efficiency Optimization
+## Category 9: Efficiency Optimization
 
 Reduce context usage and improve session performance
 
-### Check 8.1: Sequential Tool Call Detection
+### Check 9.1: Sequential Tool Call Detection
 
 Identify opportunities for parallel tool execution
 
@@ -687,7 +687,7 @@ Identify opportunities for parallel tool execution
 
 ---
 
-### Check 8.2: Predictive Prefetching
+### Check 9.2: Predictive Prefetching
 
 Verify protocol files loaded early in session
 
@@ -711,7 +711,7 @@ Verify protocol files loaded early in session
 
 ---
 
-### Check 8.3: Fail-Fast Validation
+### Check 9.3: Fail-Fast Validation
 
 Verify compilation/style checks after each component
 

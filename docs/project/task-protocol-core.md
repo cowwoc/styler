@@ -854,7 +854,7 @@ IF (audit-protocol-compliance skill returns FAILED):
   1. **STOP immediately** - Do not proceed to next state
   2. **IDENTIFY violation** - Read audit-protocol-compliance skill output for specific check IDs
   3. **APPLY fix** - Based on violation type:
-     - Check 0.2 (main agent implementation): Revert changes, re-delegate to agents
+     - Check 1.2 (main agent implementation): Revert changes, re-delegate to agents
      - State sequence violation: Return to skipped state
      - Missing artifacts: Create required files/reports
      - Lock state mismatch: Update lock file to match actual state
@@ -1149,7 +1149,7 @@ Audit Behavior:
 - State remains IMPLEMENTATION after audit
 
 Critical Audit Checks During IMPLEMENTATION:
-- Check 0.2: Main agent implementation violation detection
+- Check 1.2: Main agent implementation violation detection
   → If FAILED: Agent implemented instead of delegating
   → Recovery: Revert changes, return to SYNTHESIS, re-delegate
 
@@ -1371,7 +1371,7 @@ CORRECT PATTERN:
 
 **Violation: Main Agent Implemented During IMPLEMENTATION**
 ```bash
-# Detected by: Check 0.2
+# Detected by: Check 1.2
 # Recovery:
 1. Revert implementation changes:
    git reset --hard SYNTHESIS_STATE_SHA

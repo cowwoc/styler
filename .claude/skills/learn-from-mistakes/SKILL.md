@@ -347,9 +347,36 @@ jq -r --arg indicator "$MISTAKE" \
 
 ### Phase 4: Configuration Updates
 
-**⚠️ CRITICAL: Active Enforcement vs Passive Policies**
+**⚠️ CRITICAL: Prevention Hierarchy (MANDATORY)**
 
-**When policies exist but are violated, implement ACTIVE ENFORCEMENT (hooks), not just passive documentation.**
+**Prevention mechanisms must be chosen in strict priority order. Higher-priority options MUST be exhausted
+before lower-priority options are considered.**
+
+| Priority | Type | Description | When to Use |
+|----------|------|-------------|-------------|
+| **1 (HIGHEST)** | `code_fix` | Fix broken tool or code | Root cause is a bug in existing code/tool |
+| **2** | `hook` | Automatic enforcement before/after execution | Mistake is detectable/preventable via PreToolUse/PostToolUse |
+| **3** | `validation` | Automatic detection after execution | Mistake detectable but not preventable (alerts for manual fix) |
+| **4 (LOWEST)** | `config` | Documentation/policy update | **LAST RESORT** - only when above options impossible |
+
+**⚠️ CONFIG JUSTIFICATION GATE**
+
+Before choosing `config` (documentation), you MUST answer:
+
+1. **Why can't a code_fix work?** (e.g., "No existing tool covers this case")
+2. **Why can't a hook work?** (e.g., "Cannot be detected mechanically before/during execution")
+3. **Why can't validation work?** (e.g., "Requires human judgment, no pattern to detect")
+
+**If you cannot provide concrete answers, you MUST implement a higher-priority prevention.**
+
+**PROHIBITED JUSTIFICATIONS**:
+- ❌ "It's faster to document"
+- ❌ "A hook would be too complex"
+- ❌ "Documentation is sufficient for now"
+
+**Active Enforcement vs Passive Policies**
+
+When policies exist but are violated, implement ACTIVE ENFORCEMENT (hooks), not just passive documentation.
 
 **Decision Tree**:
 1. **Policy exists AND was violated?**

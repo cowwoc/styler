@@ -1072,9 +1072,9 @@ git log --oneline
 # Expected: Only 2 commits (3ebecc4 and b732939)
 ```
 
-**Solution**: ALWAYS checkout the LAST commit FIRST (Step 0):
+**Solution**: ALWAYS checkout the LAST commit FIRST (Step 1):
 ```bash
-# 🚨 MANDATORY Step 0: Position HEAD
+# 🚨 MANDATORY Step 1: Position HEAD
 git checkout b732939                # Position HEAD at LAST commit to squash
 git log --oneline -1                # Verify: should show b732939
 
@@ -1085,9 +1085,9 @@ git reset --soft 4d3e19e           # Now squashes ONLY 3ebecc4 and b732939
 ```
 
 **Prevention Measures Added**:
-1. **Step 0 added**: Mandatory HEAD positioning before backup
-2. **Usage section updated**: Emphasizes Step 0 with warnings
-3. **Verification checks**: HEAD position validated in Step 2
+1. **Step 1 added**: Mandatory HEAD positioning before backup
+2. **Usage section updated**: Emphasizes Step 1 with warnings
+3. **Verification checks**: HEAD position validated in Step 3
 4. **This example added**: Documents real mistake for future reference
 
 **Why This Works**:
