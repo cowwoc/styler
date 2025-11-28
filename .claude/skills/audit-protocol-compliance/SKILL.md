@@ -32,9 +32,9 @@ This produces structured timeline JSON with:
 - task_state
 - statistics
 
-### Phase 2: Execute Category 0 Checks (CRITICAL - MANDATORY FIRST)
+### Phase 2: Execute Category 1 Checks (CRITICAL - MANDATORY FIRST)
 
-**Check 0.0: User Approval Checkpoints** (CRITICAL)
+**Check 1.0: User Approval Checkpoints** (CRITICAL)
 ```bash
 jq '.statistics.approval_checkpoints' timeline.json
 
@@ -46,7 +46,7 @@ jq '.statistics.approval_checkpoints' timeline.json
 #     → CRITICAL VIOLATION
 ```
 
-**Check 0.1: Task Merge to Main Before COMPLETE** (CRITICAL)
+**Check 1.1: Task Merge to Main Before COMPLETE** (CRITICAL)
 ```bash
 jq '.task_state.task_json.state' timeline.json
 jq '.git_status.branches[] | select(.task_complete_but_not_merged == true)' timeline.json
@@ -57,7 +57,7 @@ jq '.git_status.branches[] | select(.task_complete_but_not_merged == true)' time
 #   → CRITICAL VIOLATION
 ```
 
-**Check 0.2: Main Agent Source File Creation** (CRITICAL)
+**Check 1.2: Main Agent Source File Creation** (CRITICAL)
 ```bash
 jq '.timeline[] | select(.type == "tool_use" and .actor == "main" and (.tool.name == "Edit" or .tool.name == "Write") and .file_classification.type == "source_file")' timeline.json
 
@@ -70,7 +70,7 @@ jq '.timeline[] | select(.type == "tool_use" and .actor == "main" and (.tool.nam
 #       → CRITICAL VIOLATION
 ```
 
-**Check 0.3: Working Directory Violations** (CRITICAL)
+**Check 1.3: Working Directory Violations** (CRITICAL)
 ```bash
 jq '.timeline[] | select(.type == "tool_use" and .actor == "main" and (.tool.name == "Edit" or .tool.name == "Write") and .file_classification.worktree_type == "agent_worktree")' timeline.json
 
@@ -80,46 +80,46 @@ jq '.timeline[] | select(.type == "tool_use" and .actor == "main" and (.tool.nam
 #   → CRITICAL VIOLATION
 ```
 
-### Phase 3: Execute Additional Checks (Categories 1-7)
+### Phase 3: Execute Additional Checks (Categories 2-8)
 
-**Check 1.1: Main Agent Implementation** (CRITICAL)
+**Check 2.1: Main Agent Implementation** (CRITICAL)
 ```bash
 # Rule: Main agent MUST coordinate via Task tool, NOT implement directly
 # Query timeline for Write/Edit on .java/.ts/.py during IMPLEMENTATION state
 ```
 
-**Check 1.2: Agent Invocation Pattern** (HIGH)
+**Check 2.2: Agent Invocation Pattern** (HIGH)
 ```bash
 # Rule: Launch independent agents in parallel (single message)
 # Query: Count Task tool invocations per message
 # IF Task tools spread across multiple messages: VIOLATION
 ```
 
-**Check 2.1: Worktree Structure** (CRITICAL)
+**Check 3.1: Worktree Structure** (CRITICAL)
 ```bash
 # Rule: Each agent must have own worktree before invocation
 # Query: Check worktree creation before Task tool calls
 ```
 
-**Check 2.2: Working Directory** (CRITICAL)
+**Check 3.2: Working Directory** (CRITICAL)
 ```bash
 # Rule: Agents work in their assigned worktrees
 # Query: Verify cwd matches expected worktree for each agent
 ```
 
-**Check 3.1: Parallel Execution** (MEDIUM)
+**Check 4.1: Parallel Execution** (MEDIUM)
 ```bash
 # Rule: Independent operations should run in parallel
 # Query: Identify sequential Task calls that could be parallel
 ```
 
-**Check 3.2: Iterative Validation** (HIGH)
+**Check 4.2: Iterative Validation** (HIGH)
 ```bash
 # Rule: Implementation uses review mode + implementation mode iterations
 # Query: Verify agents in review mode (sonnet) validate agents in implementation mode (haiku)
 ```
 
-**Check 3.3: Agent Integration** (CRITICAL)
+**Check 4.3: Agent Integration** (CRITICAL)
 ```bash
 # Rule: Agent work must merge to task branch
 # Query: Verify git merge operations after agent completion
@@ -194,7 +194,7 @@ For EACH violation, recommend specific protocol changes:
 
 ## CRITICAL RULES (ZERO TOLERANCE)
 
-### Rule 1: Check 0.0-0.3 Execute FIRST
+### Rule 1: Check 1.0-1.3 Execute FIRST
 - Do NOT skip to other checks
 - Do NOT assume state is correct
 - Read timeline data, don't infer
@@ -213,7 +213,7 @@ For EACH violation, recommend specific protocol changes:
 - ❌ "The agent was trying to fix violations, so it's reasonable"
 
 **REQUIRED PATTERN**:
-- ✅ "Check 0.2: VIOLATION - Main agent used Edit during IMPLEMENTATION state"
+- ✅ "Check 1.2: VIOLATION - Main agent used Edit during IMPLEMENTATION state"
 - ✅ "Evidence: task.json state == IMPLEMENTATION, Edit tool on source file"
 - ✅ "Verdict: VIOLATION (no exceptions)"
 
@@ -234,23 +234,23 @@ Rules apply based on actual task_state, NOT:
 
 | Check ID | Category | Severity | Description |
 |----------|----------|----------|-------------|
-| 0.0 | Approval checkpoints | CRITICAL | User approval after SYNTHESIS |
-| 0.1 | State verification | CRITICAL | Merge before COMPLETE |
-| 0.2 | Implementation boundaries | CRITICAL | Main agent source file creation |
-| 0.3 | Working directory | CRITICAL | Agent worktree isolation |
-| 1.1 | Coordination | CRITICAL | Main agent delegates via Task tool |
-| 1.2 | Invocation pattern | HIGH | Parallel agent launch |
-| 1.3 | Role clarity | HIGH | Clear mode specification (sonnet/haiku) |
-| 2.1 | Worktree structure | CRITICAL | Agent worktrees exist |
-| 2.2 | Working directory | CRITICAL | Agents in correct worktrees |
-| 3.1 | Parallel execution | MEDIUM | Independent operations parallel |
-| 3.2 | Iterative validation | HIGH | Review/implementation iterations |
-| 3.3 | Agent integration | CRITICAL | Work merged to task branch |
+| 1.0 | Approval checkpoints | CRITICAL | User approval after SYNTHESIS |
+| 1.1 | State verification | CRITICAL | Merge before COMPLETE |
+| 1.2 | Implementation boundaries | CRITICAL | Main agent source file creation |
+| 1.3 | Working directory | CRITICAL | Agent worktree isolation |
+| 2.1 | Coordination | CRITICAL | Main agent delegates via Task tool |
+| 2.2 | Invocation pattern | HIGH | Parallel agent launch |
+| 2.3 | Role clarity | HIGH | Clear mode specification (sonnet/haiku) |
+| 3.1 | Worktree structure | CRITICAL | Agent worktrees exist |
+| 3.2 | Working directory | CRITICAL | Agents in correct worktrees |
+| 4.1 | Parallel execution | MEDIUM | Independent operations parallel |
+| 4.2 | Iterative validation | HIGH | Review/implementation iterations |
+| 4.3 | Agent integration | CRITICAL | Work merged to task branch |
 
 ## Verification Checklist
 
 Before outputting audit results:
-- [ ] Check 0.0-0.3 executed FIRST
+- [ ] Check 1.0-1.3 executed FIRST
 - [ ] All checks attempted
 - [ ] Each violation has timeline evidence
 - [ ] Binary verdicts only (no rationalizations)

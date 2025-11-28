@@ -61,6 +61,29 @@ if [[ "$FILE_PATH" =~ README\.md$ ]] || \
     exit 0
 fi
 
+# =============================================================================
+# RETROSPECTIVE SKILL OUTPUT EXCEPTION
+# =============================================================================
+# Allow structured outputs from the retrospective skill process:
+# - .claude/retrospectives/*.json (mistakes.json, retrospectives.json)
+# - Action item tracking files
+#
+# This distinction per user request:
+# - BLOCK: Ad-hoc retrospective prose, lessons-learned docs, post-mortems
+# - ALLOW: Structured machine-readable tracking from retrospective workflow
+
+if [[ "$FILE_PATH" =~ \.claude/retrospectives/.*\.json$ ]]; then
+    log_hook_success "block-retrospective-docs" "PreToolUse" "Retrospective skill JSON output allowed"
+    exit 0
+fi
+
+# Allow retrospective skill to update its own skill file
+if [[ "$FILE_PATH" =~ \.claude/skills/retrospective/ ]] || \
+   [[ "$FILE_PATH" =~ \.claude/skills/learn-from-mistakes/ ]]; then
+    log_hook_success "block-retrospective-docs" "PreToolUse" "Retrospective/learn-from-mistakes skill file allowed"
+    exit 0
+fi
+
 # Extract filename and content
 FILENAME=$(basename "$FILE_PATH")
 CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .content // .parameters.content // ""' 2>/dev/null || echo "")
@@ -68,16 +91,20 @@ CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .content // .parameters.
 # =============================================================================
 # DETECTION PHASE 1: Prohibited directory paths (ALWAYS BLOCK)
 # =============================================================================
+# NOTE: .claude/retrospectives/ is ALLOWED (handled above) for structured JSON
+#       tracking. These patterns block ad-hoc prose directories elsewhere.
 
 PROHIBITED_PATHS=(
     "mistakes/"
     "lessons-learned"
     "post-mortem"
     "postmortem"
-    "retrospective"
     "decision-log"
     "decision-logs"
 )
+# NOTE: "retrospective" pattern removed - .claude/retrospectives/ is allowed
+#       for structured skill output. Other retrospective directories still blocked
+#       by filename/content analysis below.
 
 for pattern in "${PROHIBITED_PATHS[@]}"; do
     if [[ "$FILE_PATH" =~ $pattern ]]; then

@@ -4,7 +4,7 @@
 > **Audience:** quality, test
 > **Purpose:** Code quality standards and test-driven development practices
 
-## 🧪 UNIT TEST DRIVEN BUG FIXING {#unit-test-driven-bug-fixing}
+## 🧪 UNIT TEST DRIVEN BUG FIXING {#unit-tdd-implementationing}
 
 When encountering any bug during development:
 

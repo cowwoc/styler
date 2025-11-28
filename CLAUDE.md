@@ -161,6 +161,44 @@ When code, configuration, or documentation becomes obsolete:
 **When removing**: (1) Delete all obsolete files/code (2) Update changelog with "Removed" section (3)
 Update documentation (4) Verify no broken references
 
+### Fail-Fast Error Handling
+
+**NEVER fail silently.** Code must fail-fast with clear error messages when encountering invalid input or
+unexpected conditions.
+
+**Prohibited patterns**:
+- ❌ Return empty collections on invalid input (hides bugs)
+- ❌ Return null or default values when preconditions fail
+- ❌ Silently ignore invalid configuration
+- ❌ Catch and swallow exceptions without logging or rethrowing
+
+**Required patterns**:
+- ✅ Throw `IllegalArgumentException` for invalid parameters
+- ✅ Throw `IllegalStateException` for invalid object state
+- ✅ Include descriptive error messages with actual values
+- ✅ Validate preconditions at method entry (fail early)
+
+**Example**:
+```java
+// ❌ WRONG - Silent failure
+if (!(config instanceof ExpectedType)) {
+    return new ArrayList<>();  // Hides programming error
+}
+
+// ✅ CORRECT - Fail-fast
+if (!(config instanceof ExpectedType expected)) {
+    throw new IllegalArgumentException("config must be ExpectedType, got: " +
+        config.getClass().getName());
+}
+```
+
+### Test-Driven Development
+
+**MANDATORY**: Use the `tdd-implementation` skill for ALL Java development.
+
+Hooks physically BLOCK production code edits without active TDD mode. No exceptions - the skill provides
+the workflow and the hooks enforce it.
+
 ### Defensive Security Policy
 
 Assist with defensive security tasks only. Refuse to create, modify, or improve code that may be used
