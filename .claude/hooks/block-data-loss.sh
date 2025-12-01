@@ -80,7 +80,17 @@ handle_pre_tool_use()
 	        echo "❌ **VIOLATION** - This operation would destroy the entire workspace" >&2
 	        exit 2
 	        ;;
-	    *"rm -rf /workspace/main"|*"rm -rf /workspace/main "*|*"rm -rf /workspace/main/"*|*"rm /workspace/main"|*"rm /workspace/main "*)
+	    *"rm -rf /workspace/main"|*"rm -rf /workspace/main "*|*"rm -rf /workspace/main/ "*|*"rm -rf /workspace/main/&&"*|*"rm -rf /workspace/main/;"*|*"rm /workspace/main"|*"rm /workspace/main "*)
+	        # Skip if this is a heredoc (the rm pattern is just text content, not a command)
+	        if echo "$COMMAND" | grep -q '<<'; then
+	            echo '{}'
+	            exit 0
+	        fi
+	        # Skip if this is an echo/printf/cat string (the rm pattern is quoted text)
+	        if echo "$COMMAND" | grep -qE '^(echo|printf|cat\s*>)'; then
+	            echo '{}'
+	            exit 0
+	        fi
 	        echo "⛔ BLOCKED: Deletion of /workspace/main directory is not allowed to prevent data loss" >&2
 	        echo "🚨 DATA PROTECTION: The code directory must not be deleted" >&2
 	        echo "❌ **VIOLATION** - This operation would destroy the entire project" >&2

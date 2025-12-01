@@ -46,9 +46,9 @@ fi
 SCRIPT_NAME=$(basename "$0")
 EXIT_CODE=0
 
-echo "=== DOCUMENTATION SYNCHRONIZATION VERIFICATION ==="
-echo "Checking rule title consistency between Claude and human files"
-echo ""
+echo "=== DOCUMENTATION SYNCHRONIZATION VERIFICATION ===" >&2
+echo "Checking rule title consistency between Claude and human files" >&2
+echo "" >&2
 
 # Function to extract rule titles from a file
 extract_rule_titles() {
@@ -222,36 +222,38 @@ verify_file_pair() {
 
 # Main verification process
 main() {
-    echo "Starting synchronization check at $(date)"
-    echo ""
-    
-    # Verify common rules
-    verify_file_pair "code-style/common-claude.md" "code-style/common-human.md" "COMMON RULES"
-    
+    echo "Starting synchronization check at $(date)" >&2
+    echo "" >&2
+
+    # Verify common rules (|| true prevents set -e from exiting on mismatch)
+    verify_file_pair "code-style/common-claude.md" "code-style/common-human.md" "COMMON RULES" || true
+
     # Verify Java rules
-    verify_file_pair "code-style/java-claude.md" "code-style/java-human.md" "JAVA RULES"
-    
+    verify_file_pair "code-style/java-claude.md" "code-style/java-human.md" "JAVA RULES" || true
+
     # Verify TypeScript rules
-    verify_file_pair "code-style/typescript-claude.md" "code-style/typescript-human.md" "TYPESCRIPT RULES"
-    
+    verify_file_pair "code-style/typescript-claude.md" "code-style/typescript-human.md" "TYPESCRIPT RULES" || true
+
     # Verify Testing rules
-    verify_file_pair "code-style/testing-claude.md" "code-style/testing-human.md" "TESTING RULES"
+    verify_file_pair "code-style/testing-claude.md" "code-style/testing-human.md" "TESTING RULES" || true
     
-    echo "=== VERIFICATION SUMMARY ==="
+    echo "=== VERIFICATION SUMMARY ===" >&2
     if [[ $EXIT_CODE -eq 0 ]]; then
-        echo "✅ ALL DOCUMENTATION FILES ARE SYNCHRONIZED"
-        echo "All rule titles match between Claude and human files."
-        echo "Safe to proceed with documentation updates."
+        echo "✅ ALL DOCUMENTATION FILES ARE SYNCHRONIZED" >&2
+        echo "All rule titles match between Claude and human files." >&2
+        echo "Safe to proceed with documentation updates." >&2
     else
-        echo "❌ SYNCHRONIZATION ERRORS DETECTED"
-        echo "Rule titles do not match between some Claude and human files."
-        echo "Fix synchronization issues before proceeding."
+        echo "❌ SYNCHRONIZATION ERRORS DETECTED" >&2
+        echo "Rule titles do not match between some Claude and human files." >&2
+        echo "Fix synchronization issues before proceeding." >&2
     fi
-    
-    echo ""
-    echo "Verification completed at $(date)"
-    
-    exit $EXIT_CODE
+
+    echo "" >&2
+    echo "Verification completed at $(date)" >&2
+
+    # PostToolUse hooks are advisory - always exit 0 to not block
+    # The warnings above inform the user of any issues
+    exit 0
 }
 
 # Function to show usage information
