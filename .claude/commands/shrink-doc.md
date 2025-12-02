@@ -92,7 +92,9 @@ Use Task tool with `subagent_type: "general-purpose"` and simple outcome-based p
 
 **File**: {{arg}}
 
-**Goal**: Compress to approximately 50% of current size while preserving **execution equivalence**.
+**Goal**: Compress while preserving **perfect execution equivalence** (score = 1.0).
+
+**Compression Target**: ~50% reduction is ideal, but lesser compression is acceptable. Perfect equivalence (1.0) is mandatory; compression amount is secondary.
 
 ---
 
@@ -240,7 +242,7 @@ state from before /shrink-doc was invoked (not against any intermediate versions
 
 ### Step 5: Decision Logic
 
-**Threshold**: 0.95
+**Threshold**: 1.0
 
 **Report Format** (for approval):
 1. What was preserved
@@ -265,8 +267,8 @@ After presenting validation results for ANY version, show comparison table:
 ```
 
 **Status Legend**:
-- ✅ = Approved (score ≥ 0.95)
-- ❌ = Rejected (score < 0.95)
+- ✅ = Approved (score = 1.0)
+- ❌ = Rejected (score < 1.0)
 - ✓ applied = Currently applied to original file
 
 **Example**:
@@ -280,7 +282,7 @@ After presenting validation results for ANY version, show comparison table:
 
 ---
 
-**If score ≥ 0.95**: ✅ **APPROVE**
+**If score = 1.0**: ✅ **APPROVE**
 ```
 Validation passed! Execution equivalence: {score}/1.0
 
@@ -312,17 +314,17 @@ Would you like to try again to generate an even better version?
 → `rm /tmp/shrink-doc-{{filename}}-version.txt`
 → Note: Future /shrink-doc on this file will use compressed version as new baseline
 
-**If score < 0.95**: ❌ **ITERATE**
+**If score < 1.0**: ❌ **ITERATE**
 ```
-Validation requires improvement. Score: {score}/1.0 (threshold: 0.95)
+Validation requires improvement. Score: {score}/1.0 (threshold: 1.0)
 
 Components:
 - Claim preservation: {claim_score}
 - Relationship preservation: {relationship_score}
 - Graph structure: {graph_score}
 
-**Why < 0.95 requires iteration**:
-Scores below 0.95 indicate relationship abstraction or loss that creates
+**Why < 1.0 requires iteration**:
+Scores below 1.0 indicate relationship abstraction or loss that creates
 interpretation vulnerabilities. See /compare-docs § Score Interpretation
 for detailed vulnerability analysis.
 
@@ -348,9 +350,9 @@ Before presenting results to user, MANDATORY self-check:
 
 ```bash
 # Self-validation checklist
-if [ score >= 0.95 ]; then
+if [ score == 1.0 ]; then
   decision="APPROVE"
-elif [ score < 0.95 ]; then
+elif [ score < 1.0 ]; then
   decision="ITERATE"
 fi
 
@@ -362,11 +364,11 @@ fi
 ```
 
 **Common Mistakes**:
-❌ **WRONG**: "Score 0.89, above threshold 0.95" (0.89 < 0.95, mathematical error)
-✅ **CORRECT**: "Score 0.89 < 0.95, iterate automatically"
+❌ **WRONG**: "Score 0.97, close enough to 1.0" (0.97 < 1.0, must be perfect)
+✅ **CORRECT**: "Score 0.97 < 1.0, iterate to achieve perfect equivalence"
 
-❌ **WRONG**: "Score 0.92, good enough" (ignores 0.95 threshold)
-✅ **CORRECT**: "Score 0.92 < 0.95, iterate to eliminate abstraction risks"
+❌ **WRONG**: "Score 0.99, good enough" (ignores 1.0 threshold)
+✅ **CORRECT**: "Score 0.99 < 1.0, iterate to eliminate any loss"
 
 **Prevention**: Always verify threshold comparison matches stated score value before presenting.
 
@@ -374,13 +376,13 @@ fi
 
 ### Step 6: Iteration Loop
 
-**If score < 0.95**, invoke agent again with specific feedback:
+**If score < 1.0**, invoke agent again with specific feedback:
 
 **Iteration Prompt Template**:
 ```
 **Document Compression - Revision Attempt {iteration_number}**
 
-**Previous Score**: {score}/1.0 (threshold: 0.95)
+**Previous Score**: {score}/1.0 (threshold: 1.0)
 
 **Issues Identified by Validation**:
 
@@ -472,7 +474,7 @@ Any score derived from manual assessment, estimation, or targeted validation is 
 3. If either is NO → STOP and invoke /compare-docs
 
 **Maximum iterations**: 3
-- If still < 0.95 after 3 attempts, report to user and ask for guidance
+- If still < 1.0 after 3 attempts, report to user and ask for guidance
 - All versions preserved in /tmp for rollback
 - User may choose to accept best attempt or abandon compression
 
@@ -514,14 +516,14 @@ version numbers for rollback capability.
 ## Success Criteria
 
 ✅ **Compression approved** when:
-- Execution equivalence score ≥ 0.95
+- Execution equivalence score = 1.0
 
 ✅ **Compression quality** metrics:
 - Word reduction: ~50% (target)
-- Execution equivalence: ≥ 0.95
-- Claim preservation: ≥ 0.95
-- Relationship preservation: ≥ 0.95
-- Graph structure: ≥ 0.90
+- Execution equivalence: = 1.0
+- Claim preservation: = 1.0
+- Relationship preservation: = 1.0
+- Graph structure: = 1.0
 - No critical relationship losses
 
 ---
@@ -536,10 +538,10 @@ creates interpretation vulnerabilities (see /compare-docs § Score Interpretatio
 
 **Score Plateau**: If multiple iterations needed but score plateaus (no
 improvement after 2 attempts, e.g., v1=0.87, v2=0.88, v3=0.89), compression
-may be hitting fundamental limits. After 3 attempts below 0.95, report best
+may be hitting fundamental limits. After 3 attempts below 1.0, report best
 version to user and explain compression challenges encountered.
 
-**Multiple Iterations**: Each iteration should show improvement. Monitor progression toward 0.95 threshold.
+**Multiple Iterations**: Each iteration should show improvement. Monitor progression toward 1.0 threshold.
 
 **Large Documents**: For documents >10KB, consider breaking into logical sections
 and compressing separately to improve iteration efficiency.
@@ -558,11 +560,11 @@ Expected flow:
 3. Invoke compression agent
 4. Save to /tmp/compressed-example-command-v1.md (version 1) ✅
 5. Run /compare-docs /tmp/original-example-command.md /tmp/compressed-example-command-v1.md
-6. Score 0.96 → Approve v1 and overwrite original ✅
+6. Score 1.0 → Approve v1 and overwrite original ✅
 7. Cleanup: Remove /tmp/compressed-example-command-v*.md and /tmp/original-example-command.md ✅
 
 **If iteration needed**:
-- v1 score < 0.95 → Save v2, validate against original
-- v2 score < 0.95 → Save v3, validate against original
-- v3 score ≥ 0.95 → Approve v3, cleanup v1/v2/v3 and original
-- v3 score < 0.95 (after max iterations) → Report to user with best version
+- v1 score < 1.0 → Save v2, validate against original
+- v2 score < 1.0 → Save v3, validate against original
+- v3 score = 1.0 → Approve v3, cleanup v1/v2/v3 and original
+- v3 score < 1.0 (after max iterations) → Report to user with best version
