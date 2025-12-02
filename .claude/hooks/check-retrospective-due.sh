@@ -1,0 +1,89 @@
+#!/bin/bash
+set -euo pipefail
+
+# Check if retrospective is due (hybrid: time-based OR mistake count)
+#
+# Trigger: SessionStart hook
+# Purpose: Remind about retrospectives when due based on time or mistake count
+#
+# Adopted from temp/.claude 2025-11-28
+# Original: Session 13d72857-362f-4b56-b706-94dfbd5d8207
+
+# Error handler
+trap 'echo "ERROR in check-retrospective-due.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
+RETRO_FILE="/workspace/main/.claude/retrospectives/retrospectives.json"
+
+# Early exit if file doesn't exist
+if [[ ! -f "$RETRO_FILE" ]]; then
+    exit 0
+fi
+
+# Read configuration and state using jq for reliable parsing
+TRIGGER_DAYS=$(jq -r '.config.trigger_interval_days // 14' "$RETRO_FILE" 2>/dev/null || echo "14")
+MISTAKE_THRESHOLD=$(jq -r '.config.mistake_count_threshold // 10' "$RETRO_FILE" 2>/dev/null || echo "10")
+LAST_RETRO=$(jq -r '.last_retrospective // ""' "$RETRO_FILE" 2>/dev/null || echo "")
+MISTAKE_COUNT=$(jq -r '.mistake_count_since_last // 0' "$RETRO_FILE" 2>/dev/null || echo "0")
+
+# Check if retrospective is due
+RETRO_DUE=false
+TRIGGER_REASON=""
+
+# Check 1: Time-based trigger
+if [[ -z "$LAST_RETRO" || "$LAST_RETRO" == "null" ]]; then
+    # No retrospective ever run - check if we have any mistakes logged
+    MISTAKES_FILE="/workspace/main/.claude/retrospectives/mistakes.json"
+    if [[ -f "$MISTAKES_FILE" ]]; then
+        TOTAL_MISTAKES=$(jq '.mistakes | length' "$MISTAKES_FILE" 2>/dev/null || echo "0")
+        if [[ "$TOTAL_MISTAKES" -gt 0 ]]; then
+            RETRO_DUE=true
+            TRIGGER_REASON="First retrospective with $TOTAL_MISTAKES logged mistakes"
+        fi
+    fi
+else
+    # Calculate days since last retrospective
+    LAST_RETRO_EPOCH=$(date -d "$LAST_RETRO" +%s 2>/dev/null || echo "0")
+    NOW_EPOCH=$(date +%s)
+    DAYS_SINCE=$(( (NOW_EPOCH - LAST_RETRO_EPOCH) / 86400 ))
+
+    if [[ "$DAYS_SINCE" -ge "$TRIGGER_DAYS" ]]; then
+        RETRO_DUE=true
+        TRIGGER_REASON="$DAYS_SINCE days since last retrospective (threshold: $TRIGGER_DAYS)"
+    fi
+fi
+
+# Check 2: Mistake count trigger
+if [[ "$RETRO_DUE" == "false" && "$MISTAKE_COUNT" -ge "$MISTAKE_THRESHOLD" ]]; then
+    RETRO_DUE=true
+    TRIGGER_REASON="$MISTAKE_COUNT mistakes accumulated (threshold: $MISTAKE_THRESHOLD)"
+fi
+
+# If retrospective is due, output reminder
+if [[ "$RETRO_DUE" == "true" ]]; then
+    cat >&2 << EOF
+
+================================================================================
+📊 RETROSPECTIVE DUE
+================================================================================
+
+Trigger: $TRIGGER_REASON
+
+A retrospective review is recommended to analyze accumulated mistakes and
+identify recurring patterns that need systemic fixes.
+
+SUGGESTED ACTION: Invoke the retrospective skill:
+
+  Skill: retrospective
+
+This will:
+1. Aggregate all mistakes since last retrospective
+2. Identify recurring patterns
+3. Check effectiveness of previous action items
+4. Generate new action items for systemic fixes
+
+================================================================================
+
+EOF
+fi
+
+exit 0

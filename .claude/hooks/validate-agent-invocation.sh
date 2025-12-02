@@ -15,7 +15,6 @@ set -euo pipefail
 # Error handler - output helpful message to stderr on failure
 trap 'echo "ERROR in validate-agent-invocation.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
-echo "[HOOK DEBUG] validate-agent-invocation.sh START" >&2
 
 # Source logging helper
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -218,5 +217,4 @@ See: /workspace/main/docs/project/task-protocol-core.md § Agent Invocation Rule
 fi
 
 log_hook_success "validate-agent-invocation" "PreToolUse" "Agent ${AGENT_NAME} allowed in ${CURRENT_STATE} state"
-echo "[HOOK DEBUG] validate-agent-invocation.sh END" >&2
 exit 0

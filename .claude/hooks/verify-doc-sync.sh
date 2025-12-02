@@ -1,12 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "[HOOK DEBUG] verify-doc-sync.sh START" >&2
-
 # Documentation Synchronization Verification Script
 # Ensures Claude and human documentation files maintain synchronized rule titles
 
-trap 'echo "[HOOK DEBUG] verify-doc-sync.sh FAILED at line $LINENO" >&2; echo "❌ SCRIPT ERROR: verify-doc-sync.sh failed at line $LINENO" >&2; exit 1' ERR
+trap 'echo "ERROR in verify-doc-sync.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
 # Resolve absolute path to docs directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || {
@@ -72,9 +70,6 @@ extract_rule_titles() {
     
     if [[ -z "$rules" ]]; then
         echo "WARNING: No rules found in file: $(basename "$file")" >&2
-        echo "DEBUG: File path: $file" >&2
-        echo "DEBUG: All ### headers found:" >&2
-        grep "^### " "$file" 2>/dev/null | head -5 >&2 || echo "No ### headers found" >&2
         return 1
     fi
     
@@ -293,9 +288,6 @@ case "${1:-}" in
         echo "Error: Unknown option '$1'"
         echo ""
         show_usage
-        echo "[HOOK DEBUG] verify-doc-sync.sh END (error exit)" >&2
         exit 1
         ;;
 esac
-
-echo "[HOOK DEBUG] verify-doc-sync.sh END" >&2

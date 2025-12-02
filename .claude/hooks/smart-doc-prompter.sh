@@ -5,9 +5,8 @@ set -euo pipefail
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 
 # Fail gracefully without blocking Claude Code
-trap 'echo "[HOOK DEBUG] smart-doc-prompter.sh FAILED at line $LINENO" >&2; echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Unexpected error at line $LINENO" >&2; exit 0' ERR
+trap 'echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Unexpected error at line $LINENO" >&2; exit 0' ERR
 
-echo "[HOOK DEBUG] smart-doc-prompter.sh START" >&2
 
 # Consolidated Smart Documentation Prompter
 # Handles all context-aware documentation prompting with session tracking
@@ -307,6 +306,5 @@ case "$HOOK_EVENT" in
 		;;
 esac
 
-echo "[HOOK DEBUG] smart-doc-prompter.sh END" >&2
 
 exit 0
