@@ -10,4 +10,5 @@ module io.github.cowwoc.styler.formatter.test
 	requires org.testng;
 
 	opens io.github.cowwoc.styler.formatter.test to org.testng;
+	opens io.github.cowwoc.styler.formatter.linelength.test to org.testng;
 }
