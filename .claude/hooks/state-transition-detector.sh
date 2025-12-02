@@ -8,8 +8,6 @@ set -euo pipefail
 # Error handler - output helpful message to stderr on failure
 trap 'echo "ERROR in state-transition-detector.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
-echo "[HOOK DEBUG] state-transition-detector.sh START" >&2
-
 # Read session ID from stdin JSON
 INPUT=$(cat)
 SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // empty')
@@ -69,5 +67,3 @@ for task_dir in "$TASKS_DIR"/*; do
 		fi
 	fi
 done
-
-echo "[HOOK DEBUG] state-transition-detector.sh END" >&2

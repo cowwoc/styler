@@ -5,9 +5,8 @@ set -euo pipefail
 SCRIPT_PATH="${BASH_SOURCE[0]}"
 
 # Fail gracefully without blocking Claude Code
-trap 'echo "[HOOK DEBUG] detect-giving-up.sh FAILED at line $LINENO" >&2; echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Unexpected error at line $LINENO" >&2; exit 0' ERR
+trap 'echo "⚠️  HOOK ERROR [$SCRIPT_PATH]: Unexpected error at line $LINENO" >&2; exit 0' ERR
 
-echo "[HOOK DEBUG] detect-giving-up.sh START" >&2
 
 # Giving Up Pattern Detection Hook (Refactored with Composable Keywords)
 # Detects phrases indicating abandonment of complex problems
@@ -555,6 +554,5 @@ esac
 # Cleanup old session tracking files (7-day TTL) - runs opportunistically
 find /tmp -maxdepth 1 -type d -name "claude-hooks-session-*" -mtime +7 -delete 2>/dev/null || true
 
-echo "[HOOK DEBUG] detect-giving-up.sh END" >&2
 
 exit 0

@@ -1,0 +1,447 @@
+{
+  "schema_version": "2.0",
+  "description": "Centralized mistake log for cross-session retrospective analysis with pattern linkage",
+  "documentation": {
+    "purpose": "Mistakes logged here by learn-from-mistakes skill (Phase 9) for pattern identification",
+    "pattern_linkage": "Each mistake links to a pattern_id in retrospectives.json for effectiveness tracking",
+    "effectiveness_check": "Query mistakes WHERE pattern_id = X AND timestamp > action_item.completed_date",
+    "processed_in_retrospective": "ID of retrospective that analyzed this mistake (R001, R002, etc.)",
+    "data_retention": "Mistakes never deleted. Full audit trail preserved for temporal analysis."
+  },
+  "categories": [
+    "tdd_violation",
+    "detection_gap",
+    "bash_error",
+    "edit_failure",
+    "architecture_issue",
+    "protocol_violation",
+    "worktree_violation",
+    "merge_conflict",
+    "build_failure",
+    "test_failure",
+    "logical_error",
+    "git_operation_failure",
+    "giving_up",
+    "documentation_violation",
+    "other"
+  ],
+  "prevention_types": [
+    "code_fix",
+    "hook",
+    "validation",
+    "config",
+    "skill",
+    "documentation"
+  ],
+  "mistakes": [
+    {
+      "id": "M001",
+      "timestamp": "2025-11-05T00:00:00-05:00",
+      "category": "git_operation_failure",
+      "pattern_id": "PATTERN-001",
+      "description": "Skill step failures not detected - git operations failing silently",
+      "root_cause": "auto-learn-from-mistakes hook did not detect Skill tool failures",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/auto-learn-from-mistakes.sh",
+      "pattern_keywords": [
+        "skill",
+        "step",
+        "failure",
+        "git"
+      ],
+      "commit": "c828001",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M002",
+      "timestamp": "2025-11-06T00:00:00-05:00",
+      "category": "git_operation_failure",
+      "pattern_id": "PATTERN-001",
+      "description": "Commit order assumptions in rebase automation - squashed wrong direction",
+      "root_cause": "Assumed commit order without verification, squashed newer into older",
+      "prevention_type": "skill",
+      "prevention_path": ".claude/skills/git-squash/SKILL.md",
+      "pattern_keywords": [
+        "git",
+        "squash",
+        "rebase",
+        "order",
+        "commit"
+      ],
+      "commit": "aa3b9b3",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M003",
+      "timestamp": "2025-11-06T00:00:00-05:00",
+      "category": "detection_gap",
+      "pattern_id": "PATTERN-002",
+      "description": "Missing cleanup after git operations - backup branches left behind",
+      "root_cause": "No enforcement of cleanup phase after successful git operations",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/auto-learn-from-mistakes.sh",
+      "pattern_keywords": [
+        "cleanup",
+        "backup",
+        "git",
+        "branch"
+      ],
+      "commit": "91123a7",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M004",
+      "timestamp": "2025-11-07T00:00:00-05:00",
+      "category": "detection_gap",
+      "pattern_id": "PATTERN-002",
+      "description": "Critical self-acknowledgments not detected (CRITICAL DISASTER phrases)",
+      "root_cause": "Hook did not monitor for phrases indicating major problems",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/auto-learn-from-mistakes.sh",
+      "pattern_keywords": [
+        "critical",
+        "disaster",
+        "detection",
+        "acknowledgment"
+      ],
+      "commit": "a8994b9",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M005",
+      "timestamp": "2025-11-07T00:00:00-05:00",
+      "category": "giving_up",
+      "pattern_id": null,
+      "description": "Token policy violations - assistant giving up due to token constraints",
+      "root_cause": "No detection of token-related giving up patterns",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/detect-assistant-giving-up.sh",
+      "pattern_keywords": [
+        "token",
+        "budget",
+        "giving up",
+        "constraint"
+      ],
+      "commit": "caddd58",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M006",
+      "timestamp": "2025-11-11T00:00:00-05:00",
+      "category": "git_operation_failure",
+      "pattern_id": "PATTERN-001",
+      "description": "Git squash without immediate verification - data loss risk",
+      "root_cause": "Verification separated from execution, allowing errors to go unnoticed",
+      "prevention_type": "skill",
+      "prevention_path": ".claude/skills/git-squash/SKILL.md",
+      "pattern_keywords": [
+        "git",
+        "squash",
+        "verify",
+        "immediate",
+        "atomic"
+      ],
+      "commit": "cbf0754",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M007",
+      "timestamp": "2025-11-11T00:00:00-05:00",
+      "category": "documentation_violation",
+      "pattern_id": null,
+      "description": "Execution context protections removed from optimize-doc",
+      "root_cause": "Fix strategies were removed during optimization",
+      "prevention_type": "config",
+      "prevention_path": ".claude/commands/shrink-doc.md",
+      "pattern_keywords": [
+        "optimize",
+        "doc",
+        "context",
+        "protection",
+        "removal"
+      ],
+      "commit": "0b0a6aa",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M008",
+      "timestamp": "2025-11-11T00:00:00-05:00",
+      "category": "documentation_violation",
+      "pattern_id": null,
+      "description": "Fix strategy removal violations in documentation optimization",
+      "root_cause": "Semantic content being removed instead of preserved during shrinking",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/block-retrospective-docs.sh",
+      "pattern_keywords": [
+        "fix",
+        "strategy",
+        "removal",
+        "semantic",
+        "preserve"
+      ],
+      "commit": "eedbf73",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M009",
+      "timestamp": "2025-11-11T00:00:00-05:00",
+      "category": "giving_up",
+      "pattern_id": null,
+      "description": "Option-presenting pattern instead of implementing optimal solution",
+      "root_cause": "detect-giving-up hook did not catch option presentation as giving up",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/detect-giving-up.sh",
+      "pattern_keywords": [
+        "option",
+        "present",
+        "giving up",
+        "implement"
+      ],
+      "commit": "bbe4e45",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M010",
+      "timestamp": "2025-11-12T00:00:00-05:00",
+      "category": "git_operation_failure",
+      "pattern_id": "PATTERN-001",
+      "description": "Squashing newer commit into older commit (wrong direction)",
+      "root_cause": "Did not verify commit order before squashing",
+      "prevention_type": "skill",
+      "prevention_path": ".claude/skills/git-squash/SKILL.md",
+      "pattern_keywords": [
+        "git",
+        "squash",
+        "order",
+        "newer",
+        "older"
+      ],
+      "commit": "7fee9f7",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M011",
+      "timestamp": "2025-11-13T00:00:00-05:00",
+      "category": "detection_gap",
+      "pattern_id": "PATTERN-002",
+      "description": "Ineffective fixes - prevention applied but mistake still occurred",
+      "root_cause": "No temporal analysis to detect when fix predates violation",
+      "prevention_type": "skill",
+      "prevention_path": ".claude/skills/learn-from-mistakes/SKILL.md",
+      "pattern_keywords": [
+        "temporal",
+        "analysis",
+        "ineffective",
+        "fix",
+        "recurrence"
+      ],
+      "commit": "ccf862b",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M012",
+      "timestamp": "2025-11-17T00:00:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Main agent creating source files in IMPLEMENTATION state",
+      "root_cause": "No enforcement blocking main agent from creating .java files",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/implementation-guard.sh",
+      "pattern_keywords": [
+        "main",
+        "agent",
+        "source",
+        "implementation",
+        "java"
+      ],
+      "commit": "implementation-guard",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M013",
+      "timestamp": "2025-11-17T00:00:00-05:00",
+      "category": "worktree_violation",
+      "pattern_id": null,
+      "description": "Agent creating files in wrong worktree",
+      "root_cause": "Agents not properly directed to their agent-specific worktrees",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/detect-worktree-violation.sh",
+      "pattern_keywords": [
+        "worktree",
+        "agent",
+        "directory",
+        "violation"
+      ],
+      "commit": "detect-worktree-violation",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M014",
+      "timestamp": "2025-11-17T00:00:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Task tool invoked without proper state transition",
+      "root_cause": "Task tool used from INIT state or without requirements reports",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/task-invoke-pre.sh",
+      "pattern_keywords": [
+        "task",
+        "tool",
+        "state",
+        "init",
+        "requirements"
+      ],
+      "commit": "task-invoke-pre",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M015",
+      "timestamp": "2025-11-26T00:00:00-05:00",
+      "category": "detection_gap",
+      "pattern_id": "PATTERN-002",
+      "description": "Destructive operations executed without confirmation",
+      "root_cause": "No verification before destructive git or file operations",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/verify-destructive-operations.sh",
+      "pattern_keywords": [
+        "destructive",
+        "verify",
+        "confirmation",
+        "delete"
+      ],
+      "commit": "verify-destructive-operations",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M016",
+      "timestamp": "2025-11-26T00:00:00-05:00",
+      "category": "detection_gap",
+      "pattern_id": "PATTERN-002",
+      "description": "Data loss from git filter-branch --all affecting version branches",
+      "root_cause": "No protection for version branches during history rewriting",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/block-data-loss.sh",
+      "pattern_keywords": [
+        "filter-branch",
+        "all",
+        "version",
+        "branch",
+        "data loss"
+      ],
+      "commit": "block-data-loss",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M017",
+      "timestamp": "2025-11-27T00:00:00-05:00",
+      "category": "build_failure",
+      "pattern_id": "PATTERN-003",
+      "description": "Checkstyle violations in line length formatter implementation",
+      "root_cause": "Code style rules not followed during implementation",
+      "prevention_type": "validation",
+      "prevention_path": "mvn checkstyle:check",
+      "pattern_keywords": [
+        "checkstyle",
+        "style",
+        "formatting",
+        "violation"
+      ],
+      "commit": "96d878c",
+      "recurrence_count": 4,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M018",
+      "timestamp": "2025-11-27T00:00:00-05:00",
+      "category": "build_failure",
+      "pattern_id": "PATTERN-003",
+      "description": "PMD violations in line length formatter implementation",
+      "root_cause": "PMD rules not followed - code quality issues",
+      "prevention_type": "validation",
+      "prevention_path": "mvn pmd:check",
+      "pattern_keywords": [
+        "pmd",
+        "quality",
+        "violation",
+        "static analysis"
+      ],
+      "commit": "b608714",
+      "recurrence_count": 3,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M019",
+      "timestamp": "2025-11-27T00:00:00-05:00",
+      "category": "build_failure",
+      "pattern_id": "PATTERN-003",
+      "description": "Compilation errors - ContextDetector in wrong package",
+      "root_cause": "Class placed in internal package but needed from public package",
+      "prevention_type": "code_fix",
+      "prevention_path": "src/main/java/io/github/cowwoc/styler/internal",
+      "pattern_keywords": [
+        "compilation",
+        "package",
+        "public",
+        "internal",
+        "access"
+      ],
+      "commit": "da4f33d",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M020",
+      "timestamp": "2025-11-27T00:00:00-05:00",
+      "category": "detection_gap",
+      "pattern_id": "PATTERN-002",
+      "description": "Simple mistake acknowledgments not detected by auto-learn hook",
+      "root_cause": "Hook only detected complex patterns, not simple 'I made a mistake'",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/auto-learn-from-mistakes.sh",
+      "pattern_keywords": [
+        "acknowledgment",
+        "simple",
+        "detection",
+        "mistake"
+      ],
+      "commit": "031957b",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M021",
+      "timestamp": "2025-11-07T00:00:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Agent role misassignment - engineer assigned for testing tasks",
+      "root_cause": "Confused engineer (code quality) with tester (test strategy)",
+      "prevention_type": "documentation",
+      "prevention_path": "CLAUDE.md",
+      "pattern_keywords": [
+        "engineer",
+        "tester",
+        "role",
+        "misassignment"
+      ],
+      "commit": "01acbd2",
+      "recurrence_count": 0,
+      "processed_in_retrospective": "R001"
+    }
+  ]
+}
