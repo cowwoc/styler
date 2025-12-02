@@ -1,5 +1,39 @@
 # Changelog
 
+## 2025-12-02
+
+### B1a: Line Length Formatter - Context-Aware Line Wrapping ✅
+
+**Completion Date**: 2025-12-02
+
+**Task**: `implement-line-length-formatter`
+
+**Commit**: d487bbe46782e692ba457c450b38b5fdeb238e43
+
+**Problem Solved**:
+- Lines exceeding configured length needed context-aware wrapping
+- Wrapping behavior must respect AST context (method chains, arguments, expressions, etc.)
+
+**Solution Implemented**:
+- LineLengthFormattingRule that wraps long lines at appropriate break points based on AST context
+- Context-aware wrapping for method chains, arguments, binary expressions, etc.
+
+**Key Components**:
+- **LineLengthConfiguration**: Configurable max length, wrap styles per context
+- **ContextDetector**: Uses AST to identify syntactic context at positions
+- **LineWrapper**: Finds break points and wraps lines with proper indentation
+- **StringWrapper**: Handles long string literal wrapping with URL/path protection
+- **LineAnalyzer**: Detects line length violations for reporting
+
+**JPMS Structure**:
+- Public API in io.github.cowwoc.styler.formatter.linelength
+- Implementation in .internal package (qualified export to test module)
+- Tests in .test package to avoid split package issues
+
+**Unblocks**: B2 (File Processing Pipeline) - now has one of the required formatters
+
+---
+
 ## 2025-11-26
 
 ### A0: Styler Formatter Module - Core API Interfaces ✅

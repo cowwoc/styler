@@ -921,6 +921,41 @@ public final class Parser implements AutoCloseable
 		}
 	}
 
+	/**
+	 * Attempts to parse an enhanced for-loop header (type identifier : expression).
+	 *
+	 * @return {@code true} if enhanced for-loop header was successfully parsed
+	 */
+	private boolean tryParseEnhancedForHeader()
+	{
+		try
+		{
+			if (!looksLikeTypeStart())
+				return false;
+			parseType();
+			if (currentToken().type() != TokenType.IDENTIFIER)
+				return false;
+			consume();
+			return match(TokenType.COLON);
+		}
+		catch (ParserException e)
+		{
+			// Not enhanced for - parsing failed
+			return false;
+		}
+	}
+
+	/**
+	 * Checks if the current token could be the start of a type declaration.
+	 *
+	 * @return {@code true} if current token is FINAL, a primitive type, or an identifier
+	 */
+	private boolean looksLikeTypeStart()
+	{
+		TokenType type = currentToken().type();
+		return type == TokenType.FINAL || isPrimitiveType(type) || type == TokenType.IDENTIFIER;
+	}
+
 	private void parseForStatement()
 	{
 		expect(TokenType.FOR);
@@ -928,28 +963,7 @@ public final class Parser implements AutoCloseable
 
 		// Enhanced for or regular for
 		int checkpoint = position;
-		boolean isEnhanced = false;
-
-		try
-		{
-			if (currentToken().type() == TokenType.FINAL || isPrimitiveType(currentToken().type()) ||
-				currentToken().type() == TokenType.IDENTIFIER)
-			{
-				parseType();
-				if (currentToken().type() == TokenType.IDENTIFIER)
-				{
-					consume();
-					if (match(TokenType.COLON))
-					{
-						isEnhanced = true;
-					}
-				}
-			}
-		}
-		catch (ParserException e) // NOPMD - EmptyCatchBlock: Intentional backtracking, position reset below
-		{
-			// Not enhanced for - parsing failed, so backtrack to checkpoint
-		}
+		boolean isEnhanced = tryParseEnhancedForHeader();
 
 		if (isEnhanced)
 		{
@@ -1116,56 +1130,72 @@ public final class Parser implements AutoCloseable
 		expect(TokenType.SEMICOLON);
 	}
 
+	/**
+	 * Attempts to parse a variable declaration. Backtracks to checkpoint on failure.
+	 *
+	 * @param checkpoint the position to backtrack to on failure
+	 * @return {@code true} if successfully parsed a variable declaration
+	 */
+	private boolean tryParseVariableDeclaration(int checkpoint)
+	{
+		try
+		{
+			parseType();
+			if (currentToken().type() != TokenType.IDENTIFIER)
+			{
+				position = checkpoint;
+				return false;
+			}
+			consume();
+			parseOptionalArrayBrackets();
+			if (match(TokenType.ASSIGN))
+				parseExpression();
+			parseAdditionalDeclarators();
+			expect(TokenType.SEMICOLON);
+			return true;
+		}
+		catch (ParserException e)
+		{
+			position = checkpoint;
+			return false;
+		}
+	}
+
+	/**
+	 * Parses optional array brackets after a variable name.
+	 */
+	private void parseOptionalArrayBrackets()
+	{
+		while (match(TokenType.LBRACKET))
+			expect(TokenType.RBRACKET);
+	}
+
+	/**
+	 * Parses additional variable declarators after the first one (comma-separated).
+	 */
+	private void parseAdditionalDeclarators()
+	{
+		while (match(TokenType.COMMA))
+		{
+			expect(TokenType.IDENTIFIER);
+			parseOptionalArrayBrackets();
+			if (match(TokenType.ASSIGN))
+				parseExpression();
+		}
+	}
+
 	private void parseExpressionOrVariableStatement()
 	{
 		int checkpoint = position;
 
 		// Try to parse as variable declaration
-		if (currentToken().type() == TokenType.FINAL ||
+		if ((currentToken().type() == TokenType.FINAL ||
 			currentToken().type() == TokenType.VAR ||
 			isPrimitiveType(currentToken().type()) ||
-			currentToken().type() == TokenType.IDENTIFIER)
+			currentToken().type() == TokenType.IDENTIFIER) &&
+			tryParseVariableDeclaration(checkpoint))
 		{
-			try
-			{
-				parseType();
-				if (currentToken().type() == TokenType.IDENTIFIER)
-				{
-					consume();
-					while (match(TokenType.LBRACKET))
-					{
-						expect(TokenType.RBRACKET);
-					}
-					if (match(TokenType.ASSIGN))
-					{
-						parseExpression();
-					}
-					while (match(TokenType.COMMA))
-					{
-						expect(TokenType.IDENTIFIER);
-						while (match(TokenType.LBRACKET))
-						{
-							expect(TokenType.RBRACKET);
-						}
-						if (match(TokenType.ASSIGN))
-						{
-							parseExpression();
-						}
-					}
-					expect(TokenType.SEMICOLON);
-					return;
-				}
-				else
-				{
-					// Not a variable declaration (e.g., "x = 1" where x is the identifier, not a type)
-					// Backtrack and parse as expression
-					position = checkpoint;
-				}
-			}
-			catch (ParserException e)
-			{
-				position = checkpoint;
-			}
+			return;
 		}
 
 		// Parse as expression statement

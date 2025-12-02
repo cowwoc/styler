@@ -1,12 +1,13 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.*;
-
+import io.github.cowwoc.styler.parser.Lexer;
+import io.github.cowwoc.styler.parser.Token;
+import io.github.cowwoc.styler.parser.TokenType;
 import org.testng.annotations.Test;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-
 import java.util.List;
+
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
  * Thread-safe tests for Lexer.

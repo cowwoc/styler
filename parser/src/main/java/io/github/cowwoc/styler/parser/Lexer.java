@@ -260,14 +260,7 @@ public final class Lexer
 				hasExponent = true;
 				hasDecimal = true; // Exponents imply floating point
 				position += 1;
-				if (position < source.length())
-				{
-					char next = source.charAt(position);
-					if (next == '+' || next == '-')
-					{
-						position += 1;
-					}
-				}
+				consumeOptionalExponentSign();
 			}
 			else
 			{
@@ -312,6 +305,19 @@ public final class Lexer
 		}
 
 		return new Token(type, start, position, text);
+	}
+
+	/**
+	 * Consumes an optional exponent sign (+ or -) if present at current position.
+	 */
+	private void consumeOptionalExponentSign()
+	{
+		if (position < source.length())
+		{
+			char next = source.charAt(position);
+			if (next == '+' || next == '-')
+				position += 1;
+		}
 	}
 
 	private Token scanStringLiteral(int start)
@@ -453,27 +459,7 @@ public final class Lexer
 			}
 			case '>' ->
 			{
-				if (matchAndConsume('='))
-				{
-					yield TokenType.GE;
-				}
-				if (matchAndConsume('>'))
-				{
-					if (matchAndConsume('>'))
-					{
-						if (matchAndConsume('='))
-						{
-							yield TokenType.URSHIFTASSIGN;
-						}
-						yield TokenType.URSHIFT;
-					}
-					if (matchAndConsume('='))
-					{
-						yield TokenType.RSHIFTASSIGN;
-					}
-					yield TokenType.RSHIFT;
-				}
-				yield TokenType.GT;
+				yield scanGreaterThanOperator();
 			}
 			case '&' ->
 			{
@@ -564,6 +550,49 @@ public final class Lexer
 
 		String text = source.substring(start, position);
 		return new Token(type, start, position, text);
+	}
+
+	/**
+	 * Scans greater-than related operators: {@code >}, {@code >=}, {@code >>}, {@code >>=},
+	 * {@code >>>}, {@code >>>=}.
+	 *
+	 * @return the token type for the scanned operator
+	 */
+	private TokenType scanGreaterThanOperator()
+	{
+		if (matchAndConsume('='))
+			return TokenType.GE;
+		if (matchAndConsume('>'))
+			return scanRightShiftOperator();
+		return TokenType.GT;
+	}
+
+	/**
+	 * Scans right shift operators: {@code >>}, {@code >>=}, {@code >>>}, {@code >>>=}.
+	 * Called after the second '>' has been consumed.
+	 *
+	 * @return the token type for the scanned operator
+	 */
+	private TokenType scanRightShiftOperator()
+	{
+		if (matchAndConsume('>'))
+			return scanUnsignedRightShiftOperator();
+		if (matchAndConsume('='))
+			return TokenType.RSHIFTASSIGN;
+		return TokenType.RSHIFT;
+	}
+
+	/**
+	 * Scans unsigned right shift operators: {@code >>>}, {@code >>>=}.
+	 * Called after the third '>' has been consumed.
+	 *
+	 * @return the token type for the scanned operator
+	 */
+	private TokenType scanUnsignedRightShiftOperator()
+	{
+		if (matchAndConsume('='))
+			return TokenType.URSHIFTASSIGN;
+		return TokenType.URSHIFT;
 	}
 
 	private char peek()

@@ -5,7 +5,7 @@
 **Current Status**: Phase A complete - Phase B ready to start
 
 **READY TO START**:
-- B1a: Line Length Formatter ← Ready (depends on completed A0)
+- B1a: Line Length Formatter ✅ COMPLETE
 - B1b: Import Organization ← Ready (depends on completed A0)
 
 **Phase B (B2-B5)**: Blocked until B1 tasks complete
@@ -85,58 +85,7 @@ delivers working AI agent integration.
 B2-B5 have sequential dependencies.
 
 ### B1. Minimal Formatting Rules (MVP)
-- [ ] **READY:** `implement-line-length-formatter` - Context-aware line wrapping with AST integration
-  - **Dependencies**: A0 ✅ COMPLETE (styler-formatter module), A1 ✅ COMPLETE (parser for AST)
-  - **Blocks**: B2 (pipeline needs formatters)
-  - **Parallelizable With**: `implement-import-organization` (other B1 task)
-  - **Estimated Effort**: 4-5 days
-  - **Purpose**: Detect and fix lines exceeding configured length with context-aware wrapping
-  - **Scope**: AST-based line wrapping with per-context configuration
-  - **Architecture**:
-    - **AST Context Detection**: Use parser AST to identify wrapping context from NodeType
-    - **Context-Specific Rules**: Different wrap behavior per context (not per break type)
-    - **Position-Based Lookup**: Find smallest enclosing AST node for any character position
-  - **Wrapping Contexts** (from AST NodeTypes):
-    - `method-chain`: METHOD_INVOCATION chains (wrap before/after dots)
-    - `qualified-name`: QUALIFIED_NAME (package/class names, typically no wrap)
-    - `method-arguments`: METHOD_INVOCATION arguments (wrap after commas)
-    - `method-parameters`: METHOD_DECLARATION/PARAMETER_DECLARATION (wrap after commas)
-    - `binary-expression`: BINARY_EXPRESSION (wrap before/after operators)
-    - `ternary-expression`: CONDITIONAL_EXPRESSION (wrap before ? and :)
-    - `array-initializer`: ARRAY_CREATION (wrap after commas)
-    - `annotation-arguments`: ANNOTATION (wrap after commas)
-    - `generic-type-args`: PARAMETERIZED_TYPE (wrap after commas)
-  - **Configuration** (TOML, fully configurable per context):
-    ```toml
-    [line-length]
-    max = 120
-
-    [line-length.method-chain]
-    wrap = "before-dot"           # before-dot | after-dot | never
-    continuation-indent = 4
-
-    [line-length.method-arguments]
-    wrap = "after-comma"          # after-comma | before-comma | one-per-line | never
-    align-with-open-paren = true
-
-    [line-length.qualified-name]
-    wrap = "never"
-
-    [line-length.binary-expression]
-    wrap = "before-operator"      # before-operator | after-operator
-    ```
-  - **Components**:
-    - LineLengthFormattingRule: FormattingRule implementation
-    - LineLengthConfiguration: Immutable config with per-context settings
-    - WrapContext: Enum of wrapping contexts (maps to NodeTypes)
-    - ContextDetector: Find AST context for a given position using NodeArena
-    - ContextWrapper: Apply context-specific wrapping rules
-  - **Design Principles**:
-    - Context determines wrap behavior, not break-type priorities
-    - Each context has exactly one wrap strategy (configurable)
-    - No priority system between BEFORE/AFTER - that's a per-context config choice
-  - **Integration**: Requires Parser (A1) to build AST, uses NodeArena position ranges
-  - **Quality**: Comprehensive tests per context, respects code semantics
+- [x] **COMPLETE:** `implement-line-length-formatter` - Context-aware line wrapping with AST integration (2025-12-02)
 
 - [ ] **READY:** `implement-import-organization` - Import grouping and unused import removal
   - **Dependencies**: A0 ✅ COMPLETE (styler-formatter module), A1 ✅ COMPLETE (parser for AST)
