@@ -17,4 +17,8 @@ module io.github.cowwoc.styler.formatter
 	requires io.github.cowwoc.requirements12.java;
 
 	exports io.github.cowwoc.styler.formatter;
+	exports io.github.cowwoc.styler.formatter.linelength;
+
+	// Allow test module to access internal implementation classes for testing
+	exports io.github.cowwoc.styler.formatter.linelength.internal to io.github.cowwoc.styler.formatter.test;
 }

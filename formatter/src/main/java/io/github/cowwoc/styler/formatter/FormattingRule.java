@@ -64,13 +64,4 @@ public interface FormattingRule
 	 *         {@link TransformationContext#securityConfig() context.securityConfig()} is exceeded
 	 */
 	String format(TransformationContext context, FormattingConfiguration config);
-
-	/**
-	 * Validates the given configuration for this rule and returns any error messages.
-	 *
-	 * @param config the configuration to validate
-	 * @return an empty list if the configuration is valid
-	 * @throws NullPointerException if config is null
-	 */
-	List<String> validateConfiguration(FormattingConfiguration config);
 }

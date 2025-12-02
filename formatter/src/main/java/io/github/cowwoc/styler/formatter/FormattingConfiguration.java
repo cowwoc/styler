@@ -1,21 +1,14 @@
 package io.github.cowwoc.styler.formatter;
 
-import java.util.List;
-
 /**
  * Base interface for rule-specific configuration.
- * Implementations must be immutable after construction.
+ * <p>
+ * Implementations must be immutable and validate all fields in their constructors using fail-fast
+ * validation. This ensures that invalid configurations cannot exist.
  */
+@SuppressWarnings("PMD.ImplicitFunctionalInterface")
 public interface FormattingConfiguration
 {
-	/**
-	 * Validates this configuration and returns any error messages.
-	 * Called before rule execution to ensure configuration is valid.
-	 *
-	 * @return an empty list if the configuration is valid
-	 */
-	List<String> validate();
-
 	/**
 	 * Returns the rule ID this configuration applies to.
 	 *
