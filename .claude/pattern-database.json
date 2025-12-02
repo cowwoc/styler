@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "description": "Pattern database for batch read opportunity detection",
+  "documentation": "Tracks sequential read patterns to suggest batch-read skill usage",
+  "config": {
+    "min_occurrences_for_suggestion": 2,
+    "confidence_threshold": 0.75,
+    "max_patterns_to_track": 50,
+    "pattern_expiry_days": 30
+  },
+  "patterns": [],
+  "stats": {
+    "total_patterns_detected": 0,
+    "total_batch_suggestions_made": 0,
+    "total_time_saved_seconds": 0,
+    "last_updated": null
+  }
+}
