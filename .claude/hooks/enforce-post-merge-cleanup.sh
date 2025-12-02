@@ -51,6 +51,11 @@ log_hook_start "enforce-post-merge-cleanup" "PostToolUse"
 # Extract branch that was merged (after 'git merge')
 MERGE_BRANCH=$(echo "$COMMAND" | sed -E 's/.*git[[:space:]]+merge[[:space:]]+--squash[[:space:]]+([^[:space:]]+).*/\1/')
 
+# Create pending cleanup marker for verification hook
+PENDING_CLEANUP_DIR="/tmp/pending-task-cleanup"
+mkdir -p "$PENDING_CLEANUP_DIR"
+echo "$(date -Iseconds)" > "${PENDING_CLEANUP_DIR}/${MERGE_BRANCH}.marker"
+
 # Only cleanup task branches (not arbitrary branches)
 if [[ ! "$MERGE_BRANCH" =~ ^implement- ]] && [[ ! "$MERGE_BRANCH" =~ ^refactor- ]] && [[ ! "$MERGE_BRANCH" =~ ^fix- ]]; then
 	log_hook_success "enforce-post-merge-cleanup" "PostToolUse" "Not a task branch, skipping cleanup"
