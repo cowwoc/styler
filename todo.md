@@ -87,22 +87,64 @@ B2-B5 have sequential dependencies.
 ### B1. Minimal Formatting Rules (MVP)
 - [x] **COMPLETE:** `implement-line-length-formatter` - Context-aware line wrapping with AST integration (2025-12-02)
 
-- [ ] **READY:** `implement-import-organization` - Import grouping and unused import removal
+- [ ] **READY:** `implement-import-organization` - Import grouping and unused import removal (conservative mode)
   - **Dependencies**: A0 ✅ COMPLETE (styler-formatter module), A1 ✅ COMPLETE (parser for AST)
   - **Blocks**: B2 (pipeline needs formatters)
   - **Parallelizable With**: `implement-line-length-formatter` (other B1 task)
-  - **Estimated Effort**: 2-3 days
+  - **Estimated Effort**: 3-4 days
   - **Purpose**: Organize imports and remove unused ones
   - **Scope**: Import grouping (java/javax, third-party, project, static) with configurable patterns
   - **Components**:
     - ImportOrganizerFormattingRule: FormattingRule implementation
     - ImportOrganizerConfiguration: Group patterns, ordering rules
-    - ImportAnalyzer: Detect unused imports
+    - ImportAnalyzer: Detect unused explicit imports
     - ImportGrouper: Group and sort imports
-  - **Features**: Configurable group ordering, unused import detection, auto-removal
+  - **Features**:
+    - Configurable group ordering, unused import detection, auto-removal
+    - Conservative mode: Preserve wildcard imports, only detect unused explicit imports
   - **Integration**: Uses AST import nodes, transformation context API
   - **Quality**: Comprehensive tests, security constraints (ReDoS prevention)
+  - **Future Enhancement**: See `resolve-wildcard-imports` task for wildcard expansion with classpath
+
+### B1.5. Classpath Infrastructure (Optional Enhancement)
+
+- [ ] **READY:** `add-classpath-support` - Enable passing project classpath/modulepath into Styler
+  - **Dependencies**: A3 ✅ COMPLETE (CLI args), A2 ✅ COMPLETE (config)
+  - **Blocks**: `resolve-wildcard-imports` (needs classpath access to resolve wildcards)
+  - **Parallelizable With**: B2 (independent infrastructure)
   - **Estimated Effort**: 2-3 days
+  - **Purpose**: Allow Styler to access project classpath/modulepath for advanced type analysis
+  - **Scope**: Infrastructure for passing classpath/modulepath via CLI, API, and Maven plugin
+  - **Components**:
+    - CLI: `--classpath` and `--module-path` arguments
+    - API: `FormatterConfiguration.withClasspath(List<Path>)` and `.withModulePath(List<Path>)`
+    - Maven Plugin: Automatic access via `MavenProject.getCompileClasspathElements()` and `plexus-java`
+      LocationManager for modulepath resolution
+    - ClasspathScanner: Utility to scan classpath/modulepath for available classes
+  - **Use Cases**:
+    - Resolve wildcard imports to determine which classes are actually used
+    - Detect truly unused imports by verifying class existence on classpath
+    - Support JPMS module-aware import analysis
+  - **Integration**: Extends existing CLI args and config system
+  - **Quality**: Unit tests for classpath scanning, integration tests with sample JARs
+
+- [ ] **BLOCKED:** `resolve-wildcard-imports` - Enhance import organization with wildcard resolution
+  - **Dependencies**: `implement-import-organization` (base import rule), `add-classpath-support` (classpath access)
+  - **Blocks**: None (optional enhancement)
+  - **Parallelizable With**: B2 and beyond (independent enhancement)
+  - **Estimated Effort**: 2-3 days
+  - **Purpose**: Resolve `import java.util.*` to determine which classes are actually used
+  - **Scope**: Extend ImportAnalyzer to use classpath for wildcard import analysis
+  - **Components**:
+    - WildcardResolver: Scan classpath for classes matching wildcard patterns
+    - ImportAnalyzer enhancement: Use classpath to detect unused wildcard imports
+    - Optional: Expand wildcards to explicit imports (configurable)
+  - **Features**:
+    - Detect unused wildcard imports when classpath available
+    - Optionally expand wildcards to explicit imports
+    - Fall back to conservative mode when no classpath provided
+  - **Integration**: Extends ImportAnalyzer from `implement-import-organization`
+  - **Quality**: Comprehensive tests with sample classpaths, edge cases for nested classes
 
 ### B2. File Processing Pipeline
 - [ ] **BLOCKED:** `implement-file-processing-pipeline` - Orchestrate parse → format → output

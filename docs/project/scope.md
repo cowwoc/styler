@@ -182,6 +182,23 @@ system should be **flexible** and support any combination of formatting rules.
 
 ## Technical Capabilities {#technical-capabilities}
 
+### Classpath and Modulepath Access {#classpath-modulepath-access}
+Styler can access the project's classpath and modulepath to enable advanced analysis features like
+resolving wildcard imports and determining actual class usage.
+
+**Status**: Planned capability (see `add-classpath-support` and `resolve-wildcard-imports` tasks in todo.md)
+
+**Access Methods**:
+- **CLI**: `--classpath` and `--module-path` arguments
+- **API**: `FormatterConfiguration.withClasspath(List<Path>)` and `.withModulePath(List<Path>)`
+- **Maven Plugin**: Automatic access via `MavenProject.getCompileClasspathElements()` and `plexus-java`
+  LocationManager for modulepath resolution
+
+**Use Cases**:
+- Resolve wildcard imports (`import java.util.*`) to determine which classes are actually used
+- Detect truly unused imports by verifying class existence on classpath
+- Support JPMS module-aware import analysis
+
 ### AST Processing Features {#ast-processing-features}
 - **Full Language Support**: Complete JDK 25 feature coverage (pattern matching, string templates, etc.)
 - **Comment Preservation**: Maintain all comments, whitespace, and formatting hints
