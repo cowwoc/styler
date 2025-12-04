@@ -1095,6 +1095,47 @@ git reset --soft 4d3e19e           # Now squashes ONLY 3ebecc4 and b732939
 - If HEAD is at wrong position, wrong range gets squashed
 - Checking out last commit FIRST ensures correct range
 
+## Squashing Specific Non-Consecutive Commits
+
+**⚠️ CRITICAL: When user provides SPECIFIC commit hashes to squash**
+
+When the user provides a list of specific commit hashes (e.g., "Squash 76894f6 d9af66d 7ef72f1"),
+these commits may NOT be consecutive in history. **NEVER use `git reset --soft`** for this case.
+
+**Mistake Pattern (from 2025-12-04)**:
+```bash
+# User asked: "Squash 76894f6 d9af66d 7ef72f1 d2c5a6c ccecf0c"
+# These 5 commits had 12 OTHER commits between them in history
+
+# ❌ WRONG - Soft reset to oldest commit parent
+git checkout ccecf0c  # Last commit to squash
+git reset --soft 76894f6~1  # Stages ALL 17 commits from parent to HEAD!
+# Result: Squashed 17 commits instead of 5
+
+# ✅ CORRECT - Interactive rebase to reorder and squash ONLY specified commits
+git rebase -i 76894f6~1
+# In editor: Move the 5 commits to be adjacent, mark with "squash"
+# All other commits remain unchanged
+```
+
+**Why Soft Reset Fails for Specific Commits**:
+- `git reset --soft <base>` stages ALL commits from base to HEAD
+- It cannot selectively include only specific commits
+- Use interactive rebase instead to pick specific commits
+
+**Procedure for Specific Commit Squashing**:
+1. Identify which commits are specified
+2. Find the earliest commit's parent as rebase base
+3. Use interactive rebase to:
+   - REORDER specified commits to be adjacent
+   - Mark them for squashing
+   - PRESERVE all other commits unchanged
+4. Verify only the specified commits were combined
+
+**See "Approach 2: Interactive Rebase with Reorder" below for detailed procedure.**
+
+---
+
 ## Squashing Non-Adjacent Commits
 
 **When commits to squash are NOT adjacent** (separated by other commits in between):
