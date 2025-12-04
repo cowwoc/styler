@@ -1,13 +1,13 @@
 #!/bin/bash
-# Post-Tool-Use Hook: Enforce cleanup after squash merge to main
+# Post-Tool-Use Hook: Enforce cleanup after --ff-only merge to main
 #
-# CREATED: 2025-11-03 after implement-formatter-api left orphaned commits
-# (5f95180, b393ce3) and unreferenced branches after squash merge to main
+# CREATED: 2025-11-03 after implement-formatter-api left orphaned branches
+# UPDATED: 2025-12-04 to work with --ff-only workflow (no GC needed)
 #
-# PREVENTS: Orphaned commits from squash merges polluting repository
-# ENFORCES: Automatic garbage collection and branch cleanup after squash merge
+# PREVENTS: Orphaned branches and worktrees after task completion
+# ENFORCES: Branch and worktree cleanup after merge
 #
-# Triggers: PostToolUse (tool:Bash && command:*git*merge*--squash* matcher)
+# Triggers: PostToolUse (tool:Bash && command:*git*merge* matcher)
 
 set -euo pipefail
 
@@ -35,21 +35,21 @@ fi
 # Extract command
 COMMAND=$(echo "$TOOL_PARAMS" | jq -r '.command // empty' 2>/dev/null || echo "")
 
-# Only validate git merge --squash commands
-if [[ ! "$COMMAND" =~ git[[:space:]]*merge.*--squash ]]; then
+# Only validate git merge --ff-only commands
+if [[ ! "$COMMAND" =~ git[[:space:]]*merge.*--ff-only ]]; then
 	exit 0
 fi
 
-# Check if merge was successful (result contains success indicators)
-if [[ ! "$RESULT" =~ (Squash commit|Automatic merge went well) ]]; then
+# Check if merge was successful (result doesn't contain error indicators)
+if [[ "$RESULT" =~ (fatal:|error:|CONFLICT|Not possible to fast-forward) ]]; then
 	# Merge failed or was aborted, don't cleanup
 	exit 0
 fi
 
 log_hook_start "enforce-post-merge-cleanup" "PostToolUse"
 
-# Extract branch that was merged (after 'git merge')
-MERGE_BRANCH=$(echo "$COMMAND" | sed -E 's/.*git[[:space:]]+merge[[:space:]]+--squash[[:space:]]+([^[:space:]]+).*/\1/')
+# Extract branch that was merged (handles --ff-only flag before branch name)
+MERGE_BRANCH=$(echo "$COMMAND" | sed -E 's/.*git[[:space:]]+merge[[:space:]]+(--[^[:space:]]+[[:space:]]+)*([^[:space:]]+).*/\2/')
 
 # Create pending cleanup marker for verification hook
 PENDING_CLEANUP_DIR="/tmp/pending-task-cleanup"
@@ -90,11 +90,11 @@ fi
 MESSAGE="## 🧹 POST-MERGE CLEANUP REMINDER
 
 **Task Branch**: \`$MERGE_BRANCH\`
-**Squash Merge**: ✅ Successful
+**Merge**: ✅ Successful (--ff-only)
 
 ## ⚠️ MANDATORY CLEANUP REQUIRED
 
-After squash merge to main, you MUST complete CLEANUP state:
+After --ff-only merge to main, you MUST complete CLEANUP state:
 
 **AUTOMATIC TRANSITION TO CLEANUP STATE**:
 
@@ -117,57 +117,40 @@ for agent_dir in /workspace/tasks/${TASK_NAME}/agents/*/code; do
   fi
 done
 
-# Step 5: Delete ALL task-related branches (use -D, squash makes them unreachable)
+# Step 5: Delete ALL task-related branches (safe with --ff-only, commit is on main)
 git branch -D ${TASK_NAME} 2>/dev/null || true
 git branch | grep \"^  ${TASK_NAME}-\" | xargs -r git branch -D
 
-# Step 6: MANDATORY - Garbage collect orphaned commits from squash merge
-# Why: git merge --squash creates new commit on main, leaving original commits unreferenced
-# Without gc, these orphaned commits persist indefinitely
-echo \"Running garbage collection to remove orphaned commits...\"
-git gc --prune=now
-echo \"✅ Orphaned commits removed\"
-
-# Step 7: Verify complete branch cleanup
+# Step 6: Verify complete branch cleanup
 if git branch | grep -q \"${TASK_NAME}\"; then
   echo \"❌ VIOLATION: Task branches still exist after CLEANUP\"
   git branch | grep \"${TASK_NAME}\"
   exit 1
 fi
 
-# Step 8: Remove task directory
+# Step 7: Remove task directory
 rm -rf /workspace/tasks/${TASK_NAME}
 
-# Step 9: VERIFICATION - Confirm complete cleanup
+# Step 8: VERIFICATION - Confirm complete cleanup
 echo \"✅ CLEANUP complete:\"
 echo \"   - Task worktree removed\"
 echo \"   - Agent worktrees removed\"
 echo \"   - All task branches deleted\"
-echo \"   - Orphaned commits garbage collected\"
 echo \"   - Task directory removed\"
 \`\`\`
 
-## 🚨 WHY GARBAGE COLLECTION IS CRITICAL
+## ✅ No Garbage Collection Needed
 
-**Squash Merge Creates Orphaned Commits**:
-- \`git merge --squash\` creates a NEW commit on main with all changes
-- Original task branch commits (on \`${TASK_NAME}\`) become unreferenced
-- Without \`git gc --prune=now\`, these orphaned commits persist forever
-- This clutters the repository and wastes disk space
-
-**Example from implement-formatter-api**:
-- Task branch had commits: 5f95180, b393ce3
-- Squash merge created: db1339b on main
-- Original commits 5f95180, b393ce3 became unreferenced orphans
-- User reported: \"Task didn't remove commits 5f95180, b393ce3\"
-- Root cause: Missing garbage collection in CLEANUP
+With --ff-only merge, no orphaned commits are created:
+- The task branch commit becomes the main branch commit (same SHA)
+- No new commit is created, just a pointer move
+- All commits remain reachable through main
 
 ## Protocol Reference
 
 See:
-- task-protocol-operations.md § CLEANUP (Final State) - Phase 4: Garbage Collection
-- main-agent-coordination.md § Step 21g: Garbage collect orphaned commits
-- git-workflow.md § Cleanup After Squash Merge
+- task-protocol-operations.md § CLEANUP (Final State)
+- git-workflow.md § Cleanup After --ff-only Merge
 
 **CRITICAL**: CLEANUP is AUTOMATIC (execute immediately, no user prompt)"
 
