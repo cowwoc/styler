@@ -18,6 +18,7 @@
 		<module>error-catalog</module>
 		<module>formatter</module>
 		<module>parser</module>
+		<module>pipeline</module>
 		<module>cli</module>
 	</modules>
 
@@ -41,6 +42,16 @@
 			<dependency>
 				<groupId>io.github.cowwoc.styler</groupId>
 				<artifactId>styler-security</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.cowwoc.styler</groupId>
+				<artifactId>styler-parser</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.cowwoc.styler</groupId>
+				<artifactId>styler-formatter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 
