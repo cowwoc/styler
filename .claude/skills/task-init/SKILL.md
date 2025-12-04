@@ -58,6 +58,7 @@ allowed-tools: Bash, Write, Read
 ```json
 {
   "task_name": "{task-name}",
+  "session_id": "{session-id}",
   "state": "INIT",
   "created": "2025-11-11T12:34:56-05:00",
   "phase": "initialization",
@@ -65,9 +66,15 @@ allowed-tools: Bash, Write, Read
     "architect": {"status": "not_started"},
     "tester": {"status": "not_started"},
     "formatter": {"status": "not_started"}
-  }
+  },
+  "transition_log": [
+    {"from": null, "to": "INIT", "timestamp": "2025-11-11T12:34:56-05:00"}
+  ]
 }
 ```
+
+**⚠️ CRITICAL**: The `session_id` field tracks which Claude instance owns the task. Other instances
+MUST NOT work on tasks with a different session_id (see CLAUDE.md § Session Ownership Verification).
 
 **task.md** initialized with template:
 ```markdown
@@ -89,24 +96,30 @@ allowed-tools: Bash, Write, Read
 ### Basic Task Initialization
 
 ```bash
-# Step 1: Invoke skill with task name
+# Step 1: Invoke skill with task name and session ID
 # Task name should match entry in todo.md
+# Session ID comes from system reminder at SessionStart
 
 TASK_NAME="implement-formatter-api"
+SESSION_ID="your-session-id-from-startup"  # ← REQUIRED for ownership tracking
 
 # Step 2: Execute initialization script
-/workspace/main/.claude/scripts/task-init.sh "$TASK_NAME"
+/workspace/main/.claude/scripts/task-init.sh "$TASK_NAME" "" "$SESSION_ID"
 ```
 
 ### With Custom Description
 
 ```bash
-# Optionally pass task description from todo.md
+# Pass task description and session ID
 TASK_NAME="implement-formatter-api"
 DESCRIPTION="Add public API for custom formatting rules"
+SESSION_ID="your-session-id"
 
-/workspace/main/.claude/scripts/task-init.sh "$TASK_NAME" "$DESCRIPTION"
+/workspace/main/.claude/scripts/task-init.sh "$TASK_NAME" "$DESCRIPTION" "$SESSION_ID"
 ```
+
+**⚠️ IMPORTANT**: Always pass your session ID (from SessionStart hook) to track task ownership.
+Tasks without session_id cannot be properly coordinated across multiple Claude instances.
 
 ## Workflow Integration
 

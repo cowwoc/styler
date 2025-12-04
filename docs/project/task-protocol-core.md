@@ -919,13 +919,14 @@ IF (audit-protocol-compliance skill returns FAILED):
 
 ### COMPLETE → CLEANUP Transition {#complete-cleanup-transition}
 
-**Trigger**: After successfully merging task to main branch with squash merge
+**Trigger**: After successfully merging task to main branch with --ff-only merge
 
 **Timing**: Execute CLEANUP immediately after COMPLETE state merge is verified on main
 
 **Transition Criteria**:
-- ✅ Task branch squash merged to main (`git merge --squash`)
-- ✅ Atomic commit created (task + todo.md + changelog.md)
+- ✅ Task branch commits squashed into ONE commit (includes todo.md + changelog.md)
+- ✅ Task branch merged to main (`git merge --ff-only`)
+- ✅ Atomic commit on main (task + todo.md + changelog.md)
 - ✅ Build verification passed on main branch
 - ✅ Module exists in main branch (for implementation tasks)
 

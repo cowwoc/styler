@@ -26,9 +26,16 @@ fi
 
 TASK_NAME="$1"
 DESCRIPTION="${2:-Task description}"
+SESSION_ID="${3:-${CLAUDE_SESSION_ID:-unknown}}"  # Session ID for ownership tracking
 TASK_DIR="/workspace/tasks/$TASK_NAME"
 TIMESTAMP=$(date -Iseconds)
 START_TIME=$(date +%s)
+
+# Validate session ID is provided
+if [ "$SESSION_ID" = "unknown" ]; then
+    echo "⚠️ WARNING: No session ID provided. Task ownership cannot be tracked." >&2
+    echo "   Pass session ID as 3rd argument or set CLAUDE_SESSION_ID env var." >&2
+fi
 
 # Validate task name format (kebab-case)
 if ! [[ "$TASK_NAME" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
@@ -121,10 +128,11 @@ CREATED_WORKTREES+=("$TASK_DIR/agents/tester/code")
 git worktree add "$TASK_DIR/agents/formatter/code" "$TASK_NAME-formatter"
 CREATED_WORKTREES+=("$TASK_DIR/agents/formatter/code")
 
-# Create task.json
+# Create task.json with session_id for ownership tracking
 cat > "$TASK_DIR/task.json" <<EOF
 {
   "task_name": "$TASK_NAME",
+  "session_id": "$SESSION_ID",
   "state": "INIT",
   "created": "$TIMESTAMP",
   "phase": "initialization",
@@ -132,7 +140,10 @@ cat > "$TASK_DIR/task.json" <<EOF
     "architect": {"status": "not_started"},
     "tester": {"status": "not_started"},
     "formatter": {"status": "not_started"}
-  }
+  },
+  "transition_log": [
+    {"from": null, "to": "INIT", "timestamp": "$TIMESTAMP"}
+  ]
 }
 EOF
 
