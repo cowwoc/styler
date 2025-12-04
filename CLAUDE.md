@@ -169,6 +169,39 @@ contradicts comparison
 
 **Tool-Val**: Mandatory tool=INVOKE. ❌Manual checklist when skill requires /compare-docs
 
+### Environment State Verification
+
+**MANDATORY**: NEVER claim or act on environment state (directory, branch, file existence) without
+verification first.
+
+**⚠️ DANGEROUS PATTERN**: Making assertions about state without evidence:
+- ❌ "The build is running from main, not the task worktree. Let me fix:"
+- ❌ "We're on the wrong branch, switching to..."
+- ❌ "The file doesn't exist, creating..."
+
+**CORRECT PATTERN**: Verify THEN claim THEN act:
+```bash
+# ✅ CORRECT - Verify before claiming
+pwd                                    # Verify first
+# Output: /workspace/tasks/my-task/code
+# "Current directory is /workspace/tasks/my-task/code, running build..."
+
+# ❌ WRONG - Claim without verification
+# "The build is running from main..." (assumed without pwd)
+```
+
+**Verification Commands**:
+- Directory: `pwd`
+- Branch: `git branch --show-current`
+- File existence: `ls -la {file}` or `test -f {file}`
+- Worktree status: `git worktree list`
+
+**Why This Matters**: False claims about environment state lead to:
+1. Operations in wrong directory/branch
+2. Unnecessary "fixes" that break things
+3. Confusion about actual system state
+4. Potential data loss or corruption
+
 ### Code Lifecycle Policy
 
 **NO DEPRECATION - Remove Outright**

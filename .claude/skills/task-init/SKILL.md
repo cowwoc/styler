@@ -129,10 +129,16 @@ Tasks without session_id cannot be properly coordinated across multiple Claude i
 1. ✅ User selects task from todo.md
 2. ✅ Invoke task-init skill
 3. ✅ Verify initialization successful
-4. ✅ Transition to CLASSIFIED state: `jq '.state = "CLASSIFIED"' task.json`
-5. ✅ Invoke gather-requirements skill
-6. Continue with task protocol...
+4. ⚠️ CHANGE TO TASK WORKTREE: `cd /workspace/tasks/{task-name}/code`
+5. ✅ Verify directory: `pwd` (must show task worktree path)
+6. ✅ Transition to CLASSIFIED state
+7. ✅ Invoke gather-requirements skill
+8. Continue with task protocol...
 ```
+
+**⚠️ CRITICAL: After task-init, you MUST change to the task worktree before continuing.**
+Main agent operations during task protocol should run from `/workspace/tasks/{task-name}/code/`,
+NOT from `/workspace/main/`.
 
 ## Output Format
 
@@ -217,10 +223,17 @@ cat /workspace/tasks/{task-name}/task.md
 # Initialize task
 /workspace/main/.claude/scripts/task-init.sh "implement-api"
 
+# ⚠️ CRITICAL: Change to task worktree IMMEDIATELY after init
+cd /workspace/tasks/implement-api/code
+pwd  # Verify: must show /workspace/tasks/implement-api/code
+
 # Transition to CLASSIFIED (ready for requirements gathering)
-cd /workspace/tasks/implement-api
+cd /workspace/tasks/implement-api  # task root for task.json
 jq '.state = "CLASSIFIED" | .phase = "requirements"' task.json > tmp.json
 mv tmp.json task.json
+
+# Return to task worktree for all subsequent operations
+cd /workspace/tasks/implement-api/code
 ```
 
 ### Pattern 2: Initialize Multiple Tasks
