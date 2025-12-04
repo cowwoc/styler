@@ -139,7 +139,7 @@ without losing unrelated work.
 > ⚠️ **CRITICAL VIOLATION PATTERN**: Merging task branch with multiple commits
 >
 > **REQUIREMENT**: Task branches MUST have exactly 1 squashed commit before merge
-> **ENFORCEMENT**: Pre-merge hook `.claude/hooks/task-merge-check.sh` validates commit count
+> **ENFORCEMENT**: Pre-merge hook `.claude/hooks/enforce-commit-squashing.sh` validates commit count
 > **CORRECT**: `git rev-list --count main..<task-branch>` returns 1
 > **INCORRECT**: Merging with 2+ commits creates unclear history and violates protocol
 
@@ -224,8 +224,8 @@ Co-Authored-By: style <noreply@anthropic.com>
 **Pre-Merge Validation** (automated):
 
 ```bash
-# Validation hook checks commit count before merge
-.claude/hooks/task-merge-check.sh <task-branch> main
+# Validation hook checks commit count before merge (automatic via PreToolUse)
+# Hook: .claude/hooks/enforce-commit-squashing.sh
 
 # If validation fails (>1 commit), squash required:
 cd /workspace/main
@@ -253,21 +253,20 @@ git merge <task-branch> --ff-only
 # Fast-forward merge preserves linear history
 ```
 
-**Cleanup After Squash Merge** (Task Protocol):
+**Cleanup After --ff-only Merge** (Task Protocol):
 
-When using squash merge in task protocol (`git merge --squash`), the original task branch commits become unreferenced:
+With `--ff-only` merge, no orphaned commits are created (the task branch commit becomes the main branch
+commit). Cleanup is simpler:
 
 ```bash
-# After: git merge --squash task-branch && git commit
-# Result: New commit on main, original task-branch commits are orphaned
+# After: git merge --ff-only task-branch
+# Result: main pointer moves to task-branch commit (same SHA, no orphans)
 
-# MANDATORY cleanup steps:
-git branch -D task-branch              # Delete branch (use -D, squash makes it unreachable)
+# Cleanup steps:
+git branch -D task-branch              # Delete branch (safe, commit is on main)
 git branch | grep "task-branch-" | xargs -r git branch -D  # Delete agent branches
-git gc --prune=now                     # Remove orphaned commits immediately
 
-# Verify cleanup
-git log --all --oneline | grep <original-commit-sha>  # Should return nothing
+# No git gc needed! No orphaned commits with --ff-only
 ```
 
 See: [task-protocol-operations.md § CLEANUP](task-protocol-operations.md#cleanup-final-state) for complete task protocol cleanup procedure.

@@ -200,12 +200,9 @@ ls -la /workspace/tasks/{task-name}/
 # Typical workflow after successful merge
 cd /workspace/main
 
-# Merge task to main (with squash)
-git merge --squash implement-api
-git commit -m "Implement API
-
-🤖 Generated with Claude Code
-Co-Authored-By: Claude <noreply@anthropic.com>"
+# Merge task to main (with --ff-only, task branch already squashed)
+git merge --ff-only implement-api
+# Note: Commit already exists on task branch with todo.md + changelog.md updates
 
 # Update task state
 jq '.state = "COMPLETE"' /workspace/tasks/implement-api/task.json > tmp.json

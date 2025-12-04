@@ -160,6 +160,24 @@ B2-B5 have sequential dependencies.
   - **Quality**: Well-structured output, comprehensive fix guidance
   - **Estimated Effort**: 3-4 days
 
+### B3.5. Proactive Rules Summary Export
+- [ ] **BLOCKED:** `implement-rules-summary-export` - Export formatting rules as markdown for AI pre-guidance
+  - **Dependencies**: B3 (AI output infrastructure), B1 ✅ (formatters define rules)
+  - **Blocks**: None (optional enhancement)
+  - **Parallelizable With**: B4, B5
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Allow AI agents to request formatting expectations before writing code
+  - **Scope**: Markdown/JSON export of configured formatting rules and their settings
+  - **Components**:
+    - RulesSummaryExporter: Iterate FormattingRule instances, output descriptions
+    - Output formats: Markdown (human-readable), JSON (machine-readable)
+  - **Output Example**:
+    - "Lines must be ≤120 characters"
+    - "Imports grouped by: java → javax → third-party → project"
+    - Rule configurations and thresholds
+  - **Integration**: CLI flag `--explain-rules` or API method
+  - **Quality**: Clear, actionable guidance for proactive compliance
+
 ### B4. Error Message Catalog ✅ COMPLETE
 - [x] **COMPLETE:** `create-error-message-catalog` - Comprehensive error messages for AI and human users (2025-12-05)
 
