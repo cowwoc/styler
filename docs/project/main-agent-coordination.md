@@ -570,7 +570,9 @@ CORRECT SEQUENCE:
 
     ```bash
     # Step 19a: ALWAYS verify task branch has exactly 1 commit
-    .claude/hooks/task-merge-check.sh <task-branch> main
+    COMMIT_COUNT=$(git rev-list --count main..<task-branch>)
+    echo "Task branch has $COMMIT_COUNT commit(s)"
+    # Hook .claude/hooks/enforce-commit-squashing.sh auto-validates on merge
 
     # Step 19b: If validation fails (>1 commit), squash ALL commits before merge:
     cd /workspace/main
@@ -579,8 +581,8 @@ CORRECT SEQUENCE:
     git commit -m "Squashed task implementation"
 
     # Step 19c: MANDATORY re-validation to confirm squash succeeded
-    .claude/hooks/task-merge-check.sh <task-branch> main
-    # MUST output: "✅ Task branch ready for merge: 1 commit"
+    COMMIT_COUNT=$(git rev-list --count main..<task-branch>)
+    [ "$COMMIT_COUNT" -eq 1 ] && echo "✅ Task branch ready for merge: 1 commit"
     ```
 
     **VERIFICATION CHECKPOINT**:

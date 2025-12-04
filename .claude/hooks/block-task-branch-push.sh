@@ -56,8 +56,8 @@ Task branches should remain LOCAL. Only main branch gets pushed to origin.
 
 Workflow:
 1. Complete work on task branch (local)
-2. Squash commits into single commit
-3. Merge to main with --squash
+2. Squash commits into single commit (git rebase -i)
+3. Merge to main with --ff-only
 4. Push main to origin
 
 If you need to push this branch for a specific reason, use:

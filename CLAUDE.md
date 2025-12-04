@@ -75,16 +75,15 @@ quality/refactoring; tester = test strategy/coverage)
 
 **Checkpoint 2: AWAITING_USER_APPROVAL → COMPLETE** (Change Review)
    - AWAITING_USER_APPROVAL state: After validation passes
+   - **⚠️ MANDATORY**: Use `pre-presentation-cleanup` skill before showing changes to user
    - **STOP and PRESENT**: Show commit SHA and `git diff --stat main...task-branch`
    - **WAIT for user approval**: User must say "approved", "merge it", "LGTM"
    - **⚠️ DISTINGUISH**: Git manipulation requests ("squash the commits", "rebase", "amend") are
      preprocessing instructions, NOT approval. Execute them and re-present for review.
    - **ONLY THEN**: Create `/workspace/tasks/{task}/user-approved-changes.flag`
    - **Transition to COMPLETE**: Use `state-transition` skill (or see pattern below)
-   - **Squash and merge to main**: See [task-protocol-core.md](docs/project/task-protocol-core.md) for
-     commit template
-   - **CRITICAL**: Use `--squash` to create ONE commit
-   - Hook will BLOCK merges to main without approval flag or from wrong working directory
+   - **Merge with --ff-only**: `git merge --ff-only {task-branch}` (linear history, no merge commits)
+   - Hook will BLOCK merges without approval flag, from wrong directory, or missing archival files
 
 **Final Step: COMPLETE → CLEANUP** (Clean Repository)
    - After merge to main: Use `state-transition` skill to transition to CLEANUP (or see pattern below)
@@ -119,12 +118,14 @@ jq --arg old "AWAITING_USER_APPROVAL" --arg new "COMPLETE" \
 - Proceed to IMPLEMENTATION without presenting plan
 - Merge to main without presenting changes
 - Assume silence or bypass mode means approval
-- Use `git merge` without `--squash` when merging task to main
+- Use `git merge` without `--ff-only` when merging task to main
 
 **Enforcement**:
 - `task-invoke-pre.sh` blocks Task tool from INIT state and SYNTHESIS/IMPLEMENTATION states without
   requirements reports
-- `enforce-merge-workflow.sh` validates merge location, approval, and squash requirement
+- `enforce-merge-workflow.sh` validates merge location and approval flag
+- `enforce-commit-squashing.sh` validates single commit and `--ff-only` flag
+- `enforce-atomic-archival.sh` validates task branch includes todo.md and changelog.md
 - `enforce-checkpoints.sh` validates state transitions and approval flags
 
 **SUB-AGENTS**: If you are a stakeholder agent (architect, engineer, formatter), this file contains
@@ -433,6 +434,9 @@ for all agents)
 isolation)
 
 **Locks**: Multi-instance coordination via lock files at `/workspace/tasks/{task-name}/task.json`
+
+**⚠️ CRITICAL**: Before working on existing tasks, use `verify-task-ownership` skill to check session
+ownership and prevent conflicts with other Claude instances.
 
 **Branch Management**:
 

@@ -414,19 +414,15 @@ EOF
    Also read: /workspace/main/docs/project/git-workflow.md for merge procedures
 
 REQUIRED ACTIONS:
-1. ✅ Merge task branch to main
-   - cd /workspace/main/code (main worktree)
-   - git merge --squash {task-name}
-   - Commit with descriptive message + Co-Authored-By: Claude
+1. ✅ Squash commits on task branch (include archival)
+   - cd /workspace/tasks/{task-name}/code
+   - Update todo.md and changelog.md
+   - git rebase -i (squash all commits into ONE)
 
-2. ✅ Update project documentation
-   - REMOVE task from todo.md (delete entire task entry)
-   - ADD to changelog.md with completion details
-   - Verify: git diff todo.md shows ONLY deletions
-
-3. ✅ Commit all changes atomically
-   - Include: implementation + todo.md + changelog.md
-   - Single atomic commit
+2. ✅ Merge task branch to main with --ff-only
+   - cd /workspace/main (main worktree)
+   - git merge --ff-only {task-name}
+   - (No new commit - fast-forward only)
 
 ✅ PHASE COMPLETE WHEN:
    - Changes merged to main branch
