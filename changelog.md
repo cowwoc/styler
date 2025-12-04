@@ -28,6 +28,51 @@
 
 ---
 
+## 2025-12-04
+
+### B2: File Processing Pipeline - Parse → Format → Output ✅
+
+**Completion Date**: 2025-12-04
+
+**Task**: `implement-file-processing-pipeline`
+
+**Commit**: 9047b04 (squashed)
+
+**Problem Solved**:
+- Needed orchestration layer to coordinate parse → format → output workflow
+- Required file-level error isolation with Railway-Oriented Programming (ROP) semantics
+- Multiple formatting rules needed to be applied in sequence with proper error handling
+
+**Solution Implemented**:
+- FileProcessingPipeline with Chain of Responsibility pattern for stage orchestration
+- PipelineStage sealed interface with Parse, Format, and Output stages
+- StageResult sealed interface with Success, Failure, and Skipped cases for ROP
+- PipelineResult with arena ownership, stage results, and overall success tracking
+
+**Key Components**:
+- **FileProcessingPipeline**: Main orchestrator coordinating all stages
+- **PipelineStage**: Sealed interface for stage implementations (ParseStage, FormatStage, OutputStage)
+- **StageResult**: ROP result type (Success/Failure/Skipped) for explicit error handling
+- **PipelineResult**: Aggregate result with NodeArena ownership, stage results, validation mode support
+- **ProcessingContext**: Immutable context carrying file content, path, and configuration
+
+**Features**:
+- File-level error isolation (one file's failure doesn't affect others)
+- Validation mode support (check without modifying)
+- Arena-based memory management with proper lifecycle
+- Configurable formatting rules via FormatterConfiguration
+- Clear error boundaries with descriptive failure messages
+
+**Test Coverage**:
+- Unit tests for pipeline orchestration
+- Integration tests with real formatters (line length, import organization)
+- Error handling and failure isolation tests
+- Validation mode tests
+
+**Unblocks**: B3 (AI output), B4 (error catalog), B5 (CLI integration), all of Phase C
+
+---
+
 ## 2025-12-03
 
 ### B1b: Import Organization - Import Grouping and Cleanup ✅
