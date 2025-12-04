@@ -16,13 +16,34 @@ allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 
 ## Skill Workflow
 
+**🚨 CRITICAL: Prevention BEFORE Fixing**
+
+**DO NOT fix the immediate issue before completing prevention steps.**
+
+The natural instinct is to fix the problem first, then worry about prevention. This is WRONG because:
+1. Once fixed, urgency disappears and prevention gets skipped
+2. The mistake context is freshest BEFORE fixing
+3. Fixing first signals "prevention is optional"
+
+**MANDATORY ORDER**:
+1. **STOP** - Do not fix the immediate issue yet
+2. **Complete Phases 1-5** - Identify, analyze, design, implement prevention
+3. **Commit prevention** - Prevention changes go to main FIRST
+4. **THEN fix** - Now fix the immediate issue
+5. **Complete Phases 6-8** - Validate and document
+
+❌ **WRONG**: Fix issue → Invoke skill → Maybe implement prevention
+✅ **CORRECT**: Invoke skill → Implement prevention → Commit → Fix issue
+
+---
+
 8-phase process:
 
 1. **Mistake Identification** - Gather context
 2. **Conversation Analysis** - Review logs
 3. **Root Cause Analysis** - Categorize and investigate cause
 4. **Configuration Updates** - Design prevention measures
-5. **Implement Updates** - Apply changes
+5. **Implement Updates** - Apply changes (BEFORE fixing immediate issue)
 6. **Validation** - Review completeness
 7. **Test by Reproduction** - ⚠️ Attempt to reproduce mistake to verify prevention
 8. **Documentation** - Add inline comments and commit messages
