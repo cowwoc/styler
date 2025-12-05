@@ -1,5 +1,33 @@
 # Changelog
 
+## 2025-12-05
+
+### B4: Error Message Catalog - Comprehensive Error Messages ✅
+
+**Completion Date**: 2025-12-05
+
+**Task**: `create-error-message-catalog`
+
+**Problem Solved**:
+- Error messages were inconsistent across pipeline stages
+- AI agents needed structured error codes for programmatic handling
+- Human users needed clear, actionable error messages
+
+**Solution Implemented**:
+- Centralized error code registry with hierarchical codes (E-XXX-XXX)
+- Dual-audience formatting (AI structured, human narrative)
+- Context-specific fix suggestions
+
+**Features**:
+- Hierarchical error codes by category (Parser, Formatter, Config, IO)
+- Fix suggestions with code examples
+- Source location information for all errors
+- Internationalization-ready message templates
+
+**Unblocks**: B5 (CLI integration needs error formatting)
+
+---
+
 ## 2025-12-03
 
 ### B1b: Import Organization - Import Grouping and Cleanup ✅
