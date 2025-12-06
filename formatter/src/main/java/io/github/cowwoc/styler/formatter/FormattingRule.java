@@ -44,9 +44,9 @@ public interface FormattingRule
 	 * This method must not modify the AST.
 	 *
 	 * @param context the transformation context with AST and source access
-	 * @param config the rule-specific configuration (may be null for defaults)
+	 * @param config the rule-specific configuration (may be {@code null} for defaults)
 	 * @return an empty list if no violations are found
-	 * @throws NullPointerException if context is null
+	 * @throws NullPointerException if {@code context} is {@code null}
 	 * @throws ExecutionTimeoutException if the execution deadline from
 	 *         {@link TransformationContext#securityConfig() context.securityConfig()} is exceeded
 	 */
@@ -57,9 +57,9 @@ public interface FormattingRule
 	 * Formats the source code by applying fixes for violations and returns the formatted source code.
 	 *
 	 * @param context the transformation context with AST and source access
-	 * @param config the rule-specific configuration (may be null for defaults)
+	 * @param config the rule-specific configuration (may be {@code null} for defaults)
 	 * @return the formatted source code
-	 * @throws NullPointerException if context is null
+	 * @throws NullPointerException if {@code context} is {@code null}
 	 * @throws ExecutionTimeoutException if the execution deadline from
 	 *         {@link TransformationContext#securityConfig() context.securityConfig()} is exceeded
 	 */

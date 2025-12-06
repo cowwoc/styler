@@ -81,7 +81,7 @@ public final class Lexer
 	 * Creates a new lexer for the specified source code.
 	 *
 	 * @param source the Java source code to tokenize
-	 * @throws NullPointerException if source is null
+	 * @throws NullPointerException if {@code source} is {@code null}
 	 */
 	public Lexer(String source)
 	{

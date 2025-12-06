@@ -12,8 +12,8 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * @param startPosition 0-based character offset from start of source file to "import" keyword
  * @param endPosition   0-based character offset from start of source file to semicolon (inclusive)
  * @param lineNumber    1-based line number where import appears
- * @throws NullPointerException     if qualifiedName is null
- * @throws IllegalArgumentException if qualifiedName is empty or positions are invalid
+ * @throws NullPointerException     if {@code qualifiedName} is {@code null}
+ * @throws IllegalArgumentException if {@code qualifiedName} is empty or positions are invalid
  */
 public record ImportDeclaration(
 	String qualifiedName,

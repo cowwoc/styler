@@ -7,7 +7,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.security.SecurityConfig;
@@ -98,7 +97,7 @@ public final class FileProcessingPipeline
 	 *
 	 * @param filePath the path to the file to process
 	 * @return PipelineResult with processing outcome (should be used with try-with-resources)
-	 * @throws NullPointerException if filePath is null
+	 * @throws NullPointerException if {@code filePath} is {@code null}
 	 */
 	public PipelineResult processFile(Path filePath)
 	{
@@ -107,7 +106,7 @@ public final class FileProcessingPipeline
 		Instant startTime = Instant.now();
 		List<StageResult> results = new ArrayList<>();
 
-		ProcessingContext context = new ProcessingContext(
+		ProcessingContext context = ProcessingContext.create(
 				filePath,
 				securityConfig,
 				formattingConfig,
@@ -145,7 +144,7 @@ public final class FileProcessingPipeline
 	 *
 	 * @param filePaths the paths to the files to process
 	 * @return list of PipelineResult objects (each should be closed when done)
-	 * @throws NullPointerException if filePaths is null
+	 * @throws NullPointerException if {@code filePaths} is {@code null}
 	 */
 	public List<PipelineResult> processFiles(List<Path> filePaths)
 	{
@@ -174,7 +173,7 @@ public final class FileProcessingPipeline
 		 *
 		 * @param config the security configuration
 		 * @return this builder for chaining
-		 * @throws NullPointerException if config is null
+		 * @throws NullPointerException if {@code config} is {@code null}
 		 */
 		public Builder securityConfig(SecurityConfig config)
 		{
@@ -187,7 +186,7 @@ public final class FileProcessingPipeline
 		 *
 		 * @param rules the formatting rules
 		 * @return this builder for chaining
-		 * @throws NullPointerException if rules is null
+		 * @throws NullPointerException if {@code rules} is {@code null}
 		 */
 		public Builder formattingRules(List<FormattingRule> rules)
 		{
@@ -200,7 +199,7 @@ public final class FileProcessingPipeline
 		 *
 		 * @param config the formatting configuration
 		 * @return this builder for chaining
-		 * @throws NullPointerException if config is null
+		 * @throws NullPointerException if {@code config} is {@code null}
 		 */
 		public Builder formattingConfig(FormattingConfiguration config)
 		{

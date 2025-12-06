@@ -47,14 +47,28 @@ public class ViolationSeverityTest
 	}
 
 	/**
-	 * Tests that severity ordering is ERROR, WARNING, INFO.
+	 * Tests that natural ordering reflects severity precedence: ERROR > WARNING > INFO.
 	 */
 	@Test
 	public void shouldMaintainSeverityOrderingErrorHighest()
 	{
-		requireThat(ViolationSeverity.ERROR.ordinal(), "ERROR.ordinal").
-			isLessThan(ViolationSeverity.WARNING.ordinal());
-		requireThat(ViolationSeverity.WARNING.ordinal(), "WARNING.ordinal").
-			isLessThan(ViolationSeverity.INFO.ordinal());
+		// Natural ordering via compareTo should have ERROR as highest
+		requireThat(ViolationSeverity.ERROR.compareTo(ViolationSeverity.WARNING), "ERROR.compareTo(WARNING)").
+			isPositive();
+		requireThat(ViolationSeverity.WARNING.compareTo(ViolationSeverity.INFO), "WARNING.compareTo(INFO)").
+			isPositive();
+		requireThat(ViolationSeverity.ERROR.compareTo(ViolationSeverity.INFO), "ERROR.compareTo(INFO)").
+			isPositive();
+	}
+
+	/**
+	 * Tests that severity weights are correctly assigned.
+	 */
+	@Test
+	public void shouldHaveCorrectWeights()
+	{
+		requireThat(ViolationSeverity.ERROR.weight(), "ERROR.weight").isEqualTo(10);
+		requireThat(ViolationSeverity.WARNING.weight(), "WARNING.weight").isEqualTo(5);
+		requireThat(ViolationSeverity.INFO.weight(), "INFO.weight").isEqualTo(1);
 	}
 }

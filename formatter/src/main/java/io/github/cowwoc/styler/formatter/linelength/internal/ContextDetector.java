@@ -38,7 +38,7 @@ public final class ContextDetector
 	 * Builds internal spatial index during construction (O(n log n) where n = node count).
 	 *
 	 * @param context transformation context with AST access
-	 * @throws NullPointerException if context is null
+	 * @throws NullPointerException if {@code context} is {@code null}
 	 */
 	public ContextDetector(TransformationContext context)
 	{

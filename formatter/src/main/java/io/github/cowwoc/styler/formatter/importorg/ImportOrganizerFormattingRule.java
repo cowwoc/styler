@@ -14,7 +14,6 @@ import io.github.cowwoc.styler.formatter.importorg.internal.ImportGrouper;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
@@ -208,7 +207,6 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 			imp.endPosition(),
 			lineNumber,
 			columnNumber,
-			Optional.empty(),
 			List.of());
 	}
 
@@ -236,7 +234,6 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 			imp.endPosition(),
 			lineNumber,
 			columnNumber,
-			Optional.empty(),
 			List.of());
 	}
 
@@ -257,7 +254,6 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 			0,
 			1,  // Line number for first import
 			1,  // Column number
-			Optional.empty(),
 			List.of());
 	}
 
