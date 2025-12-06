@@ -10,16 +10,52 @@
 **Violation**: `int maxDepth = 100; // No source reference`
 **Correct**: `// Based on JLS §14.4 block statement nesting limits\nint maxDepth = 100;`
 
-### JavaDoc Paragraph Formatting - Empty Line Before &lt;p&gt;
-**Detection Pattern**: `\* .*\n \*\n \* <p>` (blank JavaDoc line before `<p>` tag)
-**Violation**: `/**\n * Summary line.\n *\n * <p>\n * Detailed description.`
-**Correct**: `/**\n * Summary line.\n * <p>\n * Detailed description.`
+### JavaDoc Paragraph Tag - No Empty Lines Around &lt;p&gt;
+**Detection Pattern 1**: `\* .*\n \*\n \* <p>` (blank line BEFORE `<p>` tag)
+**Detection Pattern 2**: `<p>\n \*\n` (blank line AFTER `<p>` tag)
+**Violation**: `/**\n * Summary line.\n *\n * <p>\n * Text.` or ` * <p>\n *\n * Text.`
+**Correct**: `/**\n * Summary line.\n * <p>\n * Text.`
 **Detection Commands**:
 ```bash
-# Find JavaDoc with blank line before <p>
+# Find blank line before <p>
 grep -rn -B2 '^ \* <p>$' --include="*.java" . | grep -B1 '^ \*$'
+# Find blank line after <p>
+grep -rn -A1 '^ \* <p>$' --include="*.java" . | grep -A1 '^ \*$'
 ```
-**Rationale**: JavaDoc formatting convention requires `<p>` to appear immediately after summary line without blank lines. This maintains consistent paragraph separation and follows standard JavaDoc style.
+**Rationale**: The `<p>` tag should have no empty lines before or after it. It serves as a visual separator between paragraphs without requiring additional blank lines.
+
+### JavaDoc Paragraph Tag - Must Not Be Last Element
+**Detection Pattern**: `<p>\n \*/` (paragraph tag as final JavaDoc element)
+**Violation**: ` * Some text.\n * <p>\n */`
+**Correct**: ` * Some text.\n */` (remove trailing `<p>`)
+**Detection Commands**:
+```bash
+# Find <p> as last element before closing */
+grep -rn -A1 '^ \* <p>$' --include="*.java" . | grep ' \*/'
+```
+**Rationale**: A `<p>` tag at the end of JavaDoc serves no purpose - it creates an empty paragraph. Remove trailing `<p>` tags.
+
+### JavaDoc Paragraph Tag - Must Be On Own Line
+**Detection Pattern**: `<p>[A-Za-z]` (opening `<p>` tag immediately followed by text)
+**Violation**: ` * <p>Example usage:`
+**Correct**: ` * <p>\n * Example usage:`
+**Detection Commands**:
+```bash
+# Find <p> tags with inline text
+grep -rn '<p>[A-Za-z]' --include="*.java" .
+```
+**Rationale**: The `<p>` tag should appear on its own line for consistency and readability. Text content begins on the following line.
+
+### JavaDoc - No Blank Line Before Member
+**Detection Pattern**: ` \*/\n\n(public|private|protected|class|interface|enum|record)`
+**Violation**: ` */\n\npublic class Foo`
+**Correct**: ` */\npublic class Foo`
+**Detection Commands**:
+```bash
+# Find blank line between JavaDoc and member (multiline grep)
+grep -Pzo '\*/\n\n(public|private|protected)' --include="*.java" -r .
+```
+**Rationale**: JavaDoc must immediately precede the element it documents. A blank line breaks the association and may cause documentation tools to misinterpret the relationship.
 
 ### JavaDoc Exception Documentation - Missing @throws
 **Detection Pattern**: `public.*throws.*Exception.*\{` without corresponding `@throws`
@@ -32,6 +68,56 @@ grep -rn -B2 '^ \* <p>$' --include="*.java" . | grep -B1 '^ \*$'
 **Violation**: `@throws IllegalArgumentException if sourceCode or parseOptions are null`
 **Correct**: `@throws IllegalArgumentException if {@code sourceCode} or {@code parseOptions} are null`
 **Rationale**: {@code} markup provides semantic distinction and better documentation generation
+
+### Inline Comments - No Duplication of JavaDoc
+**Detection Pattern**: Inline comment repeating information from method/parameter JavaDoc
+**Violation**: `this.arena = arena;  // May be null` (when JavaDoc says `@param arena ... (may be null)`)
+**Correct**: `this.arena = arena;` (JavaDoc already documents nullability)
+**Rationale**: Inline comments that duplicate JavaDoc create maintenance burden - if JavaDoc changes, the inline comment becomes stale or contradictory. Trust the JavaDoc as the source of truth.
+
+**When inline comments ARE appropriate**:
+- Implementation details not in JavaDoc (algorithm notes, performance considerations)
+- Non-obvious code behavior that wouldn't belong in API docs
+- Temporary notes (TODO, FIXME with ticket references)
+
+### JavaDoc - Avoid @since Tags
+**Detection Pattern**: `@since\s+`
+**Violation**: `* @since 1.0`
+**Correct**: (remove the @since tag entirely)
+**Detection Commands**:
+```bash
+# Find @since tags in JavaDoc
+grep -rn '@since' --include="*.java" .
+```
+**Rationale**: Version history is tracked in git commits and changelogs, not in source code. @since tags become stale, create maintenance burden, and duplicate information already available in version control.
+
+### JavaDoc - Omit Redundant "(required)" When All Parameters Are Required
+**Detection Pattern**: `@param.*\(required\)` when all non-primitive parameters have `(required)`
+**Violation**: `@param filePath the file path (required)` when every parameter is required
+**Correct**: `@param filePath the file path` (omit redundant marker)
+**Rationale**: When all parameters are required (validated with `requireThat().isNotNull()`), marking each
+one as "(required)" adds noise without information. Only annotate nullability when it varies - use
+"(may be null)" for optional parameters to highlight exceptions to the default.
+
+### JavaDoc - @throws for Null Arguments Should Not Exclude Primitives
+**Detection Pattern**: `@throws.*if any.*except.*is null` mentioning primitive parameters
+**Violation**: `@throws NullPointerException if any parameter except {@code enabled} is null` (where
+`enabled` is a primitive boolean)
+**Correct**: `@throws NullPointerException if any argument is null`
+**Rationale**: Primitives cannot be null, so excluding them in `@throws` documentation is redundant and
+confusing. Simply state "if any argument is null" - readers understand primitives are implicitly excluded.
+
+### JavaDoc - Use "Returns" Not "Gets" for Accessor Methods
+**Detection Pattern**: `^\s+\* Gets the` or `^\s+\* Gets a`
+**Violation**: `/** Gets the file path. */`
+**Correct**: `/** Returns the file path. */`
+**Detection Commands**:
+```bash
+# Find "Gets the/a" at start of JavaDoc description
+grep -rn '^\s*\* Gets [ta]' --include="*.java" .
+```
+**Rationale**: "Returns" is more precise for methods that return values. "Gets" implies retrieval from
+somewhere, while "Returns" accurately describes what the method does - it returns a value to the caller.
 
 ### Validation - Use requireThat() Instead of Manual Checks
 **Detection Pattern**: `if \(.+ [<>!=]=.+\)\s*\{\s*throw new IllegalArgumentException`
@@ -72,10 +158,90 @@ if (position < 0) {
 
 // CORRECT - requireThat() range check
 requireThat(position, "position").isNotNegative();
+
+// VIOLATION - Manual null + empty check (two separate checks)
+requireThat(message, "message").isNotNull();
+if (message.isEmpty()) {
+    throw new IllegalArgumentException("message cannot be empty");
+}
+
+// CORRECT - requireThat() combined null + empty check
+requireThat(message, "message").isNotEmpty();
 ```
 **Rationale**: requireThat() provides consistent validation with better error messages, standardized naming,
 and clearer intent. The validation library generates consistent error messages automatically and reduces
-boilerplate code.
+boilerplate code. Use `isNotEmpty()` for strings that must be non-null AND non-empty - it handles both in
+one call.
+
+### Requirements Library - Exception Types for @throws Documentation
+**Detection Pattern**: `@throws IllegalArgumentException if.*is null` (when using `requireThat()`)
+**Violation**: `@throws IllegalArgumentException if config is null`
+**Correct**: `@throws NullPointerException if config is null`
+**Key Rule**: Most `requireThat()` methods throw `NullPointerException` on null values.
+**Exception Types**:
+- **NullPointerException** (on null): All methods EXCEPT those listed below
+- **IllegalArgumentException** (if validation fails): `isEqualTo()`, `isNotEqualTo()`, `isInstanceOf()`,
+  `isNotInstanceOf()` - these methods accept null as valid input; they only throw if validation fails
+- **IllegalArgumentException** (on invalid non-null value): Empty strings, out-of-range values, etc.
+**Examples**:
+```java
+// VIOLATION - Wrong exception type
+/**
+ * @throws IllegalArgumentException if config is null
+ */
+public void configure(Config config)
+{
+    requireThat(config, "config").isNotNull();  // Actually throws NullPointerException!
+}
+
+// CORRECT - Matching exception type
+/**
+ * @throws NullPointerException if config is null
+ */
+public void configure(Config config)
+{
+    requireThat(config, "config").isNotNull();
+}
+
+// CORRECT - Multiple validations with different exception types
+/**
+ * @throws NullPointerException if message is null
+ * @throws IllegalArgumentException if message is empty
+ */
+public Failure(String message)
+{
+    requireThat(message, "message").isNotNull();  // NullPointerException
+    if (message.isEmpty())
+    {
+        throw new IllegalArgumentException("message cannot be empty");  // IllegalArgumentException
+    }
+}
+```
+**Rationale**: JavaDoc `@throws` must accurately document the actual exception type thrown. Mismatched
+exception types mislead API consumers who may catch the wrong exception type.
+
+### Defensive Copies - Create Once in Constructor
+**Detection Pattern**: `return List.copyOf\(` or `return Collections.unmodifiable` in getter methods
+**Violation**: Creating defensive copy on every getter call for immutable fields
+```java
+public List<StageResult> stageResults()
+{
+    return List.copyOf(stageResults);  // WRONG: Creates copy on every call
+}
+```
+**Correct**: Create defensive copy once in constructor, return field directly in getter
+```java
+// Constructor
+this.stageResults = List.copyOf(stageResults);  // Copy once
+
+// Getter
+public List<StageResult> stageResults()
+{
+    return stageResults;  // Return already-immutable list
+}
+```
+**Rationale**: If a collection field is never modified after construction, creating a defensive copy on
+every getter invocation wastes CPU and memory. Create the copy once in the constructor.
 
 ### Parameter Formatting - Multi-line Declarations and Calls
 **Detection Pattern 1**: `(record|public\s+\w+).*\([^)]*\n.*,` (multi-line parameter declarations)
@@ -124,6 +290,84 @@ grep -rn -E "\w+\([^,)]+,[^,)]+,[^,)]+,[^,)]+,\s*\n\s+[^,)]+\);" --include="*.ja
 **Rationale**: Maximize both horizontal and vertical space efficiency; avoid wasted lines and improve code
 density without sacrificing readability
 
+### Line Breaking - Break After Operators and Dots
+**Detection Pattern**: `\n\s*\.(method|field)` (line starting with dot) or `\n\s*[+\-*/|&]` (line starting
+with operator)
+**Violation**: Line break BEFORE operator/dot
+**Correct**: Line break AFTER operator/dot
+**Detection Commands**:
+```bash
+# Find lines starting with dot (method chains breaking before dot)
+grep -rn '^\s*\.' --include="*.java" .
+
+# Find lines starting with binary operators
+grep -rn -E '^\s*[+\-*/|&]{1,2}\s' --include="*.java" .
+```
+**Examples**:
+```java
+// VIOLATION - Break before dot
+FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
+    .securityConfig(securityConfig)
+    .formattingRules(rules)
+    .build();
+
+// CORRECT - Break after dot
+FileProcessingPipeline pipeline = FileProcessingPipeline.builder().
+    securityConfig(securityConfig).
+    formattingRules(rules).
+    build();
+
+// VIOLATION - Break before operator
+String result = longExpression
+    + anotherExpression;
+
+// CORRECT - Break after operator
+String result = longExpression +
+    anotherExpression;
+```
+**Rationale**: Breaking after operators/dots makes it immediately clear that the line continues. The trailing
+operator/dot signals continuation; a leading operator/dot requires looking at the previous line for context.
+**Applies to**: Source code AND JavaDoc code examples.
+
+### Brace Placement - Opening Brace on New Line (Allman Style)
+**Detection Pattern**: `\)\s*\{$` or `(class|interface|enum|record)\s+\w+.*\{$` (opening brace at end of line)
+**Violation**: Opening brace at end of line (K&R/OTBS style)
+**Correct**: Opening brace on its own line (Allman style)
+**Detection Commands**:
+```bash
+# Find opening braces at end of line
+grep -rn -E '\)\s*\{$' --include="*.java" .
+grep -rn -E '(class|interface|enum|record)\s+\w+[^{]*\{$' --include="*.java" .
+```
+**Examples**:
+```java
+// VIOLATION - K&R style (brace at end of line)
+public void processFile(Path path) {
+    if (path.exists()) {
+        // ...
+    }
+}
+
+// CORRECT - Allman style (brace on new line)
+public void processFile(Path path)
+{
+    if (path.exists())
+    {
+        // ...
+    }
+}
+
+// VIOLATION - Class declaration
+public class FileProcessor {
+
+// CORRECT - Class declaration
+public class FileProcessor
+{
+```
+**Rationale**: Allman style provides clear visual separation between declarations and body. Each brace gets
+its own line, making block boundaries unambiguous and improving vertical scanning.
+**Applies to**: All blocks - classes, interfaces, methods, control structures, lambdas, initializers.
+
 ### Class Organization - User-Facing Members First
 **Detection Pattern**: `(public|protected).*record\s+\w+.*\{.*\n.*public\s+\w+.*\(` (nested types before
 public methods)
@@ -132,6 +376,48 @@ public methods)
 **Rationale**: Present API surface first to improve code readability and understanding
 
 ## TIER 2 IMPORTANT - Code Review
+
+### Exception Declaration - Unreachable Throws in Final Classes
+**Detection Pattern**: `public final class.*\{.*public.*throws.*Exception` where implementation cannot throw
+**Violation**: Method in final class declares `throws` for exceptions the implementation never throws
+**Correct**: Remove unreachable exception declarations from method signatures
+**Detection Commands**:
+```bash
+# Find final classes with methods declaring throws
+grep -rn -A20 'public final class' --include="*.java" . | grep 'throws'
+
+# Manual review required: Check if implementation actually throws declared exceptions
+# Look for methods that wrap checked exceptions or have evolved to not need them
+```
+**Examples**:
+```java
+// VIOLATION - Method declares IOException but implementation cannot throw it
+public final class ConfigParser {
+    public Config parse(String content) throws IOException {
+        // Implementation only does string parsing, never touches I/O
+        return new Config(content.split(","));
+    }
+}
+
+// CORRECT - No unreachable throws declaration
+public final class ConfigParser {
+    public Config parse(String content) {
+        return new Config(content.split(","));
+    }
+}
+
+// CORRECT - Method actually throws the declared exception
+public final class FileConfigParser {
+    public Config parse(Path path) throws IOException {
+        return new Config(Files.readString(path).split(","));
+    }
+}
+```
+**Rationale**: Unreachable exception declarations in final classes force callers to handle exceptions that can
+never occur. Since final classes cannot be extended, there's no future subclass that might need the exception.
+This creates unnecessary boilerplate and misleads API consumers about actual error conditions.
+**Note**: This rule applies specifically to final classes. Non-final classes may legitimately declare
+exceptions for subclass implementations even if the base implementation doesn't throw.
 
 ### Stream vs For-Loop - Inappropriate Stream Usage
 **Detection Pattern**: `\.forEach\(System\.out::println\)`
@@ -523,6 +809,52 @@ public RuleConfiguration merge(RuleConfiguration override) {
 **Rationale**: `IllegalStateException` signals recoverable API usage errors. `AssertionError` signals
 programming bugs indicating broken implementation invariants.
 
+### Class Naming - CamelCase for All Java Files Including Test Resources
+**Detection Pattern**: Java files with non-CamelCase names (kebab-case, snake_case, lowercase)
+**Violation**: `malformed-missing-brace.java`, `valid_simple.java`, `testinput.java`
+**Correct**: `MalformedMissingBrace.java`, `ValidSimple.java`, `TestInput.java`
+**Detection Commands**:
+```bash
+# Find Java files not starting with uppercase letter
+find . -name "*.java" | grep -E '/[a-z].*\.java$'
+
+# Find Java files with hyphens or underscores
+find . -name "*.java" | grep -E '[-_].*\.java$'
+```
+**Rationale**: Java class names must match file names, and class names follow CamelCase convention. This
+applies to ALL Java files including test fixtures and resources. Non-CamelCase file names cause compilation
+errors or require workarounds that obscure intent.
+
+### Naming - Acronyms as CamelCase Not ALL-CAPS
+**Detection Pattern**: Class/interface/enum/record/method names with consecutive uppercase letters (2+ caps)
+**Violation**: `AIOutputFormatter`, `HTTPClient`, `formatForAI()`, `parseJSON()`
+**Correct**: `AiOutputFormatter`, `HttpClient`, `formatForAi()`, `parseJson()`
+**Detection Commands**:
+```bash
+# Find class declarations with consecutive uppercase letters (acronyms)
+grep -rn -E '(class|interface|enum|record)\s+[A-Z]+[A-Z][a-z]' --include="*.java" .
+
+# Find class declarations starting with 2+ uppercase letters
+grep -rn -E '(class|interface|enum|record)\s+[A-Z]{2,}' --include="*.java" .
+```
+**Examples**:
+```java
+// VIOLATION - ALL-CAPS acronyms
+public interface AIOutputFormatter { }
+public class HTTPClientFactory { }
+public String formatForAI() { }
+public void parseJSON() { }
+
+// CORRECT - CamelCase acronyms
+public interface AiOutputFormatter { }
+public class HttpClientFactory { }
+public String formatForAi() { }
+public void parseJson() { }
+```
+**Rationale**: Treating acronyms as regular words in CamelCase improves readability and consistency. When
+acronyms are ALL-CAPS, word boundaries become ambiguous (is it `XMLHTTP` or `XML` + `HTTP`?) and the visual
+rhythm of CamelCase is broken. This applies to both type names and method names.
+
 ### Method Naming - Clarity Over Brevity
 **Detection Pattern**: Look for method names with unclear abbreviations
 **Common Abbreviations to Flag**:
@@ -554,9 +886,7 @@ grep -rn -E 'get\w+Len\(\)' --include="*.java" .
 ```
 
 **Exceptions** (do NOT flag these):
-- Universal acronyms: `getURL()`, `parseHTML()`, `toJSON()`, `getHTTPResponse()`
 - Java conventions: `toString()`, `hashCode()`, `equals()`
-- Domain terms: `parseAST()`, `getJLSReference()`, `buildDOM()`
 - Math conventions: `min()`, `max()`, `abs()`
 
 **Example Violations**:

@@ -325,7 +325,7 @@ across environments.
 - **Output**: Executable JAR and native binaries
 
 **Code Quality & Documentation**:
-- **Testing**: JUnit 5 with comprehensive CLI integration tests
+- **Testing**: TestNG with comprehensive CLI integration tests
 - **Documentation**: JavaDoc for API documentation generation
 - **Validation**: Input validation and error handling
 - **Configuration**: YAML-based configuration with validation

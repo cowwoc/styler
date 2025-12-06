@@ -17,6 +17,60 @@ projects in Styler Java Code Formatter.
 
 ## 🚨 CRITICAL REQUIREMENTS
 
+### Test Framework Dependencies
+
+**Use TestNG exclusively** (NOT JUnit). Required test dependencies in each module's `pom.xml`:
+
+```xml
+<dependencies>
+	<dependency>
+		<groupId>org.testng</groupId>
+		<artifactId>testng</artifactId>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>io.github.cowwoc.requirements</groupId>
+		<artifactId>requirements-java</artifactId>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>ch.qos.logback</groupId>
+		<artifactId>logback-classic</artifactId>
+		<scope>test</scope>
+	</dependency>
+</dependencies>
+```
+
+**Use Requirements API for assertions** (NOT AssertJ):
+```java
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+
+// ✅ CORRECT - Requirements API
+requireThat(result, "result").isNotNull();
+requireThat(result.hasErrors(), "hasErrors").isFalse();
+
+// ❌ WRONG - AssertJ
+assertThat(result).isNotNull();
+assertThat(result.hasErrors()).isFalse();
+```
+
+Each module with tests MUST have `src/test/resources/logback-test.xml`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<root level="WARN">
+		<appender-ref ref="CONSOLE"/>
+	</root>
+</configuration>
+```
+
 ### JPMS-Compliant Test Structure
 
 **This project uses Java Platform Module System (JPMS).** Tests MUST follow documented structure:
@@ -219,9 +273,133 @@ public class BadTestConstants
 }
 ```
 
+### Test Value Requirements
+
+**Tests must verify runtime behavior and business logic, not compile-time guarantees or implementation details.**
+
+#### ❌ **PROHIBITED - Meaningless Tests (Compile-Time Guarantees):**
+```java
+// ❌ Tests compile-time guarantee - enum always has these values
+@Test
+public void shouldHaveAiValue()
+{
+	assertThat(Audience.AI).isNotNull();
+}
+
+@Test
+public void shouldHaveHumanValue()
+{
+	assertThat(Audience.HUMAN).isNotNull();
+}
+
+// ❌ Tests that a record has fields - compiler guarantees this
+@Test
+public void shouldHaveDescriptionField()
+{
+	FixSuggestion fix = new FixSuggestion("desc", List.of("step"));
+	assertThat(fix.description()).isEqualTo("desc");
+}
+```
+
+#### ❌ **PROHIBITED - Implementation Detail Tests:**
+```java
+// ❌ Tests implementation detail - business logic doesn't care about enum count
+@Test
+public void shouldHaveExactlyTwoValues()
+{
+	Audience[] values = Audience.values();
+	assertThat(values).hasSize(2);
+}
+
+// ❌ Tests internal structure - if a third value is added, test fails but nothing broke
+@Test
+public void shouldContainAllExpectedValues()
+{
+	assertThat(Audience.values()).containsExactly(Audience.AI, Audience.HUMAN);
+}
+
+// ❌ Tests implementation choice - business doesn't care about internal collection type
+@Test
+public void stepsShouldReturnImmutableList()
+{
+	FixSuggestion fix = new FixSuggestion("desc", List.of("step"));
+	assertThatThrownBy(() -> fix.steps().add("new"))
+		.isInstanceOf(UnsupportedOperationException.class);
+}
+```
+
+#### ✅ **REQUIRED - Tests with Value (Business Logic):**
+```java
+// ✅ Tests runtime behavior - actual logic that could fail
+@Test
+public void detectReturnsAiWhenClaudeSessionIdSet()
+{
+	// Tests environment detection logic - this is business behavior
+}
+
+@Test
+public void formatForAiProducesValidJson()
+{
+	// Tests actual formatting logic - this is user-visible behavior
+}
+
+@Test
+public void constructorRejectsEmptyDescription()
+{
+	// Tests validation logic - prevents invalid data
+	assertThatThrownBy(() -> new FixSuggestion("", List.of("step")))
+		.isInstanceOf(IllegalArgumentException.class);
+}
+
+// ✅ Tests business rule - merge precedence affects user experience
+@Test
+public void mergeConfigsProjectOverridesUser()
+{
+	// Tests that nearest config wins - this is documented behavior
+}
+```
+
+#### Decision Criteria
+
+**Ask these questions before writing a test:**
+
+1. **Does this test business logic?** If the code changes but behavior is identical, would the test still pass?
+2. **Would a bug here affect users?** If this logic fails, does something user-visible break?
+3. **Is this a documented contract?** Is the tested behavior part of the API contract or just an implementation choice?
+
+**Rules:**
+- If removing the test would not reduce confidence in the code's correctness, the test has no value.
+- If the test would break when refactoring without changing behavior, it tests implementation details.
+- Tests should verify WHAT the code does, not HOW it does it internally.
+
 ---
 
 ## ⚠️ STANDARD CONVENTIONS
+
+### Test Class Declaration
+
+**All test classes should be `public final`:**
+
+```java
+// ✅ CORRECT - Test class is public final
+public final class JavaParserTest
+{
+	@Test
+	public void parseExpressionWithValidSyntaxReturnsCorrectAST()
+	{
+		// Test implementation
+	}
+}
+
+// ❌ WRONG - Package-private or non-final test class
+class JavaParserTest  // Missing public final
+{
+}
+```
+
+**Rationale:**
+- `public` - Required by some test frameworks for reflection access
+- `final` - Test classes should not be extended; each test class is self-contained
 
 ### Test Naming and Structure
 

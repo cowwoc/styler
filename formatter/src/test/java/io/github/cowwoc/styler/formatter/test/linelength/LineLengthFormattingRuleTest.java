@@ -1,4 +1,6 @@
-package io.github.cowwoc.styler.formatter.linelength.test;
+package io.github.cowwoc.styler.formatter.test.linelength;
+
+import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;

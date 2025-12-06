@@ -3,10 +3,11 @@ package io.github.cowwoc.styler.security.exceptions;
 /**
  * Base exception for all security-related violations.
  * <p>
- * This checked exception indicates that a security policy has been violated,
- * requiring explicit handling by calling code.
+ * This unchecked exception indicates that a security policy has been violated.
+ * Security violations typically represent unrecoverable conditions (resource exhaustion,
+ * execution timeouts) that should propagate without requiring explicit handling at every call site.
  */
-public class SecurityException extends Exception
+public class SecurityException extends RuntimeException
 {
 	private static final long serialVersionUID = 1L;
 
