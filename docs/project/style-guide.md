@@ -56,6 +56,33 @@ Before declaring style validation complete:
 - [ ] All TIER2 violations fixed
 - [ ] All TIER3 violations fixed or documented
 
+### PMD Suppression Policy {#pmd-suppression-policy}
+
+**Only suppress PMD rules when there is a documented, legitimate reason.**
+
+```java
+// ❌ BAD: Lazy suppression without justification
+@SuppressWarnings("PMD.UseEnumCollections")
+Map<MyEnum, String> map = new HashMap<>();  // Should use EnumMap
+
+// ✅ GOOD: Fix the issue instead of suppressing
+Map<MyEnum, String> map = new EnumMap<>(MyEnum.class);
+
+// ✅ ACCEPTABLE: Suppression with legitimate reason documented
+@SuppressWarnings("PMD.AvoidLiteralsInIfCondition")  // Magic number is array index, clear in context
+if (args.length > 0) { ... }
+```
+
+**Valid suppression reasons:**
+- False positive (PMD doesn't understand the context)
+- Performance-critical code where PMD suggestion would hurt performance
+- Interop with external API that requires specific pattern
+
+**Invalid suppression reasons:**
+- "Too much work to fix"
+- "I don't understand why PMD flagged this"
+- No reason provided
+
 ## 📝 JAVADOC MANUAL DOCUMENTATION REQUIREMENT {#javadoc-manual-documentation-requirement}
 
 JavaDoc comments require manual authoring with contextual understanding.
@@ -105,6 +132,9 @@ public void testValidToken() {
 
 ### JavaDoc Formatting Rules {#javadoc-formatting-rules}
 
+**Avoid @since Tags**: Do not use `@since` tags in JavaDoc. Version history is tracked in git commits and
+changelogs, not source code. These tags become stale and duplicate information from version control.
+
 **Paragraph Tags**: No empty line before `<p>` tags. The `<p>` tag should appear on the same line as the
 preceding content's closing.
 
@@ -148,6 +178,25 @@ other content including performance characteristics.
  */
 ```
 
+**Identifier References**: Always use `{@code}` for identifiers in JavaDoc, including class names, method
+names, parameter names, field names, and literals.
+
+```java
+// ❌ BAD: Plain text identifiers
+/**
+ * @throws NullPointerException if outputFormat or processingDuration is null
+ * @param config the Parser configuration
+ * @return the Token list
+ */
+
+// ✅ GOOD: {@code} wrapped identifiers
+/**
+ * @throws NullPointerException if {@code outputFormat} or {@code processingDuration} is {@code null}
+ * @param config the {@code Parser} configuration
+ * @return the {@code Token} list
+ */
+```
+
 ### Enforcement {#enforcement}
 
 Pre-commit hook detects generic JavaDoc patterns. PMD.CommentRequired violations must be fixed, not suppressed.
@@ -161,6 +210,33 @@ Comments that contradict current implementation must be updated or removed. Impl
 ```java
 // ❌ BAD: "This used to use ArrayList but was changed to LinkedList for performance"
 // ✅ GOOD: "Uses LinkedList for efficient insertions at arbitrary positions"
+```
+
+**Avoid obvious comments.** Only add comments that explain complex logic or explain WHY code does something.
+Do not add comments that merely restate what self-explanatory code is doing.
+
+```java
+// ❌ BAD: Comments restate what the code obviously does
+// Validate ruleId
+requireThat(ruleId, "ruleId").isNotBlank();
+
+// Validate groupOrder
+requireThat(groupOrder, "groupOrder").isNotNull().isNotEmpty();
+
+// Defensive copy
+groupOrder = List.copyOf(groupOrder);
+
+// ✅ GOOD: No comments needed - the code is self-explanatory
+requireThat(ruleId, "ruleId").isNotBlank();
+requireThat(groupOrder, "groupOrder").isNotNull().isNotEmpty();
+groupOrder = List.copyOf(groupOrder);
+
+// ✅ GOOD: Comment explains WHY, not WHAT
+// Process in reverse order to preserve insertion positions during replacement
+for (int i = matches.size() - 1; i >= 0; i--)
+{
+    // ...
+}
 ```
 
 ### TODO Comments {#todo-comments}
@@ -236,6 +312,121 @@ requireThat(tabWidth, "tabWidth").isGreaterThanOrEqualTo(MIN_TAB_WIDTH).isLessTh
 ```
 
 This reduces redundancy and makes the validation constraints clearer at a glance.
+
+**Avoid Redundant Validation Calls**: Some validation methods imply others. Don't chain methods where
+one already covers another:
+
+```java
+// ❌ BAD: isNotBlank() already implies isNotEmpty()
+requireThat(name, "name").isNotEmpty().isNotBlank();
+
+// ✅ GOOD: isNotBlank() is sufficient
+requireThat(name, "name").isNotBlank();
+```
+
+**Method implications**:
+- `isNotBlank()` → implies `isNotEmpty()` (non-blank strings cannot be empty)
+- `size().isEqualTo(n)` where n > 0 → implies `isNotEmpty()` (positive size means not empty)
+
+### Local Variable Type Inference (var) {#var-usage}
+
+**`var` should be the exception, not the rule.** Only use `var` when it **significantly reduces verbosity**
+by avoiding long generic type declarations, AND the type is clear from explicit types in the same or outer
+block.
+
+**The justification for `var` is reducing verbosity, not just "obvious" types.** If the explicit type is
+short and readable, use it even when the type would be obvious with `var`.
+
+```java
+// ✅ GOOD: var significantly reduces verbosity, type clear from declaration
+List<Map<Integer, String>> list = new ArrayList<>();
+for (var element : list)
+{
+    // element is clearly Map<Integer, String> from list declaration
+    // Writing Map<Integer, String> element would be redundant
+}
+
+// ❌ BAD: Type is obvious but var doesn't improve readability
+var matcher = PATTERN.matcher(input);
+// Use: Matcher matcher = PATTERN.matcher(input);
+// "Matcher" is short - no verbosity benefit from var
+
+// ❌ BAD: Type not immediately clear
+var result = processData(input);  // What type is result?
+
+// ❌ BAD: Simple types should be explicit
+var count = 0;        // Use: int count = 0;
+var name = "test";    // Use: String name = "test";
+```
+
+**When in doubt, use explicit types.** Explicit types improve code readability and make refactoring safer.
+
+### String Whitespace Trimming {#string-whitespace-trimming}
+
+**Use `strip()` instead of `trim()` when the string may contain Unicode whitespace.**
+
+`String.trim()` only removes ASCII whitespace (characters ≤ U+0020), while `String.strip()` (Java 11+)
+removes all Unicode whitespace characters including non-breaking spaces, ideographic spaces, and other
+Unicode space separators.
+
+```java
+// ❌ BAD: trim() misses Unicode whitespace
+String input = "\u00A0text\u2003";  // Non-breaking space + ideographic space
+input.trim();  // Returns "\u00A0text\u2003" - unchanged!
+
+// ✅ GOOD: strip() handles all Unicode whitespace
+input.strip();  // Returns "text"
+```
+
+**When to use each**:
+- `strip()` - Default choice for user input, file content, external data
+- `trim()` - Only when specifically handling ASCII-only content (rare)
+
+### Immutable Collections {#immutable-collections}
+
+**Prefer `List.copyOf()` and `Map.copyOf()` over `Collections.unmodifiableList()` and
+`Collections.unmodifiableMap()`.**
+
+`Collections.unmodifiableX()` creates a view that prevents modification through the wrapper, but the
+underlying collection can still be modified by the original reference. `List.copyOf()` and `Map.copyOf()`
+create true immutable copies.
+
+```java
+// ❌ BAD: Unmodifiable wrapper - original list can still be modified
+List<String> original = new ArrayList<>();
+List<String> wrapped = Collections.unmodifiableList(original);
+original.add("surprise");  // wrapped now contains "surprise"
+
+// ✅ GOOD: True immutable copy - completely independent
+List<String> original = new ArrayList<>();
+List<String> copy = List.copyOf(original);
+original.add("surprise");  // copy is unaffected
+```
+
+**When to use each**:
+- `List.copyOf()` / `Map.copyOf()` - Default choice for defensive copies and immutable fields
+- `Collections.unmodifiableX()` - Only when you intentionally want a live view (rare)
+
+### Import Types Instead of Using FQNs {#import-types}
+
+**Always import types instead of using fully-qualified names (FQNs) in code.**
+
+FQNs reduce readability and create visual clutter. Import statements exist to avoid repeating package names.
+
+```java
+// ❌ BAD: FQN in code
+private java.util.Map<String, java.util.List<String>> data = new java.util.HashMap<>();
+
+// ✅ GOOD: Proper imports
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+// ...
+private Map<String, List<String>> data = new HashMap<>();
+```
+
+**Exception**: Name conflicts where two classes have the same simple name (rare). In this case, import the
+more frequently used one and use the FQN for the other.
 
 ## References {#references}
 

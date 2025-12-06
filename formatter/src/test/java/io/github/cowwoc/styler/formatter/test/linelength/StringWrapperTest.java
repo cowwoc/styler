@@ -1,4 +1,4 @@
-package io.github.cowwoc.styler.formatter.linelength.test;
+package io.github.cowwoc.styler.formatter.test.linelength;
 
 import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
 import io.github.cowwoc.styler.formatter.linelength.internal.StringWrapper;

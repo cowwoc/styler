@@ -1,4 +1,4 @@
-package io.github.cowwoc.styler.formatter.linelength.test;
+package io.github.cowwoc.styler.formatter.test;
 
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
@@ -11,11 +11,11 @@ import java.nio.file.Path;
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
- * Test implementation of TransformationContext for unit testing.
+ * Test implementation of TransformationContext for formatter unit testing.
  * <p>
  * <b>Thread-safety</b>: This class is not thread-safe.
  */
-final class TestTransformationContext implements TransformationContext
+public final class TestTransformationContext implements TransformationContext
 {
 	private final NodeArena arena;
 	private final NodeIndex rootNode;
@@ -29,7 +29,7 @@ final class TestTransformationContext implements TransformationContext
 	 * @param sourceCode the source code to use
 	 * @throws NullPointerException if sourceCode is null
 	 */
-	TestTransformationContext(String sourceCode)
+	public TestTransformationContext(String sourceCode)
 	{
 		requireThat(sourceCode, "sourceCode").isNotNull();
 
@@ -46,11 +46,11 @@ final class TestTransformationContext implements TransformationContext
 	 * Creates a test context with a custom arena for testing specific AST scenarios.
 	 *
 	 * @param sourceCode the source code
-	 * @param arena the pre-configured arena
-	 * @param rootNode the root node index
+	 * @param arena      the pre-configured arena
+	 * @param rootNode   the root node index
 	 * @throws NullPointerException if any parameter is null
 	 */
-	TestTransformationContext(String sourceCode, NodeArena arena, NodeIndex rootNode)
+	public TestTransformationContext(String sourceCode, NodeArena arena, NodeIndex rootNode)
 	{
 		requireThat(sourceCode, "sourceCode").isNotNull();
 		requireThat(arena, "arena").isNotNull();

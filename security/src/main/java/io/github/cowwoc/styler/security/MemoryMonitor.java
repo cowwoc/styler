@@ -50,7 +50,7 @@ public final class MemoryMonitor
 	}
 
 	/**
-	 * Gets the current heap memory usage in bytes.
+	 * Returns the current heap memory usage in bytes.
 	 *
 	 * @return current heap usage
 	 */

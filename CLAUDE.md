@@ -68,7 +68,8 @@ quality/refactoring; tester = test strategy/coverage)
    - **STOP and PRESENT**: Show plan to user
    - **WAIT for user approval**: User must say "approved", "proceed", "looks good"
    - **ONLY THEN**: Create `/workspace/tasks/{task}/user-approved-synthesis.flag`
-   - **Transition to IMPLEMENTATION**: `jq '.state = "IMPLEMENTATION"' task.json`
+   - **Transition to IMPLEMENTATION**: Use `state-transition` skill (see pattern in § State Transition
+     Pattern below)
    - Hook will BLOCK Task tool invocations from INIT state and IMPLEMENTATION transition without approval
      flag
 
@@ -76,15 +77,17 @@ quality/refactoring; tester = test strategy/coverage)
    - AWAITING_USER_APPROVAL state: After validation passes
    - **STOP and PRESENT**: Show commit SHA and `git diff --stat main...task-branch`
    - **WAIT for user approval**: User must say "approved", "merge it", "LGTM"
+   - **⚠️ DISTINGUISH**: Git manipulation requests ("squash the commits", "rebase", "amend") are
+     preprocessing instructions, NOT approval. Execute them and re-present for review.
    - **ONLY THEN**: Create `/workspace/tasks/{task}/user-approved-changes.flag`
-   - **Transition to COMPLETE**: `jq '.state = "COMPLETE"' task.json`
+   - **Transition to COMPLETE**: Use `state-transition` skill (or see pattern below)
    - **Squash and merge to main**: See [task-protocol-core.md](docs/project/task-protocol-core.md) for
      commit template
    - **CRITICAL**: Use `--squash` to create ONE commit
    - Hook will BLOCK merges to main without approval flag or from wrong working directory
 
 **Final Step: COMPLETE → CLEANUP** (Clean Repository)
-   - After merge to main: Transition to CLEANUP: `jq '.state = "CLEANUP"' task.json`
+   - After merge to main: Use `state-transition` skill to transition to CLEANUP (or see pattern below)
    - Delete all task branches: `git branch -D {task-name} {task-name}-architect {task-name}-engineer
      {task-name}-formatter`
    - Remove all worktrees: `git worktree remove /workspace/tasks/{task-name}/code` and agent worktrees
@@ -92,6 +95,23 @@ quality/refactoring; tester = test strategy/coverage)
    - Preserves: Task directory with audit files (task.json, task.md, approval flags)
    - Reference: [task-protocol-core.md § COMPLETE → CLEANUP
      Transition](docs/project/task-protocol-core.md#complete-cleanup-transition)
+
+**⚠️ MANDATORY: State Transition Pattern** {#state-transition-pattern}
+
+**NEVER update just `.state`** - ALL state transitions MUST also update `.transition_log`:
+
+```bash
+# ❌ WRONG - Missing transition_log (causes audit trail gaps)
+jq '.state = "COMPLETE"' task.json > tmp.json && mv tmp.json task.json
+
+# ✅ CORRECT - Full transition with audit trail
+jq --arg old "AWAITING_USER_APPROVAL" --arg new "COMPLETE" \
+   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+   '.state = $new | .transition_log += [{"from": $old, "to": $new, "timestamp": $ts}]' \
+   task.json > tmp.json && mv tmp.json task.json
+```
+
+**Recommended**: Use `state-transition` skill for safe transitions with automatic validation.
 
 **NEVER**:
 - Skip state progression (staying in INIT throughout task)

@@ -36,7 +36,7 @@ public final class ConfigurationCache
 	}
 
 	/**
-	 * Gets a configuration builder from cache or parses it if not cached.
+	 * Returns a configuration builder from cache or parses it if not cached.
 	 * <p>
 	 * Uses canonical paths for cache keys to correctly handle symbolic links and path
 	 * variations (e.g., "./config.toml" and "config.toml" map to the same cache entry).
