@@ -375,7 +375,19 @@ cd /workspace/tasks/{task-name}/code
 
 **ERROR HANDLING**: Document blockers if test cannot be implemented, analyze root cause for test failures (code bug vs strategy issue), request clarification for ambiguity, report all outcomes.
 
-**TEST CODE QUALITY**: Follow Code Style Guidelines, use TestNG framework, thread-safe patterns only (no @BeforeMethod), descriptive assertions with failure messages, proper test isolation.
+**TEST CODE QUALITY**: Follow Code Style Guidelines, use TestNG framework, thread-safe patterns only (no
+@BeforeMethod/@AfterMethod/@Test(singleThreaded=true)), descriptive assertions with failure messages, proper
+test isolation.
+
+🚨 **PROHIBITED TEST PATTERNS** (per style-guide.md § TestNG Tests):
+- ❌ `@BeforeMethod` - Creates shared mutable state between tests
+- ❌ `@AfterMethod` - Implies shared state needing cleanup
+- ❌ `@Test(singleThreaded = true)` - Masks thread-safety issues
+- ❌ `@Test(enabled = false)` - **STUB VIOLATION**: Disabled tests are stubs for unimplemented functionality
+- ✅ Create fresh resources in each test method
+- ✅ Use try-finally for cleanup within each test
+- ✅ Use `@Test(expectedExceptions = X.class)` for exception tests
+- ✅ Either implement tests fully or don't create them
 
 ## IMPLEMENTATION OUTPUT FORMAT
 
