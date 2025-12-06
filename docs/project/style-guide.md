@@ -197,6 +197,59 @@ names, parameter names, field names, and literals.
  */
 ```
 
+**Simplified @throws for All-Non-Null Parameters**: When all parameters must be non-null, use a single
+concise statement instead of enumerating each parameter:
+
+```java
+// ❌ BAD: Enumerating when all are non-null
+/**
+ * @throws NullPointerException if any of {@code ruleId}, {@code severity}, {@code message},
+ *                              {@code filePath}, or {@code suggestedFixes} is {@code null}
+ */
+
+// ✅ GOOD: Concise when all parameters are non-null
+/**
+ * @throws NullPointerException if any of the arguments are {@code null}
+ */
+```
+
+Use enumeration only when some parameters allow null (to clarify which ones don't).
+
+**Clear Terminology in @throws**: Use simple, understandable descriptions instead of technical jargon:
+
+```java
+// ❌ BAD: Technical jargon
+/**
+ * @throws IllegalArgumentException if {@code name} is empty or not stripped
+ */
+
+// ✅ GOOD: Clear terminology
+/**
+ * @throws IllegalArgumentException if {@code name} is empty or contains leading/trailing whitespace
+ */
+```
+
+**Multiple Conditions in @throws**: When an exception has multiple conditions, use `<ul>` and `<li>`:
+
+```java
+// ❌ BAD: Run-on conditions
+/**
+ * @throws IllegalArgumentException if {@code ruleId} is empty, if {@code startPosition} is negative,
+ *                                  if {@code endPosition} is less than {@code startPosition},
+ *                                  or if {@code lineNumber} is not positive
+ */
+
+// ✅ GOOD: Structured list
+/**
+ * @throws IllegalArgumentException <ul>
+ *                                    <li>if {@code ruleId} or {@code message} are empty</li>
+ *                                    <li>if {@code startPosition} is negative</li>
+ *                                    <li>if {@code endPosition} is less than {@code startPosition}</li>
+ *                                    <li>if {@code lineNumber} is not positive</li>
+ *                                  </ul>
+ */
+```
+
 ### Enforcement {#enforcement}
 
 Pre-commit hook detects generic JavaDoc patterns. PMD.CommentRequired violations must be fixed, not suppressed.
@@ -256,20 +309,126 @@ for (int i = matches.size() - 1; i >= 0; i--)
 
 **Thread-Safe Patterns Only**:
 - ❌ **Prohibited**: `@BeforeMethod` (creates shared mutable state)
+- ❌ **Prohibited**: `@AfterMethod` (implies shared state needing cleanup)
+- ❌ **Prohibited**: `@Test(singleThreaded = true)` (masks thread-safety issues)
 - ✅ **Required**: Create fresh instances in each test method
+- ✅ **Required**: Use try-finally for resource cleanup within each test
+
+**No Stub Tests (All Forms Prohibited)**:
+- ❌ **Prohibited**: `@Test(enabled = false)` - Disabled test is a stub
+- ❌ **Prohibited**: Comments like `// This test will be implemented when...` - Placeholder comment is a stub
+- ❌ **Prohibited**: Tests that only verify `isNotNull()` without testing actual behavior - Empty shell is a stub
+- ✅ **Required**: Either implement the test fully or don't create it
+- Tests waiting for "future functionality" ARE stubs - delete them entirely
 
 ```java
-// ❌ BAD
+// ❌ BAD - Shared state
 @BeforeMethod
 public void setup() {
     parser = new Parser();  // Shared state
 }
 
-// ✅ GOOD
+// ❌ BAD - Disabled test stub
+@Test(enabled = false)
+public void testFutureFeature() {
+    // TODO: implement when feature is ready
+}
+
+// ❌ BAD - Placeholder comment stub
+@Test
+public void outputHandlerFormatsSuccessResultProperly() {
+    OutputHandler handler = new OutputHandler();
+    // This test will be implemented when OutputHandler is available
+    requireThat(handler, "handler").isNotNull();  // Only verifies creation, not behavior
+}
+
+// ❌ BAD - Empty shell stub (only tests object creation)
+@Test
+public void testFormatting() {
+    Formatter formatter = new Formatter();
+    requireThat(formatter, "formatter").isNotNull();  // No actual behavior tested
+}
+
+// ✅ GOOD - Fresh instance, no disabled tests
 @Test
 public void testParse() {
     Parser parser = new Parser();  // Fresh instance per test
     // ...
+}
+```
+
+**Test Assertions - Use requireThat()**:
+- ❌ **Prohibited**: Manual if-throw patterns for assertions
+- ✅ **Required**: Use `requireThat()` for all test assertions
+
+```java
+// ❌ BAD - Manual null check
+if (message == null) {
+    throw new AssertionError("Message should not be null");
+}
+
+// ❌ BAD - Manual value check
+if (!result.contains("expected")) {
+    throw new AssertionError("Result should contain expected");
+}
+
+// ✅ GOOD - Use requireThat()
+requireThat(message, "message").isNotNull();
+requireThat(result, "result").contains("expected");
+```
+
+**Avoid Redundant Validators** - Stronger validators imply weaker ones:
+- ❌ `isNotNull().isNotEmpty()` - `isNotEmpty()` implies `isNotNull()`
+- ❌ `isNotNull()` then `contains()` - `contains()` implies `isNotNull()`
+- ✅ Use only the strongest validator needed
+
+```java
+// ❌ BAD - Redundant: isNotEmpty() already checks for null
+requireThat(message, "message").isNotNull().isNotEmpty();
+
+// ❌ BAD - Redundant: contains() already checks for null
+requireThat(message, "message").isNotNull();
+requireThat(message, "message").contains("expected");
+
+// ✅ GOOD - Single strongest validator
+requireThat(message, "message").isNotEmpty();
+requireThat(message, "message").contains("expected");
+```
+
+**Avoid Testing Compile-Time Constants** - Don't test what the compiler guarantees:
+- ❌ Testing that an enum value equals its defined constant (tautology)
+- ❌ Testing that a constant is positive/negative when defined that way
+- ✅ Test relationships between values that could accidentally break
+- ✅ Test uniqueness constraints (no accidental duplicates)
+- ✅ Test integration with external systems that depend on specific values
+
+```java
+// ❌ BAD - Tautology: tests that 1 > 0
+@Test
+public void errorCodesArePositive() {
+    requireThat(ExitCode.VIOLATIONS_FOUND.code(), "code").isGreaterThan(0); // Always true
+}
+
+// ❌ BAD - Duplicates enum definition
+@Test
+public void successExitCodeEqualsZero() {
+    requireThat(ExitCode.SUCCESS.code(), "code").isEqualTo(0); // Enum already defines this
+}
+
+// ✅ GOOD - Tests intentional relationship that could break
+@Test
+public void successAndHelpShareSameCode() {
+    requireThat(ExitCode.SUCCESS.code(), "SUCCESS").isEqualTo(ExitCode.HELP.code());
+}
+
+// ✅ GOOD - Tests uniqueness constraint
+@Test
+public void errorCodesAreUnique() {
+    Set<Integer> codes = Arrays.stream(ExitCode.values())
+        .filter(e -> e != ExitCode.HELP) // HELP intentionally duplicates SUCCESS
+        .map(ExitCode::code)
+        .collect(Collectors.toSet());
+    requireThat(codes.size(), "unique codes").isEqualTo(ExitCode.values().length - 1);
 }
 ```
 
@@ -407,6 +566,27 @@ original.add("surprise");  // copy is unaffected
 - `List.copyOf()` / `Map.copyOf()` - Default choice for defensive copies and immutable fields
 - `Collections.unmodifiableX()` - Only when you intentionally want a live view (rare)
 
+### Stream toList() {#stream-tolist}
+
+**Use `toList()` instead of `collect(Collectors.toUnmodifiableList())`.**
+
+Java 16+ provides `Stream.toList()` which returns an unmodifiable list. It's more concise and readable.
+
+```java
+// ❌ BAD: Verbose collector
+List<String> names = items.stream()
+    .map(Item::getName)
+    .collect(Collectors.toUnmodifiableList());
+
+// ✅ GOOD: Built-in terminal operation
+List<String> names = items.stream()
+    .map(Item::getName)
+    .toList();
+```
+
+**Note**: `toList()` returns an unmodifiable list (like `List.of()`). If you need a mutable list, use
+`collect(Collectors.toList())` or `toCollection(ArrayList::new)`.
+
 ### Import Types Instead of Using FQNs {#import-types}
 
 **Always import types instead of using fully-qualified names (FQNs) in code.**
@@ -427,6 +607,161 @@ private Map<String, List<String>> data = new HashMap<>();
 
 **Exception**: Name conflicts where two classes have the same simple name (rare). In this case, import the
 more frequently used one and use the FQN for the other.
+
+### Optional Usage {#optional-usage}
+
+**Use `Optional` only as a method return type, never as a method parameter.**
+
+`Optional` was designed to represent "a value that may or may not be present" in return types. Using it as
+a parameter creates unnecessary complexity and ambiguity.
+
+```java
+// ❌ BAD: Optional as parameter
+public void processUser(Optional<String> nickname) {
+    // Caller must wrap: processUser(Optional.of("John"))
+    // Or pass empty: processUser(Optional.empty())
+}
+
+// ❌ BAD: Nullable parameter
+public void processUser(String name, String nickname) {
+    // Caller passes null: processUser("John", null)
+    // Unclear contract, null checks scattered throughout
+}
+
+// ✅ GOOD: Method overloading with optional arguments last
+public void processUser(String name) {
+    processUser(name, generateDefaultNickname(name));
+}
+
+public void processUser(String name, String nickname) {
+    requireThat(name, "name").isNotNull();
+    requireThat(nickname, "nickname").isNotNull();  // Non-null when provided
+    // process with both values
+}
+
+// ✅ GOOD: Optional as return type
+public Optional<User> findUserById(long id) {
+    // Clearly signals the result may be absent
+    return Optional.ofNullable(userMap.get(id));
+}
+```
+
+**Pattern for optional arguments**:
+- Place optional arguments at the end of the method signature
+- Provide overloaded methods that omit optional arguments
+- The full-signature method must validate all arguments as non-null
+- Shorter overloads delegate to the full signature with default values
+
+**When the default value is null**: Use a private method that accepts nullable parameters:
+
+```java
+// Public API - all arguments validated
+public void process(String name) {
+    processInternal(name, null);  // null is the default
+}
+
+public void process(String name, String nickname) {
+    requireThat(nickname, "nickname").isNotNull();
+    processInternal(name, nickname);
+}
+
+// Private implementation accepts nullable
+private void processInternal(String name, String nickname) {
+    requireThat(name, "name").isNotNull();
+    if (nickname != null) {
+        // use nickname
+    }
+}
+```
+
+**For constructors**: When optional arguments have no non-null default value, each constructor should
+set fields directly (no chaining). The constructor accepting the optional argument must validate it's
+non-null:
+
+```java
+public class User {
+    private final String name;
+    private final String nickname;  // nullable
+
+    // Short constructor - sets nickname to null directly
+    public User(String name) {
+        requireThat(name, "name").isNotNull();
+        this.name = name;
+        this.nickname = null;
+    }
+
+    // Full constructor - validates nickname is non-null
+    public User(String name, String nickname) {
+        requireThat(name, "name").isNotNull();
+        requireThat(nickname, "nickname").isNotNull();
+        this.name = name;
+        this.nickname = nickname;
+    }
+}
+```
+
+When optional arguments have a non-null default, use constructor chaining:
+
+```java
+public class Config {
+    private final int timeout;
+    private final int retries;
+
+    public Config(int timeout) {
+        this(timeout, 3);  // Chain with default retries=3
+    }
+
+    public Config(int timeout, int retries) {
+        this.timeout = timeout;
+        this.retries = retries;
+    }
+}
+```
+
+**Records and Optional**: Do not use `Optional` as a record component when implementing an interface
+that returns `Optional`. Records auto-generate accessors matching component types, so an
+`Optional<T>` component creates a public accessor that callers must use `Optional.empty()` to construct.
+Use a regular class instead to control accessor visibility.
+
+```java
+// ❌ BAD: Record with Optional component
+public record Violation(String message, Optional<NodeIndex> nodeIndex)
+    implements FormattingViolation
+{
+    // Auto-generated: public Optional<NodeIndex> nodeIndex() - forces callers to pass Optional
+}
+
+// ✅ GOOD: Class with controlled accessors
+public final class Violation implements FormattingViolation {
+    private final String message;
+    private final NodeIndex nodeIndex;  // nullable
+
+    // Constructor without optional parameter - sets null directly
+    public Violation(String message) {
+        this.message = requireThat(message, "message").isNotNull().getValue();
+        this.nodeIndex = null;
+    }
+
+    // Constructor with optional parameter - enforces non-null
+    public Violation(String message, NodeIndex nodeIndex) {
+        this.message = requireThat(message, "message").isNotNull().getValue();
+        this.nodeIndex = requireThat(nodeIndex, "nodeIndex").isNotNull().getValue();
+    }
+
+    @Override
+    public Optional<NodeIndex> nodeIndex() {
+        return Optional.ofNullable(nodeIndex);  // Interface return type is Optional
+    }
+}
+```
+
+**Constructors vs Factory Methods**: Prefer constructors for simple instance creation. Use static factory
+methods only when they provide meaningful benefits:
+- Named construction with different semantics (e.g., `fromJson()`, `empty()`, `copyOf()`)
+- Returning cached instances or subclasses
+- Complex initialization logic that benefits from a descriptive name
+
+When all factory methods would just be `create(...)` with simple `new` calls, use constructors instead.
 
 ## References {#references}
 

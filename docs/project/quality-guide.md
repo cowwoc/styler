@@ -179,14 +179,16 @@ public class OrderProcessor {
 
 ## Test Strategy Requirements {#test-strategy-requirements}
 
-### Minimum Test Coverage {#minimum-test-coverage}
+### Business-Logic Coverage {#business-logic-coverage}
 
-**Categories** (MANDATORY):
-1. **Null/Empty Validation**: 2-3 tests verifying null/empty input handling
-2. **Boundary Conditions**: 2-3 tests for edge values (0, max, min+1, max-1)
-3. **Edge Cases**: 3-5 tests for unusual but valid inputs
-4. **Happy Path**: 1-2 tests for standard expected usage
-5. **Error Conditions**: 2-3 tests for invalid inputs and expected failures
+**Focus on meaningful behavior, not test counts or code coverage percentages.**
+
+**Coverage Areas** (MANDATORY):
+1. **Input Validation**: Tests for null, empty, and invalid inputs
+2. **Business Rules**: Tests verifying core business logic and constraints
+3. **Edge Cases**: Tests for boundary conditions and unusual but valid inputs
+4. **Error Handling**: Tests for expected failure modes and error messages
+5. **Integration Points**: Tests for component interactions and data flow
 
 ### Test Naming Convention {#test-naming-convention}
 

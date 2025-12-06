@@ -187,11 +187,7 @@ git status --porcelain src/
 ./mvnw checkstyle:check pmd:check
 # Exit code: 0 (zero violations)
 
-# Gate 4: Minimum test count
-find src/test -name "*Test.java" -exec grep -c "@Test" {} + | awk '{sum+=$1} END {print sum}'
-# Count: ≥15 tests
-
-# Gate 5: Build verification
+# Gate 4: Build verification
 ./mvnw clean verify
 # Exit code: 0 (full build passes with clean compilation)
 # Clean build prevents stale module-info.class from compile-only builds
@@ -204,16 +200,15 @@ find src/test -name "*Test.java" -exec grep -c "@Test" {} + | awk '{sum+=$1} END
 - All modules compile successfully
 - No missing dependencies
 
-**✅ Test Coverage:**
-- Minimum 15 tests (standard components)
-- Minimum 20 tests (algorithm-heavy components)
-- Required categories:
-  - Null/Empty validation: 2-3 tests
-  - Boundary conditions: 2-3 tests
-  - Edge cases: 3-5 tests
-  - Algorithm precision: 3-5 tests (if applicable)
-  - Configuration validation: 2-3 tests
-  - Real-world scenarios: 3-5 tests
+**✅ Business-Logic Coverage:**
+- Tests cover all significant business logic paths
+- Focus on meaningful behavior, not test counts
+- Required coverage areas:
+  - Input validation (null, empty, invalid values)
+  - Business rules and constraints
+  - Edge cases and boundary conditions
+  - Error handling paths
+  - Integration points between components
 
 **✅ Test Execution:**
 - `./mvnw test` passes (100% success rate)
