@@ -161,7 +161,7 @@ FILE: src/test/java/FormattingRuleTest.java
 
      1  package io.github.cowwoc.styler;
      2
-     3  import org.junit.Test;
+     3  import org.testng.annotations.Test;
      4
      5  public class FormattingRuleTest {
      6      @Test
@@ -232,7 +232,7 @@ Found 3 Maven configuration files:
 1. /workspace/main/pom.xml (Parent POM)
    - Defines modules: formatter, ast-core
    - Java version: 21
-   - Dependencies: JUnit 5, Mockito
+   - Dependencies: TestNG, AssertJ
 
 2. /workspace/main/formatter/pom.xml
    - Module: styler-formatter

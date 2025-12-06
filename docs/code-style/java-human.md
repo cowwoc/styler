@@ -23,14 +23,12 @@ and correctness are critical because:
 
 ## 🚨 TIER 1 CRITICAL - Build Blockers
 
-### JavaDoc Paragraph Formatting - Empty Line Before &lt;p&gt;
-**Why this matters**: JavaDoc formatting conventions require consistent paragraph separation. The `<p>` tag should appear immediately after the summary line without a blank JavaDoc line in between.
-
-**Standard convention**: The JavaDoc tool and documentation generators expect `<p>` tags to follow the summary description directly, maintaining clean separation between paragraphs without unnecessary blank lines.
+### JavaDoc Paragraph Tag - No Empty Lines Around &lt;p&gt;
+**Why this matters**: The `<p>` tag should have no empty JavaDoc lines before or after it. It serves as a visual paragraph separator without requiring additional blank lines.
 
 **Practical example**:
 ```java
-// ✅ CORRECT - No blank line before <p>
+// ✅ CORRECT - No blank lines around <p>
 /**
  * Represents a potential line break location within source code.
  * <p>
@@ -43,12 +41,67 @@ and correctness are critical because:
  * Represents a potential line break location within source code.
  *
  * <p>
- * This record is immutable and thread-safe, containing all metadata needed to
- * evaluate and apply a line break.
+ * This record is immutable and thread-safe.
+ */
+
+// ❌ VIOLATION - Blank line after <p>
+/**
+ * Represents a potential line break location.
+ * <p>
+ *
+ * This record is immutable and thread-safe.
  */
 ```
 
 **Why consistency matters**: Following standard JavaDoc formatting makes documentation more readable and ensures proper rendering in JavaDoc HTML output and IDE documentation views.
+
+### JavaDoc Paragraph Tag - Must Not Be Last Element
+**Why this matters**: A `<p>` tag at the end of JavaDoc creates an empty paragraph that serves no purpose. Remove any trailing `<p>` tags.
+
+**Practical example**:
+```java
+// ✅ CORRECT - No trailing <p>
+/**
+ * Processes the input file.
+ * <p>
+ * Returns the formatted result.
+ */
+
+// ❌ VIOLATION - Trailing <p> with no content
+/**
+ * Processes the input file.
+ * <p>
+ */
+```
+
+**Why this matters**: Empty trailing paragraphs add visual noise in generated documentation and indicate incomplete documentation.
+
+### JavaDoc Paragraph Tag - Must Be On Own Line
+**Why this matters**: The `<p>` tag in JavaDoc should appear on its own line, with the paragraph content starting on the following line. This improves readability and maintains consistent formatting.
+
+**Practical example**:
+```java
+// ✅ CORRECT - <p> on its own line
+/**
+ * Processes the input file.
+ * <p>
+ * Example usage:
+ * <pre>
+ * processor.process(file);
+ * </pre>
+ */
+
+// ❌ VIOLATION - Text immediately after <p>
+/**
+ * Processes the input file.
+ * <p>Example usage:
+ * <pre>
+ * processor.process(file);
+ * </pre>
+ */
+```
+
+**Why this matters**: Placing `<p>` on its own line creates visual separation and makes the structure of JavaDoc comments easier to scan. It also aligns with the broader formatting style where block-level elements stand alone.
 
 ### External Source Documentation - Missing URLs
 **Why this matters**: Parser implementations must be traceable to official Java Language Specification
@@ -151,6 +204,68 @@ return new ParseResult(
     errors);
 ```
 
+### Line Breaking - Break After Operators and Dots
+**Why trailing operators/dots**: When a line ends with an operator or dot, it immediately signals that the
+expression continues on the next line. In contrast, when a line starts with an operator/dot, you must look
+back at the previous line to understand the context.
+
+**Visual scanning benefit**: Reading code top-to-bottom, a trailing dot or operator tells you "this isn't
+complete yet" before you even start the next line. A leading dot requires re-evaluating the previous line.
+
+**Method chain readability**:
+```java
+// ❌ AVOID - Break before dot (common but less clear)
+FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
+    .securityConfig(securityConfig)
+    .formattingRules(rules)
+    .build();
+
+// ✅ PREFERRED - Break after dot (trailing dot signals continuation)
+FileProcessingPipeline pipeline = FileProcessingPipeline.builder().
+    securityConfig(securityConfig).
+    formattingRules(rules).
+    build();
+```
+
+**Consistency with other languages**: Many style guides prefer trailing operators for line continuation
+(Python's PEP 8 historically, C++ style guides). This aligns with the principle that line endings should
+signal whether the statement is complete.
+
+**JavaDoc code examples**: Apply the same rule to code examples in JavaDoc to maintain consistency between
+documentation and actual code.
+
+### Brace Placement - Opening Brace on New Line (Allman Style)
+**Why Allman style**: Opening braces on their own line creates clear visual separation between declarations
+and their bodies. Each block boundary is unambiguous, and code scans vertically without brace-hunting.
+
+**Visual alignment benefit**: With Allman style, opening and closing braces align vertically at the same
+indentation level, making it trivial to match block boundaries:
+```java
+// ✅ PREFERRED - Allman style (braces align vertically)
+public void processFile(Path path)
+{
+    if (path.exists())
+    {
+        // block content clearly delineated
+    }
+}
+
+// ❌ AVOID - K&R style (closing brace misaligns from opening)
+public void processFile(Path path) {
+    if (path.exists()) {
+        // harder to match block boundaries
+    }
+}
+```
+
+**Applies consistently**: Use Allman style for all blocks including:
+- Class, interface, enum, record declarations
+- Method and constructor bodies
+- Control structures (if, else, for, while, switch)
+- Try-catch-finally blocks
+- Lambda expressions with block bodies
+- Static and instance initializers
+
 ### Class Organization - User-Facing Members First
 **Why API-first organization matters**: When reviewing parser classes, developers first want to understand the
 public interface - what methods are available and what they return. Presenting the API surface before
@@ -167,6 +282,61 @@ compilation unit, making this organization technically feasible.
 first, then `ParseResult` record below, creates a logical flow from usage to implementation.
 
 ## ⚠️ TIER 2 IMPORTANT - Code Review
+
+### Exception Declaration - Unreachable Throws in Final Classes
+**Why this matters**: When a final class declares that a method throws an exception that the implementation
+cannot actually throw, it creates unnecessary burden on API consumers. They must write try-catch blocks or
+declare throws clauses for exceptions that will never occur.
+
+**Final class significance**: This rule applies specifically to final classes because they cannot be
+extended. With non-final classes, a method might legitimately declare a throws clause to allow subclasses
+to throw that exception, even if the base implementation doesn't. Final classes have no such consideration.
+
+**API evolution context**: This situation often arises when:
+- A method signature was designed for flexibility but the final implementation doesn't need it
+- Code was refactored to handle exceptions internally but the signature wasn't updated
+- A method was copied from a non-final class without adjusting the signature
+
+**Practical examples**:
+```java
+// ❌ VIOLATION - Unreachable exception declaration
+public final class StringConfigParser {
+    public Config parse(String content) throws IOException {
+        // This implementation does pure string parsing
+        // IOException can never be thrown here
+        return new Config(content.split(","));
+    }
+}
+
+// ✅ CORRECT - No unreachable declaration
+public final class StringConfigParser {
+    public Config parse(String content) {
+        return new Config(content.split(","));
+    }
+}
+
+// ✅ CORRECT - Exception is actually reachable
+public final class FileConfigParser {
+    public Config parse(Path path) throws IOException {
+        // Files.readString can throw IOException
+        return new Config(Files.readString(path).split(","));
+    }
+}
+```
+
+**Caller impact**: Unreachable throws declarations force callers to write dead code:
+```java
+// Caller forced to handle exception that never occurs
+try {
+    Config config = parser.parse(jsonString);
+} catch (IOException e) {
+    // This catch block can never execute - dead code
+    throw new RuntimeException("Impossible", e);
+}
+```
+
+**When throws declarations are appropriate in final classes**: Only when the implementation actually can
+throw the declared exception through direct throws statements or by calling methods that throw.
 
 ### Stream vs For-Loop - Inappropriate Stream Usage
 **When to use streams**: Complex transformations, filtering, or reductions of AST node collections.

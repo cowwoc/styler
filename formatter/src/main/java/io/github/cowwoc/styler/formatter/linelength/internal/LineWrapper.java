@@ -235,7 +235,7 @@ public final class LineWrapper
 	}
 
 	/**
-	 * Gets the wrap style for a given context.
+	 * Returns the wrap style for a given context.
 	 *
 	 * @param context the wrap context
 	 * @return the configured wrap style

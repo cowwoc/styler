@@ -92,7 +92,7 @@ public record LineLengthConfiguration(
 	public LineLengthConfiguration
 	{
 		// Validate ruleId
-		requireThat(ruleId, "ruleId").isNotEmpty().isNotBlank();
+		requireThat(ruleId, "ruleId").isNotBlank();
 
 		// Validate maxLineLength
 		requireThat(maxLineLength, "maxLineLength").

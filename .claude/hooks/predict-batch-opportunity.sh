@@ -27,6 +27,11 @@ if [[ "$TOOL_NAME" != "Read" && "$TOOL_NAME" != "Glob" && "$TOOL_NAME" != "Grep"
     exit 0
 fi
 
+# Exit if no session ID (can't track without it)
+if [[ -z "$SESSION_ID" ]]; then
+    exit 0
+fi
+
 TIMESTAMP=$(date +%s)
 TRACKER_FILE="/tmp/batch_tracker_${SESSION_ID}.json"
 WINDOW_SECONDS=30  # Track operations within 30-second windows
@@ -37,22 +42,32 @@ if [[ ! -f "$TRACKER_FILE" ]]; then
     echo '{"operations": [], "warnings_shown": 0, "last_warning": 0}' > "$TRACKER_FILE"
 fi
 
-# Add this operation
-jq --arg tool "$TOOL_NAME" \
-   --arg path "$FILE_PATH" \
-   --arg ts "$TIMESTAMP" \
-   '.operations += [{"tool": $tool, "path": $path, "timestamp": ($ts | tonumber)}]' \
-   "$TRACKER_FILE" > "${TRACKER_FILE}.tmp" && mv "${TRACKER_FILE}.tmp" "$TRACKER_FILE"
+# Add this operation (with safe temp file handling)
+if jq --arg tool "$TOOL_NAME" \
+      --arg path "$FILE_PATH" \
+      --arg ts "$TIMESTAMP" \
+      '.operations += [{"tool": $tool, "path": $path, "timestamp": ($ts | tonumber)}]' \
+      "$TRACKER_FILE" > "${TRACKER_FILE}.tmp" 2>/dev/null && [[ -s "${TRACKER_FILE}.tmp" ]]; then
+    mv "${TRACKER_FILE}.tmp" "$TRACKER_FILE"
+else
+    rm -f "${TRACKER_FILE}.tmp"
+    exit 0  # Silently exit on jq failure - advisory hook shouldn't block
+fi
 
 # Clean old operations (outside window)
 CUTOFF=$((TIMESTAMP - WINDOW_SECONDS))
-jq --arg cutoff "$CUTOFF" \
-   '.operations = [.operations[] | select(.timestamp > ($cutoff | tonumber))]' \
-   "$TRACKER_FILE" > "${TRACKER_FILE}.tmp" && mv "${TRACKER_FILE}.tmp" "$TRACKER_FILE"
+if jq --arg cutoff "$CUTOFF" \
+      '.operations = [.operations[] | select(.timestamp > ($cutoff | tonumber))]' \
+      "$TRACKER_FILE" > "${TRACKER_FILE}.tmp" 2>/dev/null && [[ -s "${TRACKER_FILE}.tmp" ]]; then
+    mv "${TRACKER_FILE}.tmp" "$TRACKER_FILE"
+else
+    rm -f "${TRACKER_FILE}.tmp"
+    exit 0
+fi
 
-# Count recent operations
-RECENT_COUNT=$(jq '.operations | length' "$TRACKER_FILE")
-LAST_WARNING=$(jq '.last_warning // 0' "$TRACKER_FILE")
+# Count recent operations (with defensive defaults)
+RECENT_COUNT=$(jq '.operations | length' "$TRACKER_FILE" 2>/dev/null || echo "0")
+LAST_WARNING=$(jq '.last_warning // 0' "$TRACKER_FILE" 2>/dev/null || echo "0")
 WARNING_COOLDOWN=60  # Only warn once per minute
 
 # Check if we should warn
@@ -60,12 +75,16 @@ if [[ $RECENT_COUNT -ge $THRESHOLD ]]; then
     TIME_SINCE_WARNING=$((TIMESTAMP - LAST_WARNING))
 
     if [[ $TIME_SINCE_WARNING -gt $WARNING_COOLDOWN ]]; then
-        # Update last warning time
-        jq --arg ts "$TIMESTAMP" '.last_warning = ($ts | tonumber) | .warnings_shown += 1' \
-           "$TRACKER_FILE" > "${TRACKER_FILE}.tmp" && mv "${TRACKER_FILE}.tmp" "$TRACKER_FILE"
+        # Update last warning time (with safe temp file handling)
+        if jq --arg ts "$TIMESTAMP" '.last_warning = ($ts | tonumber) | .warnings_shown += 1' \
+              "$TRACKER_FILE" > "${TRACKER_FILE}.tmp" 2>/dev/null && [[ -s "${TRACKER_FILE}.tmp" ]]; then
+            mv "${TRACKER_FILE}.tmp" "$TRACKER_FILE"
+        else
+            rm -f "${TRACKER_FILE}.tmp"
+        fi
 
         # Get list of recent paths
-        RECENT_PATHS=$(jq -r '.operations | map(.path) | join(", ")' "$TRACKER_FILE")
+        RECENT_PATHS=$(jq -r '.operations | map(.path) | join(", ")' "$TRACKER_FILE" 2>/dev/null || echo "(unknown)")
 
         cat >&2 << EOF
 

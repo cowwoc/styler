@@ -109,7 +109,7 @@ public final class NodeArena implements AutoCloseable
 	}
 
 	/**
-	 * Gets the memory offset for a node at the specified index.
+	 * Returns the memory offset for a node at the specified index.
 	 * Validates the index and calculates its byte offset in the memory segment.
 	 * Eliminates duplicate validation and offset calculation logic.
 	 *
@@ -124,7 +124,7 @@ public final class NodeArena implements AutoCloseable
 	}
 
 	/**
-	 * Gets the type of the node at the specified index.
+	 * Returns the type of the node at the specified index.
 	 *
 	 * @param index the node index
 	 * @return the node type
@@ -138,7 +138,7 @@ public final class NodeArena implements AutoCloseable
 	}
 
 	/**
-	 * Gets the start position of the node at the specified index.
+	 * Returns the start position of the node at the specified index.
 	 *
 	 * @param index the node index
 	 * @return the start position in source code
@@ -151,7 +151,7 @@ public final class NodeArena implements AutoCloseable
 	}
 
 	/**
-	 * Gets the end position of the node at the specified index.
+	 * Returns the end position of the node at the specified index.
 	 *
 	 * @param index the node index
 	 * @return the end position in source code
@@ -164,7 +164,7 @@ public final class NodeArena implements AutoCloseable
 	}
 
 	/**
-	 * Gets the data field of the node at the specified index.
+	 * Returns the data field of the node at the specified index.
 	 *
 	 * @param index the node index
 	 * @return the data field value

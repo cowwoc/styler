@@ -24,7 +24,8 @@ if [[ ! -d "$BACKUP_DIR" ]]; then
 fi
 
 # Find most recent backup (any session - for continuity)
-LATEST_BACKUP=$(ls -t "${BACKUP_DIR}/"*.json 2>/dev/null | head -1)
+# Use find to avoid glob expansion failure when no files exist
+LATEST_BACKUP=$(find "$BACKUP_DIR" -maxdepth 1 -name "*.json" -type f -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2- || true)
 
 if [[ -z "$LATEST_BACKUP" ]]; then
     exit 0

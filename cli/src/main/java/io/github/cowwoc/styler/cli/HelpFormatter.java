@@ -75,7 +75,7 @@ public final class HelpFormatter
 	}
 
 	/**
-	 * Gets the module version from the module descriptor.
+	 * Returns the module version from the module descriptor.
 	 *
 	 * @return the module version, or "UNKNOWN" if not available
 	 */

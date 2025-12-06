@@ -51,7 +51,7 @@ public final class RecursionDepthTracker
 	}
 
 	/**
-	 * Gets the current recursion depth for the current thread.
+	 * Returns the current recursion depth for the current thread.
 	 *
 	 * @return current depth
 	 */

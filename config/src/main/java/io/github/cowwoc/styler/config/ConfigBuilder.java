@@ -46,7 +46,7 @@ public final class ConfigBuilder
 	}
 
 	/**
-	 * Gets the maximum line length if explicitly set.
+	 * Returns the maximum line length if explicitly set.
 	 *
 	 * @return the maximum line length if set, empty otherwise
 	 */
@@ -71,7 +71,7 @@ public final class ConfigBuilder
 	}
 
 	/**
-	 * Gets the line number for a specific field.
+	 * Returns the line number for a specific field.
 	 *
 	 * @param fieldName the name of the field
 	 * @return the line number if tracked, or {@code null} if not tracked

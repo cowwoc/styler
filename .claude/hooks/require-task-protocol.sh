@@ -211,6 +211,12 @@ AGENT_TYPE="${CURRENT_AGENT_TYPE:-main}"
 # Check VIOLATION #1: Main agent creating source files in IMPLEMENTATION state
 if [[ "$STATE" == "IMPLEMENTATION" ]] && [[ "$AGENT_TYPE" == "main" ]]; then
 	if match_source_pattern "$FILE_PATH"; then
+		# Exception: Allow agent worktree paths (agents are allowed to create source files)
+		# Pattern: /workspace/tasks/{task}/agents/{agent}/code/...
+		if [[ "$FILE_PATH" =~ /workspace/tasks/$TASK_NAME/agents/[^/]+/code/ ]]; then
+			exit 0  # Allow - this is an agent working in their isolated worktree
+		fi
+
 		cat << EOF >&2
 ❌ CRITICAL VIOLATION: Main Agent Source File Creation
 

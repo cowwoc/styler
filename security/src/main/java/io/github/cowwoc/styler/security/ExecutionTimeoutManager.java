@@ -63,7 +63,7 @@ public final class ExecutionTimeoutManager
 	}
 
 	/**
-	 * Gets the elapsed time since tracking started.
+	 * Returns the elapsed time since tracking started.
 	 *
 	 * @return elapsed milliseconds
 	 * @throws IllegalStateException if tracking wasn't started

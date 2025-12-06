@@ -26,6 +26,11 @@ This document contains testing patterns and detection rules optimized for Claude
 - `static\s+final\s+` (immutable constants)
 - Test method creating instances locally
 
+### Test Class Declaration
+- ✅ `public\s+final\s+class\s+\w+Test` - Correct test class declaration
+- ❌ `^class\s+\w+Test` - Missing public final (package-private)
+- ❌ `public\s+class\s+\w+Test[^a-zA-Z]` - Missing final modifier
+
 ### Test Naming and Structure
 - `@Test\s*public\s+void\s+[a-z][a-zA-Z0-9]*\(\)`
 - `parseExpressionWithInvalidTokenThrowsParseException`
@@ -89,6 +94,16 @@ This document contains testing patterns and detection rules optimized for Claude
 - `testPrivateHelperMethodLogic\(\)` (implementation detail test)
 - Tests without business logic validation
 
+### Test Value Anti-Patterns (Meaningless Tests)
+- `shouldHave\w+Value\(\)` (compile-time guarantee tests)
+- `shouldHaveExactly\w+Values\(\)` (implementation detail tests)
+- `shouldContainAllExpected\w+\(\)` (enum/collection structure tests)
+- `\.values\(\)\)\.hasSize\(` (enum count assertions)
+- `\.values\(\)\)\.containsExactly\(` (enum structure assertions)
+- `assertThat\(\w+\.\w+\)\.isNotNull\(\)` without business logic (trivial null checks)
+- `shouldReturn\w+List\(\)` testing collection type (implementation detail)
+- Tests verifying Java language guarantees (record fields, enum values exist)
+
 ### Risk-Driven Testing Best Practices
 - `discoverConfigWithGitBoundaryStopsAtRepositoryRoot`
 - Repository boundary validation
@@ -105,13 +120,28 @@ This document contains testing patterns and detection rules optimized for Claude
 3. Isolation - Instance creation per test method
 4. Thread Safety - Stateless utilities only
 5. Risk Documentation - Business risk, impact, and bug risk comments
+6. Test Framework - TestNG only (NOT JUnit)
+7. Test Value - No compile-time guarantee or implementation detail tests
+
+### Test Dependency Detection
+- ✅ `org\.testng` - Correct test framework
+- ❌ `org\.junit` - Wrong framework, use TestNG
+- ✅ `io\.github\.cowwoc\.requirements12` - Correct assertion library (Requirements API)
+- ❌ `org\.assertj` - Wrong assertion library, use Requirements API
+- ✅ `logback-classic` - Required for test logging
+- ✅ `logback-test\.xml` - Required configuration file
+
+### Assertion Pattern Detection
+- ✅ `requireThat\(` - Correct assertion pattern (Requirements API)
+- ❌ `assertThat\(` - Wrong assertion pattern, use requireThat
 
 **Standard Requirements:**
-1. Naming Convention - `method_condition_expectedResult`
-2. Test Organization - TestNG groups for categorization
-3. Builder Pattern - For complex test data creation
-4. Resource Management - Read-only external data
-5. Test Prioritization - Business logic > Happy path > Edge cases > Error handling
+1. Test Class Declaration - `public final class *Test`
+2. Naming Convention - `method_condition_expectedResult`
+3. Test Organization - TestNG groups for categorization
+4. Builder Pattern - For complex test data creation
+5. Resource Management - Read-only external data
+6. Test Prioritization - Business logic > Happy path > Edge cases > Error handling
 
 **Risk-Based Testing Requirements:**
 1. Business Logic First - Critical workflows validated before edge cases
@@ -121,9 +151,9 @@ This document contains testing patterns and detection rules optimized for Claude
 5. Actionable Errors - Error handling tests validate error message usefulness
 
 **Detection Priority:**
-- 🔴 CRITICAL: Parallel test violations, JPMS structure, missing business logic tests
+- 🔴 CRITICAL: Parallel test violations, JPMS structure, missing business logic tests, meaningless tests
 - 🟡 STANDARD: Naming conventions, organization patterns, risk documentation
-- 🟢 OPTIONAL: Advanced patterns, optimizations, coverage-only tests
+- 🟢 OPTIONAL: Advanced patterns, optimizations
 
 ---
 
