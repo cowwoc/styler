@@ -35,20 +35,24 @@
  * <p>
  * <b>Usage Example</b>:
  * <pre>
- * public class MyFormattingRule implements FormattingRule {
+ * public class MyFormattingRule implements FormattingRule
+ * {
  *     {@literal @}Override
- *     public String getId() {
+ *     public String getId()
+ *     {
  *         return "my-formatter-rule";
  *     }
  *
  *     {@literal @}Override
- *     public List&lt;FormattingViolation&gt; analyze(TransformationContext context) {
+ *     public List&lt;FormattingViolation&gt; analyze(TransformationContext context)
+ *     {
  *         // Analyze AST via context.arena() and context.rootNode()
  *         // Return detected violations
  *     }
  *
  *     {@literal @}Override
- *     public void format(TransformationContext context) {
+ *     public void format(TransformationContext context)
+ *     {
  *         // Transform the AST to fix violations
  *     }
  * }
@@ -58,7 +62,5 @@
  * which orchestrates rules to analyze and format source files, and by individual formatter
  * implementations (Phase B1) which provide specific formatting rules for indentation, line length,
  * import organization, and other style concerns.
- *
- * @since 1.0
  */
 package io.github.cowwoc.styler.formatter;
