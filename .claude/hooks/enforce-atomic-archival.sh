@@ -7,6 +7,10 @@
 # UPDATED: 2025-12-04 to work with --ff-only workflow (validates task branch
 # commit includes archival BEFORE merge, not during git commit on main)
 #
+# BUG FIX: 2025-12-06 - Fixed directory detection for compound commands
+# When command is "cd /workspace/main && git merge ...", $PWD is pre-cd directory
+# Now parses command string to detect effective directory after cd
+#
 # PREVENTS: Merging task branches that don't include todo.md and changelog.md updates
 # ENFORCES: Atomic commits that include task + todo.md + changelog.md together
 #
@@ -42,8 +46,17 @@ if [[ ! "$COMMAND" =~ git[[:space:]]+merge ]]; then
 	exit 0
 fi
 
+# Determine effective directory for merge
+# Bug fix: When command includes "cd /workspace/main &&", $PWD is pre-cd directory
+# ADDED: 2025-12-06 after implement-ai-violation-output merged without archival
+# because hook saw $PWD=/workspace/tasks/... but command changed to /workspace/main
+EFFECTIVE_DIR="$PWD"
+if [[ "$COMMAND" =~ cd[[:space:]]+(/workspace/main|/workspace/main/)[[:space:]]*(\&\&|;) ]]; then
+	EFFECTIVE_DIR="/workspace/main"
+fi
+
 # Only enforce in /workspace/main
-if [[ "$PWD" != "/workspace/main" ]]; then
+if [[ "$EFFECTIVE_DIR" != "/workspace/main" ]]; then
 	exit 0
 fi
 
