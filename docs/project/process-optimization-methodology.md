@@ -542,7 +542,7 @@ Verify IMPLEMENTATION state requirements from task-protocol-core.md
 - Main agent coordinates stakeholder agents
 - Each agent implements in own worktree
 - Tests created DURING implementation (not separate phase)
-- Minimum 15 tests before state exit
+- Business-logic coverage achieved (focus on meaningful behavior, not test counts)
 
 **Violation Indicators:**
 - Main agent implemented instead of coordinating
@@ -610,26 +610,27 @@ Detect first file creation and verify it's from agent, not main
 
 Ensure test requirements are met during IMPLEMENTATION
 
-### Check 8.1: Test Count Verification
+### Check 8.1: Business-Logic Coverage Verification
 
-Verify minimum test count before IMPLEMENTATION exit
+Verify meaningful business-logic coverage before IMPLEMENTATION exit
 
 **Verification Steps:**
-1. Count test files created
-2. Count @Test methods across all test files
-3. Verify against minimum requirement (15 tests)
+1. Review test files for coverage of business logic
+2. Verify tests cover input validation, business rules, edge cases
+3. Ensure tests focus on meaningful behavior, not arbitrary counts
 
 **Expected Pattern:**
-- At least 15 @Test methods
+- Tests cover significant business logic paths
 - Multiple test classes covering different components
 - Tests created DURING IMPLEMENTATION, not after
+- Tests verify behavior that could break, not compile-time constants
 
 **Violation Indicators:**
-- 0 tests created
+- No tests created
 - Tests deferred to "next phase"
-- Test count below minimum threshold
+- Tests only cover trivial cases (e.g., testing compile-time constants)
 
-**Fix:** Create remaining tests before exiting IMPLEMENTATION
+**Fix:** Create tests that cover meaningful business logic before exiting IMPLEMENTATION
 
 ---
 
