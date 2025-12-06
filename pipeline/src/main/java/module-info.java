@@ -25,6 +25,8 @@ module io.github.cowwoc.styler.pipeline
 	requires transitive io.github.cowwoc.styler.formatter;
 	requires io.github.cowwoc.requirements12.java;
 	requires java.logging;
+	requires com.fasterxml.jackson.databind;
 
 	exports io.github.cowwoc.styler.pipeline;
+	exports io.github.cowwoc.styler.pipeline.output;
 }

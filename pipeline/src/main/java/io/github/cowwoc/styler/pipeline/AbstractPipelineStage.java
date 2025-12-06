@@ -52,7 +52,7 @@ public abstract class AbstractPipelineStage implements PipelineStage
 	 *
 	 * @param context the processing context
 	 * @return the stage result
-	 * @throws NullPointerException if context is null
+	 * @throws NullPointerException if {@code context} is {@code null}
 	 */
 	@Override
 	@SuppressWarnings("PMD.AvoidCatchingGenericException")

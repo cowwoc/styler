@@ -9,7 +9,6 @@ import org.testng.annotations.Test;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -28,7 +27,7 @@ public class FormattingViolationWithFixesTest
 	{
 		new DefaultFormattingViolation(
 			"TEST", ViolationSeverity.ERROR, "test", TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), null);
+			0, 10, 1, 1, null);
 	}
 
 	/**
@@ -39,7 +38,7 @@ public class FormattingViolationWithFixesTest
 	{
 		FormattingViolation violation = new DefaultFormattingViolation(
 			"TEST", ViolationSeverity.ERROR, "test", TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), List.of());
+			0, 10, 1, 1, List.of());
 
 		requireThat(violation.suggestedFixes(), "suggestedFixes").isEmpty();
 	}
@@ -54,7 +53,7 @@ public class FormattingViolationWithFixesTest
 
 		FormattingViolation violation = new DefaultFormattingViolation(
 			"TEST", ViolationSeverity.ERROR, "test", TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), List.of(fix));
+			0, 10, 1, 1, List.of(fix));
 
 		requireThat(violation.suggestedFixes().size(), "suggestedFixes.size").isEqualTo(1);
 	}
@@ -70,7 +69,7 @@ public class FormattingViolationWithFixesTest
 
 		FormattingViolation violation = new DefaultFormattingViolation(
 			"TEST", ViolationSeverity.ERROR, "test", TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), List.of(fix1, fix2));
+			0, 10, 1, 1, List.of(fix1, fix2));
 
 		requireThat(violation.suggestedFixes().size(), "suggestedFixes.size").isEqualTo(2);
 	}
@@ -84,7 +83,7 @@ public class FormattingViolationWithFixesTest
 		FixStrategy fix = new DefaultFixStrategy("Test", true, "fixed", 0, 5);
 		FormattingViolation violation = new DefaultFormattingViolation(
 			"TEST", ViolationSeverity.ERROR, "test", TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), List.of(fix));
+			0, 10, 1, 1, List.of(fix));
 
 		violation.suggestedFixes().add(new DefaultFixStrategy("New", true, "new", 0, 5));
 	}

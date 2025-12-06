@@ -7,6 +7,7 @@ import java.util.List;
 
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingRule;
+import io.github.cowwoc.styler.pipeline.output.OutputFormat;
 import io.github.cowwoc.styler.security.SecurityConfig;
 
 /**
@@ -17,7 +18,7 @@ import io.github.cowwoc.styler.security.SecurityConfig;
  * <p>
  * Example:
  * <pre>
- * ProcessingContext context = new ProcessingContext(
+ * ProcessingContext context = ProcessingContext.create(
  *     Paths.get("src/Main.java"),
  *     securityConfig,
  *     formattingConfig,
@@ -31,23 +32,65 @@ import io.github.cowwoc.styler.security.SecurityConfig;
  * @param formattingConfig the formatting configuration
  * @param formattingRules the list of formatting rules to apply (may be empty)
  * @param validationOnly true to only validate without applying fixes
+ * @param outputFormatOverride override for output format, or {@code null} for automatic detection
  */
 public record ProcessingContext(
 		Path filePath,
 		SecurityConfig securityConfig,
 		FormattingConfiguration formattingConfig,
 		List<FormattingRule> formattingRules,
-		boolean validationOnly)
+		boolean validationOnly,
+		OutputFormat outputFormatOverride)
 {
 	/**
-	 * Creates a ProcessingContext with validation of all parameters.
+	 * Creates a ProcessingContext without output format override (uses automatic detection).
 	 *
 	 * @param filePath the path to the file being processed
 	 * @param securityConfig the security configuration
 	 * @param formattingConfig the formatting configuration
 	 * @param formattingRules the list of formatting rules to apply (may be empty)
 	 * @param validationOnly true to only validate without applying fixes
-	 * @throws NullPointerException if any argument is null
+	 * @return a new ProcessingContext
+	 * @throws NullPointerException if any argument is {@code null}
+	 */
+	public static ProcessingContext create(
+			Path filePath,
+			SecurityConfig securityConfig,
+			FormattingConfiguration formattingConfig,
+			List<FormattingRule> formattingRules,
+			boolean validationOnly)
+	{
+		return new ProcessingContext(filePath, securityConfig, formattingConfig, formattingRules,
+			validationOnly, null);
+	}
+
+	/**
+	 * Creates a ProcessingContext with explicit output format override.
+	 *
+	 * @param filePath the path to the file being processed
+	 * @param securityConfig the security configuration
+	 * @param formattingConfig the formatting configuration
+	 * @param formattingRules the list of formatting rules to apply (may be empty)
+	 * @param validationOnly true to only validate without applying fixes
+	 * @param outputFormatOverride the output format to use
+	 * @return a new ProcessingContext
+	 * @throws NullPointerException if any argument is {@code null}
+	 */
+	public static ProcessingContext create(
+			Path filePath,
+			SecurityConfig securityConfig,
+			FormattingConfiguration formattingConfig,
+			List<FormattingRule> formattingRules,
+			boolean validationOnly,
+			OutputFormat outputFormatOverride)
+	{
+		requireThat(outputFormatOverride, "outputFormatOverride").isNotNull();
+		return new ProcessingContext(filePath, securityConfig, formattingConfig, formattingRules,
+			validationOnly, outputFormatOverride);
+	}
+
+	/**
+	 * Canonical constructor with validation of required parameters.
 	 */
 	public ProcessingContext
 	{
@@ -55,5 +98,6 @@ public record ProcessingContext(
 		requireThat(securityConfig, "securityConfig").isNotNull();
 		requireThat(formattingConfig, "formattingConfig").isNotNull();
 		requireThat(formattingRules, "formattingRules").isNotNull();
+		// outputFormatOverride is intentionally nullable - null means automatic detection
 	}
 }

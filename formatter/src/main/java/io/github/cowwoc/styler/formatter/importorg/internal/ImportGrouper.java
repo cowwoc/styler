@@ -37,7 +37,7 @@ public final class ImportGrouper
 	 * @param imports list of import declarations
 	 * @param config organization configuration
 	 * @return formatted import section as string (without trailing newline)
-	 * @throws NullPointerException if imports or config is null
+	 * @throws NullPointerException if {@code imports} or {@code config} is {@code null}
 	 */
 	public static String organizeImports(
 		List<ImportDeclaration> imports,
