@@ -7,7 +7,6 @@ import org.testng.annotations.Test;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -26,7 +25,7 @@ public class FormattingViolationTest
 	{
 		FormattingViolation violation = new DefaultFormattingViolation(
 			"LINE_LENGTH", ViolationSeverity.ERROR, "Line exceeds 120 characters",
-			TEST_FILE, 100, 150, 10, 5, Optional.empty(), List.of());
+			TEST_FILE, 100, 150, 10, 5, List.of());
 
 		requireThat(violation.lineNumber(), "lineNumber").isEqualTo(10);
 		requireThat(violation.columnNumber(), "columnNumber").isEqualTo(5);
@@ -44,8 +43,7 @@ public class FormattingViolationTest
 	@Test(expectedExceptions = NullPointerException.class)
 	public void shouldRejectNullSeverity()
 	{
-		new DefaultFormattingViolation("TEST", null, "test", TEST_FILE, 0, 10, 1, 1,
-			Optional.empty(), List.of());
+		new DefaultFormattingViolation("TEST", null, "test", TEST_FILE, 0, 10, 1, 1, List.of());
 	}
 
 	/**
@@ -55,7 +53,7 @@ public class FormattingViolationTest
 	public void shouldRejectNullRuleId()
 	{
 		new DefaultFormattingViolation(null, ViolationSeverity.ERROR, "test", TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), List.of());
+			0, 10, 1, 1, List.of());
 	}
 
 	/**
@@ -65,7 +63,7 @@ public class FormattingViolationTest
 	public void shouldRejectNullMessage()
 	{
 		new DefaultFormattingViolation("TEST", ViolationSeverity.ERROR, null, TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), List.of());
+			0, 10, 1, 1, List.of());
 	}
 
 	/**
@@ -75,7 +73,7 @@ public class FormattingViolationTest
 	public void shouldRejectEmptyRuleId()
 	{
 		new DefaultFormattingViolation("", ViolationSeverity.ERROR, "test", TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), List.of());
+			0, 10, 1, 1, List.of());
 	}
 
 	/**
@@ -85,7 +83,7 @@ public class FormattingViolationTest
 	public void shouldRejectEmptyMessage()
 	{
 		new DefaultFormattingViolation("TEST", ViolationSeverity.ERROR, "", TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), List.of());
+			0, 10, 1, 1, List.of());
 	}
 
 	/**
@@ -95,7 +93,7 @@ public class FormattingViolationTest
 	public void shouldRejectWhitespaceOnlyRuleId()
 	{
 		new DefaultFormattingViolation("  ", ViolationSeverity.ERROR, "test", TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), List.of());
+			0, 10, 1, 1, List.of());
 	}
 
 	/**
@@ -105,7 +103,7 @@ public class FormattingViolationTest
 	public void shouldRejectWhitespaceOnlyMessage()
 	{
 		new DefaultFormattingViolation("TEST", ViolationSeverity.ERROR, "  ", TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), List.of());
+			0, 10, 1, 1, List.of());
 	}
 
 	/**
@@ -115,7 +113,7 @@ public class FormattingViolationTest
 	public void shouldRejectNegativeStartPosition()
 	{
 		new DefaultFormattingViolation("TEST", ViolationSeverity.ERROR, "test", TEST_FILE,
-			-1, 10, 1, 1, Optional.empty(), List.of());
+			-1, 10, 1, 1, List.of());
 	}
 
 	/**
@@ -125,7 +123,7 @@ public class FormattingViolationTest
 	public void shouldRejectEndPositionBeforeStart()
 	{
 		new DefaultFormattingViolation("TEST", ViolationSeverity.ERROR, "test", TEST_FILE,
-			10, 5, 1, 1, Optional.empty(), List.of());
+			10, 5, 1, 1, List.of());
 	}
 
 	/**
@@ -135,7 +133,7 @@ public class FormattingViolationTest
 	public void shouldRejectNonPositiveLineNumber()
 	{
 		new DefaultFormattingViolation("TEST", ViolationSeverity.ERROR, "test", TEST_FILE,
-			0, 10, 0, 1, Optional.empty(), List.of());
+			0, 10, 0, 1, List.of());
 	}
 
 	/**
@@ -145,7 +143,7 @@ public class FormattingViolationTest
 	public void shouldRejectNonPositiveColumnNumber()
 	{
 		new DefaultFormattingViolation("TEST", ViolationSeverity.ERROR, "test", TEST_FILE,
-			0, 10, 1, 0, Optional.empty(), List.of());
+			0, 10, 1, 0, List.of());
 	}
 
 	/**
@@ -156,7 +154,7 @@ public class FormattingViolationTest
 	{
 		FormattingViolation violation = new DefaultFormattingViolation(
 			"TEST", ViolationSeverity.ERROR, "test", TEST_FILE,
-			0, 10, 1, 1, Optional.empty(), List.of());
+			0, 10, 1, 1, List.of());
 
 		requireThat(violation.lineNumber(), "lineNumber").isEqualTo(1);
 	}
@@ -168,9 +166,9 @@ public class FormattingViolationTest
 	public void shouldImplementEqualsCorrectly()
 	{
 		FormattingViolation v1 = new DefaultFormattingViolation("TEST", ViolationSeverity.ERROR,
-			"msg", TEST_FILE, 0, 10, 1, 1, Optional.empty(), List.of());
+			"msg", TEST_FILE, 0, 10, 1, 1, List.of());
 		FormattingViolation v2 = new DefaultFormattingViolation("TEST", ViolationSeverity.ERROR,
-			"msg", TEST_FILE, 0, 10, 1, 1, Optional.empty(), List.of());
+			"msg", TEST_FILE, 0, 10, 1, 1, List.of());
 
 		requireThat(v1, "v1").isEqualTo(v2);
 		requireThat(v1.hashCode(), "v1.hashCode").isEqualTo(v2.hashCode());
@@ -183,9 +181,9 @@ public class FormattingViolationTest
 	public void shouldImplementHashCodeCorrectly()
 	{
 		FormattingViolation v1 = new DefaultFormattingViolation("TEST", ViolationSeverity.ERROR,
-			"msg", TEST_FILE, 0, 10, 1, 1, Optional.empty(), List.of());
+			"msg", TEST_FILE, 0, 10, 1, 1, List.of());
 		FormattingViolation v2 = new DefaultFormattingViolation("TEST", ViolationSeverity.ERROR,
-			"msg", TEST_FILE, 0, 10, 1, 1, Optional.empty(), List.of());
+			"msg", TEST_FILE, 0, 10, 1, 1, List.of());
 
 		requireThat(v1.hashCode(), "v1.hashCode").isEqualTo(v2.hashCode());
 	}
@@ -198,7 +196,7 @@ public class FormattingViolationTest
 	{
 		FormattingViolation v = new DefaultFormattingViolation(
 			"LINE_LENGTH", ViolationSeverity.ERROR, "Too long", TEST_FILE,
-			100, 150, 10, 5, Optional.empty(), List.of());
+			100, 150, 10, 5, List.of());
 
 		String result = v.toString();
 		requireThat(result, "result").contains("10");

@@ -27,7 +27,7 @@ public final class TestTransformationContext implements TransformationContext
 	 * Creates a test context with the given source code.
 	 *
 	 * @param sourceCode the source code to use
-	 * @throws NullPointerException if sourceCode is null
+	 * @throws NullPointerException if {@code sourceCode} is {@code null}
 	 */
 	public TestTransformationContext(String sourceCode)
 	{

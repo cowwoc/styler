@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -1263,7 +1264,7 @@ public final class Parser implements AutoCloseable
 	 * @param operators variable number of operator token types to match
 	 * @return the parsed binary expression node or next level node if no operators match
 	 */
-	private NodeIndex parseBinaryExpression(java.util.function.Supplier<NodeIndex> nextLevel, TokenType... operators)
+	private NodeIndex parseBinaryExpression(Supplier<NodeIndex> nextLevel, TokenType... operators)
 	{
 		NodeIndex left = nextLevel.get();
 

@@ -42,7 +42,7 @@ public final class ImportAnalyzer
 	 * @param imports all import declarations in the file
 	 * @param context transformation context for source access
 	 * @return an empty set if no match is found
-	 * @throws NullPointerException if imports or context is null
+	 * @throws NullPointerException if {@code imports} or {@code context} is {@code null}
 	 */
 	public static Set<String> findUnusedImports(
 		List<ImportDeclaration> imports,

@@ -39,7 +39,7 @@ public final class ImportExtractor
 	 *
 	 * @param context transformation context with source code
 	 * @return list of extracted import declarations
-	 * @throws NullPointerException if context is null
+	 * @throws NullPointerException if {@code context} is {@code null}
 	 */
 	public static List<ImportDeclaration> extract(TransformationContext context)
 	{
