@@ -13,11 +13,11 @@
 
 	<modules>
 		<module>ast</module>
-		<module>cli</module>
+		<module>security</module>
 		<module>config</module>
 		<module>formatter</module>
 		<module>parser</module>
-		<module>security</module>
+		<module>cli</module>
 	</modules>
 
 	<properties>

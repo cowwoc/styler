@@ -1,5 +1,55 @@
 # Changelog
 
+## 2025-12-03
+
+### B1b: Import Organization - Import Grouping and Cleanup ✅
+
+**Completion Date**: 2025-12-03
+
+**Task**: `implement-import-organization`
+
+**Commit**: 56e31a3
+
+**Problem Solved**:
+- Java imports needed organization with proper grouping and sorting
+- Unused imports cluttered codebases and needed detection/removal
+- Duplicate imports needed detection and elimination
+
+**Solution Implemented**:
+- ImportOrganizerFormattingRule that organizes and cleans up Java import statements
+- Conservative mode: preserves wildcard imports, only detects unused explicit imports
+
+**Key Components**:
+- **ImportOrganizerFormattingRule**: Main rule implementing FormattingRule interface
+- **ImportOrganizerConfiguration**: Configurable grouping, ordering, and behavior
+- **ImportGroup**: Enum defining import categories (Java, Javax, third-party, project)
+- **CustomImportPattern**: Record for user-defined import patterns
+- **ImportExtractor**: Text-based import statement extraction
+- **ImportAnalyzer**: Unused import detection via identifier analysis
+- **ImportGrouper**: Import grouping and formatting
+- **ImportDeclaration**: Record representing a single import
+
+**Features**:
+- Detects unused imports (conservative mode - wildcards preserved)
+- Detects and removes duplicate imports
+- Groups imports by category (Java, Javax, third-party, project)
+- Sorts imports alphabetically within groups
+- Separates static and regular imports with blank lines
+- Configurable group ordering and custom patterns
+
+**Test Coverage**:
+- 133 tests covering import extraction, analysis, grouping, ordering
+- Configuration options and integration scenarios
+- Security: timeout handling to prevent ReDoS
+
+**JPMS Structure**:
+- Test package: formatter.test.importorg (avoids split package with linelength tests)
+- Shared TestTransformationContext in formatter.test
+
+**Unblocks**: B2 (File Processing Pipeline) - now has both required formatters
+
+---
+
 ## 2025-12-02
 
 ### B1a: Line Length Formatter - Context-Aware Line Wrapping ✅
