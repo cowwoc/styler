@@ -8,7 +8,6 @@ import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -34,7 +33,7 @@ public final class LineAnalyzer
 	 * @param context transformation context with source code access
 	 * @param config line length configuration with rules
 	 * @return list of detected violations
-	 * @throws NullPointerException if context or config is null
+	 * @throws NullPointerException if {@code context} or {@code config} is {@code null}
 	 */
 	public static List<FormattingViolation> analyze(TransformationContext context,
 		LineLengthConfiguration config)
@@ -69,7 +68,6 @@ public final class LineAnalyzer
 					lineStart + line.length(),
 					lineNumber,
 					1,  // column number (1-based)
-					Optional.empty(),  // no node index for line violations
 					List.of());  // no fixes available
 
 				violations.add(violation);

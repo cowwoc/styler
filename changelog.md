@@ -2,6 +2,44 @@
 
 ## 2025-12-05
 
+### B3: AI Violation Output - Structured Feedback for AI Agents ✅
+
+**Completion Date**: 2025-12-05
+
+**Task**: `implement-ai-violation-output`
+
+**Commit**: de21c96
+
+**Problem Solved**:
+- AI agents needed structured, machine-readable violation feedback
+- Needed automatic context detection (AI vs human) without explicit flags
+- Required priority scoring to help agents focus on important issues first
+
+**Solution Implemented**:
+- ViolationReport record for immutable violation grouping by rule
+- JSON and Human-readable violation renderers
+- Automatic context detection via environment variables and terminal checks
+- Priority calculator (severity × frequency scoring)
+
+**Key Components**:
+- **OutputFormat**: Enum (JSON, HUMAN)
+- **OutputConfiguration**: Record for format settings
+- **ViolationReport**: Immutable violation representation with grouping
+- **ViolationReportRenderer**: Interface + JsonViolationRenderer, HumanViolationRenderer
+- **ContextDetector**: Automatic AI/human detection (CI, ANTHROPIC_API_KEY, etc.)
+- **PriorityCalculator**: Severity × count scoring
+
+**Features**:
+- JSON output with versioned schema, violations, fix strategies
+- Human output with ANSI color codes for terminal formatting
+- Auto-detection of AI context without --ai-mode flag
+- Violations grouped by rule type for pattern recognition
+- Fix strategies with code examples
+
+**Unblocks**: B5 (CLI integration needs output formatter)
+
+---
+
 ### B4: Error Message Catalog - Comprehensive Error Messages ✅
 
 **Completion Date**: 2025-12-05

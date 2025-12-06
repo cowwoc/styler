@@ -9,7 +9,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * @param type  the type of this token
  * @param start the start position in source code (inclusive)
  * @param end   the end position in source code (exclusive)
- * @param text  the text content of this token (may be null for structural tokens)
+ * @param text  the text content of this token (may be {@code null} for structural tokens)
  */
 public record Token(TokenType type, int start, int end, String text)
 {
@@ -19,9 +19,9 @@ public record Token(TokenType type, int start, int end, String text)
 	 * @param type  the type of this token
 	 * @param start the start position in source code (inclusive)
 	 * @param end   the end position in source code (exclusive)
-	 * @param text  the text content of this token (may be null for structural tokens)
-	 * @throws NullPointerException     if type is null
-	 * @throws IllegalArgumentException if start is negative or end is less than start
+	 * @param text  the text content of this token (may be {@code null} for structural tokens)
+	 * @throws NullPointerException     if {@code type} is {@code null}
+	 * @throws IllegalArgumentException if {@code start} is negative or {@code end} is less than {@code start}
 	 */
 	public Token
 	{
