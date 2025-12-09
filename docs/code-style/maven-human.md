@@ -22,6 +22,26 @@ critical because:
 
 ## 🚨 TIER 1 CRITICAL - Build Blockers
 
+### Avoid relativePath in Parent References
+**Why avoid explicit relativePath**: Maven automatically resolves parent POMs from the local repository or
+the reactor (multi-module build). Adding explicit `<relativePath>` elements creates unnecessary coupling
+between module locations and filesystem structure.
+
+**Problems with relativePath**:
+- **Brittle builds**: Moving modules or changing directory structure breaks builds
+- **Unnecessary coupling**: Modules shouldn't know about filesystem layout beyond their own structure
+- **Redundant**: Maven's default behavior already handles parent resolution correctly
+
+**Correct approach**:
+```xml
+<parent>
+	<groupId>io.github.cowwoc.styler</groupId>
+	<artifactId>styler</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<!-- Let Maven resolve parent automatically - no relativePath needed -->
+</parent>
+```
+
 ### Dependency Grouping - Inconsistent Organization
 **Why dependency grouping matters**: Dependencies should be organized by type and scope to make the POM file
 scannable and maintainable. This organization helps developers quickly understand which dependencies are

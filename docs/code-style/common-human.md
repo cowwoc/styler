@@ -39,6 +39,31 @@ user-facing text.
 
 ## 💡 TIER 3 QUALITY - Best Practices
 
+### Increment/Decrement - Use Prefix Form
+**Why prefer `++i` over `i += 1`**: The prefix increment/decrement operators are more idiomatic and concise.
+Using `i += 1` or `i -= 1` is unnecessarily verbose when the increment/decrement operators exist.
+
+**Consistency**: Using prefix form (`++i`) consistently throughout the codebase makes patterns easier to
+recognize. Prefix form is preferred over postfix (`i++`) unless the return value matters.
+
+### Exception Handling - Misleading Comments
+**Why comments must match actions**: A comment like `// Log error but continue` that doesn't actually log
+anything creates confusion during debugging and maintenance. Either perform the promised action or use an
+accurate comment like `// Intentionally ignored`.
+
+**Silent failures**: Misleading comments hide potential issues. If an exception is truly ignorable, document
+why with a truthful comment.
+
+### Unused Variables - Use Underscore Convention
+**Why use `_` for unused variables**: When catching exceptions or receiving parameters that aren't used, naming
+them `_` clearly signals intent. This applies to:
+- Catch blocks: `catch (IOException _) { /* ignore */ }`
+- Lambdas: `(unused, value) -> value` becomes `(_, value) -> value`
+- Override methods with unused parameters
+
+**Readability**: The underscore convention is widely recognized across languages (Python, Kotlin, Rust) and
+immediately signals "this value is intentionally ignored."
+
 ### Code Duplication - Repeated Logic Blocks
 **Why extract common functionality**: Parser operations often involve similar patterns (token validation, AST
 construction, error handling). Shared utilities ensure consistent behavior and easier maintenance.

@@ -22,6 +22,23 @@ Extract to named constants with clear meaning
 **Violation**: Copy-pasted code instead of shared functions
 Extract common functionality to shared utilities
 
+### Increment/Decrement - Verbose Form
+**Detection Pattern**: `\b\w+\s*\+=\s*1\b` or `\b\w+\s*-=\s*1\b`
+**Violation**: `i += 1` or `count -= 1`
+Use `++i` or `--i` instead (prefix form preferred for consistency)
+
+### Exception Handling - Misleading Comments
+**Detection Pattern**: `catch.*\{[^}]*//.*\b(log|Log|LOG|record|report)\b[^}]*\}` with empty action
+**Violation**: `catch (IOException e) { // Log error but continue }` (comment promises logging but nothing
+happens)
+Either actually log/record the error, or use an accurate comment like `// Intentionally ignored`
+
+### Unused Variables - Named Parameters
+**Detection Pattern**: `catch\s*\(\w+\s+[a-zA-Z]\w*\)` with variable unused in body
+**Violation**: `catch (IOException e) { /* ignore */ }` (named variable `e` never used)
+Use `_` for intentionally unused variables: `catch (IOException _) { /* ignore */ }`
+This convention applies to any unused variable (catch blocks, lambdas, method parameters in overrides)
+
 ### Comments - Obvious Statements
 **Detection Pattern**: `//\s*(Increment|Decrement|Set|Get|Return)`
 **Violation**: `counter++; // Increment counter`
