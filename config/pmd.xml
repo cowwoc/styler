@@ -75,7 +75,6 @@
 		<exclude name="DataClass"/>
 		<exclude name="GodClass"/>
 		<exclude name="TooManyMethods"/>
-		<exclude name="AvoidCatchingGenericException"/>
 		<exclude name="SignatureDeclareThrowsException"/>
 		<exclude name="ExcessiveParameterList"/>
 		<exclude name="UseObjectForClearerAPI"/>
@@ -124,6 +123,8 @@
 		<exclude name="UseProperClassLoader"/>
 		<!-- WORKAROUND: https://github.com/pmd/pmd/issues/3601 -->
 		<exclude name="InvalidLogMessageFormat"/>
+		<!-- Allow catching generic Exception for error handling consolidation -->
+		<exclude name="AvoidCatchingGenericException"/>
 	</rule>
 	<rule ref="category/java/errorprone.xml/CloseResource">
 		<properties>

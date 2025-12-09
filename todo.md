@@ -173,25 +173,11 @@ B2-B5 have sequential dependencies.
 **Goal**: Scale to large codebases with parallel processing, build to 5 formatting rules for realistic
 benchmarking, and validate with Maven plugin integration.
 
-### C1. File Discovery
-- [ ] **READY:** `implement-file-discovery` - Recursive Java file discovery with filtering
-  - **Dependencies**: B5 ✅ COMPLETE (CLI integration), A4 ✅ COMPLETE (security for file validation)
-  - **Blocks**: C2 (parallel processing needs file list), C5 (Maven plugin needs discovery)
-  - **Parallelizable With**: C3 (formatting rules development)
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Find Java source files in directories with include/exclude patterns
-  - **Scope**: Recursive directory traversal, glob patterns, .gitignore integration
-  - **Components**:
-    - FileDiscovery: Directory walker with filtering
-    - PatternMatcher: Glob pattern matching for includes/excludes
-    - GitignoreParser: Respect .gitignore rules
-  - **Features**: Include/exclude patterns, symlink handling, large directory support
-  - **Integration**: Provides file list to parallel processor
-  - **Quality**: Efficient traversal, security validation
+### C1. File Discovery ✅ COMPLETE (2025-12-09)
 
 ### C2. Virtual Thread Processing (Thread-per-File Baseline)
-- [ ] **BLOCKED:** `implement-virtual-thread-processing` - Multi-threaded file processing with virtual threads
-  - **Dependencies**: B5 ✅ COMPLETE (CLI integration), C1 (file discovery for file list), B2 ✅ COMPLETE (pipeline)
+- [ ] **READY:** `implement-virtual-thread-processing` - Multi-threaded file processing with virtual threads
+  - **Dependencies**: B5 ✅ COMPLETE (CLI integration), C1 ✅ COMPLETE (file discovery), B2 ✅ COMPLETE (pipeline)
   - **Blocks**: C4 (concurrency benchmark needs baseline), C5 (Maven plugin needs parallel processing)
   - **Parallelizable With**: C3 (formatting rules development)
   - **Estimated Effort**: 3-4 days
