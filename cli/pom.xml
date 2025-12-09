@@ -31,6 +31,31 @@
 		</dependency>
 
 		<dependency>
+			<groupId>io.github.cowwoc.styler</groupId>
+			<artifactId>styler-config</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.cowwoc.styler</groupId>
+			<artifactId>styler-pipeline</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.cowwoc.styler</groupId>
+			<artifactId>styler-error-catalog</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.cowwoc.styler</groupId>
+			<artifactId>styler-security</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.github.cowwoc.styler</groupId>
+			<artifactId>styler-formatter</artifactId>
+		</dependency>
+
+		<dependency>
 			<groupId>org.testng</groupId>
 			<artifactId>testng</artifactId>
 			<scope>test</scope>
