@@ -137,7 +137,7 @@ This document contains testing patterns and detection rules optimized for Claude
 
 **Standard Requirements:**
 1. Test Class Declaration - `public final class *Test`
-2. Naming Convention - `method_condition_expectedResult`
+2. Naming Convention - `methodConditionExpectedResult` (camelCase, no underscores)
 3. Test Organization - TestNG groups for categorization
 4. Builder Pattern - For complex test data creation
 5. Resource Management - Read-only external data
