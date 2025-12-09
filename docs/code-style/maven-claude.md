@@ -5,6 +5,39 @@
 
 ## TIER 1 CRITICAL - Build Blockers
 
+### Avoid relativePath in Parent References {#avoid-relativepath}
+
+**Detection Pattern**: `<relativePath>` element in pom.xml parent section
+**Violation**: Any use of `<relativePath>` in `<parent>` block
+
+**✅ CORRECT** - Let Maven resolve parent automatically:
+```xml
+<parent>
+	<groupId>io.github.cowwoc.styler</groupId>
+	<artifactId>styler</artifactId>
+	<version>1.0-SNAPSHOT</version>
+</parent>
+```
+
+**❌ WRONG** - Explicit relativePath:
+```xml
+<parent>
+	<groupId>io.github.cowwoc.styler</groupId>
+	<artifactId>styler</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<relativePath>../pom.xml</relativePath>
+</parent>
+```
+
+**Detection Command**:
+```bash
+grep -rn '<relativePath>' --include='pom.xml' .
+```
+
+**Rationale**: Maven automatically resolves parent POMs from the local repository or reactor. Explicit
+`<relativePath>` creates brittle builds that break when directory structure changes and adds unnecessary
+coupling between module locations.
+
 ### Dependency Grouping - Inconsistent Organization
 **Detection Pattern**: Dependencies not grouped by type and scope with correct spacing
 **Key Rules**:
