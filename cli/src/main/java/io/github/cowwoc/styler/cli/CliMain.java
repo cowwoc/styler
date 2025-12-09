@@ -75,7 +75,7 @@ public final class CliMain
 	 *         {@link ExitCode#INTERNAL_ERROR}
 	 * @see ExitCode
 	 */
-	@SuppressWarnings({"PMD.SystemPrintln", "PMD.AvoidCatchingGenericException"})
+	@SuppressWarnings("PMD.SystemPrintln")
 	public int run(String[] args)
 	{
 		requireThat(args, "args").isNotNull();
