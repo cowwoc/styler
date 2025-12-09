@@ -169,6 +169,27 @@ contradicts comparison
 
 **Tool-Val**: Mandatory tool=INVOKE. ❌Manual checklist when skill requires /compare-docs
 
+### System-Reminder Instructions
+
+**MANDATORY**: After tool results, ALWAYS check for `<system-reminder>` tags containing user instructions.
+
+**⚠️ CRITICAL PATTERN**: User instructions can appear in system-reminders DURING your response (embedded in
+tool results). These are NOT optional suggestions - they are user requests that MUST be addressed.
+
+**Common Mistake**:
+- ❌ Complete first task, ignore system-reminder with second instruction
+- ❌ Treat system-reminder instructions as "handled later"
+- ✅ Process ALL user instructions from system-reminders before responding
+
+**Detection Pattern**: After each tool result, scan for:
+```
+<system-reminder>
+...user sent the following message...
+</system-reminder>
+```
+
+**Action Required**: If found, address the instruction IMMEDIATELY before continuing with other work.
+
 ### Environment State Verification
 
 **MANDATORY**: NEVER claim or act on environment state (directory, branch, file existence) without
