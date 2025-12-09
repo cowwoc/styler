@@ -55,7 +55,6 @@ public abstract class AbstractPipelineStage implements PipelineStage
 	 * @throws NullPointerException if {@code context} is {@code null}
 	 */
 	@Override
-	@SuppressWarnings("PMD.AvoidCatchingGenericException")
 	public final StageResult execute(ProcessingContext context)
 	{
 		requireThat(context, "context").isNotNull();
