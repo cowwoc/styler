@@ -1,5 +1,45 @@
 # Changelog
 
+## 2025-12-09
+
+### B5: CLI Integration - Complete End-to-End Workflow ✅
+
+**Completion Date**: 2025-12-09
+
+**Task**: `implement-cli-formatter-integration`
+
+**Commit**: 4d13018
+
+**Problem Solved**:
+- CLI entry point needed to be wired to the file processing pipeline
+- Needed proper exit codes for different outcomes (success, violations, errors)
+- Required clear error reporting and output formatting
+
+**Solution Implemented**:
+- CliMain orchestration facade connecting CLI args → pipeline → output
+- ErrorReporter with switch pattern matching for exception-to-message mapping
+- ExitCode enum with Unix-standard codes (0-6)
+- OutputHandler using Audience detection for format selection
+
+**Key Components**:
+- **CliMain**: Entry point orchestration, picocli argument parsing
+- **ErrorReporter**: Exception classification and user-friendly messages
+- **ExitCode**: Enum (SUCCESS=0, HELP=0, VIOLATIONS_FOUND=1, USAGE_ERROR=2, CONFIG_ERROR=3, SECURITY_ERROR=4, IO_ERROR=5, INTERNAL_ERROR=6)
+- **OutputHandler**: Results rendering with automatic Audience detection
+
+**Exit Codes**:
+- 0: SUCCESS/HELP - Operation completed or help displayed
+- 1: VIOLATIONS_FOUND - Style violations detected
+- 2: USAGE_ERROR - Invalid arguments or files
+- 3: CONFIG_ERROR - Configuration problems
+- 4: SECURITY_ERROR - Security constraints violated
+- 5: IO_ERROR - File system errors
+- 6: INTERNAL_ERROR - Unexpected failures
+
+**Unblocks**: All Phase C tasks (C1-C6 need working CLI)
+
+---
+
 ## 2025-12-05
 
 ### B3: AI Violation Output - Structured Feedback for AI Agents ✅

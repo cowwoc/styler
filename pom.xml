@@ -54,6 +54,21 @@
 				<artifactId>styler-formatter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>io.github.cowwoc.styler</groupId>
+				<artifactId>styler-config</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.cowwoc.styler</groupId>
+				<artifactId>styler-pipeline</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.cowwoc.styler</groupId>
+				<artifactId>styler-error-catalog</artifactId>
+				<version>${project.version}</version>
+			</dependency>
 
 			<!-- External dependencies -->
 			<dependency>
