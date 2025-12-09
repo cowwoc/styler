@@ -2,6 +2,50 @@
 
 ## 2025-12-09
 
+### C1: File Discovery - Recursive Java File Discovery ✅
+
+**Completion Date**: 2025-12-09
+
+**Task**: `implement-file-discovery`
+
+**Commit**: 22d2cf7
+
+**Problem Solved**:
+- CLI needed to discover Java files in directories recursively
+- Required pattern-based filtering (include/exclude globs)
+- Needed .gitignore integration for consistent behavior with version control
+
+**Solution Implemented**:
+- FileDiscovery: Recursive directory walker with configurable options
+- PatternMatcher: Glob pattern matching for includes/excludes
+- GitignoreParser: Parse and apply .gitignore rules
+- Security integration with PathSanitizer and FileValidator
+
+**Key Components**:
+- **FileDiscovery**: Main entry point for file discovery operations
+- **DiscoveryConfiguration**: Builder pattern for discovery settings
+- **GitignoreParser**: Parse .gitignore files and apply rules
+- **PatternMatcher**: Interface for pattern matching strategies
+- **GlobPatternMatcher**: Glob-to-regex pattern conversion
+
+**Configuration Options**:
+- followSymlinks: Control symlink traversal (default: false)
+- maxDepth: Limit directory recursion depth
+- fileExtensions: Filter by file extension (default: .java)
+- excludePatterns: Glob patterns to exclude files/directories
+- respectGitignore: Honor .gitignore files (default: true)
+
+**Test Coverage** (48 tests):
+- FileDiscoveryTest: Core functionality
+- FileDiscoveryEdgeCasesTest: Hidden files, symlinks, unicode, permissions
+- FileDiscoverySecurityIntegrationTest: Security boundary validation
+- GitignoreParserTest: Pattern parsing and matching
+- PatternMatcherTest: Glob pattern conversion
+
+**Unblocks**: C2 (virtual thread processing), C5 (Maven plugin)
+
+---
+
 ### B5: CLI Integration - Complete End-to-End Workflow ✅
 
 **Completion Date**: 2025-12-09

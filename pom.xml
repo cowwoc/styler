@@ -14,6 +14,7 @@
 	<modules>
 		<module>ast</module>
 		<module>security</module>
+		<module>discovery</module>
 		<module>config</module>
 		<module>error-catalog</module>
 		<module>formatter</module>
@@ -42,6 +43,11 @@
 			<dependency>
 				<groupId>io.github.cowwoc.styler</groupId>
 				<artifactId>styler-security</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>io.github.cowwoc.styler</groupId>
+				<artifactId>styler-discovery</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
