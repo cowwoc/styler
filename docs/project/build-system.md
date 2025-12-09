@@ -145,6 +145,37 @@ across environments.
 
 ## Maven Multi-Module Setup {#maven-multi-module-setup}
 
+### Module Naming Convention {#module-naming-convention}
+
+**CRITICAL**: Directory names and Maven artifactIds follow different naming patterns:
+
+| Component | Pattern | Example |
+|-----------|---------|---------|
+| **Directory name** | NO "styler-" prefix | `discovery/`, `parser/`, `security/` |
+| **Maven artifactId** | WITH "styler-" prefix | `styler-discovery`, `styler-parser`, `styler-security` |
+
+**✅ CORRECT**:
+```
+discovery/                          # Directory name (no prefix)
+└── pom.xml
+    <artifactId>styler-discovery</artifactId>  # ArtifactId (with prefix)
+```
+
+**❌ WRONG**:
+```
+styler-discovery/                   # Directory should NOT have styler- prefix
+└── pom.xml
+    <artifactId>styler-discovery</artifactId>
+```
+
+**Existing Modules** (reference pattern):
+- `parser/` → `styler-parser`
+- `formatter/` → `styler-formatter`
+- `security/` → `styler-security`
+- `config/` → `styler-config`
+- `cli/` → `styler-cli`
+- `pipeline/` → `styler-pipeline`
+
 ### pom.xml Style Guidelines {#pomxml-style-guidelines}
 
 **RULE**: Do not add explanatory comments above dependencies or plugins that simply describe what they are.
