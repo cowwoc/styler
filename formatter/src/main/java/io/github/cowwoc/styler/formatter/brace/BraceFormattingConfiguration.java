@@ -12,8 +12,10 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * <p>
  * <b>Thread-safety</b>: This record is immutable and thread-safe.
  *
- * @param ruleId the rule ID for this configuration
+ * @param ruleId     the rule ID for this configuration
  * @param braceStyle the brace style to apply to all constructs
+ * @throws NullPointerException     if any parameter is null
+ * @throws IllegalArgumentException if {@code ruleId} is blank
  */
 public record BraceFormattingConfiguration(String ruleId,
 	BraceStyle braceStyle) implements FormattingConfiguration
@@ -21,11 +23,11 @@ public record BraceFormattingConfiguration(String ruleId,
 	private static final String DEFAULT_RULE_ID = "brace-style";
 
 	/**
-	 * Compact constructor for validation.
+	 * Creates a brace formatting configuration.
 	 */
 	public BraceFormattingConfiguration
 	{
-		requireThat(ruleId, "ruleId").isNotNull().isNotBlank();
+		requireThat(ruleId, "ruleId").isNotBlank();
 		requireThat(braceStyle, "braceStyle").isNotNull();
 	}
 
