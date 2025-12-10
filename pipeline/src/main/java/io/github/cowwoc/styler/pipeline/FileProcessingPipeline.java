@@ -2,6 +2,7 @@ package io.github.cowwoc.styler.pipeline;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -259,7 +260,12 @@ public final class FileProcessingPipeline
 		@Override
 		protected StageResult executeStage(ProcessingContext context) throws Exception
 		{
-			return new StageResult.Skipped("Not yet implemented");
+			// Validate file exists before attempting to process
+			if (!Files.exists(context.filePath()))
+			{
+				return new StageResult.Failure("File not found: " + context.filePath(), null);
+			}
+			return new StageResult.Skipped("Parse not yet implemented");
 		}
 
 		@Override
