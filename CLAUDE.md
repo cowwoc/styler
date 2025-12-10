@@ -35,6 +35,9 @@ AWAITING_USER_APPROVAL → [USER APPROVAL] → COMPLETE
 **Required stakeholder agents** (invoke in parallel for requirements gathering):
 - `architect` - Analyzes dependencies, design patterns, integration points
 - `tester` - Analyzes test coverage needs, test strategy, edge cases, business logic validation
+  - **⚠️ CRITICAL**: Tester requirements MUST focus on **business rules to validate**, NOT test counts.
+    Specify WHAT behaviors/scenarios to test, not HOW MANY tests. Test count is an output of implementation,
+    not an input to planning.
 - `formatter` - Specifies documentation requirements, code style standards
 
 **⚠️ COMMON MISTAKE**: Do NOT invoke "engineer" for testing requirements (engineer = code
@@ -235,6 +238,33 @@ When code, configuration, or documentation becomes obsolete:
 
 **When removing**: (1) Delete all obsolete files/code (2) Update changelog with "Removed" section (3)
 Update documentation (4) Verify no broken references
+
+**NO STUBBING - Complete or Simplify**
+
+When implementing features, complete them fully or simplify the API to match what you can deliver:
+- ✅ Complete implementation matches API surface (all fields/methods work)
+- ✅ Simplify API if feature is too complex (remove unused fields, use simpler design)
+- ❌ DO NOT create "for future use" fields/parameters that aren't implemented
+- ❌ DO NOT add comments like "for now", "a full implementation would", "TODO"
+
+**Detection patterns** (indicate stubbing violations):
+- Record/class fields that are never read
+- Configuration parameters that have no effect
+- Comments suggesting incomplete implementation
+- API promising more than implementation delivers
+
+**Example violation**:
+```java
+// ❌ WRONG - 4 fields but only one used
+record Config(Style classStyle, Style methodStyle, Style controlStyle, Style lambdaStyle) {}
+// Code only calls config.controlStyle() - other 3 fields are dead code
+
+// ✅ CORRECT - API matches implementation
+record Config(Style braceStyle) {}  // Single field, actually used
+```
+
+**Principle**: A working simple feature beats a broken complex one. If per-X configuration requires AST
+integration you don't have, use a single style instead of stubbing per-X fields.
 
 ### Fail-Fast Error Handling
 
