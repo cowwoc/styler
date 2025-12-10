@@ -62,7 +62,7 @@ public class BatchProcessorPerformanceTest
 				{
 					Files.deleteIfExists(file);
 				}
-				catch (IOException e) // NOPMD - cleanup errors don't affect test result
+				catch (IOException _)
 				{
 					// Intentionally ignored
 				}
@@ -109,7 +109,7 @@ public class BatchProcessorPerformanceTest
 				{
 					Files.deleteIfExists(file);
 				}
-				catch (IOException e) // NOPMD - cleanup errors don't affect test result
+				catch (IOException _)
 				{
 					// Intentionally ignored
 				}
@@ -152,7 +152,7 @@ public class BatchProcessorPerformanceTest
 				{
 					Files.deleteIfExists(file);
 				}
-				catch (IOException e) // NOPMD - cleanup errors don't affect test result
+				catch (IOException _)
 				{
 					// Intentionally ignored
 				}
