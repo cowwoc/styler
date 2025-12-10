@@ -735,19 +735,29 @@ of deviation]. Invoking learn-from-mistakes skill to analyze and prevent recurre
 
 ## Essential References
 
-[docs/project/main-agent-coordination.md](docs/project/main-agent-coordination.md) - Main agent task protocol
-and coordination
-[docs/project/task-protocol-agents.md](docs/project/task-protocol-agents.md) - Sub-agent coordination protocol
-[docs/project/task-protocol-core.md](docs/project/task-protocol-core.md) - Complete state machine (main agent)
-[docs/project/task-protocol-operations.md](docs/project/task-protocol-operations.md) - Operational patterns (main
-agent)
-[docs/project/architecture.md](docs/project/architecture.md) - Project architecture and features
-[docs/project/scope.md](docs/project/scope.md) - Family configuration and development philosophy
-[docs/project/build-system.md](docs/project/build-system.md) - Build configuration and commands
-[docs/project/git-workflow.md](docs/project/git-workflow.md) - Git workflows and commit squashing
-procedures
-[docs/project/style-guide.md](docs/project/style-guide.md) - Style validation and JavaDoc requirements
-[docs/project/quality-guide.md](docs/project/quality-guide.md) - Code quality and testing standards
-[docs/code-style-human.md](docs/code-style-human.md) - Code style master guide
-[docs/code-style/](docs/code-style/) - Code style files (\*-claude.md detection patterns, \*-human.md
-explanations)
+**Task Protocol** (use skills for common operations):
+- [task-protocol-core.md](docs/project/task-protocol-core.md) - State machine architecture, definitions (~15K tokens)
+- [task-protocol-transitions.md](docs/project/task-protocol-transitions.md) - Detailed state transitions (~17K tokens)
+- [task-protocol-multi-agent.md](docs/project/task-protocol-multi-agent.md) - Multi-agent workflow (~11K tokens)
+- [task-protocol-operations.md](docs/project/task-protocol-operations.md) - Operations, best practices (~20K tokens)
+- [task-protocol-recovery.md](docs/project/task-protocol-recovery.md) - Error recovery procedures (~8K tokens)
+- [task-protocol-risk-agents.md](docs/project/task-protocol-risk-agents.md) - Risk assessment, agent selection (~4K
+  tokens)
+- Skills: `select-agents`, `recover-from-error`, `state-transition`
+
+**Agent Coordination**:
+- [docs/project/main-agent-coordination.md](docs/project/main-agent-coordination.md) - Main agent coordination
+- [docs/project/task-protocol-agents.md](docs/project/task-protocol-agents.md) - Sub-agent protocol
+
+**Project Configuration**:
+- [docs/project/architecture.md](docs/project/architecture.md) - Project architecture and features
+- [docs/project/scope.md](docs/project/scope.md) - Family configuration and development philosophy
+- [docs/project/build-system.md](docs/project/build-system.md) - Build configuration and commands
+- [docs/project/git-workflow.md](docs/project/git-workflow.md) - Git workflows and commit squashing
+
+**Code Quality**:
+- [docs/project/style-guide.md](docs/project/style-guide.md) - Style validation and JavaDoc requirements
+- [docs/project/quality-guide.md](docs/project/quality-guide.md) - Code quality and testing standards
+- [docs/code-style-human.md](docs/code-style-human.md) - Code style master guide
+- [docs/code-style/](docs/code-style/) - Code style files (\*-claude.md detection patterns, \*-human.md
+  explanations)
