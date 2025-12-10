@@ -1,5 +1,54 @@
 # Changelog
 
+## 2025-12-10
+
+### C2: Virtual Thread Processing - Parallel File Processing ✅
+
+**Completion Date**: 2025-12-10
+
+**Task**: `implement-virtual-thread-processing`
+
+**Commit**: a525b1c
+
+**Problem Solved**:
+- Large codebases need efficient parallel processing
+- Required file-level concurrency with error isolation
+- Needed progress tracking and configurable error handling strategies
+
+**Solution Implemented**:
+- BatchProcessor: Interface for parallel file batch processing
+- DefaultBatchProcessor: Virtual thread-based implementation with semaphore concurrency limiting
+- VirtualThreadExecutor: Wrapper for Java 25 virtual thread executor with permit-based limiting
+- ParallelProcessingConfig: Builder-based configuration for concurrency, error strategy, progress callbacks
+
+**Key Components**:
+- **BatchProcessor/DefaultBatchProcessor**: Process file batches with configurable concurrency
+- **VirtualThreadExecutor**: Virtual thread executor with semaphore-based concurrency control
+- **ParallelProcessingConfig**: Configuration with maxConcurrency, errorStrategy, progressCallback
+- **ErrorStrategy**: FAIL_FAST, CONTINUE, ABORT_AFTER_THRESHOLD strategies
+- **BatchResult**: Aggregated results with success/failure counts, throughput metrics
+- **ProgressCallback**: Functional interface for progress tracking
+
+**Architecture**:
+- File-level parallelism (one virtual thread per file, JVM manages scheduling)
+- Semaphore-based concurrency limiting to prevent OOM
+- Memory-based default concurrency (maxHeap / 5MB per file)
+- CountDownLatch for task completion synchronization
+- AtomicBoolean for thread-safe close() semantics
+
+**Test Coverage** (117 tests):
+- BatchProcessorTest: Core processing functionality
+- BatchProcessorConcurrencyTest: Thread safety, isolation, parallel execution
+- BatchProcessorErrorHandlingTest: Error strategies, partial failures
+- BatchProcessorPerformanceTest: Throughput, scalability metrics
+- ParallelProcessingConfigTest: Configuration validation
+- VirtualThreadExecutorTest: Executor lifecycle, concurrency limits
+- ProgressCallbackTest: Progress tracking thread safety
+
+**Unblocks**: C4 (concurrency benchmark), C5 (Maven plugin parallel processing)
+
+---
+
 ## 2025-12-09
 
 ### C1: File Discovery - Recursive Java File Discovery ✅
