@@ -56,7 +56,7 @@ public class BatchProcessorConcurrencyTest
 				{
 					Files.deleteIfExists(file);
 				}
-				catch (IOException e) // NOPMD - cleanup errors don't affect test result
+				catch (IOException _)
 				{
 					// Intentionally ignored
 				}
@@ -99,7 +99,7 @@ public class BatchProcessorConcurrencyTest
 				{
 					Files.deleteIfExists(file);
 				}
-				catch (IOException e) // NOPMD - cleanup errors don't affect test result
+				catch (IOException _)
 				{
 					// Intentionally ignored
 				}
@@ -111,6 +111,7 @@ public class BatchProcessorConcurrencyTest
 	 * Tests that multiple batch processors can run concurrently with a shared pipeline.
 	 */
 	@Test
+	@SuppressWarnings("PMD.UseTryWithResources")
 	public void shouldHandleMultipleConcurrentBatchProcessors() throws IOException, InterruptedException
 	{
 		FileProcessingPipeline pipeline = TestPipelineFactory.createDefaultPipeline();
@@ -120,7 +121,7 @@ public class BatchProcessorConcurrencyTest
 		List<List<Path>> fileBatches = new ArrayList<>();
 		List<BatchProcessor> processors = new ArrayList<>();
 
-		try // NOPMD - processors created in loop, manually closed in finally
+		try
 		{
 			for (int b = 0; b < 3; b += 1)
 			{
@@ -157,7 +158,7 @@ public class BatchProcessorConcurrencyTest
 					{
 						Files.deleteIfExists(file);
 					}
-					catch (IOException e) // NOPMD - cleanup errors don't affect test result
+					catch (IOException _)
 					{
 						// Intentionally ignored
 					}
@@ -207,7 +208,7 @@ public class BatchProcessorConcurrencyTest
 				{
 					Files.deleteIfExists(file);
 				}
-				catch (IOException e) // NOPMD - cleanup errors don't affect test result
+				catch (IOException _)
 				{
 					// Intentionally ignored
 				}
@@ -265,7 +266,7 @@ public class BatchProcessorConcurrencyTest
 				{
 					Files.deleteIfExists(file);
 				}
-				catch (IOException e) // NOPMD - cleanup errors don't affect test result
+				catch (IOException _)
 				{
 					// Intentionally ignored
 				}
