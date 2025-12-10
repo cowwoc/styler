@@ -361,6 +361,10 @@ public void testParse() {
 - ❌ **Prohibited**: Manual if-throw patterns for assertions
 - ✅ **Required**: Use `requireThat()` for all test assertions
 
+`requireThat()` throws `IllegalArgumentException` instead of `AssertionError`, which is acceptable for test
+assertions. The benefits of consistent validation syntax and descriptive failure messages outweigh the
+semantic difference in exception type. TestNG reports both exception types as test failures.
+
 ```java
 // ❌ BAD - Manual null check
 if (message == null) {
