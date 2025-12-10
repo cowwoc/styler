@@ -111,7 +111,6 @@ public class BatchProcessorConcurrencyTest
 	 * Tests that multiple batch processors can run concurrently with a shared pipeline.
 	 */
 	@Test
-	@SuppressWarnings("PMD.UseTryWithResources")
 	public void shouldHandleMultipleConcurrentBatchProcessors() throws IOException, InterruptedException
 	{
 		FileProcessingPipeline pipeline = TestPipelineFactory.createDefaultPipeline();
