@@ -226,8 +226,6 @@ If you see these errors, use this skill:
 
 ## Integration with Existing Workflows
 
-**get-agent-id skill**: Already documented to use script file approach
-
 **optimize-doc command**: Already documented with script file requirement for validation ID extraction
 
 **Other skills/commands**: Use this skill proactively when commands match the problematic patterns above
@@ -276,7 +274,6 @@ Simply copy and paste this into the Bash tool to execute.
 ## Related Documentation
 
 - CLAUDE.md § Tool Usage Best Practices § Bash Tool - Path Handling § Parameter Expansion Limitation
-- get-agent-id skill (uses script file approach)
 - optimize-doc command (documents script file requirement)
 
 ## Maintenance
