@@ -179,6 +179,31 @@ public class OrderProcessor {
 
 ## Test Strategy Requirements {#test-strategy-requirements}
 
+### REQUIREMENTS Phase: Business Rule Focus {#requirements-phase-business-rule-focus}
+
+**⚠️ CRITICAL FOR TESTER AGENTS**: When writing requirements reports (`*-tester-requirements.md`), focus on
+**business rules to validate**, NOT test counts.
+
+**✅ CORRECT** (Business Rule Focus):
+```markdown
+## Required Business Rule Coverage
+- Input validation: null inputs, empty collections, invalid paths
+- File isolation: one file failure must not affect other files
+- Concurrency safety: no race conditions, proper synchronization
+- Error handling: file not found, permissions denied, timeout
+```
+
+**❌ WRONG** (Test Count Focus):
+```markdown
+## Test Requirements
+- Phase 1: 17 tests
+- Phase 2: 10 tests
+- Total: 27 tests minimum
+```
+
+**Rationale**: Test count is an OUTPUT of implementation, not an INPUT to planning. The tester agent
+specifies WHAT to test; the implementation determines HOW MANY tests are needed to cover those behaviors.
+
 ### Business-Logic Coverage {#business-logic-coverage}
 
 **Focus on meaningful behavior, not test counts or code coverage percentages.**
