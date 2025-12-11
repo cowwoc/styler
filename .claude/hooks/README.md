@@ -92,24 +92,102 @@ jq '.hooks' /workspace/.claude/settings.json
 
 ### PreToolUse Hooks (Safety-Critical)
 
-#### detect-main-agent-implementation.sh
+#### implementation-guard.sh
 - **Purpose**: **BLOCK** Write/Edit of source files during IMPLEMENTATION state
-- **Trigger**: PreToolUse
+- **Trigger**: PreToolUse (Write, Edit)
 - **Matcher**: `(tool:Write || tool:Edit) && path:**/*.{java,ts,py,js,go,rs,cpp,c,h}`
 - **Registration**: ✅ REQUIRED
-- **Blocking**: **YES** (returns exit 1 to prevent operation)
+- **Blocking**: **YES**
 - **Status**: ✅ REGISTERED
-- **Verification**:
-  ```bash
-  jq '.hooks.PreToolUse[] | select(.hooks[].command | contains("detect-main-agent-implementation"))' /workspace/.claude/settings.json
-  ```
-- **Test Case**:
-  ```bash
-  # Simulate Write tool during IMPLEMENTATION state
-  echo '{"tool_name": "Write", "parameters": {"file_path": "/workspace/tasks/test/code/src/Test.java"}}' | \
-    .claude/hooks/detect-main-agent-implementation.sh
-  # Expected: Exit 1 with violation message (if task in IMPLEMENTATION state)
-  ```
+- **State Enforcement**:
+  - IMPLEMENTATION: BLOCKED - delegate to stakeholder agents
+  - VALIDATION: ALLOWED (policy governs fix types, see CLAUDE.md § VALIDATION STATE FIX BOUNDARIES)
+  - Other states: ALLOWED
+- **Infrastructure Exceptions**: module-info.java, package-info.java (always allowed)
+- **Reference**: CLAUDE.md § Multi-Agent Architecture
+
+#### task-invoke-pre.sh
+- **Purpose**: **BLOCK** Task tool invocations in wrong states, enforce requirements phase
+- **Trigger**: PreToolUse (Task)
+- **Registration**: ✅ REQUIRED
+- **Blocking**: **YES**
+- **Enforcement**:
+  - Blocks Task from INIT state (must progress through CLASSIFIED)
+  - Blocks IMPLEMENTATION transition without requirements reports
+  - Validates stakeholder agents: architect, tester, formatter (NOT engineer)
+- **Reference**: CLAUDE.md § MANDATORY USER APPROVAL CHECKPOINTS
+
+#### enforce-requirements-phase.sh
+- **Purpose**: **BLOCK** state transitions without requirements reports
+- **Trigger**: PreToolUse
+- **Registration**: ✅ REQUIRED
+- **Blocking**: **YES**
+- **Enforcement**: All 3 stakeholder reports must exist before IMPLEMENTATION
+- **Reference**: task-protocol-core.md § State Machine Architecture
+
+#### enforce-checkpoints.sh
+- **Purpose**: **BLOCK** state transitions without user approval flags
+- **Trigger**: PreToolUse
+- **Registration**: ✅ REQUIRED
+- **Blocking**: **YES**
+- **Checkpoints**:
+  - Checkpoint 1 (SYNTHESIS→IMPLEMENTATION): Requires user-approved-synthesis.flag
+  - Checkpoint 2 (AWAITING_USER_APPROVAL→COMPLETE): Requires user-approved-changes.flag
+- **Reference**: CLAUDE.md § MANDATORY USER APPROVAL CHECKPOINTS
+
+#### enforce-commit-squashing.sh
+- **Purpose**: **BLOCK** git merge without --ff-only flag
+- **Trigger**: PreToolUse (Bash with git merge)
+- **Registration**: ✅ REQUIRED
+- **Blocking**: **YES**
+- **Enforcement**: Task branches must be squashed, merged with --ff-only
+- **Reference**: git-workflow.md § Task Branch Squashing
+
+#### enforce-merge-workflow.sh
+- **Purpose**: **BLOCK** merges without approval flag, from wrong directory
+- **Trigger**: PreToolUse (Bash with git merge)
+- **Registration**: ✅ REQUIRED
+- **Blocking**: **YES**
+- **Enforcement**: Validates merge location and user-approved-changes.flag
+- **Reference**: task-protocol-core.md § AWAITING_USER_APPROVAL → COMPLETE Transition
+
+#### block-branch-force-update.sh
+- **Purpose**: **BLOCK** force updates to protected branches
+- **Trigger**: PreToolUse (Bash with git push --force, git branch -f)
+- **Registration**: ✅ REQUIRED
+- **Blocking**: **YES**
+- **Protected Branches**: main, v[0-9]+ (version branches)
+- **Reference**: CLAUDE.md § Branch Management
+
+#### block-task-branch-push.sh
+- **Purpose**: **BLOCK** pushing task/agent branches to remote
+- **Trigger**: PreToolUse (Bash with git push)
+- **Registration**: ✅ REQUIRED
+- **Blocking**: **YES**
+- **Policy**: Only main and version branches should be pushed
+- **Reference**: git-workflow.md § Push Workflow
+
+#### validate-git-filter-branch.sh
+- **Purpose**: **BLOCK** git filter-branch with --all or --branches flags
+- **Trigger**: PreToolUse (Bash with git filter-branch)
+- **Registration**: ✅ REQUIRED
+- **Blocking**: **YES**
+- **Protection**: Prevents accidental rewriting of version branches
+- **Reference**: git-workflow.md § Git History Rewriting Safety
+
+#### block-retrospective-docs.sh
+- **Purpose**: **BLOCK** creation of retrospective documentation
+- **Trigger**: PreToolUse (Write, Edit)
+- **Registration**: ✅ REQUIRED
+- **Blocking**: **YES**
+- **Blocked Patterns**: summary, lessons-learned, retrospective, postmortem, analysis
+- **Exceptions**:
+  - Explicitly user-requested documentation
+  - Temporary files in `/workspace/tasks/{task}/temp/` (cleanup required)
+  - Retrospective skill JSON outputs (`.claude/retrospectives/*.json`)
+  - Skill files (`.claude/skills/retrospective/`, `.claude/skills/learn-from-mistakes/`)
+- **Cleanup**: Temp files must be deleted before AWAITING_USER_APPROVAL → COMPLETE
+- **Reference**: CLAUDE.md § RETROSPECTIVE DOCUMENTATION POLICY
 
 #### block-data-loss.sh
 - **Purpose**: **BLOCK** destructive git/rm operations without verification

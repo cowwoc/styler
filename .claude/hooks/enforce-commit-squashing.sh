@@ -16,6 +16,9 @@ set -euo pipefail
 # Error handler - output helpful message to stderr on failure
 trap 'echo "ERROR in enforce-commit-squashing.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
+# Source helper for proper hook blocking
+source /workspace/.claude/scripts/json-output.sh
+
 # Read hook input from stdin
 INPUT=$(cat)
 COMMAND=$(echo "$INPUT" | jq -r '.command // ""')
@@ -108,7 +111,7 @@ git merge --ff-only $BRANCH_NAME
 
 See:
 - /workspace/main/docs/project/git-workflow.md § Task Branch Squashing
-- /workspace/main/docs/project/task-protocol-core.md (line 3886)
+- /workspace/main/docs/project/task-protocol-core.md § AWAITING_USER_APPROVAL → COMPLETE Transition
 
 **PROHIBITED PATTERNS**:
 ❌ \`git merge <branch>\` (default, may create merge commit)
@@ -118,17 +121,9 @@ See:
 **REQUIRED PATTERN**:
 ✅ \`git merge --ff-only <branch>\` (enforces linear history)"
 
-	jq -n \
-		--arg event "PreToolUse" \
-		--arg context "$MESSAGE" \
-		'{
-			"hookSpecificOutput": {
-				"hookEventName": $event,
-				"additionalContext": $context
-			}
-		}'
-
-	exit 2  # Block the command
+	# Use proper permission system
+	output_hook_block "Blocked: git merge to main must use --ff-only flag. Use: git merge --ff-only $BRANCH_NAME" "$MESSAGE"
+	exit 0
 fi
 
 # Check if branch exists
@@ -236,17 +231,9 @@ See:
 ❌ Assuming \"clean history\" doesn't matter
 ❌ Bypassing squashing for \"small\" changes"
 
-	jq -n \
-		--arg event "PreToolUse" \
-		--arg context "$MESSAGE" \
-		'{
-			"hookSpecificOutput": {
-				"hookEventName": $event,
-				"additionalContext": $context
-			}
-		}'
-
-	exit 2  # Block the command
+	# Use proper permission system
+	output_hook_block "Blocked: Task branch has $COMMIT_COUNT commits. Must squash to exactly 1 commit before merging to main." "$MESSAGE"
+	exit 0
 fi
 
 # Exactly 1 commit or 0 commits - allow merge

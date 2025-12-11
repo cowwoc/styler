@@ -202,5 +202,6 @@ See:
 - CLAUDE.md § Checkpoint 2: AWAITING_USER_APPROVAL → COMPLETE
 - git-workflow.md § Task Branch Squashing"
 
-output_hook_error "PreToolUse" "$MESSAGE"
-exit 2
+# Use proper permission system: JSON to stdout, message to stderr, exit 0
+output_hook_block "Blocked: Task branch missing archival files (todo.md and/or changelog.md). Add archival entries before merging." "$MESSAGE"
+exit 0

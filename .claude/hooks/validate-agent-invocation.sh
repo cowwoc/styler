@@ -19,6 +19,7 @@ trap 'echo "ERROR in validate-agent-invocation.sh at line $LINENO: Command faile
 # Source logging helper
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/hook-logger.sh"
+source /workspace/.claude/scripts/json-output.sh
 
 # Read hook input from stdin
 INPUT=$(cat)
@@ -203,17 +204,12 @@ See: /workspace/main/docs/project/task-protocol-core.md § Agent Invocation Rule
 
 **Violation logged to**: ${LOG_FILE}"
 
-	jq -n \
-		--arg event "PreToolUse" \
-		--arg context "$MESSAGE" \
-		'{
-			"hookSpecificOutput": {
-				"hookEventName": $event,
-				"additionalContext": $context
-			}
-		}'
+	# Output detailed message to stderr for user
+	echo "$MESSAGE" >&2
 
-	exit 2  # Block the tool invocation
+	# Use proper permission system
+	output_hook_block "Blocked: Agent invocation not allowed in $CURRENT_STATE state. Progress through protocol states first." ""
+	exit 0  # Exit 0 for JSON processing
 fi
 
 log_hook_success "validate-agent-invocation" "PreToolUse" "Agent ${AGENT_NAME} allowed in ${CURRENT_STATE} state"
