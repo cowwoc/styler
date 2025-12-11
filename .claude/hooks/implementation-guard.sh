@@ -4,8 +4,29 @@ set -euo pipefail
 # Error handler - output helpful message to stderr on failure
 trap 'echo "ERROR in implementation-guard.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
+# Source helper for proper hook blocking
+source /workspace/.claude/scripts/json-output.sh
+
 # Pre-tool-use hook: Block main agent from creating source files during IMPLEMENTATION state
 # Prevents VIOLATION #1: Main Agent Source File Creation
+#
+# TRIGGER: PreToolUse (Write, Edit)
+#
+# STATE ENFORCEMENT:
+# - IMPLEMENTATION state: BLOCKED - Main agent must delegate to stakeholder agents via Task tool
+# - VALIDATION state: ALLOWED - Main agent may fix compilation errors, syntax issues directly
+#   (Policy for VALIDATION: CLAUDE.md § VALIDATION STATE FIX BOUNDARIES determines what fixes
+#    are appropriate - hook allows edits but policy governs when to re-invoke agents)
+# - Other states: ALLOWED - No restrictions
+#
+# INFRASTRUCTURE EXCEPTIONS (always allowed):
+# - module-info.java (JPMS module descriptor)
+# - package-info.java (package documentation)
+#
+# AGENT WORKTREES: Always allowed (agents work in their own worktrees)
+#
+# See: CLAUDE.md § Multi-Agent Architecture
+# See: CLAUDE.md § VALIDATION STATE FIX BOUNDARIES
 
 # Parse stdin JSON for tool invocation details
 TOOL_INPUT=$(cat)
@@ -69,7 +90,9 @@ if [[ ! -f "$TASK_JSON" ]]; then
         echo "  EOF" >&2
         echo "" >&2
         echo "See: /workspace/main/docs/project/task-protocol-core.md § State Management" >&2
-        exit 2
+        # Use proper permission system
+        output_hook_block "Blocked: INIT state - must progress through CLASSIFIED/REQUIREMENTS/SYNTHESIS states before creating source files." ""
+        exit 0
     fi
     exit 0
 fi
@@ -112,7 +135,9 @@ if [[ "$TARGET_PATH" =~ \.(java|ts|py|js|jsx|tsx|cpp|c|h|hpp|rs|go)$ ]]; then
         echo "  - package-info.java (package documentation)" >&2
         echo "" >&2
         echo "See: /workspace/main/CLAUDE.md § CRITICAL PROTOCOL VIOLATIONS #1" >&2
-        exit 2
+        # Use proper permission system
+        output_hook_block "Blocked: Main agent cannot create source files in IMPLEMENTATION state. Delegate to stakeholder agents via Task tool." ""
+        exit 0
     fi
 fi
 

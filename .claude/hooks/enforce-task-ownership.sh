@@ -4,6 +4,9 @@ set -euo pipefail
 # Error handler - output helpful message to stderr on failure
 trap 'echo "ERROR in enforce-task-ownership.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
+# Source helper for proper hook blocking
+source /workspace/.claude/scripts/json-output.sh
+
 # enforce-task-ownership.sh
 #
 # PURPOSE: Prevent Claude instances from working on tasks owned by other sessions.
@@ -125,9 +128,6 @@ Working on it from your session would cause coordination conflicts.
 
 EOF
 
-# Return deny decision
-jq -n '{
-  "decision": "block",
-  "reason": "Task owned by different session"
-}'
-exit 2
+# Use proper permission system
+output_hook_block "Blocked: Task $TASK_NAME owned by different Claude session. Choose a different task or clean up the abandoned task first." ""
+exit 0

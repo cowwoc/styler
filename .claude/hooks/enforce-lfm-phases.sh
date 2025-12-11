@@ -14,6 +14,9 @@
 set -euo pipefail
 trap 'echo "ERROR in enforce-lfm-phases.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
+# Source helper for proper hook blocking
+source /workspace/.claude/scripts/json-output.sh
+
 # Read stdin
 INPUT=$(cat)
 
@@ -76,8 +79,9 @@ To proceed:
 
 ═══════════════════════════════════════════════════════════════════════════════
 EOF
-        echo '{"decision": "block", "reason": "LFM phase violation: Must complete INVESTIGATE before fixing."}'
-        exit 2
+        # Use proper permission system
+        output_hook_block "Blocked: LFM phase violation - must complete INVESTIGATE phase before fixing. Read conversation logs first." ""
+        exit 0
     fi
 
     if [[ "$PHASE" == "PREVENT" ]]; then
@@ -108,8 +112,9 @@ To proceed:
 
 ═══════════════════════════════════════════════════════════════════════════════
 EOF
-        echo '{"decision": "block", "reason": "LFM phase violation: Must implement PREVENT before fixing."}'
-        exit 2
+        # Use proper permission system
+        output_hook_block "Blocked: LFM phase violation - must implement PREVENT phase before fixing. Create prevention mechanism first." ""
+        exit 0
     fi
 fi
 

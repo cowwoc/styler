@@ -110,7 +110,7 @@ else
         \"hookEventName\": \"PostToolUse\",
         \"additionalContext\": $(echo "$MESSAGE" | jq -Rs .)
       }
-    }"
+    }" >&2
     exit 2
 fi
 
@@ -161,7 +161,7 @@ echo "{
     \"hookEventName\": \"PostToolUse\",
     \"additionalContext\": $(echo "$MESSAGE" | jq -Rs .)
   }
-}"
+}" >&2
 
 # Create marker to prevent re-running this verification
 touch "$MARKER_FILE"

@@ -103,7 +103,7 @@ Task: ${TASK_NAME}
 
 Expected files in ${TASK_DIR}/:
   - ${TASK_NAME}-architect-requirements.md
-  - ${TASK_NAME}-engineer-requirements.md
+  - ${TASK_NAME}-tester-requirements.md
   - ${TASK_NAME}-formatter-requirements.md
 
 REQUIRED ACTIONS:
@@ -115,9 +115,9 @@ REQUIRED ACTIONS:
    architectural perspective. Analyze dependencies, design patterns,
    integration points. Output: ${TASK_NAME}-architect-requirements.md"
 
-   Task tool (engineer): "Review task requirements from quality
-   perspective. Define testing strategy, quality metrics, validation criteria.
-   Output: ${TASK_NAME}-engineer-requirements.md"
+   Task tool (tester): "Review task requirements from testing
+   perspective. Define test strategy, edge cases, business logic validation.
+   Output: ${TASK_NAME}-tester-requirements.md"
 
    Task tool (formatter): "Review task requirements from style perspective.
    Specify documentation requirements, code style standards, naming conventions.

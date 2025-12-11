@@ -11,6 +11,9 @@
 set -euo pipefail
 trap 'echo "ERROR in tdd-skill-gate.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
+# Source helper for proper hook blocking
+source /workspace/.claude/scripts/json-output.sh
+
 # Read stdin for hook context
 INPUT=$(cat)
 
@@ -86,9 +89,9 @@ Required file: $TDD_MODE_FILE
 ═══════════════════════════════════════════════════════════════════════════════
 EOF
 
-    # Return deny decision
-    echo '{"decision": "block", "reason": "TDD mode not active. Invoke tdd-implementation skill first."}'
-    exit 2
+    # Use proper permission system
+    output_hook_block "Blocked: TDD mode not active. Invoke tdd-implementation skill first before editing production Java code." ""
+    exit 0
 fi
 
 # Check TDD phase - must be GREEN or REFACTOR to edit production code
@@ -118,8 +121,9 @@ Then update TDD mode:
 ═══════════════════════════════════════════════════════════════════════════════
 EOF
 
-        echo '{"decision": "block", "reason": "RED phase: Test must fail before implementing fix."}'
-        exit 2
+        # Use proper permission system
+        output_hook_block "Blocked: TDD RED phase - test must fail before implementing fix. Run test first to verify failure." ""
+        exit 0
     fi
 fi
 

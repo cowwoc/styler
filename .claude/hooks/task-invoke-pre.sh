@@ -78,11 +78,11 @@ while IFS= read -r TASK_JSON; do
 	   [[ "$STATE" == "COMPLETE" ]]; then
 		TASK_ROOT=$(dirname "$TASK_JSON")
 		ARCHITECT_REQ="${TASK_ROOT}/${TASK_NAME}-architect-requirements.md"
-		ENGINEER_REQ="${TASK_ROOT}/${TASK_NAME}-engineer-requirements.md"
+		TESTER_REQ="${TASK_ROOT}/${TASK_NAME}-tester-requirements.md"
 		FORMATTER_REQ="${TASK_ROOT}/${TASK_NAME}-formatter-requirements.md"
 
 		# Check if all requirements reports exist
-		if [[ ! -f "$ARCHITECT_REQ" ]] || [[ ! -f "$ENGINEER_REQ" ]] || [[ ! -f "$FORMATTER_REQ" ]]; then
+		if [[ ! -f "$ARCHITECT_REQ" ]] || [[ ! -f "$TESTER_REQ" ]] || [[ ! -f "$FORMATTER_REQ" ]]; then
 			VIOLATION_FOUND=true
 			VIOLATING_TASK="$TASK_NAME"
 			CURRENT_STATE="$STATE (missing requirements reports)"
@@ -107,7 +107,7 @@ You are in ${CURRENT_STATE%% (*} state but the required requirements reports do 
 
 **Missing Reports**:
 - \`${TASK_NAME}-architect-requirements.md\`
-- \`${TASK_NAME}-engineer-requirements.md\`
+- \`${TASK_NAME}-tester-requirements.md\`
 - \`${TASK_NAME}-formatter-requirements.md\`
 
 **AUTOMATIC ACTION TAKEN**:
@@ -123,7 +123,7 @@ You are in ${CURRENT_STATE%% (*} state but the required requirements reports do 
    \`\`\`
 
 2. **Invoke stakeholder agents in REQUIREMENTS mode**:
-   - Use Task tool with THREE parallel invocations (architect, engineer, formatter)
+   - Use Task tool with THREE parallel invocations (architect, tester, formatter)
    - Set model to \"opus\" for REQUIREMENTS phase
    - Emphasize in prompts: \"You are in REQUIREMENTS mode. ONLY write requirements report. DO NOT implement code.\"
    - Specify output file: \`/workspace/tasks/${VIOLATING_TASK}/${VIOLATING_TASK}-{agent}-requirements.md\`
