@@ -84,10 +84,10 @@ Run test with both documents (original and shortened):
 
 ```bash
 # Test with original
-Task(model="sonnet", prompt="Read original.md, execute test-scenarios.md")
+Task(model="opus", prompt="Read original.md, execute test-scenarios.md")
 
 # Test with shortened
-Task(model="sonnet", prompt="Read shortened.md, execute test-scenarios.md")
+Task(model="opus", prompt="Read shortened.md, execute test-scenarios.md")
 ```
 
 ### Step 3: Compare Results
@@ -110,7 +110,7 @@ This guide is based on comprehensive validation with 191 test scenarios:
 | Scenarios passed | 191 |
 | Overall accuracy | 100% |
 | Document types validated | 4 (normative, protocol, quality, procedural) |
-| Models validated | 2 (Sonnet 4.5, Haiku 4.5) |
+| Models validated | 2 (Opus 4.5, Haiku 4.5) |
 | Compression ratio validated | Up to 2.2x |
 
 **See [validation-report.md](validation-report.md) for complete details.**

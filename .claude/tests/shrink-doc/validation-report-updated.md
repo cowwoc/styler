@@ -23,7 +23,7 @@ Can `/compare-docs` semantic claim comparison with relationship preservation sol
 1. **Perfect Correlation**: 100% claim preservation → 100% execution preservation (291/291 scenarios)
 2. **Structure Independence**: Visual markers, headings don't impact execution when claims preserved
 3. **Compression Validated**: Up to 3.8x compression while maintaining 100% execution accuracy
-4. **Model Independence**: Both Sonnet 4.5 and Haiku 4.5 show identical execution
+4. **Model Independence**: Both Opus 4.5 and Haiku 4.5 show identical execution
 5. **Scalability**: Validated for documents up to 249 claims
 
 **Phase 4 Validation** (Relationship-Dependent Documents) - **NEW**:

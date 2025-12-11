@@ -48,7 +48,7 @@ This command aims for high reproducibility but cannot guarantee perfect determin
    - Mitigation: Use `temperature=0` in all Task calls (already specified above)
    - Expected with temp=0: ±0.5-1% residual variance
 2. **Model Version** (±1-3% score drift across versions)
-   - Mitigation: Pin exact model version (e.g., `"claude-sonnet-4-5-20250929"`)
+   - Mitigation: Pin exact model version (e.g., `"claude-opus-4-5-20251101"`)
    - Already specified in Task calls above
 3. **Semantic Judgment** (±1-2% for boundary cases)
    - Claim similarity: "essentially the same" vs "slightly different"
@@ -256,7 +256,7 @@ This command aims for high reproducibility but cannot guarantee perfect determin
 # This is a SINGLE assistant message containing TWO Task invocations
 
 Task(\n  subagent_type="general-purpose",
-  model="sonnet",  # For reproducibility, consider pinning: "claude-sonnet-4-5-20250929"
+  model="opus",  # For reproducibility, consider pinning: "claude-opus-4-5-20251101"
   temperature=0,   # Deterministic sampling for consistency
   description="Extract claims from Document A",
   prompt="[Full extraction prompt above]
@@ -269,7 +269,7 @@ Task(\n  subagent_type="general-purpose",
 
 Task(
   subagent_type="general-purpose",
-  model="sonnet",  # For reproducibility, consider pinning: "claude-sonnet-4-5-20250929"
+  model="opus",  # For reproducibility, consider pinning: "claude-opus-4-5-20251101"
   temperature=0,   # Deterministic sampling for consistency
   description="Extract claims from Document B",
   prompt="[Full extraction prompt above]

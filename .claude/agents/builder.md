@@ -4,7 +4,7 @@ description: >
   Build system specialist with authority over build execution, failure analysis, and remediation.
   Can execute builds and analyze failures (review mode) or implement fixes for build failures
   (implementation mode) based on invocation instructions.
-model: sonnet-4-5
+model: opus
 color: red
 tools: Read, Write, Edit, Grep, Glob, LS, Bash
 ---
@@ -94,7 +94,7 @@ Must comply with [Code Style Guidelines](../../docs/code-style-human.md):
 ## 🎯 CRITICAL: REQUIREMENTS DETAIL FOR SIMPLER MODEL IMPLEMENTATION
 
 **MODEL CONFIGURATION CONTEXT**:
-- **REVIEW MODE**: Uses Sonnet 4.5 for deep analysis and complex decision-making
+- **REVIEW MODE**: Uses Opus 4.5 for deep analysis and complex decision-making
 - **IMPLEMENTATION MODE**: Uses Haiku 4.5 for mechanical implementation
 
 **MANDATORY REQUIREMENT QUALITY STANDARD**:

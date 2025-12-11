@@ -3,7 +3,7 @@ name: formatter
 description: >
   Reviews code against MANUAL-ONLY style patterns from docs/code-style/. Can review style compliance
   (analysis mode) or implement corrections (implementation mode) based on invocation instructions.
-model: sonnet-4-5
+model: opus
 color: blue
 tools: Read, Write, Edit, Grep, Glob, LS, Bash
 ---
@@ -53,7 +53,7 @@ You will receive specific task instructions in your invocation prompt. Your role
 
 ## 🎯 CRITICAL: REQUIREMENTS DETAIL FOR SIMPLER MODEL IMPLEMENTATION
 
-**MODEL CONFIGURATION**: analysis (Sonnet 4.5) for analysis, implementation (Haiku 4.5) for implementation.
+**MODEL CONFIGURATION**: analysis (Opus 4.5) for analysis, implementation (Haiku 4.5) for implementation.
 
 Violation reports MUST be sufficiently detailed for implementation to apply fixes mechanically without decisions.
 

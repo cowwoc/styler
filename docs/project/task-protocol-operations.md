@@ -103,10 +103,10 @@ The main branch must NEVER contain broken commits. If build failures occur post-
 **CRITICAL: Pre-Merge Build Verification Gate**
 ```bash
 # Launch ALL agents with Task tool in ONE message
-Task tool (architect), model: sonnet, prompt: "Review architecture requirements for {task}"
-Task tool (quality), model: sonnet, prompt: "Review code quality requirements for {task}"
-Task tool (style), model: sonnet, prompt: "Review style requirements for {task}"
-Task tool (security), model: sonnet, prompt: "Review security requirements for {task}"
+Task tool (architect), model: opus, prompt: "Review architecture requirements for {task}"
+Task tool (quality), model: opus, prompt: "Review code quality requirements for {task}"
+Task tool (style), model: opus, prompt: "Review style requirements for {task}"
+Task tool (security), model: opus, prompt: "Review security requirements for {task}"
 
 # Wait for ALL responses before proceeding
 ```
@@ -114,11 +114,11 @@ Task tool (security), model: sonnet, prompt: "Review security requirements for {
 **DON'T** (sequential):
 ```bash
 # Message 1
-Task tool (architect), model: sonnet, prompt: "..."
+Task tool (architect), model: opus, prompt: "..."
 # Wait for response
 
 # Message 2
-Task tool (quality), model: sonnet, prompt: "..."
+Task tool (quality), model: opus, prompt: "..."
 # Wait for response
 
 # = 3-4× overhead, 20-30 min wasted
@@ -312,7 +312,7 @@ jq '.state = "IMPLEMENTATION"' $LOCK_FILE > /tmp/lock.json && mv /tmp/lock.json 
 
 ### Implementation Rounds (Review/Implementation Iteration) {#implementation-rounds-reviewimplementation-iteration}
 
-**CRITICAL PATTERN**: Implementation uses agents in BOTH review mode (Sonnet) and implementation mode (Haiku) in iterative cycles.
+**CRITICAL PATTERN**: Implementation uses agents in BOTH review mode (Opus) and implementation mode (Haiku) in iterative cycles.
 
 **Round 1 - Initial Implementation:**
 ```
@@ -328,10 +328,10 @@ Task tool (test), model: haiku, prompt: "Implement comprehensive test suite per 
 ```
 Agents have merged to task branch. Launching agents in review mode for parallel validation.
 
-Task tool (architect), model: sonnet, prompt: "Review merged architecture on task branch for completeness"
-Task tool (engineer), model: sonnet, prompt: "Review merged code quality on task branch"
-Task tool (formatter), model: sonnet, prompt: "Review merged style compliance on task branch"
-Task tool (tester), model: sonnet, prompt: "Review merged test coverage and quality on task branch"
+Task tool (architect), model: opus, prompt: "Review merged architecture on task branch for completeness"
+Task tool (engineer), model: opus, prompt: "Review merged code quality on task branch"
+Task tool (formatter), model: opus, prompt: "Review merged style compliance on task branch"
+Task tool (tester), model: opus, prompt: "Review merged test coverage and quality on task branch"
 ```
 
 **Round 2 - Apply Review Feedback (if rejections):**
@@ -346,8 +346,8 @@ Task tool (architect), model: haiku, prompt: "Clarify interface contracts per re
 ```
 Agents have merged fixes. Re-launching agents in review mode to verify.
 
-Task tool (formatter), model: sonnet, prompt: "Re-review style compliance on task branch"
-Task tool (architect), model: sonnet, prompt: "Re-review architecture fixes on task branch"
+Task tool (formatter), model: opus, prompt: "Re-review style compliance on task branch"
+Task tool (architect), model: opus, prompt: "Re-review architecture fixes on task branch"
 ```
 
 **CRITICAL**: All agents in SINGLE message for parallel execution

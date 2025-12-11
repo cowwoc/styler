@@ -3,7 +3,7 @@ name: hacker
 description: >
   Reviews code for security vulnerabilities, attack vectors, and compliance issues. Can review security
   (analysis mode) or implement fixes (implementation mode) based on invocation instructions.
-model: sonnet-4-5
+model: opus
 color: red
 tools: Read, Write, Edit, Grep, Glob, LS, Bash, WebSearch, WebFetch
 ---
@@ -76,7 +76,7 @@ You will receive specific task instructions in your invocation prompt. Your role
 
 ## 🎯 CRITICAL: REQUIREMENTS DETAIL FOR SIMPLER MODEL IMPLEMENTATION
 
-**MODEL CONFIGURATION**: analyst (Sonnet 4.5) for analysis, implementation (Haiku 4.5) for implementation.
+**MODEL CONFIGURATION**: analyst (Opus 4.5) for analysis, implementation (Haiku 4.5) for implementation.
 
 Security reports MUST be sufficiently detailed for implementation to apply fixes mechanically without security decisions.
 

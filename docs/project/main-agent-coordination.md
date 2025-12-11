@@ -1671,9 +1671,9 @@ Task tool (style), model: haiku, prompt: "Apply style guidelines to implementati
 Task tool (quality), model: haiku, prompt: "Apply design patterns per requirements..."
 
 Single Message - Review Mode:
-Task tool (architect), model: sonnet, prompt: "Review implementation for completeness..."
-Task tool (style), model: sonnet, prompt: "Review implementation for style compliance..."
-Task tool (quality), model: sonnet, prompt: "Audit code quality and design patterns..."
+Task tool (architect), model: opus, prompt: "Review implementation for completeness..."
+Task tool (style), model: opus, prompt: "Review implementation for style compliance..."
+Task tool (quality), model: opus, prompt: "Audit code quality and design patterns..."
 ```
 
 **When Parallel Execution is NOT Appropriate**:

@@ -3,7 +3,7 @@ name: designer
 description: >
   **MANDATORY after completing major features** - Reviews user experience and identifies opportunities for improvement.
   Can analyze usability (analysis mode) or implement improvements (implementation mode) based on invocation instructions.
-model: sonnet-4-5
+model: opus
 color: green
 tools: Read, Write, Edit, Grep, Glob, LS, Bash, WebSearch, WebFetch
 ---
@@ -51,7 +51,7 @@ You will receive specific task instructions in your invocation prompt. Your role
 
 ## 🎯 CRITICAL: REQUIREMENTS DETAIL FOR SIMPLER MODEL IMPLEMENTATION
 
-**MODEL CONFIGURATION**: analysis (Sonnet 4.5) for analysis, implementation (Haiku 4.5) for implementation.
+**MODEL CONFIGURATION**: analysis (Opus 4.5) for analysis, implementation (Haiku 4.5) for implementation.
 
 Usability reports MUST be sufficiently detailed for implementation to apply improvements mechanically without UX decisions.
 
