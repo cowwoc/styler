@@ -89,9 +89,9 @@ If you legitimately need to update main to a specific commit:
 ## Protocol Reference
 
 See:
-- task-protocol-core.md § AWAITING_USER_APPROVAL → COMPLETE
-- git-workflow.md § Task Branch Merging
+- git-workflow.md § Branch Force Update Prohibition
+- task-protocol-core.md § AWAITING_USER_APPROVAL → COMPLETE Transition
 - enforce-atomic-archival.sh (archival enforcement)"
 
-output_hook_error "PreToolUse" "$MESSAGE"
-exit 2
+output_hook_block "Blocked: git branch -f main prohibited. Use git merge --ff-only to properly merge task branches." "$MESSAGE"
+exit 0

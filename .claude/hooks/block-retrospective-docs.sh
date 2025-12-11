@@ -9,7 +9,7 @@ trap 'echo "ERROR in block-retrospective-docs.sh at line $LINENO: Command failed
 # PURPOSE: Prevent creation of retrospective documents that chronicle past
 #          decisions, fixes, or development processes
 #
-# ENFORCEMENT: Runs on PreToolUse (Write|Edit) before file creation
+# TRIGGER: PreToolUse (Write, Edit)
 #
 # POLICY: See CLAUDE.md § RETROSPECTIVE DOCUMENTATION POLICY
 #
@@ -19,6 +19,20 @@ trap 'echo "ERROR in block-retrospective-docs.sh at line $LINENO: Command failed
 # 3. Check CONTENT for retrospective indicators
 # 4. BLOCK if: path violation OR (filename + content violation)
 # 5. WARN if: filename violation without content confirmation
+#
+# EXCEPTIONS:
+# 1. README.md, changelog.md, todo.md (allowed files)
+# 2. .claude/retrospectives/*.json (structured skill output)
+# 3. .claude/skills/retrospective/ and learn-from-mistakes/ (skill files)
+# 4. /workspace/tasks/{task}/temp/ (TEMPORARY analysis during debugging)
+#    - ⚠️ CLEANUP REQUIRED: Must delete before task completion
+#    - Hook check-retrospective-due.sh enforces cleanup
+# 5. User explicitly requests documentation creation
+#
+# BLOCKED PATTERNS:
+# - mistakes/, lessons-learned/, postmortem/, decision-log/ directories
+# - Filenames: summary, analysis, retrospective, postmortem, lessons-learned
+# - Content: "What Was Implemented", "Lessons Learned", "Root Cause Analysis"
 
 # Source libraries
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -81,6 +95,24 @@ fi
 if [[ "$FILE_PATH" =~ \.claude/skills/retrospective/ ]] || \
    [[ "$FILE_PATH" =~ \.claude/skills/learn-from-mistakes/ ]]; then
     log_hook_success "block-retrospective-docs" "PreToolUse" "Retrospective/learn-from-mistakes skill file allowed"
+    exit 0
+fi
+
+# =============================================================================
+# TEMPORARY ANALYSIS EXCEPTION
+# =============================================================================
+# Allow temporary retrospective documentation in task temp directories
+# for analysis and debugging purposes. CLEANUP REQUIRED before task completion.
+#
+# Location: /workspace/tasks/{task}/temp/
+# Lifecycle: Must be deleted during AWAITING_USER_APPROVAL → COMPLETE transition
+# Enforcement: check-retrospective-due.sh validates cleanup
+
+if [[ "$FILE_PATH" =~ /workspace/tasks/[^/]+/temp/ ]]; then
+    log_hook_success "block-retrospective-docs" "PreToolUse" "Temporary task analysis file allowed (cleanup required)"
+    # Output warning to stderr so user knows cleanup is required
+    echo "⚠️ TEMPORARY ANALYSIS FILE: $FILE_PATH" >&2
+    echo "   CLEANUP REQUIRED: Delete before task completion" >&2
     exit 0
 fi
 

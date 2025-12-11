@@ -152,6 +152,91 @@ Typical task execution:
 ✅ No clarification questions from implementation mode to review mode
 ✅ Implementation matches requirements without re-analysis
 
+### Agent Invocation Modes {#agent-invocation-modes}
+
+Stakeholder agents operate in one of two modes based on task state and model parameter. The
+`.claude/hooks/validate-agent-invocation.sh` hook enforces these rules.
+
+**Mode Determination Logic**:
+
+```
+1. Check explicit model parameter in Task tool invocation:
+   - model: "haiku" → IMPLEMENTATION mode (updater)
+   - model: "opus"  → REQUIREMENTS/VALIDATION mode (reviewer)
+
+2. If no model specified, infer from current task state:
+   - State is REQUIREMENTS, VALIDATION, REVIEW → REQUIREMENTS/VALIDATION mode
+   - State is IMPLEMENTATION → IMPLEMENTATION mode
+```
+
+**State-Mode Validity Matrix**:
+
+| Task State | REQUIREMENTS/VALIDATION Mode (Opus) | IMPLEMENTATION Mode (Haiku) |
+|------------|-------------------------------------|------------------------------|
+| INIT | ❌ Invalid | ❌ Invalid |
+| CLASSIFIED | ❌ Invalid | ❌ Invalid |
+| REQUIREMENTS | ✅ Valid | ❌ Invalid |
+| SYNTHESIS | ⚠️ Allowed (unusual) | ❌ Invalid |
+| IMPLEMENTATION | ⚠️ Allowed (unusual) | ✅ Valid (ONLY here) |
+| VALIDATION | ✅ Valid | ❌ Invalid |
+| REVIEW | ✅ Valid | ❌ Invalid |
+| AWAITING_USER_APPROVAL | ❌ Invalid | ❌ Invalid |
+| COMPLETE | ❌ Invalid | ❌ Invalid |
+| CLEANUP | ❌ Invalid | ❌ Invalid |
+
+**Correct Invocation Examples**:
+
+```bash
+# REQUIREMENTS phase - Opus for analysis
+Task tool: architect
+  model: "opus"
+  prompt: "Analyze requirements and write {task}-architect-requirements.md"
+
+# IMPLEMENTATION phase - Haiku for code generation
+Task tool: architect
+  model: "haiku"
+  prompt: "Implement the core interfaces per requirements"
+
+# VALIDATION phase - Opus for review
+Task tool: architect
+  model: "opus"
+  prompt: "Review task branch changes for architectural compliance"
+```
+
+**Prohibited Invocation Patterns**:
+
+```bash
+# ❌ WRONG: Haiku in REQUIREMENTS phase
+Task tool: architect
+  model: "haiku"  # ← Will be blocked
+  prompt: "Analyze requirements..."
+# Hook blocks: IMPLEMENTATION mode agents require IMPLEMENTATION state
+
+# ❌ WRONG: No model in ambiguous state (SYNTHESIS)
+Task tool: architect
+  # No model specified in SYNTHESIS → ambiguous mode
+  prompt: "..."
+# Hook allows but logs as unusual - explicitly specify model
+
+# ❌ WRONG: Opus in IMPLEMENTATION state for code generation
+Task tool: architect
+  model: "opus"  # ← Wastes cost, allowed but defeats purpose
+  prompt: "Write the implementation code"
+# Not blocked, but wastes budget - use haiku for implementation
+```
+
+**Audit Agents (Exception)**:
+
+Audit agents (`process-recorder`, `process-compliance-reviewer`, `process-efficiency-reviewer`) can be
+invoked in ANY state without mode restrictions.
+
+**Hook Enforcement**:
+
+When violations are detected, `validate-agent-invocation.sh`:
+1. Blocks the invocation
+2. Logs violation to `/workspace/tasks/{task}/agent-invocation-violations.log`
+3. Displays state requirements and correct procedure
+
 ### Implementation Round Structure {#implementation-round-structure}
 
 **CRITICAL**: Implementation rounds use agents in BOTH review mode (Opus) and implementation mode (Haiku) in an iterative validation pattern.

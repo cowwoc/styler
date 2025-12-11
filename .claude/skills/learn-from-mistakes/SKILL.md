@@ -37,7 +37,105 @@ The natural instinct is to fix the problem first, then worry about prevention. T
 
 ---
 
-8-phase process:
+## LFM Phase Enforcement {#lfm-phase-enforcement}
+
+The `.claude/hooks/enforce-lfm-phases.sh` hook enforces the 3-phase workflow by blocking premature fixes.
+
+### Phase State Machine
+
+```
+NONE ──(skill invoked)──> INVESTIGATE ──(analysis complete)──> PREVENT ──(prevention implemented)──> FIX ──(fix applied)──> COMPLETE
+```
+
+| Phase | Allowed Actions | Blocked Actions |
+|-------|-----------------|-----------------|
+| **INVESTIGATE** | Read conversation logs, analyze root cause, identify triggering thought | ❌ Edit target source file |
+| **PREVENT** | Create hooks, update configs, write prevention mechanism | ❌ Edit target source file |
+| **FIX** | Edit target source file, apply immediate fix | (all allowed) |
+| **COMPLETE** | (workflow finished) | (all allowed) |
+
+### State File
+
+Phase state is tracked in: `/tmp/lfm_state_${SESSION_ID}.json`
+
+```json
+{
+  "phase": "INVESTIGATE|PREVENT|FIX|COMPLETE",
+  "mistake_id": "descriptive-id",
+  "target_file": "path/to/file/needing/fix.java"
+}
+```
+
+### Phase Transitions
+
+**To start LFM workflow** (invokes this skill):
+```bash
+echo '{"phase":"INVESTIGATE","mistake_id":"wrong-worktree","target_file":"src/Main.java"}' > /tmp/lfm_state_${SESSION_ID}.json
+```
+
+**To transition INVESTIGATE → PREVENT** (after root cause analysis):
+```bash
+jq '.phase = "PREVENT"' /tmp/lfm_state_${SESSION_ID}.json > /tmp/tmp.json && mv /tmp/tmp.json /tmp/lfm_state_${SESSION_ID}.json
+```
+
+**To transition PREVENT → FIX** (after prevention implemented):
+```bash
+jq '.phase = "FIX"' /tmp/lfm_state_${SESSION_ID}.json > /tmp/tmp.json && mv /tmp/tmp.json /tmp/lfm_state_${SESSION_ID}.json
+```
+
+**To complete workflow**:
+```bash
+echo '{"phase":"COMPLETE"}' > /tmp/lfm_state_${SESSION_ID}.json
+# Or remove state file
+rm /tmp/lfm_state_${SESSION_ID}.json
+```
+
+### Hook Behavior
+
+When you try to edit the target file before completing earlier phases:
+
+**In INVESTIGATE phase** (trying to fix):
+```
+❌ LEARN-FROM-MISTAKES PHASE VIOLATION
+
+You're trying to fix the source file before completing investigation.
+
+Current Phase: INVESTIGATE
+
+MANDATORY WORKFLOW:
+  1. INVESTIGATE → Gather evidence, identify root cause, find triggering thought
+  2. PREVENT     → Implement prevention mechanism (hook, validation, code fix)
+  3. FIX         → Only then fix the immediate issue
+```
+
+**In PREVENT phase** (trying to fix):
+```
+❌ LEARN-FROM-MISTAKES PHASE VIOLATION
+
+You're trying to fix the source file before implementing prevention.
+
+Prevention must be implemented BEFORE fixing. This ensures the same mistake
+cannot recur.
+
+PREVENTION HIERARCHY (choose highest applicable):
+  1. code_fix   - Fix broken tool/code (HIGHEST priority)
+  2. hook       - Automatic enforcement before/after execution
+  3. validation - Automatic detection after execution
+  4. config     - Documentation (LAST RESORT)
+```
+
+### Allowed Edits in All Phases
+
+The hook only blocks edits to the **target file** (the file containing the bug/mistake). These are always
+allowed:
+- Creating/editing hooks (`.claude/hooks/*.sh`)
+- Updating configuration (`.claude/settings.json`)
+- Editing documentation (`docs/**/*.md`, `CLAUDE.md`)
+- Modifying other source files not identified as the target
+
+---
+
+## 8-Phase Process
 
 1. **Mistake Identification** - Gather context
 2. **Conversation Analysis** - Review logs
@@ -367,6 +465,95 @@ jq -r --arg indicator "$MISTAKE" \
 3. **Wrong Choice Reason**: Documentation gaps, ambiguous instructions, misleading examples, insufficient validation
 
 ### Phase 4: Configuration Updates
+
+**⚠️ MANDATORY STEP 0: Policy Document Verification**
+
+**Before adding ANY enforcement mechanism (hook, validation, etc.), you MUST verify the policy document
+is correct.** Enforcement hooks cannot fix problems caused by incorrect or conflicting documentation.
+
+**Why This Step Exists**: Session audit found hooks that logged "BLOCKED" but didn't actually block because
+policy documentation conflicts prevented correct behavior. Specifically:
+- CLAUDE.md said "Preserves audit files" for CLEANUP state
+- task-protocol-operations.md said "Delete task directory" for CLEANUP state
+- Hooks enforced the operations.md version but Claude followed CLAUDE.md
+
+**Policy Verification Procedure**:
+
+1. **Identify the policy being enforced**:
+   - What behavior should the hook enforce?
+   - Where is this behavior documented? (CLAUDE.md, task-protocol-*.md, style-guide.md, etc.)
+
+2. **Search for existing policy**:
+   ```bash
+   # Search for the keyword/concept across all policy documents
+   grep -rn "CLEANUP\|task directory\|preserve\|delete" docs/project/ CLAUDE.md
+   ```
+
+3. **Check for policy problems** (any of these require documentation fix FIRST):
+
+   **A. Missing Policy** - Behavior not documented at all
+   - Search returns no relevant results
+   - Action: Write the policy in appropriate document BEFORE creating hook
+   - Without documented policy, Claude cannot know what behavior is expected
+
+   **B. Vague Policy** - Behavior mentioned but not clearly specified
+   - Documentation says "should" or "may" instead of "MUST"
+   - No concrete examples of correct/incorrect behavior
+   - Missing edge cases or boundary conditions
+   - Action: Clarify with explicit requirements, ✅/❌ examples, and edge cases
+
+   **C. Conflicting Policy** - Different documents disagree
+   - CLAUDE.md says one thing, detailed docs say another
+   - Action: Determine correct behavior, update all docs to be consistent
+
+   **D. Incomplete Policy** - Policy exists but missing critical details
+   - Says WHAT to do but not HOW or WHEN
+   - Missing error recovery guidance
+   - Action: Add missing details before enforcement
+
+4. **Fix documentation BEFORE creating hook**:
+   - Missing → Write complete policy with examples
+   - Vague → Add explicit requirements and ✅/❌ examples
+   - Conflicting → Resolve conflict, update all affected docs
+   - Incomplete → Add missing details (how, when, edge cases)
+   - Commit documentation fix separately from hook implementation
+
+**Example - WRONG Approach**:
+```
+# Policy conflict exists:
+# - CLAUDE.md: "Preserves audit files during CLEANUP"
+# - operations.md: "Delete task directory during CLEANUP"
+
+# ❌ WRONG: Create hook to enforce deletion without fixing CLAUDE.md
+# Result: Claude follows CLAUDE.md, hook "blocks" but agent doesn't understand why
+```
+
+**Example - CORRECT Approach**:
+```
+# Policy conflict exists - FIX DOCUMENTATION FIRST:
+
+# Step 1: Determine correct behavior (operations.md is correct)
+# Step 2: Update CLAUDE.md to match
+Edit CLAUDE.md: Change "Preserves audit files" to "Delete task directory"
+
+# Step 3: NOW create enforcement hook
+# Hook will work because documentation and enforcement are aligned
+```
+
+**Output Required Before Proceeding**:
+```
+POLICY VERIFICATION:
+- Behavior being enforced: <description>
+- Policy documents checked: <list-of-files>
+- Policy status: MISSING | VAGUE | CONFLICTING | INCOMPLETE | COMPLETE
+- If not COMPLETE:
+  - Problem: <specific issue found>
+  - Fix applied: <what was added/clarified/resolved>
+  - Documentation commit: <commit-hash>
+- Ready for enforcement: YES/NO
+```
+
+---
 
 **⚠️ CRITICAL: Prevention Hierarchy (MANDATORY)**
 

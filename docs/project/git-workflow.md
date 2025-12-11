@@ -121,6 +121,58 @@ git status  # Must show "nothing to commit, working tree clean"
 
 **See Also**: main-agent-coordination.md § VALIDATION State Exit Requirements
 
+## Push Workflow {#push-workflow}
+
+### Branch Push Policy
+
+**Only the `main` branch should be pushed to remote origin.** Task and agent branches are local workspaces.
+
+| Branch Type | Push to Origin | Rationale |
+|-------------|----------------|-----------|
+| `main` | ✅ Allowed | Primary development branch |
+| `v{N}` (version branches) | ✅ Allowed | Release markers |
+| Task branches (e.g., `implement-api`) | ❌ Blocked | Temporary local workspace |
+| Agent branches (e.g., `implement-api-architect`) | ❌ Blocked | Agent-specific workspace |
+
+### Enforcement
+
+The hook `.claude/hooks/block-task-branch-push.sh` automatically blocks pushing branches that match task
+patterns:
+- Prefixes: `implement-`, `add-`, `fix-`, `refactor-`, `update-`, `create-`
+- Suffixes: `-architect`, `-engineer`, `-formatter`, `-tester`, `-optimizer`, `-hacker`
+
+### Correct Workflow
+
+```bash
+# 1. Complete work on task branch (LOCAL)
+cd /workspace/tasks/implement-api/code
+# ... make changes, commit locally ...
+
+# 2. Squash commits into single commit
+git rebase -i main
+
+# 3. Merge to main with --ff-only
+cd /workspace/main
+git merge --ff-only implement-api
+
+# 4. Push main to origin
+git push origin main
+
+# 5. Cleanup: Delete local task branches
+git branch -D implement-api implement-api-architect implement-api-formatter
+```
+
+### Bypass (When Necessary)
+
+If you explicitly need to push a task branch (e.g., for backup or collaboration):
+
+```bash
+# Explicitly bypass the check
+git push origin implement-api --force
+```
+
+**Note**: This should be rare. Task branches are designed as temporary local workspaces.
+
 ## Commit Squashing Procedures {#commit-squashing-procedures}
 
 ### Overview {#overview}
@@ -280,6 +332,38 @@ git branch | grep "task-branch-" | xargs -r git branch -D  # Delete agent branch
 ```
 
 See: [task-protocol-operations.md § CLEANUP](task-protocol-operations.md#cleanup-final-state) for complete task protocol cleanup procedure.
+
+### Branch Force Update Prohibition {#branch-force-update-prohibition}
+
+**CRITICAL**: Direct manipulation of the `main` branch pointer is PROHIBITED.
+
+**Blocked Operations**:
+```bash
+# ❌ PROHIBITED - Bypasses merge workflow
+git branch -f main HEAD
+git branch -f main <commit>
+git branch --force main <any-ref>
+```
+
+**Why This Is Blocked**:
+1. **Bypasses archival verification** - todo.md and changelog.md updates not validated
+2. **Circumvents pre-merge hooks** - No enforcement of commit squashing or approval flags
+3. **Creates inconsistent state** - Post-merge cleanup hooks never triggered
+4. **Breaks audit trail** - Task completion not properly recorded
+
+**Correct Approach**:
+```bash
+# ✅ CORRECT - Use merge workflow
+cd /workspace/main
+git merge --ff-only <task-branch>
+```
+
+**If You Need to Update Main to Specific Commit**:
+1. Create a branch at that commit: `git checkout -b temp-branch <commit>`
+2. Merge with validation: `git checkout main && git merge --ff-only temp-branch`
+3. This triggers all validation hooks
+
+**Enforcement**: `.claude/hooks/block-branch-force-update.sh` blocks these operations at PreToolUse.
 
 ## Interactive Rebase (PRIMARY METHOD) {#interactive-rebase-primary-method}
 
@@ -1132,6 +1216,118 @@ Avoid this procedure when:
 - The intermediate commits are closely related to the squashed commits
 - The commit history is complex with many merge commits
 - Working on shared branches with multiple contributors
+
+## Git History Rewriting Safety {#git-history-rewriting-safety}
+
+### Overview
+
+Git history rewriting commands (`git filter-branch`, `git rebase`, `git reset`) are powerful but dangerous.
+Incorrect usage can permanently destroy commits across multiple branches, including protected version branches.
+
+### Protected Branch Pattern
+
+**Version branches MUST NEVER be affected by history rewriting operations.**
+
+```bash
+# Pattern: v followed by digits (v1, v13, v21, etc.)
+PATTERN="^v[0-9]+$"
+
+# Check for version branches before any history operation
+git branch | grep -E "^  v[0-9]+"
+```
+
+### Prohibited Patterns
+
+**NEVER use these flags with history-rewriting commands:**
+
+```bash
+# ❌ PROHIBITED - Affects ALL branches including version branches
+git filter-branch --all ...
+git filter-branch --branches ...
+git rebase -i HEAD~10 --all
+
+# ❌ PROHIBITED - Global operations without branch targeting
+git filter-branch -- --all
+git filter-branch --index-filter 'command' -- --all
+```
+
+### Required Safety Procedures
+
+**Before ANY history-rewriting operation:**
+
+```bash
+# Step 1: Document current branch state
+git branch -v > /tmp/branch-state-before.txt
+
+# Step 2: Identify protected version branches
+VERSION_BRANCHES=$(git branch | grep -E "^  v[0-9]+" | wc -l)
+echo "Found $VERSION_BRANCHES protected version branches"
+
+# Step 3: Verify target is specific branch, not --all
+# ✅ CORRECT: Target specific branch
+git filter-branch --tree-filter 'command' main
+
+# ❌ WRONG: Target all branches
+git filter-branch --tree-filter 'command' --all
+```
+
+### Safe History Rewriting Examples
+
+**Filter-branch (remove file from history):**
+
+```bash
+# ✅ CORRECT - Targets only main branch
+git filter-branch --force --index-filter \
+  'git rm --cached --ignore-unmatch path/to/sensitive-file' \
+  --prune-empty -- main
+
+# ❌ WRONG - Would affect all branches including v1, v13, v21
+git filter-branch --force --index-filter \
+  'git rm --cached --ignore-unmatch path/to/sensitive-file' \
+  --prune-empty -- --all
+```
+
+**Rebase (squash commits):**
+
+```bash
+# ✅ CORRECT - Interactive rebase on current branch only
+git checkout feature-branch
+git rebase -i main
+
+# ❌ WRONG - Never rebase version branches
+git checkout v21
+git rebase -i main  # PROHIBITED - corrupts version marker
+```
+
+### Pre-Operation Checklist
+
+Before executing any history-rewriting command:
+
+1. **Verify current branch**: `git branch --show-current`
+2. **List all branches**: `git branch -a`
+3. **Identify version branches**: `git branch | grep -E "^  v[0-9]+"`
+4. **Confirm command targets specific branch** (not `--all` or `--branches`)
+5. **Create backup**: `git checkout -b backup-$(date +%Y%m%d-%H%M%S)`
+
+### Recovery Procedures
+
+**If version branches are accidentally modified:**
+
+```bash
+# Check reflog for original commit
+git reflog show v21
+
+# Restore version branch to original commit
+git branch -f v21 <original-commit-sha>
+
+# Verify restoration
+git log --oneline v21 -1
+```
+
+### Enforcement
+
+The hook `.claude/hooks/validate-git-filter-branch.sh` blocks commands containing `--all` or `--branches`
+flags to prevent accidental corruption of version branches.
 
 ---
 

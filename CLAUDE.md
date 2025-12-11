@@ -94,7 +94,7 @@ quality/refactoring; tester = test strategy/coverage)
      {task-name}-formatter`
    - Remove all worktrees: `git worktree remove /workspace/tasks/{task-name}/code` and agent worktrees
    - Verify cleanup: `git branch | grep {task-name}` should return nothing
-   - Preserves: Task directory with audit files (task.json, task.md, approval flags)
+   - **Delete task directory**: `rm -rf /workspace/tasks/{task-name}` (audit trail in git history)
    - Reference: [task-protocol-core.md § COMPLETE → CLEANUP
      Transition](docs/project/task-protocol-core.md#complete-cleanup-transition)
 
@@ -716,7 +716,14 @@ analysis files (4) Explaining architecture: Update existing docs, not new retros
 "Write up the comparison...", task in todo.md specifically requires documentation, forward-looking
 architecture/API/design docs (how system works, not how it was built)
 
-**Enforcement**: Hooks block retrospective patterns
+**TEMPORARY ANALYSIS EXCEPTION**: During complex debugging or analysis, you MAY create temporary
+retrospective documents in `/workspace/tasks/{task}/temp/` for working notes.
+- **Location**: ONLY `/workspace/tasks/{task-name}/temp/` directory
+- **Cleanup**: MUST delete before AWAITING_USER_APPROVAL → COMPLETE transition
+- **Enforcement**: `check-retrospective-due.sh` validates cleanup before task completion
+- **Warning**: Hook outputs cleanup reminder when creating temp files
+
+**Enforcement**: Hooks block retrospective patterns; `block-retrospective-docs.sh` enforces policy
 
 ## 🔧 MANDATORY MISTAKE HANDLING
 

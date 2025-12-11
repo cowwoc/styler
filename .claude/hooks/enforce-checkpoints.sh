@@ -5,16 +5,14 @@
 # CHECKPOINTS ENFORCED:
 # 1. SYNTHESIS → IMPLEMENTATION (after plan presentation)
 # 2. AWAITING_USER_APPROVAL → COMPLETE (after REVIEW with unanimous approval)
-# 3. POST_IMPLEMENTATION merge (after agent implementations complete)
 #
 # TRIGGERS: UserPromptSubmit, PreToolUse (via .claude/settings.json)
-# CHECKS: State transitions and git merge operations requiring user approval
+# CHECKS: State transitions requiring user approval
 # ACTION: Blocks operations and displays checkpoint requirements if approval missing
 #
 # Related Protocol Sections:
 # - task-protocol-core.md § SYNTHESIS → IMPLEMENTATION
-# - task-protocol-core.md § POST_IMPLEMENTATION
-# - CLAUDE.md § CRITICAL PROTOCOL VIOLATIONS
+# - CLAUDE.md § MANDATORY USER APPROVAL CHECKPOINTS
 
 set -euo pipefail
 
@@ -263,7 +261,7 @@ See: /workspace/main/docs/project/task-protocol-core.md § CHANGE REVIEW checkpo
 fi
 
 # =============================================================================
-# CHECKPOINT 2: POST_IMPLEMENTATION merge approval (PreToolUse trigger)
+# PreToolUse: Git merge detection (delegates to other hooks)
 # =============================================================================
 if [[ "$TRIGGER_TYPE" == "PreToolUse" ]]; then
 	# Only enforce on Bash tool with git merge commands
@@ -300,31 +298,8 @@ if [[ "$TRIGGER_TYPE" == "PreToolUse" ]]; then
 		exit 0
 	fi
 
-	STATE=$(jq -r '.state // empty' "$TASK_JSON")
-
-	# Require approval for merges in IMPLEMENTATION state
-	if [[ "$STATE" == "IMPLEMENTATION" ]]; then
-		APPROVAL_FLAG="/workspace/tasks/$TASK_NAME/user-approved-merge.flag"
-
-		if [[ ! -f "$APPROVAL_FLAG" ]]; then
-			log_hook_blocked "enforce-checkpoints" "PreToolUse" "Task $TASK_NAME: git merge without user approval"
-
-			echo "⚠️  CHECKPOINT REQUIRED: Agent implementation merge" >&2
-			echo "" >&2
-			echo "Before merging agent implementations, you MUST:" >&2
-			echo "1. Review agent outputs for quality and completeness" >&2
-			echo "2. Obtain user approval for merge" >&2
-			echo "3. Create approval flag file" >&2
-			echo "" >&2
-			echo "To approve merge after user approval:" >&2
-			echo "  touch /workspace/tasks/$TASK_NAME/user-approved-merge.flag" >&2
-			echo "" >&2
-			echo "See: /workspace/main/CLAUDE.md § POST_IMPLEMENTATION Checkpoint" >&2
-			exit 2
-		fi
-	fi
-
-	log_hook_success "enforce-checkpoints" "PreToolUse" "Task $TASK_NAME: git merge approved"
+	# git merge in task context - no additional checkpoint needed here
+	# (merge workflow is enforced by enforce-merge-workflow.sh and enforce-commit-squashing.sh)
 	exit 0
 fi
 
