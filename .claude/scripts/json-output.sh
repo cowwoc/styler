@@ -31,12 +31,48 @@ output_hook_warning() {
 	output_hook_message "$event" "$message"
 }
 
-# Output hook error message
+# Output hook error message (does NOT block - use output_hook_block to block)
 # Args: event_name message_content
 output_hook_error() {
 	local event="$1"
 	local message="$2"
 	output_hook_message "$event" "$message"
+}
+
+# Output hook block message and deny permission (PreToolUse hooks ONLY)
+# This ACTUALLY BLOCKS the action via Claude Code's permission system
+#
+# Args: reason_for_claude [user_message]
+#   reason_for_claude: Shown to Claude to explain why blocked (keep concise)
+#   user_message: Optional detailed message shown to user (defaults to reason)
+#
+# CRITICAL: Caller MUST exit 0 after calling this function
+# Usage: output_hook_block "Blocked: policy violation" "$DETAILED_MESSAGE"; exit 0
+#
+# How it works:
+# - JSON with permissionDecision goes to stdout (processed by Claude Code)
+# - User-visible message goes to stderr (displayed to user)
+# - Exit code 0 required for JSON processing (exit 2 ignores JSON)
+output_hook_block() {
+	local reason="$1"
+	local user_message="${2:-$reason}"
+
+	# Output detailed message to stderr for user visibility
+	if [[ -n "$user_message" ]]; then
+		echo "$user_message" >&2
+	fi
+
+	# Output JSON permission denial to stdout with proper structure
+	# CRITICAL: Must go to stdout with exit 0 for Claude Code to process
+	jq -n \
+		--arg reason "$reason" \
+		'{
+			"hookSpecificOutput": {
+				"hookEventName": "PreToolUse",
+				"permissionDecision": "deny",
+				"permissionDecisionReason": $reason
+			}
+		}'
 }
 
 # Output JSON error message and exit

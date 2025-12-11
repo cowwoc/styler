@@ -10,8 +10,9 @@ trap 'echo "ERROR in require-task-protocol.sh at line $LINENO: Command failed: $
 # Purpose: Enforce protocol-scope-specification.md rules
 # Consolidates: detect-main-agent-implementation.sh, validate-lock-location.sh
 
-# Source helper library
+# Source helper libraries
 source /workspace/main/.claude/hooks/lib/pattern-matcher.sh
+source /workspace/.claude/scripts/json-output.sh
 
 # Parse stdin JSON for tool invocation details
 TOOL_INPUT=$(cat)
@@ -90,7 +91,9 @@ This is Category B work (requires task protocol):
    - Build files → Category A, should have been allowed
    - Contact user if you believe this is incorrectly blocked
 EOF
-		exit 2  # Block
+		# Use proper permission system
+		output_hook_block "Blocked: Protocol required for Category B work. Initialize task.json first."
+		exit 0
 	fi
 
 	# Unknown/edge case - allow with warning
@@ -158,7 +161,9 @@ You skipped: INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS states entirely.
    rm $TASK_JSON
    # Then follow protocol from INIT state
 EOF
-			exit 2
+			# Use proper permission system
+			output_hook_block "Blocked: State sequence skipped. task.json created with IMPLEMENTATION without going through required states."
+			exit 0
 		fi
 
 		# Verify transition log contains all required states
@@ -194,7 +199,9 @@ Each state serves a critical purpose:
 
 📖 See: task-protocol-core.md § State Definitions
 EOF
-				exit 2
+				# Use proper permission system
+				output_hook_block "Blocked: Skipped required state $required_state in state progression."
+				exit 0
 			fi
 		done
 		;;
@@ -246,7 +253,9 @@ Operation: $TOOL_NAME
    3. Merge agent work:
       git merge $TASK_NAME-{agent-name}
 EOF
-		exit 2  # Block
+		# Use proper permission system
+		output_hook_block "Blocked: Main agent cannot create source files in IMPLEMENTATION state. Delegate to stakeholder agents."
+		exit 0
 	fi
 fi
 
@@ -267,7 +276,9 @@ NOT inside subdirectories like:
 
 📖 See: CLAUDE.md § Locks
 EOF
-	exit 2  # Block
+	# Use proper permission system
+	output_hook_block "Blocked: Invalid task.json location. Must be at task root: /workspace/tasks/{task-name}/task.json"
+	exit 0
 fi
 
 # All checks passed

@@ -20,6 +20,9 @@
 set -euo pipefail
 trap 'echo "ERROR in tdd-bash-guard.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
 
+# Source helper for proper hook blocking
+source /workspace/.claude/scripts/json-output.sh
+
 # Read stdin for hook context
 INPUT=$(cat)
 
@@ -97,8 +100,9 @@ To proceed, you MUST invoke the tdd-implementation skill first:
 
 ═══════════════════════════════════════════════════════════════════════════════
 EOF
-                echo '{"decision": "block", "reason": "TDD mode required for modifying production Java via Bash."}'
-                exit 2
+                # Use proper permission system
+                output_hook_block "Blocked: TDD mode required for modifying production Java via Bash. Invoke tdd-implementation skill first." ""
+                exit 0
             fi
 
             # TDD mode active but verify phase
@@ -120,8 +124,9 @@ Before modifying production code, you MUST:
 
 ═══════════════════════════════════════════════════════════════════════════════
 EOF
-                echo '{"decision": "block", "reason": "TDD RED phase: Test must fail before modifying production code."}'
-                exit 2
+                # Use proper permission system
+                output_hook_block "Blocked: TDD RED phase - test must fail before modifying production code. Verify test failure first." ""
+                exit 0
             fi
         fi
         break
