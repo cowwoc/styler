@@ -1,6 +1,7 @@
 package io.github.cowwoc.styler.formatter.whitespace.internal;
 
 import io.github.cowwoc.styler.formatter.TransformationContext;
+import io.github.cowwoc.styler.formatter.internal.SourceCodeUtils;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 
 import java.util.List;
@@ -69,7 +70,7 @@ public final class WhitespaceFixer
 				continue;
 			if (isEndOfBlockComment(str, i))
 				continue;
-			if (isInLiteralOrComment(str, i))
+			if (SourceCodeUtils.isInLiteralOrComment(str, i))
 				continue;
 
 			// Fix increment/decrement operator spacing (must be before binary operators)
@@ -514,83 +515,6 @@ public final class WhitespaceFixer
 	}
 
 	/**
-	 * Checks if a position is inside a literal or comment.
-	 *
-	 * @param sourceCode the source code
-	 * @param position the position
-	 * @return true if position is in literal or comment
-	 */
-	private static boolean isInLiteralOrComment(String sourceCode, int position)
-	{
-		boolean inStringLiteral = false;
-		boolean inCharLiteral = false;
-		boolean inLineComment = false;
-		boolean inBlockComment = false;
-
-		for (int i = 0; i < position; ++i)
-		{
-			char current = sourceCode.charAt(i);
-			char next;
-			if (i + 1 < sourceCode.length())
-				next = sourceCode.charAt(i + 1);
-			else
-				next = '\0';
-
-			if (inLineComment)
-			{
-				if (current == '\n')
-					inLineComment = false;
-				continue;
-			}
-
-			if (inBlockComment)
-			{
-				if (current == '*' && next == '/')
-				{
-					inBlockComment = false;
-					++i;
-				}
-				continue;
-			}
-
-			if (inStringLiteral)
-			{
-				if (current == '\\' && next == '"')
-					++i;
-				else if (current == '"')
-					inStringLiteral = false;
-				continue;
-			}
-
-			if (inCharLiteral)
-			{
-				if (current == '\\' && next == '\'')
-					++i;
-				else if (current == '\'')
-					inCharLiteral = false;
-				continue;
-			}
-
-			if (current == '"')
-				inStringLiteral = true;
-			else if (current == '\'')
-				inCharLiteral = true;
-			else if (current == '/' && next == '/')
-			{
-				inLineComment = true;
-				++i;
-			}
-			else if (current == '/' && next == '*')
-			{
-				inBlockComment = true;
-				++i;
-			}
-		}
-
-		return inStringLiteral || inCharLiteral || inLineComment || inBlockComment;
-	}
-
-	/**
 	 * Checks if position is part of a no-space operator (like {@code ++}, {@code --}, {@code ::}).
 	 *
 	 * @param sourceCode the source code
@@ -673,10 +597,11 @@ public final class WhitespaceFixer
 				return false;
 		}
 
-		return current == '+' || current == '-' || current == '*' || current == '/' ||
-			current == '%' || current == '&' || current == '|' || current == '^' ||
-			current == '<' || current == '>' || current == '=' || current == ':' ||
-			current == '?';
+		return switch (current)
+		{
+			case '+', '-', '*', '/', '%', '&', '|', '^', '<', '>', '=', ':', '?' -> true;
+			default -> false;
+		};
 	}
 
 	/**
