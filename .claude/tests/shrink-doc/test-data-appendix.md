@@ -90,8 +90,8 @@ git branch -D backup-before-cherrypick-*
 
 **Actual Agent Responses** (all 4 combinations identical):
 
-- Sonnet + Structured: ✅ Provided exact 4-step procedure
-- Sonnet + Flat: ✅ Provided exact 4-step procedure
+- Opus + Structured: ✅ Provided exact 4-step procedure
+- Opus + Flat: ✅ Provided exact 4-step procedure
 - Haiku + Structured: ✅ Provided exact 4-step procedure
 - Haiku + Flat: ✅ Provided exact 4-step procedure
 
@@ -117,8 +117,8 @@ Should this method have `@return` documentation?
 **Expected Answer**: YES - Methods returning non-void must document return value. Should add `@return true if input is valid, false otherwise`
 
 **Actual Responses**:
-- Sonnet + Structured: ✅ "YES - must document return value, cite requirement: non-void methods require @return"
-- Sonnet + Flat: ✅ "YES - must document return value, methods returning boolean need @return documentation"
+- Opus + Structured: ✅ "YES - must document return value, cite requirement: non-void methods require @return"
+- Opus + Flat: ✅ "YES - must document return value, methods returning boolean need @return documentation"
 - Haiku + Structured: ✅ "YES - @return required for non-void methods per JavaDoc requirements"
 - Haiku + Flat: ✅ "YES - boolean return needs @return documentation explaining true/false conditions"
 
@@ -142,8 +142,8 @@ Does this JavaDoc follow the manual authoring requirement?
 **Expected Answer**: NO - Getter/setter documentation is PROHIBITED (manual authoring requirement). This is mechanical documentation that should be auto-generated or omitted.
 
 **Actual Responses**:
-- Sonnet + Structured: ✅ "NO - violates manual authoring requirement, getter documentation is mechanical"
-- Sonnet + Flat: ✅ "NO - prohibited pattern, getters should not have manual JavaDoc"
+- Opus + Structured: ✅ "NO - violates manual authoring requirement, getter documentation is mechanical"
+- Opus + Flat: ✅ "NO - prohibited pattern, getters should not have manual JavaDoc"
 - Haiku + Structured: ✅ "NO - getter documentation is mechanical, violates manual authoring rule"
 - Haiku + Flat: ✅ "NO - this is prohibited mechanical documentation per manual authoring requirement"
 
@@ -156,8 +156,8 @@ Does this JavaDoc follow the manual authoring requirement?
 **Expected Answer**: Private methods and test methods are exempt from JavaDoc requirements.
 
 **Actual Responses**:
-- Sonnet + Structured: ✅ "Private methods and test methods" (cited section on exemptions)
-- Sonnet + Flat: ✅ "Private methods and test methods are exempt" (found via search)
+- Opus + Structured: ✅ "Private methods and test methods" (cited section on exemptions)
+- Opus + Flat: ✅ "Private methods and test methods are exempt" (found via search)
 - Haiku + Structured: ✅ "Private and test methods exempt from JavaDoc"
 - Haiku + Flat: ✅ "Test methods and private methods don't require JavaDoc"
 
@@ -168,8 +168,8 @@ Does this JavaDoc follow the manual authoring requirement?
 **Expected Answer**: Never acceptable to omit @param for public/protected methods. All parameters must be documented.
 
 **Actual Responses**:
-- Sonnet + Structured: ✅ "Never - all params require documentation for public/protected methods"
-- Sonnet + Flat: ✅ "Not acceptable to omit @param, all parameters must be documented"
+- Opus + Structured: ✅ "Never - all params require documentation for public/protected methods"
+- Opus + Flat: ✅ "Not acceptable to omit @param, all parameters must be documented"
 - Haiku + Structured: ✅ "Must document all parameters, no exemption for @param"
 - Haiku + Flat: ✅ "Never omit @param, required for all parameters in public methods"
 
@@ -188,8 +188,8 @@ Does this JavaDoc follow the manual authoring requirement?
 **Expected Answer**: Wait or select alternative task. Cannot proceed with main worktree modifications without acquiring main lock, and lock is owned by different session.
 
 **Actual Responses**:
-- Sonnet + Structured: ✅ "Cannot proceed - lock owned by different session (abc-123 vs xyz-789). Must wait for lock release or work on different task."
-- Sonnet + Flat: ✅ "Must wait or choose another task. Lock is held by another session, cannot modify main worktree."
+- Opus + Structured: ✅ "Cannot proceed - lock owned by different session (abc-123 vs xyz-789). Must wait for lock release or work on different task."
+- Opus + Flat: ✅ "Must wait or choose another task. Lock is held by another session, cannot modify main worktree."
 - Haiku + Structured: ✅ "Wait for lock or select different task. Lock owned by abc-123, your session xyz-789 cannot acquire."
 - Haiku + Flat: ✅ "Cannot acquire lock owned by different session. Must wait or work elsewhere."
 
@@ -204,8 +204,8 @@ Does this JavaDoc follow the manual authoring requirement?
 **Expected Answer**: No, cannot skip SYNTHESIS state. Protocol requires INIT→CLASSIFIED→REQUIREMENTS→SYNTHESIS→IMPLEMENTATION. Must synthesize requirements into implementation plan first.
 
 **Actual Responses**:
-- Sonnet + Structured: ✅ "No - cannot skip SYNTHESIS. Must follow sequence REQUIREMENTS→SYNTHESIS→IMPLEMENTATION. Need to synthesize requirements first."
-- Sonnet + Flat: ✅ "Cannot skip SYNTHESIS state. Protocol requires synthesis of requirements before implementation."
+- Opus + Structured: ✅ "No - cannot skip SYNTHESIS. Must follow sequence REQUIREMENTS→SYNTHESIS→IMPLEMENTATION. Need to synthesize requirements first."
+- Opus + Flat: ✅ "Cannot skip SYNTHESIS state. Protocol requires synthesis of requirements before implementation."
 - Haiku + Structured: ✅ "No - SYNTHESIS is mandatory between REQUIREMENTS and IMPLEMENTATION. Must create implementation plan."
 - Haiku + Flat: ✅ "Must go through SYNTHESIS. Cannot jump from REQUIREMENTS directly to IMPLEMENTATION."
 
@@ -218,8 +218,8 @@ Does this JavaDoc follow the manual authoring requirement?
 **Expected Answer**: Yes, must acquire main lock before ANY git operations on main branch. Prohibited to run git operations on main branch without main lock.
 
 **Actual Responses**:
-- Sonnet + Structured: ✅ "Yes - main lock required before ANY git operations on main. Found in lock management requirements."
-- Sonnet + Flat: ✅ "Must acquire main lock first. Prohibited to run git ops on main without lock."
+- Opus + Structured: ✅ "Yes - main lock required before ANY git operations on main. Found in lock management requirements."
+- Opus + Flat: ✅ "Must acquire main lock first. Prohibited to run git ops on main without lock."
 - Haiku + Structured: ✅ "Yes - main lock mandatory for git operations on main branch."
 - Haiku + Flat: ✅ "Main lock required. Cannot run git commands on main without acquiring lock."
 
@@ -230,8 +230,8 @@ Does this JavaDoc follow the manual authoring requirement?
 **Expected Answer**: transition_log field in lock file. Entry guards verify complete state sequence before allowing state transitions.
 
 **Actual Responses**:
-- Sonnet + Structured: ✅ "transition_log in lock file. Entry guards validate complete sequence."
-- Sonnet + Flat: ✅ "transition_log field ensures no states skipped. Guards check sequence."
+- Opus + Structured: ✅ "transition_log in lock file. Entry guards validate complete sequence."
+- Opus + Flat: ✅ "transition_log field ensures no states skipped. Guards check sequence."
 - Haiku + Structured: ✅ "Lock file transition_log validates state sequence progression."
 - Haiku + Flat: ✅ "transition_log tracks all transitions, guards verify completeness."
 
@@ -254,7 +254,7 @@ Does this JavaDoc follow the manual authoring requirement?
 
 **Actual Responses** (all provided comprehensive recovery):
 
-Sonnet + Structured:
+Opus + Structured:
 ```
 Damage: Critical protocol violation - mutual exclusion broken. Other session (abc-123)
 may experience race conditions if both modify main worktree simultaneously.
@@ -274,7 +274,7 @@ Prevention: Must verify lock ownership before ANY lock operations:
 Cite: Lock ownership verification requirement
 ```
 
-Sonnet + Flat: ✅ Similar comprehensive answer
+Opus + Flat: ✅ Similar comprehensive answer
 Haiku + Structured: ✅ Similar comprehensive answer
 Haiku + Flat: ✅ Similar comprehensive answer
 
@@ -329,8 +329,8 @@ All 4 combinations provided:
 **Expected Answer**: Complexity 12 is "concerning" (10-15 range, should consider refactoring). Length 45 lines is "acceptable" (<50). Should consider refactoring to reduce complexity below 10.
 
 **Actual Responses**:
-- Sonnet + Structured: ✅ "Concerning complexity (12 in 10-15 range), acceptable length (45<50). Consider refactoring complexity."
-- Sonnet + Flat: ✅ "Should refactor - complexity 12 exceeds ideal (<10). Length acceptable."
+- Opus + Structured: ✅ "Concerning complexity (12 in 10-15 range), acceptable length (45<50). Consider refactoring complexity."
+- Opus + Flat: ✅ "Should refactor - complexity 12 exceeds ideal (<10). Length acceptable."
 - Haiku + Structured: ✅ "Complexity concerning per thresholds (10-15). Length OK. Refactor recommended."
 - Haiku + Flat: ✅ "12 is concerning complexity. 45 lines acceptable. Should reduce to <10."
 
@@ -488,8 +488,8 @@ git branch -D backup-before-rebase-*
 
 | Model | Format | Scenarios | Correct | Accuracy |
 |-------|--------|-----------|---------|----------|
-| Sonnet 4.5 | Structured | 75 | 75 | 100% |
-| Sonnet 4.5 | Flat | 75 | 75 | 100% |
+| Opus 4.5 | Structured | 75 | 75 | 100% |
+| Opus 4.5 | Flat | 75 | 75 | 100% |
 | Haiku 4.5 | Structured | 75 | 75 | 100% |
 | Haiku 4.5 | Flat | 75 | 75 | 100% |
 
@@ -519,11 +519,11 @@ Use the question formats shown above:
 ### Step 4: Test All Combinations
 
 ```bash
-# Test 1: Sonnet + Structured
-Task(model="sonnet", prompt="Read structured.md, answer questions in test-task.md")
+# Test 1: Opus + Structured
+Task(model="opus", prompt="Read structured.md, answer questions in test-task.md")
 
-# Test 2: Sonnet + Flat
-Task(model="sonnet", prompt="Read flat.md, answer questions in test-task.md")
+# Test 2: Opus + Flat
+Task(model="opus", prompt="Read flat.md, answer questions in test-task.md")
 
 # Test 3: Haiku + Structured
 Task(model="haiku", prompt="Read structured.md, answer questions in test-task.md")

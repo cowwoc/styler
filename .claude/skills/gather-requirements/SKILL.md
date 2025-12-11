@@ -206,17 +206,17 @@ Assistant: Invoking all stakeholder agents for requirements gathering...
 Task tool call #1:
 - subagent_type: architect
 - prompt: [architect prompt with REQUIREMENTS emphasis]
-- model: sonnet
+- model: opus
 
 Task tool call #2:
 - subagent_type: tester
 - prompt: [tester prompt with REQUIREMENTS emphasis]
-- model: sonnet
+- model: opus
 
 Task tool call #3:
 - subagent_type: formatter
 - prompt: [formatter prompt with REQUIREMENTS emphasis]
-- model: sonnet
+- model: opus
 ```
 
 **Result**: All agents start work concurrently, requirements gathered in parallel.
