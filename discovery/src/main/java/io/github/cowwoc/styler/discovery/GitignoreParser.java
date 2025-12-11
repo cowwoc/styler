@@ -96,7 +96,7 @@ public final class GitignoreParser
 	private GitignoreRule parseLine(String line, int lineNumber)
 	{
 		// Handle empty lines and comments
-		String trimmed = line.trim();
+		String trimmed = line.strip();
 		if (trimmed.isEmpty() || trimmed.startsWith("#"))
 		{
 			return null;
@@ -109,7 +109,7 @@ public final class GitignoreParser
 		if (pattern.startsWith("!"))
 		{
 			negation = true;
-			pattern = pattern.substring(1).trim();
+			pattern = pattern.substring(1);
 		}
 
 		// Handle directory-only patterns
