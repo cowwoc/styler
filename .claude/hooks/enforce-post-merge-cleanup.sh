@@ -49,7 +49,19 @@ fi
 log_hook_start "enforce-post-merge-cleanup" "PostToolUse"
 
 # Extract branch that was merged (handles --ff-only flag before branch name)
+# Only process single-line commands to avoid matching grep output or multi-line scripts
+if [[ $(echo "$COMMAND" | wc -l) -gt 1 ]]; then
+	# Multi-line command - likely a script or search, not an actual merge
+	exit 0
+fi
+
 MERGE_BRANCH=$(echo "$COMMAND" | sed -E 's/.*git[[:space:]]+merge[[:space:]]+(--[^[:space:]]+[[:space:]]+)*([^[:space:]]+).*/\2/')
+
+# Validate branch name doesn't contain special characters (sanity check)
+if [[ ! "$MERGE_BRANCH" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+	# Invalid branch name extracted, likely a false positive match
+	exit 0
+fi
 
 # Create pending cleanup marker for verification hook
 PENDING_CLEANUP_DIR="/tmp/pending-task-cleanup"
