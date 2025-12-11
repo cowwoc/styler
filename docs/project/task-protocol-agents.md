@@ -332,11 +332,11 @@ Main agent checks these conditions before transitioning to next state:
 
 ## Implementation Mode Design Decision Protocol {#implementation-mode-design-decision-protocol}
 
-When agents in implementation mode encounter unexpected design problems not specified in the implementation plan, they MUST re-invoke themselves in review mode (model: sonnet) or invoke other agents in review mode rather than making architectural decisions themselves in implementation mode.
+When agents in implementation mode encounter unexpected design problems not specified in the implementation plan, they MUST re-invoke themselves in review mode (model: opus) or invoke other agents in review mode rather than making architectural decisions themselves in implementation mode.
 
 ### Role Separation Principle {#role-separation-principle}
 
-**Review Mode (model: sonnet)**: Make architectural decisions, analyze requirements, create plans, resolve ambiguities
+**Review Mode (model: opus)**: Make architectural decisions, analyze requirements, create plans, resolve ambiguities
 
 **Implementation Mode (model: haiku)**: Execute mechanical implementation per plan, apply fixes from review mode, report blockers, DO NOT make architectural decisions independently
 

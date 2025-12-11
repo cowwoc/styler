@@ -88,8 +88,8 @@ for stakeholder in "${STAKEHOLDER_AGENTS[@]}"; do
 		MODEL=$(echo "$INPUT" | jq -r '.tool_input.model // empty')
 		if [[ "$MODEL" == "haiku" ]] || [[ "$MODEL" == *"haiku"* ]]; then
 			AGENT_TYPE="updater"  # Implementation mode (Haiku)
-		elif [[ "$MODEL" == "sonnet" ]] || [[ "$MODEL" == *"sonnet"* ]]; then
-			AGENT_TYPE="reviewer"  # Requirements/Validation mode (Sonnet)
+		elif [[ "$MODEL" == "opus" ]] || [[ "$MODEL" == *"opus"* ]]; then
+			AGENT_TYPE="reviewer"  # Requirements/Validation mode (Opus)
 		else
 			# No model specified, infer from state
 			if [[ "$CURRENT_STATE" == "REQUIREMENTS" ]] || [[ "$CURRENT_STATE" == "VALIDATION" ]] || [[ "$CURRENT_STATE" == "REVIEW" ]]; then

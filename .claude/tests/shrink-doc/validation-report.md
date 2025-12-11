@@ -22,7 +22,7 @@ Can `/compare-docs` semantic claim comparison solve the test oracle problem for 
 1. **Perfect Correlation Validated**: 100% claim preservation → 100% execution preservation across 291 test scenarios
 2. **Structure Independence Confirmed**: Visual markers, headings, and formatting do NOT impact LLM execution when claims preserved
 3. **Compression Validated**: Up to 3.8x compression achievable while maintaining 100% execution accuracy (average 2.1x)
-4. **Model Independence**: Both Sonnet 4.5 and Haiku 4.5 show identical execution with structured vs flat formats
+4. **Model Independence**: Both Opus 4.5 and Haiku 4.5 show identical execution with structured vs flat formats
 5. **Scalability Demonstrated**: Validated for documents ranging from 18 to 249 claims (up to 200+ claims tested)
 6. **Claim Count Variance Tolerance**: Up to 27% claim count difference still achieved 100% execution accuracy
 7. **Domain Independence**: Validated across software development AND medical domains - claim preservation → execution preservation holds cross-domain
@@ -55,7 +55,7 @@ Can `/compare-docs` semantic claim comparison solve the test oracle problem for 
 **Phase 1: Initial Comprehensive Test**
 - Document: JavaDoc normative guide (147 claims)
 - Tasks: Judgment (6 scenarios) + Search/retrieval (5 questions)
-- Models: Sonnet 4.5 + Haiku 4.5
+- Models: Opus 4.5 + Haiku 4.5
 - Formats: Structured (sections, headings, visual markers) vs Flat (dense prose)
 
 **Phase 2: Targeted Validation** (addressing critic's methodological concerns)
@@ -72,8 +72,8 @@ For each document type:
 3. Run `/compare-docs` to verify claim preservation
 4. Create test tasks (judgment scenarios + search questions)
 5. Test execution with 4 combinations:
-   - Sonnet 4.5 + Structured
-   - Sonnet 4.5 + Flat
+   - Opus 4.5 + Structured
+   - Opus 4.5 + Flat
    - Haiku 4.5 + Structured
    - Haiku 4.5 + Flat
 6. Compare results across all combinations
@@ -105,8 +105,8 @@ For each document type:
 
 | Model | Format | Judgment (6) | Search (5) | Total | Accuracy |
 |-------|--------|--------------|------------|-------|----------|
-| Sonnet | Structured | 6/6 | 5/5 | 11/11 | 100% |
-| Sonnet | Flat | 6/6 | 5/5 | 11/11 | 100% |
+| Opus | Structured | 6/6 | 5/5 | 11/11 | 100% |
+| Opus | Flat | 6/6 | 5/5 | 11/11 | 100% |
 | Haiku | Structured | 6/6 | 5/5 | 11/11 | 100% |
 | Haiku | Flat | 6/6 | 5/5 | 11/11 | 100% |
 
@@ -126,7 +126,7 @@ For each document type:
 
 **Execution Test Results**:
 
-| Test Type | Scenarios | Sonnet-Struct | Sonnet-Flat | Haiku-Struct | Haiku-Flat |
+| Test Type | Scenarios | Opus-Struct | Opus-Flat | Haiku-Struct | Haiku-Flat |
 |-----------|-----------|---------------|-------------|--------------|------------|
 | Judgment | 6 | 6/6 | 6/6 | 6/6 | 6/6 |
 | Search | 5 | 5/5 | 5/5 | 5/5 | 5/5 |
@@ -142,7 +142,7 @@ For each document type:
 
 **Execution Test Results**:
 
-| Scenario | Sonnet-Struct | Sonnet-Flat | Haiku-Struct | Haiku-Flat |
+| Scenario | Opus-Struct | Opus-Flat | Haiku-Struct | Haiku-Flat |
 |----------|---------------|-------------|--------------|------------|
 | Lock deletion | ✓ | ✓ | ✓ | ✓ |
 | Skipped state | ✓ | ✓ | ✓ | ✓ |
@@ -168,7 +168,7 @@ For each document type:
 
 **Execution Test Results**:
 
-| Test Type | Scenarios | Sonnet-Struct | Sonnet-Flat | Haiku-Struct | Haiku-Flat |
+| Test Type | Scenarios | Opus-Struct | Opus-Flat | Haiku-Struct | Haiku-Flat |
 |-----------|-----------|---------------|-------------|--------------|------------|
 | Judgment | 6 | 6/6 | 6/6 | 6/6 | 6/6 |
 | Search | 5 | 5/5 | 5/5 | 5/5 | 5/5 |
@@ -192,7 +192,7 @@ For each document type:
 
 **Execution Test Results**:
 
-| Scenario | Sonnet-Struct | Sonnet-Flat | Haiku-Struct | Haiku-Flat |
+| Scenario | Opus-Struct | Opus-Flat | Haiku-Struct | Haiku-Flat |
 |----------|---------------|-------------|--------------|------------|
 | Squash commits | ✓ | ✓ | ✓ | ✓ |
 | Version branch update | ✓ | ✓ | ✓ | ✓ |
@@ -223,7 +223,7 @@ For each document type:
 
 **Execution Test Results**:
 
-| Task | Sonnet+Struct | Sonnet+Flat | Haiku+Struct | Haiku+Flat |
+| Task | Opus+Struct | Opus+Flat | Haiku+Struct | Haiku+Flat |
 |------|---------------|-------------|--------------|------------|
 | Bug workflow | ✅ | ✅ | ✅ | ✅ |
 | Test coverage | ✅ | ✅ | ✅ | ✅ |
@@ -264,7 +264,7 @@ For each document type:
 
 **Execution Test Results**:
 
-| Question | Sonnet+Struct | Sonnet+Flat | Haiku+Struct | Haiku+Flat |
+| Question | Opus+Struct | Opus+Flat | Haiku+Struct | Haiku+Flat |
 |----------|---------------|-------------|--------------|------------|
 | Five moments | ✅ | ✅ | ✅ | ✅ |
 | ABHR duration | ✅ | ✅ | ✅ | ✅ |
@@ -337,7 +337,7 @@ For each document type:
 
 | Model | Total Scenarios | Correct | Accuracy |
 |-------|-----------------|---------|----------|
-| Sonnet 4.5 | 138 | 138 | 100% |
+| Opus 4.5 | 138 | 138 | 100% |
 | Haiku 4.5 | 138 | 138 | 100% |
 
 ### By Format
@@ -400,7 +400,7 @@ For each document type:
 ```bash
 # Required tools
 - Claude Code with /compare-docs command
-- Access to Sonnet 4.5 and Haiku 4.5 models
+- Access to Opus 4.5 and Haiku 4.5 models
 - Test document creation capability
 ```
 
@@ -482,11 +482,11 @@ Procedure A consists of creating backup first then executing operation then veri
 **Test with all 4 combinations**:
 
 ```bash
-# Sonnet + Structured
-Task(model="sonnet", prompt="Read structured.md, execute test-task.md")
+# Opus + Structured
+Task(model="opus", prompt="Read structured.md, execute test-task.md")
 
-# Sonnet + Flat
-Task(model="sonnet", prompt="Read flat.md, execute test-task.md")
+# Opus + Flat
+Task(model="opus", prompt="Read flat.md, execute test-task.md")
 
 # Haiku + Structured
 Task(model="haiku", prompt="Read structured.md, execute test-task.md")
@@ -515,8 +515,8 @@ Task(model="haiku", prompt="Read flat.md, execute test-task.md")
 **Test Tasks**: `/tmp/test-tasks.md` (3 scenarios applying git backup-verify-cleanup pattern)
 
 **Execution Results**:
-- Sonnet + Structured: 3/3 correct
-- Sonnet + Flat: 3/3 correct
+- Opus + Structured: 3/3 correct
+- Opus + Flat: 3/3 correct
 - Haiku + Structured: 3/3 correct
 - Haiku + Flat: 3/3 correct
 
@@ -579,7 +579,7 @@ Task(model="haiku", prompt="Read flat.md, execute test-task.md")
 1. **Structure is presentation, not content**: LLMs process semantically, not structurally
 2. **Visual markers unnecessary**: Formatting aids human readability but doesn't affect LLM execution
 3. **Compression is safe**: Up to 12.3x compression validated with no execution degradation
-4. **Model independence**: Cheaper models (Haiku) perform identically to capable models (Sonnet)
+4. **Model independence**: Cheaper models (Haiku) perform identically to capable models (Opus)
 5. **Scalability demonstrated**: Works for documents from 18 to 249 claims
 6. **Domain independence**: Cross-domain validation (software + medical) confirms generalizability
 7. **High variance tolerance**: Up to 27% claim count variance still achieves 100% execution accuracy
@@ -688,8 +688,8 @@ Located in `/tmp/` directory (temporary - see test-data-appendix.md for permanen
 ### Test Results Files
 
 All results stored as JSON in `/tmp/`:
-- `sonnet-structured-*-results.json`
-- `sonnet-flat-*-results.json`
+- `opus-structured-*-results.json`
+- `opus-flat-*-results.json`
 - `haiku-structured-*-results.json`
 - `haiku-flat-*-results.json`
 

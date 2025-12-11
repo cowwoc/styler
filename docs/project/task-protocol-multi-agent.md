@@ -104,7 +104,7 @@ escalation path: Tier 3 → Tier 2 → Tier 1.
 **COST-OPTIMIZED ARCHITECTURE**: Agent model selection is designed to maximize quality while minimizing cost.
 
 **Model Assignments**:
-- **Agents in review mode** (Sonnet 4.5): Deep analysis, complex decision-making, detailed requirements generation
+- **Agents in review mode** (Opus 4.5): Deep analysis, complex decision-making, detailed requirements generation
 - **Agents in implementation mode** (Haiku 4.5): Mechanical implementation following detailed specifications
 
 **Strategic Rationale**:
@@ -112,7 +112,7 @@ escalation path: Tier 3 → Tier 2 → Tier 1.
 The protocol uses a **two-phase quality amplification** approach:
 
 1. **REQUIREMENTS Phase** (High-cost, high-value):
-   - Agents in review mode use Sonnet 4.5 for comprehensive analysis
+   - Agents in review mode use Opus 4.5 for comprehensive analysis
    - Generate extremely detailed, implementation-ready specifications
    - Make ALL difficult decisions (architecture, design patterns, naming, trade-offs)
    - Output must be detailed enough for simpler model to execute mechanically
@@ -138,7 +138,7 @@ requirements.
 **Cost Optimization Calculation**:
 
 Typical task execution:
-- 1x REQUIREMENTS round (agents in review mode analyze entire codebase): Use Sonnet 4.5
+- 1x REQUIREMENTS round (agents in review mode analyze entire codebase): Use Opus 4.5
 - 2-5x IMPLEMENTATION rounds (agents in implementation mode apply fixes): Use Haiku 4.5 (40% cost reduction)
 - Net savings: ~30-35% on total task cost while maintaining quality
 
@@ -154,10 +154,10 @@ Typical task execution:
 
 ### Implementation Round Structure {#implementation-round-structure}
 
-**CRITICAL**: Implementation rounds use agents in BOTH review mode (Sonnet) and implementation mode (Haiku) in an iterative validation pattern.
+**CRITICAL**: Implementation rounds use agents in BOTH review mode (Opus) and implementation mode (Haiku) in an iterative validation pattern.
 
 **Agent Modes in IMPLEMENTATION**:
-- **Review mode** (model: sonnet): Deep analysis, generate detailed requirements, approve/reject with specific feedback
+- **Review mode** (model: opus): Deep analysis, generate detailed requirements, approve/reject with specific feedback
 - **Implementation mode** (model: haiku): Mechanical implementation, apply exact specifications, merge verified changes
 
 **Single Agent Round Pattern**:

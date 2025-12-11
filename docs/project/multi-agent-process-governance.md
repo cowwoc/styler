@@ -336,7 +336,7 @@ Task tool (config): "Find doc ambiguities that caused violations. Input: audit-p
 name: parse-conversation-timeline skill
 description: Neutral fact gatherer for session execution analysis
 tools: [Read, Grep, Bash, LS]
-model: sonnet-4-5
+model: opus
 color: gray
 ---
 
@@ -353,7 +353,7 @@ color: gray
 name: audit-protocol-compliance skill
 description: Adversarial compliance checker for protocol violations
 tools: [Read]
-model: sonnet-4-5
+model: opus
 color: red
 ---
 
@@ -376,7 +376,7 @@ color: red
 name: audit-protocol-efficiency skill
 description: Collaborative performance advisor for process optimization
 tools: [Read]
-model: sonnet-4-5
+model: opus
 color: green
 ---
 
@@ -399,7 +399,7 @@ color: green
 name: config
 description: Technical writer quality checker for protocol documentation
 tools: [Read, Grep, Edit]
-model: sonnet-4-5
+model: opus
 color: blue
 ---
 

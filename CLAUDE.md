@@ -611,7 +611,7 @@ stakeholder agents implement features.
   complete
 - Models: REQUIREMENTS phase uses Opus (analysis/decisions), IMPLEMENTATION phase uses Haiku (code
   generation). **Escalate to Opus** for complex implementations involving: AST analysis, multi-character
-  token handling, context-sensitive parsing, or when haiku/sonnet agents fail with >20 test failures.
+  token handling, context-sensitive parsing, or when haiku agents fail with >20 test failures.
 - **Agent Spawning**: Agents spawn FRESH for each phase (do NOT use Task tool `resume` parameter across
   phases). Different phases use different models and have different objectives (clean separation).
 

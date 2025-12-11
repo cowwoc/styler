@@ -49,7 +49,7 @@ Can `/compare-docs` semantic claim comparison solve the test oracle problem for 
 1. **Perfect Correlation**: 100% claim preservation → 100% execution preservation (291/291 scenarios)
 2. **Structure Independence**: Visual markers, headings, formatting do NOT impact LLM execution
 3. **Compression**: Up to 12.3x compression achievable while maintaining 100% accuracy (average 4.1x)
-4. **Model Independence**: Both Sonnet 4.5 and Haiku 4.5 show identical execution
+4. **Model Independence**: Both Opus 4.5 and Haiku 4.5 show identical execution
 5. **Scalability**: Validated for documents 18-249 claims
 6. **Claim Variance Tolerance**: Up to 27% claim count variance still achieves 100% accuracy
 7. **Domain Independence**: Software development + medical domains validated
@@ -405,7 +405,7 @@ Can `/compare-docs` semantic claim comparison solve the test oracle problem for 
 ✅ **Phase 1-3 validates**:
 - Claim preservation → execution preservation correlation (100%)
 - Compression safety (up to 12.3x)
-- Model independence (Sonnet + Haiku)
+- Model independence (Opus + Haiku)
 - Domain independence (software + medical)
 
 ❌ **Phase 4 requires validation**:

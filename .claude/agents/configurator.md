@@ -4,7 +4,7 @@ description: >
   Configuration quality specialist for Claude Code configuration files. Can identify ambiguities,
   contradictions, and missing guidance (review mode) or apply configuration fixes automatically
   (implementation mode) based on invocation instructions.
-model: sonnet-4-5
+model: opus
 color: blue
 tools: Read, Write, Edit, Grep
 ---

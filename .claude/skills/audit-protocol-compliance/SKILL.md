@@ -116,7 +116,7 @@ jq '.timeline[] | select(.type == "tool_use" and .actor == "main" and (.tool.nam
 **Check 4.2: Iterative Validation** (HIGH)
 ```bash
 # Rule: Implementation uses review mode + implementation mode iterations
-# Query: Verify agents in review mode (sonnet) validate agents in implementation mode (haiku)
+# Query: Verify agents in review mode (opus) validate agents in implementation mode (haiku)
 ```
 
 **Check 4.3: Agent Integration** (CRITICAL)
@@ -240,7 +240,7 @@ Rules apply based on actual task_state, NOT:
 | 1.3 | Working directory | CRITICAL | Agent worktree isolation |
 | 2.1 | Coordination | CRITICAL | Main agent delegates via Task tool |
 | 2.2 | Invocation pattern | HIGH | Parallel agent launch |
-| 2.3 | Role clarity | HIGH | Clear mode specification (sonnet/haiku) |
+| 2.3 | Role clarity | HIGH | Clear mode specification (opus/haiku) |
 | 3.1 | Worktree structure | CRITICAL | Agent worktrees exist |
 | 3.2 | Working directory | CRITICAL | Agents in correct worktrees |
 | 4.1 | Parallel execution | MEDIUM | Independent operations parallel |
