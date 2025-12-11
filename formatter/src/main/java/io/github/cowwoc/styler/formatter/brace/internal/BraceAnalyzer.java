@@ -6,6 +6,7 @@ import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
 import io.github.cowwoc.styler.formatter.brace.BraceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.brace.BraceStyle;
+import io.github.cowwoc.styler.formatter.internal.SourceCodeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,7 @@ public final class BraceAnalyzer
 		{
 			context.checkDeadline();
 
-			if (sourceCode.charAt(i) == '{' && !isInLiteralOrComment(sourceCode, i))
+			if (sourceCode.charAt(i) == '{' && !SourceCodeUtils.isInLiteralOrComment(sourceCode, i))
 			{
 				// Detect current style
 				BraceStyle currentStyle = detectCurrentStyle(sourceCode, i);
@@ -98,106 +99,5 @@ public final class BraceAnalyzer
 
 		// Otherwise, brace is on same line as declaration
 		return BraceStyle.SAME_LINE;
-	}
-
-	/**
-	 * Checks if a position is inside a string literal, character literal, or comment.
-	 *
-	 * @param sourceCode the source code string
-	 * @param position the position to check
-	 * @return true if position is inside a literal or comment, false otherwise
-	 */
-	private static boolean isInLiteralOrComment(String sourceCode, int position)
-	{
-		// Scan from the beginning to the position, tracking state
-		boolean inStringLiteral = false;
-		boolean inCharLiteral = false;
-		boolean inLineComment = false;
-		boolean inBlockComment = false;
-
-		for (int i = 0; i < position; ++i)
-		{
-			char current = sourceCode.charAt(i);
-			char next;
-			if (i + 1 < sourceCode.length())
-				next = sourceCode.charAt(i + 1);
-			else
-				next = '\0';
-
-			// Handle line comments
-			if (inLineComment)
-			{
-				if (current == '\n')
-					inLineComment = false;
-				continue;
-			}
-
-			// Handle block comments
-			if (inBlockComment)
-			{
-				if (current == '*' && next == '/')
-				{
-					inBlockComment = false;
-					// Skip the closing '/'
-					++i;
-				}
-				continue;
-			}
-
-			// Handle string literals
-			if (inStringLiteral)
-			{
-				if (current == '\\' && next == '"')
-				{
-					// Skip escaped quote
-					++i;
-				}
-				else if (current == '"')
-				{
-					inStringLiteral = false;
-				}
-				continue;
-			}
-
-			// Handle character literals
-			if (inCharLiteral)
-			{
-				if (current == '\\' && next == '\'')
-				{
-					// Skip escaped quote
-					++i;
-				}
-				else if (current == '\'')
-				{
-					inCharLiteral = false;
-				}
-				continue;
-			}
-
-			// Check for start of literals/comments
-			if (current == '"')
-			{
-				inStringLiteral = true;
-			}
-			else if (current == '\'')
-			{
-				inCharLiteral = true;
-			}
-			else if (current == '/' && next == '/')
-			{
-				inLineComment = true;
-				// Skip second '/'
-				++i;
-			}
-			else if (current == '/' && next == '*')
-			{
-				inBlockComment = true;
-				// Skip '*'
-				++i;
-			}
-		}
-
-		// Return true if we're in any kind of literal or comment at the target position
-		return inStringLiteral || inCharLiteral || inLineComment || inBlockComment;
 	}
 }
