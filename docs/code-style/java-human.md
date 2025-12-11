@@ -173,6 +173,36 @@ if (position < 0) {
 **When manual validation is still appropriate**: Complex business logic validation that requires custom error
 messages with domain-specific context beyond simple parameter comparisons.
 
+### FormattingConfiguration Pattern - Validation and Documentation
+**What**: All record types implementing `FormattingConfiguration` must follow consistent validation patterns.
+
+**Required pattern**:
+1. Use `requireThat(ruleId, "ruleId").isNotBlank()` - not just `.isNotNull()`, because a blank ruleId is
+   semantically invalid
+2. Document `@throws NullPointerException` and `@throws IllegalArgumentException` in the record's JavaDoc
+3. Don't chain `.isNotNull().isNotBlank()` - it's redundant since `.isNotBlank()` already checks for null
+
+**Why this matters**: Configuration ruleId values appear in violation reports and logs. A blank ruleId would
+produce confusing output like `Rule '' reported: ...`. Consistent validation and documentation across all
+FormattingConfiguration implementations ensures predictable behavior and accurate API documentation.
+
+**Example**:
+```java
+/**
+ * @param ruleId the rule ID
+ * @throws NullPointerException     if {@code ruleId} is null
+ * @throws IllegalArgumentException if {@code ruleId} is blank
+ */
+public record WhitespaceFormattingConfiguration(String ruleId, boolean spaceAfterComma)
+    implements FormattingConfiguration
+{
+    public WhitespaceFormattingConfiguration
+    {
+        requireThat(ruleId, "ruleId").isNotBlank();
+    }
+}
+```
+
 ### Parameter Formatting - Multi-line Declarations and Calls
 **Line-filling principle**: Multi-parameter constructs (records, constructor calls, method calls) should
 maximize horizontal space usage within the 120-character limit. Each line should be filled to capacity before
@@ -521,6 +551,127 @@ provides specific guarantees about thread-safe operations.
 - Place after the main description and any `<p>` tags
 
 ## 💡 TIER 3 QUALITY - Best Practices
+
+### Constants - Prefer Immutable Collections Over Arrays
+**Why immutable collections matter**: Array constants (e.g., `static final String[]`) are not truly immutable -
+any code with access can modify their contents. Using `List.of()`, `Set.of()`, or `Map.of()` factory methods
+creates genuinely immutable collections that communicate intent and prevent accidental modification.
+
+**Benefits of collection factory methods**:
+- **True immutability**: Cannot be modified after creation (arrays only have a final reference)
+- **Null-hostile**: Fail fast if null elements are passed (arrays accept nulls silently)
+- **Memory efficient**: Optimized internal representations for small collections
+- **Clearer intent**: Signals that data is constant and should not change
+
+**Implementation guidance**:
+```java
+// ❌ AVOID - Array constant (mutable contents)
+private static final String[] CONTROL_KEYWORDS = {
+    "if", "else", "while", "for", "switch"
+};
+
+// ✅ PREFERRED - Immutable List
+private static final List<String> CONTROL_KEYWORDS = List.of(
+    "if", "else", "while", "for", "switch");
+
+// ❌ AVOID - Arrays.asList (still backed by array)
+private static final List<String> OPERATORS = Arrays.asList("+", "-", "*");
+
+// ✅ PREFERRED - List.of()
+private static final List<String> OPERATORS = List.of("+", "-", "*");
+
+// ❌ AVOID - HashSet from Arrays.asList
+private static final Set<String> RESERVED = new HashSet<>(Arrays.asList("class", "enum"));
+
+// ✅ PREFERRED - Set.of() for unique values
+private static final Set<String> RESERVED = Set.of("class", "enum");
+
+// ❌ AVOID - Map with static block
+private static final Map<String, Integer> PRECEDENCE = new HashMap<>();
+static {
+    PRECEDENCE.put("+", 1);
+    PRECEDENCE.put("*", 2);
+}
+
+// ✅ PREFERRED - Map.of()
+private static final Map<String, Integer> PRECEDENCE = Map.of("+", 1, "*", 2);
+```
+
+**Exception**: Primitive arrays (`int[]`, `char[]`, `byte[]`) - `List.of()` requires object types and
+autoboxing has performance implications for large arrays. Use primitive arrays when performance matters.
+
+### Performance - Cache Expensive Method Calls in Loops
+**Why caching matters**: Methods that perform O(n) operations (string scanning, regex matching, collection
+searches) can silently dominate loop performance when called redundantly with the same arguments. A loop
+that appears O(n) becomes O(n²) when it calls an O(n) method on each iteration that could be cached.
+
+**Common patterns to watch for**:
+- `isInLiteralOrComment(source, position)` - scans from 0 to position each call
+- `Pattern.matches()` / `String.matches()` - compiles regex each call
+- `List.contains()` on large lists - O(n) linear scan
+- Any method that scans/searches from the beginning
+
+**Two refactoring approaches**:
+
+1. **Early-exit pattern**: If you skip processing when a condition is true, code after the `continue`
+   implicitly knows the condition was false:
+```java
+// Before: redundant checks
+for (int i = 0; i < length; ++i) {
+    if (isExpensive(i)) continue;
+    if (x && !isExpensive(i)) doA();  // Redundant!
+    if (y && !isExpensive(i)) doB();  // Redundant!
+}
+
+// After: early-exit makes result implicit
+for (int i = 0; i < length; ++i) {
+    if (isExpensive(i)) continue;
+    // Past this point, isExpensive(i) is implicitly false
+    if (x) doA();
+    if (y) doB();
+}
+```
+
+2. **Explicit caching**: When you need the result in multiple branches:
+```java
+for (int i = 0; i < length; ++i) {
+    boolean cached = isExpensive(i);  // Call once
+    if (cached && needsSpecialHandling(i))
+        handleSpecial(i);
+    else if (!cached)
+        processNormal(i);
+}
+```
+
+**Impact**: In a 10,000 character file, `isInLiteralOrComment()` called 4 times per character means 40,000
+scans instead of 10,000 - a 4x slowdown that grows with file size.
+
+### Performance - Cache Non-Trivial Method Return Values
+**Why caching return values matters**: Methods like `toString()`, `toArray()`, and `stream()` allocate new
+objects each time they're called. In loops, this creates thousands of short-lived objects that stress the
+garbage collector and pollute CPU caches.
+
+**Common offenders**:
+- `StringBuilder.toString()` - creates new String each call
+- `Collection.toArray()` - allocates new array each call
+- `Collection.stream()` - creates stream pipeline objects
+- `list.size()` in loop condition - harmless for ArrayList, expensive for LinkedList
+
+**Safe caching pattern for mutable data**:
+```java
+// When StringBuilder is modified during iteration, cache at iteration start
+for (int i = result.length() - 1; i >= 0; --i) {
+    String str = result.toString();  // Cache once per iteration
+    // Use str for all read-only operations
+    if (someCheck(str, i)) {
+        result.insert(i, ' ');  // Modification invalidates cache
+        continue;               // Next iteration gets fresh cache
+    }
+}
+```
+
+**Impact**: In a formatter processing 10,000 characters with 10 method calls per iteration, caching reduces
+100,000 String allocations to 10,000 - a 10x reduction in GC pressure.
 
 ### Error Handling - Default Return Values
 **Parser system reliability**: Returning default values when parsing fails can mask serious errors in code
