@@ -5,7 +5,7 @@ description: >
   optimization opportunities. Can review performance characteristics (analysis mode) or implement
   optimizations (implementation mode). FOR CODE ONLY - not for documentation, configuration, or
   general validation tasks.
-model: sonnet-4-5
+model: opus
 color: orange
 tools: Read, Write, Edit, Grep, Glob, LS, Bash, WebSearch, WebFetch
 ---
@@ -56,7 +56,7 @@ You will receive specific task instructions in your invocation prompt. Your role
 ## 🎯 CRITICAL: REQUIREMENTS DETAIL FOR SIMPLER MODEL IMPLEMENTATION
 
 **MODEL CONFIGURATION CONTEXT**:
-- **THIS AGENT** (analysis mode): Uses Sonnet 4.5 for deep analysis and complex decision-making
+- **THIS AGENT** (analysis mode): Uses Opus 4.5 for deep analysis and complex decision-making
 - **IMPLEMENTATION** (implementation mode): Uses specifications for mechanical execution
 
 **MANDATORY REQUIREMENT QUALITY STANDARD** (when generating specifications):

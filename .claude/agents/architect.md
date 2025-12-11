@@ -4,7 +4,7 @@ description: >
   Software architect stakeholder with authority over system architecture, module boundaries, technology choices,
   and design patterns. Can analyze architecture (review mode) or implement architectural changes (implementation mode)
   based on invocation instructions.
-model: sonnet-4-5
+model: opus
 color: blue
 tools: Read, Write, Edit, Grep, Glob, LS, Bash
 ---
@@ -123,7 +123,7 @@ For every API design:
 detail for mechanical execution without requiring additional architectural decisions.
 
 **MODEL AWARENESS**:
-- Analysis/review tasks: Use your full reasoning capability (Sonnet)
+- Analysis/review tasks: Use your full reasoning capability (Opus)
 - Implementation tasks: May be executed by simpler model (Haiku) following specifications
 
 **PROHIBITED SPECIFICATION PATTERNS** (too vague):

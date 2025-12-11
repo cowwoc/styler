@@ -3,7 +3,7 @@ name: engineer
 description: >
   Improves class design by identifying and refactoring quality issues, duplication, complexity, and maintainability
   concerns. Can review code quality (analysis mode) or implement fixes (implementation mode) based on invocation instructions.
-model: sonnet-4-5
+model: opus
 color: cyan
 tools: Read, Write, Edit, Grep, Glob, LS, Bash
 ---
@@ -76,7 +76,7 @@ You will receive specific task instructions in your invocation prompt. Your role
 ## 🎯 CRITICAL: REQUIREMENTS DETAIL FOR SIMPLER MODEL IMPLEMENTATION
 
 **MODEL CONFIGURATION**:
-- **THIS AGENT** (analysis mode): Uses Sonnet 4.5 for deep analysis and complex refactoring decisions
+- **THIS AGENT** (analysis mode): Uses Opus 4.5 for deep analysis and complex refactoring decisions
 - **IMPLEMENTATION** (implementation mode): Uses specifications for mechanical fix application
 
 Quality reports MUST be sufficiently detailed for implementation to apply fixes mechanically without making difficult decisions.

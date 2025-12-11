@@ -124,7 +124,7 @@ You are in ${CURRENT_STATE%% (*} state but the required requirements reports do 
 
 2. **Invoke stakeholder agents in REQUIREMENTS mode**:
    - Use Task tool with THREE parallel invocations (architect, engineer, formatter)
-   - Set model to \"sonnet\" for REQUIREMENTS phase
+   - Set model to \"opus\" for REQUIREMENTS phase
    - Emphasize in prompts: \"You are in REQUIREMENTS mode. ONLY write requirements report. DO NOT implement code.\"
    - Specify output file: \`/workspace/tasks/${VIOLATING_TASK}/${VIOLATING_TASK}-{agent}-requirements.md\`
 

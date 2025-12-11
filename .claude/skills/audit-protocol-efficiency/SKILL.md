@@ -214,11 +214,11 @@ Show concrete before/after examples:
 
 **❌ INEFFICIENT PATTERN**:
 ```
-Message 1 @ 10:23:45 - Task(architect, model=sonnet)
+Message 1 @ 10:23:45 - Task(architect, model=opus)
   Wait for completion...
-Message 2 @ 10:25:12 - Task(engineer, model=sonnet)
+Message 2 @ 10:25:12 - Task(engineer, model=opus)
   Wait for completion...
-Message 3 @ 10:26:38 - Task(formatter, model=sonnet)
+Message 3 @ 10:26:38 - Task(formatter, model=opus)
   Wait for completion...
 
 → Impact: 3 sequential round-trips = ~5-6 minutes total
@@ -228,9 +228,9 @@ Message 3 @ 10:26:38 - Task(formatter, model=sonnet)
 **✅ EFFICIENT PATTERN**:
 ```
 Message 1 @ 10:23:45 - Parallel invocation:
-  - Task(architect, model=sonnet)
-  - Task(engineer, model=sonnet)
-  - Task(formatter, model=sonnet)
+  - Task(architect, model=opus)
+  - Task(engineer, model=opus)
+  - Task(formatter, model=opus)
   All complete by 10:25:30
 
 → Impact: 1 parallel round-trip = ~2 minutes total
