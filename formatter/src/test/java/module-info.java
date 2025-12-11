@@ -14,4 +14,5 @@ module io.github.cowwoc.styler.formatter.test
 	opens io.github.cowwoc.styler.formatter.test.linelength to org.testng;
 	opens io.github.cowwoc.styler.formatter.test.brace to org.testng;
 	opens io.github.cowwoc.styler.formatter.test.whitespace to org.testng;
+	opens io.github.cowwoc.styler.formatter.test.indentation to org.testng;
 }

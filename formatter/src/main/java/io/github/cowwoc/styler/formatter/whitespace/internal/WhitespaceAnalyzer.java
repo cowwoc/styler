@@ -4,6 +4,7 @@ import io.github.cowwoc.styler.formatter.DefaultFormattingViolation;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
+import io.github.cowwoc.styler.formatter.internal.SourceCodeUtils;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 
 import java.util.ArrayList;
@@ -14,12 +15,6 @@ import java.util.List;
  * <p>
  * <b>Thread-safety</b>: All methods are stateless and thread-safe.
  */
-@SuppressWarnings(
-	{
-		"PMD.AvoidDeeplyNestedIfStmts",
-		"PMD.CollapsibleIfStatements",
-		"PMD.NcssCount"
-	})
 public final class WhitespaceAnalyzer
 {
 	// Multi-character operators to check before single-character ones
@@ -60,7 +55,7 @@ public final class WhitespaceAnalyzer
 			context.checkDeadline();
 
 			// Skip if inside literal or comment
-			if (isInLiteralOrComment(sourceCode, i))
+			if (SourceCodeUtils.isInLiteralOrComment(sourceCode, i))
 				continue;
 
 			char current = sourceCode.charAt(i);
@@ -133,19 +128,20 @@ public final class WhitespaceAnalyzer
 		while (nextNonSpace < sourceCode.length() && sourceCode.charAt(nextNonSpace) == ' ')
 			++nextNonSpace;
 
-		if (nextNonSpace < sourceCode.length() && sourceCode.charAt(nextNonSpace) == '(')
-		{
-			if (nextNonSpace == keywordEnd || nextNonSpace - keywordEnd != 1)
-			{
-				String keyword = sourceCode.substring(keywordStart, keywordEnd);
-				int lineNumber = context.getLineNumber(keywordStart);
-				int columnNumber = context.getColumnNumber(keywordStart);
+		// Must be followed by '(' and must have exactly one space between keyword and '('
+		boolean hasOpenParen = nextNonSpace < sourceCode.length() && sourceCode.charAt(nextNonSpace) == '(';
+		boolean hasWrongSpacing = nextNonSpace == keywordEnd || nextNonSpace - keywordEnd != 1;
 
-				String message = String.format("Missing space after keyword: %s", keyword);
-				violations.add(new DefaultFormattingViolation("whitespace-keyword",
-					ViolationSeverity.WARNING, message, context.filePath(), keywordStart,
-					keywordEnd, lineNumber, columnNumber, List.of()));
-			}
+		if (hasOpenParen && hasWrongSpacing)
+		{
+			String keyword = sourceCode.substring(keywordStart, keywordEnd);
+			int lineNumber = context.getLineNumber(keywordStart);
+			int columnNumber = context.getColumnNumber(keywordStart);
+
+			String message = String.format("Missing space after keyword: %s", keyword);
+			violations.add(new DefaultFormattingViolation("whitespace-keyword",
+				ViolationSeverity.WARNING, message, context.filePath(), keywordStart,
+				keywordEnd, lineNumber, columnNumber, List.of()));
 		}
 	}
 
@@ -192,159 +188,63 @@ public final class WhitespaceAnalyzer
 		TransformationContext context, List<FormattingViolation> violations)
 	{
 		if (current == '(')
-		{
-			if (position + 1 < sourceCode.length() && sourceCode.charAt(position + 1) == ' ')
-			{
-				int lineNumber = context.getLineNumber(position);
-				int columnNumber = context.getColumnNumber(position);
-
-				String message = "Unexpected space after opening parenthesis";
-				violations.add(new DefaultFormattingViolation("whitespace-paren",
-					ViolationSeverity.WARNING, message, context.filePath(), position, position + 2,
-					lineNumber, columnNumber, List.of()));
-			}
-		}
+			checkOpeningParenthesis(sourceCode, position, context, violations);
 		else if (current == ')')
-		{
-			if (position > 0 && sourceCode.charAt(position - 1) == ' ')
-			{
-				// Check if previous non-space is opening paren
-				int j = position - 2;
-				while (j >= 0 && sourceCode.charAt(j) == ' ')
-					--j;
-
-				if (j >= 0 && sourceCode.charAt(j) != '(')
-				{
-					int lineNumber = context.getLineNumber(position);
-					int columnNumber = context.getColumnNumber(position);
-
-					String message = "Unexpected space before closing parenthesis";
-					violations.add(new DefaultFormattingViolation("whitespace-paren",
-						ViolationSeverity.WARNING, message, context.filePath(), position - 1, position,
-						lineNumber, columnNumber, List.of()));
-				}
-			}
-		}
+			checkClosingParenthesis(sourceCode, position, context, violations);
 	}
 
 	/**
-	 * Checks if a position is inside a string literal, character literal, or comment.
+	 * Checks for space after opening parenthesis.
 	 *
 	 * @param sourceCode the source code string
-	 * @param position the position to check
-	 * @return true if position is inside a literal or comment, false otherwise
+	 * @param position the position of the opening parenthesis
+	 * @param context the transformation context
+	 * @param violations the list to add violations to
 	 */
-	private static boolean isInLiteralOrComment(String sourceCode, int position)
+	private static void checkOpeningParenthesis(String sourceCode, int position,
+		TransformationContext context, List<FormattingViolation> violations)
 	{
-		boolean inStringLiteral = false;
-		boolean inCharLiteral = false;
-		boolean inLineComment = false;
-		boolean inBlockComment = false;
-		boolean inTextBlock = false;
+		if (position + 1 >= sourceCode.length() || sourceCode.charAt(position + 1) != ' ')
+			return;
 
-		for (int i = 0; i < position; ++i)
-		{
-			char current = sourceCode.charAt(i);
-			char next;
-			if (i + 1 < sourceCode.length())
-				next = sourceCode.charAt(i + 1);
-			else
-				next = '\0';
-			char nextNext;
-			if (i + 2 < sourceCode.length())
-				nextNext = sourceCode.charAt(i + 2);
-			else
-				nextNext = '\0';
+		int lineNumber = context.getLineNumber(position);
+		int columnNumber = context.getColumnNumber(position);
 
-			// Handle line comments
-			if (inLineComment)
-			{
-				if (current == '\n')
-					inLineComment = false;
-				continue;
-			}
+		String message = "Unexpected space after opening parenthesis";
+		violations.add(new DefaultFormattingViolation("whitespace-paren",
+			ViolationSeverity.WARNING, message, context.filePath(), position, position + 2,
+			lineNumber, columnNumber, List.of()));
+	}
 
-			// Handle block comments
-			if (inBlockComment)
-			{
-				if (current == '*' && next == '/')
-				{
-					inBlockComment = false;
-					++i;
-				}
-				continue;
-			}
+	/**
+	 * Checks for space before closing parenthesis.
+	 *
+	 * @param sourceCode the source code string
+	 * @param position the position of the closing parenthesis
+	 * @param context the transformation context
+	 * @param violations the list to add violations to
+	 */
+	private static void checkClosingParenthesis(String sourceCode, int position,
+		TransformationContext context, List<FormattingViolation> violations)
+	{
+		if (position <= 0 || sourceCode.charAt(position - 1) != ' ')
+			return;
 
-			// Handle text blocks
-			if (inTextBlock)
-			{
-				if (current == '"' && next == '"' && nextNext == '"')
-				{
-					inTextBlock = false;
-					i += 2;
-				}
-				continue;
-			}
+		// Check if previous non-space is opening paren (empty parens with space is ok)
+		int j = position - 2;
+		while (j >= 0 && sourceCode.charAt(j) == ' ')
+			--j;
 
-			// Handle string literals
-			if (inStringLiteral)
-			{
-				if (current == '\\' && next == '"')
-				{
-					++i;
-				}
-				else if (current == '"')
-				{
-					inStringLiteral = false;
-				}
-				continue;
-			}
+		if (j < 0 || sourceCode.charAt(j) == '(')
+			return;
 
-			// Handle character literals
-			if (inCharLiteral)
-			{
-				if (current == '\\' && next == '\'')
-				{
-					++i;
-				}
-				else if (current == '\'')
-				{
-					inCharLiteral = false;
-				}
-				continue;
-			}
+		int lineNumber = context.getLineNumber(position);
+		int columnNumber = context.getColumnNumber(position);
 
-			// Check for start of literals/comments
-			if (current == '"')
-			{
-				// Check for text block
-				if (next == '"' && nextNext == '"')
-				{
-					inTextBlock = true;
-					i += 2;
-				}
-				else
-				{
-					inStringLiteral = true;
-				}
-			}
-			else if (current == '\'')
-			{
-				inCharLiteral = true;
-			}
-			else if (current == '/' && next == '/')
-			{
-				inLineComment = true;
-				++i;
-			}
-			else if (current == '/' && next == '*')
-			{
-				inBlockComment = true;
-				++i;
-			}
-		}
-
-		return inStringLiteral || inCharLiteral || inLineComment || inBlockComment || inTextBlock;
+		String message = "Unexpected space before closing parenthesis";
+		violations.add(new DefaultFormattingViolation("whitespace-paren",
+			ViolationSeverity.WARNING, message, context.filePath(), position - 1, position,
+			lineNumber, columnNumber, List.of()));
 	}
 
 	/**
@@ -369,24 +269,39 @@ public final class WhitespaceAnalyzer
 
 		// Check single-character operators
 		char current = sourceCode.charAt(position);
-		if (current == '+' || current == '-' || current == '*' || current == '/' ||
-			current == '%' || current == '&' || current == '|' || current == '^' ||
-			current == '<' || current == '>' || current == '=')
+		if (!isSingleCharOperator(current))
+			return false;
+
+		// Make sure it's not part of a comment
+		return position <= 0 || !isPartOfComment(current, sourceCode.charAt(position - 1));
+	}
+
+	/**
+	 * Checks if a character is a single-character binary operator.
+	 *
+	 * @param ch the character to check
+	 * @return true if it's a single-character operator
+	 */
+	private static boolean isSingleCharOperator(char ch)
+	{
+		return switch (ch)
 		{
-			// Make sure it's not a unary operator or part of a comment
-			if (position > 0)
-			{
-				char prev = sourceCode.charAt(position - 1);
-				if (current == '/' && prev == '/')
-					return false;
-				if (current == '/' && prev == '*')
-					return false;
-			}
+			case '+', '-', '*', '/', '%', '&', '|', '^', '<', '>', '=' -> true;
+			default -> false;
+		};
+	}
 
-			return true;
-		}
-
-		return false;
+	/**
+	 * Checks if the current character is part of a comment delimiter.
+	 *
+	 * @param current the current character
+	 * @param prev the previous character
+	 * @return true if this is part of a comment (// or end of block comment)
+	 */
+	private static boolean isPartOfComment(char current, char prev)
+	{
+		// "//" is a line comment, "*/" ends a block comment
+		return (current == '/' && prev == '/') || (current == '/' && prev == '*');
 	}
 
 	/**
@@ -447,32 +362,46 @@ public final class WhitespaceAnalyzer
 	{
 		for (String keyword : CONTROL_KEYWORDS)
 		{
-			if (position + keyword.length() <= sourceCode.length())
-			{
-				String candidate = sourceCode.substring(position, position + keyword.length());
-				if (candidate.equals(keyword))
-				{
-					// Make sure it's a word boundary (not part of longer identifier)
-					if (position + keyword.length() < sourceCode.length())
-					{
-						char next = sourceCode.charAt(position + keyword.length());
-						if (Character.isLetterOrDigit(next) || next == '_')
-							continue;
-					}
+			if (matchesKeywordAt(sourceCode, position, keyword))
+				return true;
+		}
+		return false;
+	}
 
-					if (position > 0)
-					{
-						char prev = sourceCode.charAt(position - 1);
-						if (Character.isLetterOrDigit(prev) || prev == '_')
-							continue;
-					}
+	/**
+	 * Checks if a keyword matches at the given position with word boundaries.
+	 *
+	 * @param sourceCode the source code string
+	 * @param position the position to check
+	 * @param keyword the keyword to match
+	 * @return true if the keyword matches at this position
+	 */
+	private static boolean matchesKeywordAt(String sourceCode, int position, String keyword)
+	{
+		if (position + keyword.length() > sourceCode.length())
+			return false;
 
-					return true;
-				}
-			}
+		String candidate = sourceCode.substring(position, position + keyword.length());
+		if (!candidate.equals(keyword))
+			return false;
+
+		// Check word boundary after keyword
+		if (position + keyword.length() < sourceCode.length())
+		{
+			char next = sourceCode.charAt(position + keyword.length());
+			if (Character.isLetterOrDigit(next) || next == '_')
+				return false;
 		}
 
-		return false;
+		// Check word boundary before keyword
+		if (position > 0)
+		{
+			char prev = sourceCode.charAt(position - 1);
+			if (Character.isLetterOrDigit(prev) || prev == '_')
+				return false;
+		}
+
+		return true;
 	}
 
 	/**
