@@ -220,6 +220,62 @@ public Failure(String message)
 **Rationale**: JavaDoc `@throws` must accurately document the actual exception type thrown. Mismatched
 exception types mislead API consumers who may catch the wrong exception type.
 
+### FormattingConfiguration Pattern - Validation and Documentation
+**Detection Pattern**: Record implementing `FormattingConfiguration` with compact constructor
+**Applies to**: All `*Configuration` records that implement `FormattingConfiguration`
+**Required Pattern**:
+1. Use `requireThat(ruleId, "ruleId").isNotBlank()` (NOT `.isNotNull()` - blank ruleId is invalid)
+2. Document `@throws NullPointerException` and `@throws IllegalArgumentException` in record JavaDoc
+3. Do NOT chain `.isNotNull().isNotBlank()` (redundant - `isNotBlank()` implies `isNotNull()`)
+**Detection Commands**:
+```bash
+# Find FormattingConfiguration implementations with weak validation
+grep -rn -A5 'implements FormattingConfiguration' --include="*.java" . | \
+  grep -E 'isNotNull\(\)' | grep -v 'isNotBlank'
+
+# Find missing @throws documentation
+grep -rn -B20 'implements FormattingConfiguration' --include="*.java" . | \
+  grep -L '@throws'
+```
+**Examples**:
+```java
+// VIOLATION - isNotNull() allows blank ruleId
+public WhitespaceFormattingConfiguration
+{
+    requireThat(ruleId, "ruleId").isNotNull();
+}
+
+// VIOLATION - Redundant chain
+public BraceFormattingConfiguration
+{
+    requireThat(ruleId, "ruleId").isNotNull().isNotBlank();  // isNotNull() is redundant
+}
+
+// VIOLATION - Missing @throws documentation
+/**
+ * @param ruleId the rule ID
+ */
+public record MyConfiguration(String ruleId) implements FormattingConfiguration { }
+
+// CORRECT - Proper validation and documentation
+/**
+ * @param ruleId the rule ID
+ * @throws NullPointerException     if {@code ruleId} is null
+ * @throws IllegalArgumentException if {@code ruleId} is blank
+ */
+public record WhitespaceFormattingConfiguration(String ruleId, ...)
+    implements FormattingConfiguration
+{
+    public WhitespaceFormattingConfiguration
+    {
+        requireThat(ruleId, "ruleId").isNotBlank();
+    }
+}
+```
+**Rationale**: Configuration ruleId values are used for identification and reporting. A blank ruleId is
+semantically meaningless and would cause confusing output. The validation and documentation patterns must
+be consistent across all FormattingConfiguration implementations.
+
 ### Defensive Copies - Create Once in Constructor
 **Detection Pattern**: `return List.copyOf\(` or `return Collections.unmodifiable` in getter methods
 **Violation**: Creating defensive copy on every getter call for immutable fields
@@ -678,6 +734,159 @@ grep -rn '<b>Thread-safety</b>:.*try-finally cleanup' --include="*.java" .
 of thread-safety documentation implies the class is not thread-safe.
 
 ## TIER 3 QUALITY - Best Practices
+
+### Constants - Prefer Immutable Collections Over Arrays
+**Detection Pattern**: `(private|public)\s+static\s+final\s+\w+\[\]\s+\w+\s*=\s*\{`
+**Violation**: Using array literals for constant collections of objects
+**Correct**: Use `List.of()`, `Set.of()`, or `Map.of()` for immutable constant collections
+**Detection Commands**:
+```bash
+# Find array constant declarations (object types)
+grep -rn -E 'static\s+final\s+String\[\]' --include="*.java" .
+grep -rn -E 'static\s+final\s+\w+\[\]\s+\w+\s*=\s*\{' --include="*.java" .
+
+# Find Arrays.asList() that could be List.of()
+grep -rn 'Arrays\.asList(' --include="*.java" .
+
+# Find new HashSet<>(Arrays.asList(...)) that could be Set.of()
+grep -rn 'new HashSet.*Arrays\.asList' --include="*.java" .
+```
+**Examples**:
+```java
+// VIOLATION - Array constant
+private static final String[] CONTROL_KEYWORDS = {
+    "if", "else", "while", "for", "switch", "synchronized", "try", "catch", "do"
+};
+
+// CORRECT - Immutable List
+private static final List<String> CONTROL_KEYWORDS = List.of(
+    "if", "else", "while", "for", "switch", "synchronized", "try", "catch", "do");
+
+// VIOLATION - Arrays.asList for constant
+private static final List<String> OPERATORS = Arrays.asList("+", "-", "*", "/");
+
+// CORRECT - List.of()
+private static final List<String> OPERATORS = List.of("+", "-", "*", "/");
+
+// VIOLATION - HashSet with Arrays.asList for constant unique values
+private static final Set<String> RESERVED_WORDS = new HashSet<>(Arrays.asList("class", "interface", "enum"));
+
+// CORRECT - Set.of()
+private static final Set<String> RESERVED_WORDS = Set.of("class", "interface", "enum");
+
+// VIOLATION - Map constant with put() calls
+private static final Map<String, Integer> PRECEDENCE = new HashMap<>();
+static {
+    PRECEDENCE.put("+", 1);
+    PRECEDENCE.put("*", 2);
+}
+
+// CORRECT - Map.of()
+private static final Map<String, Integer> PRECEDENCE = Map.of("+", 1, "*", 2);
+```
+**Exception**: Primitive arrays (`int[]`, `char[]`, `byte[]`, etc.) - `List.of()` requires object types and
+autoboxing has performance implications for large arrays. Use primitive arrays when performance matters.
+**Rationale**: Immutable collections from factory methods are:
+- Truly immutable (arrays can be modified even when `final`)
+- More expressive of intent (constant data shouldn't change)
+- Null-hostile (fail fast on null elements)
+- More memory efficient (optimized internal representations)
+
+### Performance - Cache Expensive Method Calls in Loops
+**Detection Pattern**: Same expensive method called multiple times with identical arguments in a loop
+**Violation**: Redundant calls to expensive methods (O(n) or worse) when result is already known
+**Correct**: Call once at loop start, cache result, reuse cached value
+**Detection Commands**:
+```bash
+# Find methods called multiple times in same loop body (manual review required)
+grep -rn -A30 'for.*{' --include="*.java" . | grep -E '(\w+)\([^)]*\).*\1\([^)]*\)'
+
+# Common expensive patterns to check
+grep -rn 'isIn.*(' --include="*.java" . | grep -B5 -A5 'for\s*('
+grep -rn 'contains.*(' --include="*.java" . | grep -B5 -A5 'for\s*('
+```
+**Examples**:
+```java
+// VIOLATION - isInLiteralOrComment() called 4 times per iteration with same arguments
+for (int i = 0; i < sourceCode.length(); ++i) {
+    if (isInLiteralOrComment(sourceCode, i))  // O(n) - scans from 0 to i
+        continue;
+    if (current == ',' && !isInLiteralOrComment(sourceCode, i))  // Redundant!
+        checkComma(i);
+    if (current == '(' && !isInLiteralOrComment(sourceCode, i))  // Redundant!
+        checkParen(i);
+}
+
+// CORRECT - Call once, use result (or structure code so early-exit handles it)
+for (int i = 0; i < sourceCode.length(); ++i) {
+    if (isInLiteralOrComment(sourceCode, i))
+        continue;  // If we get past this, we know we're NOT in literal/comment
+    char current = sourceCode.charAt(i);
+    checkComma(sourceCode, i, current);      // No redundant check needed
+    checkParentheses(sourceCode, i, current); // No redundant check needed
+}
+
+// ALTERNATIVE - Cache when result needed multiple times in different branches
+for (int i = 0; i < sourceCode.length(); ++i) {
+    boolean inLiteralOrComment = isInLiteralOrComment(sourceCode, i);
+    if (inLiteralOrComment && needsSpecialHandling(i))
+        handleSpecial(i);
+    else if (!inLiteralOrComment)
+        processNormal(i);
+}
+```
+**Rationale**: Expensive methods (string scanning, regex matching, collection searches) can dominate loop
+performance when called redundantly. Structure code to call once and reuse, or use early-exit patterns that
+make the result implicitly known.
+
+### Performance - Cache Non-Trivial Method Return Values
+**Detection Pattern**: Same method called multiple times with identical arguments when result doesn't change
+**Violation**: Repeated calls to methods that allocate or compute (e.g., `toString()`, `toArray()`, `stream()`)
+**Correct**: Assign result to variable once, reuse the variable
+**Detection Commands**:
+```bash
+# Find repeated toString() calls (often in same method)
+grep -rn '\.toString()' --include="*.java" . | awk -F: '{print $1}' | sort | uniq -c | sort -rn | head -20
+
+# Find multiple StringBuilder.toString() in loops
+grep -rn -A20 'for.*{' --include="*.java" . | grep 'result\.toString()'
+```
+**Examples**:
+```java
+// VIOLATION - 10 calls to result.toString() per iteration
+for (int i = result.length() - 1; i >= 0; --i) {
+    if (isStartOfComment(result.toString(), i)) continue;
+    if (isEndOfComment(result.toString(), i)) continue;
+    if (isInLiteral(result.toString(), i)) continue;
+    if (isBinaryOperator(result.toString(), i)) { ... }
+    if (isKeyword(result.toString(), i)) { ... }
+    // Each toString() creates a new String object!
+}
+
+// CORRECT - Cache once per iteration, reuse
+for (int i = result.length() - 1; i >= 0; --i) {
+    String str = result.toString();  // One allocation per iteration
+    if (isStartOfComment(str, i)) continue;
+    if (isEndOfComment(str, i)) continue;
+    if (isInLiteral(str, i)) continue;
+    if (isBinaryOperator(str, i)) { ... }
+    if (isKeyword(str, i)) { ... }
+}
+
+// VIOLATION - Repeated method call in tight loop
+for (int i = 0; i < list.size(); ++i) {  // size() called N times
+    process(list.get(i));
+}
+
+// CORRECT - Cache size
+for (int i = 0, size = list.size(); i < size; ++i) {
+    process(list.get(i));
+}
+```
+**When caching is safe**: When the underlying data doesn't change between calls. If modifications occur
+(e.g., `StringBuilder.insert()`), cache at iteration start and let loop iteration invalidate it naturally.
+**Rationale**: Methods like `toString()`, `toArray()`, `stream()` allocate new objects. In loops, this can
+create thousands of short-lived objects causing GC pressure and cache pollution.
 
 ### Error Handling - Default Return Values
 **Violation**: Catching exceptions and returning default/fallback values instead of propagating errors (either

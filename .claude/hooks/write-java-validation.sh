@@ -4,6 +4,10 @@
 # ADDED: 2025-11-04 after engineer agent used wrong requireThat() import and
 # parameter order during implement-formatter-api task, causing 20+ compilation errors
 # PREVENTS: Wrong requireThat() imports and parameter order violations
+#
+# UPDATED: 2025-12-11 - Added .trim() detection after agents used trim() instead of
+# strip() in implement-indentation-formatting task despite style guide rule existing
+# PREVENTS: Using .trim() instead of .strip() (Unicode whitespace handling)
 
 set -euo pipefail
 trap 'echo "ERROR in write-java-validation.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
@@ -44,6 +48,21 @@ if grep -E 'requireThat\s*\(\s*"[^"]+"\s*,' "$FILE_PATH" 2>/dev/null | head -1; 
   echo "See: docs/project/quality-guide.md § Parameter Validation" >&2
   echo "" >&2
   grep -n -E 'requireThat\s*\(\s*"[^"]+"\s*,' "$FILE_PATH" | head -5 >&2
+  # Don't fail - just warn
+fi
+
+# Pattern 3: Using .trim() instead of .strip() (Unicode whitespace)
+# Added: 2025-12-11 - style guide rule existed but was violated
+if grep -E '\.trim\s*\(\s*\)' "$FILE_PATH" 2>/dev/null | head -1 > /dev/null; then
+  echo "⚠️  WARNING: .trim() usage detected in $FILE_PATH" >&2
+  echo "" >&2
+  echo "Style guide requires .strip() instead of .trim()" >&2
+  echo "Reason: strip() handles Unicode whitespace, trim() only handles ASCII" >&2
+  echo "" >&2
+  echo "See: .claude/rules/java-style.md § Code Patterns" >&2
+  echo "" >&2
+  echo "Occurrences:" >&2
+  grep -n -E '\.trim\s*\(\s*\)' "$FILE_PATH" | head -5 >&2
   # Don't fail - just warn
 fi
 
