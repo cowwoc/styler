@@ -148,8 +148,18 @@ without losing unrelated work.
 **Procedure** (from task worktree, before merge to main):
 
 ```bash
-# Step 1: Ensure you're in the task worktree
+# Step 1: Ensure you're in the task worktree AND on the correct branch
 cd /workspace/tasks/{task-name}/code
+
+# ⚠️ CRITICAL: Verify you're on the task branch, NOT an agent branch
+CURRENT_BRANCH=$(git branch --show-current)
+if [[ "$CURRENT_BRANCH" != "{task-name}" ]]; then
+  echo "❌ ERROR: On branch '$CURRENT_BRANCH', expected '{task-name}'"
+  echo "   Common mistake: In agent worktree instead of task worktree"
+  echo "   Fix: cd /workspace/tasks/{task-name}/code (not agents/{agent}/code)"
+  exit 1
+fi
+echo "✅ On correct branch: $CURRENT_BRANCH"
 
 # Step 2: Count commits on task branch
 COMMIT_COUNT=$(git rev-list --count main..{task-name})

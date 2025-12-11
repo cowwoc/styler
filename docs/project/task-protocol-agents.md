@@ -278,6 +278,46 @@ Write: FileMetadata.java
 # → Catches any new errors early
 ```
 
+### ⚠️ CRITICAL: Commit Partial Progress {#commit-partial-progress}
+
+**ALWAYS commit your work, even if tests fail.** Partial progress is better than no progress.
+
+**Why This Matters**:
+- Agent work is NOT persisted unless committed
+- If you don't commit, ALL your work is lost when the session ends
+- Main agent cannot merge or review uncommitted changes
+- Re-invocation starts from scratch without your progress
+
+**Commit Pattern**:
+```bash
+# Even with test failures, COMMIT your work
+git add -A
+git commit -m "[WIP] description of work done
+
+Tests: X passing, Y failing
+Remaining: list of known issues"
+
+# Main agent can then:
+# - Merge partial progress
+# - Re-invoke you to fix specific issues
+# - Have another agent continue from your progress
+```
+
+**Example** (from real session):
+```
+❌ WRONG: Agent completed implementation but didn't commit due to 29 test failures
+   Result: ALL work lost, had to start over
+
+✅ CORRECT: Agent commits with test failures
+   Result: Progress preserved, targeted fix invocation reduced failures from 29 → 12 → 0
+```
+
+**When to Commit**:
+- After creating skeleton classes (even empty)
+- After implementing core logic (even if tests fail)
+- Before reporting any error or blocker
+- At regular intervals during long implementations
+
 ### Round Completion Criteria {#round-completion-criteria}
 
 Main agent checks these conditions before transitioning to next state:
