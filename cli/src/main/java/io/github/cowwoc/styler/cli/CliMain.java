@@ -207,7 +207,7 @@ public final class CliMain
 	 * @param config the configuration containing rule settings
 	 * @param options CLI options specifying operational mode
 	 * @return the built pipeline ready to process files
-	 * @throws NullPointerException if any parameter is null
+	 * @throws NullPointerException if any argument is null
 	 */
 	private FileProcessingPipeline buildPipeline(Config config, CLIOptions options)
 	{
@@ -286,7 +286,7 @@ public final class CliMain
 	 * @return the pipeline result (may indicate success or failure)
 	 * @throws SecurityException if file is rejected by security validation
 	 * @throws IOException if file cannot be read
-	 * @throws NullPointerException if any parameter is null
+	 * @throws NullPointerException if any argument is null
 	 */
 	private PipelineResult processFile(FileProcessingPipeline pipeline, Path filePath)
 	{

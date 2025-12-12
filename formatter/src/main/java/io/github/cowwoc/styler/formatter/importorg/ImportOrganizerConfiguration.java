@@ -20,7 +20,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * @param removeUnusedImports whether to remove imports not referenced in code
  * @param sortImportsAlphabetically whether to sort imports alphabetically within groups
  * @param customPatterns custom regex patterns for import grouping
- * @throws NullPointerException if any required parameter is null
+ * @throws NullPointerException if any required argument is null
  * @throws IllegalArgumentException if parameters are invalid
  */
 public record ImportOrganizerConfiguration(

@@ -17,8 +17,8 @@
 - C3b: Whitespace Formatting ✅ COMPLETE (2025-12-11)
 - C3c: Indentation Formatting ✅ COMPLETE (2025-12-11)
 
-**Phase B**: In progress (5/6 tasks - B2.5 pipeline stages remaining)
-**Phase C**: Blocked on B2.5 (C1, C2, C3 done; C4, C5, C6 blocked)
+**Phase B**: Complete (6/6 tasks)
+**Phase C**: In progress (3/6 tasks - C4, C5, C6 now unblocked)
 
 **Phase A - ✅ COMPLETE (5/5 tasks)**:
 - ✅ A0: styler-formatter module (defines FormattingRule interfaces)
@@ -144,7 +144,7 @@ B2-B5 have sequential dependencies.
   - **Note**: Stage implementations return `StageResult.Skipped` - see B2.5 for actual implementation
 
 ### B2.5. Pipeline Stage Implementation (Critical Path)
-- [ ] **READY:** `implement-pipeline-stages` - Wire parser and formatters into pipeline stages
+- [x] **COMPLETE:** `implement-pipeline-stages` - Wire parser and formatters into pipeline stages (2025-12-13)
   - **Dependencies**: A1 ✅ (parser), B1 ✅ (2 rules), C3 ✅ (3 rules), B2 ✅ (pipeline infrastructure)
   - **Blocks**: C4, C5, C6, D1 (all need functional pipeline to measure real work)
   - **Parallelizable With**: None (critical path)

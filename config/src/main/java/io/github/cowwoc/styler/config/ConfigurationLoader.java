@@ -47,7 +47,7 @@ public final class ConfigurationLoader
 	 * @param discovery the discovery strategy to use
 	 * @param parser    the parser to use for TOML files
 	 * @param merger    the merger to use for combining configurations
-	 * @throws NullPointerException if any parameter is null
+	 * @throws NullPointerException if any argument is null
 	 */
 	public ConfigurationLoader(ConfigDiscovery discovery, ConfigParser parser, ConfigMerger merger)
 	{

@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.security;
 
+import java.time.Duration;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
@@ -11,7 +13,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 public record SecurityConfig(
 	long maxFileSizeBytes,
 	long maxHeapBytes,
-	long executionTimeoutMs,
+	Duration executionTimeout,
 	int maxRecursionDepth)
 {
 	/**
@@ -24,15 +26,17 @@ public record SecurityConfig(
 	 *
 	 * @param maxFileSizeBytes  maximum allowed file size in bytes (must be positive)
 	 * @param maxHeapBytes      maximum allowed heap memory in bytes (must be positive)
-	 * @param executionTimeoutMs maximum execution time per file in milliseconds (must be positive)
+	 * @param executionTimeout  maximum execution time per file (must be positive)
 	 * @param maxRecursionDepth maximum recursion depth allowed (must be positive)
+	 * @throws NullPointerException     if {@code executionTimeout} is null
 	 * @throws IllegalArgumentException if any limit is non-positive
 	 */
 	public SecurityConfig
 	{
 		requireThat(maxFileSizeBytes, "maxFileSizeBytes").isPositive();
 		requireThat(maxHeapBytes, "maxHeapBytes").isPositive();
-		requireThat(executionTimeoutMs, "executionTimeoutMs").isPositive();
+		requireThat(executionTimeout, "executionTimeout").isNotNull();
+		requireThat(executionTimeout.toMillis(), "executionTimeout").isPositive();
 		requireThat(maxRecursionDepth, "maxRecursionDepth").isPositive();
 	}
 
@@ -43,7 +47,7 @@ public record SecurityConfig(
 	{
 		private long maxFileSizeBytes = 10 * 1024 * 1024; // 10MB
 		private long maxHeapBytes = 512 * 1024 * 1024; // 512MB
-		private long executionTimeoutMs = 30_000; // 30 seconds
+		private Duration executionTimeout = Duration.ofSeconds(30);
 		private int maxRecursionDepth = 1000;
 
 		/**
@@ -77,14 +81,16 @@ public record SecurityConfig(
 		/**
 		 * Sets the maximum execution timeout per file.
 		 *
-		 * @param executionTimeoutMs timeout in milliseconds (must be positive)
+		 * @param executionTimeout the timeout duration (must be positive)
 		 * @return this builder
+		 * @throws NullPointerException     if {@code executionTimeout} is null
 		 * @throws IllegalArgumentException if timeout is non-positive
 		 */
-		public Builder executionTimeoutMs(long executionTimeoutMs)
+		public Builder executionTimeout(Duration executionTimeout)
 		{
-			requireThat(executionTimeoutMs, "executionTimeoutMs").isPositive();
-			this.executionTimeoutMs = executionTimeoutMs;
+			requireThat(executionTimeout, "executionTimeout").isNotNull();
+			requireThat(executionTimeout.toMillis(), "executionTimeout").isPositive();
+			this.executionTimeout = executionTimeout;
 			return this;
 		}
 
@@ -109,7 +115,7 @@ public record SecurityConfig(
 		 */
 		public SecurityConfig build()
 		{
-			return new SecurityConfig(maxFileSizeBytes, maxHeapBytes, executionTimeoutMs,
+			return new SecurityConfig(maxFileSizeBytes, maxHeapBytes, executionTimeout,
 				maxRecursionDepth);
 		}
 	}

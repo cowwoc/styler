@@ -1,10 +1,13 @@
 package io.github.cowwoc.styler.pipeline.parallel.test;
 
-import static org.testng.Assert.assertTrue;
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static org.testng.Assert.assertEquals;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,17 +45,16 @@ public class BatchProcessorPerformanceTest
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
-			long startTime = System.currentTimeMillis();
+			Instant startTime = Instant.now();
 			BatchResult result = processor.processFiles(files);
-			long endTime = System.currentTimeMillis();
+			Duration elapsed = Duration.between(startTime, Instant.now());
 
-			long elapsedMillis = endTime - startTime;
-			double elapsedSeconds = elapsedMillis / 1000.0;
+			double elapsedSeconds = elapsed.toMillis() / 1000.0;
 			int throughput = (int) (100 / elapsedSeconds);
 
 			// Expect at least some throughput (reasonable for test environment)
-			assertTrue(throughput >= 50, "Throughput should be >= 50 files/sec, was: " + throughput);
-			assertTrue(result.successCount() == 100, "All 100 files should be processed");
+			requireThat(throughput, "throughput").isGreaterThanOrEqualTo(50);
+			assertEquals(result.successCount(), 100, "All 100 files should be processed");
 		}
 		finally
 		{
@@ -90,16 +92,15 @@ public class BatchProcessorPerformanceTest
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
-			long startTime = System.currentTimeMillis();
+			Instant startTime = Instant.now();
 			BatchResult result = processor.processFiles(files);
-			long endTime = System.currentTimeMillis();
+			Duration elapsed = Duration.between(startTime, Instant.now());
 
 			// Verify all files were processed
-			assertTrue(result.successCount() == fileCount, "All files should be processed");
-			long elapsedMillis = endTime - startTime;
+			assertEquals(result.successCount(), fileCount, "All files should be processed");
 
 			// Should complete in reasonable time (not exact linear test, just completion verification)
-			assertTrue(elapsedMillis < 60_000, "Processing should complete within 60 seconds");
+			requireThat(elapsed, "elapsed").isLessThan(Duration.ofSeconds(60));
 		}
 		finally
 		{
@@ -120,7 +121,7 @@ public class BatchProcessorPerformanceTest
 	/**
 	 * Tests that high concurrency processing completes without deadlock.
 	 */
-	@Test(groups = "performance")
+	@Test(groups = "performance", timeOut = 30_000)
 	public void shouldHandleHighConcurrencyWithoutDeadlock() throws IOException, InterruptedException
 	{
 		FileProcessingPipeline pipeline = TestPipelineFactory.createDefaultPipeline();
@@ -134,15 +135,8 @@ public class BatchProcessorPerformanceTest
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
-			long startTime = System.currentTimeMillis();
 			BatchResult result = processor.processFiles(files);
-			long endTime = System.currentTimeMillis();
-
-			long elapsedMillis = endTime - startTime;
-
-			// Should complete without deadlock (30 second timeout for this test)
-			assertTrue(elapsedMillis < 30_000, "Should complete within 30 seconds to avoid deadlock timeout");
-			assertTrue(result.totalFiles() == 50, "All 50 files should be processed");
+			assertEquals(result.totalFiles(), 50, "All 50 files should be processed");
 		}
 		finally
 		{

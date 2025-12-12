@@ -27,7 +27,7 @@ public final class LineWrapper
 	 * @param contextDetector AST-based context detector for semantic analysis
 	 * @param transformationContext the transformation context with source access
 	 * @param config the line length configuration
-	 * @throws NullPointerException if any parameter is null
+	 * @throws NullPointerException if any argument is null
 	 */
 	public LineWrapper(ContextDetector contextDetector, TransformationContext transformationContext,
 		LineLengthConfiguration config)

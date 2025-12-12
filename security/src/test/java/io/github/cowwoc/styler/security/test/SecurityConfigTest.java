@@ -3,6 +3,9 @@ package io.github.cowwoc.styler.security.test;
 import io.github.cowwoc.styler.security.*;
 
 import org.testng.annotations.Test;
+
+import java.time.Duration;
+
 import static org.testng.Assert.*;
 
 /**
@@ -17,7 +20,7 @@ public class SecurityConfigTest
 
 		assertTrue(config.maxFileSizeBytes() > 0);
 		assertTrue(config.maxHeapBytes() > 0);
-		assertTrue(config.executionTimeoutMs() > 0);
+		assertTrue(config.executionTimeout().toMillis() > 0);
 		assertTrue(config.maxRecursionDepth() > 0);
 	}
 
@@ -27,13 +30,13 @@ public class SecurityConfigTest
 		SecurityConfig config = new SecurityConfig.Builder()
 			.maxFileSizeBytes(1024)
 			.maxHeapBytes(2048)
-			.executionTimeoutMs(500)
+			.executionTimeout(Duration.ofMillis(500))
 			.maxRecursionDepth(100)
 			.build();
 
 		assertEquals(config.maxFileSizeBytes(), 1024);
 		assertEquals(config.maxHeapBytes(), 2048);
-		assertEquals(config.executionTimeoutMs(), 500);
+		assertEquals(config.executionTimeout(), Duration.ofMillis(500));
 		assertEquals(config.maxRecursionDepth(), 100);
 	}
 
@@ -58,7 +61,7 @@ public class SecurityConfigTest
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void builderRejectsNegativeTimeout()
 	{
-		new SecurityConfig.Builder().executionTimeoutMs(-1);
+		new SecurityConfig.Builder().executionTimeout(Duration.ofMillis(-1));
 	}
 
 	@Test(expectedExceptions = IllegalArgumentException.class)
@@ -70,7 +73,7 @@ public class SecurityConfigTest
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void recordConstructorRejectsInvalidLimits()
 	{
-		new SecurityConfig(0, 1, 1, 1);
+		new SecurityConfig(0, 1, Duration.ofMillis(1), 1);
 	}
 
 	@Test
@@ -88,7 +91,7 @@ public class SecurityConfigTest
 		SecurityConfig config = new SecurityConfig.Builder()
 			.maxFileSizeBytes(100)
 			.maxHeapBytes(200)
-			.executionTimeoutMs(300)
+			.executionTimeout(Duration.ofMillis(300))
 			.maxRecursionDepth(400)
 			.build();
 

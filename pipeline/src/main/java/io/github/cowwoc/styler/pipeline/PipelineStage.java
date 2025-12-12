@@ -14,9 +14,10 @@ interface PipelineStage
 	 * Executes this stage with the given processing context.
 	 *
 	 * @param context the processing context (immutable)
+	 * @param previousStageData data produced by the previous stage, or null if this is the first stage
 	 * @return the stage result (success, failure, or skipped)
 	 */
-	StageResult execute(ProcessingContext context);
+	StageResult execute(ProcessingContext context, Object previousStageData);
 
 	/**
 	 * Returns the human-readable name of this stage.

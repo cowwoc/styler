@@ -9,6 +9,8 @@ import java.util.Optional;
 
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
+import io.github.cowwoc.styler.pipeline.internal.FormatResult;
+import io.github.cowwoc.styler.pipeline.output.ViolationReport;
 
 /**
  * Aggregated results from processing a single file through the pipeline.
@@ -113,22 +115,36 @@ public final class PipelineResult implements AutoCloseable
 
 	/**
 	 * Returns all formatting violations collected during pipeline execution.
+	 * <p>
+	 * Note: A stage with {@code StageResult.Success} can contain violations. "Success" means
+	 * the stage executed without errors - detecting violations is the intended behavior of
+	 * the analysis, not a failure. The pipeline produces exactly one {@code ViolationReport}
+	 * from the ValidationStage.
 	 *
-	 * @return unmodifiable list of violations, empty if no violations found
+	 * @return unmodifiable list of violations, empty if no violations found or if
+	 *     ValidationStage was not reached
 	 */
 	public List<FormattingViolation> violations()
 	{
-		// Extract violations from FormatStage result
-		// For now, return empty list - will be populated by stages
+		// The pipeline produces exactly one ViolationReport from ValidationStage
+		for (StageResult result : stageResults)
+		{
+			if (result instanceof StageResult.Success success &&
+				success.data() instanceof ViolationReport report)
+			{
+				return report.violations();
+			}
+		}
 		return List.of();
 	}
 
 	/**
 	 * Returns the formatted source code if formatting was applied.
 	 * <p>
+	 * The pipeline produces exactly one {@code FormatResult} from the FormatStage.
 	 * Returns empty if:
 	 * <ul>
-	 *     <li>{@code validationOnly} mode was enabled</li>
+	 *     <li>{@code validationOnly} mode was enabled (source unchanged)</li>
 	 *     <li>{@code FormatStage} failed before producing output</li>
 	 * </ul>
 	 *
@@ -136,8 +152,15 @@ public final class PipelineResult implements AutoCloseable
 	 */
 	public Optional<String> formattedSource()
 	{
-		// Extract from OutputStage result
-		// For now, return empty
+		// The pipeline produces exactly one FormatResult from FormatStage
+		for (StageResult result : stageResults)
+		{
+			if (result instanceof StageResult.Success success &&
+				success.data() instanceof FormatResult formatResult)
+			{
+				return Optional.of(formatResult.formattedSource());
+			}
+		}
 		return Optional.empty();
 	}
 

@@ -1,5 +1,45 @@
 # Changelog
 
+## 2025-12-13
+
+### B2.5: Pipeline Stage Implementation ✅
+
+**Completion Date**: 2025-12-13
+
+**Task**: `implement-pipeline-stages`
+
+**Problem Solved**:
+- Pipeline stages returned `Skipped` status instead of performing real work
+- No integration between parser, formatters, and pipeline infrastructure
+- Missing error handling for parse failures and formatting violations
+
+**Solution Implemented**:
+- Railway-Oriented Programming pattern for error handling through pipeline stages
+- ParseStage and FormatStage as concrete implementations
+- Internal value types for stage data flow (ParsedData, FormatResult)
+- DefaultTransformationContext for passing data between stages
+
+**Key Components**:
+- **ParseStage**: Parses Java files using A1 parser, stores AST in context
+- **FormatStage**: Applies formatting rules to parsed AST, collects violations
+- **ParsedData**: Internal record holding parsed AST and source code
+- **FormatResult**: Internal record holding formatted output and violations
+- **DefaultTransformationContext**: Manages data flow between pipeline stages
+
+**Test Coverage**:
+- ParseStageTest: Parser integration, error handling, edge cases
+- FormatStageTest: Formatting rule application, violation detection
+- PipelineIntegrationTest: End-to-end pipeline execution
+
+**SecurityConfig Enhancements**:
+- Changed timeout configuration from `long` to `Duration`
+- Added NPE validation to ExecutionTimeoutException
+- Updated ExecutionTimeoutManager to use Instant/Duration
+
+**Unblocks**: C4 (concurrency benchmark), C5 (Maven plugin), C6 (performance benchmark), D1 (real-world testing)
+
+---
+
 ## 2025-12-11
 
 ### C3: Indentation Formatting - Consistent Tabs/Spaces ✅
