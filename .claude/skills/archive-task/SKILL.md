@@ -194,8 +194,16 @@ Update changelog.md (add entry)
   ↓
 Commit both atomically
   ↓
+[update-dependent-tasks skill: Unblock dependent tasks] ← MANDATORY
+  ↓
 [task-cleanup skill: Remove branches/worktrees]
 ```
+
+⚠️ **CRITICAL: After archiving, you MUST invoke update-dependent-tasks skill**
+
+When a task is marked complete, other tasks that depend on it may become unblocked.
+Failure to update dependent tasks leaves todo.md in an inconsistent state where
+tasks remain marked BLOCKED even though their dependencies are satisfied.
 
 ## Output Format
 
@@ -342,7 +350,8 @@ AFTER:
 
 ## Related Skills
 
-- **task-cleanup**: Follows archive-task (cleans branches/worktrees)
+- **update-dependent-tasks**: **MANDATORY** - Follows archive-task (unblocks dependent tasks)
+- **task-cleanup**: Follows update-dependent-tasks (cleans branches/worktrees)
 - **checkpoint-approval**: Precedes archive-task (gets user approval)
 - **git-merge-linear**: Merges task to main before archival
 
