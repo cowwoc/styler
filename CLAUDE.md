@@ -551,6 +551,14 @@ exist: `git branch -a` (2) Identify protected version branches: `git branch | gr
 Safety](docs/project/git-workflow.md#git-history-rewriting-safety) for complete safety procedures and
 examples.
 
+**🚨 NEVER Rebase Main Branch**
+
+`git rebase` on main is PROHIBITED. After merging task branches:
+- Rebasing main rewrites merged commits to appear as direct commits on main
+- This breaks the audit trail (can't distinguish task work from ad-hoc commits)
+- Enforcement: `block-main-rebase.sh` blocks `git rebase` when on main branch
+- If commit message needs fixing: Amend on task branch BEFORE merging to main
+
 **Pre-Deletion Validation** (MANDATORY before `git branch -D`): List all branches (`git branch -v`), check
 if branch matches version pattern (`^v[0-9]+$`), for version branches ERROR (cannot delete, use `git branch
 -f` to update), for non-version branches verify purpose before deletion (backup-* safe after verification,
