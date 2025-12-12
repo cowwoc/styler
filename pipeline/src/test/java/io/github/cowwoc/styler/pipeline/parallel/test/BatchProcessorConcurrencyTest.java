@@ -111,7 +111,7 @@ public class BatchProcessorConcurrencyTest
 	 * Tests that multiple batch processors can run concurrently with a shared pipeline.
 	 */
 	@Test
-	// Suppressed: try-with-resources cannot handle dynamically-sized collections of AutoCloseable resources
+	// Try-with-resources cannot handle dynamically-sized collections of AutoCloseable resources
 	@SuppressWarnings("PMD.UseTryWithResources")
 	public void shouldHandleMultipleConcurrentBatchProcessors() throws IOException, InterruptedException
 	{

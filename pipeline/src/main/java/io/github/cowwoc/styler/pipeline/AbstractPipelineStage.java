@@ -51,18 +51,19 @@ public abstract class AbstractPipelineStage implements PipelineStage
 	 * </ol>
 	 *
 	 * @param context the processing context
+	 * @param previousStageData data from the previous stage, or null if this is the first stage
 	 * @return the stage result
 	 * @throws NullPointerException if {@code context} is {@code null}
 	 */
 	@Override
-	public final StageResult execute(ProcessingContext context)
+	public final StageResult execute(ProcessingContext context, Object previousStageData)
 	{
 		requireThat(context, "context").isNotNull();
 
 		try
 		{
 			setup(context);
-			return executeStage(context);
+			return executeStage(context, previousStageData);
 		}
 		catch (Exception exception)
 		{
@@ -98,10 +99,12 @@ public abstract class AbstractPipelineStage implements PipelineStage
 	 * Subclasses must implement this method to perform their specific processing.
 	 *
 	 * @param context the processing context (immutable)
+	 * @param previousStageData data from the previous stage, or null if this is the first stage
 	 * @return the stage result
 	 * @throws Exception if processing fails
 	 */
-	protected abstract StageResult executeStage(ProcessingContext context) throws Exception;
+	protected abstract StageResult executeStage(ProcessingContext context, Object previousStageData)
+		throws Exception;
 
 	/**
 	 * Cleans up resources after stage execution.

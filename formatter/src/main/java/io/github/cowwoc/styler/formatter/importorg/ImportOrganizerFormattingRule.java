@@ -171,16 +171,17 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 	 *
 	 * @param config the configuration (may be null)
 	 * @return the configuration to use
+	 * @throws IllegalArgumentException if {@code config} is not null and not an
+	 *                                  {@link ImportOrganizerConfiguration}
 	 */
 	private ImportOrganizerConfiguration getConfig(FormattingConfiguration config)
 	{
 		if (config == null)
-		{
 			return ImportOrganizerConfiguration.defaultConfig();
-		}
-
-		requireThat(config, "config").isInstanceOf(ImportOrganizerConfiguration.class);
-		return (ImportOrganizerConfiguration) config;
+		if (config instanceof ImportOrganizerConfiguration importConfig)
+			return importConfig;
+		throw new IllegalArgumentException("config must be ImportOrganizerConfiguration, got: " +
+			config.getClass().getName());
 	}
 
 	/**

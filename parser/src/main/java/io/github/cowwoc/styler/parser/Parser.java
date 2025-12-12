@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -35,7 +36,7 @@ public final class Parser implements AutoCloseable
 
 	private final List<Token> tokens;
 	private final NodeArena arena;
-	private final long parsingDeadline;
+	private final Instant parsingDeadline;
 	private int position;
 	private int depth;
 
@@ -116,7 +117,7 @@ public final class Parser implements AutoCloseable
 		this.arena = new NodeArena();
 
 		// SEC-006: Set parsing deadline for timeout enforcement
-		this.parsingDeadline = System.currentTimeMillis() + SecurityConfig.PARSING_TIMEOUT_MS;
+		this.parsingDeadline = Instant.now().plusMillis(SecurityConfig.PARSING_TIMEOUT_MS);
 	}
 
 	/**
@@ -1613,7 +1614,7 @@ public final class Parser implements AutoCloseable
 		if (tokenCheckCounter >= TIMEOUT_CHECK_INTERVAL)
 		{
 			tokenCheckCounter = 0;
-			if (System.currentTimeMillis() > parsingDeadline)
+			if (Instant.now().isAfter(parsingDeadline))
 			{
 				throw new ParserException(
 					"Parsing timeout exceeded (" + SecurityConfig.PARSING_TIMEOUT_MS + "ms) at position " +
@@ -1681,7 +1682,7 @@ public final class Parser implements AutoCloseable
 	private void enterDepth()
 	{
 		// SEC-006: Check parsing timeout
-		if (System.currentTimeMillis() > parsingDeadline)
+		if (Instant.now().isAfter(parsingDeadline))
 		{
 			throw new ParserException(
 				"Parsing timeout exceeded (" + SecurityConfig.PARSING_TIMEOUT_MS + "ms) at position " +
