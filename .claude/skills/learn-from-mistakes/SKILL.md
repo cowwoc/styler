@@ -140,7 +140,10 @@ allowed:
 1. **Mistake Identification** - Gather context
 2. **Conversation Analysis** - Review logs
 3. **Root Cause Analysis** - Categorize and investigate cause
-4. **Configuration Updates** - Design prevention measures
+   - ⚠️ **STEP 1**: Documentation Verification (check if docs misled agent)
+   - **STEP 2**: Temporal Analysis (check for existing fixes)
+   - **STEP 3**: Triggering Thought (identify decision point)
+4. **Configuration Updates** - Design prevention measures (ONLY after docs verified)
 5. **Implement Updates** - Apply changes (BEFORE fixing immediate issue)
 6. **Validation** - Review completeness
 7. **Test by Reproduction** - ⚠️ Attempt to reproduce mistake to verify prevention
@@ -233,7 +236,76 @@ done
 
 ### Phase 3: Root Cause Analysis
 
-**⚠️ MANDATORY STEP 1: Check if Fix Already Exists (Temporal Analysis)**
+**⚠️ MANDATORY STEP 1: Documentation Verification**
+
+**CRITICAL**: Before creating ANY preventative measures (hooks, configs, etc.), verify that the
+documentation itself didn't mislead the agent.
+
+**Why This Step Exists**: Agents follow documentation. If documentation is incorrect, vague, or
+contradictory, the "mistake" may actually be the agent correctly following bad guidance. Creating hooks
+to prevent behavior that documentation encourages creates confusion and wasted effort.
+
+**Documentation Verification Procedure**:
+
+1. **Identify what documentation the agent should have consulted**:
+   - CLAUDE.md for general guidance
+   - docs/project/*.md for protocol-specific rules
+   - .claude/agents/*.md for agent-specific instructions
+
+2. **Search for relevant guidance**:
+   ```bash
+   # Search for keywords related to the mistake
+   grep -rn "todo.md\|archival\|commit.*main" docs/project/ CLAUDE.md
+   ```
+
+3. **Evaluate documentation quality**:
+
+   | Issue | Example | Fix Required |
+   |-------|---------|--------------|
+   | **Missing** | No guidance on when to edit todo.md | Add documentation FIRST |
+   | **Vague** | "Should" instead of "MUST" | Clarify with explicit rules |
+   | **Contradictory** | CLAUDE.md says X, protocol says Y | Resolve conflict |
+   | **Incorrect** | Documentation describes wrong workflow | Fix documentation |
+   | **Clear but violated** | Agent ignored clear guidance | THEN create enforcement |
+
+4. **Document findings BEFORE proceeding**:
+   ```
+   DOCUMENTATION VERIFICATION:
+   - Relevant docs checked: [list files]
+   - Documentation status: MISSING | VAGUE | CONTRADICTORY | INCORRECT | CLEAR
+   - If not CLEAR:
+     - Problem found: [specific issue]
+     - Documentation fix needed: YES/NO
+     - Fix applied: [commit hash if applicable]
+   - Ready for enforcement: YES (only if docs are now clear)
+   ```
+
+**CRITICAL**: If documentation is not CLEAR, fix documentation BEFORE creating hooks/enforcement.
+Creating enforcement for unclear rules causes:
+- Agent confusion (following docs but blocked by hooks)
+- Duplicate/conflicting guidance
+- Wasted effort on wrong prevention
+
+**Example - WRONG Approach**:
+```
+# Documentation says nothing about todo.md edits on main
+# Agent edits todo.md on main
+# ❌ WRONG: Create hook to block todo.md edits
+# Result: Hook blocks behavior that docs never prohibited
+```
+
+**Example - CORRECT Approach**:
+```
+# Documentation says nothing about todo.md edits on main
+# Agent edits todo.md on main
+# Step 1: Add documentation clarifying the correct workflow
+# Step 2: ONLY THEN consider if enforcement hook is needed
+# Step 3: If hook created, it enforces documented policy
+```
+
+---
+
+**⚠️ MANDATORY STEP 2: Check if Fix Already Exists (Temporal Analysis)**
 
 **CRITICAL**: Before creating new fixes, determine if this is a NEW mistake or an INEFFECTIVE EXISTING FIX.
 
@@ -318,7 +390,7 @@ If **INEFFECTIVE FIX** detected:
 - Design improvement or replacement (not duplicate)
 - Document in commit message: "Improve/Replace ineffective fix from commit <hash>"
 
-**⚠️ MANDATORY STEP 2: Identify Triggering Thought Before Creating Fixes**
+**⚠️ MANDATORY STEP 3: Identify Triggering Thought Before Creating Fixes**
 
 After temporal analysis, MUST:
 
