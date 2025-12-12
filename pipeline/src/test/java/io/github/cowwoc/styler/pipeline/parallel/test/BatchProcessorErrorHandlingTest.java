@@ -177,7 +177,7 @@ public class BatchProcessorErrorHandlingTest
 	/**
 	 * Tests that interruptions are handled gracefully without deadlock.
 	 */
-	@Test
+	@Test(timeOut = 30_000)
 	public void shouldHandleInterruptionGracefully() throws IOException, InterruptedException
 	{
 		FileProcessingPipeline pipeline = TestPipelineFactory.createDefaultPipeline();

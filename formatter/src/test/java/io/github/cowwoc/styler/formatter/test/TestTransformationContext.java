@@ -48,7 +48,7 @@ public final class TestTransformationContext implements TransformationContext
 	 * @param sourceCode the source code
 	 * @param arena      the pre-configured arena
 	 * @param rootNode   the root node index
-	 * @throws NullPointerException if any parameter is null
+	 * @throws NullPointerException if any argument is null
 	 */
 	public TestTransformationContext(String sourceCode, NodeArena arena, NodeIndex rootNode)
 	{

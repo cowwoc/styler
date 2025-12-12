@@ -2,6 +2,7 @@ package io.github.cowwoc.styler.formatter.test.linelength;
 
 import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 
+import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
@@ -215,9 +216,9 @@ public class LineLengthFormattingRuleTest
 	}
 
 	/**
-	 * Dummy configuration class for testing type validation.
+	 * A wrong configuration type for testing type validation.
 	 */
-	private record WrongConfigType() implements io.github.cowwoc.styler.formatter.FormattingConfiguration
+	private record WrongConfigType() implements FormattingConfiguration
 	{
 		@Override
 		public String ruleId()

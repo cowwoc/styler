@@ -1,11 +1,13 @@
 package io.github.cowwoc.styler.pipeline.parallel.test;
 
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,16 +45,15 @@ public class VirtualThreadExecutorTest
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
-			long startTime = System.currentTimeMillis();
+			Instant startTime = Instant.now();
 			BatchResult result = processor.processFiles(files);
-			long endTime = System.currentTimeMillis();
+			Duration elapsed = Duration.between(startTime, Instant.now());
 
 			// Verify all files were processed
 			assertEquals(result.successCount(), 10);
-			long elapsedMillis = endTime - startTime;
 
 			// Should complete in reasonable time (not instantaneous like sequential)
-			assertTrue(elapsedMillis < 30_000, "Should complete within 30 seconds");
+			requireThat(elapsed, "elapsed").isLessThan(Duration.ofSeconds(30));
 		}
 		finally
 		{
@@ -98,7 +99,7 @@ public class VirtualThreadExecutorTest
 	/**
 	 * Tests that execution completes without deadlock.
 	 */
-	@Test
+	@Test(timeOut = 60_000)
 	public void shouldCompleteWithoutDeadlock() throws IOException, InterruptedException
 	{
 		FileProcessingPipeline pipeline = TestPipelineFactory.createDefaultPipeline();
@@ -112,12 +113,7 @@ public class VirtualThreadExecutorTest
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
-			long startTime = System.currentTimeMillis();
 			BatchResult result = processor.processFiles(files);
-			long endTime = System.currentTimeMillis();
-
-			// Should not hang or deadlock
-			assertTrue(endTime - startTime < 60_000, "Should complete without deadlock");
 			assertEquals(result.totalFiles(), 30);
 		}
 		finally

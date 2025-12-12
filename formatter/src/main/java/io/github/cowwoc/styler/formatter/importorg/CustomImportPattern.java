@@ -11,7 +11,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  *
  * @param groupName name of the import group this pattern belongs to
  * @param pattern   compiled regex pattern to match import qualified names
- * @throws NullPointerException     if any parameter is null
+ * @throws NullPointerException     if any argument is null
  * @throws IllegalArgumentException if groupName is empty
  */
 public record CustomImportPattern(
@@ -35,7 +35,7 @@ public record CustomImportPattern(
 	 * @param groupName name of the import group this pattern belongs to
 	 * @param regex     regex pattern string to match import qualified names
 	 * @return a new CustomImportPattern
-	 * @throws NullPointerException     if any parameter is null
+	 * @throws NullPointerException     if any argument is null
 	 * @throws IllegalArgumentException if groupName is empty, regex is empty, or regex contains
 	 *                                  nested quantifiers (ReDoS vulnerability)
 	 */

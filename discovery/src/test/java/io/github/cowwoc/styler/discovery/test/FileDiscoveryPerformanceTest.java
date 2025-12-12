@@ -1,20 +1,23 @@
 package io.github.cowwoc.styler.discovery.test;
 
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.discovery.test.TestUtils.deleteDirectoryRecursively;
+import static org.testng.Assert.assertEquals;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+
+import org.testng.annotations.Test;
+
 import io.github.cowwoc.styler.discovery.DiscoveryConfiguration;
 import io.github.cowwoc.styler.discovery.FileDiscovery;
 import io.github.cowwoc.styler.security.FileValidator;
 import io.github.cowwoc.styler.security.PathSanitizer;
 import io.github.cowwoc.styler.security.SecurityConfig;
-import org.testng.annotations.Test;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-
-import static io.github.cowwoc.styler.discovery.test.TestUtils.deleteDirectoryRecursively;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 /**
  * Performance tests for FileDiscovery.
@@ -51,14 +54,12 @@ public final class FileDiscoveryPerformanceTest
 				}
 			}
 
-			long startTime = System.currentTimeMillis();
+			Instant startTime = Instant.now();
 			List<Path> files = discoverFiles(tempDir, DiscoveryConfiguration.DEFAULT);
-			long endTime = System.currentTimeMillis();
+			Duration elapsed = Duration.between(startTime, Instant.now());
 
-			long executionTimeMs = endTime - startTime;
 			assertEquals(files.size(), 1000, "Should discover all 1000 files");
-			assertTrue(executionTimeMs < 5000,
-				"Discovery should complete in under 5 seconds, took: " + executionTimeMs + "ms");
+			requireThat(elapsed, "elapsed").isLessThan(Duration.ofSeconds(5));
 		}
 		finally
 		{
@@ -83,14 +84,12 @@ public final class FileDiscoveryPerformanceTest
 				}
 			}
 
-			long startTime = System.currentTimeMillis();
+			Instant startTime = Instant.now();
 			List<Path> files = discoverFiles(tempDir, DiscoveryConfiguration.DEFAULT);
-			long endTime = System.currentTimeMillis();
+			Duration elapsed = Duration.between(startTime, Instant.now());
 
-			long executionTimeMs = endTime - startTime;
 			assertEquals(files.size(), 10000, "Should discover all 10000 files");
-			assertTrue(executionTimeMs < 30000,
-				"Discovery should complete in under 30 seconds, took: " + executionTimeMs + "ms");
+			requireThat(elapsed, "elapsed").isLessThan(Duration.ofSeconds(30));
 		}
 		finally
 		{
@@ -112,14 +111,12 @@ public final class FileDiscoveryPerformanceTest
 				Files.createFile(subdir.resolve("File.java"));
 			}
 
-			long startTime = System.currentTimeMillis();
+			Instant startTime = Instant.now();
 			List<Path> files = discoverFiles(tempDir, DiscoveryConfiguration.DEFAULT);
-			long endTime = System.currentTimeMillis();
+			Duration elapsed = Duration.between(startTime, Instant.now());
 
-			long executionTimeMs = endTime - startTime;
 			assertEquals(files.size(), 1000, "Should discover all 1000 files");
-			assertTrue(executionTimeMs < 10000,
-				"Wide directory discovery should complete quickly, took: " + executionTimeMs + "ms");
+			requireThat(elapsed, "elapsed").isLessThan(Duration.ofSeconds(10));
 		}
 		finally
 		{
@@ -142,15 +139,13 @@ public final class FileDiscoveryPerformanceTest
 				Files.createFile(current.resolve("File" + i + ".java"));
 			}
 
-			long startTime = System.currentTimeMillis();
+			Instant startTime = Instant.now();
 			List<Path> files = discoverFiles(tempDir, DiscoveryConfiguration.DEFAULT);
-			long endTime = System.currentTimeMillis();
+			Duration elapsed = Duration.between(startTime, Instant.now());
 
-			long executionTimeMs = endTime - startTime;
 			// All files should be discoverable up to maxDepth (default 100)
-			assertTrue(files.size() >= 1, "Should discover files without stack overflow");
-			assertTrue(executionTimeMs < 10000,
-				"Deep directory discovery should complete quickly, took: " + executionTimeMs + "ms");
+			requireThat(files.size(), "files.size()").isGreaterThanOrEqualTo(1);
+			requireThat(elapsed, "elapsed").isLessThan(Duration.ofSeconds(10));
 		}
 		finally
 		{
@@ -180,15 +175,12 @@ public final class FileDiscoveryPerformanceTest
 				Files.createFile(tempDir.resolve("File" + i + ".java"));
 			}
 
-			long startTime = System.currentTimeMillis();
+			Instant startTime = Instant.now();
 			List<Path> files = discoverFiles(tempDir, DiscoveryConfiguration.DEFAULT);
-			long endTime = System.currentTimeMillis();
+			Duration elapsed = Duration.between(startTime, Instant.now());
 
-			long executionTimeMs = endTime - startTime;
 			assertEquals(files.size(), 100, "Should discover all 100 Java files");
-			assertTrue(executionTimeMs < 5000,
-				"Gitignore pattern matching should not cause significant slowdown, took: " +
-					executionTimeMs + "ms");
+			requireThat(elapsed, "elapsed").isLessThan(Duration.ofSeconds(5));
 		}
 		finally
 		{

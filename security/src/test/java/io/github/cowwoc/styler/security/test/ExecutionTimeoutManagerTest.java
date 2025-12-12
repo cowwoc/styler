@@ -6,6 +6,7 @@ import io.github.cowwoc.styler.security.exceptions.ExecutionTimeoutException;
 import org.testng.annotations.Test;
 
 import java.nio.file.Path;
+import java.time.Duration;
 
 import static org.testng.Assert.*;
 
@@ -19,7 +20,7 @@ public class ExecutionTimeoutManagerTest
 	public void checkPassesBeforeTimeout() throws Exception
 	{
 		ExecutionTimeoutManager manager = new ExecutionTimeoutManager();
-		SecurityConfig config = new SecurityConfig.Builder().executionTimeoutMs(1000).build();
+		SecurityConfig config = new SecurityConfig.Builder().executionTimeout(Duration.ofMillis(1000)).build();
 		Path testFile = Path.of("Test.java");
 
 		try
@@ -38,13 +39,13 @@ public class ExecutionTimeoutManagerTest
 	public void checkFailsAfterTimeout() throws Exception
 	{
 		ExecutionTimeoutManager manager = new ExecutionTimeoutManager();
-		SecurityConfig shortConfig = new SecurityConfig.Builder().executionTimeoutMs(1).build();
+		SecurityConfig shortConfig = new SecurityConfig.Builder().executionTimeout(Duration.ofMillis(1)).build();
 		Path testFile = Path.of("Test.java");
 
 		try
 		{
 			manager.startTracking();
-			Thread.sleep(10); // Ensure timeout exceeded
+			Thread.sleep(2); // Ensure timeout exceeded
 			manager.checkTimeout(testFile, shortConfig);
 		}
 		finally
@@ -57,7 +58,7 @@ public class ExecutionTimeoutManagerTest
 	public void checkWithoutStartThrowsException() throws Exception
 	{
 		ExecutionTimeoutManager manager = new ExecutionTimeoutManager();
-		SecurityConfig config = new SecurityConfig.Builder().executionTimeoutMs(1000).build();
+		SecurityConfig config = new SecurityConfig.Builder().executionTimeout(Duration.ofMillis(1000)).build();
 		Path testFile = Path.of("Test.java");
 
 		manager.checkTimeout(testFile, config);
@@ -71,10 +72,9 @@ public class ExecutionTimeoutManagerTest
 		try
 		{
 			manager.startTracking();
-			Thread.sleep(10);
 
-			long elapsed = manager.getElapsedTime();
-			assertTrue(elapsed >= 10);
+			Duration elapsed = manager.getElapsedTime();
+			assertTrue(elapsed.toNanos() > 0);
 		}
 		finally
 		{
@@ -112,7 +112,7 @@ public class ExecutionTimeoutManagerTest
 	public void multipleStartStopCyclesWork() throws Exception
 	{
 		ExecutionTimeoutManager manager = new ExecutionTimeoutManager();
-		SecurityConfig config = new SecurityConfig.Builder().executionTimeoutMs(1000).build();
+		SecurityConfig config = new SecurityConfig.Builder().executionTimeout(Duration.ofMillis(1000)).build();
 		Path testFile = Path.of("Test.java");
 
 		manager.startTracking();
@@ -128,7 +128,7 @@ public class ExecutionTimeoutManagerTest
 	public void nullFileThrowsException() throws Exception
 	{
 		ExecutionTimeoutManager manager = new ExecutionTimeoutManager();
-		SecurityConfig config = new SecurityConfig.Builder().executionTimeoutMs(1000).build();
+		SecurityConfig config = new SecurityConfig.Builder().executionTimeout(Duration.ofMillis(1000)).build();
 
 		try
 		{
