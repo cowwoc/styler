@@ -2,12 +2,12 @@
 
 ## 🚀 READY TO WORK NOW (Multi-Instance Coordination)
 
-**Current Status**: Phase B COMPLETE, Phase C in progress (C1, C2, C3 complete)
+**Current Status**: Phase B in progress (B2.5 blocking), Phase C partially done (C1, C2, C3 complete)
 
 **COMPLETED**:
 - B1a: Line Length Formatter ✅ COMPLETE
 - B1b: Import Organization ✅ COMPLETE
-- B2: File Processing Pipeline ✅ COMPLETE
+- B2: File Processing Pipeline Infrastructure ✅ COMPLETE (stages stubbed - see B2.5)
 - B3: AI Violation Output ✅ COMPLETE (2025-12-05)
 - B4: Error Catalog ✅ COMPLETE (2025-12-05)
 - B5: CLI Integration ✅ COMPLETE (2025-12-09)
@@ -17,8 +17,8 @@
 - C3b: Whitespace Formatting ✅ COMPLETE (2025-12-11)
 - C3c: Indentation Formatting ✅ COMPLETE (2025-12-11)
 
-**Phase B**: ✅ COMPLETE (5/5 tasks)
-**Phase C**: In progress (3/6 complete - C1, C2, C3 done; C4, C5, C6 remaining)
+**Phase B**: In progress (5/6 tasks - B2.5 pipeline stages remaining)
+**Phase C**: Blocked on B2.5 (C1, C2, C3 done; C4, C5, C6 blocked)
 
 **Phase A - ✅ COMPLETE (5/5 tasks)**:
 - ✅ A0: styler-formatter module (defines FormattingRule interfaces)
@@ -138,8 +138,38 @@ B2-B5 have sequential dependencies.
   - **Integration**: Extends ImportAnalyzer from `implement-import-organization`
   - **Quality**: Comprehensive tests with sample classpaths, edge cases for nested classes
 
-### B2. File Processing Pipeline ✅ COMPLETE
-- [x] **COMPLETE:** `implement-file-processing-pipeline` - Orchestrate parse → format → output (2025-12-04)
+### B2. File Processing Pipeline Infrastructure ✅ COMPLETE
+- [x] **COMPLETE:** `implement-file-processing-pipeline` - Pipeline infrastructure (2025-12-04)
+  - **Delivered**: FileProcessingPipeline class, StageResult types, ProcessingContext, AbstractPipelineStage
+  - **Note**: Stage implementations return `StageResult.Skipped` - see B2.5 for actual implementation
+
+### B2.5. Pipeline Stage Implementation (Critical Path)
+- [ ] **READY:** `implement-pipeline-stages` - Wire parser and formatters into pipeline stages
+  - **Dependencies**: A1 ✅ (parser), B1 ✅ (2 rules), C3 ✅ (3 rules), B2 ✅ (pipeline infrastructure)
+  - **Blocks**: C4, C5, C6, D1 (all need functional pipeline to measure real work)
+  - **Parallelizable With**: None (critical path)
+  - **Estimated Effort**: 2-3 days
+  - **Purpose**: Make the pipeline actually process files (currently all stages return Skipped)
+  - **Scope**: Implement the 4 pipeline stages to perform real work
+  - **Components**:
+    - **ParseStage**: Use A1 parser to parse Java files into AST
+      - Input: File path from ProcessingContext
+      - Output: Parsed AST stored in ProcessingContext
+      - Error handling: Return StageResult.Failure for parse errors
+    - **FormatStage**: Apply all 5 formatting rules to parsed AST
+      - Input: AST from ParseStage
+      - Apply: LineLengthFormattingRule, ImportOrganizerFormattingRule, BraceFormattingRule,
+        WhitespaceFormattingRule, IndentationFormattingRule
+      - Output: Formatted source code and/or list of violations
+    - **ValidationStage**: Collect and aggregate violations from formatting
+      - Input: Violations from FormatStage
+      - Output: Validated violation list with severity/priority
+    - **OutputStage**: Write formatted output or report violations
+      - Validation-only mode: Report violations via B3 AI output
+      - Fix mode: Write formatted code back to file
+  - **Integration**: Connects A1 parser, all formatting rules (B1 + C3), B3 violation output
+  - **Verification**: Run `styler check` on a real Java file and see actual violations
+  - **Quality**: Integration tests with real Java files, verify end-to-end processing
 
 ### B3. Structured Violation Output (AI Agent Integration) ✅ COMPLETE
 - [x] **COMPLETE:** `implement-ai-violation-output` - Structured violation feedback for AI agents (2025-12-05)
@@ -188,20 +218,20 @@ benchmarking, and validate with Maven plugin integration.
 - [x] **COMPLETE:** `implement-indentation-formatting` - Indentation formatting (tabs/spaces/mixed) (2025-12-11)
 
 ### C4. Concurrency Model Benchmark
-- [ ] **READY:** `benchmark-concurrency-models` - Compare thread-per-file vs thread-per-block parallelism
-  -  **Dependencies**: C2 ✅ (thread-per-file baseline), C3 ✅ (brace + whitespace + indentation = 3
-    rules), B1 ✅ (line length + imports = 2 rules), total 5 rules
+- [ ] **BLOCKED:** `benchmark-concurrency-models` - Compare thread-per-file vs thread-per-block parallelism
+  - **Dependencies**: B2.5 ✅ (functional pipeline - CRITICAL), C2 ✅ (thread-per-file baseline), C3 ✅ (3
+    rules), B1 ✅ (2 rules)
   - **Blocks**: C5 (Maven plugin should use optimal concurrency model if thread-per-block wins)
-  - **Parallelizable With**: None (needs C2 and all C3 tasks complete first)
+  - **Parallelizable With**: None (needs functional pipeline first)
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Determine optimal concurrency strategy for styler through empirical testing
-  -  **Scope**: Benchmark thread-per-file (baseline from C2) vs thread-per-block concurrency with 5 formatting
-    rules
-  - **Prerequisites**: 5 formatting rules implemented (B1: 2 rules, C3: 3 rules)
+  - **Scope**: Benchmark thread-per-file (baseline from C2) vs thread-per-block concurrency
+  - **Trigger Criteria**: Execute ONLY when `styler check` processes real Java files and reports actual
+    violations (proving pipeline stages are functional)
+  - **Prerequisites**: B2.5 complete (pipeline does real work), 5 formatting rules integrated
   - **Comparison Approaches**:
     - **Thread-per-file (baseline)**: One virtual thread per file (current C2 implementation)
     - **Thread-per-block**: Virtual threads for method-level parallelism within files
-    - **Platform threads**: Work-stealing pool for reference comparison
   - **Test Workload**: Real codebases (Spring Framework, Guava, Apache Commons) with all 5 formatting rules
   - **Benchmark Metrics**:
     - Total processing time (wall clock end-to-end)
@@ -220,7 +250,8 @@ benchmarking, and validate with Maven plugin integration.
 
 ### C5. Maven Plugin (Early Real-World Testing)
 - [ ] **BLOCKED:** `create-maven-plugin` - Maven plugin for build system integration
-  - **Dependencies**: C1 (file discovery), C2 (parallel processing), B5 (CLI integration)
+  - **Dependencies**: B2.5 (functional pipeline), C1 ✅ (file discovery), C2 ✅ (parallel processing), B5 ✅
+    (CLI integration)
   -  **Blocks**: C6 (performance benchmarking uses Maven plugin), D1 (regression tests use Maven plugin), D2
     (CI/CD uses Maven plugin)
   - **Parallelizable With**: C4 (concurrency benchmark can run independently)
@@ -239,8 +270,8 @@ benchmarking, and validate with Maven plugin integration.
 
 ### C6. Performance Benchmarking
 - [ ] **BLOCKED:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
-  -  **Dependencies**: C5 (Maven plugin for running benchmarks), C2 (parallel processing), all formatters (B1
-    + C3)
+  - **Dependencies**: B2.5 (functional pipeline), C5 (Maven plugin for running benchmarks), C2 ✅ (parallel
+    processing), all formatters (B1 + C3) ✅
   -  **Blocks**: D1 (testing uses benchmarks for performance regression detection), D2 (CI/CD runs benchmark
     comparisons)
   - **Parallelizable With**: C4 (concurrency benchmark is separate empirical study)
@@ -266,7 +297,8 @@ benchmarking, and validate with Maven plugin integration.
 
 ### D1. Comprehensive Testing
 - [ ] **BLOCKED:** `add-regression-test-suite` - Real-world Java project regression tests
-  - **Dependencies**: C5 (Maven plugin for running styler), all formatters (B1 + C3)
+  - **Dependencies**: B2.5 (functional pipeline), C5 (Maven plugin for running styler), all formatters (B1 +
+    C3) ✅
   - **Blocks**: D2 (CI/CD needs complete test suite)
   - **Parallelizable With**: D3 (documentation can be written in parallel)
   - **Estimated Effort**: 2-3 days (for regression suite)
@@ -278,7 +310,8 @@ benchmarking, and validate with Maven plugin integration.
   - **Quality**: Golden file testing, failure analysis
 
 - [ ] **BLOCKED:** `add-cli-integration-tests` - End-to-end CLI integration tests
-  - **Dependencies**: B5 (CLI integration), C1 (file discovery), C2 (parallel processing)
+  - **Dependencies**: B2.5 (functional pipeline), B5 ✅ (CLI integration), C1 ✅ (file discovery), C2 ✅
+    (parallel processing)
   - **Blocks**: D2 (CI/CD needs complete test suite)
   - **Parallelizable With**: D1 (regression suite), D3 (documentation)
   - **Estimated Effort**: 1-2 days
