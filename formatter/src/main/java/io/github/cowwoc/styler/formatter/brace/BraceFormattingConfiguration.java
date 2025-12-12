@@ -14,7 +14,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  *
  * @param ruleId     the rule ID for this configuration
  * @param braceStyle the brace style to apply to all constructs
- * @throws NullPointerException     if any parameter is null
+ * @throws NullPointerException     if any argument is null
  * @throws IllegalArgumentException if {@code ruleId} is blank
  */
 public record BraceFormattingConfiguration(String ruleId,

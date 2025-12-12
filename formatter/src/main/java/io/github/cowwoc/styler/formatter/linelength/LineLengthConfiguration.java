@@ -23,7 +23,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * @param annotationArgumentsWrap wrapping style for annotation arguments
  * @param genericTypeArgsWrap wrapping style for generic type arguments
  * @param wrapLongStrings whether to wrap long string literals
- * @throws NullPointerException     if any required parameter is null
+ * @throws NullPointerException     if any required argument is null
  * @throws IllegalArgumentException if any parameter is out of valid range
  */
 public record LineLengthConfiguration(

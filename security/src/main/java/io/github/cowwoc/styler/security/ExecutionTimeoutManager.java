@@ -1,9 +1,12 @@
 package io.github.cowwoc.styler.security;
 
-import io.github.cowwoc.styler.security.exceptions.ExecutionTimeoutException;
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
+
+import io.github.cowwoc.styler.security.exceptions.ExecutionTimeoutException;
 
 /**
  * Manages execution time tracking to enforce timeout limits.
@@ -14,14 +17,14 @@ import java.nio.file.Path;
  */
 public final class ExecutionTimeoutManager
 {
-	private final ThreadLocal<Long> startTime = new ThreadLocal<>();
+	private final ThreadLocal<Instant> startTime = new ThreadLocal<>();
 
 	/**
 	 * Starts tracking execution time for the current thread.
 	 */
 	public void startTracking()
 	{
-		startTime.set(System.currentTimeMillis());
+		startTime.set(Instant.now());
 	}
 
 	/**
@@ -37,17 +40,17 @@ public final class ExecutionTimeoutManager
 		requireThat(file, "file").isNotNull();
 		requireThat(config, "config").isNotNull();
 
-		Long start = startTime.get();
+		Instant start = startTime.get();
 		if (start == null)
 		{
 			throw new IllegalStateException(
 				"Execution tracking not started. Call startTracking() first.");
 		}
 
-		long elapsed = System.currentTimeMillis() - start;
-		if (elapsed > config.executionTimeoutMs())
+		Duration elapsed = Duration.between(start, Instant.now());
+		if (elapsed.compareTo(config.executionTimeout()) > 0)
 		{
-			throw new ExecutionTimeoutException(file, config.executionTimeoutMs());
+			throw new ExecutionTimeoutException(file, config.executionTimeout());
 		}
 	}
 
@@ -65,17 +68,17 @@ public final class ExecutionTimeoutManager
 	/**
 	 * Returns the elapsed time since tracking started.
 	 *
-	 * @return elapsed milliseconds
+	 * @return elapsed duration
 	 * @throws IllegalStateException if tracking wasn't started
 	 */
-	public long getElapsedTime()
+	public Duration getElapsedTime()
 	{
-		Long start = startTime.get();
+		Instant start = startTime.get();
 		if (start == null)
 		{
 			throw new IllegalStateException(
 				"Execution tracking not started. Call startTracking() first.");
 		}
-		return System.currentTimeMillis() - start;
+		return Duration.between(start, Instant.now());
 	}
 }

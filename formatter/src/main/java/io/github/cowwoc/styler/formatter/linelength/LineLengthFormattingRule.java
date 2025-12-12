@@ -85,11 +85,11 @@ public final class LineLengthFormattingRule implements FormattingRule
 		LineLengthConfiguration lineConfig;
 		if (config == null)
 			lineConfig = LineLengthConfiguration.defaultConfig();
+		else if (config instanceof LineLengthConfiguration lineLengthConfig)
+			lineConfig = lineLengthConfig;
 		else
-		{
-			requireThat(config, "config").isInstanceOf(LineLengthConfiguration.class);
-			lineConfig = (LineLengthConfiguration) config;
-		}
+			throw new IllegalArgumentException("config must be LineLengthConfiguration, got: " +
+				config.getClass().getName());
 
 		return LineAnalyzer.analyze(context, lineConfig);
 	}
@@ -102,11 +102,11 @@ public final class LineLengthFormattingRule implements FormattingRule
 		LineLengthConfiguration lineConfig;
 		if (config == null)
 			lineConfig = LineLengthConfiguration.defaultConfig();
+		else if (config instanceof LineLengthConfiguration lineLengthConfig)
+			lineConfig = lineLengthConfig;
 		else
-		{
-			requireThat(config, "config").isInstanceOf(LineLengthConfiguration.class);
-			lineConfig = (LineLengthConfiguration) config;
-		}
+			throw new IllegalArgumentException("config must be LineLengthConfiguration, got: " +
+				config.getClass().getName());
 
 		// Create context detector for AST-based analysis
 		ContextDetector detector = new ContextDetector(context);

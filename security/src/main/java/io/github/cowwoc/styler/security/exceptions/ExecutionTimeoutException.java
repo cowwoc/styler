@@ -1,6 +1,9 @@
 package io.github.cowwoc.styler.security.exceptions;
 
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+
 import java.nio.file.Path;
+import java.time.Duration;
 
 /**
  * Exception thrown when file processing exceeds the configured timeout.
@@ -15,15 +18,17 @@ public class ExecutionTimeoutException extends SecurityException
 	/**
 	 * Creates an exception indicating execution timeout.
 	 *
-	 * @param file      file being processed
-	 * @param timeoutMs configured timeout in milliseconds
+	 * @param file    file being processed
+	 * @param timeout configured timeout duration
+	 * @throws NullPointerException if any argument is null
 	 */
-	public ExecutionTimeoutException(Path file, long timeoutMs)
+	public ExecutionTimeoutException(Path file, Duration timeout)
 	{
 		super(String.format(
 			"Processing file '%s' exceeded timeout of %d ms. " +
 			"File may be too complex or contain pathological patterns. " +
-			"Consider increasing executionTimeoutMs or excluding this file.",
-			file, timeoutMs));
+			"Consider increasing executionTimeout or excluding this file.",
+			requireThat(file, "file").isNotNull().getValue(),
+			requireThat(timeout, "timeout").isNotNull().getValue().toMillis()));
 	}
 }

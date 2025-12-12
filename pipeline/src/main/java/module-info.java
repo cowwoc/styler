@@ -31,6 +31,7 @@ module io.github.cowwoc.styler.pipeline
 	exports io.github.cowwoc.styler.pipeline.parallel;
 	exports io.github.cowwoc.styler.pipeline.output;
 
+	exports io.github.cowwoc.styler.pipeline.internal to io.github.cowwoc.styler.pipeline.test;
 	exports io.github.cowwoc.styler.pipeline.output.internal to io.github.cowwoc.styler.pipeline.test;
 	exports io.github.cowwoc.styler.pipeline.parallel.internal to io.github.cowwoc.styler.pipeline.test;
 }
