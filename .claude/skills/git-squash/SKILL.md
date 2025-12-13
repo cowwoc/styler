@@ -14,6 +14,38 @@ allowed-tools: Bash, Read
 - Simplifying pull request history
 - Preparing feature branch for main merge
 
+## Squash vs Fixup: Choosing the Right Command
+
+**CRITICAL**: When combining commits via interactive rebase, use the correct command:
+
+| Command | Message Behavior | When to Use |
+|---------|-----------------|-------------|
+| `squash` | Opens editor with ALL commit messages combined | Different features/changes being combined |
+| `fixup` | Discards secondary commit messages | Incremental fixes (typos, "oops forgot file") |
+
+**⚠️ COMMON MISTAKE**: Using `fixup` when combining commits about different features.
+
+```bash
+# ❌ WRONG - Using fixup loses important context
+pick abc123 Add FQN rule example
+fixup def456 Add assert that() pattern      # Message discarded!
+fixup ghi789 Add Instant/Duration patterns  # Message discarded!
+# Result: Commit message only mentions FQN rule
+
+# ✅ CORRECT - Using squash preserves all messages
+pick abc123 Add FQN rule example
+squash def456 Add assert that() pattern      # Message preserved
+squash ghi789 Add Instant/Duration patterns  # Message preserved
+# Result: Editor opens with all 3 messages for editing
+```
+
+**Decision Rule**:
+- **Same logical change** (fix typo, add forgotten file, fix test) → Use `fixup`
+- **Different logical changes** (different features, different rules) → Use `squash`
+
+**When in doubt**: Use `squash` - you can always edit the combined message, but `fixup` irreversibly
+discards messages.
+
 ## Default Behavior: Squash Into Earliest Commit
 
 **When squashing multiple commits, the default is to squash into the EARLIEST (first) commit in the sequence.**
@@ -1326,7 +1358,7 @@ git rebase -i "$BASE_COMMIT"
 # 4. In the interactive editor:
 #    - FIND the fix commit line
 #    - MOVE it directly after the target commit line
-#    - CHANGE "pick" to "squash" (or "fixup" to discard fix message)
+#    - CHANGE "pick" to "squash" (or "fixup" ONLY if fix is trivial like typo)
 #    - PRESERVE all other commits in their original order
 #    - Save and exit
 
