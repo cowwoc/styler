@@ -14,14 +14,15 @@ allowed-tools: Bash, Read, Edit, Write
 
 ### ✅ Use archive-task When:
 
-- Task successfully merged to main (COMPLETE state)
+- User has approved changes (AWAITING_USER_APPROVAL state)
 - Ready to mark task complete in todo.md
 - Need to add entry to changelog.md
 - Want atomic commit of both updates
+- **BEFORE merging to main** (archival must be part of task branch commit)
 
 ### ❌ Do NOT Use When:
 
-- Task not yet merged to main
+- User has not yet approved changes
 - Still in IMPLEMENTATION or VALIDATION state
 - Todo.md already updated for this task
 - Working on multiple tasks simultaneously
@@ -182,17 +183,17 @@ Commit: abc123
 ### Complete Task Archival Workflow
 
 ```markdown
-COMPLETE state: Merged to main
+User approves changes (AWAITING_USER_APPROVAL)
   ↓
-Extract changes from merge commit
-  ↓
-[archive-task skill] ← THIS SKILL
+[archive-task skill] ← THIS SKILL (BEFORE merge)
   ↓
 Update todo.md (mark complete)
   ↓
 Update changelog.md (add entry)
   ↓
-Commit both atomically
+Amend task branch commit to include archival
+  ↓
+Merge to main with --ff-only
   ↓
 [update-dependent-tasks skill: Unblock dependent tasks] ← MANDATORY
   ↓
