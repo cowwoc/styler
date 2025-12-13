@@ -13,128 +13,18 @@ Styler Java Code Formatter project configuration and universal guidance for all 
 files upfront. Phase-specific instructions provided automatically as you transition states. Reference docs
 available for troubleshooting: main-agent-coordination.md, task-protocol-core.md
 
-### ⚠️ MANDATORY USER APPROVAL CHECKPOINTS
+### Task Protocol
 
-**CRITICAL**: Two checkpoints require EXPLICIT user approval before proceeding. User approval checkpoints
-are tied to task.json state transitions. You MUST progress through the state machine - hooks only enforce
-protocol when states are used correctly.
+**For todo.md tasks**, follow the task protocol documented in:
+- [task-protocol-core.md](docs/project/task-protocol-core.md) - State machine, definitions
+- [task-protocol-transitions.md](docs/project/task-protocol-transitions.md) - State transitions
+- [task-protocol-operations.md](docs/project/task-protocol-operations.md) - Operations, archival workflow
 
-**State Workflow**:
-```
-INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [USER APPROVAL] → IMPLEMENTATION → VALIDATION →
-AWAITING_USER_APPROVAL → [USER APPROVAL] → COMPLETE
-         ↓              ↓              ↓                              ↓                             ↓
-    Create task.md  Gather reqs   Plan impl      Invoke agents    Build/test              Merge to main
-```
-
-**CRITICAL: REQUIREMENTS Phase is MANDATORY**
-
-❌ **WRONG**: Main agent writes implementation plan directly from todo.md
-✅ **CORRECT**: Invoke stakeholder agents → Read reports → Synthesize plan
-
-**Required stakeholder agents** (invoke in parallel for requirements gathering):
-- `architect` - Analyzes dependencies, design patterns, integration points
-- `tester` - Analyzes test coverage needs, test strategy, edge cases, business logic validation
-  - **⚠️ CRITICAL**: Tester requirements MUST focus on **business rules to validate**, NOT test counts.
-    Specify WHAT behaviors/scenarios to test, not HOW MANY tests. Test count is an output of implementation,
-    not an input to planning.
-- `formatter` - Specifies documentation requirements, code style standards
-
-**⚠️ COMMON MISTAKE**: Do NOT invoke "engineer" for testing requirements (engineer = code
-quality/refactoring; tester = test strategy/coverage)
-
-**Workflow**:
-1. CLASSIFIED state: **MANDATORY** - Invoke ALL stakeholder agents in REQUIREMENTS mode with parallel
-   coordination
-   - **PREFERRED** (Best Practice - True Parallel): Single message with 3 Task tool calls
-   - **ACCEPTABLE** (Achieves Coordination Goal): Rapid succession within same conversation turn (all
-     within <30 seconds), no user messages between invocations. Evidence: Session 3fa4e964 had 17-31s
-     spreads, marked COMPLIANT
-   - **VIOLATION** (Prevents Coordination): Sequential calls across multiple user interactions; user
-     interruption between agent invocations
-   - **Clarification on Timing**: Focus on avoiding user interruptions, not microsecond timing. 6-30
-     second gaps within same turn = ACCEPTABLE (achieves coordination). >30 second delays suggest
-     sequential work.
-   - **CRITICAL**: Prompts MUST specify output file `/workspace/tasks/{task}/{task}-{agent}-requirements.md`
-     and emphasize "REQUIREMENTS mode. ONLY write requirements report. DO NOT implement code."
-2. Wait for completion: Each writes `{task-name}-{agent}-requirements.md`
-3. **VERIFY reports exist**: `ls -la /workspace/tasks/{task}/*-requirements.md` (Must show all 3 files)
-4. READ all reports: Main agent synthesizes into unified plan
-5. SYNTHESIS state: Write implementation plan to task.md
-6. Get user approval
-7. IMPLEMENTATION state: **MANDATORY** - Invoke ALL stakeholder agents in IMPLEMENTATION mode with
-   parallel coordination (PREFERRED: single message, ACCEPTABLE: rapid succession <10s within same turn,
-   no user interruption)
-
-**Checkpoint 1: SYNTHESIS → IMPLEMENTATION** (Plan Approval)
-   - SYNTHESIS state: Create implementation plan in task.md
-   - **STOP and PRESENT**: Show plan to user
-   - **WAIT for user approval**: User must say "approved", "proceed", "looks good"
-   - **ONLY THEN**: Create `/workspace/tasks/{task}/user-approved-synthesis.flag`
-   - **Transition to IMPLEMENTATION**: Use `state-transition` skill (see pattern in § State Transition
-     Pattern below)
-   - Hook will BLOCK Task tool invocations from INIT state and IMPLEMENTATION transition without approval
-     flag
-
-**Checkpoint 2: AWAITING_USER_APPROVAL → COMPLETE** (Change Review)
-   - AWAITING_USER_APPROVAL state: After validation passes
-   - **⚠️ MANDATORY**: Use `pre-presentation-cleanup` skill before showing changes to user
-   - **STOP and PRESENT**: Show commit SHA and `git diff --stat main...task-branch`
-   - **WAIT for user approval**: User must say "approved", "merge it", "LGTM"
-   - **⚠️ DISTINGUISH**: Git manipulation requests ("squash the commits", "rebase", "amend") are
-     preprocessing instructions, NOT approval. Execute them and re-present for review.
-   - **ONLY THEN**: Create `/workspace/tasks/{task}/user-approved-changes.flag`
-   - **⚠️ MANDATORY: Update archival files BEFORE merge**:
-     - Update todo.md: Mark task complete with date
-     - Update changelog.md: Add entry describing changes
-     - Amend task branch commit to include archival files
-     - Use `archive-task` skill for atomic update
-   - **Transition to COMPLETE**: Use `state-transition` skill (or see pattern below)
-   - **Merge with --ff-only**: `git merge --ff-only {task-branch}` (linear history, no merge commits)
-   - Hook will BLOCK merges without approval flag, from wrong directory, or missing archival files
-
-**Final Step: COMPLETE → CLEANUP** (Clean Repository)
-   - After merge to main: Use `state-transition` skill to transition to CLEANUP (or see pattern below)
-   - Delete all task branches: `git branch -D {task-name} {task-name}-architect {task-name}-engineer
-     {task-name}-formatter`
-   - Remove all worktrees: `git worktree remove /workspace/tasks/{task-name}/code` and agent worktrees
-   - Verify cleanup: `git branch | grep {task-name}` should return nothing
-   - **Delete task directory**: `rm -rf /workspace/tasks/{task-name}` (audit trail in git history)
-   - Reference: [task-protocol-core.md § COMPLETE → CLEANUP
-     Transition](docs/project/task-protocol-core.md#complete-cleanup-transition)
-
-**⚠️ MANDATORY: State Transition Pattern** {#state-transition-pattern}
-
-**NEVER update just `.state`** - ALL state transitions MUST also update `.transition_log`:
-
-```bash
-# ❌ WRONG - Missing transition_log (causes audit trail gaps)
-jq '.state = "COMPLETE"' task.json > tmp.json && mv tmp.json task.json
-
-# ✅ CORRECT - Full transition with audit trail
-jq --arg old "AWAITING_USER_APPROVAL" --arg new "COMPLETE" \
-   --arg ts "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-   '.state = $new | .transition_log += [{"from": $old, "to": $new, "timestamp": $ts}]' \
-   task.json > tmp.json && mv tmp.json task.json
-```
-
-**Recommended**: Use `state-transition` skill for safe transitions with automatic validation.
-
-**NEVER**:
-- Skip state progression (staying in INIT throughout task)
-- Invoke Task tool before transitioning to CLASSIFIED/IMPLEMENTATION
-- Proceed to IMPLEMENTATION without presenting plan
-- Merge to main without presenting changes
-- Assume silence or bypass mode means approval
-- Use `git merge` without `--ff-only` when merging task to main
-
-**Enforcement**:
-- `task-invoke-pre.sh` blocks Task tool from INIT state and SYNTHESIS/IMPLEMENTATION states without
-  requirements reports
-- `enforce-merge-workflow.sh` validates merge location and approval flag
-- `enforce-commit-squashing.sh` validates single commit and `--ff-only` flag
-- `enforce-atomic-archival.sh` validates task branch includes todo.md and changelog.md
-- `enforce-checkpoints.sh` validates state transitions and approval flags
+**Key points** (details in protocol docs):
+- Two user approval checkpoints: SYNTHESIS → IMPLEMENTATION, AWAITING_USER_APPROVAL → COMPLETE
+- Archival (todo.md + changelog.md) must be in task branch commit BEFORE merge
+- Use `--ff-only` for all merges to main (linear history)
+- Hooks enforce protocol compliance
 
 **SUB-AGENTS**: If you are a stakeholder agent (architect, engineer, formatter), this file contains
 universal guidance only. You MUST also read `/workspace/main/docs/project/task-protocol-agents.md`
