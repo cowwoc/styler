@@ -84,6 +84,11 @@ quality/refactoring; tester = test strategy/coverage)
    - **⚠️ DISTINGUISH**: Git manipulation requests ("squash the commits", "rebase", "amend") are
      preprocessing instructions, NOT approval. Execute them and re-present for review.
    - **ONLY THEN**: Create `/workspace/tasks/{task}/user-approved-changes.flag`
+   - **⚠️ MANDATORY: Update archival files BEFORE merge**:
+     - Update todo.md: Mark task complete with date
+     - Update changelog.md: Add entry describing changes
+     - Amend task branch commit to include archival files
+     - Use `archive-task` skill for atomic update
    - **Transition to COMPLETE**: Use `state-transition` skill (or see pattern below)
    - **Merge with --ff-only**: `git merge --ff-only {task-branch}` (linear history, no merge commits)
    - Hook will BLOCK merges without approval flag, from wrong directory, or missing archival files
