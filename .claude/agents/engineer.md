@@ -342,7 +342,7 @@ private void validateFormatting() {
 
 **Phase 1: Parse Report**
 ```bash
-# Read reviewer report
+# Read requirements report
 cat /workspace/tasks/{task-name}/code-quality-review-report.json
 ```
 

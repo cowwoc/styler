@@ -708,8 +708,8 @@ CORRECT SEQUENCE:
 **CRITICAL**: Steps 14-18 are MANDATORY and CANNOT be skipped. The sequence REVIEW → AWAITING_USER_APPROVAL → COMPLETE → CLEANUP is REQUIRED.
 
 **Key Transition Point**: Step 9 (VALIDATION state) is when main agent permissions change from PROHIBITED to
-PERMITTED for minor fixes. Steps 5-8 are iterative rounds within IMPLEMENTATION state using both reviewer and
-agents in implementation mode until all reviewers approve.
+PERMITTED for minor fixes. Steps 5-8 are iterative rounds within IMPLEMENTATION state using both validation mode
+and implementation mode agents until all validation mode agents approve.
 
 **VIOLATION PATTERN** (NEVER DO THIS):
 ```markdown
@@ -1485,7 +1485,7 @@ tracking
 
 ### Parallel Agent Invocation (MANDATORY) {#parallel-agent-invocation-mandatory}
 
-**CRITICAL**: When launching multiple independent agents (reviewers or updaters), invoke ALL agents in a SINGLE message using parallel Task calls.
+**CRITICAL**: When launching multiple independent agents (in any mode), invoke ALL agents in a SINGLE message using parallel Task calls.
 
 ❌ **Anti-Pattern (Sequential Launches - wastes ~20,000 tokens)**:
 ```markdown

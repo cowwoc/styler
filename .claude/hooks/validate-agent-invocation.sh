@@ -77,79 +77,63 @@ if [[ -z "$TASK_LOCK" ]]; then
 	exit 0
 fi
 
-# Determine agent type from name
-AGENT_TYPE="unknown"
+# Determine agent mode based on model parameter
+# Mode determines which states the agent can be invoked in:
+#   - requirements: REQUIREMENTS, VALIDATION, REVIEW states (uses Opus model)
+#   - implementation: IMPLEMENTATION state only (uses Haiku model)
+#   - audit: Any state (special audit agents)
+AGENT_MODE="unknown"
 
-# Stakeholder agents (can operate in REQUIREMENTS/VALIDATION or IMPLEMENTATION modes)
-# Note: The mode is determined by state + model parameter, not agent name
+# Stakeholder agents - mode is determined by model parameter
 STAKEHOLDER_AGENTS=("architect" "engineer" "formatter" "tester" "builder" "designer" "optimizer" "hacker" "configurator")
 for stakeholder in "${STAKEHOLDER_AGENTS[@]}"; do
 	if [[ "$AGENT_NAME" == "$stakeholder" ]]; then
-		# Determine mode based on model parameter if available, otherwise allow all states
 		MODEL=$(echo "$INPUT" | jq -r '.tool_input.model // empty')
 		if [[ "$MODEL" == "haiku" ]] || [[ "$MODEL" == *"haiku"* ]]; then
-			AGENT_TYPE="updater"  # Implementation mode (Haiku)
+			AGENT_MODE="implementation"
 		elif [[ "$MODEL" == "opus" ]] || [[ "$MODEL" == *"opus"* ]]; then
-			AGENT_TYPE="reviewer"  # Requirements/Validation mode (Opus)
+			AGENT_MODE="requirements"
 		else
-			# No model specified, infer from state
+			# No model specified, infer from current state
 			if [[ "$CURRENT_STATE" == "REQUIREMENTS" ]] || [[ "$CURRENT_STATE" == "VALIDATION" ]] || [[ "$CURRENT_STATE" == "REVIEW" ]]; then
-				AGENT_TYPE="reviewer"
+				AGENT_MODE="requirements"
 			elif [[ "$CURRENT_STATE" == "IMPLEMENTATION" ]]; then
-				AGENT_TYPE="updater"
+				AGENT_MODE="implementation"
 			fi
 		fi
 		break
 	fi
 done
 
-# Legacy pattern support (for backward compatibility with old tests)
-if [[ "$AGENT_TYPE" == "unknown" ]]; then
-	if [[ "$AGENT_NAME" == *"-reviewer" ]]; then
-		AGENT_TYPE="reviewer"
-	elif [[ "$AGENT_NAME" == *"-updater" ]]; then
-		AGENT_TYPE="updater"
-	fi
-fi
 
-# Audit agents
-if [[ "$AGENT_NAME" == "process-recorder" ]] || [[ "$AGENT_NAME" == "process-compliance-reviewer" ]] || [[ "$AGENT_NAME" == "process-efficiency-reviewer" ]]; then
-	AGENT_TYPE="audit"
-fi
-
-# Validate agent invocation timing based on state and type
+# Validate agent invocation timing based on mode
 VIOLATION=""
 
-case "$AGENT_TYPE" in
-	"reviewer")
-		# Stakeholder agents in REQUIREMENTS/VALIDATION mode can be invoked in REQUIREMENTS, VALIDATION, REVIEW states
+case "$AGENT_MODE" in
+	"requirements")
+		# Requirements mode agents can be invoked in REQUIREMENTS, VALIDATION, REVIEW states
 		if [[ "$CURRENT_STATE" != "REQUIREMENTS" ]] && [[ "$CURRENT_STATE" != "VALIDATION" ]] && [[ "$CURRENT_STATE" != "REVIEW" ]]; then
 			if [[ "$CURRENT_STATE" == "SYNTHESIS" ]] || [[ "$CURRENT_STATE" == "IMPLEMENTATION" ]]; then
 				# Allow re-invocation during synthesis/implementation for clarification
-				# but log as unusual
 				LOG_FILE="/workspace/tasks/${TASK_NAME}/agent-invocations.log"
-				echo "[$(date -Iseconds)] WARNING: Agent ${AGENT_NAME} in REQUIREMENTS/VALIDATION mode invoked in ${CURRENT_STATE} state (unusual but permitted)" >> "$LOG_FILE"
+				echo "[$(date -Iseconds)] WARNING: Agent ${AGENT_NAME} in requirements mode invoked in ${CURRENT_STATE} state (unusual but permitted)" >> "$LOG_FILE"
 			else
-				VIOLATION="Stakeholder agents in REQUIREMENTS/VALIDATION mode should be invoked in REQUIREMENTS, VALIDATION, or REVIEW states. Current state: ${CURRENT_STATE}"
+				VIOLATION="Agents in requirements mode (model=opus) should be invoked in REQUIREMENTS, VALIDATION, or REVIEW states. Current state: ${CURRENT_STATE}"
 			fi
 		fi
 		;;
 
-	"updater")
-		# Stakeholder agents in IMPLEMENTATION mode MUST only be invoked in IMPLEMENTATION state
+	"implementation")
+		# Implementation mode agents MUST only be invoked in IMPLEMENTATION state
 		if [[ "$CURRENT_STATE" != "IMPLEMENTATION" ]]; then
-			VIOLATION="Stakeholder agents in IMPLEMENTATION mode can ONLY be invoked in IMPLEMENTATION state. Current state: ${CURRENT_STATE}"
+			VIOLATION="Agents in implementation mode (model=haiku) can ONLY be invoked in IMPLEMENTATION state. Current state: ${CURRENT_STATE}"
 		fi
 		;;
 
-	"audit")
-		# Audit agents can be invoked in any state
-		;;
-
 	*)
-		# Unknown agent type, allow but log
+		# Unknown agent mode, allow but log
 		LOG_FILE="/workspace/tasks/${TASK_NAME}/agent-invocations.log"
-		echo "[$(date -Iseconds)] INFO: Unknown agent type invoked: ${AGENT_NAME} in ${CURRENT_STATE} state" >> "$LOG_FILE"
+		echo "[$(date -Iseconds)] INFO: Unknown agent mode for: ${AGENT_NAME} in ${CURRENT_STATE} state" >> "$LOG_FILE"
 		;;
 esac
 
@@ -157,46 +141,43 @@ esac
 if [[ -n "$VIOLATION" ]]; then
 	log_hook_blocked "validate-agent-invocation" "PreToolUse" "Agent ${AGENT_NAME} blocked in ${CURRENT_STATE} state"
 	LOG_FILE="/workspace/tasks/${TASK_NAME}/agent-invocation-violations.log"
-	echo "[$(date -Iseconds)] BLOCKED: ${AGENT_NAME} invocation in ${CURRENT_STATE} state" >> "$LOG_FILE"
+	echo "[$(date -Iseconds)] BLOCKED: ${AGENT_NAME} invocation in ${CURRENT_STATE} state (mode: ${AGENT_MODE})" >> "$LOG_FILE"
 
 	MESSAGE="## 🚨 AGENT INVOCATION BLOCKED
 
 **Task**: \`$TASK_NAME\`
-**Agent**: \`$AGENT_NAME\` (${AGENT_TYPE})
+**Agent**: \`$AGENT_NAME\` (mode: ${AGENT_MODE})
 **Current State**: \`$CURRENT_STATE\`
 **Violation**: ${VIOLATION}
 
-## ⚠️ AGENT INVOCATION RULES
+## ⚠️ AGENT MODE RULES
 
-**Stakeholder Agents in REQUIREMENTS/VALIDATION Mode** (*-reviewer):
+**Requirements Mode** (model=opus):
 - ✅ Invoked during: REQUIREMENTS, VALIDATION, REVIEW
-- ⚠️  Allowed but unusual: SYNTHESIS, IMPLEMENTATION (for clarifications)
+- ⚠️ Allowed but unusual: SYNTHESIS, IMPLEMENTATION (for clarifications)
 - ❌ Invalid: INIT, CLASSIFIED, AWAITING_USER_APPROVAL, COMPLETE, CLEANUP
 
-**Stakeholder Agents in IMPLEMENTATION Mode** (*-updater):
+**Implementation Mode** (model=haiku):
 - ✅ Invoked during: IMPLEMENTATION ONLY
 - ❌ Invalid: All other states (including SYNTHESIS before user approval)
 
-**Audit Agents** (process-*):
-- ✅ Invoked during: Any state
-
 ## Required Action
 
-**If you need to invoke \`$AGENT_NAME\`**:
+**To invoke \`$AGENT_NAME\` in the correct mode**:
 
 1. **Check current task state**:
    \`\`\`bash
    cat /workspace/tasks/${TASK_NAME}/task.json | jq '.state'
    \`\`\`
 
-2. **Transition to appropriate state** (if needed):
-   - For stakeholder agents in REQUIREMENTS/VALIDATION mode: Ensure state is REQUIREMENTS, VALIDATION, or REVIEW
-   - For stakeholder agents in IMPLEMENTATION mode: MUST be in IMPLEMENTATION state
+2. **Choose the correct model for your state**:
+   - In REQUIREMENTS/VALIDATION/REVIEW → use \`model: opus\`
+   - In IMPLEMENTATION → use \`model: haiku\`
 
-3. **For stakeholder agents in IMPLEMENTATION mode specifically**:
+3. **For implementation mode specifically**:
    - Verify user approved implementation plan (see enforce-synthesis-checkpoint.sh)
    - Verify state is IMPLEMENTATION
-   - Then invoke agent
+   - Then invoke agent with \`model: haiku\`
 
 ## Protocol Reference
 

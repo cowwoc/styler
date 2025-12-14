@@ -6,8 +6,8 @@ trap 'echo "ERROR in enforce-requirements-phase.sh at line $LINENO: Command fail
 
 # Enforce REQUIREMENTS phase completion before SYNTHESIS state transition
 #
-# This hook ensures that stakeholder reviewers have been invoked and have
-# produced requirement reports before the main agent creates an implementation plan.
+# This hook ensures that stakeholder agents (in requirements mode) have been invoked
+# and have produced requirement reports before the main agent creates an implementation plan.
 #
 # Triggered by: PreToolUse (when tool is TodoWrite or Bash with jq updating task.json)
 # Purpose: Prevent skipping REQUIREMENTS phase
@@ -123,7 +123,7 @@ REQUIRED ACTIONS:
    Specify documentation requirements, code style standards, naming conventions.
    Output: ${TASK_NAME}-formatter-requirements.md"
 
-3. After ALL reviewers complete, READ their reports
+3. After ALL agents complete, READ their reports
 4. SYNTHESIZE unified implementation plan in task.md
 5. THEN transition to SYNTHESIS state
 
