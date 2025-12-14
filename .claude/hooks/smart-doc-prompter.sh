@@ -124,7 +124,7 @@ handle_user_prompt_submit()
 
 	# Agent-specific filtering: Skip workflow/style prompts for specialized agents
 	case "$CURRENT_AGENT_TYPE" in
-		"security-auditor"|"usability-reviewer")
+		"hacker"|"designer")
 			# Read-only analysis agents - skip code style/workflow prompts
 			return 0
 			;;
@@ -277,14 +277,14 @@ handle_pre_tool_use()
 							echo "🧪 AGENT PROMPT: Using code-tester. Quick read: ./docs/code-style/testing-claude.md (testing detection patterns)"
 						fi
 						;;
-					*"technical-architect"*)
-						if check_and_mark_prompt "agent-technical-architect"; then
-							echo "🏛️ AGENT PROMPT: Using technical-architect. Quick read: ./docs/project/scope.md (architecture guidelines section)"
+					*"architect"*)
+						if check_and_mark_prompt "agent-architect"; then
+							echo "🏛️ AGENT PROMPT: Using architect. Quick read: ./docs/project/scope.md (architecture guidelines section)"
 						fi
 						;;
-					*"usability-reviewer"*)
-						if check_and_mark_prompt "agent-usability-reviewer"; then
-							echo "👥 AGENT PROMPT: Using usability-reviewer. Quick read: ./docs/project/scope.md (user experience requirements)"
+					*"designer"*)
+						if check_and_mark_prompt "agent-designer"; then
+							echo "👥 AGENT PROMPT: Using designer. Quick read: ./docs/project/scope.md (user experience requirements)"
 						fi
 						;;
 				esac

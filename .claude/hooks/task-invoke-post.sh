@@ -25,7 +25,7 @@ if [[ -z "$SUBAGENT_TYPE" ]]; then
     exit 0
 fi
 
-# Derive agent name from subagent_type (e.g., "style-reviewer" -> "style-reviewer")
+# Derive agent name from subagent_type (e.g., "architect" -> "architect")
 AGENT_NAME="$SUBAGENT_TYPE"
 
 # Infer task name from current working directory or task context

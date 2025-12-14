@@ -7,7 +7,7 @@
 # Create agent worktree for task protocol
 # Args:
 #   $1: task-name (e.g., "implement-formatter-api")
-#   $2: agent-name (e.g., "technical-architect", "style-reviewer")
+#   $2: agent-name (e.g., "architect", "formatter")
 # Returns:
 #   0: Success (worktree created or already exists)
 #   1: Failure (missing args, git error)

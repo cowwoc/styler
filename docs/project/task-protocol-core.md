@@ -166,8 +166,9 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 - **CLASSIFIED**: Risk level determined, agents selected, isolation established
 -  **REQUIREMENTS**: All stakeholder agents contribute requirements to task.md, negotiate conflicts, finalize
   task.md
--  **SYNTHESIS**: Each agent appends implementation plan to task.md, **USER APPROVAL CHECKPOINT: Present all
-  plans to user, wait for explicit user approval**
+-  **SYNTHESIS**: Create detailed implementation plan in task.md with file-level specificity, exact method
+  signatures, and complete test specifications. **USER APPROVAL CHECKPOINT: Present comprehensive plan with
+  all implementation details - user approves the WHAT and HOW before any code is written**
 -  **IMPLEMENTATION**: Iterative rounds where each agent implements domain requirements in parallel, rebases
   on task branch, merges changes (continues until all agents report no more work)
 - **VALIDATION**: Final build verification after all implementation rounds complete
@@ -184,6 +185,257 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 -  **COMPLETE**: Work merged to main branch with atomic documentation update (task implementation + todo.md +
   changelog.md in single commit), dependent tasks unblocked (only after user approves changes)
 - **CLEANUP**: All agent worktrees removed, task worktree removed, locks released, temporary files cleaned
+
+### Detailed Implementation Plan Requirements (SYNTHESIS State) {#detailed-implementation-plan-requirements}
+
+**MANDATORY**: The implementation plan created during SYNTHESIS must be detailed enough that implementation
+becomes mechanical - NO significant decisions should remain for the implementation phase.
+
+**🎯 Goal**: When a user approves an implementation plan, they know EXACTLY what will be created, where,
+and how. No surprises during implementation.
+
+#### Required Plan Components {#required-plan-components}
+
+**1. FILE MANIFEST** - Complete list of all files to be created or modified:
+```markdown
+## Files to Create
+| File Path | Purpose | Lines (est.) |
+|-----------|---------|--------------|
+| `formatter/src/main/java/.../FormattingRule.java` | Core interface | ~50 |
+| `formatter/src/main/java/.../FormattingConfiguration.java` | Config base | ~30 |
+| `formatter/src/test/java/.../FormattingRuleTest.java` | Unit tests | ~150 |
+
+## Files to Modify
+| File Path | Changes |
+|-----------|---------|
+| `pipeline/src/main/java/.../FormatStage.java` | Update format() signature |
+| `cli/src/main/java/.../CliMain.java` | Create config list |
+```
+
+**2. API SPECIFICATIONS** - Exact method signatures with JavaDoc summaries:
+```markdown
+## API Design
+
+### FormattingRule Interface
+```java
+public interface FormattingRule {
+    /**
+     * Analyzes source code for formatting violations.
+     * @param context transformation context with source and metadata
+     * @param configs list of all configurations (rule finds its own)
+     * @return list of violations found, empty if compliant
+     */
+    List<FormattingViolation> analyze(TransformationContext context,
+                                       List<FormattingConfiguration> configs);
+
+    /**
+     * Formats source code according to rule's style.
+     * @param context transformation context with source
+     * @param configs list of all configurations
+     * @return formatted source code
+     */
+    String format(TransformationContext context,
+                  List<FormattingConfiguration> configs);
+}
+```
+
+### FormattingConfiguration.findConfig() Helper
+```java
+/**
+ * Finds configuration of specified type from config list.
+ * @param configs all configurations passed to rule
+ * @param configType the configuration class to find
+ * @param defaultSupplier provides default if not found
+ * @return matching config or default
+ * @throws IllegalArgumentException if multiple configs of same type
+ */
+static <T extends FormattingConfiguration> T findConfig(
+    List<FormattingConfiguration> configs,
+    Class<T> configType,
+    Supplier<T> defaultSupplier);
+```
+```
+
+**3. BEHAVIORAL SPECIFICATIONS** - How the code should behave in specific scenarios:
+```markdown
+## Behavior Specifications
+
+### Config Lookup Behavior
+| Scenario | Input | Expected Behavior |
+|----------|-------|-------------------|
+| Matching config exists | `[LineConfig, BraceConfig]` for BraceRule | Returns BraceConfig |
+| No matching config | `[LineConfig]` for BraceRule | Returns default from supplier |
+| Multiple same type | `[BraceConfig, BraceConfig]` | Throws IllegalArgumentException |
+| Null config list | `null` | Returns default from supplier |
+| Empty config list | `[]` | Returns default from supplier |
+
+### Rule Format Behavior
+| Input | Config | Expected Output |
+|-------|--------|-----------------|
+| `class Test{` | BraceStyle.SAME_LINE | `class Test {` |
+| `class Test{` | BraceStyle.NEW_LINE | `class Test\n{` |
+```
+
+**4. TEST SPECIFICATIONS** - Exact test cases to implement:
+```markdown
+## Test Cases
+
+### FormattingConfiguration.findConfig() Tests
+| Test Name | Input | Expected |
+|-----------|-------|----------|
+| `shouldReturnMatchingConfig` | List with matching type | Returns that config |
+| `shouldReturnDefaultWhenNoMatch` | List without matching type | Returns default |
+| `shouldThrowOnDuplicateConfig` | List with 2 same type | IllegalArgumentException |
+| `shouldHandleNullList` | null | Returns default |
+| `shouldHandleEmptyList` | [] | Returns default |
+
+### BraceFormattingRule.analyze() Tests
+| Test Name | Source | Config | Expected Violations |
+|-----------|--------|--------|---------------------|
+| `shouldDetectMissingSpaceBeforeBrace` | `class Test{` | SAME_LINE | 1 violation at col 10 |
+| `shouldAcceptCorrectSameLineStyle` | `class Test {` | SAME_LINE | 0 violations |
+```
+
+**5. IMPLEMENTATION SEQUENCE** - Ordered steps with dependencies:
+```markdown
+## Implementation Sequence
+
+### Phase 1: Core Interfaces (architect agent)
+1. Create `FormattingConfiguration` base record with `findConfig()` helper
+2. Update `FormattingRule` interface with new `List<>` signatures
+3. Compile and verify no existing code breaks
+
+### Phase 2: Rule Updates (engineer agent, depends on Phase 1)
+1. Update `BraceFormattingRule` to use `findConfig()`
+2. Update `LineLengthFormattingRule` to use `findConfig()`
+3. Update remaining 3 rules
+4. Verify all rules compile
+
+### Phase 3: Pipeline Integration (engineer agent, depends on Phase 2)
+1. Update `FormatStage.format()` to pass config list
+2. Update `ProcessingContext` if needed
+3. Verify pipeline compiles
+
+### Phase 4: CLI Integration (engineer agent, depends on Phase 3)
+1. Update `CliMain` to create `List<FormattingConfiguration>`
+2. Pass config list through pipeline
+3. Verify end-to-end flow
+
+### Phase 5: Test Updates (tester agent, depends on Phases 1-4)
+1. Update all existing tests to use `List.of(config)`
+2. Add new tests for `findConfig()` behavior
+3. Add tests for duplicate config detection
+4. Verify 100% test pass rate
+```
+
+**6. DECISION LOG** - Decisions already made (NOT for implementation phase):
+```markdown
+## Decisions Made During Requirements/Synthesis
+
+| Decision | Options Considered | Chosen | Rationale |
+|----------|-------------------|--------|-----------|
+| Config lookup method | Instance method vs static | Static helper | Reusable across all rules |
+| Missing config behavior | Throw vs default | Return default | Backward compatible |
+| Duplicate config behavior | Ignore vs throw | Throw exception | Fail-fast, prevent bugs |
+| Method location | FormattingRule vs Config | FormattingConfiguration | Closer to config domain |
+```
+
+#### Plan Presentation Format for User Approval {#plan-presentation-format}
+
+When presenting the plan to the user, use this comprehensive format:
+
+```markdown
+## Implementation Plan Summary
+
+**Task**: [Task name from todo.md]
+**Risk Level**: [HIGH/MEDIUM/LOW]
+**Stakeholder Agents**: [List of agents consulted, e.g., architect, formatter, tester]
+
+### Problem Statement
+[2-3 sentences describing the problem being solved and why it matters]
+
+### Proposed Solution
+[2-3 sentences describing the approach at a high level]
+
+### Scope Summary
+**Files to create**: [X files, ~Y lines]
+**Files to modify**: [A files, ~B lines changed]
+**Test coverage**: [N new tests, M existing tests affected]
+
+### Key Design Decisions
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| [Design decision 1] | [Choice made] | [Why this choice] |
+| [Design decision 2] | [Choice made] | [Why this choice] |
+
+### Files to Create/Modify
+| File Path | Purpose | Changes |
+|-----------|---------|---------|
+| `path/to/file.java` | [Purpose] | [Create/Modify: description] |
+
+### Key API Signatures
+[Most important 2-3 method signatures that define the feature]
+```java
+// Example signature with brief description
+```
+
+### Behavioral Summary
+| Scenario | Input | Expected Behavior |
+|----------|-------|-------------------|
+| [Scenario 1] | [Input] | [Expected result] |
+
+### Implementation Phases
+1. **Phase 1: [Name]** - [Description] (Agent: [agent name])
+2. **Phase 2: [Name]** - [Description] (Agent: [agent name])
+[Continue for all phases]
+
+### Success Criteria
+- [ ] [Criterion 1 - what must be true for implementation to be complete]
+- [ ] [Criterion 2]
+- [ ] Build passes with zero test failures
+- [ ] Checkstyle and PMD pass with zero violations
+
+### Risks and Mitigations
+| Risk | Likelihood | Mitigation |
+|------|------------|------------|
+| [Risk 1] | [High/Medium/Low] | [How we'll address it] |
+
+---
+
+**Full implementation details**: See `/workspace/tasks/{task-name}/task.md`
+
+**Please review and respond with:**
+- "approved" / "proceed" to begin implementation
+- Or provide feedback for plan revisions
+```
+
+**CRITICAL**: The summary must provide enough context that the user can make an informed decision
+WITHOUT reading the full task.md file. Include all major decisions and their rationale.
+
+#### What the User is Approving {#what-user-approves}
+
+When the user approves a SYNTHESIS plan, they are agreeing to:
+
+✅ **THESE ARE FIXED** (user approved, no changes without re-approval):
+- File paths and names
+- Method signatures and return types
+- Core behavioral logic (what the code does)
+- Test case specifications
+- Implementation sequence and phases
+
+⚠️ **THESE MAY VARY** (implementation details within approved scope):
+- Internal variable names
+- Loop vs stream implementation
+- Exact line counts
+- Helper method decomposition
+- Import ordering
+
+❌ **THESE REQUIRE RE-APPROVAL** (deviation from plan):
+- Adding/removing files not in manifest
+- Changing method signatures
+- Changing behavior (different edge case handling)
+- Skipping planned test cases
+- Changing implementation sequence
 
 ### User Approval Checkpoints - MANDATORY REGARDLESS OF BYPASS MODE {#user-approval-checkpoints---mandatory-regardless-of-bypass-mode}
 

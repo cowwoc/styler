@@ -1,7 +1,7 @@
 # Task Protocol for Sub-Agents
 
-> **Version:** 1.0 | **Last Updated:** 2025-10-18
-> **Audience:** All sub-agents (reviewers and updaters)
+> **Version:** 1.1 | **Last Updated:** 2025-12-14
+> **Audience:** All sub-agents
 > **Purpose:** Agent coordination protocol, worktree structure, and status tracking
 
 ## 🚨 MANDATORY: Read This Document at Startup {#mandatory-read-this-document-at-startup}
@@ -29,15 +29,14 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
         │
         └── agents/
             ├── architect/
-            │   └── status.json     # Reviewer status tracking
-            ├── architect/
-            │   ├── code/           # Updater's isolated worktree
+            │   ├── code/           # Agent's isolated worktree
             │   │   ├── src/        # Implementation work
             │   │   └── pom.xml
-            │   └── status.json     # Updater status tracking
-            ├── quality/
+            │   └── status.json     # Agent status tracking
+            ├── engineer/
+            │   ├── code/
             │   └── status.json
-            └── quality/
+            └── formatter/
                 ├── code/
                 └── status.json
 ```
@@ -64,7 +63,7 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
 
 ### Status File Location {#status-file-location}
 
-**Every agent** (reviewer and updater) MUST maintain a `status.json` file:
+**Every agent** MUST maintain a `status.json` file:
 
 ```
 /workspace/tasks/{task-name}/agents/{agent-name}/status.json
@@ -107,7 +106,7 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
 }
 ```
 
-**Required updater fields**:
+**Required implementation mode fields**:
 - `last_merge_sha`: Git SHA of last merge to task branch
 - `work_remaining`: "none" when complete
 
@@ -170,16 +169,17 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
 EOF
 ```
 
-**If reviewer rejects changes**:
+**If agent (validation mode) rejects changes**:
 
 ```bash
-cat > /workspace/tasks/{TASK}/agents/{AGENT}-reviewer/status.json <<EOF
+cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
 {
-  "agent": "{AGENT}-reviewer",
+  "agent": "{AGENT}",
   "task": "{TASK}",
+  "mode": "validation",
   "status": "COMPLETE",
   "decision": "REJECTED",
-  "work_remaining": "updater must address feedback",
+  "work_remaining": "implementation agent must address feedback",
   "round": ${CURRENT_ROUND},
   "last_review_sha": "${TASK_SHA}",
   "updated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
@@ -193,16 +193,16 @@ EOF
 ### Single Agent Round Pattern {#single-agent-round-pattern}
 
 ```
-1. Agent (implementation mode) implements in their worktree (/workspace/tasks/{task}/agents/{agent}-updater/code)
+1. Agent (implementation mode) implements in their worktree (/workspace/tasks/{task}/agents/{agent}/code)
 2. Agent (implementation mode) validates locally: ./mvnw verify (in their worktree)
 3. Agent (implementation mode) merges to task branch (/workspace/tasks/{task}/code)
 4. Agent (implementation mode) updates status.json with COMPLETE
-5. Agent (review mode) reviews what was merged to task branch
-6. Agent (review mode) decides: APPROVED or REJECTED
+5. Agent (validation mode) reviews what was merged to task branch
+6. Agent (validation mode) decides: APPROVED or REJECTED
    - If APPROVED: Round complete, update status.json with decision=APPROVED
    - If REJECTED: Update status.json with decision=REJECTED and feedback
 7. If REJECTED: Agent (implementation mode) reads feedback → fixes issues → merge → repeat from step 5
-8. Round complete when reviewer decision=APPROVED
+8. Round complete when validation mode decision=APPROVED
 ```
 
 ### Multi-Agent Round Flow Example {#multi-agent-round-flow-example}
@@ -210,29 +210,29 @@ EOF
 ```
 Round 1 - Initial Implementation:
 ├─ architect: Implement core interfaces → merge to task branch
-├─ quality: Apply refactoring → merge to task branch
-├─ style: Apply style rules → merge to task branch
-├─ test: Implement test suite → merge to task branch
-└─ All updaters: Update status.json with COMPLETE
+├─ engineer: Apply refactoring → merge to task branch
+├─ formatter: Apply style rules → merge to task branch
+├─ tester: Implement test suite → merge to task branch
+└─ All agents (implementation mode): Update status.json with COMPLETE
 
 Round 1 - Review Merged Changes:
 ├─ architect: Review task branch → REJECTED (ambiguous contracts)
-├─ quality: Review task branch → APPROVED ✓
-├─ style: Review task branch → REJECTED (12 violations)
-├─ test: Review task branch → APPROVED ✓
-└─ Reviewers: Update status.json with decision
+├─ engineer: Review task branch → APPROVED ✓
+├─ formatter: Review task branch → REJECTED (12 violations)
+├─ tester: Review task branch → APPROVED ✓
+└─ All agents (validation mode): Update status.json with decision
 
-Round 2 - Apply Reviewer Feedback:
+Round 2 - Apply Feedback:
 ├─ architect: Fix contracts per feedback → merge
-├─ style: Fix 12 violations per feedback → merge
-└─ Updaters: Update status.json
+├─ formatter: Fix 12 violations per feedback → merge
+└─ Agents (implementation mode): Update status.json
 
 Round 2 - Re-review Fixes:
 ├─ architect: Re-review → APPROVED ✓
-├─ style: Re-review → APPROVED ✓
-└─ All reviewers now APPROVED: Round complete
+├─ formatter: Re-review → APPROVED ✓
+└─ All agents (validation mode) now APPROVED: Round complete
 
-Main agent checks all reviewer status.json files:
+Main agent checks all agent status.json files:
 - All have decision=APPROVED → Transition to VALIDATION state
 ```
 
@@ -318,6 +318,41 @@ Remaining: list of known issues"
 - Before reporting any error or blocker
 - At regular intervals during long implementations
 
+### ⚠️ CRITICAL: Style Violations (Checkstyle/PMD) - MUST FIX, NEVER GIVE UP {#style-violations-must-fix}
+
+**Pre-commit hooks will block commits with style violations.** This is NOT an excuse to leave work uncommitted.
+
+**MANDATORY RESPONSE to style violations**:
+1. **Read the violation report** - Find exact file, line, and rule
+2. **Fix each violation** - Most are simple (duplicate imports, missing comments, wrong formatting)
+3. **Re-run style check** - `./mvnw checkstyle:check pmd:check -pl :module-name`
+4. **Iterate until clean** - Then commit
+5. **If truly stuck** - Commit with `--no-verify` and document the blocker in commit message
+
+**PROHIBITED RESPONSES**:
+- ❌ "Due to complexity and time constraints, let me provide a summary" (Token Usage Policy violation)
+- ❌ Returning without committing because style checks failed
+- ❌ Giving up after one or two fix attempts
+- ❌ Claiming the task is "too complex" to complete
+
+**Common PMD Violations and Quick Fixes**:
+
+| Violation | Typical Cause | Quick Fix |
+|-----------|---------------|-----------|
+| DuplicateImports | Added import that already exists | Remove duplicate line |
+| UnusedImports | Import no longer needed | Remove unused import |
+| CommentRequired | Missing JavaDoc on public element | Add JavaDoc comment |
+| AvoidDuplicateLiterals | Same string used multiple times | Extract to constant |
+
+**Example** (from real session causing ~30 min rework):
+```
+❌ WRONG: Agent hit 19 PMD violations (duplicate imports), tried to fix once,
+   then gave up saying "Due to complexity...". ALL 37 files of work lost.
+
+✅ CORRECT: Fix each duplicate import (literally just delete the duplicate line),
+   re-run PMD, commit when clean. Takes 5-10 minutes, preserves all work.
+```
+
 ### Round Completion Criteria {#round-completion-criteria}
 
 Main agent checks these conditions before transitioning to next state:
@@ -340,9 +375,9 @@ When agents in implementation mode encounter unexpected design problems not spec
 
 **Implementation Mode (model: haiku)**: Execute mechanical implementation per plan, apply fixes from review mode, report blockers, DO NOT make architectural decisions independently
 
-### When to Consult Reviewers {#when-to-consult-reviewers}
+### When to Consult Validation Mode Agents {#when-to-consult-validation-mode-agents}
 
-Agents in implementation mode MUST report to reviewers when encountering:
+Agents in implementation mode MUST report to validation mode agents when encountering:
 
 1. **Unexpected Design Problems**: Planned approach not viable, multiple valid approaches exist, design pattern choice needed, ambiguous contracts
 2. **Scope Ambiguities**: Unspecified edge case handling, unclear component ownership, conflicting requirements
@@ -370,25 +405,25 @@ Agents in implementation mode MUST report to reviewers when encountering:
 
 **Example**:
 
-❌ **INCORRECT** (Updater makes architectural decision):
+❌ **INCORRECT** (Implementation mode agent makes architectural decision):
 ```
 Problem: Plan says "validate inputs" but doesn't specify validation framework
-Updater Action: Independently chooses to use Bean Validation annotations
+Implementation Mode Action: Independently chooses to use Bean Validation annotations
 Result: Violates separation of concerns, may contradict project patterns
 ```
 
-✅ **CORRECT** (Updater consults reviewer):
+✅ **CORRECT** (Implementation mode agent consults validation mode agent):
 ```
 Problem: Plan says "validate inputs" but doesn't specify validation framework
-Updater Action:
+Implementation Mode Action:
   - Updates status.json with BLOCKED status
   - Returns: "Blocked: Plan requires input validation but doesn't specify framework.
-             Project uses both requirements-java and Bean Validation. Need reviewer
-             guidance on which to use for consistency."
-Main Agent: Invokes architect with problem description
-Reviewer: Analyzes project patterns, specifies "Use requirements-java requireThat()
+             Project uses both requirements-java and Bean Validation. Need validation
+             mode guidance on which to use for consistency."
+Main Agent: Invokes architect (validation mode) with problem description
+Validation Mode: Analyzes project patterns, specifies "Use requirements-java requireThat()
           for consistency with existing security module"
-Updater: Implements using requirements-java per reviewer guidance
+Implementation Mode: Implements using requirements-java per validation mode guidance
 ```
 
 ## Git Workflow for Agents {#git-workflow-for-agents}
@@ -410,7 +445,7 @@ Co-Authored-By: {agent-type} <noreply@anthropic.com>
 **Examples**:
 
 ```bash
-# ✅ CORRECT - Architecture updater commit
+# ✅ CORRECT - Architect agent commit
 [architect] Implement FormattingRule and TransformationContext interfaces
 
 Created core API interfaces with proper contract definitions.
@@ -418,13 +453,13 @@ Validated with SecurityConfig integration.
 
 Co-Authored-By: architect <noreply@anthropic.com>
 
-# ✅ CORRECT - Quality updater commit
-[quality] Add comprehensive test suite for FormattingViolation
+# ✅ CORRECT - Engineer agent commit
+[engineer] Add comprehensive test suite for FormattingViolation
 
 Implemented 11 unit tests covering validation, immutability, equals/hashCode.
 All tests passing with 100% coverage.
 
-Co-Authored-By: quality <noreply@anthropic.com>
+Co-Authored-By: engineer <noreply@anthropic.com>
 
 # ❌ VIOLATION - Missing agent signature
 Implement FormattingRule interface
@@ -433,7 +468,7 @@ Implement FormattingRule interface
 [feat] Add new feature
 ```
 
-### For Stakeholder Agents in IMPLEMENTATION Mode: Merging to Task Branch {#for-implementation-agents-merging-to-task-branch}
+### For Agents in IMPLEMENTATION Mode: Merging to Task Branch {#for-implementation-agents-merging-to-task-branch}
 
 **Step 1: Verify your worktree**
 
@@ -463,12 +498,12 @@ git status
 cd /workspace/tasks/{TASK}/code
 
 # Merge changes from your worktree
-# CRITICAL: Include [{AGENT}-updater] signature prefix for audit compliance
-git merge --no-ff /workspace/tasks/{TASK}/agents/{AGENT}-updater/code -m "[{AGENT}-updater] {description}
+# CRITICAL: Include [{AGENT}] signature prefix for audit compliance
+git merge --no-ff /workspace/tasks/{TASK}/agents/{AGENT}/code -m "[{AGENT}] {description}
 
 Implemented in round ${ROUND}.
 
-Co-Authored-By: {AGENT}-updater <noreply@anthropic.com>"
+Co-Authored-By: {AGENT} <noreply@anthropic.com>"
 
 # Verify merge succeeded
 git status
@@ -481,10 +516,11 @@ git status
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
 
 # Update your status file
-cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
+cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
 {
-  "agent": "{AGENT}-updater",
+  "agent": "{AGENT}",
   "task": "{TASK}",
+  "mode": "implementation",
   "status": "COMPLETE",
   "work_remaining": "none",
   "round": ${ROUND},
@@ -494,7 +530,7 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}-updater/status.json <<EOF
 EOF
 ```
 
-### For Stakeholder Agents in VALIDATION Mode: Reviewing Task Branch {#for-validation-agents-reviewing-task-branch}
+### For Agents in VALIDATION Mode: Reviewing Task Branch {#for-validation-agents-reviewing-task-branch}
 
 **Step 1: Review the task branch (NOT implementation agent worktrees)**
 
@@ -503,7 +539,7 @@ EOF
 cd /workspace/tasks/{TASK}/code
 
 # Review merged code here
-# DO NOT review individual updater worktrees
+# DO NOT review individual agent worktrees (those are WIP)
 ```
 
 **Step 2: Analyze changes**
@@ -516,8 +552,8 @@ git log --oneline -10
 Read /workspace/tasks/{TASK}/code/src/main/java/...
 
 # Run analysis tools if applicable
-./mvnw checkstyle:check pmd:check  # For style/quality reviewers
-./mvnw test                         # For test reviewers
+./mvnw checkstyle:check pmd:check  # For formatter agents
+./mvnw test                         # For tester agents
 ```
 
 **Step 3: Make decision (APPROVED or REJECTED)**
@@ -537,13 +573,14 @@ FEEDBACK="Detailed issues:\n1. Interface contracts ambiguous\n2. Missing validat
 ```bash
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
 
-cat > /workspace/tasks/{TASK}/agents/{AGENT}-reviewer/status.json <<EOF
+cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
 {
-  "agent": "{AGENT}-reviewer",
+  "agent": "{AGENT}",
   "task": "{TASK}",
+  "mode": "validation",
   "status": "COMPLETE",
   "decision": "${DECISION}",
-  "work_remaining": "$([ "$DECISION" = "APPROVED" ] && echo "none" || echo "updater must address feedback")",
+  "work_remaining": "$([ "$DECISION" = "APPROVED" ] && echo "none" || echo "implementation agent must address feedback")",
   "round": ${ROUND},
   "last_review_sha": "${TASK_SHA}",
   "updated_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
@@ -579,7 +616,7 @@ cd /workspace/tasks/{task-name}/code
 ./mvnw verify
 ```
 
-### For Stakeholder Agents in VALIDATION Mode {#for-validation-agents}
+### For Agents in VALIDATION Mode {#for-validation-agents}
 
 **Review task branch** (where implementation agents have merged):
 
@@ -587,15 +624,15 @@ cd /workspace/tasks/{task-name}/code
 cd /workspace/tasks/{task-name}/code
 
 # Run domain-specific validation
-./mvnw verify                          # All reviewers
-./mvnw checkstyle:check pmd:check      # Style/quality reviewers
-./mvnw test                            # Test reviewer
-./mvnw compile                         # Architecture/build reviewers
+./mvnw verify                          # All agents
+./mvnw checkstyle:check pmd:check      # Formatter agents
+./mvnw test                            # Tester agents
+./mvnw compile                         # Architect agents
 ```
 
 **Report Format Best Practices**:
 
-Reviewer reports should be **concise and structured** to minimize token usage:
+Agent reports should be **concise and structured** to minimize token usage:
 
 ✅ **RECOMMENDED** (Concise):
 ```markdown
@@ -629,16 +666,16 @@ public interface FormattingRule {
 
 ### Input Files (Where to Read) {#input-files-where-to-read}
 
-**Reviewer reports** (generated by agents in review mode, consumed by agents in implementation mode):
+**Agent reports** (generated by agents in validation mode, consumed by agents in implementation mode):
 
 ```
-/workspace/tasks/{task-name}/{domain}-reviewer-report.json
-/workspace/tasks/{task-name}/{domain}-reviewer-report.md
+/workspace/tasks/{task-name}/{agent}-report.json
+/workspace/tasks/{task-name}/{agent}-report.md
 
 Examples:
 /workspace/tasks/add-api/architect-requirements.md
-/workspace/tasks/add-api/style-violations.json
-/workspace/tasks/add-api/quality-refactoring.json
+/workspace/tasks/add-api/formatter-violations.json
+/workspace/tasks/add-api/engineer-refactoring.json
 ```
 
 **Task requirements** (generated by main agent):
@@ -663,7 +700,7 @@ Examples:
 /workspace/tasks/{task-name}/agents/{agent-name}/status.json
 ```
 
-**Reviewer reports** (for updater consumption):
+**Agent reports** (for implementation mode consumption):
 
 ```
 /workspace/tasks/{task-name}/{agent-name}-report.json
@@ -726,25 +763,25 @@ Full `./mvnw verify` is slow (30-60 seconds). Validate incrementally during deve
 
 **Default**: Use `./mvnw verify` for normal validation.
 
-### Pattern: Reading Reviewer Feedback {#pattern-reading-reviewer-feedback}
+### Pattern: Reading Validation Feedback {#pattern-reading-validation-feedback}
 
-**Agents in implementation mode** must read reviewer feedback after REJECTED decision:
+**Agents in implementation mode** must read validation feedback after REJECTED decision:
 
 ```bash
-# Check reviewer decision
-DECISION=$(jq -r '.decision' /workspace/tasks/{TASK}/agents/{REVIEWER}/status.json)
+# Check validation mode decision
+DECISION=$(jq -r '.decision' /workspace/tasks/{TASK}/agents/{AGENT}/status.json)
 
 if [ "$DECISION" = "REJECTED" ]; then
     # Read feedback
-    FEEDBACK=$(jq -r '.feedback' /workspace/tasks/{TASK}/agents/{REVIEWER}/status.json)
+    FEEDBACK=$(jq -r '.feedback' /workspace/tasks/{TASK}/agents/{AGENT}/status.json)
 
-    echo "Reviewer rejected changes:"
+    echo "Validation mode rejected changes:"
     echo "$FEEDBACK"
 
     # Address each issue in feedback
     # Fix issues in your worktree
     # Re-merge to task branch
-    # Reviewer will re-review
+    # Validation mode will re-review
 fi
 ```
 
@@ -809,8 +846,8 @@ When merging:
 - [ ] Update status.json with COMPLETE and last_merge_sha
 - [ ] Verify task branch still passes validation after merge
 
-If reviewer rejects:
-- [ ] Read feedback from reviewer's status.json
+If validation mode rejects:
+- [ ] Read feedback from agent's status.json
 - [ ] Fix issues in YOUR worktree
 - [ ] Re-merge to task branch
 - [ ] Update status.json

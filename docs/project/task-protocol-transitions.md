@@ -1601,7 +1601,7 @@ task execution.
   "agent_invocations": [
     {
       "agent_name": "architect",
-      "agent_type": "reviewer",
+      "agent_mode": "requirements",
       "working_dir": "/workspace/tasks/{task-name}/code/",
       "invocation_timestamp": "2025-10-19T10:05:00Z",
       "completion_timestamp": "2025-10-19T10:10:00Z",
@@ -1727,51 +1727,98 @@ fi
 **CRITICAL**: Audit trail MUST be preserved during CLEANUP state (see CLEANUP State Audit Preservation section).
 
 ### SYNTHESIS → IMPLEMENTATION {#synthesis-implementation}
+
+**REFERENCE**: See [Detailed Implementation Plan Requirements](task-protocol-core.md#detailed-implementation-plan-requirements)
+for the complete specification of what implementation plans must contain.
+
 **Mandatory Conditions:**
 - [ ] Requirements synthesis document created (all agents contributed to task.md)
 - [ ] Architecture plan addresses all stakeholder requirements
 -  [ ] Conflict resolution documented for competing requirements (architect makes final decisions
   based on tier hierarchy)
-- [ ] Implementation strategy defined with clear success criteria
-- [ ] Each agent's implementation plan appended to task.md
-- [ ] **USER APPROVAL: All implementation plans presented to user in task.md**
-- [ ] **USER CONFIRMATION: User has approved all proposed implementation approaches**
+- [ ] **DETAILED PLAN**: Implementation plan contains ALL required components:
+  - [ ] File manifest (all files to create/modify with paths)
+  - [ ] API specifications (exact method signatures with JavaDoc)
+  - [ ] Behavioral specifications (scenario → behavior tables)
+  - [ ] Test specifications (exact test cases to implement)
+  - [ ] Implementation sequence (ordered phases with dependencies)
+  - [ ] Decision log (all design decisions already made)
+- [ ] **USER APPROVAL: Detailed plan presented to user for approval**
+- [ ] **USER CONFIRMATION: User has approved the specific implementation approach**
 
 **🚨 CRITICAL - MANDATORY USER APPROVAL CHECKPOINT**:
 
 **PROHIBITION**: Main agent MUST NOT automatically transition from SYNTHESIS to IMPLEMENTATION state.
 
-**REQUIRED BEHAVIOR**:
-1. After completing SYNTHESIS (implementation plan written to task.md), main agent MUST HALT execution
-2. Main agent MUST output approval request to user with this exact pattern:
-   ```
-   Implementation plan complete. Location: /workspace/tasks/{task-name}/task.md
+**PLAN DETAIL REQUIREMENT**: The implementation plan must be detailed enough that:
+- User knows EXACTLY what files will be created/modified
+- User knows EXACTLY what method signatures will exist
+- User knows EXACTLY how the code will behave in each scenario
+- User knows EXACTLY what tests will be written
+- NO significant design decisions remain for implementation phase
 
-   Please review the implementation approach and confirm approval.
-   Type 'approved', 'LGTM', 'looks good', or 'proceed' to continue to IMPLEMENTATION state.
-   ```
+**REQUIRED BEHAVIOR**:
+1. After completing SYNTHESIS (detailed implementation plan written to task.md), main agent MUST HALT
+2. Main agent MUST present plan summary using the format below
 3. Main agent MUST WAIT for explicit user approval before transitioning to IMPLEMENTATION
 4. ONLY transition to IMPLEMENTATION after receiving approval keywords
 
-**EXAMPLE - CORRECT APPROVAL REQUEST PATTERN**:
+**EXAMPLE - CORRECT DETAILED APPROVAL REQUEST**:
 ```markdown
 ## Implementation Plan Complete
 
-I have completed the SYNTHESIS phase and created a comprehensive implementation plan in `/workspace/tasks/implement-formatter-api/task.md`.
+**Task**: implement-multi-config-architecture
+**Risk Level**: MEDIUM
+**Estimated Changes**: 2 files modified, 1 method added, ~30 lines
 
-**Plan Summary**:
-- Architecture: 8 core interfaces across 3 packages
-- Implementation: 6 stakeholder agents in parallel
-- Testing: 90%+ coverage with 80+ unit tests
-- Quality gates: Checkstyle, PMD, compilation
+### What Will Be Built
+Multi-configuration architecture allowing each formatting rule to receive all configurations and find
+its own type via a shared helper method. This fixes CLI failures where a single config was passed to
+all rules.
 
-**May I proceed to IMPLEMENTATION?**
+### Files to Modify
+| File | Changes |
+|------|---------|
+| `formatter/.../FormattingConfiguration.java` | Add static `findConfig()` helper method |
+| `formatter/.../FormattingRule.java` | Change `analyze()` and `format()` to accept `List<FormattingConfiguration>` |
+| `formatter/.../BraceFormattingRule.java` | Use `findConfig()` to get BraceFormattingConfiguration |
+| `formatter/.../LineLengthFormattingRule.java` | Use `findConfig()` to get LineLengthConfiguration |
+| (3 more rules) | Same pattern |
+| `pipeline/.../FormatStage.java` | Pass config list to rules |
+| `cli/.../CliMain.java` | Create `List<FormattingConfiguration>` |
+| (19 test files) | Update to use `List.of(config)` |
 
-Please review the plan and respond with:
-- "approved" / "LGTM" / "looks good" / "proceed" to continue, OR
-- Provide feedback for plan revisions
+### Key API Signature
+```java
+static <T extends FormattingConfiguration> T findConfig(
+    List<FormattingConfiguration> configs,
+    Class<T> configType,
+    Supplier<T> defaultSupplier)
+```
 
-I will wait for your approval before transitioning to IMPLEMENTATION state.
+### Behavioral Summary
+| Scenario | Behavior |
+|----------|----------|
+| Matching config in list | Returns that config |
+| No matching config | Returns default from supplier |
+| Multiple same type | Throws IllegalArgumentException |
+| Null or empty list | Returns default from supplier |
+
+### Implementation Phases
+1. **Phase 1** (architect): Add `findConfig()` to FormattingConfiguration
+2. **Phase 2** (engineer): Update FormattingRule interface signatures
+3. **Phase 3** (engineer): Update all 5 rule implementations
+4. **Phase 4** (engineer): Update pipeline FormatStage
+5. **Phase 5** (engineer): Update CLI to create config list
+6. **Phase 6** (tester): Update all 19 test files
+
+---
+
+**Full implementation details**: `/workspace/tasks/implement-multi-config-architecture/task.md`
+
+**Please review and respond with:**
+- "approved" / "proceed" to begin implementation
+- Or provide feedback for plan revisions
 ```
 
 **PROHIBITED PATTERNS**:

@@ -119,11 +119,11 @@ The protocol uses a **two-phase quality amplification** approach:
 
 2. **IMPLEMENTATION Phase** (Low-cost, high-volume):
    - Agents in implementation mode use Haiku 4.5 for mechanical code generation
-   - Execute reviewer specifications without making new decisions
+   - Execute validation mode specifications without making new decisions
    - Apply exact changes using Edit/Write tools with provided strings
    - No analysis, no judgment, pure implementation execution
 
-**Critical Requirement for Reviewers**:
+**Critical Requirement for Validation Mode Agents**:
 
 Agents in review mode MUST produce specifications that a **simpler model** (Haiku) can implement **without making
 difficult decisions**. See agent-specific guidance sections in agent (review mode) definitions for detailed
@@ -161,8 +161,8 @@ Stakeholder agents operate in one of two modes based on task state and model par
 
 ```
 1. Check explicit model parameter in Task tool invocation:
-   - model: "haiku" → IMPLEMENTATION mode (updater)
-   - model: "opus"  → REQUIREMENTS/VALIDATION mode (reviewer)
+   - model: "haiku" → IMPLEMENTATION mode
+   - model: "opus"  → REQUIREMENTS/VALIDATION mode
 
 2. If no model specified, infer from current task state:
    - State is REQUIREMENTS, VALIDATION, REVIEW → REQUIREMENTS/VALIDATION mode
@@ -225,11 +225,6 @@ Task tool: architect
 # Not blocked, but wastes budget - use haiku for implementation
 ```
 
-**Audit Agents (Exception)**:
-
-Audit agents (`process-recorder`, `process-compliance-reviewer`, `process-efficiency-reviewer`) can be
-invoked in ANY state without mode restrictions.
-
 **Hook Enforcement**:
 
 When violations are detected, `validate-agent-invocation.sh`:
@@ -272,7 +267,7 @@ Round 1:
 ├─ formatter: Review → APPROVED ✓
 └─ All agents: Update status.json {"status": "COMPLETE", "decision": "APPROVED"}
 
-Transition to VALIDATION (all reviewers APPROVED, all status COMPLETE)
+Transition to VALIDATION (all validation mode agents APPROVED, all status COMPLETE)
 ```
 
 **Round Completion Criteria**:
@@ -409,7 +404,7 @@ if check_all_validation_agents_approved "implement-feature-x" "${VALIDATION_AGEN
     echo "✅ All validation agents approved - transitioning to VALIDATION state"
     transition_to_validation
 else
-    echo "⏳ Continuing implementation rounds (reviewers have feedback or work pending)"
+    echo "⏳ Continuing implementation rounds (validation agents have feedback or work pending)"
 fi
 ```
 
@@ -1013,7 +1008,7 @@ cat > /workspace/tasks/{task-name}/audit-snapshot.json <<'EOF'
   "build_verifications": $(jq '.build_verifications | length' audit-trail.json),
   "verification_summary": {
     "all_builds_passed": $(jq '[.build_verifications[].success] | all' audit-trail.json),
-    "stakeholder_agents_used": $(jq '[.agent_invocations[] | select(.agent_type | endswith("-updater") or endswith("-reviewer"))] | length > 0' audit-trail.json)
+    "stakeholder_agents_used": $(jq '[.agent_invocations[] | select(.agent_type | test("architect|engineer|formatter|tester|builder|designer|optimizer|hacker|configurator"))] | length > 0' audit-trail.json)
   }
 }
 EOF
@@ -1065,7 +1060,7 @@ After CLEANUP, audit files remain accessible at:
 **Audit Verification Commands**:
 ```bash
 # Verify task used stakeholder agents (not main agent implementation)
-jq '.agent_invocations[] | select(.agent_type | endswith("-updater"))' \
+jq '.agent_invocations[] | select(.agent_type | test("architect|engineer|formatter|tester|builder|designer|optimizer|hacker|configurator"))' \
   /workspace/tasks/{task-name}/audit-trail.json
 
 # Check for suspicious single-commit pattern
