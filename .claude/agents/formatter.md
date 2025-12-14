@@ -205,7 +205,7 @@ IMPLEMENTATION_REQUIRED: true|false
 - Run `./mvnw compile` after structural changes
 - Run `./mvnw checkstyle:check pmd:check` after style fixes
 - Verify no new violations introduced
-- Ensure fixes match reviewer specifications exactly
+- Ensure fixes match requirements specifications exactly
 
 ## FIX IMPLEMENTATION EXAMPLES (IMPLEMENTATION MODE)
 
@@ -316,7 +316,7 @@ cd /workspace/tasks/{task-name}/code
 
 ## IMPLEMENTATION CONSTRAINTS
 
-**SAFETY**: Never change logic, preserve functionality, match reviewer specs exactly, validate no regressions, document deviations with justification.
+**SAFETY**: Never change logic, preserve functionality, match requirements specs exactly, validate no regressions, document deviations with justification.
 
 **VALIDATION**: Compile after structural changes, run checkstyle/PMD after formatting, ensure tests pass, verify no new violations, check fixes match specs.
 

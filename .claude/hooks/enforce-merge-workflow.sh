@@ -48,8 +48,6 @@ MERGE_BRANCH=$(echo "$COMMAND" | sed -E 's/.*git[[:space:]]+merge[[:space:]]+([^
 case "$MERGE_BRANCH" in
 	*-architect|*-engineer|*-formatter|*-tester|*-builder|*-designer|*-optimizer|*-hacker|*-configurator)
 		BRANCH_TYPE="agent" ;;
-	*-quality|*-style|*-updater|*-reviewer)
-		BRANCH_TYPE="agent" ;;
 	implement-*)
 		BRANCH_TYPE="task" ;;
 	*)

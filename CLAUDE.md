@@ -295,6 +295,25 @@ sed
 **Safe Code Removal**: When removing code patterns from multiple files, use the `safe-remove-code` skill (via
 Skill tool) to prevent accidentally gutting files.
 
+**Safe JSON File Editing (jq)**:
+
+**⚠️ CRITICAL**: Never redirect jq output directly to the input file. This truncates the file BEFORE jq reads
+it, resulting in data loss.
+
+```bash
+# ❌ WRONG - Truncates file before jq reads it
+jq '.state = "IMPLEMENTATION"' task.json > task.json  # Data loss!
+
+# ✅ CORRECT - Use temp file + mv (atomic operation)
+jq '.state = "IMPLEMENTATION"' task.json > task.json.tmp && mv task.json.tmp task.json
+
+# ✅ ALSO CORRECT - Use sponge if available
+jq '.state = "IMPLEMENTATION"' task.json | sponge task.json
+```
+
+**Why This Happens**: Shell redirection (`>`) opens and truncates the output file BEFORE the command runs.
+The jq process then reads an empty file, producing empty output.
+
 **Synchronous Tool Execution (Skill and SlashCommand)**:
 
 **⚠️ CRITICAL**: Skill and SlashCommand tools run SYNCHRONOUSLY, NOT like Task tool's async model.
