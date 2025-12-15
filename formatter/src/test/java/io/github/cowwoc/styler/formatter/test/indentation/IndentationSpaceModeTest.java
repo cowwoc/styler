@@ -31,7 +31,7 @@ public final class IndentationSpaceModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Should convert 1 tab to 4 spaces
 		requireThat(formatted, "formatted").startsWith("    ");
@@ -50,7 +50,7 @@ public final class IndentationSpaceModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 2, 2);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Should convert 1 tab to 2 spaces
 		requireThat(formatted, "formatted").startsWith("  ");
@@ -69,7 +69,7 @@ public final class IndentationSpaceModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Should convert 2 tabs to 8 spaces (2 * 4)
 		requireThat(formatted, "formatted").startsWith("        ");
@@ -88,7 +88,7 @@ public final class IndentationSpaceModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").startsWith("    ");
 	}
@@ -107,7 +107,7 @@ public final class IndentationSpaceModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// 3 spaces is less than one indent level (4), should normalize to no indentation
 		requireThat(formatted, "formatted").isEqualTo("int x = 1;");
@@ -126,7 +126,7 @@ public final class IndentationSpaceModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		List<?> violations = rule.analyze(context, config);
+		List<?> violations = rule.analyze(context, List.of(config));
 
 		// Should detect tabs as violations in space mode (at least 1 violation)
 		requireThat(violations, "violations").isNotEmpty();
@@ -145,7 +145,7 @@ public final class IndentationSpaceModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 8, 8);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Should convert 1 tab to 8 spaces
 		requireThat(formatted, "formatted").startsWith("        ");
@@ -164,7 +164,7 @@ public final class IndentationSpaceModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 2, 2);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Should convert 3 tabs to 6 spaces (3 * 2)
 		requireThat(formatted, "formatted").startsWith("      ");

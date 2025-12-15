@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.testng.annotations.Test;
 
@@ -59,7 +60,7 @@ public class FormatStageTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder().
 			securityConfig(SecurityConfig.DEFAULT).
 			formattingRules(new ArrayList<>()).
-			formattingConfig(createDefaultFormattingConfig()).
+			formattingConfigs(List.of(createDefaultFormattingConfig())).
 			validationOnly(true).
 			build();
 
@@ -85,7 +86,7 @@ public class FormatStageTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder().
 			securityConfig(SecurityConfig.DEFAULT).
 			formattingRules(new ArrayList<>()).
-			formattingConfig(createDefaultFormattingConfig()).
+			formattingConfigs(List.of(createDefaultFormattingConfig())).
 			validationOnly(true).
 			build();
 
@@ -121,7 +122,7 @@ public class FormatStageTest
 			FileProcessingPipeline pipeline = FileProcessingPipeline.builder().
 				securityConfig(SecurityConfig.DEFAULT).
 				formattingRules(new ArrayList<>()).
-				formattingConfig(createDefaultFormattingConfig()).
+				formattingConfigs(List.of(createDefaultFormattingConfig())).
 				validationOnly(true).
 				build();
 
@@ -160,7 +161,7 @@ public class FormatStageTest
 			FileProcessingPipeline pipeline = FileProcessingPipeline.builder().
 				securityConfig(SecurityConfig.DEFAULT).
 				formattingRules(new ArrayList<>()).
-				formattingConfig(createDefaultFormattingConfig()).
+				formattingConfigs(List.of(createDefaultFormattingConfig())).
 				validationOnly(false).
 				build();
 
@@ -190,7 +191,7 @@ public class FormatStageTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder().
 			securityConfig(SecurityConfig.DEFAULT).
 			formattingRules(new ArrayList<>()).
-			formattingConfig(createDefaultFormattingConfig()).
+			formattingConfigs(List.of(createDefaultFormattingConfig())).
 			validationOnly(true).
 			build();
 
@@ -220,7 +221,7 @@ public class FormatStageTest
 			FileProcessingPipeline pipeline = FileProcessingPipeline.builder().
 				securityConfig(SecurityConfig.DEFAULT).
 				formattingRules(new ArrayList<>()).
-				formattingConfig(createDefaultFormattingConfig()).
+				formattingConfigs(List.of(createDefaultFormattingConfig())).
 				validationOnly(true).
 				build();
 

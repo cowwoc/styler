@@ -2,7 +2,6 @@ package io.github.cowwoc.styler.formatter.test.importorg;
 
 import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 
-import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
 import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerFormattingRule;
@@ -68,7 +67,7 @@ public class ImportOrganizerFormattingRuleTest
 	void shouldRejectNullContextInAnalyze()
 	{
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
-		rule.analyze(null, null);
+		rule.analyze(null, List.of());
 	}
 
 	/**
@@ -78,14 +77,14 @@ public class ImportOrganizerFormattingRuleTest
 	void shouldRejectNullContextInFormat()
 	{
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
-		rule.format(null, null);
+		rule.format(null, List.of());
 	}
 
 	/**
-	 * Tests that wrong config type is rejected in analyze.
+	 * Tests that null configs list is rejected in analyze.
 	 */
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	void shouldRejectWrongConfigTypeInAnalyze()
+	@Test(expectedExceptions = NullPointerException.class)
+	void shouldRejectNullConfigsInAnalyze()
 	{
 		String source = """
 			import java.util.List;
@@ -93,23 +92,14 @@ public class ImportOrganizerFormattingRuleTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		FormattingConfiguration wrongConfig = new FormattingConfiguration()
-		{
-			@Override
-			public String ruleId()
-			{
-				return "wrong-id";
-			}
-		};
-
-		rule.analyze(context, wrongConfig);
+		rule.analyze(context, null);
 	}
 
 	/**
-	 * Tests that wrong config type is rejected in format.
+	 * Tests that null configs list is rejected in format.
 	 */
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	void shouldRejectWrongConfigTypeInFormat()
+	@Test(expectedExceptions = NullPointerException.class)
+	void shouldRejectNullConfigsInFormat()
 	{
 		String source = """
 			import java.util.List;
@@ -117,16 +107,7 @@ public class ImportOrganizerFormattingRuleTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		FormattingConfiguration wrongConfig = new FormattingConfiguration()
-		{
-			@Override
-			public String ruleId()
-			{
-				return "wrong-id";
-			}
-		};
-
-		rule.format(context, wrongConfig);
+		rule.format(context, null);
 	}
 
 	/**
@@ -139,7 +120,7 @@ public class ImportOrganizerFormattingRuleTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		List<FormattingViolation> violations = rule.analyze(context, null);
+		List<FormattingViolation> violations = rule.analyze(context, List.of());
 
 		requireThat(violations, "violations").isEmpty();
 	}
@@ -158,7 +139,7 @@ public class ImportOrganizerFormattingRuleTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		List<FormattingViolation> violations = rule.analyze(context, null);
+		List<FormattingViolation> violations = rule.analyze(context, List.of());
 
 		requireThat(violations, "violations").isEmpty();
 	}
@@ -177,7 +158,7 @@ public class ImportOrganizerFormattingRuleTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		List<FormattingViolation> violations = rule.analyze(context, null);
+		List<FormattingViolation> violations = rule.analyze(context, List.of());
 
 		requireThat(violations, "violations").isNotEmpty();
 		requireThat(violations.get(0).severity(), "severity").isEqualTo(ViolationSeverity.WARNING);
@@ -193,7 +174,7 @@ public class ImportOrganizerFormattingRuleTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").isNotNull();
 	}

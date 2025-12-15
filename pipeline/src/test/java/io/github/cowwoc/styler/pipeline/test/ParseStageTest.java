@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.testng.annotations.Test;
@@ -68,7 +69,7 @@ public class ParseStageTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
 			.securityConfig(SecurityConfig.DEFAULT)
 			.formattingRules(new ArrayList<>())
-			.formattingConfig(createDefaultFormattingConfig())
+			.formattingConfigs(List.of(createDefaultFormattingConfig()))
 			.validationOnly(true)
 			.build();
 
@@ -97,7 +98,7 @@ public class ParseStageTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
 			.securityConfig(SecurityConfig.DEFAULT)
 			.formattingRules(new ArrayList<>())
-			.formattingConfig(createDefaultFormattingConfig())
+			.formattingConfigs(List.of(createDefaultFormattingConfig()))
 			.validationOnly(true)
 			.build();
 
@@ -126,7 +127,7 @@ public class ParseStageTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
 			.securityConfig(SecurityConfig.DEFAULT)
 			.formattingRules(new ArrayList<>())
-			.formattingConfig(createDefaultFormattingConfig())
+			.formattingConfigs(List.of(createDefaultFormattingConfig()))
 			.validationOnly(true)
 			.build();
 
@@ -171,7 +172,7 @@ public class ParseStageTest
 			FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
 				.securityConfig(SecurityConfig.DEFAULT)
 				.formattingRules(new ArrayList<>())
-				.formattingConfig(createDefaultFormattingConfig())
+				.formattingConfigs(List.of(createDefaultFormattingConfig()))
 				.validationOnly(true)
 				.build();
 
@@ -201,7 +202,7 @@ public class ParseStageTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
 			.securityConfig(SecurityConfig.DEFAULT)
 			.formattingRules(new ArrayList<>())
-			.formattingConfig(createDefaultFormattingConfig())
+			.formattingConfigs(List.of(createDefaultFormattingConfig()))
 			.validationOnly(true)
 			.build();
 

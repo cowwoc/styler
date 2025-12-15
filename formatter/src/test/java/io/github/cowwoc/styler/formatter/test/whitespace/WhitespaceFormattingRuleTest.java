@@ -79,9 +79,8 @@ public class WhitespaceFormattingRuleTest
 	public void shouldRejectNullContextInAnalyze()
 	{
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
-		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		rule.analyze(null, config);
+		rule.analyze(null, List.of());
 	}
 
 	/**
@@ -91,35 +90,34 @@ public class WhitespaceFormattingRuleTest
 	public void shouldRejectNullContextInFormat()
 	{
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
-		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		rule.format(null, config);
+		rule.format(null, List.of());
 	}
 
 	/**
-	 * Tests that analyze() with wrong config type throws IllegalArgumentException.
+	 * Tests that analyze() with null configs list throws NullPointerException.
 	 */
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldRejectWrongConfigTypeInAnalyze()
+	@Test(expectedExceptions = NullPointerException.class)
+	public void shouldRejectNullConfigsInAnalyze()
 	{
 		String source = "class Test {}";
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 
-		rule.analyze(context, new WrongConfigType());
+		rule.analyze(context, null);
 	}
 
 	/**
-	 * Tests that format() with wrong config type throws IllegalArgumentException.
+	 * Tests that format() with null configs list throws NullPointerException.
 	 */
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldRejectWrongConfigTypeInFormat()
+	@Test(expectedExceptions = NullPointerException.class)
+	public void shouldRejectNullConfigsInFormat()
 	{
 		String source = "class Test {}";
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 
-		rule.format(context, new WrongConfigType());
+		rule.format(context, null);
 	}
 
 	/**
@@ -132,7 +130,7 @@ public class WhitespaceFormattingRuleTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		List<FormattingViolation> violations = rule.analyze(context, config);
+		List<FormattingViolation> violations = rule.analyze(context, List.of(config));
 
 		requireThat(violations, "violations").isEmpty();
 	}
@@ -147,7 +145,7 @@ public class WhitespaceFormattingRuleTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").isEmpty();
 	}
@@ -163,10 +161,10 @@ public class WhitespaceFormattingRuleTest
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
 		TestTransformationContext context1 = new TestTransformationContext(source);
-		String result1 = rule.format(context1, config);
+		String result1 = rule.format(context1, List.of(config));
 
 		TestTransformationContext context2 = new TestTransformationContext(result1);
-		String result2 = rule.format(context2, config);
+		String result2 = rule.format(context2, List.of(config));
 
 		requireThat(result2, "result2").isEqualTo(result1);
 	}

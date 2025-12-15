@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.formatter.test.whitespace;
 
+import java.util.List;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingRule;
 import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
@@ -23,7 +24,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("\"a + b\"");
 	}
@@ -39,7 +40,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("' '");
 	}
@@ -55,7 +56,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("// a+b comment");
 		requireThat(result, "result").contains("a + b");
@@ -72,7 +73,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("/* a+b */");
 		requireThat(result, "result").contains("a + b");
@@ -89,7 +90,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("Map<String, List<Integer>>");
 	}
@@ -105,7 +106,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("<T extends Comparable<T>>");
 	}
@@ -121,7 +122,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("new ArrayList<>");
 	}
@@ -137,7 +138,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("x -> x * 2");
 	}
@@ -153,7 +154,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("(a, b) -> a + b");
 	}
@@ -169,7 +170,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("ClassName::staticMethod");
 	}
@@ -185,7 +186,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("object::instanceMethod");
 	}
@@ -201,7 +202,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("ClassName::new");
 	}
@@ -217,7 +218,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("(a + b)");
 		requireThat(result, "result").contains("(c + d)");
@@ -235,7 +236,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a + b * c - d / e");
 	}
@@ -251,7 +252,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("method1()");
 		requireThat(result, "result").contains("method2()");
@@ -269,7 +270,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a ? b : c ? d : e");
 	}
@@ -285,7 +286,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("(int)x");
 	}
@@ -301,7 +302,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("(int)(long)x");
 	}
@@ -317,7 +318,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("arr[i][j]");
 	}
@@ -333,7 +334,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("{a + b, c * d}");
 	}
@@ -349,7 +350,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("@SuppressWarnings(\"unused\")");
 	}
@@ -370,7 +371,7 @@ public class WhitespaceEdgeCaseTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a + b");
 	}

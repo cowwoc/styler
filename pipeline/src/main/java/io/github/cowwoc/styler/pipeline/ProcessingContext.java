@@ -21,7 +21,7 @@ import io.github.cowwoc.styler.security.SecurityConfig;
  * ProcessingContext context = ProcessingContext.create(
  *     Paths.get("src/Main.java"),
  *     securityConfig,
- *     formattingConfig,
+ *     List.of(lineLengthConfig, braceConfig),
  *     List.of(new LineLengthFormattingRule()),
  *     false  // not validation-only
  * );
@@ -29,7 +29,7 @@ import io.github.cowwoc.styler.security.SecurityConfig;
  *
  * @param filePath the path to the file being processed
  * @param securityConfig the security configuration
- * @param formattingConfig the formatting configuration
+ * @param formattingConfigs the list of formatting configurations for all rules
  * @param formattingRules the list of formatting rules to apply (may be empty)
  * @param validationOnly true to only validate without applying fixes
  * @param outputFormatOverride override for output format, or {@code null} for automatic detection
@@ -37,7 +37,7 @@ import io.github.cowwoc.styler.security.SecurityConfig;
 public record ProcessingContext(
 		Path filePath,
 		SecurityConfig securityConfig,
-		FormattingConfiguration formattingConfig,
+		List<FormattingConfiguration> formattingConfigs,
 		List<FormattingRule> formattingRules,
 		boolean validationOnly,
 		OutputFormat outputFormatOverride)
@@ -47,7 +47,7 @@ public record ProcessingContext(
 	 *
 	 * @param filePath the path to the file being processed
 	 * @param securityConfig the security configuration
-	 * @param formattingConfig the formatting configuration
+	 * @param formattingConfigs the list of formatting configurations for all rules
 	 * @param formattingRules the list of formatting rules to apply (may be empty)
 	 * @param validationOnly true to only validate without applying fixes
 	 * @return a new ProcessingContext
@@ -56,11 +56,11 @@ public record ProcessingContext(
 	public static ProcessingContext create(
 			Path filePath,
 			SecurityConfig securityConfig,
-			FormattingConfiguration formattingConfig,
+			List<FormattingConfiguration> formattingConfigs,
 			List<FormattingRule> formattingRules,
 			boolean validationOnly)
 	{
-		return new ProcessingContext(filePath, securityConfig, formattingConfig, formattingRules,
+		return new ProcessingContext(filePath, securityConfig, formattingConfigs, formattingRules,
 			validationOnly, null);
 	}
 
@@ -69,7 +69,7 @@ public record ProcessingContext(
 	 *
 	 * @param filePath the path to the file being processed
 	 * @param securityConfig the security configuration
-	 * @param formattingConfig the formatting configuration
+	 * @param formattingConfigs the list of formatting configurations for all rules
 	 * @param formattingRules the list of formatting rules to apply (may be empty)
 	 * @param validationOnly true to only validate without applying fixes
 	 * @param outputFormatOverride the output format to use
@@ -79,13 +79,13 @@ public record ProcessingContext(
 	public static ProcessingContext create(
 			Path filePath,
 			SecurityConfig securityConfig,
-			FormattingConfiguration formattingConfig,
+			List<FormattingConfiguration> formattingConfigs,
 			List<FormattingRule> formattingRules,
 			boolean validationOnly,
 			OutputFormat outputFormatOverride)
 	{
 		requireThat(outputFormatOverride, "outputFormatOverride").isNotNull();
-		return new ProcessingContext(filePath, securityConfig, formattingConfig, formattingRules,
+		return new ProcessingContext(filePath, securityConfig, formattingConfigs, formattingRules,
 			validationOnly, outputFormatOverride);
 	}
 
@@ -96,7 +96,7 @@ public record ProcessingContext(
 	{
 		requireThat(filePath, "filePath").isNotNull();
 		requireThat(securityConfig, "securityConfig").isNotNull();
-		requireThat(formattingConfig, "formattingConfig").isNotNull();
+		requireThat(formattingConfigs, "formattingConfigs").isNotNull();
 		requireThat(formattingRules, "formattingRules").isNotNull();
 		// outputFormatOverride is intentionally nullable - null means automatic detection
 	}
