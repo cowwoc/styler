@@ -31,7 +31,7 @@ public final class IndentationTabModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.TABS, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Should convert 4 spaces to 1 tab when width is 4
 		requireThat(formatted, "formatted").contains("\t");
@@ -50,7 +50,7 @@ public final class IndentationTabModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.TABS, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").isEqualTo("\tint x = 1;");
 	}
@@ -69,7 +69,7 @@ public final class IndentationTabModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.TABS, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Max of 1 tab level and 1 space level (4/4) = 1 tab
 		requireThat(formatted, "formatted").isEqualTo("\tint x = 1;");
@@ -88,7 +88,7 @@ public final class IndentationTabModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.TABS, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Inline spaces (after code) should be preserved
 		requireThat(formatted, "formatted").contains("//");
@@ -108,7 +108,7 @@ public final class IndentationTabModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.TABS, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// 2 spaces is less than tab width of 4, so no leading tabs
 		requireThat(formatted, "formatted").isEqualTo("int x = 1;");
@@ -128,7 +128,7 @@ public final class IndentationTabModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.TABS, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").isEqualTo("\t\tint x = 1;");
 	}
@@ -146,7 +146,7 @@ public final class IndentationTabModeTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.TABS, 4, 4);
 
-		List<?> violations = rule.analyze(context, config);
+		List<?> violations = rule.analyze(context, List.of(config));
 
 		// Should detect spaces as violations in tab mode (at least 1 violation)
 		requireThat(violations, "violations").isNotEmpty();

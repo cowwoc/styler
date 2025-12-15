@@ -5,6 +5,8 @@ import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerFormattingRule;
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
@@ -34,7 +36,7 @@ public class ImportOrganizerIntegrationTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").isNotNull();
 		requireThat(result.indexOf("java.util.List"), "javaPos").
@@ -58,7 +60,7 @@ public class ImportOrganizerIntegrationTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("java.util.List");
 		requireThat(result, "result").doesNotContain("java.util.Map");
@@ -76,7 +78,7 @@ public class ImportOrganizerIntegrationTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").isNotNull();
 	}
@@ -92,7 +94,7 @@ public class ImportOrganizerIntegrationTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").isEqualTo(source);
 	}
@@ -112,7 +114,7 @@ public class ImportOrganizerIntegrationTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		int resultCount = countOccurrences(result, "import java.util.List");
 		requireThat(resultCount, "resultCount").isEqualTo(1);

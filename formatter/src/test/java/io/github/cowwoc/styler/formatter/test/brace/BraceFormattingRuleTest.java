@@ -63,7 +63,7 @@ public class BraceFormattingRuleTest
 	public void shouldRejectNullContextInAnalyze()
 	{
 		BraceFormattingRule rule = new BraceFormattingRule();
-		rule.analyze(null, null);
+		rule.analyze(null, List.of());
 	}
 
 	/**
@@ -73,60 +73,60 @@ public class BraceFormattingRuleTest
 	public void shouldRejectNullContextInFormat()
 	{
 		BraceFormattingRule rule = new BraceFormattingRule();
-		rule.format(null, null);
+		rule.format(null, List.of());
 	}
 
 	/**
-	 * Tests that wrong config type is rejected in analyze.
+	 * Tests that null configs list is rejected in analyze.
 	 */
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldRejectWrongConfigTypeInAnalyze()
+	@Test(expectedExceptions = NullPointerException.class)
+	public void shouldRejectNullConfigsInAnalyze()
 	{
 		BraceFormattingRule rule = new BraceFormattingRule();
 		String source = "class Test {}";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		rule.analyze(context, new WrongConfigType());
+		rule.analyze(context, null);
 	}
 
 	/**
-	 * Tests that wrong config type is rejected in format.
+	 * Tests that null configs list is rejected in format.
 	 */
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldRejectWrongConfigTypeInFormat()
+	@Test(expectedExceptions = NullPointerException.class)
+	public void shouldRejectNullConfigsInFormat()
 	{
 		BraceFormattingRule rule = new BraceFormattingRule();
 		String source = "class Test {}";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		rule.format(context, new WrongConfigType());
+		rule.format(context, null);
 	}
 
 	/**
-	 * Tests that null config uses defaults in analyze.
+	 * Tests that empty config list uses defaults in analyze.
 	 */
 	@Test
-	public void shouldUseDefaultConfigWhenNullInAnalyze()
+	public void shouldUseDefaultConfigWhenEmptyListInAnalyze()
 	{
 		BraceFormattingRule rule = new BraceFormattingRule();
 		String source = "class Test { void method() { } }";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		List<FormattingViolation> violations = rule.analyze(context, null);
+		List<FormattingViolation> violations = rule.analyze(context, List.of());
 		requireThat(violations, "violations").isNotNull();
 	}
 
 	/**
-	 * Tests that null config uses defaults in format.
+	 * Tests that empty config list uses defaults in format.
 	 */
 	@Test
-	public void shouldUseDefaultConfigWhenNullInFormat()
+	public void shouldUseDefaultConfigWhenEmptyListInFormat()
 	{
 		BraceFormattingRule rule = new BraceFormattingRule();
 		String source = "class Test { void method() { } }";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 		requireThat(result, "result").isNotNull();
 	}
 
@@ -141,7 +141,7 @@ public class BraceFormattingRuleTest
 		TestTransformationContext context = new TestTransformationContext(source);
 
 		BraceFormattingConfiguration config = BraceFormattingConfiguration.defaultConfig();
-		List<FormattingViolation> violations = rule.analyze(context, config);
+		List<FormattingViolation> violations = rule.analyze(context, List.of(config));
 
 		requireThat(violations, "violations").isNotEmpty();
 	}
@@ -160,7 +160,7 @@ public class BraceFormattingRuleTest
 			""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		List<FormattingViolation> violations = rule.analyze(context, null);
+		List<FormattingViolation> violations = rule.analyze(context, List.of());
 		requireThat(violations, "violations").isEmpty();
 	}
 
@@ -178,7 +178,7 @@ public class BraceFormattingRuleTest
 			""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 		requireThat(result, "result").isEqualTo(source);
 	}
 
@@ -192,19 +192,7 @@ public class BraceFormattingRuleTest
 		String source = "class Test {" + "\n" + "}";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 		requireThat(result, "result").contains("{").contains("}");
-	}
-
-	/**
-	 * Test configuration type for testing config validation.
-	 */
-	private static final class WrongConfigType implements io.github.cowwoc.styler.formatter.FormattingConfiguration
-	{
-		@Override
-		public String ruleId()
-		{
-			return "wrong";
-		}
 	}
 }

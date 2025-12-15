@@ -34,7 +34,7 @@ public final class TestPipelineFactory
 		return FileProcessingPipeline.builder().
 			securityConfig(securityConfig).
 			formattingRules(rules).
-			formattingConfig(formattingConfig).
+			formattingConfigs(List.of(formattingConfig)).
 			build();
 	}
 
@@ -52,7 +52,7 @@ public final class TestPipelineFactory
 		return FileProcessingPipeline.builder().
 			securityConfig(securityConfig).
 			formattingRules(rules).
-			formattingConfig(formattingConfig).
+			formattingConfigs(List.of(formattingConfig)).
 			build();
 	}
 

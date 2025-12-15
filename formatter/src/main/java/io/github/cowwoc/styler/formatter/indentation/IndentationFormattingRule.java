@@ -60,47 +60,25 @@ public final class IndentationFormattingRule implements FormattingRule
 
 	@Override
 	public List<FormattingViolation> analyze(TransformationContext context,
-		FormattingConfiguration config)
+		List<FormattingConfiguration> configs)
 	{
 		requireThat(context, "context").isNotNull();
+		requireThat(configs, "configs").isNotNull();
 
-		IndentationFormattingConfiguration indentConfig;
-		if (config == null)
-		{
-			indentConfig = IndentationFormattingConfiguration.defaultConfig();
-		}
-		else if (config instanceof IndentationFormattingConfiguration)
-		{
-			indentConfig = (IndentationFormattingConfiguration) config;
-		}
-		else
-		{
-			throw new IllegalArgumentException("config must be IndentationFormattingConfiguration, got: " +
-				config.getClass().getName());
-		}
+		IndentationFormattingConfiguration indentConfig = FormattingConfiguration.findConfig(
+			configs, IndentationFormattingConfiguration.class, IndentationFormattingConfiguration.defaultConfig());
 
 		return IndentationAnalyzer.analyze(context, indentConfig);
 	}
 
 	@Override
-	public String format(TransformationContext context, FormattingConfiguration config)
+	public String format(TransformationContext context, List<FormattingConfiguration> configs)
 	{
 		requireThat(context, "context").isNotNull();
+		requireThat(configs, "configs").isNotNull();
 
-		IndentationFormattingConfiguration indentConfig;
-		if (config == null)
-		{
-			indentConfig = IndentationFormattingConfiguration.defaultConfig();
-		}
-		else if (config instanceof IndentationFormattingConfiguration)
-		{
-			indentConfig = (IndentationFormattingConfiguration) config;
-		}
-		else
-		{
-			throw new IllegalArgumentException("config must be IndentationFormattingConfiguration, got: " +
-				config.getClass().getName());
-		}
+		IndentationFormattingConfiguration indentConfig = FormattingConfiguration.findConfig(
+			configs, IndentationFormattingConfiguration.class, IndentationFormattingConfiguration.defaultConfig());
 
 		return IndentationFixer.format(context, indentConfig);
 	}

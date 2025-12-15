@@ -1,5 +1,50 @@
 # Changelog
 
+## 2025-12-14
+
+### B6: Multi-Configuration Architecture ✅
+
+**Completion Date**: 2025-12-14
+
+**Task**: `implement-multi-config-architecture`
+
+**Problem Solved**:
+- FormattingRule interface required single configuration type, causing type mismatches
+- CLI creates multiple configuration types but rules could only receive one
+- No mechanism for rules to extract their specific configuration from a shared pool
+
+**Solution Implemented**:
+- Refactored `FormattingRule.analyze()` and `format()` to accept `List<FormattingConfiguration>`
+- Added `FormattingConfiguration.findConfig()` static helper for type-safe config lookup
+- Updated all 5 formatting rules to use `findConfig()` helper
+- Updated FormatStage and CLI to pass complete configuration list
+
+**Key Components**:
+- **FormattingConfiguration.findConfig()**: Generic static helper method
+  - Returns first matching config type from list
+  - Returns default config when no matching type found
+  - Throws `IllegalArgumentException` if multiple configs of same type
+- **FormattingRule interface**: Updated signature for multi-config support
+- **All formatting rules**: LineLengthFormattingRule, ImportOrganizerFormattingRule,
+  BraceFormattingRule, WhitespaceFormattingRule, IndentationFormattingRule
+
+**Files Modified** (31 files):
+- `formatter/src/main/java/io/github/cowwoc/styler/formatter/FormattingConfiguration.java`
+- `formatter/src/main/java/io/github/cowwoc/styler/formatter/FormattingRule.java`
+- All formatting rule implementations and their tests
+- `pipeline/src/main/java/io/github/cowwoc/styler/pipeline/internal/FormatStage.java`
+- `pipeline/src/main/java/io/github/cowwoc/styler/pipeline/FileProcessingPipeline.java`
+- `cli/src/main/java/io/github/cowwoc/styler/cli/CliMain.java`
+
+**Quality**:
+- All existing tests updated and passing
+- No behavioral changes for correctly-typed configurations
+- Build successful with zero style violations
+
+**Completes**: Phase B (8/8 tasks complete)
+
+---
+
 ## 2025-12-13
 
 ### B2.5: Pipeline Stage Implementation ✅

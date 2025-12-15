@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.formatter.test.indentation;
 
+import java.util.List;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.indentation.IndentationType;
 import io.github.cowwoc.styler.formatter.indentation.IndentationFormattingConfiguration;
@@ -33,7 +34,7 @@ public final class IndentationPreservationTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").contains("leading spaces");
 	}
@@ -58,7 +59,7 @@ public final class IndentationPreservationTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").contains("indented");
 	}
@@ -80,7 +81,7 @@ public final class IndentationPreservationTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").contains("comment with spaces");
 	}
@@ -105,7 +106,7 @@ public final class IndentationPreservationTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").contains("comment");
 	}
@@ -132,7 +133,7 @@ public final class IndentationPreservationTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").contains("Javadoc");
 	}
@@ -154,7 +155,7 @@ public final class IndentationPreservationTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").contains("unused");
 	}
@@ -176,7 +177,7 @@ public final class IndentationPreservationTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").contains("\\n").contains("\\t");
 	}
@@ -199,7 +200,7 @@ public final class IndentationPreservationTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").contains("This is a comment");
 	}

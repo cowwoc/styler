@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.formatter.test.indentation;
 
+import java.util.List;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.indentation.IndentationType;
 import io.github.cowwoc.styler.formatter.indentation.IndentationFormattingConfiguration;
@@ -33,7 +34,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Test {
@@ -62,7 +63,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Test {
@@ -97,7 +98,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Test {
@@ -132,7 +133,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Outer {
@@ -167,7 +168,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Test {
@@ -204,7 +205,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Test {
@@ -243,7 +244,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Test {
@@ -289,7 +290,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Test {
@@ -331,7 +332,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Test {
@@ -367,7 +368,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Test {
@@ -403,7 +404,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Test {
@@ -436,7 +437,7 @@ public final class IndentationNestedStructureTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			enum Color {

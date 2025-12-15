@@ -70,7 +70,7 @@ public final class FileProcessingPipeline
 {
 	private final SecurityConfig securityConfig;
 	private final List<FormattingRule> formattingRules;
-	private final FormattingConfiguration formattingConfig;
+	private final List<FormattingConfiguration> formattingConfigs;
 	private final boolean validationOnly;
 	private final List<PipelineStage> stages;
 
@@ -79,22 +79,22 @@ public final class FileProcessingPipeline
 	 *
 	 * @param securityConfig the security configuration
 	 * @param formattingRules the formatting rules to apply
-	 * @param formattingConfig the formatting configuration
+	 * @param formattingConfigs the list of formatting configurations for all rules
 	 * @param validationOnly true to only validate without applying fixes
 	 * @param stages the pipeline stages in execution order
 	 */
 	private FileProcessingPipeline(
 			SecurityConfig securityConfig,
 			List<FormattingRule> formattingRules,
-			FormattingConfiguration formattingConfig,
+			List<FormattingConfiguration> formattingConfigs,
 			boolean validationOnly,
 			List<PipelineStage> stages)
 	{
 		this.securityConfig = securityConfig;
-		this.formattingRules = formattingRules;
-		this.formattingConfig = formattingConfig;
+		this.formattingRules = List.copyOf(formattingRules);
+		this.formattingConfigs = List.copyOf(formattingConfigs);
 		this.validationOnly = validationOnly;
-		this.stages = stages;
+		this.stages = List.copyOf(stages);
 	}
 
 	/**
@@ -124,7 +124,7 @@ public final class FileProcessingPipeline
 		ProcessingContext context = ProcessingContext.create(
 				filePath,
 				securityConfig,
-				formattingConfig,
+				formattingConfigs,
 				formattingRules,
 				validationOnly);
 
@@ -187,7 +187,7 @@ public final class FileProcessingPipeline
 	{
 		private SecurityConfig securityConfig;
 		private List<FormattingRule> formattingRules = List.of();
-		private FormattingConfiguration formattingConfig;
+		private List<FormattingConfiguration> formattingConfigs = List.of();
 		private boolean validationOnly = true;
 
 		/**
@@ -217,15 +217,15 @@ public final class FileProcessingPipeline
 		}
 
 		/**
-		 * Sets the formatting configuration.
+		 * Sets the list of formatting configurations.
 		 *
-		 * @param config the formatting configuration
+		 * @param configs the list of formatting configurations for all rules
 		 * @return this builder for chaining
-		 * @throws NullPointerException if {@code config} is {@code null}
+		 * @throws NullPointerException if {@code configs} is {@code null}
 		 */
-		public Builder formattingConfig(FormattingConfiguration config)
+		public Builder formattingConfigs(List<FormattingConfiguration> configs)
 		{
-			this.formattingConfig = requireThat(config, "config").isNotNull().getValue();
+			this.formattingConfigs = requireThat(configs, "configs").isNotNull().getValue();
 			return this;
 		}
 
@@ -250,7 +250,7 @@ public final class FileProcessingPipeline
 		public FileProcessingPipeline build()
 		{
 			requireThat(securityConfig, "securityConfig").isNotNull();
-			requireThat(formattingConfig, "formattingConfig").isNotNull();
+			requireThat(formattingConfigs, "formattingConfigs").isNotNull();
 
 			// Initialize stages (package-private implementations)
 			List<PipelineStage> stages = new ArrayList<>();
@@ -262,7 +262,7 @@ public final class FileProcessingPipeline
 			return new FileProcessingPipeline(
 					securityConfig,
 					formattingRules,
-					formattingConfig,
+					formattingConfigs,
 					validationOnly,
 					stages);
 		}
@@ -376,7 +376,7 @@ public final class FileProcessingPipeline
 			}
 
 			List<FormattingRule> rules = context.formattingRules();
-			FormattingConfiguration config = context.formattingConfig();
+			List<FormattingConfiguration> configs = context.formattingConfigs();
 
 			// Create transformation context for formatters
 			TransformationContext txContext = new DefaultTransformationContext(
@@ -392,7 +392,7 @@ public final class FileProcessingPipeline
 				List<FormattingViolation> allViolations = new ArrayList<>();
 				for (FormattingRule rule : rules)
 				{
-					allViolations.addAll(rule.analyze(txContext, config));
+					allViolations.addAll(rule.analyze(txContext, configs));
 				}
 				return new StageResult.Success(new FormatResult(parsed.sourceCode(), allViolations));
 			}
@@ -401,7 +401,7 @@ public final class FileProcessingPipeline
 			String currentSource = parsed.sourceCode();
 			for (FormattingRule rule : rules)
 			{
-				currentSource = rule.format(txContext, config);
+				currentSource = rule.format(txContext, configs);
 				// Recreate context with new source for next rule
 				txContext = new DefaultTransformationContext(
 					parsed.arena(),
@@ -415,7 +415,7 @@ public final class FileProcessingPipeline
 			List<FormattingViolation> violations = new ArrayList<>();
 			for (FormattingRule rule : rules)
 			{
-				violations.addAll(rule.analyze(txContext, config));
+				violations.addAll(rule.analyze(txContext, configs));
 			}
 
 			return new StageResult.Success(new FormatResult(currentSource, violations));

@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.formatter.test.whitespace;
 
+import java.util.List;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingRule;
 import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
@@ -23,7 +24,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a + b");
 	}
@@ -39,7 +40,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a - b");
 	}
@@ -55,7 +56,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a * b");
 	}
@@ -71,7 +72,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a / b");
 	}
@@ -87,7 +88,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a % b");
 	}
@@ -103,7 +104,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a == b");
 	}
@@ -119,7 +120,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a != b");
 	}
@@ -135,7 +136,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a < b");
 	}
@@ -151,7 +152,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a > b");
 	}
@@ -167,7 +168,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a && b");
 	}
@@ -183,7 +184,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a || b");
 	}
@@ -199,7 +200,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("x = 1");
 	}
@@ -215,7 +216,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("x += 1");
 	}
@@ -231,7 +232,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("x -= 1");
 	}
@@ -247,7 +248,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a + b");
 		requireThat(result, "result").doesNotContain("a  +");
@@ -265,7 +266,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("++y");
 	}
@@ -281,7 +282,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("--y");
 	}
@@ -297,7 +298,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("!flag");
 	}
@@ -313,7 +314,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("y++");
 	}
@@ -329,7 +330,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("y--");
 	}
@@ -345,7 +346,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a ? b : c");
 	}
@@ -361,7 +362,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("x -> x * 2");
 	}
@@ -377,7 +378,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("String::valueOf");
 	}
@@ -393,7 +394,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a & b");
 	}
@@ -409,7 +410,7 @@ public class WhitespaceOperatorSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a << b");
 	}

@@ -6,6 +6,8 @@ import io.github.cowwoc.styler.formatter.brace.BraceStyle;
 import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
@@ -27,7 +29,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("comment");
 	}
@@ -46,7 +48,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").isEqualTo(source);
 	}
@@ -71,7 +73,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("Test").contains("Inner").contains("method");
 	}
@@ -90,7 +92,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("@Override");
 	}
@@ -105,7 +107,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").isNotNull();
 	}
@@ -120,7 +122,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").isNotNull();
 	}
@@ -140,7 +142,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("Runnable");
 	}
@@ -159,7 +161,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("int[]");
 	}
@@ -183,7 +185,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("try").contains("catch").contains("finally");
 	}
@@ -203,7 +205,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("static");
 	}
@@ -222,7 +224,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("RED");
 	}
@@ -242,7 +244,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("interface");
 	}
@@ -266,7 +268,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("switch");
 	}
@@ -288,7 +290,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("do");
 	}
@@ -310,7 +312,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("synchronized");
 	}
@@ -332,7 +334,7 @@ public class BraceEdgeCaseTest
 			BraceStyle.NEW_LINE);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		// Both class and method braces should be converted to Allman style
 		requireThat(result, "result").isNotNull();
@@ -352,7 +354,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("VeryLong");
 	}
@@ -372,7 +374,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("extends");
 	}
@@ -390,7 +392,7 @@ public class BraceEdgeCaseTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingRule rule = new BraceFormattingRule();
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 
 		requireThat(result, "result").contains("comment");
 	}
