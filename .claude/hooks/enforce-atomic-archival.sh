@@ -41,8 +41,10 @@ fi
 # Extract command
 COMMAND=$(echo "$TOOL_PARAMS" | jq -r '.command // empty' 2>/dev/null || echo "")
 
-# Only validate git merge commands
-if [[ ! "$COMMAND" =~ git[[:space:]]+merge ]]; then
+# Only validate git merge or cherry-pick commands (both can merge to main)
+# BUG FIX: 2025-12-15 - Added cherry-pick check after implement-multi-config-architecture
+# task bypassed archival check by using cherry-pick instead of merge
+if [[ ! "$COMMAND" =~ git[[:space:]]+(merge|cherry-pick) ]]; then
 	exit 0
 fi
 

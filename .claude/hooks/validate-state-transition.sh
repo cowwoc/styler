@@ -123,9 +123,101 @@ See: /workspace/main/docs/project/task-protocol-core.md § INIT → CLASSIFIED
 		;;
 
 	IMPLEMENTATION)
-		# IMPLEMENTATION requires user-approved-synthesis.flag
+		# IMPLEMENTATION requires user-approved-synthesis.flag AND detailed plan
 		APPROVAL_FLAG="${TASK_DIR}/user-approved-synthesis.flag"
-		if [[ ! -f "$APPROVAL_FLAG" ]]; then
+		TASK_MD="${TASK_DIR}/task.md"
+
+		# First check: Plan quality validation (before user approval check)
+		if [[ -f "$TASK_MD" ]]; then
+			PLAN_ISSUES=""
+
+			# Required sections per task-protocol-core.md § Required Plan Components
+			if ! grep -qiE "^#+ .*file.*manifest|^#+ .*files to (create|modify)" "$TASK_MD"; then
+				PLAN_ISSUES="$PLAN_ISSUES\n- Missing FILE MANIFEST section"
+			fi
+			if ! grep -qiE "^#+ .*api.*specification|^#+ .*api.*design|^#+ .*interface|^#+ .*method signature" "$TASK_MD"; then
+				PLAN_ISSUES="$PLAN_ISSUES\n- Missing API SPECIFICATIONS section"
+			fi
+			if ! grep -qiE "^#+ .*behavior|^#+ .*scenario" "$TASK_MD"; then
+				PLAN_ISSUES="$PLAN_ISSUES\n- Missing BEHAVIORAL SPECIFICATIONS section"
+			fi
+			if ! grep -qiE "^#+ .*test (specification|case|scenario)" "$TASK_MD"; then
+				PLAN_ISSUES="$PLAN_ISSUES\n- Missing TEST SPECIFICATIONS section"
+			fi
+			if ! grep -qiE "^#+ .*decision" "$TASK_MD"; then
+				PLAN_ISSUES="$PLAN_ISSUES\n- Missing DECISION LOG section"
+			fi
+
+			# Anti-pattern: Test counts instead of specific test cases
+			if grep -qiE "(minimum|required|must have|at least).*(test count|[0-9]+ tests)" "$TASK_MD" || \
+			   grep -qiE "(total|grand total):?\s*[0-9]+ tests?" "$TASK_MD" || \
+			   grep -qiE "\b[0-9]+ tests?\b.*(minimum|required|mandatory)" "$TASK_MD"; then
+				PLAN_ISSUES="$PLAN_ISSUES\n- Contains TEST COUNTS instead of specific test cases (prohibited)"
+			fi
+
+			# Test cases should have specific names and expected outputs
+			if grep -qiE "^#+ .*test (specification|case)" "$TASK_MD"; then
+				# Check if there are test case tables with Name|Input|Expected format
+				if ! grep -qE "\|.*test.*name.*\||\|.*input.*\|.*expected|\|.*scenario.*\|" "$TASK_MD"; then
+					# Also check for bullet-list format test cases
+					if ! grep -qE "^\s*[-*]\s*\`?[a-zA-Z]+.*\`?:?\s*(input|when|given|should|returns|expects)" "$TASK_MD"; then
+						PLAN_ISSUES="$PLAN_ISSUES\n- TEST SPECIFICATIONS lacks specific test cases (need Name|Input|Expected format)"
+					fi
+				fi
+			fi
+
+			if [[ -n "$PLAN_ISSUES" ]]; then
+				VIOLATION_FOUND=true
+				VIOLATION_MESSAGE="## 🚨 STATE TRANSITION BLOCKED - INSUFFICIENT PLAN DETAIL
+
+**Task**: \`$TASK_NAME\`
+**Attempted Transition**: \`$CURRENT_STATE\` → \`$NEW_STATE\`
+**Violation**: Implementation plan lacks required detail for mechanical implementation
+
+## ⚠️ PLAN QUALITY VALIDATION FAILED
+
+Issues found in task.md:
+$PLAN_ISSUES
+
+## 📋 REQUIRED PLAN COMPONENTS (task-protocol-core.md § Required Plan Components)
+
+1. **FILE MANIFEST** - Complete list of files to create/modify with paths
+2. **API SPECIFICATIONS** - Exact method signatures with JavaDoc summaries
+3. **BEHAVIORAL SPECIFICATIONS** - How code behaves in specific scenarios (tables)
+4. **TEST SPECIFICATIONS** - Specific test cases with Name|Input|Expected format
+5. **DECISION LOG** - Decisions already made (NOT for implementation phase)
+
+## ❌ PROHIBITED PATTERNS
+
+- \"\${BOLD}36 tests required\${NORMAL}\" - Mandates counts instead of coverage
+- \"\${BOLD}Minimum 31 mandatory tests\${NORMAL}\" - Focuses on quantity over quality
+- Missing specific test case definitions
+
+## ✅ REQUIRED TEST SPECIFICATION FORMAT
+
+\`\`\`markdown
+| Test Name | Input | Expected |
+|-----------|-------|----------|
+| \`shouldReturnEmptyForNullInput\` | null | Empty list |
+| \`shouldFindExistingClass\` | \"java.util.List\" | true |
+\`\`\`
+
+## 🎯 GOAL
+
+Implementation must be MECHANICAL - NO significant decisions should remain.
+User approves the WHAT and HOW before any code is written.
+
+**ACTION**: Update task.md to include missing sections with sufficient detail,
+then retry state transition.
+
+## Protocol Reference
+
+See: /workspace/main/docs/project/task-protocol-core.md § Detailed Implementation Plan Requirements"
+			fi
+		fi
+
+		# Second check: User approval flag (only if plan passes quality check)
+		if [[ "$VIOLATION_FOUND" != "true" ]] && [[ ! -f "$APPROVAL_FLAG" ]]; then
 			VIOLATION_FOUND=true
 			VIOLATION_MESSAGE="## 🚨 STATE TRANSITION BLOCKED
 
