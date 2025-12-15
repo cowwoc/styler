@@ -56,6 +56,29 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 - `List.of()`/`Set.of()`/`Map.of()` over array literals for constants (truly immutable)
 - `List.copyOf()` over `Collections.unmodifiableList()` (true immutable)
 - `stream().toList()` over `collect(Collectors.toUnmodifiableList())`
+- Defensive copying for List parameters: Use `List.copyOf()` in constructors and setters to prevent external
+  mutation:
+  ```java
+  // ❌ WRONG - Caller can mutate the list after passing it
+  public MyClass(List<Item> items)
+  {
+      this.items = items;
+  }
+  public void setItems(List<Item> items)
+  {
+      this.items = items;
+  }
+
+  // ✅ CORRECT - Defensive copy ensures immutability
+  public MyClass(List<Item> items)
+  {
+      this.items = List.copyOf(items);
+  }
+  public void setItems(List<Item> items)
+  {
+      this.items = List.copyOf(items);
+  }
+  ```
 - Import types, never use FQNs in code (including in nested types):
   ```java
   // ❌ WRONG - FQN in record/class declaration
