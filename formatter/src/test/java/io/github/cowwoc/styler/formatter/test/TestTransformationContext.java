@@ -4,6 +4,7 @@ import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.ast.core.NodeType;
 import io.github.cowwoc.styler.formatter.TransformationContext;
+import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
 import io.github.cowwoc.styler.security.SecurityConfig;
 
 import java.nio.file.Path;
@@ -134,5 +135,11 @@ public final class TestTransformationContext implements TransformationContext
 	public void checkDeadline()
 	{
 		// No deadline enforcement in tests
+	}
+
+	@Override
+	public TypeResolutionConfig typeResolutionConfig()
+	{
+		return TypeResolutionConfig.EMPTY;
 	}
 }

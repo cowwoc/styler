@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 import static io.github.cowwoc.styler.discovery.test.TestUtils.deleteDirectoryRecursively;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -109,8 +110,8 @@ public final class FileDiscoverySecurityIntegrationTest
 			List<Path> files = discoverFiles(tempDir, config);
 
 			// File at level 100 should not be discovered with maxDepth 50
-			// No stack overflow should occur
-			assertTrue(true, "Discovery completed without stack overflow");
+			// Test passes if we reach here without stack overflow
+			requireThat(files, "files").doesNotContain(current.resolve("Deep.java"));
 		}
 		finally
 		{

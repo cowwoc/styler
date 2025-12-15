@@ -17,6 +17,7 @@ import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.TransformationContext;
+import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
 import io.github.cowwoc.styler.parser.Parser;
 import io.github.cowwoc.styler.pipeline.internal.DefaultTransformationContext;
 import io.github.cowwoc.styler.pipeline.internal.FormatResult;
@@ -126,7 +127,8 @@ public final class FileProcessingPipeline
 				securityConfig,
 				formattingConfigs,
 				formattingRules,
-				validationOnly);
+				validationOnly,
+				TypeResolutionConfig.EMPTY);
 
 		// Execute stages in sequence, passing data between them
 		Object previousStageData = null;
@@ -384,7 +386,8 @@ public final class FileProcessingPipeline
 				parsed.rootNode(),
 				parsed.sourceCode(),
 				parsed.filePath(),
-				context.securityConfig());
+				context.securityConfig(),
+				context.typeResolutionConfig());
 
 			if (context.validationOnly())
 			{
@@ -408,7 +411,8 @@ public final class FileProcessingPipeline
 					parsed.rootNode(),
 					currentSource,
 					parsed.filePath(),
-					context.securityConfig());
+					context.securityConfig(),
+					context.typeResolutionConfig());
 			}
 
 			// Collect violations in the final formatted source

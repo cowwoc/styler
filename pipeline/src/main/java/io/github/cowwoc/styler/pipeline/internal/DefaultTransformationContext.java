@@ -5,6 +5,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.formatter.TransformationContext;
+import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
 import io.github.cowwoc.styler.security.SecurityConfig;
 import io.github.cowwoc.styler.security.exceptions.ExecutionTimeoutException;
 import java.nio.file.Path;
@@ -24,6 +25,7 @@ public final class DefaultTransformationContext implements TransformationContext
 	private final Path filePath;
 	private final SecurityConfig securityConfig;
 	private final Instant deadline;
+	private final TypeResolutionConfig typeResolutionConfig;
 
 	/**
 	 * Creates a transformation context with the given data.
@@ -33,6 +35,7 @@ public final class DefaultTransformationContext implements TransformationContext
 	 * @param sourceCode the source code being formatted
 	 * @param filePath the path to the source file
 	 * @param securityConfig the security configuration for deadline enforcement
+	 * @param typeResolutionConfig the type resolution configuration for classpath access
 	 * @throws NullPointerException if any argument is null
 	 */
 	public DefaultTransformationContext(
@@ -40,13 +43,15 @@ public final class DefaultTransformationContext implements TransformationContext
 			NodeIndex rootNode,
 			String sourceCode,
 			Path filePath,
-			SecurityConfig securityConfig)
+			SecurityConfig securityConfig,
+			TypeResolutionConfig typeResolutionConfig)
 	{
 		this.arena = requireThat(arena, "arena").isNotNull().getValue();
 		this.rootNode = requireThat(rootNode, "rootNode").isNotNull().getValue();
 		this.sourceCode = requireThat(sourceCode, "sourceCode").isNotNull().getValue();
 		this.filePath = requireThat(filePath, "filePath").isNotNull().getValue();
 		this.securityConfig = requireThat(securityConfig, "securityConfig").isNotNull().getValue();
+		this.typeResolutionConfig = requireThat(typeResolutionConfig, "typeResolutionConfig").isNotNull().getValue();
 
 		// Calculate execution deadline based on current time + timeout
 		this.deadline = Instant.now().plus(securityConfig.executionTimeout());
@@ -142,5 +147,11 @@ public final class DefaultTransformationContext implements TransformationContext
 		{
 			throw new ExecutionTimeoutException(filePath, securityConfig.executionTimeout());
 		}
+	}
+
+	@Override
+	public TypeResolutionConfig typeResolutionConfig()
+	{
+		return typeResolutionConfig;
 	}
 }

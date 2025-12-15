@@ -85,4 +85,11 @@ public interface TransformationContext
 	 * @throws ExecutionTimeoutException if the deadline is exceeded
 	 */
 	void checkDeadline();
+
+	/**
+	 * Returns the type resolution configuration for classpath access.
+	 *
+	 * @return the type resolution config, or {@link TypeResolutionConfig#EMPTY} if none provided
+	 */
+	TypeResolutionConfig typeResolutionConfig();
 }

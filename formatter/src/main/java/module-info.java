@@ -15,6 +15,7 @@ module io.github.cowwoc.styler.formatter
 	requires transitive io.github.cowwoc.styler.ast.core;
 	requires transitive io.github.cowwoc.styler.security;
 	requires io.github.cowwoc.requirements12.java;
+	requires io.github.classgraph;
 
 	exports io.github.cowwoc.styler.formatter;
 	exports io.github.cowwoc.styler.formatter.linelength;

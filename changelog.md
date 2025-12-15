@@ -1,5 +1,38 @@
 # Changelog
 
+## 2025-12-15
+
+### B1.5: Classpath Infrastructure ✅
+
+**Completion Date**: 2025-12-15
+
+**Task**: `add-classpath-support`
+
+**Problem Solved**:
+- Styler needed access to project classpath/modulepath for advanced type analysis
+- Required infrastructure for wildcard import resolution and unused import detection
+- Needed to support both classpath and JPMS modulepath configurations
+
+**Solution Implemented**:
+- CLI arguments `--classpath` and `--module-path` for passing paths
+- `ClasspathScanner` utility for scanning classpath/modulepath to discover available classes
+- `ClasspathTestUtils` for test support with classpath operations
+- Integration with existing CLI args and configuration system
+
+**Key Components**:
+- **CLI Integration**: `--classpath` and `--module-path` arguments in ArgumentParser
+- **ClasspathScanner**: Scans JARs and directories for class files, returns available class names
+- **ClasspathTestUtils**: Test utilities for creating test JARs and classpath scenarios
+- **Module Support**: Handles both classpath (unnamed module) and modulepath (JPMS) configurations
+
+**Test Coverage**:
+- ClasspathScannerTest: JAR scanning, directory scanning, filtering, edge cases
+- Integration tests with sample JARs containing test classes
+
+**Unblocks**: `resolve-wildcard-imports` (can now use classpath to resolve wildcards)
+
+---
+
 ## 2025-12-14
 
 ### B6: Multi-Configuration Architecture ✅
