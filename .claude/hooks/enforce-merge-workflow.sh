@@ -44,15 +44,20 @@ log_hook_start "enforce-merge-workflow" "PreToolUse"
 # Extract branch being merged (after 'git merge')
 MERGE_BRANCH=$(echo "$COMMAND" | sed -E 's/.*git[[:space:]]+merge[[:space:]]+([^[:space:]]+).*/\1/')
 
-# Performance optimization: Replace multiple regex checks with case statement (40% faster)
+# Determine branch type by checking for agent suffix first, then task.json existence
 case "$MERGE_BRANCH" in
 	*-architect|*-engineer|*-formatter|*-tester|*-builder|*-designer|*-optimizer|*-hacker|*-configurator)
 		BRANCH_TYPE="agent" ;;
-	implement-*)
-		BRANCH_TYPE="task" ;;
 	*)
-		log_hook_success "enforce-merge-workflow" "PreToolUse" "Not a task/agent branch merge, allowing"
-		exit 0 ;;
+		# Check if this is a task branch by looking for task.json
+		# This handles ANY task branch name pattern (not just implement-*)
+		if [[ -f "/workspace/tasks/${MERGE_BRANCH}/task.json" ]]; then
+			BRANCH_TYPE="task"
+		else
+			log_hook_success "enforce-merge-workflow" "PreToolUse" "Not a task/agent branch merge, allowing"
+			exit 0
+		fi
+		;;
 esac
 
 # Get current working directory (where merge will run)
@@ -143,10 +148,52 @@ fi
 
 # RULE 2: Task branches merging to main must have user approval
 if [[ "$BRANCH_TYPE" == "task" ]] && [[ "$CURRENT_DIR" == "/workspace/main" ]]; then
-	# Check if user approval flag exists
 	TASK_DIR="/workspace/tasks/${MERGE_BRANCH}"
+	TASK_JSON="${TASK_DIR}/task.json"
 	APPROVAL_FLAG="${TASK_DIR}/user-approved-changes.flag"
 
+	# Check task state - must be in AWAITING_USER_APPROVAL (or have approval flag)
+	TASK_STATE=$(jq -r '.state // "UNKNOWN"' "$TASK_JSON" 2>/dev/null || echo "UNKNOWN")
+
+	# Block if: not in AWAITING_USER_APPROVAL state AND no approval flag
+	if [[ "$TASK_STATE" != "AWAITING_USER_APPROVAL" ]] && [[ ! -f "$APPROVAL_FLAG" ]]; then
+		log_hook_blocked "enforce-merge-workflow" "PreToolUse" "Task merge blocked - not in AWAITING_USER_APPROVAL state"
+
+		MESSAGE="## 🚨 TASK STATE ERROR - CANNOT MERGE
+
+**Task Branch**: \`$MERGE_BRANCH\`
+**Current State**: \`$TASK_STATE\`
+**Required State**: \`AWAITING_USER_APPROVAL\`
+
+## ⚠️ MERGE BLOCKED - INCORRECT STATE
+
+You attempted to merge a task branch that is not in AWAITING_USER_APPROVAL state.
+
+**AUTOMATIC ACTION TAKEN**:
+- Git merge blocked
+- Violation logged
+
+**REQUIRED ACTION**:
+
+1. **Transition task to AWAITING_USER_APPROVAL**:
+   \`\`\`bash
+   # Update task state
+   jq '.state = \"AWAITING_USER_APPROVAL\"' ${TASK_JSON} > ${TASK_JSON}.tmp
+   mv ${TASK_JSON}.tmp ${TASK_JSON}
+   \`\`\`
+
+2. **Present changes to user for approval** (see next check)
+
+## Protocol Reference
+
+See: /workspace/main/docs/project/task-protocol-core.md § State Machine
+The state flow is: VALIDATION → AWAITING_USER_APPROVAL → (user approval) → COMPLETE"
+
+		output_hook_error "PreToolUse" "$MESSAGE"
+		exit 0
+	fi
+
+	# Check if user approval flag exists (separate from state check)
 	if [[ ! -f "$APPROVAL_FLAG" ]]; then
 		log_hook_blocked "enforce-merge-workflow" "PreToolUse" "Task branch merge blocked - no user approval"
 
