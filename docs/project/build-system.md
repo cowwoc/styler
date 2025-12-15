@@ -44,6 +44,33 @@ src/test/java/
 
 This resolves TestNG module export warnings with `-Werror` enabled.
 
+### Test Package Naming Convention {#test-package-naming-convention}
+
+**CRITICAL**: All test packages must be subpackages of the `.test` package, not siblings.
+
+**✅ CORRECT** - `internal` is a subpackage of `test`:
+```
+src/test/java/io/github/cowwoc/styler/formatter/test/
+  ├── FormattingViolationTest.java
+  ├── internal/
+  │   └── ClasspathScannerTest.java    # Tests for internal.ClasspathScanner
+  └── brace/
+      └── BraceFormatterTest.java
+```
+
+**❌ WRONG** - `internal` and `test` as siblings:
+```
+src/test/java/io/github/cowwoc/styler/formatter/
+  ├── internal/
+  │   └── test/
+  │       └── ClasspathScannerTest.java  # WRONG: internal.test not test.internal
+  └── test/
+      └── FormattingViolationTest.java
+```
+
+**Rationale**: The `.test` package is the root for all test code. Tests for internal classes go in
+`test/internal/`, not `internal/test/`. This keeps all tests grouped under a single test root.
+
 ### Test Module Name Verification {#test-module-name-verification}
 
 **CRITICAL REQUIREMENT**: Test modules MUST use a different module name than the main module to avoid conflicts.

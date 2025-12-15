@@ -107,6 +107,52 @@ one as "(required)" adds noise without information. Only annotate nullability wh
 **Rationale**: Primitives cannot be null, so excluding them in `@throws` documentation is redundant and
 confusing. Simply state "if any argument is null" - readers understand primitives are implicitly excluded.
 
+### JavaDoc - Compact Constructors Must Have @param Tags
+**Detection Pattern**: Record with compact constructor missing `@param` tags on the constructor itself
+**Violation**:
+```java
+/**
+ * Configuration for type resolution.
+ *
+ * @param classpathEntries paths to JAR files
+ * @param modulepathEntries paths to modules
+ */
+public record TypeResolutionConfig(List<Path> classpathEntries, List<Path> modulepathEntries)
+{
+    // Compact constructor WITHOUT @param tags - VIOLATION
+    public TypeResolutionConfig
+    {
+        classpathEntries = List.copyOf(classpathEntries);
+    }
+}
+```
+**Correct**:
+```java
+/**
+ * Configuration for type resolution.
+ *
+ * @param classpathEntries paths to JAR files
+ * @param modulepathEntries paths to modules
+ */
+public record TypeResolutionConfig(List<Path> classpathEntries, List<Path> modulepathEntries)
+{
+    /**
+     * Creates a new type resolution configuration.
+     *
+     * @param classpathEntries paths to JAR files
+     * @param modulepathEntries paths to modules
+     * @throws NullPointerException if any argument is null
+     */
+    public TypeResolutionConfig
+    {
+        classpathEntries = List.copyOf(classpathEntries);
+    }
+}
+```
+**Rationale**: JavaDoc `@param` tags from record declarations are NOT automatically inherited by compact
+constructors. Checkstyle enforces JavaDoc on public constructors, which includes compact constructors.
+Each compact constructor must have its own `@param` documentation.
+
 ### JavaDoc - Use "Returns" Not "Gets" for Accessor Methods
 **Detection Pattern**: `^\s+\* Gets the` or `^\s+\* Gets a`
 **Violation**: `/** Gets the file path. */`
@@ -484,6 +530,81 @@ exceptions for subclass implementations even if the base implementation doesn't 
 **Detection Pattern**: `throw new.*Exception\("Invalid.*"\)`
 **Violation**: `throw new IllegalArgumentException("Invalid amount");`
 **Correct**: `throw new IllegalArgumentException("Withdrawal amount must be positive for account " + accountId);`
+
+### Thread-Safety - Mutable Fields in Thread-Safe Classes
+**Detection Pattern**: Class JavaDoc claims "thread-safe" but has mutable boolean fields (even `volatile`)
+**Violation**: JavaDoc says "This class is thread-safe" but uses `private boolean closed;` or even
+`private volatile boolean closed;` with check-then-act pattern
+**Correct**: Use `private final AtomicBoolean closed = new AtomicBoolean();` with `compareAndSet()`
+**Detection Commands**:
+```bash
+# Find classes claiming thread-safety
+grep -rn -l 'thread-safe\|Thread-safety' --include="*.java" .
+
+# For each, check for boolean fields (volatile or not) - both are violations for check-then-act
+grep -A50 'thread-safe' <file> | grep 'private.*boolean.*;'
+```
+**Examples**:
+```java
+// VIOLATION - Claims thread-safety but uses plain boolean
+/**
+ * Scanner for classpath entries.
+ * <p>
+ * <b>Thread-safety</b>: This class is thread-safe.
+ */
+public final class Scanner implements AutoCloseable
+{
+    private boolean closed;  // NOT thread-safe!
+}
+
+// VIOLATION - volatile doesn't make check-then-act atomic
+/**
+ * Scanner for classpath entries.
+ * <p>
+ * <b>Thread-safety</b>: This class is thread-safe.
+ */
+public final class Scanner implements AutoCloseable
+{
+    private volatile boolean closed;
+
+    @Override
+    public void close()
+    {
+        // RACE CONDITION: Two threads can both see closed=false,
+        // both enter the block, both call resource.close()
+        if (!closed)
+        {
+            resource.close();
+            closed = true;
+        }
+    }
+}
+
+// CORRECT - Uses AtomicBoolean with compareAndSet for atomic check-then-act
+/**
+ * Scanner for classpath entries.
+ * <p>
+ * <b>Thread-safety</b>: This class is thread-safe.
+ */
+public final class Scanner implements AutoCloseable
+{
+    private final AtomicBoolean closed = new AtomicBoolean();
+
+    @Override
+    public void close()
+    {
+        // THREAD-SAFE: Only one thread wins the compareAndSet race
+        if (closed.compareAndSet(false, true))
+        {
+            resource.close();
+        }
+    }
+}
+```
+**Rationale**: `volatile` only provides visibility (all threads see the same value), but does NOT provide
+atomicity. The check-then-act pattern `if (!flag) { doSomething(); flag = true; }` has a race condition
+even with `volatile` - two threads can both read `false`, both enter the block, then both set to `true`.
+Use `AtomicBoolean.compareAndSet()` which atomically checks AND sets in one operation.
 
 ### Field Initialization - Avoid Redundant Default Values
 **Detection Pattern**: `(private|protected|public)\s+(int|long|boolean|double|float)\s+\w+\s*=\s*0` or constructor assignments to default values
