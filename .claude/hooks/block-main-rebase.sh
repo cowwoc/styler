@@ -70,9 +70,13 @@ if echo "$COMMAND" | grep -qE "cd[[:space:]]+(/workspace/main|['\"]*/workspace/m
 	CURRENT_BRANCH="main"
 fi
 
-# Method 2: Check working directory via git
-if [ -z "$CURRENT_BRANCH" ] && [ -d "/workspace/main/.git" ]; then
-	CURRENT_BRANCH=$(git -C /workspace/main branch --show-current 2>/dev/null || echo "")
+# Method 2: Check current working directory's branch
+# BUG FIX: 2025-12-15 - Was checking /workspace/main's branch instead of $PWD's branch
+# This caused false positives when rebasing task branches from their worktrees
+# because it would see main's branch is "main" and block, even though
+# the actual command runs in a task worktree on a different branch
+if [ -z "$CURRENT_BRANCH" ]; then
+	CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
 fi
 
 # Method 3: Check if we're in a task worktree (not main)
