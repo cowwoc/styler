@@ -99,30 +99,12 @@ B2-B5 have sequential dependencies.
 
 - [x] **COMPLETE:** `implement-import-organization` - Import grouping and unused import removal (2025-12-03)
 
-### B1.5. Classpath Infrastructure (Optional Enhancement)
+### B1.5. Classpath Infrastructure ✅ COMPLETE (2025-12-15)
 
-- [ ] **READY:** `add-classpath-support` - Enable passing project classpath/modulepath into Styler
-  - **Dependencies**: A3 ✅ COMPLETE (CLI args), A2 ✅ COMPLETE (config)
-  - **Blocks**: `resolve-wildcard-imports` (needs classpath access to resolve wildcards)
-  - **Parallelizable With**: B2 (independent infrastructure)
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Allow Styler to access project classpath/modulepath for advanced type analysis
-  - **Scope**: Infrastructure for passing classpath/modulepath via CLI, API, and Maven plugin
-  - **Components**:
-    - CLI: `--classpath` and `--module-path` arguments
-    - API: `FormatterConfiguration.withClasspath(List<Path>)` and `.withModulePath(List<Path>)`
-    - Maven Plugin: Automatic access via `MavenProject.getCompileClasspathElements()` and `plexus-java`
-      LocationManager for modulepath resolution
-    - ClasspathScanner: Utility to scan classpath/modulepath for available classes
-  - **Use Cases**:
-    - Resolve wildcard imports to determine which classes are actually used
-    - Detect truly unused imports by verifying class existence on classpath
-    - Support JPMS module-aware import analysis
-  - **Integration**: Extends existing CLI args and config system
-  - **Quality**: Unit tests for classpath scanning, integration tests with sample JARs
+- [x] **COMPLETE:** `add-classpath-support` - Enable passing project classpath/modulepath into Styler (2025-12-15)
 
-- [ ] **BLOCKED:** `resolve-wildcard-imports` - Enhance import organization with wildcard resolution
-  - **Dependencies**: `implement-import-organization` (base import rule), `add-classpath-support` (classpath access)
+- [ ] **READY:** `resolve-wildcard-imports` - Enhance import organization with wildcard resolution
+  - **Dependencies**: `implement-import-organization` ✅ COMPLETE, `add-classpath-support` ✅ COMPLETE
   - **Blocks**: None (optional enhancement)
   - **Parallelizable With**: B2 and beyond (independent enhancement)
   - **Estimated Effort**: 2-3 days

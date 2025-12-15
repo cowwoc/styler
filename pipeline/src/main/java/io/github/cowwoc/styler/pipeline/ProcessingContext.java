@@ -7,6 +7,7 @@ import java.util.List;
 
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingRule;
+import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
 import io.github.cowwoc.styler.pipeline.output.OutputFormat;
 import io.github.cowwoc.styler.security.SecurityConfig;
 
@@ -33,6 +34,7 @@ import io.github.cowwoc.styler.security.SecurityConfig;
  * @param formattingRules the list of formatting rules to apply (may be empty)
  * @param validationOnly true to only validate without applying fixes
  * @param outputFormatOverride override for output format, or {@code null} for automatic detection
+ * @param typeResolutionConfig configuration for type resolution during formatting
  */
 public record ProcessingContext(
 		Path filePath,
@@ -40,7 +42,8 @@ public record ProcessingContext(
 		List<FormattingConfiguration> formattingConfigs,
 		List<FormattingRule> formattingRules,
 		boolean validationOnly,
-		OutputFormat outputFormatOverride)
+		OutputFormat outputFormatOverride,
+		TypeResolutionConfig typeResolutionConfig)
 {
 	/**
 	 * Creates a ProcessingContext without output format override (uses automatic detection).
@@ -50,6 +53,7 @@ public record ProcessingContext(
 	 * @param formattingConfigs the list of formatting configurations for all rules
 	 * @param formattingRules the list of formatting rules to apply (may be empty)
 	 * @param validationOnly true to only validate without applying fixes
+	 * @param typeResolutionConfig configuration for type resolution
 	 * @return a new ProcessingContext
 	 * @throws NullPointerException if any argument is {@code null}
 	 */
@@ -58,10 +62,11 @@ public record ProcessingContext(
 			SecurityConfig securityConfig,
 			List<FormattingConfiguration> formattingConfigs,
 			List<FormattingRule> formattingRules,
-			boolean validationOnly)
+			boolean validationOnly,
+			TypeResolutionConfig typeResolutionConfig)
 	{
 		return new ProcessingContext(filePath, securityConfig, formattingConfigs, formattingRules,
-			validationOnly, null);
+			validationOnly, null, typeResolutionConfig);
 	}
 
 	/**
@@ -73,6 +78,7 @@ public record ProcessingContext(
 	 * @param formattingRules the list of formatting rules to apply (may be empty)
 	 * @param validationOnly true to only validate without applying fixes
 	 * @param outputFormatOverride the output format to use
+	 * @param typeResolutionConfig configuration for type resolution
 	 * @return a new ProcessingContext
 	 * @throws NullPointerException if any argument is {@code null}
 	 */
@@ -82,11 +88,12 @@ public record ProcessingContext(
 			List<FormattingConfiguration> formattingConfigs,
 			List<FormattingRule> formattingRules,
 			boolean validationOnly,
-			OutputFormat outputFormatOverride)
+			OutputFormat outputFormatOverride,
+			TypeResolutionConfig typeResolutionConfig)
 	{
 		requireThat(outputFormatOverride, "outputFormatOverride").isNotNull();
 		return new ProcessingContext(filePath, securityConfig, formattingConfigs, formattingRules,
-			validationOnly, outputFormatOverride);
+			validationOnly, outputFormatOverride, typeResolutionConfig);
 	}
 
 	/**
@@ -98,6 +105,7 @@ public record ProcessingContext(
 		requireThat(securityConfig, "securityConfig").isNotNull();
 		requireThat(formattingConfigs, "formattingConfigs").isNotNull();
 		requireThat(formattingRules, "formattingRules").isNotNull();
+		requireThat(typeResolutionConfig, "typeResolutionConfig").isNotNull();
 		// outputFormatOverride is intentionally nullable - null means automatic detection
 	}
 }

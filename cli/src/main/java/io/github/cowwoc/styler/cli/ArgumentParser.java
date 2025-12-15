@@ -6,8 +6,11 @@ import picocli.CommandLine.Model.OptionSpec;
 import picocli.CommandLine.Model.PositionalParamSpec;
 import picocli.CommandLine.ParseResult;
 
+import java.io.File;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -46,87 +49,149 @@ public final class ArgumentParser
 	{
 		requireThat(args, "args").isNotNull();
 
-		// Handle empty args as help request
 		if (args.length == 0)
 		{
 			throw new HelpRequestedException(helpFormatter.formatHelp());
 		}
 
-		// Create command specification programmatically
+		CommandSpec spec = createCommandSpec();
+		ParseResult parseResult = parseArguments(spec, args);
+		checkForHelpOrVersion(parseResult);
+		return buildOptions(parseResult);
+	}
+
+	/**
+	 * Creates the command specification with all options and parameters.
+	 *
+	 * @return the configured command specification
+	 */
+	private CommandSpec createCommandSpec()
+	{
 		CommandSpec spec = CommandSpec.create();
 		spec.name("styler");
 
-		// Add options
-		OptionSpec configOption = OptionSpec.builder("--config").
+		spec.addOption(OptionSpec.builder("--config").
 			type(Path.class).
 			description("Configuration file path override").
-			build();
+			build());
 
-		OptionSpec checkOption = OptionSpec.builder("--check").
+		spec.addOption(OptionSpec.builder("--check").
 			type(Boolean.class).
 			description("Validation-only mode").
-			build();
+			build());
 
-		OptionSpec fixOption = OptionSpec.builder("--fix").
+		spec.addOption(OptionSpec.builder("--fix").
 			type(Boolean.class).
 			description("Auto-fix mode").
-			build();
+			build());
 
-		OptionSpec helpOption = OptionSpec.builder("--help").
+		spec.addOption(OptionSpec.builder("--help").
 			type(Boolean.class).
 			description("Display help message").
-			build();
+			build());
 
-		OptionSpec versionOption = OptionSpec.builder("--version").
+		spec.addOption(OptionSpec.builder("--version").
 			type(Boolean.class).
 			description("Display version information").
-			build();
+			build());
 
-		spec.addOption(configOption);
-		spec.addOption(checkOption);
-		spec.addOption(fixOption);
-		spec.addOption(helpOption);
-		spec.addOption(versionOption);
+		spec.addOption(OptionSpec.builder("--classpath", "-cp").
+			type(String.class).
+			description("Classpath entries for type resolution (separator: " + File.pathSeparator + ")").
+			build());
 
-		// Add positional parameters (file paths) - variadic parameter
-		PositionalParamSpec filesParam = PositionalParamSpec.builder().
+		spec.addOption(OptionSpec.builder("--module-path", "-p").
+			type(String.class).
+			description("Module path entries for type resolution (separator: " + File.pathSeparator + ")").
+			build());
+
+		spec.addPositional(PositionalParamSpec.builder().
 			index("0..*").
 			type(String.class).
 			arity("1..*").
 			description("Files or directories to process").
-			build();
+			build());
 
-		spec.addPositional(filesParam);
+		return spec;
+	}
 
-		// Parse arguments
+	/**
+	 * Parses arguments using the command specification.
+	 *
+	 * @param spec the command specification
+	 * @param args the arguments to parse
+	 * @return the parse result
+	 * @throws UsageException if parsing fails
+	 */
+	private ParseResult parseArguments(CommandSpec spec, String[] args) throws UsageException
+	{
 		CommandLine commandLine = new CommandLine(spec);
 		commandLine.setOverwrittenOptionsAllowed(true);
-		ParseResult parseResult;
 
 		try
 		{
-			parseResult = commandLine.parseArgs(args);
+			return commandLine.parseArgs(args);
 		}
 		catch (CommandLine.ParameterException e)
 		{
 			throw new UsageException(e.getMessage(), e);
 		}
+	}
 
-		// Check for help/version flags
+	/**
+	 * Checks for help or version flags and throws appropriate exception if found.
+	 *
+	 * @param parseResult the parse result to check
+	 * @throws HelpRequestedException if --help or --version was specified
+	 */
+	private void checkForHelpOrVersion(ParseResult parseResult) throws HelpRequestedException
+	{
 		if (parseResult.hasMatchedOption("--help"))
 		{
 			throw new HelpRequestedException(helpFormatter.formatHelp());
 		}
-
 		if (parseResult.hasMatchedOption("--version"))
 		{
 			throw new HelpRequestedException(helpFormatter.formatVersion());
 		}
+	}
 
-		// Build CLIOptions from parse result
+	/**
+	 * Builds CLIOptions from the parse result.
+	 *
+	 * @param parseResult the parse result
+	 * @return the built CLI options
+	 * @throws UsageException if options are invalid
+	 */
+	private CLIOptions buildOptions(ParseResult parseResult) throws UsageException
+	{
 		CLIOptions.Builder builder = new CLIOptions.Builder();
 
-		// Add file paths - get all matched positionals as strings and convert to Path
+		addInputPaths(parseResult, builder);
+		addConfigPath(parseResult, builder);
+		addModeFlags(parseResult, builder);
+		addClasspathEntries(parseResult, builder);
+		addModulepathEntries(parseResult, builder);
+
+		try
+		{
+			return builder.build();
+		}
+		catch (IllegalArgumentException e)
+		{
+			throw new UsageException(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * Adds input paths from positional arguments to the builder.
+	 *
+	 * @param parseResult the parse result
+	 * @param builder     the options builder
+	 * @throws UsageException if no input paths are specified
+	 */
+	private void addInputPaths(ParseResult parseResult, CLIOptions.Builder builder) throws UsageException
+	{
 		List<String> positionals = List.of();
 		if (!parseResult.matchedPositionals().isEmpty())
 		{
@@ -143,28 +208,89 @@ public final class ArgumentParser
 		{
 			builder.addInputPath(Path.of(pathString));
 		}
+	}
 
-		// Add config path if specified
+	/**
+	 * Adds config path if specified.
+	 *
+	 * @param parseResult the parse result
+	 * @param builder     the options builder
+	 */
+	private void addConfigPath(ParseResult parseResult, CLIOptions.Builder builder)
+	{
 		if (parseResult.hasMatchedOption("--config"))
 		{
 			Path configPath = parseResult.matchedOptionValue("--config", null);
 			builder.setConfigPath(configPath);
 		}
+	}
 
-		boolean checkMode = parseResult.hasMatchedOption("--check");
-		boolean fixMode = parseResult.hasMatchedOption("--fix");
+	/**
+	 * Adds check/fix mode flags.
+	 *
+	 * @param parseResult the parse result
+	 * @param builder     the options builder
+	 */
+	private void addModeFlags(ParseResult parseResult, CLIOptions.Builder builder)
+	{
+		builder.setCheckMode(parseResult.hasMatchedOption("--check"));
+		builder.setFixMode(parseResult.hasMatchedOption("--fix"));
+	}
 
-		builder.setCheckMode(checkMode);
-		builder.setFixMode(fixMode);
-
-		// Build and return (validation happens in CLIOptions constructor)
-		try
+	/**
+	 * Adds classpath entries if specified.
+	 *
+	 * @param parseResult the parse result
+	 * @param builder     the options builder
+	 */
+	private void addClasspathEntries(ParseResult parseResult, CLIOptions.Builder builder)
+	{
+		if (parseResult.hasMatchedOption("--classpath"))
 		{
-			return builder.build();
+			String classpathValue = parseResult.matchedOptionValue("--classpath", "");
+			builder.setClasspathEntries(parsePathList(classpathValue));
 		}
-		catch (IllegalArgumentException e)
+		else
 		{
-			throw new UsageException(e.getMessage(), e);
+			builder.setClasspathEntries(List.of());
 		}
+	}
+
+	/**
+	 * Adds modulepath entries if specified.
+	 *
+	 * @param parseResult the parse result
+	 * @param builder     the options builder
+	 */
+	private void addModulepathEntries(ParseResult parseResult, CLIOptions.Builder builder)
+	{
+		if (parseResult.hasMatchedOption("--module-path"))
+		{
+			String modulepathValue = parseResult.matchedOptionValue("--module-path", "");
+			builder.setModulepathEntries(parsePathList(modulepathValue));
+		}
+		else
+		{
+			builder.setModulepathEntries(List.of());
+		}
+	}
+
+	/**
+	 * Parses a path-separated string into a list of paths.
+	 *
+	 * @param pathListString the path-separated string (uses platform separator)
+	 * @return list of paths, empty if input is null or blank
+	 */
+	private List<Path> parsePathList(String pathListString)
+	{
+		if (pathListString == null || pathListString.isBlank())
+		{
+			return List.of();
+		}
+		return Arrays.stream(pathListString.split(Pattern.quote(File.pathSeparator))).
+			map(String::strip).
+			filter(s -> !s.isEmpty()).
+			map(Path::of).
+			toList();
 	}
 }
