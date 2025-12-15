@@ -24,6 +24,7 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 - Use `{@code}` for all identifiers
 - No `@since` tags (use git history)
 - Thread-safety notes go LAST in class JavaDoc
+- Compact constructors MUST have their own `@param` tags (not inherited from record declaration)
 
 ### TestNG
 - No `@BeforeMethod`/`@AfterMethod` (creates shared state)
@@ -31,6 +32,24 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 - Use `requireThat()` for assertions, not manual if-throw
 - Don't chain redundant validators (`isNotEmpty()` implies `isNotNull()`)
 - Add JavaDoc comments to test classes/methods instead of `@SuppressWarnings("PMD.CommentRequired")`
+- No meaningless assertions - `assertTrue(true, ...)` always passes and tests nothing:
+  ```java
+  // ❌ WRONG - Useless assertion that always passes
+  @Test
+  public void shouldCompleteWithoutThrowing()
+  {
+      doWork();
+      assertTrue(true, "Should complete without throwing");  // Tests nothing!
+  }
+
+  // ✅ CORRECT - No assertion needed; test passes if no exception thrown
+  @Test
+  public void shouldCompleteWithoutThrowing()
+  {
+      doWork();
+      // Test passes if we reach here without exception
+  }
+  ```
 - Use `@Test(timeOut = X)` for deadlock protection, not post-completion time checks:
   ```java
   // ❌ WRONG - Only verifies timing after completion (doesn't prevent hangs)
@@ -148,6 +167,24 @@ requireThat(elapsed, "elapsed").isLessThan(Duration.ofSeconds(5));
 - Use `Duration.between(start, end)` to calculate elapsed time
 - Use `requireThat()` for Duration comparisons (better error messages)
 - Use `Duration.ofSeconds()`, `Duration.ofMillis()` etc. for thresholds
+
+### Thread-Safety
+If JavaDoc claims thread-safety, implementation MUST match:
+- Use `AtomicBoolean` for boolean state (not `volatile boolean`)
+- `volatile` only provides visibility, NOT atomicity for check-then-act patterns
+- The pattern `if (!closed) { doSomething(); closed = true; }` is NOT thread-safe even with `volatile`
+```java
+// ❌ WRONG - Plain boolean, not thread-safe
+private boolean closed;
+
+// ❌ WRONG - Volatile doesn't make check-then-act atomic
+private volatile boolean closed;
+// if (!closed) { x.close(); closed = true; }  // Race condition!
+
+// ✅ CORRECT - AtomicBoolean with compareAndSet
+private final AtomicBoolean closed = new AtomicBoolean();
+// if (closed.compareAndSet(false, true)) { x.close(); }  // Thread-safe
+```
 
 ### Validation: Public vs Internal Types
 ```java
