@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.formatter.test.whitespace;
 
+import java.util.List;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingRule;
 import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
@@ -23,7 +24,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a, b, c");
 	}
@@ -39,7 +40,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a, b, c");
 		requireThat(result, "result").doesNotContain("a ,");
@@ -56,7 +57,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").isEqualTo("int x = 1;");
 	}
@@ -72,7 +73,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("method(x)");
 	}
@@ -88,7 +89,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("method(x)");
 	}
@@ -104,7 +105,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("method()");
 	}
@@ -120,7 +121,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("array[0]");
 	}
@@ -136,7 +137,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("array[0]");
 	}
@@ -152,7 +153,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("case 1:");
 	}
@@ -168,7 +169,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("for (String s : list)");
 	}
@@ -184,7 +185,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("a ? b : c");
 	}
@@ -200,7 +201,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("{1, 2, 3}");
 	}
@@ -216,7 +217,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("Map<String, Integer>");
 	}
@@ -232,7 +233,7 @@ public class WhitespacePunctuationTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("for (int i = 0; i < n; i++)");
 	}

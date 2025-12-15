@@ -2,7 +2,6 @@ package io.github.cowwoc.styler.formatter.test.linelength;
 
 import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 
-import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
@@ -66,7 +65,7 @@ public class LineLengthFormattingRuleTest
 	public void shouldRejectNullContextInAnalyze()
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
-		rule.analyze(null, null);
+		rule.analyze(null, List.of());
 	}
 
 	/**
@@ -76,35 +75,33 @@ public class LineLengthFormattingRuleTest
 	public void shouldRejectNullContextInFormat()
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
-		rule.format(null, null);
+		rule.format(null, List.of());
 	}
 
 	/**
-	 * Tests that wrong config type is rejected in analyze.
+	 * Tests that null configs list is rejected in analyze.
 	 */
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldRejectWrongConfigTypeInAnalyze()
+	@Test(expectedExceptions = NullPointerException.class)
+	public void shouldRejectNullConfigsInAnalyze()
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
 		String source = "class Test {}";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		// Pass a non-LineLengthConfiguration
-		rule.analyze(context, new WrongConfigType());
+		rule.analyze(context, null);
 	}
 
 	/**
-	 * Tests that wrong config type is rejected in format.
+	 * Tests that null configs list is rejected in format.
 	 */
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void shouldRejectWrongConfigTypeInFormat()
+	@Test(expectedExceptions = NullPointerException.class)
+	public void shouldRejectNullConfigsInFormat()
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
 		String source = "class Test {}";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		// Pass a non-LineLengthConfiguration
-		rule.format(context, new WrongConfigType());
+		rule.format(context, null);
 	}
 
 	/**
@@ -117,7 +114,7 @@ public class LineLengthFormattingRuleTest
 		String source = "class Test {}";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		List<FormattingViolation> violations = rule.analyze(context, null);
+		List<FormattingViolation> violations = rule.analyze(context, List.of());
 		requireThat(violations, "violations").isEmpty();
 	}
 
@@ -132,7 +129,7 @@ public class LineLengthFormattingRuleTest
 		String longLine = "public class Test { void method() { String s = \"" + "a".repeat(100) + "\"; } }";
 		TestTransformationContext context = new TestTransformationContext(longLine);
 
-		List<FormattingViolation> violations = rule.analyze(context, null);
+		List<FormattingViolation> violations = rule.analyze(context, List.of());
 		requireThat(violations, "violations").isNotEmpty();
 		requireThat(violations.get(0).severity(), "severity").isEqualTo(ViolationSeverity.WARNING);
 	}
@@ -154,7 +151,7 @@ public class LineLengthFormattingRuleTest
 			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
 			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, true);
 
-		List<FormattingViolation> violations = rule.analyze(context, strictConfig);
+		List<FormattingViolation> violations = rule.analyze(context, List.of(strictConfig));
 		requireThat(violations, "violations").isNotEmpty();
 	}
 
@@ -168,22 +165,22 @@ public class LineLengthFormattingRuleTest
 		String source = "class Test {}";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 		requireThat(result, "result").isEqualTo(source);
 	}
 
 	/**
-	 * Tests that format handles null config by using defaults.
+	 * Tests that format handles empty config list by using defaults.
 	 */
 	@Test
-	public void shouldUseDefaultConfigWhenNull()
+	public void shouldUseDefaultConfigWhenEmptyList()
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
 		String source = "class Test {}";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		// Should not throw with null config
-		String result = rule.format(context, null);
+		// Should not throw with empty config list
+		String result = rule.format(context, List.of());
 		requireThat(result, "result").isNotNull();
 	}
 
@@ -197,7 +194,7 @@ public class LineLengthFormattingRuleTest
 		String source = "class Test {\n    void method() {\n    }\n}";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 		requireThat(result, "result").contains("\n");
 	}
 
@@ -211,19 +208,7 @@ public class LineLengthFormattingRuleTest
 		String source = "class Test {}\n";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		String result = rule.format(context, null);
+		String result = rule.format(context, List.of());
 		requireThat(result, "result").endsWith("\n");
-	}
-
-	/**
-	 * A wrong configuration type for testing type validation.
-	 */
-	private record WrongConfigType() implements FormattingConfiguration
-	{
-		@Override
-		public String ruleId()
-		{
-			return "wrong-type";
-		}
 	}
 }

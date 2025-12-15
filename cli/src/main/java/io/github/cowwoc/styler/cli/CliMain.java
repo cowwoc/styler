@@ -12,8 +12,14 @@ import io.github.cowwoc.styler.config.ConfigurationLoader;
 import io.github.cowwoc.styler.config.exception.ConfigurationException;
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingRule;
+import io.github.cowwoc.styler.formatter.brace.BraceFormattingConfiguration;
+import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerConfiguration;
+import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerFormattingRule;
+import io.github.cowwoc.styler.formatter.indentation.IndentationFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
+import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
 import io.github.cowwoc.styler.formatter.linelength.WrapStyle;
+import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.pipeline.FileProcessingPipeline;
 import io.github.cowwoc.styler.pipeline.PipelineResult;
 import io.github.cowwoc.styler.security.SecurityConfig;
@@ -200,7 +206,7 @@ public final class CliMain
 	 * <ul>
 	 *   <li>Security configuration (from SecurityConfig.DEFAULT)</li>
 	 *   <li>Formatting rules (extracted from config)</li>
-	 *   <li>Formatting configuration (from config)</li>
+	 *   <li>Formatting configurations (list of configs for all rules)</li>
 	 *   <li>Validation mode flag (from CLI options)</li>
 	 * </ul>
 	 *
@@ -215,12 +221,12 @@ public final class CliMain
 		requireThat(options, "options").isNotNull();
 
 		List<FormattingRule> rules = createFormattingRules(config);
-		FormattingConfiguration formattingConfig = createFormattingConfiguration(config);
+		List<FormattingConfiguration> formattingConfigs = createFormattingConfigurations(config);
 
 		return FileProcessingPipeline.builder().
 			securityConfig(SecurityConfig.DEFAULT).
 			formattingRules(rules).
-			formattingConfig(formattingConfig).
+			formattingConfigs(formattingConfigs).
 			validationOnly(options.checkMode()).
 			build();
 	}
@@ -240,26 +246,26 @@ public final class CliMain
 		requireThat(config, "config").isNotNull();
 
 		return List.of(
-			new io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule(),
-			new io.github.cowwoc.styler.formatter.importorg.ImportOrganizerFormattingRule());
+			new LineLengthFormattingRule(),
+			new ImportOrganizerFormattingRule());
 	}
 
 	/**
-	 * Creates formatting configuration from loaded config.
+	 * Creates the list of formatting configurations from loaded config.
 	 * <p>
-	 * Translates configuration values (e.g., maxLineLength) into formatter-specific configuration.
+	 * Creates configuration objects for each formatting rule, translating
+	 * configuration values (e.g., maxLineLength) into rule-specific configurations.
 	 *
 	 * @param config the loaded configuration
-	 * @return formatting configuration for the pipeline
+	 * @return list of formatting configurations for all rules
 	 * @throws NullPointerException if config is null
 	 */
-	private FormattingConfiguration createFormattingConfiguration(Config config)
+	private List<FormattingConfiguration> createFormattingConfigurations(Config config)
 	{
 		requireThat(config, "config").isNotNull();
 
-		// Create LineLengthConfiguration based on config maxLineLength
-		// Use defaults for other settings until they're configurable
-		return new LineLengthConfiguration(
+		// Create configuration for each rule
+		LineLengthConfiguration lineLengthConfig = new LineLengthConfiguration(
 			"line-length",
 			config.maxLineLength(),
 			4,  // tabWidth
@@ -273,6 +279,16 @@ public final class CliMain
 			WrapStyle.AFTER,  // annotationArgumentsWrap
 			WrapStyle.AFTER,  // genericTypeArgsWrap
 			true);  // wrapLongStrings
+
+		ImportOrganizerConfiguration importConfig = ImportOrganizerConfiguration.defaultConfig();
+
+		BraceFormattingConfiguration braceConfig = BraceFormattingConfiguration.defaultConfig();
+
+		WhitespaceFormattingConfiguration whitespaceConfig = WhitespaceFormattingConfiguration.defaultConfig();
+
+		IndentationFormattingConfiguration indentationConfig = IndentationFormattingConfiguration.defaultConfig();
+
+		return List.of(lineLengthConfig, importConfig, braceConfig, whitespaceConfig, indentationConfig);
 	}
 
 	/**

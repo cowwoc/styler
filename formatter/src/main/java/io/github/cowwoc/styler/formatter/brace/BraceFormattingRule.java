@@ -68,35 +68,25 @@ public final class BraceFormattingRule implements FormattingRule
 
 	@Override
 	public List<FormattingViolation> analyze(TransformationContext context,
-		FormattingConfiguration config)
+		List<FormattingConfiguration> configs)
 	{
 		requireThat(context, "context").isNotNull();
+		requireThat(configs, "configs").isNotNull();
 
-		BraceFormattingConfiguration braceConfig;
-		if (config == null)
-			braceConfig = BraceFormattingConfiguration.defaultConfig();
-		else
-		{
-			requireThat(config, "config").isInstanceOf(BraceFormattingConfiguration.class);
-			braceConfig = (BraceFormattingConfiguration) config;
-		}
+		BraceFormattingConfiguration braceConfig = FormattingConfiguration.findConfig(
+			configs, BraceFormattingConfiguration.class, BraceFormattingConfiguration.defaultConfig());
 
 		return BraceAnalyzer.analyze(context, braceConfig);
 	}
 
 	@Override
-	public String format(TransformationContext context, FormattingConfiguration config)
+	public String format(TransformationContext context, List<FormattingConfiguration> configs)
 	{
 		requireThat(context, "context").isNotNull();
+		requireThat(configs, "configs").isNotNull();
 
-		BraceFormattingConfiguration braceConfig;
-		if (config == null)
-			braceConfig = BraceFormattingConfiguration.defaultConfig();
-		else
-		{
-			requireThat(config, "config").isInstanceOf(BraceFormattingConfiguration.class);
-			braceConfig = (BraceFormattingConfiguration) config;
-		}
+		BraceFormattingConfiguration braceConfig = FormattingConfiguration.findConfig(
+			configs, BraceFormattingConfiguration.class, BraceFormattingConfiguration.defaultConfig());
 
 		return BraceFixer.format(context, braceConfig);
 	}

@@ -78,35 +78,25 @@ public final class LineLengthFormattingRule implements FormattingRule
 
 	@Override
 	public List<FormattingViolation> analyze(TransformationContext context,
-		FormattingConfiguration config)
+		List<FormattingConfiguration> configs)
 	{
 		requireThat(context, "context").isNotNull();
+		requireThat(configs, "configs").isNotNull();
 
-		LineLengthConfiguration lineConfig;
-		if (config == null)
-			lineConfig = LineLengthConfiguration.defaultConfig();
-		else if (config instanceof LineLengthConfiguration lineLengthConfig)
-			lineConfig = lineLengthConfig;
-		else
-			throw new IllegalArgumentException("config must be LineLengthConfiguration, got: " +
-				config.getClass().getName());
+		LineLengthConfiguration lineConfig = FormattingConfiguration.findConfig(
+			configs, LineLengthConfiguration.class, LineLengthConfiguration.defaultConfig());
 
 		return LineAnalyzer.analyze(context, lineConfig);
 	}
 
 	@Override
-	public String format(TransformationContext context, FormattingConfiguration config)
+	public String format(TransformationContext context, List<FormattingConfiguration> configs)
 	{
 		requireThat(context, "context").isNotNull();
+		requireThat(configs, "configs").isNotNull();
 
-		LineLengthConfiguration lineConfig;
-		if (config == null)
-			lineConfig = LineLengthConfiguration.defaultConfig();
-		else if (config instanceof LineLengthConfiguration lineLengthConfig)
-			lineConfig = lineLengthConfig;
-		else
-			throw new IllegalArgumentException("config must be LineLengthConfiguration, got: " +
-				config.getClass().getName());
+		LineLengthConfiguration lineConfig = FormattingConfiguration.findConfig(
+			configs, LineLengthConfiguration.class, LineLengthConfiguration.defaultConfig());
 
 		// Create context detector for AST-based analysis
 		ContextDetector detector = new ContextDetector(context);

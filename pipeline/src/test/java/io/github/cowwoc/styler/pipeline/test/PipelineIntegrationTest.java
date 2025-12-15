@@ -67,7 +67,7 @@ public class PipelineIntegrationTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
 			.securityConfig(SecurityConfig.DEFAULT)
 			.formattingRules(new ArrayList<>())
-			.formattingConfig(createDefaultFormattingConfig())
+			.formattingConfigs(List.of(createDefaultFormattingConfig()))
 			.validationOnly(true)
 			.build();
 
@@ -95,7 +95,7 @@ public class PipelineIntegrationTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
 			.securityConfig(SecurityConfig.DEFAULT)
 			.formattingRules(new ArrayList<>())
-			.formattingConfig(createDefaultFormattingConfig())
+			.formattingConfigs(List.of(createDefaultFormattingConfig()))
 			.validationOnly(true)
 			.build();
 
@@ -123,7 +123,7 @@ public class PipelineIntegrationTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
 			.securityConfig(SecurityConfig.DEFAULT)
 			.formattingRules(new ArrayList<>())
-			.formattingConfig(createDefaultFormattingConfig())
+			.formattingConfigs(List.of(createDefaultFormattingConfig()))
 			.validationOnly(true)
 			.build();
 
@@ -156,7 +156,7 @@ public class PipelineIntegrationTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
 			.securityConfig(SecurityConfig.DEFAULT)
 			.formattingRules(new ArrayList<>())
-			.formattingConfig(createDefaultFormattingConfig())
+			.formattingConfigs(List.of(createDefaultFormattingConfig()))
 			.validationOnly(true)
 			.build();
 
@@ -210,7 +210,7 @@ public class PipelineIntegrationTest
 		FileProcessingPipeline pipeline = FileProcessingPipeline.builder()
 			.securityConfig(SecurityConfig.DEFAULT)
 			.formattingRules(new ArrayList<>())
-			.formattingConfig(createDefaultFormattingConfig())
+			.formattingConfigs(List.of(createDefaultFormattingConfig()))
 			.validationOnly(true)
 			.build();
 

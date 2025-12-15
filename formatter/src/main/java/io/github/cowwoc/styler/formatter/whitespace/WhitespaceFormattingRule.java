@@ -66,49 +66,25 @@ public final class WhitespaceFormattingRule implements FormattingRule
 
 	@Override
 	public List<FormattingViolation> analyze(TransformationContext context,
-		FormattingConfiguration config)
+		List<FormattingConfiguration> configs)
 	{
 		requireThat(context, "context").isNotNull();
+		requireThat(configs, "configs").isNotNull();
 
-		// Get config - use default if null
-		WhitespaceFormattingConfiguration wsConfig;
-		if (config == null)
-		{
-			wsConfig = WhitespaceFormattingConfiguration.defaultConfig();
-		}
-		else if (config instanceof WhitespaceFormattingConfiguration)
-		{
-			wsConfig = (WhitespaceFormattingConfiguration) config;
-		}
-		else
-		{
-			throw new IllegalArgumentException("config must be WhitespaceFormattingConfiguration, got: " +
-				config.getClass().getName());
-		}
+		WhitespaceFormattingConfiguration wsConfig = FormattingConfiguration.findConfig(
+			configs, WhitespaceFormattingConfiguration.class, WhitespaceFormattingConfiguration.defaultConfig());
 
 		return WhitespaceAnalyzer.analyze(context, wsConfig);
 	}
 
 	@Override
-	public String format(TransformationContext context, FormattingConfiguration config)
+	public String format(TransformationContext context, List<FormattingConfiguration> configs)
 	{
 		requireThat(context, "context").isNotNull();
+		requireThat(configs, "configs").isNotNull();
 
-		// Get config - use default if null
-		WhitespaceFormattingConfiguration wsConfig;
-		if (config == null)
-		{
-			wsConfig = WhitespaceFormattingConfiguration.defaultConfig();
-		}
-		else if (config instanceof WhitespaceFormattingConfiguration)
-		{
-			wsConfig = (WhitespaceFormattingConfiguration) config;
-		}
-		else
-		{
-			throw new IllegalArgumentException("config must be WhitespaceFormattingConfiguration, got: " +
-				config.getClass().getName());
-		}
+		WhitespaceFormattingConfiguration wsConfig = FormattingConfiguration.findConfig(
+			configs, WhitespaceFormattingConfiguration.class, WhitespaceFormattingConfiguration.defaultConfig());
 
 		return WhitespaceFixer.format(context, wsConfig);
 	}

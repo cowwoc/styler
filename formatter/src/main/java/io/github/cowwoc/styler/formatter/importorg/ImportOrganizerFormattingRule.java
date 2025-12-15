@@ -81,11 +81,13 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 	@Override
 	public List<FormattingViolation> analyze(
 		TransformationContext context,
-		FormattingConfiguration config)
+		List<FormattingConfiguration> configs)
 	{
 		requireThat(context, "context").isNotNull();
+		requireThat(configs, "configs").isNotNull();
 
-		ImportOrganizerConfiguration importConfig = getConfig(config);
+		ImportOrganizerConfiguration importConfig = FormattingConfiguration.findConfig(
+			configs, ImportOrganizerConfiguration.class, ImportOrganizerConfiguration.defaultConfig());
 		List<FormattingViolation> violations = new ArrayList<>();
 
 		List<ImportDeclaration> imports = ImportExtractor.extract(context);
@@ -132,11 +134,13 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 	@Override
 	public String format(
 		TransformationContext context,
-		FormattingConfiguration config)
+		List<FormattingConfiguration> configs)
 	{
 		requireThat(context, "context").isNotNull();
+		requireThat(configs, "configs").isNotNull();
 
-		ImportOrganizerConfiguration importConfig = getConfig(config);
+		ImportOrganizerConfiguration importConfig = FormattingConfiguration.findConfig(
+			configs, ImportOrganizerConfiguration.class, ImportOrganizerConfiguration.defaultConfig());
 		List<ImportDeclaration> originalImports = ImportExtractor.extract(context);
 		if (originalImports.isEmpty())
 		{
@@ -164,24 +168,6 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 		String organizedImports = ImportGrouper.organizeImports(imports, importConfig);
 		// Use original imports for section bounds since filtered list may have different positions
 		return replaceImportSection(context.sourceCode(), originalImports, organizedImports);
-	}
-
-	/**
-	 * Returns the configuration, using defaults if null.
-	 *
-	 * @param config the configuration (may be null)
-	 * @return the configuration to use
-	 * @throws IllegalArgumentException if {@code config} is not null and not an
-	 *                                  {@link ImportOrganizerConfiguration}
-	 */
-	private ImportOrganizerConfiguration getConfig(FormattingConfiguration config)
-	{
-		if (config == null)
-			return ImportOrganizerConfiguration.defaultConfig();
-		if (config instanceof ImportOrganizerConfiguration importConfig)
-			return importConfig;
-		throw new IllegalArgumentException("config must be ImportOrganizerConfiguration, got: " +
-			config.getClass().getName());
 	}
 
 	/**

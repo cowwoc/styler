@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.formatter.test.whitespace;
 
+import java.util.List;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingRule;
 import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
@@ -80,7 +81,7 @@ public class WhitespaceConfigurationTest
 			true,
 			true);
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		// Should preserve original spacing since binary operators are disabled
 		requireThat(result, "result").isEqualTo(source);
@@ -109,7 +110,7 @@ public class WhitespaceConfigurationTest
 			true,
 			true);
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		// Should preserve original spacing
 		requireThat(result, "result").isEqualTo(source);
@@ -138,7 +139,7 @@ public class WhitespaceConfigurationTest
 			true,
 			true);
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		// Should preserve original spacing
 		requireThat(result, "result").isEqualTo(source);
@@ -167,7 +168,7 @@ public class WhitespaceConfigurationTest
 			true,
 			true);   // noSpaceAroundMethodReference = true
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		// Should have no spaces around ::
 		requireThat(result, "result").contains("String::valueOf");
@@ -196,7 +197,7 @@ public class WhitespaceConfigurationTest
 			false,   // spaceAroundArrowInLambda = false
 			true);
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		// Should preserve original spacing
 		requireThat(result, "result").isEqualTo(source);
@@ -225,7 +226,7 @@ public class WhitespaceConfigurationTest
 			true,
 			true);
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		// Should preserve original spacing (no changes to colons)
 		requireThat(result, "result").contains("for (String s : list)");
@@ -254,7 +255,7 @@ public class WhitespaceConfigurationTest
 			true,
 			true);
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		// Should preserve original spacing
 		requireThat(result, "result").isEqualTo(source);

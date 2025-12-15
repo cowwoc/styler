@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.formatter.test.indentation;
 
+import java.util.List;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.indentation.IndentationType;
 import io.github.cowwoc.styler.formatter.indentation.IndentationFormattingConfiguration;
@@ -29,7 +30,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").isEqualTo("");
 	}
@@ -48,7 +49,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Blank lines (lines with only whitespace) are preserved as-is
 		requireThat(formatted, "formatted").isEqualTo("   \n\t\n  ");
@@ -67,7 +68,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// No indentation needed, output equals input
 		requireThat(formatted, "formatted").isEqualTo("class Test {}");
@@ -100,7 +101,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Already properly indented, output should equal input
 		requireThat(formatted, "formatted").isEqualTo(sourceCode);
@@ -120,7 +121,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Tabs should be converted to 4 spaces; line endings preserved
 		requireThat(formatted, "formatted").isEqualTo("class Test {\r\n    int x;\n    int y;\r\n}");
@@ -143,7 +144,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Already properly indented, output should equal input
 		requireThat(formatted, "formatted").isEqualTo(sourceCode);
@@ -168,7 +169,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Already properly indented, output should equal input
 		requireThat(formatted, "formatted").isEqualTo(sourceCode);
@@ -196,7 +197,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Already properly indented, output should equal input
 		requireThat(formatted, "formatted").isEqualTo(sourceCode);
@@ -223,7 +224,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Already properly indented, output should equal input
 		requireThat(formatted, "formatted").isEqualTo(sourceCode);
@@ -250,7 +251,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Text block content gets re-indented based on brace depth (depth 1 inside class)
 		String expected = """
@@ -282,7 +283,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// Already properly indented, output should equal input
 		requireThat(formatted, "formatted").isEqualTo(sourceCode);
@@ -305,7 +306,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// No indentation in input, output should equal input
 		requireThat(formatted, "formatted").isEqualTo(sourceCode);
@@ -329,7 +330,7 @@ public final class IndentationEdgeCaseTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 16, 16);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		// 4 spaces (1 indent level) becomes 16 spaces with width 16
 		String expected = """

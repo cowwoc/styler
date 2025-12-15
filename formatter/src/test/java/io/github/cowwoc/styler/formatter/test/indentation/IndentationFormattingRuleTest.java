@@ -49,7 +49,7 @@ public final class IndentationFormattingRuleTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		List<?> violations = rule.analyze(context, config);
+		List<?> violations = rule.analyze(context, List.of(config));
 
 		// Properly indented code should have no violations
 		requireThat(violations, "violations").isEmpty();
@@ -72,7 +72,7 @@ public final class IndentationFormattingRuleTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		String expected = """
 			class Test {
@@ -95,7 +95,7 @@ public final class IndentationFormattingRuleTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		List<?> violations = rule.analyze(context, config);
+		List<?> violations = rule.analyze(context, List.of(config));
 
 		// Empty file should have no violations
 		requireThat(violations, "violations").isEmpty();
@@ -114,7 +114,7 @@ public final class IndentationFormattingRuleTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		String formatted = rule.format(context, config);
+		String formatted = rule.format(context, List.of(config));
 
 		requireThat(formatted, "formatted").isEqualTo("");
 	}
@@ -129,7 +129,7 @@ public final class IndentationFormattingRuleTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		rule.analyze(null, config);
+		rule.analyze(null, List.of(config));
 	}
 
 	/**
@@ -142,7 +142,7 @@ public final class IndentationFormattingRuleTest
 		IndentationFormattingConfiguration config = new IndentationFormattingConfiguration(
 			RULE_ID, IndentationType.SPACES, 4, 4);
 
-		rule.format(null, config);
+		rule.format(null, List.of(config));
 	}
 
 	/**
@@ -157,10 +157,10 @@ public final class IndentationFormattingRuleTest
 		TestTransformationContext context = new TestTransformationContext(sourceCode);
 
 		// Should not crash when config is null - uses default configuration
-		List<?> violations = rule.analyze(context, null);
+		List<?> violations = rule.analyze(context, List.of());
 		requireThat(violations, "violations").isNotNull();
 
-		String formatted = rule.format(context, null);
+		String formatted = rule.format(context, List.of());
 		requireThat(formatted, "formatted").isEqualTo("class Test {}");
 	}
 }

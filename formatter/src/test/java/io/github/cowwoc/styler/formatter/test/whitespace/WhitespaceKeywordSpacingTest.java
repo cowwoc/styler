@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.formatter.test.whitespace;
 
+import java.util.List;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingRule;
 import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
@@ -23,7 +24,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("if (x)");
 	}
@@ -39,7 +40,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("else if (x)");
 	}
@@ -55,7 +56,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("while (x)");
 	}
@@ -71,7 +72,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("for (");
 	}
@@ -87,7 +88,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("switch (x)");
 	}
@@ -103,7 +104,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("synchronized (lock)");
 	}
@@ -119,7 +120,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("try");
 	}
@@ -135,7 +136,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("catch (Exception e)");
 	}
@@ -151,7 +152,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("new ArrayList");
 	}
@@ -167,7 +168,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("obj instanceof String");
 	}
@@ -183,7 +184,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("extends Bar");
 	}
@@ -199,7 +200,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("implements Bar");
 	}
@@ -215,7 +216,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("return x");
 	}
@@ -231,7 +232,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("throw e");
 	}
@@ -247,7 +248,7 @@ public class WhitespaceKeywordSpacingTest
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
-		String result = rule.format(context, config);
+		String result = rule.format(context, List.of(config));
 
 		requireThat(result, "result").contains("while (true)");
 	}
