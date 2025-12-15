@@ -19,6 +19,8 @@ public final class HelpFormatter
 		  --config <file>    Configuration file path override
 		  --check            Validation-only mode (exit code 1 if changes needed)
 		  --fix              Auto-fix mode (modify files in-place)
+		  --classpath, -cp   Classpath entries for type resolution (platform separator)
+		  --module-path, -p  Module path entries for type resolution (platform separator)
 		  --help             Display this help message
 		  --version          Display version information
 
@@ -30,6 +32,7 @@ public final class HelpFormatter
 		  styler --check src/                   # Check formatting without changes
 		  styler --fix MyClass.java            # Fix formatting in file
 		  styler --config custom.xml src/      # Use custom configuration
+		  styler --classpath lib/a.jar src/    # Use classpath for type resolution
 
 		EXIT CODES:
 		  0    Success (no formatting issues or all fixed)

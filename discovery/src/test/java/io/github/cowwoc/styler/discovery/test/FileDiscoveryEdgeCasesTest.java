@@ -16,6 +16,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
 import java.util.Set;
 
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 import static io.github.cowwoc.styler.discovery.test.TestUtils.deleteDirectoryRecursively;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
@@ -143,7 +144,7 @@ public final class FileDiscoveryEdgeCasesTest
 		}
 	}
 
-	@Test
+	@Test(timeOut = 30_000)
 	public void discoverCircularSymlinkHandledGracefully() throws IOException
 	{
 		if (!supportsSymlinks())
@@ -160,8 +161,9 @@ public final class FileDiscoveryEdgeCasesTest
 
 			List<Path> files = discoverFiles(tempDir, DiscoveryConfiguration.DEFAULT);
 
-			// Should not hang or throw exception - handles circular gracefully
-			assertTrue(true, "Discovery completed without hanging");
+			// Test passes if we reach here without hanging (timeout protection above)
+			// No Java files in directory, so result should be empty
+			requireThat(files, "files").isEmpty();
 		}
 		finally
 		{
