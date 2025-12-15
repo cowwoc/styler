@@ -110,6 +110,49 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
 - `last_merge_sha`: Git SHA of last merge to task branch
 - `work_remaining`: "none" when complete
 
+### Mandatory Completion Verification (Implementation Mode) {#mandatory-completion-verification}
+
+**⚠️ CRITICAL: Before marking status as COMPLETE, agents MUST verify compilation succeeds.**
+
+Agents that change API signatures, add parameters, or modify interfaces often break callers. The agent
+MUST verify all affected code compiles before reporting completion.
+
+**Verification Checklist**:
+1. Run `./mvnw compile -Dmaven.build.cache.enabled=false` in agent worktree
+2. If compilation fails: Fix ALL errors before marking complete
+3. If API signature changed: Search for ALL callers and update them
+4. Only set `"status": "COMPLETE"` after compilation succeeds
+
+**Common Mistake** (causes rework):
+```
+❌ Agent changes ProcessingContext.create() signature
+❌ Agent does NOT update callers in FileProcessingPipeline
+❌ Agent marks status as COMPLETE
+❌ Main agent discovers compilation failure during validation
+❌ Requires re-invoking agent to fix
+```
+
+**Correct Pattern**:
+```
+✅ Agent changes ProcessingContext.create() signature
+✅ Agent searches: grep -r "ProcessingContext.create" to find ALL callers
+✅ Agent updates ALL callers to use new signature
+✅ Agent runs ./mvnw compile - PASSES
+✅ Agent marks status as COMPLETE
+```
+
+**Search Patterns for API Changes**:
+```bash
+# Find all callers of a method
+grep -rn "MethodName(" --include="*.java"
+
+# Find all implementations of an interface
+grep -rn "implements InterfaceName" --include="*.java"
+
+# Find all usages of a changed record/class
+grep -rn "RecordName" --include="*.java"
+```
+
 ## Agent Response Verbosity Guidelines {#agent-response-verbosity-guidelines}
 
 Return metadata-only status reports, NOT full code listings.
@@ -425,6 +468,40 @@ Validation Mode: Analyzes project patterns, specifies "Use requirements-java req
           for consistency with existing security module"
 Implementation Mode: Implements using requirements-java per validation mode guidance
 ```
+
+### Plan Flexibility: Specifications vs Prescriptions {#plan-flexibility}
+
+**Implementation plans specify OUTCOMES, not rigid implementation steps.**
+
+Plans define:
+- **Required API contracts** (method signatures, return types, exceptions)
+- **Required behaviors** (what the code must do in specific scenarios)
+- **Required tests** (scenarios that must pass)
+
+Plans do NOT mandate:
+- **Internal implementation approach** (algorithms, data structures, libraries)
+- **Exact code structure** (helper methods, internal classes)
+- **Specific technologies** (when multiple achieve same outcome)
+
+**When Simplification is Acceptable** (do NOT consult validation mode):
+
+| Plan Says | Agent Does | Verdict |
+|-----------|------------|---------|
+| "Use URLClassLoader for classpath, ModuleFinder for modulepath" | Uses URLClassLoader for both | ✅ **ACCEPTABLE** - same outcome, simpler |
+| "Add caching with WeakReference" | Uses HashMap caching | ✅ **ACCEPTABLE** - caching achieved, detail differs |
+| "Implement using Strategy pattern" | Uses simple switch | ⚠️ **BORDERLINE** - simpler but may affect extensibility |
+
+**When Consultation is Required** (MUST consult validation mode):
+
+| Plan Says | Issue | Verdict |
+|-----------|-------|---------|
+| "Return List of results" | Agent wants to return Optional | ❌ **MUST CONSULT** - API contract change |
+| "Throw IllegalArgumentException" | Agent wants to return null | ❌ **MUST CONSULT** - behavioral change |
+| "Cache indefinitely" | Agent wants to add expiration | ❌ **MUST CONSULT** - behavioral change |
+
+**Decision Criterion**: Does the simplification change the **observable API or behavior**?
+- YES → Must consult validation mode
+- NO → May simplify without consultation
 
 ## Git Workflow for Agents {#git-workflow-for-agents}
 
