@@ -53,10 +53,18 @@ for task_dir in /workspace/tasks/*/; do
 			;;
 		*)
 			# Check if task was merged to main
-			# Look for a commit on main that mentions the task name
+			# Use proper ancestry check - only flag if task branch is ancestor of main
 			cd /workspace/main
 
-			MERGED_COMMIT=$(git log --oneline --grep="$TASK_NAME" -1 2>/dev/null || echo "")
+			# Check if task branch exists and is ancestor of main
+			MERGED_COMMIT=""
+			if git rev-parse --verify "$TASK_NAME" >/dev/null 2>&1; then
+				# Task branch exists - check if it's merged into main
+				if git merge-base --is-ancestor "$TASK_NAME" main 2>/dev/null; then
+					# Get the merge commit or last task branch commit
+					MERGED_COMMIT=$(git log --oneline -1 "$TASK_NAME" 2>/dev/null || echo "")
+				fi
+			fi
 
 			if [[ -n "$MERGED_COMMIT" ]]; then
 				# Task appears to be merged but not cleaned up
