@@ -412,6 +412,33 @@ verification
 **⚠️ CRITICAL: Verify IMMEDIATELY after operation, not as separate phase** - Separating "execute" and
 "verify" into different todos causes data loss. ONLY mark complete after verification passes.
 
+**⚠️ CRITICAL: Always Use git-squash Skill for Squashing** {#always-use-git-squash-skill}
+
+Ad-hoc `git rebase -i` with squash produces **concatenated commit messages** (all original messages joined
+together). This is NOT acceptable - squashed commits need **unified messages** describing the final result.
+
+**The Problem**:
+```bash
+# ❌ Ad-hoc squash produces concatenated garbage:
+# "Add feature X
+#
+# Fix bug in X
+#
+# More fixes for X
+#
+# Final polish"
+
+# ✅ Proper unified message describes the final state:
+# "Add feature X with complete implementation
+#
+# Implements X functionality including edge case handling,
+# validation, and documentation."
+```
+
+**Prevention**: ALWAYS use `git-squash` skill which enforces writing a new unified commit message. The skill
+prompts you to craft a message describing what the final code DOES, not just concatenating individual commit
+messages.
+
 ## Repository Structure
 
 **⚠️ NEVER** initialize new repositories
