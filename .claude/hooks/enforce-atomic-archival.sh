@@ -65,8 +65,11 @@ fi
 # Extract branch being merged (handles flags like --ff-only before branch name)
 MERGE_BRANCH=$(echo "$COMMAND" | sed -E 's/.*git[[:space:]]+merge[[:space:]]+(--[^[:space:]]+[[:space:]]+)*([^[:space:]]+).*/\2/')
 
-# Only check task branches (implement-*, refactor-*, fix-*)
-if [[ ! "$MERGE_BRANCH" =~ ^(implement|refactor|fix)- ]]; then
+# Check if this is a protocol task by looking for task.json
+# This is more reliable than branch name patterns (which can vary)
+TASK_JSON="/workspace/tasks/${MERGE_BRANCH}/task.json"
+if [[ ! -f "$TASK_JSON" ]]; then
+	# No task.json = not a protocol task, skip archival check
 	exit 0
 fi
 
