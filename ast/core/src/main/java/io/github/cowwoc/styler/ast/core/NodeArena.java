@@ -199,7 +199,9 @@ public final class NodeArena implements AutoCloseable
 	private void validateIndex(NodeIndex index)
 	{
 		requireThat(index, "index").isNotNull();
-		requireThat(index.isValid(), "index.isValid()").isTrue();
+		requireThat(index.isValid(), "index.isValid()").
+			withContext(index, "index").
+			isTrue();
 		requireThat(index.index(), "index.index()").isLessThan(nodeCount);
 	}
 

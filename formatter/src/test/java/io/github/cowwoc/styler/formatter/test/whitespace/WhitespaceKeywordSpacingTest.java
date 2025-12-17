@@ -1,12 +1,14 @@
 package io.github.cowwoc.styler.formatter.test.whitespace;
 
-import java.util.List;
+import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingRule;
-import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.formatter.test.whitespace.WhitespaceTestUtils.wrapInMethod;
 
 /**
  * Tests for control flow and type keyword spacing rules.
@@ -19,7 +21,7 @@ public class WhitespaceKeywordSpacingTest
 	@Test
 	public void shouldAddSpaceAfterIf()
 	{
-		String source = "if(x){}";
+		String source = wrapInMethod("if(x){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -35,14 +37,14 @@ public class WhitespaceKeywordSpacingTest
 	@Test
 	public void shouldAddSpaceAfterElseIf()
 	{
-		String source = "else if(x){}";
+		String source = wrapInMethod("if(x){}else if(y){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
 		String result = rule.format(context, List.of(config));
 
-		requireThat(result, "result").contains("else if (x)");
+		requireThat(result, "result").contains("else if (y)");
 	}
 
 	/**
@@ -51,7 +53,7 @@ public class WhitespaceKeywordSpacingTest
 	@Test
 	public void shouldAddSpaceAfterWhile()
 	{
-		String source = "while(x){}";
+		String source = wrapInMethod("while(x){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -67,7 +69,7 @@ public class WhitespaceKeywordSpacingTest
 	@Test
 	public void shouldAddSpaceAfterFor()
 	{
-		String source = "for(int i=0;i<10;i++){}";
+		String source = wrapInMethod("for(int i=0;i<10;i++){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -83,7 +85,7 @@ public class WhitespaceKeywordSpacingTest
 	@Test
 	public void shouldAddSpaceAfterSwitch()
 	{
-		String source = "switch(x){}";
+		String source = wrapInMethod("switch(x){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -99,7 +101,7 @@ public class WhitespaceKeywordSpacingTest
 	@Test
 	public void shouldAddSpaceAfterSynchronized()
 	{
-		String source = "synchronized(lock){}";
+		String source = wrapInMethod("synchronized(lock){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -110,12 +112,12 @@ public class WhitespaceKeywordSpacingTest
 	}
 
 	/**
-	 * Tests that space is added after try keyword.
+	 * Tests that space is preserved after try keyword.
 	 */
 	@Test
-	public void shouldAddSpaceAfterTry()
+	public void shouldPreserveSpaceAfterTry()
 	{
-		String source = "try{}";
+		String source = wrapInMethod("try{}catch(Exception e){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -131,7 +133,7 @@ public class WhitespaceKeywordSpacingTest
 	@Test
 	public void shouldAddSpaceAfterCatch()
 	{
-		String source = "catch(Exception e){}";
+		String source = wrapInMethod("try{}catch(Exception e){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -142,19 +144,19 @@ public class WhitespaceKeywordSpacingTest
 	}
 
 	/**
-	 * Tests that space is added after new keyword.
+	 * Tests that extra space after new keyword is normalized.
 	 */
 	@Test
-	public void shouldAddSpaceAfterNew()
+	public void shouldNormalizeSpaceAfterNew()
 	{
-		String source = "new  ArrayList()";
+		String source = wrapInMethod("Object o=new  Object();");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
 		String result = rule.format(context, List.of(config));
 
-		requireThat(result, "result").contains("new ArrayList");
+		requireThat(result, "result").contains("new Object");
 	}
 
 	/**
@@ -163,7 +165,7 @@ public class WhitespaceKeywordSpacingTest
 	@Test
 	public void shouldHandleInstanceof()
 	{
-		String source = "obj instanceof String";
+		String source = wrapInMethod("boolean b=obj instanceof String;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -211,7 +213,7 @@ public class WhitespaceKeywordSpacingTest
 	@Test
 	public void shouldHandleReturn()
 	{
-		String source = "return x;";
+		String source = wrapInMethod("return x;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -227,7 +229,7 @@ public class WhitespaceKeywordSpacingTest
 	@Test
 	public void shouldHandleThrow()
 	{
-		String source = "throw e;";
+		String source = wrapInMethod("throw e;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -243,7 +245,7 @@ public class WhitespaceKeywordSpacingTest
 	@Test
 	public void shouldHandleDoWhile()
 	{
-		String source = "do{}while(true);";
+		String source = wrapInMethod("do{}while(true);");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();

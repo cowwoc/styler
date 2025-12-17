@@ -1,15 +1,17 @@
 package io.github.cowwoc.styler.pipeline.internal;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
+import io.github.cowwoc.styler.formatter.AstPositionIndex;
 import io.github.cowwoc.styler.security.SecurityConfig;
 import io.github.cowwoc.styler.security.exceptions.ExecutionTimeoutException;
+
 import java.nio.file.Path;
 import java.time.Instant;
+
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
  * Default implementation of TransformationContext for use within the pipeline.
@@ -26,6 +28,7 @@ public final class DefaultTransformationContext implements TransformationContext
 	private final SecurityConfig securityConfig;
 	private final Instant deadline;
 	private final TypeResolutionConfig typeResolutionConfig;
+	private final AstPositionIndex positionIndex;
 
 	/**
 	 * Creates a transformation context with the given data.
@@ -55,6 +58,7 @@ public final class DefaultTransformationContext implements TransformationContext
 
 		// Calculate execution deadline based on current time + timeout
 		this.deadline = Instant.now().plus(securityConfig.executionTimeout());
+		this.positionIndex = new AstPositionIndex(arena, sourceCode.length());
 	}
 
 	@Override
@@ -153,5 +157,11 @@ public final class DefaultTransformationContext implements TransformationContext
 	public TypeResolutionConfig typeResolutionConfig()
 	{
 		return typeResolutionConfig;
+	}
+
+	@Override
+	public AstPositionIndex positionIndex()
+	{
+		return positionIndex;
 	}
 }

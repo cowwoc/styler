@@ -91,7 +91,7 @@ public final class ImportAnalyzer
 		String source = context.sourceCode();
 
 		// Find the end of the import section
-		int importSectionEnd = ImportExtractor.findImportSectionEnd(source);
+		int importSectionEnd = ImportExtractor.findImportSectionEnd(context);
 
 		// Extract identifiers from code body (after imports)
 		String codeBody = source.substring(importSectionEnd);

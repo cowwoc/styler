@@ -1,11 +1,8 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.ast.core.NodeIndex;
-import io.github.cowwoc.styler.parser.ParseResult;
-import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseSucceeds;
 
 /**
  * Thread-safe tests for Parser class declarations.
@@ -19,14 +16,7 @@ public class ClassParserTest
 	@Test
 	public void testSimpleClassDeclaration()
 	{
-		String source = "public class HelloWorld { }";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds("public class HelloWorld { }");
 	}
 
 	/**
@@ -37,19 +27,12 @@ public class ClassParserTest
 	@Test
 	public void testClassWithMethod()
 	{
-		String source = """
+		assertParseSucceeds("""
 			public class Test {
 				public void foo() {
 				}
 			}
-			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+			""");
 	}
 
 	/**
@@ -60,18 +43,11 @@ public class ClassParserTest
 	@Test
 	public void testClassWithField()
 	{
-		String source = """
+		assertParseSucceeds("""
 			public class Test {
 				private int x;
 			}
-			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+			""");
 	}
 
 	/**
@@ -82,19 +58,12 @@ public class ClassParserTest
 	@Test
 	public void testClassWithConstructor()
 	{
-		String source = """
+		assertParseSucceeds("""
 			public class Test {
 				public Test() {
 				}
 			}
-			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+			""");
 	}
 
 	/**
@@ -105,14 +74,7 @@ public class ClassParserTest
 	@Test
 	public void testClassWithExtends()
 	{
-		String source = "public class Child extends Parent { }";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds("public class Child extends Parent { }");
 	}
 
 	/**
@@ -123,14 +85,7 @@ public class ClassParserTest
 	@Test
 	public void testClassWithImplements()
 	{
-		String source = "public class Test implements Runnable { }";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds("public class Test implements Runnable { }");
 	}
 
 	/**
@@ -141,14 +96,7 @@ public class ClassParserTest
 	@Test
 	public void testClassWithGenerics()
 	{
-		String source = "public class Box<T> { }";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds("public class Box<T> { }");
 	}
 
 	/**
@@ -159,14 +107,7 @@ public class ClassParserTest
 	@Test
 	public void testInterface()
 	{
-		String source = "public interface Test { }";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds("public interface Test { }");
 	}
 
 	/**
@@ -177,14 +118,7 @@ public class ClassParserTest
 	@Test
 	public void testEnum()
 	{
-		String source = "public enum Color { RED, GREEN, BLUE }";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds("public enum Color { RED, GREEN, BLUE }");
 	}
 
 	/**
@@ -195,17 +129,10 @@ public class ClassParserTest
 	@Test
 	public void testPackageDeclaration()
 	{
-		String source = """
+		assertParseSucceeds("""
 			package com.example;
 			public class Test { }
-			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+			""");
 	}
 
 	/**
@@ -216,17 +143,10 @@ public class ClassParserTest
 	@Test
 	public void testImportDeclaration()
 	{
-		String source = """
+		assertParseSucceeds("""
 			import java.util.List;
 			public class Test { }
-			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+			""");
 	}
 
 	/**
@@ -237,17 +157,10 @@ public class ClassParserTest
 	@Test
 	public void testStaticImport()
 	{
-		String source = """
+		assertParseSucceeds("""
 			import static java.lang.Math.PI;
 			public class Test { }
-			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+			""");
 	}
 
 	/**
@@ -258,17 +171,10 @@ public class ClassParserTest
 	@Test
 	public void testWildcardImport()
 	{
-		String source = """
+		assertParseSucceeds("""
 			import java.util.*;
 			public class Test { }
-			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+			""");
 	}
 
 	/**
@@ -279,19 +185,12 @@ public class ClassParserTest
 	@Test
 	public void testMethodWithParameters()
 	{
-		String source = """
+		assertParseSucceeds("""
 			public class Test {
 				public void foo(int x, String y) {
 				}
 			}
-			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+			""");
 	}
 
 	/**
@@ -302,19 +201,12 @@ public class ClassParserTest
 	@Test
 	public void testMethodWithVarargs()
 	{
-		String source = """
+		assertParseSucceeds("""
 			public class Test {
 				public void foo(String... args) {
 				}
 			}
-			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+			""");
 	}
 
 	/**
@@ -325,18 +217,11 @@ public class ClassParserTest
 	@Test
 	public void testMethodWithThrows()
 	{
-		String source = """
+		assertParseSucceeds("""
 			public class Test {
 				public void foo() throws Exception {
 				}
 			}
-			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+			""");
 	}
 }

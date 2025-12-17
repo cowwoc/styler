@@ -1,9 +1,9 @@
 package io.github.cowwoc.styler.formatter.whitespace.internal;
 
 import io.github.cowwoc.styler.formatter.TransformationContext;
-import io.github.cowwoc.styler.formatter.internal.SourceCodeUtils;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 
+import java.util.BitSet;
 import java.util.List;
 
 /**
@@ -53,6 +53,7 @@ public final class WhitespaceFixer
 	{
 		String sourceCode = context.sourceCode();
 		StringBuilder result = new StringBuilder(sourceCode);
+		BitSet textAndComments = context.positionIndex().getTextAndCommentPositions();
 
 		// Process from end to beginning to preserve offsets
 		for (int i = result.length() - 1; i >= 0; --i)
@@ -63,14 +64,8 @@ public final class WhitespaceFixer
 			String str = result.toString();
 			char current = str.charAt(i);
 
-			// Skip comments entirely - don't modify content inside comments
-			if (isStartOfLineComment(str, i))
-				continue;
-			if (isStartOfBlockComment(str, i))
-				continue;
-			if (isEndOfBlockComment(str, i))
-				continue;
-			if (SourceCodeUtils.isInLiteralOrComment(str, i))
+			// Skip positions inside text or comments
+			if (textAndComments.get(i))
 				continue;
 
 			// Fix increment/decrement operator spacing (must be before binary operators)
@@ -769,51 +764,6 @@ public final class WhitespaceFixer
 		}
 
 		return end;
-	}
-
-	/**
-	 * Checks if position is the start of a line comment ({@code //}).
-	 *
-	 * @param sourceCode the source code
-	 * @param position the position
-	 * @return true if this is the start of a line comment
-	 */
-	private static boolean isStartOfLineComment(String sourceCode, int position)
-	{
-		if (position + 1 >= sourceCode.length())
-			return false;
-		return sourceCode.charAt(position) == '/' && sourceCode.charAt(position + 1) == '/';
-	}
-
-	/**
-	 * Checks if position is the start of a block comment ({@code /*}).
-	 *
-	 * @param sourceCode the source code
-	 * @param position the position
-	 * @return true if this is the start of a block comment
-	 */
-	private static boolean isStartOfBlockComment(String sourceCode, int position)
-	{
-		if (position + 1 >= sourceCode.length())
-			return false;
-		return sourceCode.charAt(position) == '/' && sourceCode.charAt(position + 1) == '*';
-	}
-
-	/**
-	 * Checks if position is part of the end of a block comment ({@code *}/).
-	 *
-	 * @param sourceCode the source code
-	 * @param position the position
-	 * @return true if this is part of a block comment end
-	 */
-	private static boolean isEndOfBlockComment(String sourceCode, int position)
-	{
-		// Check if this is the * in */ or the / in */
-		boolean isAsteriskInEnd = position + 1 < sourceCode.length() &&
-			sourceCode.charAt(position) == '*' && sourceCode.charAt(position + 1) == '/';
-		boolean isSlashInEnd = position > 0 &&
-			sourceCode.charAt(position - 1) == '*' && sourceCode.charAt(position) == '/';
-		return isAsteriskInEnd || isSlashInEnd;
 	}
 
 	/**

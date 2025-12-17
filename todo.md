@@ -371,42 +371,21 @@ benchmarking, and validate with Maven plugin integration.
     - Add missing TokenType entries for Java 21+ constructs
   - **Quality**: All 357 formatter tests passing
 
-### E2. AST-Based Formatter Migration
-- [ ] **BLOCKED:** `migrate-formatters-to-ast` - Migrate all formatting rules to AST-based processing
-  - **Dependencies**: E1.5 ✅ (extend-ast-support), B2.5 ✅ (pipeline stages), all formatters (B1 + C3) ✅, C4 (concurrency benchmark -
-    understand performance baseline before architectural changes)
-  - **Blocks**: None (architectural improvement, can be done incrementally)
-  - **Parallelizable With**: D1, D2, D3 (independent of polish tasks)
-  - **Estimated Effort**: 5-8 days
+### E2. AST-Based Formatter Migration ✅ COMPLETE (2025-12-17)
+- [x] **COMPLETE:** `migrate-formatters-to-ast` - Migrate all formatting rules to AST-based processing (2025-12-17)
+  - **Dependencies**: E1.5 ✅ (extend-ast-support), B2.5 ✅ (pipeline stages), all formatters (B1 + C3) ✅
   - **Purpose**: Replace string/regex-based formatting logic with AST-aware transformations for higher
     accuracy and maintainability
-  - **Scope**: Refactor all 5 formatting rules to operate on AST nodes rather than raw text
-  - **Current State**: Formatters may use string manipulation or regex patterns that don't understand
-    Java syntax context (e.g., strings, comments, nested structures)
-  - **Target State**: All formatters traverse AST nodes and apply transformations based on node types,
-    ensuring context-aware formatting that respects language semantics
-  - **Components**:
-    - **AST Visitor Framework**: Base visitor pattern for formatting rules to traverse AST
-    - **LineLengthFormattingRule**: Use AST to identify safe break points (after operators, between
-      arguments, after annotations) rather than arbitrary character positions
-    - **ImportOrganizerFormattingRule**: Already somewhat AST-based; enhance to use AST import nodes
-      directly rather than text parsing
-    - **BraceFormattingRule**: Use AST to identify brace contexts (class, method, control structure,
-      lambda, initializer) for context-specific formatting
-    - **WhitespaceFormattingRule**: Use AST to understand operator context, method calls, type parameters
-      to apply appropriate spacing rules
-    - **IndentationFormattingRule**: Use AST depth and node types to calculate correct indentation levels
-  - **Benefits**:
-    - Eliminates false positives from formatting inside strings/comments
-    - Enables context-sensitive rules (different formatting for lambdas vs methods)
-    - Simplifies complex formatting logic by leveraging existing AST structure
-    - Improves accuracy for edge cases (nested generics, method references, text blocks)
-  - **Migration Strategy**:
-    - Migrate one formatter at a time with comprehensive before/after testing
-    - Maintain backward compatibility (same formatting output for common cases)
-    - Add AST context to violation reports for better AI agent guidance
-  - **Quality**: Regression tests comparing pre/post migration output, performance benchmarks to ensure
-    no degradation, comprehensive edge case coverage
+  - **Components Migrated**:
+    - **AstPositionIndex**: New spatial index for efficient position-to-node lookup in AST
+    - **TransformationContext**: Updated to expose AST via NodeArena and AstPositionIndex
+    - **BraceFormattingRule**: Uses AST to exclude literals/comments from brace detection
+    - **WhitespaceFormattingRule**: Uses AST for context-aware spacing rules
+    - **IndentationFormattingRule**: Uses AST depth for indentation calculation
+    - **ImportOrganizerFormattingRule**: Enhanced with AST-based literal/comment exclusion
+    - **LineLengthFormattingRule**: Uses AST for context detection
+  - **Removed**: SourceCodeUtils (replaced by AST-based position index)
+  - **Quality**: All 357 formatter tests passing
 
 ---
 

@@ -16,7 +16,6 @@ import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
-import io.github.cowwoc.styler.parser.ParseError;
 import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
 import io.github.cowwoc.styler.pipeline.internal.DefaultTransformationContext;
@@ -324,30 +323,8 @@ public final class FileProcessingPipeline
 					new StageResult.Success(new ParsedData(parser.getArena(), success.rootNode(), sourceCode,
 						context.filePath()));
 				case ParseResult.Failure failure ->
-					new StageResult.Failure(formatParseErrors(context.filePath(), failure.errors()), null);
+					new StageResult.Failure(failure.getErrorMessage(context.filePath()), null);
 			};
-		}
-
-		/**
-		 * Formats parse errors into a human-readable string.
-		 *
-		 * @param filePath the path to the file that failed to parse
-		 * @param errors   the list of parse errors
-		 * @return a formatted error message
-		 */
-		private String formatParseErrors(Path filePath, List<ParseError> errors)
-		{
-			StringBuilder sb = new StringBuilder();
-			for (ParseError error : errors)
-			{
-				if (!sb.isEmpty())
-				{
-					sb.append('\n');
-				}
-				sb.append(filePath).append(':').append(error.line()).append(':').
-					append(error.column()).append(": ").append(error.message());
-			}
-			return sb.toString();
 		}
 
 		@Override

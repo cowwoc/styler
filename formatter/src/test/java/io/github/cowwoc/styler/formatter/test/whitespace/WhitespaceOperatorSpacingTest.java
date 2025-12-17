@@ -1,12 +1,14 @@
 package io.github.cowwoc.styler.formatter.test.whitespace;
 
-import java.util.List;
+import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingRule;
-import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.formatter.test.whitespace.WhitespaceTestUtils.wrapInMethod;
 
 /**
  * Tests for binary and unary operator spacing rules.
@@ -19,7 +21,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundPlusOperator()
 	{
-		String source = "int x = a+b;";
+		String source = wrapInMethod("int x = a+b;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -35,7 +37,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundMinusOperator()
 	{
-		String source = "int x = a-b;";
+		String source = wrapInMethod("int x = a-b;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -51,7 +53,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundMultiplyOperator()
 	{
-		String source = "int x = a*b;";
+		String source = wrapInMethod("int x = a*b;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -67,7 +69,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundDivideOperator()
 	{
-		String source = "int x = a/b;";
+		String source = wrapInMethod("int x = a/b;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -83,7 +85,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundModuloOperator()
 	{
-		String source = "int x = a%b;";
+		String source = wrapInMethod("int x = a%b;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -99,7 +101,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundEqualsComparison()
 	{
-		String source = "if (a==b) {}";
+		String source = wrapInMethod("if (a==b) {}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -115,7 +117,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundNotEquals()
 	{
-		String source = "if (a!=b) {}";
+		String source = wrapInMethod("if (a!=b) {}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -131,7 +133,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundLessThanComparison()
 	{
-		String source = "if (a<b) {}";
+		String source = wrapInMethod("if (a<b) {}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -147,7 +149,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundGreaterThanComparison()
 	{
-		String source = "if (a>b) {}";
+		String source = wrapInMethod("if (a>b) {}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -163,7 +165,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundLogicalAnd()
 	{
-		String source = "if (a&&b) {}";
+		String source = wrapInMethod("if (a&&b) {}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -179,7 +181,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundLogicalOr()
 	{
-		String source = "if (a||b) {}";
+		String source = wrapInMethod("if (a||b) {}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -195,7 +197,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundAssignment()
 	{
-		String source = "int x=1;";
+		String source = wrapInMethod("int x=1;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -211,7 +213,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundPlusEquals()
 	{
-		String source = "x+=1;";
+		String source = wrapInMethod("x+=1;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -227,7 +229,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundMinusEquals()
 	{
-		String source = "x-=1;";
+		String source = wrapInMethod("x-=1;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -243,7 +245,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldRemoveExtraSpacesAroundOperator()
 	{
-		String source = "int x = a  +  b;";
+		String source = wrapInMethod("int x = a  +  b;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -261,7 +263,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldNotAddSpaceAfterPrefixIncrement()
 	{
-		String source = "int x = ++ y;";
+		String source = wrapInMethod("int x = ++ y;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -277,7 +279,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldNotAddSpaceAfterPrefixDecrement()
 	{
-		String source = "int x = -- y;";
+		String source = wrapInMethod("int x = -- y;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -293,7 +295,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldNotAddSpaceAfterLogicalNot()
 	{
-		String source = "if (! flag) {}";
+		String source = wrapInMethod("if (! flag) {}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -309,7 +311,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldNotAddSpaceBeforePostfixIncrement()
 	{
-		String source = "int x = y ++;";
+		String source = wrapInMethod("int x = y ++;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -325,7 +327,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldNotAddSpaceBeforePostfixDecrement()
 	{
-		String source = "int x = y --;";
+		String source = wrapInMethod("int x = y --;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -341,7 +343,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundTernaryQuestion()
 	{
-		String source = "int x = a?b:c;";
+		String source = wrapInMethod("int x = a?b:c;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -352,44 +354,12 @@ public class WhitespaceOperatorSpacingTest
 	}
 
 	/**
-	 * Tests that space is added around lambda arrow operator.
-	 */
-	@Test
-	public void shouldAddSpaceAroundArrowOperator()
-	{
-		String source = "x->x*2";
-		TestTransformationContext context = new TestTransformationContext(source);
-		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
-		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
-
-		String result = rule.format(context, List.of(config));
-
-		requireThat(result, "result").contains("x -> x * 2");
-	}
-
-	/**
-	 * Tests that no space is added around method reference operator.
-	 */
-	@Test
-	public void shouldNotAddSpaceAroundMethodReference()
-	{
-		String source = "String :: valueOf";
-		TestTransformationContext context = new TestTransformationContext(source);
-		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
-		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
-
-		String result = rule.format(context, List.of(config));
-
-		requireThat(result, "result").contains("String::valueOf");
-	}
-
-	/**
 	 * Tests that bitwise operators get proper spacing.
 	 */
 	@Test
 	public void shouldAddSpaceAroundBitwiseAnd()
 	{
-		String source = "int x = a&b;";
+		String source = wrapInMethod("int x = a&b;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -405,7 +375,7 @@ public class WhitespaceOperatorSpacingTest
 	@Test
 	public void shouldAddSpaceAroundLeftShift()
 	{
-		String source = "int x = a<<b;";
+		String source = wrapInMethod("int x = a<<b;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();

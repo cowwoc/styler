@@ -4,25 +4,21 @@ import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.ast.core.NodeType;
 import io.github.cowwoc.styler.formatter.TransformationContext;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import io.github.cowwoc.styler.formatter.AstPositionIndex;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
  * Detects wrapping context at character positions using AST analysis.
  * <p>
- * This class builds a spatial index of AST nodes during construction to enable O(log n)
- * position-to-node lookup. The spatial index maps character positions in source code to
- * their smallest enclosing AST node, which determines the wrapping context type.
+ * This class uses the shared {@link AstPositionIndex} from the {@link TransformationContext} to enable
+ * efficient position-to-node lookup. The spatial index maps character positions in source code to their
+ * smallest enclosing AST node, which determines the wrapping context type.
  * <p>
  * <b>Performance Characteristics</b>:
  * <ul>
- *   <li>Construction: O(n log n) where n = node count (~500-5000 nodes per file)</li>
- *   <li>Position lookup: O(log n) binary search on spatial index</li>
- *   <li>Memory overhead: ~32 bytes per node (~64KB for typical file)</li>
+ *   <li>Position lookup: O(n) linear scan to find smallest enclosing node</li>
+ *   <li>Memory overhead: None - reuses shared index from TransformationContext</li>
  * </ul>
  * <p>
  * <b>Thread-safety</b>: This class is thread-safe.
@@ -31,11 +27,11 @@ public final class ContextDetector
 {
 	private final TransformationContext context;
 	private final NodeArena arena;
-	private final List<NodeInterval> spatialIndex;
+	private final AstPositionIndex positionIndex;
 
 	/**
 	 * Creates detector from transformation context.
-	 * Builds internal spatial index during construction (O(n log n) where n = node count).
+	 * Uses the shared position index from the context.
 	 *
 	 * @param context transformation context with AST access
 	 * @throws NullPointerException if {@code context} is {@code null}
@@ -45,31 +41,7 @@ public final class ContextDetector
 		requireThat(context, "context").isNotNull();
 		this.context = context;
 		this.arena = context.arena();
-		this.spatialIndex = buildSpatialIndex();
-	}
-
-	/**
-	 * Builds spatial index from flat NodeArena storage.
-	 * Creates a sorted list of node intervals for binary search lookup.
-	 *
-	 * @return immutable sorted list of node intervals
-	 */
-	private List<NodeInterval> buildSpatialIndex()
-	{
-		List<NodeInterval> intervals = new ArrayList<>();
-		int nodeCount = arena.getNodeCount();
-
-		for (int i = 0; i < nodeCount; ++i)
-		{
-			NodeIndex node = new NodeIndex(i);
-			int start = arena.getStart(node);
-			int end = arena.getEnd(node);
-			intervals.add(new NodeInterval(node, start, end));
-		}
-
-		// Sort by start position, then by size (smaller intervals first for nested contexts)
-		Collections.sort(intervals);
-		return List.copyOf(intervals);
+		this.positionIndex = context.positionIndex();
 	}
 
 	/**
@@ -84,7 +56,7 @@ public final class ContextDetector
 	public WrapContext detectContext(int position)
 	{
 		validatePosition(position);
-		NodeIndex node = findSmallestEnclosingNode(position);
+		NodeIndex node = positionIndex.findEnclosingNode(position);
 
 		if (!node.isValid())
 		{
@@ -105,7 +77,7 @@ public final class ContextDetector
 	public NodeIndex findEnclosingNode(int position)
 	{
 		validatePosition(position);
-		return findSmallestEnclosingNode(position);
+		return positionIndex.findEnclosingNode(position);
 	}
 
 	/**
@@ -119,35 +91,6 @@ public final class ContextDetector
 		String sourceCode = context.sourceCode();
 		requireThat(position, "position").isGreaterThanOrEqualTo(0).
 			isLessThanOrEqualTo(sourceCode.length());
-	}
-
-	/**
-	 * Finds the smallest AST node that encloses the given position.
-	 * Uses linear search on the sorted spatial index.
-	 *
-	 * @param position character offset in source code
-	 * @return smallest enclosing node, or NodeIndex.NULL if none found
-	 */
-	private NodeIndex findSmallestEnclosingNode(int position)
-	{
-		NodeIndex smallest = NodeIndex.NULL;
-		int smallestSize = Integer.MAX_VALUE;
-
-		// Linear search: check all intervals, track smallest that contains position
-		for (NodeInterval interval : spatialIndex)
-		{
-			if (interval.start <= position && position < interval.end)
-			{
-				int size = interval.end - interval.start;
-				if (size < smallestSize)
-				{
-					smallest = interval.node;
-					smallestSize = size;
-				}
-			}
-		}
-
-		return smallest;
 	}
 
 	/**
@@ -185,19 +128,20 @@ public final class ContextDetector
 			case UNARY_EXPRESSION, POSTFIX_EXPRESSION, ASSIGNMENT_EXPRESSION,
 				INSTANCEOF_EXPRESSION, LAMBDA_EXPRESSION, METHOD_REFERENCE,
 				CAST_EXPRESSION, ARRAY_ACCESS, PARENTHESIZED_EXPRESSION,
-				OBJECT_CREATION -> WrapContext.NOT_WRAPPABLE;
+				OBJECT_CREATION, THIS_EXPRESSION, SUPER_EXPRESSION,
+				ARRAY_INITIALIZER -> WrapContext.NOT_WRAPPABLE;
 
 			// Statements - not wrappable
 			case BLOCK, EXPRESSION_STATEMENT, VARIABLE_DECLARATION,
 				IF_STATEMENT, FOR_STATEMENT, ENHANCED_FOR_STATEMENT,
-				WHILE_STATEMENT, DO_WHILE_STATEMENT, SWITCH_STATEMENT,
+				WHILE_STATEMENT, DO_WHILE_STATEMENT, SWITCH_STATEMENT, SWITCH_EXPRESSION,
 				SWITCH_CASE, RETURN_STATEMENT, THROW_STATEMENT,
 				TRY_STATEMENT, CATCH_CLAUSE, FINALLY_CLAUSE,
 				SYNCHRONIZED_STATEMENT, BREAK_STATEMENT, CONTINUE_STATEMENT,
 				ASSERT_STATEMENT, EMPTY_STATEMENT -> WrapContext.NOT_WRAPPABLE;
 
 			// Declarations - not wrappable
-			case COMPILATION_UNIT, PACKAGE_DECLARATION, IMPORT_DECLARATION,
+			case COMPILATION_UNIT, PACKAGE_DECLARATION, IMPORT_DECLARATION, STATIC_IMPORT_DECLARATION,
 				CLASS_DECLARATION, INTERFACE_DECLARATION, ENUM_DECLARATION,
 				ANNOTATION_DECLARATION, CONSTRUCTOR_DECLARATION,
 				FIELD_DECLARATION, ENUM_CONSTANT -> WrapContext.NOT_WRAPPABLE;
@@ -215,46 +159,6 @@ public final class ContextDetector
 			// Comments - not wrappable
 			case LINE_COMMENT, BLOCK_COMMENT, JAVADOC_COMMENT,
 				MARKDOWN_DOC_COMMENT -> WrapContext.NOT_WRAPPABLE;
-
-			// Additional expressions - not wrappable
-			case THIS_EXPRESSION, SUPER_EXPRESSION, ARRAY_INITIALIZER -> WrapContext.NOT_WRAPPABLE;
-
-			// Switch expression - not wrappable
-			case SWITCH_EXPRESSION -> WrapContext.NOT_WRAPPABLE;
-
-			// Static import - not wrappable
-			case STATIC_IMPORT_DECLARATION -> WrapContext.NOT_WRAPPABLE;
 		};
-	}
-
-	/**
-	 * Represents an interval of source code covered by an AST node.
-	 * Used for spatial indexing to enable efficient position-to-node lookup.
-	 *
-	 * @param node the node index
-	 * @param start the start position (inclusive)
-	 * @param end the end position (exclusive)
-	 */
-	private record NodeInterval(NodeIndex node, int start, int end)
-		implements Comparable<NodeInterval>
-	{
-		@Override
-		public int compareTo(NodeInterval other)
-		{
-			// Sort by start position first
-			int cmp = Integer.compare(start, other.start);
-			if (cmp != 0)
-			{
-				return cmp;
-			}
-			// For same start, sort by size (smaller first) for nested contexts
-			cmp = Integer.compare(end - start, other.end - other.start);
-			if (cmp != 0)
-			{
-				return cmp;
-			}
-			// Final tiebreaker: node index ensures total ordering consistent with equals()
-			return Integer.compare(node.index(), other.node.index());
-		}
 	}
 }

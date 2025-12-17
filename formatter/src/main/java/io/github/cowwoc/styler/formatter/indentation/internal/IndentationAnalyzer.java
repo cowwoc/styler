@@ -1,20 +1,22 @@
 package io.github.cowwoc.styler.formatter.indentation.internal;
 
+import io.github.cowwoc.styler.formatter.AstPositionIndex;
 import io.github.cowwoc.styler.formatter.DefaultFormattingViolation;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
 import io.github.cowwoc.styler.formatter.indentation.IndentationFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.indentation.IndentationType;
-import io.github.cowwoc.styler.formatter.internal.SourceCodeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.that;
+
 /**
  * Analyzes source code for indentation violations.
  * <p>
- * Tracks brace depth to determine expected indentation level and compares with actual leading
+ * Determines expected indentation level based on nesting depth and compares with actual leading
  * whitespace on each line.
  * <p>
  * <b>Thread-safety</b>: All methods are stateless and thread-safe.
@@ -32,17 +34,16 @@ public final class IndentationAnalyzer
 	 * Analyzes the source code for indentation violations.
 	 *
 	 * @param context the transformation context
-	 * @param config the indentation formatting configuration
+	 * @param config  the indentation formatting configuration
 	 * @return a list of formatting violations (empty if no violations)
 	 */
 	public static List<FormattingViolation> analyze(TransformationContext context,
 		IndentationFormattingConfiguration config)
 	{
 		List<FormattingViolation> violations = new ArrayList<>();
-		String sourceCode = context.sourceCode();
-		String[] lines = sourceCode.split("\n", -1);
+		String[] lines = context.sourceCode().split("\n", -1);
+		AstPositionIndex positionIndex = context.positionIndex();
 
-		int depth = 0;
 		boolean prevLineWasContinuation = false;
 
 		for (int lineIndex = 0; lineIndex < lines.length; ++lineIndex)
@@ -61,30 +62,19 @@ public final class IndentationAnalyzer
 			int lineStartPosition = getLineStartPosition(lines, lineIndex);
 
 			// Extract leading whitespace
-			int leadingWhitespaceEnd = 0;
-			while (leadingWhitespaceEnd < line.length() &&
-				(line.charAt(leadingWhitespaceEnd) == ' ' || line.charAt(leadingWhitespaceEnd) == '\t'))
-			{
-				++leadingWhitespaceEnd;
-			}
-
+			int leadingWhitespaceEnd = findLeadingWhitespaceEnd(line);
 			String leadingWhitespace = line.substring(0, leadingWhitespaceEnd);
 
-			// Determine if line starts with closing brace (reduces depth before checking indentation)
-			String trimmedLine = line.strip();
-			boolean startsWithCloseBrace = trimmedLine.startsWith("}");
+			assert that(leadingWhitespaceEnd, "leadingWhitespaceEnd").isLessThan(line.length()).elseThrow();
 
-			// Adjust depth for closing brace on current line
-			int effectiveDepth = depth;
-			if (startsWithCloseBrace)
-				effectiveDepth = Math.max(0, depth - 1);
+			int codePosition = lineStartPosition + leadingWhitespaceEnd;
+			int depth = positionIndex.getDepth(codePosition);
 
 			// Determine if this is a continuation line
 			boolean isContinuationLine = prevLineWasContinuation;
 
 			// Calculate expected indentation
-			String expectedIndentation = calculateExpectedIndentation(effectiveDepth, isContinuationLine,
-				config);
+			String expectedIndentation = calculateExpectedIndentation(depth, isContinuationLine, config);
 
 			// Check for mixed tabs and spaces
 			boolean hasTabs = leadingWhitespace.contains("\t");
@@ -113,7 +103,7 @@ public final class IndentationAnalyzer
 
 				String message = String.format(
 					"Incorrect indentation: expected %d %s but found %d characters",
-					effectiveDepth,
+					depth,
 					unitName,
 					leadingWhitespace.length());
 
@@ -122,14 +112,25 @@ public final class IndentationAnalyzer
 					lineStartPosition + leadingWhitespaceEnd, lineNumber, columnNumber, List.of()));
 			}
 
-			// Update depth based on braces in this line (excluding literals/comments)
-			depth = calculateDepthAfterLine(sourceCode, lineStartPosition, line, depth);
-
 			// Determine if next line will be a continuation
 			prevLineWasContinuation = isContinuationLine(line);
 		}
 
 		return violations;
+	}
+
+	/**
+	 * Finds the position after leading whitespace ends.
+	 *
+	 * @param line the line to check
+	 * @return the index of the first non-whitespace character
+	 */
+	private static int findLeadingWhitespaceEnd(String line)
+	{
+		int i = 0;
+		while (i < line.length() && (line.charAt(i) == ' ' || line.charAt(i) == '\t'))
+			++i;
+		return i;
 	}
 
 	/**
@@ -176,38 +177,6 @@ public final class IndentationAnalyzer
 	}
 
 	/**
-	 * Calculates the indentation depth after processing braces in the line.
-	 *
-	 * @param sourceCode the full source code
-	 * @param lineStartPosition the position where the line starts
-	 * @param line the line content
-	 * @param currentDepth the current depth
-	 * @return the depth after processing this line
-	 */
-	private static int calculateDepthAfterLine(String sourceCode, int lineStartPosition, String line,
-		int currentDepth)
-	{
-		int depth = currentDepth;
-
-		for (int i = 0; i < line.length(); ++i)
-		{
-			int position = lineStartPosition + i;
-
-			// Skip content in literals or comments
-			if (SourceCodeUtils.isInLiteralOrComment(sourceCode, position))
-				continue;
-
-			char ch = line.charAt(i);
-			if (ch == '{')
-				++depth;
-			else if (ch == '}')
-				depth = Math.max(0, depth - 1);
-		}
-
-		return depth;
-	}
-
-	/**
 	 * Determines if a line is a continuation line by checking if it ends with certain patterns.
 	 *
 	 * @param line the line to check
@@ -215,14 +184,14 @@ public final class IndentationAnalyzer
 	 */
 	private static boolean isContinuationLine(String line)
 	{
-		String trimmed = line.strip();
+		String stripped = line.strip();
 
 		// Empty lines don't create continuations
-		if (trimmed.isEmpty())
+		if (stripped.isEmpty())
 			return false;
 
 		// Lines ending with these characters suggest continuation
-		char lastChar = trimmed.charAt(trimmed.length() - 1);
+		char lastChar = stripped.charAt(stripped.length() - 1);
 		return switch (lastChar)
 		{
 			case ',', '(', '+', '-', '*', '/', '%', '&', '|', '^', '=', '<', '>' -> true;

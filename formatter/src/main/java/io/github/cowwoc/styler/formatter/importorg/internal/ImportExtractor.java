@@ -1,16 +1,21 @@
 package io.github.cowwoc.styler.formatter.importorg.internal;
 
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeIndex;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.formatter.AstPositionIndex;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
- * Extracts import declarations from Java source code using text-based parsing.
+ * Extracts import declarations from Java source code using AST traversal.
+ * <p>
+ * Uses the parser's AST to accurately identify import declarations, avoiding false positives
+ * from "import" appearing in strings or comments.
  * <p>
  * <b>Thread-safety</b>: This class is stateless and thread-safe.
  */
@@ -21,23 +26,17 @@ public final class ImportExtractor
 		// Utility class
 	}
 
-	/** Regex pattern for matching import statements. */
-	private static final Pattern IMPORT_PATTERN =
-		Pattern.compile(
-			"^\\s*(import\\s+)(static\\s+)?" +           // import [static]
-				"([\\w.]+(?:\\.\\*)?)" +                   // qualified name or wildcard
-				"\\s*;",                                   // semicolon
-			Pattern.MULTILINE);
-
 	/**
 	 * Extracts all import declarations from the source code.
 	 * <p>
 	 * Handles:
-	 * - Regular imports: import java.util.List;
-	 * - Static imports: import static java.lang.Math.PI;
-	 * - Wildcard imports: import java.util.*;
+	 * <ul>
+	 *   <li>Regular imports: {@code import java.util.List;}</li>
+	 *   <li>Static imports: {@code import static java.lang.Math.PI;}</li>
+	 *   <li>Wildcard imports: {@code import java.util.*;}</li>
+	 * </ul>
 	 *
-	 * @param context transformation context with source code
+	 * @param context transformation context with source code and AST
 	 * @return list of extracted import declarations
 	 * @throws NullPointerException if {@code context} is {@code null}
 	 */
@@ -46,21 +45,42 @@ public final class ImportExtractor
 		requireThat(context, "context").isNotNull();
 
 		List<ImportDeclaration> imports = new ArrayList<>();
-		String source = context.sourceCode();
+		AstPositionIndex positionIndex = context.positionIndex();
+		NodeArena arena = context.arena();
 
-		Matcher matcher = IMPORT_PATTERN.matcher(source);
+		// Process both regular and static import nodes
+		processImportNodes(context, positionIndex, arena, NodeType.IMPORT_DECLARATION, false, imports);
+		processImportNodes(context, positionIndex, arena, NodeType.STATIC_IMPORT_DECLARATION, true, imports);
 
-		while (matcher.find())
+		return imports;
+	}
+
+	/**
+	 * Processes import nodes of a specific type and adds them to the imports list.
+	 *
+	 * @param context       the transformation context
+	 * @param positionIndex the position index for AST queries
+	 * @param arena         the node arena
+	 * @param nodeType      the node type to process
+	 * @param isStatic      whether these are static imports
+	 * @param imports       the list to add declarations to
+	 */
+	private static void processImportNodes(TransformationContext context, AstPositionIndex positionIndex,
+		NodeArena arena, NodeType nodeType, boolean isStatic, List<ImportDeclaration> imports)
+	{
+		List<NodeIndex> importNodes = positionIndex.findNodesByType(nodeType);
+
+		for (NodeIndex node : importNodes)
 		{
 			context.checkDeadline();
 
-			int startPosition = matcher.start();
-			int endPosition = matcher.end() - 1; // -1 to exclude the newline if present
+			int startPosition = arena.getStart(node);
+			// -1 because endPosition is inclusive, pointing to the semicolon
+			int endPosition = arena.getEnd(node) - 1;
 
-			boolean isStatic = matcher.group(2) != null;
-			String qualifiedName = matcher.group(3);
+			String nodeText = context.getSourceText(node);
+			String qualifiedName = extractQualifiedName(nodeText, isStatic);
 
-			// Get the line number from the context
 			int lineNumber = context.getLineNumber(startPosition);
 
 			ImportDeclaration importDecl = new ImportDeclaration(
@@ -72,29 +92,71 @@ public final class ImportExtractor
 
 			imports.add(importDecl);
 		}
+	}
 
-		return imports;
+	/**
+	 * Extracts the qualified name from import node text.
+	 *
+	 * @param nodeText the full import statement text (e.g., "import java.util.List;")
+	 * @param isStatic whether this is a static import
+	 * @return the qualified name (e.g., "java.util.List")
+	 */
+	private static String extractQualifiedName(String nodeText, boolean isStatic)
+	{
+		// Strip "import ", optionally "static ", and trailing ";"
+		String result = nodeText.strip();
+		result = result.substring("import ".length());
+		if (isStatic)
+		{
+			result = result.substring("static ".length());
+		}
+		// Remove semicolon and any trailing whitespace
+		result = result.replace(";", "").strip();
+		return result;
 	}
 
 	/**
 	 * Finds the end of the import section in the source code.
 	 * Returns the position after the last import declaration.
 	 *
-	 * @param source the source code
+	 * @param context transformation context with source code and AST
 	 * @return position after the import section, or 0 if no imports found
+	 * @throws NullPointerException if {@code context} is {@code null}
 	 */
-	static int findImportSectionEnd(String source)
+	static int findImportSectionEnd(TransformationContext context)
 	{
-		requireThat(source, "source").isNotNull();
+		requireThat(context, "context").isNotNull();
 
-		Matcher matcher = IMPORT_PATTERN.matcher(source);
+		AstPositionIndex positionIndex = context.positionIndex();
+		NodeArena arena = context.arena();
+
 		int endPosition = 0;
+		endPosition = updateEndPosition(positionIndex, arena, NodeType.IMPORT_DECLARATION, endPosition);
+		endPosition = updateEndPosition(positionIndex, arena, NodeType.STATIC_IMPORT_DECLARATION, endPosition);
 
-		while (matcher.find())
+		return endPosition;
+	}
+
+	/**
+	 * Updates the end position by checking nodes of the given type.
+	 *
+	 * @param positionIndex the position index
+	 * @param arena         the node arena
+	 * @param nodeType      the node type to check
+	 * @param currentEnd    the current end position
+	 * @return the updated end position
+	 */
+	private static int updateEndPosition(AstPositionIndex positionIndex, NodeArena arena,
+		NodeType nodeType, int currentEnd)
+	{
+		List<NodeIndex> nodes = positionIndex.findNodesByType(nodeType);
+		int endPosition = currentEnd;
+		for (NodeIndex node : nodes)
 		{
-			endPosition = matcher.end();
+			int nodeEnd = arena.getEnd(node);
+			if (nodeEnd > endPosition)
+				endPosition = nodeEnd;
 		}
-
 		return endPosition;
 	}
 }

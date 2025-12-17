@@ -4,6 +4,7 @@ import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.security.SecurityConfig;
 import io.github.cowwoc.styler.security.exceptions.ExecutionTimeoutException;
+
 import java.nio.file.Path;
 
 /**
@@ -92,4 +93,12 @@ public interface TransformationContext
 	 * @return the type resolution config, or {@link TypeResolutionConfig#EMPTY} if none provided
 	 */
 	TypeResolutionConfig typeResolutionConfig();
+
+	/**
+	 * Returns the position index for efficient position-to-node lookup.
+	 * The index is lazily constructed on first access and cached.
+	 *
+	 * @return the position index
+	 */
+	AstPositionIndex positionIndex();
 }

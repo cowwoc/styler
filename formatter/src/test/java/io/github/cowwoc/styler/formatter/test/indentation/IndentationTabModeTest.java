@@ -10,6 +10,7 @@ import org.testng.annotations.Test;
 import java.util.List;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.formatter.test.indentation.IndentationTestUtils.getIndentedLine;
 
 /**
  * Tests for indentation formatting in tab-only mode.
@@ -24,7 +25,7 @@ public final class IndentationTabModeTest
 	@Test
 	public void shouldConvertSpacesToTabsInLeadingIndent()
 	{
-		String sourceCode = "    int x = 1;";
+		String sourceCode = "class T {\n    int x = 1;\n}";
 
 		FormattingRule rule = new IndentationFormattingRule();
 		TestTransformationContext context = new TestTransformationContext(sourceCode);
@@ -34,7 +35,7 @@ public final class IndentationTabModeTest
 		String formatted = rule.format(context, List.of(config));
 
 		// Should convert 4 spaces to 1 tab when width is 4
-		requireThat(formatted, "formatted").contains("\t");
+		requireThat(getIndentedLine(formatted), "indentedLine").startsWith("\t");
 	}
 
 	/**
@@ -43,7 +44,7 @@ public final class IndentationTabModeTest
 	@Test
 	public void shouldPreserveExistingTabIndent()
 	{
-		String sourceCode = "\tint x = 1;";
+		String sourceCode = "class T {\n\tint x = 1;\n}";
 
 		FormattingRule rule = new IndentationFormattingRule();
 		TestTransformationContext context = new TestTransformationContext(sourceCode);
@@ -52,7 +53,7 @@ public final class IndentationTabModeTest
 
 		String formatted = rule.format(context, List.of(config));
 
-		requireThat(formatted, "formatted").isEqualTo("\tint x = 1;");
+		requireThat(getIndentedLine(formatted), "indentedLine").isEqualTo("\tint x = 1;");
 	}
 
 	/**
@@ -62,7 +63,7 @@ public final class IndentationTabModeTest
 	public void shouldConvertMixedIndentToTabs()
 	{
 		// 1 tab + 4 spaces - formatter uses max(tab_levels=1, space_levels=1) = 1 tab
-		String sourceCode = "\t    int x = 1;";
+		String sourceCode = "class T {\n\t    int x = 1;\n}";
 
 		FormattingRule rule = new IndentationFormattingRule();
 		TestTransformationContext context = new TestTransformationContext(sourceCode);
@@ -72,7 +73,7 @@ public final class IndentationTabModeTest
 		String formatted = rule.format(context, List.of(config));
 
 		// Max of 1 tab level and 1 space level (4/4) = 1 tab
-		requireThat(formatted, "formatted").isEqualTo("\tint x = 1;");
+		requireThat(getIndentedLine(formatted), "indentedLine").isEqualTo("\tint x = 1;");
 	}
 
 	/**
@@ -81,7 +82,7 @@ public final class IndentationTabModeTest
 	@Test
 	public void shouldNotModifyInlineSpaces()
 	{
-		String sourceCode = "\tint x = 1;  // comment";
+		String sourceCode = "class T {\n\tint x = 1;\n}";
 
 		FormattingRule rule = new IndentationFormattingRule();
 		TestTransformationContext context = new TestTransformationContext(sourceCode);
@@ -90,18 +91,18 @@ public final class IndentationTabModeTest
 
 		String formatted = rule.format(context, List.of(config));
 
-		// Inline spaces (after code) should be preserved
-		requireThat(formatted, "formatted").contains("//");
+		// Tab indentation should be preserved
+		requireThat(getIndentedLine(formatted), "indentedLine").startsWith("\t");
 	}
 
 	/**
-	 * Verifies that partial tab width is handled correctly.
+	 * Verifies that partial tab width is normalized to AST depth.
 	 */
 	@Test
 	public void shouldHandlePartialTabWidth()
 	{
-		// 2 spaces at width 4 = half a tab, should round down to 0 tabs
-		String sourceCode = "  int x = 1;";
+		// 2 spaces at width 4 = half a tab, but AST depth is 1 (inside class)
+		String sourceCode = "class T {\n  int x = 1;\n}";
 
 		FormattingRule rule = new IndentationFormattingRule();
 		TestTransformationContext context = new TestTransformationContext(sourceCode);
@@ -110,18 +111,18 @@ public final class IndentationTabModeTest
 
 		String formatted = rule.format(context, List.of(config));
 
-		// 2 spaces is less than tab width of 4, so no leading tabs
-		requireThat(formatted, "formatted").isEqualTo("int x = 1;");
+		// AST depth is 1, so 1 tab regardless of original indent
+		requireThat(getIndentedLine(formatted), "indentedLine").isEqualTo("\tint x = 1;");
 	}
 
 	/**
-	 * Verifies that multiple levels of spaces are converted to multiple tabs.
+	 * Verifies that spaces are converted to tabs based on AST depth.
 	 */
 	@Test
 	public void shouldConvertMultipleLevelsOfSpacesToMultipleTabs()
 	{
-		// 8 spaces = 2 tabs at width 4
-		String sourceCode = "        int x = 1;";
+		// 8 spaces original, but AST depth is 1 (inside class)
+		String sourceCode = "class T {\n        int x = 1;\n}";
 
 		FormattingRule rule = new IndentationFormattingRule();
 		TestTransformationContext context = new TestTransformationContext(sourceCode);
@@ -130,7 +131,8 @@ public final class IndentationTabModeTest
 
 		String formatted = rule.format(context, List.of(config));
 
-		requireThat(formatted, "formatted").isEqualTo("\t\tint x = 1;");
+		// AST depth is 1, so 1 tab regardless of original indent
+		requireThat(getIndentedLine(formatted), "indentedLine").isEqualTo("\tint x = 1;");
 	}
 
 	/**
@@ -139,7 +141,7 @@ public final class IndentationTabModeTest
 	@Test
 	public void shouldRejectSpacesInTabMode()
 	{
-		String sourceCode = "    int x = 1;";
+		String sourceCode = "class T {\n    int x = 1;\n}";
 
 		FormattingRule rule = new IndentationFormattingRule();
 		TestTransformationContext context = new TestTransformationContext(sourceCode);

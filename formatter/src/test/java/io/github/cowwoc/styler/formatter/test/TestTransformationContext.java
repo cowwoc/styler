@@ -2,9 +2,11 @@ package io.github.cowwoc.styler.formatter.test;
 
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
-import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.formatter.AstPositionIndex;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
+import io.github.cowwoc.styler.parser.ParseResult;
+import io.github.cowwoc.styler.parser.Parser;
 import io.github.cowwoc.styler.security.SecurityConfig;
 
 import java.nio.file.Path;
@@ -23,12 +25,14 @@ public final class TestTransformationContext implements TransformationContext
 	private final String sourceCode;
 	private final Path filePath;
 	private final SecurityConfig securityConfig;
+	private final AstPositionIndex positionIndex;
 
 	/**
 	 * Creates a test context with the given source code.
 	 *
 	 * @param sourceCode the source code to use
-	 * @throws NullPointerException if {@code sourceCode} is {@code null}
+	 * @throws NullPointerException     if {@code sourceCode} is {@code null}
+	 * @throws IllegalArgumentException if {@code sourceCode} is not valid Java
 	 */
 	public TestTransformationContext(String sourceCode)
 	{
@@ -37,10 +41,20 @@ public final class TestTransformationContext implements TransformationContext
 		this.sourceCode = sourceCode;
 		this.filePath = Path.of("Test.java");
 		this.securityConfig = SecurityConfig.DEFAULT;
-		this.arena = new NodeArena();
 
-		// Create a minimal AST with a compilation unit covering the entire source
-		this.rootNode = arena.allocateNode(NodeType.COMPILATION_UNIT, 0, sourceCode.length());
+		Parser parser = new Parser(sourceCode);
+		switch (parser.parse())
+		{
+			case ParseResult.Success success ->
+			{
+				this.arena = parser.getArena();
+				this.rootNode = success.rootNode();
+				this.positionIndex = new AstPositionIndex(this.arena, sourceCode.length());
+			}
+			case ParseResult.Failure failure -> throw new IllegalArgumentException(
+				"Failed to parse source code:\n" + failure.getErrorMessage() +
+				"\n\nSource:\n" + sourceCode);
+		}
 	}
 
 	/**
@@ -62,6 +76,7 @@ public final class TestTransformationContext implements TransformationContext
 		this.securityConfig = SecurityConfig.DEFAULT;
 		this.arena = arena;
 		this.rootNode = rootNode;
+		this.positionIndex = new AstPositionIndex(arena, sourceCode.length());
 	}
 
 	@Override
@@ -141,5 +156,11 @@ public final class TestTransformationContext implements TransformationContext
 	public TypeResolutionConfig typeResolutionConfig()
 	{
 		return TypeResolutionConfig.EMPTY;
+	}
+
+	@Override
+	public AstPositionIndex positionIndex()
+	{
+		return positionIndex;
 	}
 }
