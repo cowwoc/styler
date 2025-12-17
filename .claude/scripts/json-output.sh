@@ -90,6 +90,16 @@ json_error() {
 
 # Output JSON success message
 # Args: message additional_fields_json
+#
+# USAGE:
+#   json_success "Operation completed"
+#   json_success "Operation completed" '{"key": "value"}'
+#
+# NOTE: The second argument MUST be valid JSON (an object).
+#       Common mistake: passing key=value pairs instead of JSON.
+#       WRONG: json_success "msg" "key=value"
+#       RIGHT: json_success "msg" '{"key": "value"}'
+#
 json_success() {
 	local message="$1"
 	local additional="${2-}"
@@ -97,6 +107,19 @@ json_success() {
 	# Use empty object if no additional fields provided
 	if [[ -z "$additional" ]]; then
 		additional='{}'
+	fi
+
+	# Validate that additional is valid JSON before using it
+	if ! echo "$additional" | jq empty 2>/dev/null; then
+		echo "ERROR in json_success: Second argument is not valid JSON" >&2
+		echo "  Received: $additional" >&2
+		echo "  Expected: A JSON object like '{\"key\": \"value\"}'" >&2
+		echo "  Common mistake: Passing key=value pairs instead of JSON" >&2
+		# Output error JSON instead of crashing
+		jq -n \
+			--arg msg "json_success called with invalid JSON: $additional" \
+			'{"status": "error", "message": $msg}'
+		return 1
 	fi
 
 	echo "$additional" | jq \
