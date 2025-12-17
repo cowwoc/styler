@@ -269,6 +269,21 @@ problems; user adds feedback while you're working; you can't address all issues 
 **NEVER**: Work on one issue and ignore others; assume you'll remember; skip TodoWrite because "only 2-3
 items"; wait to add items until you're ready to work on them
 
+### Mid-Operation Prompt Handling
+
+**When user sends a prompt while you are mid-operation**:
+
+1. **Add to TodoWrite immediately** - Do not assume you'll remember
+2. **Assess impact on current work**:
+   - If it impacts current task → Address immediately
+   - If unrelated/low priority → Add to end of TodoWrite list
+3. **Acknowledge the prompt** - Let user know you noticed and will either:
+   - Address it right away (if impactful), or
+   - Have added it to TodoWrite for later (if not blocking)
+
+**Example acknowledgment**: "I noticed your request to [X]. Adding to TodoWrite and will address after
+completing [current task]." OR "Your feedback about [X] impacts this work - addressing now."
+
 ## 🛠️ TOOL USAGE BEST PRACTICES
 
 **For complete tool usage guide, see**:
@@ -667,6 +682,11 @@ analysis files (4) Explaining architecture: Update existing docs, not new retros
 - ✅ CORRECT: Explain WHAT code does, WHY pattern exists (forward-looking)
 - ❌ WRONG: Chronicle WHEN added, WHAT PROBLEM prompted it (retrospective - put chronology in commit
   message)
+- ❌ WRONG: Reference "original behavior" or previous implementations
+  - Bad: `-1 to match original behavior (endPosition is inclusive)`
+  - Good: `-1 because endPosition is inclusive, pointing to semicolon`
+  - Bad: `// Preserved from legacy implementation`
+  - Good: `// Required for backward compatibility with API v1 clients`
 
 **PERMITTED (only with explicit user instruction)**: User explicitly says "Create a document analyzing...",
 "Write up the comparison...", task in todo.md specifically requires documentation, forward-looking
