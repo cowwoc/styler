@@ -387,6 +387,24 @@ benchmarking, and validate with Maven plugin integration.
   - **Removed**: SourceCodeUtils (replaced by AST-based position index)
   - **Quality**: All 357 formatter tests passing
 
+### E3. Method Reference Parser Support
+- [ ] **READY:** `add-method-reference-support` - Add parser support for method reference expressions
+  - **Dependencies**: E1 ✅ (parser error handling), E1.5 ✅ (AST extension)
+  - **Blocks**: None (optional enhancement)
+  - **Parallelizable With**: Any task not requiring method reference parsing
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Enable parsing of method reference expressions (`Type::method`, `object::method`)
+  - **Current State**: Lexer tokenizes `::` as `DOUBLE_COLON`, but parser doesn't handle method references
+  - **Scope**: Extend Parser to parse method reference expressions in expression contexts
+  - **Components**:
+    - Add `METHOD_REFERENCE` NodeType to ast-core
+    - Implement `parseMethodReference()` in Parser for `Type::method` and `instance::method` syntax
+    - Handle `new` references (`Type::new`)
+    - Support array constructor references (`Type[]::new`)
+  - **Integration**: Enables WhitespaceFormattingRule's `noSpaceAroundMethodReference` configuration to be
+    tested with AST-based formatting
+  - **Quality**: Add parser tests for all method reference variants, restore whitespace config test
+
 ---
 
 ## Deferred Features (Out of MVP Scope)
