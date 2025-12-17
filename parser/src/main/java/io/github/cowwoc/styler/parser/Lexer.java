@@ -174,13 +174,23 @@ public final class Lexer
 
 	private Token scanLineComment(int start)
 	{
+		// Skip past "//"
 		position += 2;
+
+		// Check for markdown doc comment (/// per JEP 467)
+		boolean isMarkdownDoc = position < source.length() && source.charAt(position) == '/';
+
 		while (position < source.length() && source.charAt(position) != '\n')
 		{
 			position += 1;
 		}
 		String text = source.substring(start, position);
-		return new Token(TokenType.LINE_COMMENT, start, position, text);
+		TokenType type;
+		if (isMarkdownDoc)
+			type = TokenType.MARKDOWN_DOC_COMMENT;
+		else
+			type = TokenType.LINE_COMMENT;
+		return new Token(type, start, position, text);
 	}
 
 	private Token scanBlockComment(int start)
@@ -324,6 +334,14 @@ public final class Lexer
 	{
 		position += 1;
 
+		// Check for text block: """
+		if (position + 1 < source.length() &&
+			source.charAt(position) == '"' &&
+			source.charAt(position + 1) == '"')
+		{
+			return scanTextBlock(start);
+		}
+
 		while (position < source.length())
 		{
 			char ch = source.charAt(position);
@@ -344,6 +362,52 @@ public final class Lexer
 
 		String text = source.substring(start, position);
 		return new Token(TokenType.STRING_LITERAL, start, position, text);
+	}
+
+	private Token scanTextBlock(int start)
+	{
+		// Skip the remaining two quotes of opening """
+		position += 2;
+
+		// Skip whitespace until newline (text block content starts after newline)
+		while (position < source.length() && source.charAt(position) != '\n')
+		{
+			if (!Character.isWhitespace(source.charAt(position)))
+			{
+				throw new LexerException(
+					"Text block opening delimiter must be followed by line terminator", position);
+			}
+			++position;
+		}
+
+		// Skip the newline
+		if (position < source.length())
+		{
+			++position;
+		}
+
+		// Scan until closing """
+		while (position + 2 < source.length())
+		{
+			if (source.charAt(position) == '"' &&
+				source.charAt(position + 1) == '"' &&
+				source.charAt(position + 2) == '"')
+			{
+				position += 3;
+				String text = source.substring(start, position);
+				return new Token(TokenType.STRING_LITERAL, start, position, text);
+			}
+			if (source.charAt(position) == '\\')
+			{
+				position += 2;
+			}
+			else
+			{
+				++position;
+			}
+		}
+
+		throw new LexerException("Unclosed text block starting at position " + start, start);
 	}
 
 	private Token scanCharLiteral(int start)
@@ -603,5 +667,36 @@ public final class Lexer
 			return source.charAt(nextPos);
 		}
 		return '\0';
+	}
+
+	/**
+	 * Exception thrown when lexical analysis fails.
+	 */
+	public static final class LexerException extends RuntimeException
+	{
+		private static final long serialVersionUID = 1L;
+		private final int position;
+
+		/**
+		 * Creates a new lexer exception.
+		 *
+		 * @param message  the error message
+		 * @param position the position in source code where error occurred
+		 */
+		public LexerException(String message, int position)
+		{
+			super(message);
+			this.position = position;
+		}
+
+		/**
+		 * Returns the position in source code where the error occurred.
+		 *
+		 * @return the position
+		 */
+		public int getPosition()
+		{
+			return position;
+		}
 	}
 }

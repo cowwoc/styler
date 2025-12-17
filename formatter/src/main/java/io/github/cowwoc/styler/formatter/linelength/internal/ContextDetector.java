@@ -211,6 +211,19 @@ public final class ContextDetector
 
 			// Modifiers - not wrappable
 			case MODIFIERS -> WrapContext.NOT_WRAPPABLE;
+
+			// Comments - not wrappable
+			case LINE_COMMENT, BLOCK_COMMENT, JAVADOC_COMMENT,
+				MARKDOWN_DOC_COMMENT -> WrapContext.NOT_WRAPPABLE;
+
+			// Additional expressions - not wrappable
+			case THIS_EXPRESSION, SUPER_EXPRESSION, ARRAY_INITIALIZER -> WrapContext.NOT_WRAPPABLE;
+
+			// Switch expression - not wrappable
+			case SWITCH_EXPRESSION -> WrapContext.NOT_WRAPPABLE;
+
+			// Static import - not wrappable
+			case STATIC_IMPORT_DECLARATION -> WrapContext.NOT_WRAPPABLE;
 		};
 	}
 

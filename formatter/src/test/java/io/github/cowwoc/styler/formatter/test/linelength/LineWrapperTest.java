@@ -139,11 +139,11 @@ public class LineWrapperTest
 
 		// Create arena with FIELD_ACCESS nodes at dot positions
 		NodeArena arena = new NodeArena();
-		NodeIndex root = arena.allocateNode(NodeType.COMPILATION_UNIT, 0, source.length(), 0);
+		NodeIndex root = arena.allocateNode(NodeType.COMPILATION_UNIT, 0, source.length());
 
 		// Add FIELD_ACCESS nodes at the dot positions
-		arena.allocateNode(NodeType.FIELD_ACCESS, 0, 13, 0);  // obj.method1()
-		arena.allocateNode(NodeType.FIELD_ACCESS, 0, 23, 0);  // entire chain
+		arena.allocateNode(NodeType.FIELD_ACCESS, 0, 13);  // obj.method1()
+		arena.allocateNode(NodeType.FIELD_ACCESS, 0, 23);  // entire chain
 
 		TestTransformationContext context = new TestTransformationContext(source, arena, root);
 		ContextDetector detector = new ContextDetector(context);
