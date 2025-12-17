@@ -4,10 +4,10 @@ import io.github.cowwoc.styler.formatter.DefaultFormattingViolation;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
-import io.github.cowwoc.styler.formatter.internal.SourceCodeUtils;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 /**
@@ -41,7 +41,7 @@ public final class WhitespaceAnalyzer
 	 * Analyzes the source code for whitespace formatting violations.
 	 *
 	 * @param context the transformation context
-	 * @param config the whitespace formatting configuration
+	 * @param config  the whitespace formatting configuration
 	 * @return a list of formatting violations (empty if no violations)
 	 */
 	public static List<FormattingViolation> analyze(TransformationContext context,
@@ -50,12 +50,15 @@ public final class WhitespaceAnalyzer
 		List<FormattingViolation> violations = new ArrayList<>();
 		String sourceCode = context.sourceCode();
 
+		// Build exclusion set from AST (text and comments)
+		BitSet textAndComments = context.positionIndex().getTextAndCommentPositions();
+
 		for (int i = 0; i < sourceCode.length(); ++i)
 		{
 			context.checkDeadline();
 
-			// Skip if inside literal or comment
-			if (SourceCodeUtils.isInLiteralOrComment(sourceCode, i))
+			// Skip if inside text or comment
+			if (textAndComments.get(i))
 				continue;
 
 			char current = sourceCode.charAt(i);

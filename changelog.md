@@ -2,6 +2,52 @@
 
 ## 2025-12-17
 
+### E2: AST-Based Formatter Migration ✅
+
+**Completion Date**: 2025-12-17
+
+**Task**: `migrate-formatters-to-ast`
+
+**Problem Solved**:
+- Formatting rules relied on regex/string-based position calculation
+- No integration between formatters and the AST parser
+- Duplicate test patterns across parser test files (~400 lines)
+
+**Solution Implemented**:
+- Created AstPositionIndex for O(1) character position lookups via AST nodes
+- Updated TransformationContext to expose AST via NodeArena and AstPositionIndex
+- Migrated all formatting rules to use AST-driven position detection
+- Consolidated parser test patterns into ParserTestUtils utility
+
+**Key Components**:
+- **AstPositionIndex**: Spatial index mapping character positions to AST nodes
+- **TransformationContext**: Updated interface exposing AST access
+- **BraceAnalyzer/BraceFixer**: AST-based brace position detection
+- **WhitespaceAnalyzer/WhitespaceFixer**: AST-based token boundary detection
+- **IndentationAnalyzer/IndentationFixer**: AST-aware line position handling
+- **ImportAnalyzer/ImportExtractor**: AST node-based import section detection
+- **ContextDetector**: AST-based context-sensitive line wrapping decisions
+- **ParserTestUtils**: Consolidated `assertParseSucceeds()` utility method
+
+**Files Created**:
+- `formatter/src/main/java/io/github/cowwoc/styler/formatter/AstPositionIndex.java`
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/ParserTestUtils.java`
+
+**Files Removed**:
+- `formatter/src/main/java/io/github/cowwoc/styler/formatter/internal/SourceCodeUtils.java`
+
+**Files Modified** (44 files total):
+- All formatter analyzer/fixer classes updated for AST integration
+- 5 parser test files consolidated to use ParserTestUtils
+- Test infrastructure updated with `withContext()` for better error diagnostics
+
+**Quality**:
+- All 357 formatter tests passing
+- Zero Checkstyle/PMD violations
+- Net reduction of ~580 lines (1319 insertions, 1901 deletions)
+
+---
+
 ### E1.5: AST Extension for Formatter Support ✅
 
 **Completion Date**: 2025-12-17

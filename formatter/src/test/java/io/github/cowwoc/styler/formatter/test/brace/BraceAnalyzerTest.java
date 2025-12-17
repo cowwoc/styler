@@ -163,17 +163,68 @@ public class BraceAnalyzerTest
 	}
 
 	/**
-	 * Tests source with no braces.
+	 * Tests empty interface declarations with proper Allman style braces.
 	 */
 	@Test
-	public void shouldHandleSourceWithNoBraces()
+	public void shouldHandleEmptyInterface()
 	{
-		String source = "interface Foo;";
+		// Use a marker interface with empty body in Allman style (no violations expected)
+		String source = """
+			interface Foo
+			{
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		BraceFormattingConfiguration config = BraceFormattingConfiguration.defaultConfig();
 
 		List<FormattingViolation> violations = BraceAnalyzer.analyze(context, config);
 
+		requireThat(violations, "violations").isEmpty();
+	}
+
+	/**
+	 * Tests that braces inside string literals are not flagged as violations.
+	 * This verifies the AST-based approach correctly ignores content inside strings.
+	 */
+	@Test
+	public void shouldNotFlagBraceInString()
+	{
+		String source = """
+			class Test
+			{
+			    String s = "contains { brace";
+			}
+			""";
+		TestTransformationContext context = new TestTransformationContext(source);
+		BraceFormattingConfiguration config = BraceFormattingConfiguration.defaultConfig();
+
+		List<FormattingViolation> violations = BraceAnalyzer.analyze(context, config);
+
+		// Only the class brace should be analyzed, which is in Allman style (correct)
+		// The brace in the string should not be flagged
+		requireThat(violations, "violations").isEmpty();
+	}
+
+	/**
+	 * Tests that braces inside comments are not flagged as violations.
+	 * This verifies the AST-based approach correctly ignores content inside comments.
+	 */
+	@Test
+	public void shouldNotFlagBraceInComment()
+	{
+		String source = """
+			class Test
+			{
+			    // This comment has { brace
+			    /* Also { in block comment */
+			}
+			""";
+		TestTransformationContext context = new TestTransformationContext(source);
+		BraceFormattingConfiguration config = BraceFormattingConfiguration.defaultConfig();
+
+		List<FormattingViolation> violations = BraceAnalyzer.analyze(context, config);
+
+		// Only the class brace should be analyzed, which is in Allman style (correct)
+		// The braces in comments should not be flagged
 		requireThat(violations, "violations").isEmpty();
 	}
 }

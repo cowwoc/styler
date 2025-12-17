@@ -243,6 +243,29 @@ requireThat(x, "x").isLessThan(100);
 requireThat(x, "x").isPositive().isLessThan(100);
 ```
 
+### Contextual Validation Errors
+When validating derived values or method results, the parameter name alone may not provide enough context
+for debugging. Use `withContext()` to add diagnostic information:
+```java
+// ❌ WRONG - Unhelpful error: "root.isValid() must be true"
+requireThat(success.rootNode().isValid(), "root.isValid()").isTrue();
+
+// ✅ CORRECT - Includes diagnostic context
+requireThat(success.rootNode().isValid(), "root.isValid()").
+    withContext(success.rootNode(), "rootNode").
+    isTrue();
+```
+
+**When to use `withContext()`:**
+- Validating method return values (e.g., `x.isValid()`, `list.isEmpty()`)
+- Validating computed/derived values
+- When the parameter name alone won't help diagnose failures
+
+**What to include in context:**
+- The object being validated (for inspecting its state)
+- Related values that help understand the failure
+- Source code or input that led to the value
+
 ### PMD Suppression
 Only suppress with documented legitimate reason. "Too much work" is NOT valid.
 

@@ -1,15 +1,14 @@
 package io.github.cowwoc.styler.formatter.indentation.internal;
 
+import io.github.cowwoc.styler.formatter.AstPositionIndex;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.indentation.IndentationFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.indentation.IndentationType;
-import io.github.cowwoc.styler.formatter.internal.SourceCodeUtils;
 
 /**
  * Applies indentation formatting fixes to source code.
  * <p>
- * Replaces incorrect leading whitespace with correct indentation based on brace depth and
- * configuration.
+ * Replaces incorrect leading whitespace with correct indentation based on nesting depth.
  * <p>
  * <b>Thread-safety</b>: All methods are stateless and thread-safe.
  */
@@ -26,16 +25,15 @@ public final class IndentationFixer
 	 * Formats the source code by applying indentation fixes.
 	 *
 	 * @param context the transformation context
-	 * @param config the indentation formatting configuration
+	 * @param config  the indentation formatting configuration
 	 * @return the formatted source code
 	 */
 	public static String format(TransformationContext context, IndentationFormattingConfiguration config)
 	{
-		String sourceCode = context.sourceCode();
-		String[] lines = sourceCode.split("\n", -1);
+		String[] lines = context.sourceCode().split("\n", -1);
 		StringBuilder result = new StringBuilder();
+		AstPositionIndex positionIndex = context.positionIndex();
 
-		int depth = 0;
 		boolean prevLineWasContinuation = false;
 
 		for (int lineIndex = 0; lineIndex < lines.length; ++lineIndex)
@@ -53,43 +51,22 @@ public final class IndentationFixer
 			else
 			{
 				// Extract existing leading whitespace and content
-				String trimmedLine = line.stripLeading();
-				int originalIndentLength = line.length() - trimmedLine.length();
-				String originalIndent = line.substring(0, originalIndentLength);
+				String strippedLine = line.stripLeading();
+				int originalIndentLength = line.length() - strippedLine.length();
 
-				// Determine if line starts with closing brace
-				boolean startsWithCloseBrace = trimmedLine.startsWith("}");
+				int lineStartPosition = getLineStartPosition(lines, lineIndex);
+				int codePosition = lineStartPosition + originalIndentLength;
 
-				// Adjust depth for closing brace on current line
-				int effectiveDepth = depth;
-				if (startsWithCloseBrace)
-					effectiveDepth = Math.max(0, depth - 1);
+				int depth = positionIndex.getDepth(codePosition);
 
-				// Determine if this is a continuation line
 				boolean isContinuationLine = prevLineWasContinuation;
-
-				// Build correct leading whitespace based on brace depth or original indentation
-				String correctIndentation;
-				if (depth > 0 || startsWithCloseBrace || isContinuationLine)
-				{
-					// Use brace-based indentation for lines with brace context
-					correctIndentation = calculateIndentation(effectiveDepth, isContinuationLine, config);
-				}
-				else
-				{
-					// For lines without brace context, convert the original indentation
-					correctIndentation = convertIndentation(originalIndent, config);
-				}
+				String correctIndentation = calculateIndentation(depth, isContinuationLine, config);
 
 				// Append correctly indented line
-				result.append(correctIndentation).append(trimmedLine);
-
-				// Update depth based on braces in this line
-				int lineStartPosition = getLineStartPosition(lines, lineIndex);
-				depth = calculateDepthAfterLine(sourceCode, lineStartPosition, line, depth);
+				result.append(correctIndentation).append(strippedLine);
 
 				// Determine if next line will be a continuation
-				prevLineWasContinuation = isContinuationLine(trimmedLine);
+				prevLineWasContinuation = isContinuationLine(strippedLine);
 			}
 
 			// Add newline after each line except the last
@@ -125,54 +102,6 @@ public final class IndentationFixer
 	}
 
 	/**
-	 * Converts existing indentation from one format to another.
-	 *
-	 * @param originalIndent the original indentation string (tabs and/or spaces)
-	 * @param config the indentation configuration
-	 * @return the converted indentation string
-	 */
-	private static String convertIndentation(String originalIndent,
-		IndentationFormattingConfiguration config)
-	{
-		// Count the equivalent indent level from original whitespace
-		int indentLevel = 0;
-		for (char ch : originalIndent.toCharArray())
-		{
-			if (ch == '\t')
-			{
-				// Each tab counts as one indent level
-				++indentLevel;
-			}
-			else if (ch == ' ')
-			{
-				// Spaces accumulate to form indent levels
-				// We need to count spaces based on config.indentSize()
-				// For simplicity, treat each indentSize spaces as one level
-			}
-		}
-
-		// For spaces, count how many complete indent levels exist
-		int spaceCount = 0;
-		for (char ch : originalIndent.toCharArray())
-		{
-			if (ch == ' ')
-				++spaceCount;
-		}
-		int spaceLevels = spaceCount / config.indentSize();
-
-		// Use the maximum of tab-based or space-based levels
-		int totalLevels = Math.max(indentLevel, spaceLevels);
-
-		// Generate the correct indentation in the target format
-		if (config.indentationType() == IndentationType.TABS)
-		{
-			return "\t".repeat(totalLevels);
-		}
-
-		return " ".repeat(totalLevels * config.indentSize());
-	}
-
-	/**
 	 * Gets the position in the source code where a line starts.
 	 *
 	 * @param lines all lines in the source code
@@ -189,38 +118,6 @@ public final class IndentationFixer
 		}
 
 		return position;
-	}
-
-	/**
-	 * Calculates the indentation depth after processing braces in the line.
-	 *
-	 * @param sourceCode the full source code
-	 * @param lineStartPosition the position where the line starts
-	 * @param line the line content
-	 * @param currentDepth the current depth
-	 * @return the depth after processing this line
-	 */
-	private static int calculateDepthAfterLine(String sourceCode, int lineStartPosition, String line,
-		int currentDepth)
-	{
-		int depth = currentDepth;
-
-		for (int i = 0; i < line.length(); ++i)
-		{
-			int position = lineStartPosition + i;
-
-			// Skip content in literals or comments
-			if (SourceCodeUtils.isInLiteralOrComment(sourceCode, position))
-				continue;
-
-			char ch = line.charAt(i);
-			if (ch == '{')
-				++depth;
-			else if (ch == '}')
-				depth = Math.max(0, depth - 1);
-		}
-
-		return depth;
 	}
 
 	/**

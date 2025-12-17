@@ -17,7 +17,9 @@ public class NodeIndexTest
 	public void testValidIndex()
 	{
 		NodeIndex index = new NodeIndex(0);
-		requireThat(index.isValid(), "index.isValid()").isTrue();
+		requireThat(index.isValid(), "index.isValid()").
+			withContext(index, "index").
+			isTrue();
 		requireThat(index.index(), "index()").isEqualTo(0);
 	}
 
@@ -28,7 +30,9 @@ public class NodeIndexTest
 	public void testValidLargeIndex()
 	{
 		NodeIndex index = new NodeIndex(1_000_000);
-		requireThat(index.isValid(), "index.isValid()").isTrue();
+		requireThat(index.isValid(), "index.isValid()").
+			withContext(index, "index").
+			isTrue();
 		requireThat(index.index(), "index()").isEqualTo(1_000_000);
 	}
 
@@ -39,7 +43,9 @@ public class NodeIndexTest
 	public void testNullSentinel()
 	{
 		NodeIndex nullIndex = NodeIndex.NULL;
-		requireThat(nullIndex.isValid(), "nullIndex.isValid()").isFalse();
+		requireThat(nullIndex.isValid(), "nullIndex.isValid()").
+			withContext(nullIndex, "nullIndex").
+			isFalse();
 		requireThat(nullIndex.index(), "index()").isEqualTo(-1);
 	}
 
@@ -50,7 +56,9 @@ public class NodeIndexTest
 	public void testExplicitNullConstruction()
 	{
 		NodeIndex index = new NodeIndex(-1);
-		requireThat(index.isValid(), "index.isValid()").isFalse();
+		requireThat(index.isValid(), "index.isValid()").
+			withContext(index, "index").
+			isFalse();
 		requireThat(index.index(), "index()").isEqualTo(-1);
 	}
 

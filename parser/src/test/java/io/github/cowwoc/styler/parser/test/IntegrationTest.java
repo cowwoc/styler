@@ -1,8 +1,5 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.ast.core.NodeIndex;
-import io.github.cowwoc.styler.parser.ParseResult;
-import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -10,7 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseSucceeds;
 
 /**
  * Integration tests that parse real Java source files from the project.
@@ -34,15 +31,7 @@ public class IntegrationTest
 		throws IOException
 	{
 		Path file = Paths.get("src/main/java/io/github/cowwoc/styler/parser/Parser.java");
-		String source = Files.readString(file);
-
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds(Files.readString(file));
 	}
 
 	/**
@@ -57,15 +46,7 @@ public class IntegrationTest
 		throws IOException
 	{
 		Path file = Paths.get("src/main/java/io/github/cowwoc/styler/parser/Lexer.java");
-		String source = Files.readString(file);
-
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds(Files.readString(file));
 	}
 
 	/**
@@ -80,15 +61,7 @@ public class IntegrationTest
 		throws IOException
 	{
 		Path file = Paths.get("src/main/java/io/github/cowwoc/styler/parser/TokenType.java");
-		String source = Files.readString(file);
-
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds(Files.readString(file));
 	}
 
 	/**
@@ -103,15 +76,7 @@ public class IntegrationTest
 		throws IOException
 	{
 		Path file = Paths.get("src/main/java/io/github/cowwoc/styler/parser/Token.java");
-		String source = Files.readString(file);
-
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds(Files.readString(file));
 	}
 
 	/**
@@ -125,15 +90,7 @@ public class IntegrationTest
 		throws IOException
 	{
 		Path file = Paths.get("../ast/core/src/main/java/io/github/cowwoc/styler/ast/core/NodeType.java");
-		String source = Files.readString(file);
-
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds(Files.readString(file));
 	}
 
 	/**
@@ -149,15 +106,7 @@ public class IntegrationTest
 		throws IOException
 	{
 		Path file = Paths.get("../ast/core/src/main/java/io/github/cowwoc/styler/ast/core/NodeArena.java");
-		String source = Files.readString(file);
-
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds(Files.readString(file));
 	}
 
 	/**
@@ -173,14 +122,6 @@ public class IntegrationTest
 		throws IOException
 	{
 		Path file = Paths.get("../ast/core/src/main/java/io/github/cowwoc/styler/ast/core/NodeIndex.java");
-		String source = Files.readString(file);
-
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			NodeIndex root = ((ParseResult.Success) result).rootNode();
-			requireThat(root.isValid(), "root.isValid()").isTrue();
-		}
+		assertParseSucceeds(Files.readString(file));
 	}
 }

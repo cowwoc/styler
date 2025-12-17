@@ -73,7 +73,9 @@ public class NodeArenaTest
 		{
 			NodeIndex index = arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 5);
 
-			requireThat(index.isValid(), "index.isValid()").isTrue();
+			requireThat(index.isValid(), "index.isValid()").
+				withContext(index, "index").
+				isTrue();
 			requireThat(index.index(), "index.index()").isEqualTo(0);
 			requireThat(arena.getNodeCount(), "arena.getNodeCount()").isEqualTo(1);
 		}
@@ -255,7 +257,9 @@ public class NodeArenaTest
 			arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 1);
 
 			NodeIndex nullIndex = NodeIndex.NULL;
-			requireThat(nullIndex.isValid(), "nullIndex.isValid()").isFalse();
+			requireThat(nullIndex.isValid(), "nullIndex.isValid()").
+				withContext(nullIndex, "nullIndex").
+				isFalse();
 			assertThrows(IllegalArgumentException.class, () -> arena.getType(nullIndex));
 		}
 	}

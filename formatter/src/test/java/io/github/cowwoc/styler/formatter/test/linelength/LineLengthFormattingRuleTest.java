@@ -141,11 +141,11 @@ public class LineLengthFormattingRuleTest
 	public void shouldRespectCustomMaxLength()
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
-		// Create a 50-character line
-		String source = "class Test { void method() { int x = 1; } } extra";
+		// Create a line that exceeds 40 characters
+		String source = "class Test { void method() { int x = 1; } }";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		// With max length 40, should report violation
+		// With max length 40, should report violation (line is 43 chars)
 		LineLengthConfiguration strictConfig = new LineLengthConfiguration(
 			"line-length", 40, 4, 4,
 			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
@@ -191,7 +191,11 @@ public class LineLengthFormattingRuleTest
 	public void shouldPreserveMultipleLines()
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
-		String source = "class Test {\n    void method() {\n    }\n}";
+		String source = """
+			class Test {
+			    void method() {
+			    }
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
 		String result = rule.format(context, List.of());
