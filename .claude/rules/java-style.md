@@ -161,6 +161,15 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   // ❌ WRONG - Trailing comment
   ++i; // Skip the closing character
   ```
+- Comments must not reference past implementations or "original behavior":
+  ```java
+  // ❌ WRONG - References past implementation
+  int adjusted = position - 1;  // -1 to match original behavior (endPosition is inclusive)
+
+  // ✅ CORRECT - Explains current state
+  // -1 because endPosition is inclusive, pointing to semicolon
+  int adjusted = position - 1;
+  ```
 
 ### Time Calculations
 Use `Instant` and `Duration` instead of `long` for time measurements:
