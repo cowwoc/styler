@@ -196,11 +196,28 @@ done
 END_TIME=$(date +%s)
 DURATION=$((END_TIME - START_TIME))
 
-# Success - return JSON
-json_success \
-    "task_name=$TASK_NAME" \
-    "task_dir=$TASK_DIR" \
-    "worktrees=$(printf '%s\n' "${CREATED_WORKTREES[@]}" | jq -R . | jq -s .)" \
-    "branches=$(printf '%s\n' "${CREATED_BRANCHES[@]}" | jq -R . | jq -s .)" \
-    "state_file=$TASK_DIR/task.json" \
-    "duration_seconds=$DURATION"
+# Build worktrees and branches as JSON arrays
+WORKTREES_JSON=$(printf '%s\n' "${CREATED_WORKTREES[@]}" | jq -R . | jq -s .)
+BRANCHES_JSON=$(printf '%s\n' "${CREATED_BRANCHES[@]}" | jq -R . | jq -s .)
+
+# Build complete JSON object for json_success
+ADDITIONAL_JSON=$(jq -n \
+    --arg task_name "$TASK_NAME" \
+    --arg task_dir "$TASK_DIR" \
+    --argjson worktrees "$WORKTREES_JSON" \
+    --argjson branches "$BRANCHES_JSON" \
+    --arg state_file "$TASK_DIR/task.json" \
+    --arg timestamp "$TIMESTAMP" \
+    --argjson duration "$DURATION" \
+    '{
+        task_name: $task_name,
+        task_dir: $task_dir,
+        worktrees: $worktrees,
+        branches: $branches,
+        state_file: $state_file,
+        timestamp: $timestamp,
+        duration_seconds: $duration
+    }')
+
+# Success - return JSON with properly constructed object
+json_success "Task initialized successfully" "$ADDITIONAL_JSON"
