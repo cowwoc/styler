@@ -1,5 +1,46 @@
 # Changelog
 
+## 2025-12-17
+
+### E1.5: AST Extension for Formatter Support ✅
+
+**Completion Date**: 2025-12-17
+
+**Task**: `extend-ast-support`
+
+**Problem Solved**:
+- Parser was missing AST node creation for enum constants with bodies
+- Lambda body parsing created duplicate BLOCK nodes (incorrect AST depth)
+- Switch expressions not recognized as indent-producing nodes
+- Missing TokenType entries for Java 21+ constructs
+
+**Solution Implemented**:
+- Added ENUM_CONSTANT node creation in `Parser.parseEnumConstant()`
+- Fixed duplicate BLOCK node allocation in `Parser.parseLambdaBody()`
+- Added SWITCH_EXPRESSION to indent-producing node types in ContextDetector
+- Extended TokenType with missing Java 21+ token types
+
+**Key Components**:
+- **Parser.parseEnumConstant()**: Now creates ENUM_CONSTANT nodes for enum constants with bodies
+- **Parser.parseLambdaBody()**: Fixed to avoid duplicate BLOCK node when parsing block lambdas
+- **ContextDetector**: Extended to handle additional node types for wrapping context
+
+**Files Modified**:
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java`
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Lexer.java`
+- `parser/src/main/java/io/github/cowwoc/styler/parser/TokenType.java`
+- `ast/core/src/main/java/io/github/cowwoc/styler/ast/core/NodeArena.java`
+- `ast/core/src/main/java/io/github/cowwoc/styler/ast/core/NodeType.java`
+- `formatter/src/main/java/io/github/cowwoc/styler/formatter/linelength/internal/ContextDetector.java`
+
+**Quality**:
+- All 357 formatter tests passing
+- Zero Checkstyle/PMD violations
+
+**Unblocks**: E2 (migrate-formatters-to-ast)
+
+---
+
 ## 2025-12-16
 
 ### E1: Parser Error Handling Enhancement ✅

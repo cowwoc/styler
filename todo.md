@@ -359,9 +359,21 @@ benchmarking, and validate with Maven plugin integration.
 ### E1. Parser Error Handling Enhancement ✅ COMPLETE (2025-12-16)
 - [x] **COMPLETE:** `add-parser-error-record` - Add ParseError record and update Parser to return errors in result (2025-12-16)
 
+### E1.5. AST Extension for Formatter Support ✅ COMPLETE (2025-12-17)
+- [x] **COMPLETE:** `extend-ast-support` - Extend AST parser to support all Java constructs needed by formatters (2025-12-17)
+  - **Dependencies**: E1 ✅ (parser error handling)
+  - **Blocks**: E2 (migrate-formatters-to-ast)
+  - **Purpose**: Add missing AST node types and parsing support required for AST-based formatting
+  - **Components**:
+    - Add ENUM_CONSTANT node creation in Parser.parseEnumConstant()
+    - Add SWITCH_EXPRESSION to indent-producing node types
+    - Fix duplicate BLOCK node allocation in lambda parsing
+    - Add missing TokenType entries for Java 21+ constructs
+  - **Quality**: All 357 formatter tests passing
+
 ### E2. AST-Based Formatter Migration
 - [ ] **BLOCKED:** `migrate-formatters-to-ast` - Migrate all formatting rules to AST-based processing
-  - **Dependencies**: B2.5 ✅ (pipeline stages), all formatters (B1 + C3) ✅, C4 (concurrency benchmark -
+  - **Dependencies**: E1.5 ✅ (extend-ast-support), B2.5 ✅ (pipeline stages), all formatters (B1 + C3) ✅, C4 (concurrency benchmark -
     understand performance baseline before architectural changes)
   - **Blocks**: None (architectural improvement, can be done incrementally)
   - **Parallelizable With**: D1, D2, D3 (independent of polish tasks)

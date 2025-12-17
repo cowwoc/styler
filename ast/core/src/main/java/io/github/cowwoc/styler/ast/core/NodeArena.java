@@ -8,25 +8,23 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 
 /**
  * Arena-based storage for AST nodes using index-overlay pattern.
- * Each node occupies exactly 16 bytes with the following layout:
+ * Each node occupies exactly 12 bytes with the following layout:
  * <ul>
  *   <li>Bytes 0-3: NodeType ordinal (int)</li>
  *   <li>Bytes 4-7: Start position in source (int)</li>
  *   <li>Bytes 8-11: End position in source (int)</li>
- *   <li>Bytes 12-15: Data field - meaning depends on NodeType (int)</li>
  * </ul>
  */
 public final class NodeArena implements AutoCloseable
 {
-	private static final int BYTES_PER_NODE = 16;
+	private static final int BYTES_PER_NODE = 12;
 	private static final int INITIAL_CAPACITY = 1024;
 	private static final ValueLayout.OfInt INT_LAYOUT = ValueLayout.JAVA_INT;
 
-	// Field offsets within each 16-byte node
+	// Field offsets within each 12-byte node
 	private static final int TYPE_OFFSET = 0;
 	private static final int START_OFFSET = 4;
 	private static final int END_OFFSET = 8;
-	private static final int DATA_OFFSET = 12;
 
 	private final Arena arena;
 	private MemorySegment segment;
@@ -62,12 +60,11 @@ public final class NodeArena implements AutoCloseable
 	 * @param type  the type of node to create
 	 * @param start the start position in the source code
 	 * @param end   the end position in the source code
-	 * @param data  the data field (meaning depends on node type)
 	 * @return the index of the newly created node
 	 * @throws NullPointerException if {@code type} is null
 	 * @throws IllegalArgumentException if {@code start}/{@code end} positions are negative
 	 */
-	public NodeIndex allocateNode(NodeType type, int start, int end, int data)
+	public NodeIndex allocateNode(NodeType type, int start, int end)
 	{
 		requireThat(type, "type").isNotNull();
 		requireThat(start, "start").isNotNegative();
@@ -101,7 +98,6 @@ public final class NodeArena implements AutoCloseable
 		segment.set(INT_LAYOUT, offset + TYPE_OFFSET, type.ordinal());
 		segment.set(INT_LAYOUT, offset + START_OFFSET, start);
 		segment.set(INT_LAYOUT, offset + END_OFFSET, end);
-		segment.set(INT_LAYOUT, offset + DATA_OFFSET, data);
 
 		NodeIndex result = new NodeIndex(nodeCount);
 		++nodeCount;
@@ -161,32 +157,6 @@ public final class NodeArena implements AutoCloseable
 	{
 		long offset = getNodeOffset(index);
 		return segment.get(INT_LAYOUT, offset + END_OFFSET);
-	}
-
-	/**
-	 * Returns the data field of the node at the specified index.
-	 *
-	 * @param index the node index
-	 * @return the data field value
-	 * @throws IllegalArgumentException if {@code index} is invalid
-	 */
-	public int getData(NodeIndex index)
-	{
-		long offset = getNodeOffset(index);
-		return segment.get(INT_LAYOUT, offset + DATA_OFFSET);
-	}
-
-	/**
-	 * Sets the data field of the node at the specified index.
-	 *
-	 * @param index the node index
-	 * @param data  the new data value
-	 * @throws IllegalArgumentException if {@code index} is invalid
-	 */
-	public void setData(NodeIndex index, int data)
-	{
-		long offset = getNodeOffset(index);
-		segment.set(INT_LAYOUT, offset + DATA_OFFSET, data);
 	}
 
 	/**

@@ -40,7 +40,7 @@ public final class TestTransformationContext implements TransformationContext
 		this.arena = new NodeArena();
 
 		// Create a minimal AST with a compilation unit covering the entire source
-		this.rootNode = arena.allocateNode(NodeType.COMPILATION_UNIT, 0, sourceCode.length(), 0);
+		this.rootNode = arena.allocateNode(NodeType.COMPILATION_UNIT, 0, sourceCode.length());
 	}
 
 	/**
