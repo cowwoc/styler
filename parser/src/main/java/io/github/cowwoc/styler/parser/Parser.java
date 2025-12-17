@@ -1739,6 +1739,29 @@ public final class Parser implements AutoCloseable
 				int end = tokens.get(position - 1).end();
 				left = arena.allocateNode(NodeType.ARRAY_ACCESS, start, end);
 			}
+			else if (match(TokenType.DOUBLE_COLON))
+			{
+				// Method reference: Type::method or Type::new
+				int end;
+				if (match(TokenType.NEW))
+				{
+					// Constructor reference
+					end = tokens.get(position - 1).end();
+				}
+				else if (currentToken().type() == TokenType.IDENTIFIER)
+				{
+					// Method reference
+					end = currentToken().end();
+					consume();
+				}
+				else
+				{
+					throw new ParserException(
+						"Expected method name or 'new' after '::' but found " + currentToken().type(),
+						currentToken().start());
+				}
+				left = arena.allocateNode(NodeType.METHOD_REFERENCE, start, end);
+			}
 			else if (currentToken().type() == TokenType.INC || currentToken().type() == TokenType.DEC)
 			{
 				// Postfix increment/decrement

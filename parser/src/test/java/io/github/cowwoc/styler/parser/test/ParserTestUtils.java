@@ -35,4 +35,27 @@ public final class ParserTestUtils
 			}
 		}
 	}
+
+	/**
+	 * Asserts that the given source code fails to parse.
+	 * Used to verify that malformed syntax is correctly rejected by the parser.
+	 *
+	 * @param source the source code to parse
+	 * @throws AssertionError if parsing succeeds when it should have failed
+	 */
+	public static void assertParseFails(String source)
+	{
+		try (Parser parser = new Parser(source))
+		{
+			switch (parser.parse())
+			{
+				case ParseResult.Success success ->
+					throw new AssertionError("Expected Failure but got: " + success);
+				case ParseResult.Failure _ ->
+				{
+					// Expected - parsing should fail for malformed input
+				}
+			}
+		}
+	}
 }

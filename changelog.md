@@ -2,6 +2,39 @@
 
 ## 2025-12-17
 
+### E3: Method Reference Parser Support ✅
+
+**Completion Date**: 2025-12-17
+
+**Task**: `add-method-reference-support`
+
+**Problem Solved**:
+- Parser did not handle method reference expressions (`Type::method`, `instance::method`, `Type::new`)
+- Lexer tokenized `::` as `DOUBLE_COLON` but parser had no handling
+
+**Solution Implemented**:
+- Added DOUBLE_COLON handling branch in `parsePostfix()` method
+- Handles static method references (`String::valueOf`)
+- Handles instance method references (`obj::method`, `this::method`, `super::method`)
+- Handles constructor references (`ArrayList::new`)
+- Creates METHOD_REFERENCE nodes with proper span tracking
+
+**Files Created**:
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/MethodReferenceParserTest.java` (24 test cases)
+
+**Files Modified**:
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java` (+23 lines)
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/ParserTestUtils.java` (+23 lines, assertParseFails)
+- `todo.md` (+17 lines, added E4 follow-up task)
+
+**Quality**:
+- All 158 parser tests passing
+- Zero Checkstyle/PMD violations
+
+**Follow-up**: Added E4 task to update all parser tests to validate AST node types (not just successful parsing)
+
+---
+
 ### E2: AST-Based Formatter Migration ✅
 
 **Completion Date**: 2025-12-17

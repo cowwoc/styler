@@ -113,8 +113,6 @@ public class BatchProcessorConcurrencyTest
 	 * ensuring correct behavior under concurrent access patterns.
 	 */
 	@Test
-	// Try-with-resources cannot handle dynamically-sized collections of AutoCloseable resources
-	@SuppressWarnings("PMD.UseTryWithResources")
 	public void shouldHandleMultipleConcurrentBatchProcessors() throws IOException, InterruptedException
 	{
 		FileProcessingPipeline pipeline = TestPipelineFactory.createDefaultPipeline();
