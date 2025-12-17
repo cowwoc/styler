@@ -265,6 +265,92 @@ See: /workspace/main/CLAUDE.md § MANDATORY USER APPROVAL CHECKPOINTS
 		fi
 		;;
 
+	AWAITING_USER_APPROVAL)
+		# AWAITING_USER_APPROVAL requires:
+		# 1. Task branch squashed to single commit
+		# 2. All agent branches deleted
+		# 3. All agent worktrees removed
+		TASK_WORKTREE="${TASK_DIR}/code"
+
+		if [[ -d "$TASK_WORKTREE" ]]; then
+			# Check commit count
+			COMMIT_COUNT=$(cd "$TASK_WORKTREE" && git rev-list --count main..HEAD 2>/dev/null || echo "0")
+
+			# Check for agent branches
+			AGENT_BRANCHES=$(cd "$TASK_WORKTREE" && git branch --list "*${TASK_NAME}-*" 2>/dev/null | tr -d ' ' || true)
+
+			CLEANUP_ISSUES=""
+
+			if [[ "$COMMIT_COUNT" -ne 1 ]]; then
+				CLEANUP_ISSUES="$CLEANUP_ISSUES\n- Task branch has $COMMIT_COUNT commits (should be 1 - use git-squash skill)"
+			fi
+
+			if [[ -n "$AGENT_BRANCHES" ]]; then
+				CLEANUP_ISSUES="$CLEANUP_ISSUES\n- Agent branches still exist: $(echo $AGENT_BRANCHES | tr '\n' ' ')"
+			fi
+
+			# Check for agent worktrees
+			for agent in architect tester formatter engineer builder; do
+				AGENT_WORKTREE="${TASK_DIR}/agents/${agent}/code"
+				if [[ -d "$AGENT_WORKTREE" ]]; then
+					CLEANUP_ISSUES="$CLEANUP_ISSUES\n- Agent worktree still exists: ${agent}"
+				fi
+			done
+
+			if [[ -n "$CLEANUP_ISSUES" ]]; then
+				VIOLATION_FOUND=true
+				VIOLATION_MESSAGE="## 🚨 STATE TRANSITION BLOCKED - PRE-APPROVAL CLEANUP REQUIRED
+
+**Task**: \`$TASK_NAME\`
+**Attempted Transition**: \`$CURRENT_STATE\` → \`$NEW_STATE\`
+**Violation**: AWAITING_USER_APPROVAL requires cleanup before presenting changes
+
+## ⚠️ CLEANUP ISSUES FOUND
+$CLEANUP_ISSUES
+
+## 🧹 REQUIRED CLEANUP STEPS
+
+Use the **pre-presentation-cleanup** skill or follow these steps:
+
+### Step 1: Remove Agent Worktrees
+\`\`\`bash
+for agent in architect tester formatter engineer builder; do
+  git worktree remove ${TASK_DIR}/agents/\${agent}/code --force 2>/dev/null || true
+done
+\`\`\`
+
+### Step 2: Delete Agent Branches
+\`\`\`bash
+cd /workspace/main
+for branch in \$(git branch --list '*${TASK_NAME}-*'); do
+  git branch -D \"\$branch\" 2>/dev/null || true
+done
+\`\`\`
+
+### Step 3: Squash Commits (use git-squash skill)
+\`\`\`bash
+cd ${TASK_WORKTREE}
+# Use git-squash skill for safe squashing with backup
+\`\`\`
+
+### Step 4: Verify Cleanup
+\`\`\`bash
+git rev-list --count main..HEAD  # Should output: 1
+git branch | grep '${TASK_NAME}'   # Should show ONLY task branch
+\`\`\`
+
+## Protocol Reference
+
+See: pre-presentation-cleanup skill for complete workflow
+
+**Why This Matters**:
+- User should review a clean, single commit
+- Agent branches are implementation artifacts, not for user review
+- Multiple commits create messy history and require rework"
+			fi
+		fi
+		;;
+
 	COMPLETE)
 		# COMPLETE requires user-approved-changes.flag
 		APPROVAL_FLAG="${TASK_DIR}/user-approved-changes.flag"
