@@ -3,9 +3,9 @@ package io.github.cowwoc.styler.formatter.brace.internal;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.brace.BraceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.brace.BraceStyle;
-import io.github.cowwoc.styler.formatter.internal.SourceCodeUtils;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 /**
@@ -33,13 +33,14 @@ public final class BraceFixer
 	{
 		String sourceCode = context.sourceCode();
 		List<Integer> bracePositions = new ArrayList<>();
+		BitSet textAndComments = context.positionIndex().getTextAndCommentPositions();
 
-		// Find all braces that are not inside strings, characters, or comments
+		// Find all braces that are not inside text or comments
 		for (int i = 0; i < sourceCode.length(); ++i)
 		{
 			context.checkDeadline();
 
-			if (sourceCode.charAt(i) == '{' && !SourceCodeUtils.isInLiteralOrComment(sourceCode, i))
+			if (sourceCode.charAt(i) == '{' && !textAndComments.get(i))
 			{
 				BraceStyle currentStyle = detectCurrentStyle(sourceCode, i);
 				BraceStyle expectedStyle = config.braceStyle();

@@ -85,8 +85,10 @@ public class BraceEdgeCaseTest
 	public void shouldHandleAnnotationsBeforeBrace()
 	{
 		String source = """
-			@Override
-			public void method() {
+			class Test {
+				@Override
+				public void method() {
+				}
 			}
 			""";
 		TestTransformationContext context = new TestTransformationContext(source);

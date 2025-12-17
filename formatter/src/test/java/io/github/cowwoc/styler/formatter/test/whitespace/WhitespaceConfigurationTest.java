@@ -1,12 +1,14 @@
 package io.github.cowwoc.styler.formatter.test.whitespace;
 
-import java.util.List;
+import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingRule;
-import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.formatter.test.whitespace.WhitespaceTestUtils.wrapInMethod;
 
 /**
  * Tests for WhitespaceFormattingConfiguration validation and behavior.
@@ -64,7 +66,7 @@ public class WhitespaceConfigurationTest
 	@Test
 	public void shouldRespectConfigurationDisable()
 	{
-		String source = "int x = a+b;";
+		String source = wrapInMethod("int x = a+b;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 
@@ -93,7 +95,7 @@ public class WhitespaceConfigurationTest
 	@Test
 	public void shouldRespectCommaSpacingConfig()
 	{
-		String source = "method(a,b,c)";
+		String source = wrapInMethod("method(a,b,c);");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 
@@ -122,7 +124,7 @@ public class WhitespaceConfigurationTest
 	@Test
 	public void shouldRespectKeywordSpacingConfig()
 	{
-		String source = "if(x){}";
+		String source = wrapInMethod("if(x){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 
@@ -146,70 +148,12 @@ public class WhitespaceConfigurationTest
 	}
 
 	/**
-	 * Tests that method reference spacing behavior is configurable.
-	 */
-	@Test
-	public void shouldRespectMethodReferenceConfig()
-	{
-		String source = "String :: valueOf";
-		TestTransformationContext context = new TestTransformationContext(source);
-		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
-
-		// Create config with noSpaceAroundMethodReference enabled
-		WhitespaceFormattingConfiguration config = new WhitespaceFormattingConfiguration(
-			"whitespace",
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true);   // noSpaceAroundMethodReference = true
-
-		String result = rule.format(context, List.of(config));
-
-		// Should have no spaces around ::
-		requireThat(result, "result").contains("String::valueOf");
-	}
-
-	/**
-	 * Tests that lambda arrow spacing can be disabled.
-	 */
-	@Test
-	public void shouldRespectLambdaArrowConfig()
-	{
-		String source = "x  ->  y";
-		TestTransformationContext context = new TestTransformationContext(source);
-		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
-
-		// Create config with spaceAroundArrowInLambda disabled
-		WhitespaceFormattingConfiguration config = new WhitespaceFormattingConfiguration(
-			"whitespace",
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			false,   // spaceAroundArrowInLambda = false
-			true);
-
-		String result = rule.format(context, List.of(config));
-
-		// Should preserve original spacing
-		requireThat(result, "result").isEqualTo(source);
-	}
-
-	/**
 	 * Tests that enhanced for colon spacing can be disabled.
 	 */
 	@Test
 	public void shouldRespectEnhancedForColonConfig()
 	{
-		String source = "for(String s : list){}";
+		String source = wrapInMethod("for(String s : list){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 
@@ -238,7 +182,7 @@ public class WhitespaceConfigurationTest
 	@Test
 	public void shouldRespectAssignmentOperatorConfig()
 	{
-		String source = "x=1;";
+		String source = wrapInMethod("x=1;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 

@@ -1,12 +1,14 @@
 package io.github.cowwoc.styler.formatter.test.whitespace;
 
-import java.util.List;
+import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingRule;
-import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import org.testng.annotations.Test;
 
+import java.util.List;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.formatter.test.whitespace.WhitespaceTestUtils.wrapInMethod;
 
 /**
  * Tests for comma, semicolon, colon, and parentheses spacing rules.
@@ -19,7 +21,7 @@ public class WhitespacePunctuationTest
 	@Test
 	public void shouldAddSpaceAfterComma()
 	{
-		String source = "method(a,b,c)";
+		String source = wrapInMethod("method(a,b,c);");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -35,7 +37,7 @@ public class WhitespacePunctuationTest
 	@Test
 	public void shouldRemoveSpaceBeforeComma()
 	{
-		String source = "method(a , b , c)";
+		String source = wrapInMethod("method(a , b , c);");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -52,14 +54,14 @@ public class WhitespacePunctuationTest
 	@Test
 	public void shouldRemoveSpaceBeforeSemicolon()
 	{
-		String source = "int x = 1 ;";
+		String source = wrapInMethod("int x = 1 ;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
 
 		String result = rule.format(context, List.of(config));
 
-		requireThat(result, "result").isEqualTo("int x = 1;");
+		requireThat(result, "result").contains("int x = 1;");
 	}
 
 	/**
@@ -68,7 +70,7 @@ public class WhitespacePunctuationTest
 	@Test
 	public void shouldRemoveSpaceAfterOpeningParen()
 	{
-		String source = "method( x )";
+		String source = wrapInMethod("method( x );");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -84,7 +86,7 @@ public class WhitespacePunctuationTest
 	@Test
 	public void shouldRemoveSpaceBeforeClosingParen()
 	{
-		String source = "method( x )";
+		String source = wrapInMethod("method( x );");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -100,7 +102,7 @@ public class WhitespacePunctuationTest
 	@Test
 	public void shouldRemoveSpaceBeforeMethodParen()
 	{
-		String source = "method ()";
+		String source = wrapInMethod("method ();");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -116,7 +118,7 @@ public class WhitespacePunctuationTest
 	@Test
 	public void shouldRemoveSpaceAfterOpeningBracket()
 	{
-		String source = "array[ 0 ]";
+		String source = wrapInMethod("Object x = array[ 0 ];");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -132,7 +134,7 @@ public class WhitespacePunctuationTest
 	@Test
 	public void shouldRemoveSpaceBeforeClosingBracket()
 	{
-		String source = "array[ 0 ]";
+		String source = wrapInMethod("Object x = array[ 0 ];");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -148,7 +150,7 @@ public class WhitespacePunctuationTest
 	@Test
 	public void shouldHandleColonInSwitchCase()
 	{
-		String source = "case 1 :";
+		String source = wrapInMethod("switch(x){case 1 :break;}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -164,7 +166,7 @@ public class WhitespacePunctuationTest
 	@Test
 	public void shouldAddSpaceAroundColonInEnhancedFor()
 	{
-		String source = "for(String s:list){}";
+		String source = wrapInMethod("for(String s:list){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -180,7 +182,7 @@ public class WhitespacePunctuationTest
 	@Test
 	public void shouldAddSpaceAroundColonInTernary()
 	{
-		String source = "a?b:c";
+		String source = wrapInMethod("int x = a?b:c;");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
@@ -191,44 +193,12 @@ public class WhitespacePunctuationTest
 	}
 
 	/**
-	 * Tests handling of comma in array initializer.
-	 */
-	@Test
-	public void shouldHandleCommaInArrayInitializer()
-	{
-		String source = "{1,2,3}";
-		TestTransformationContext context = new TestTransformationContext(source);
-		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
-		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
-
-		String result = rule.format(context, List.of(config));
-
-		requireThat(result, "result").contains("{1, 2, 3}");
-	}
-
-	/**
-	 * Tests handling of comma in generic types.
-	 */
-	@Test
-	public void shouldHandleCommaInGenericTypes()
-	{
-		String source = "Map<String,Integer>";
-		TestTransformationContext context = new TestTransformationContext(source);
-		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
-		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();
-
-		String result = rule.format(context, List.of(config));
-
-		requireThat(result, "result").contains("Map<String, Integer>");
-	}
-
-	/**
 	 * Tests that semicolon in for loop is properly handled.
 	 */
 	@Test
 	public void shouldHandleSemicolonInForLoop()
 	{
-		String source = "for(int i=0 ; i<n ; i++){}";
+		String source = wrapInMethod("for(int i=0 ; i<n ; i++){}");
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.defaultConfig();

@@ -6,9 +6,9 @@ import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
 import io.github.cowwoc.styler.formatter.brace.BraceFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.brace.BraceStyle;
-import io.github.cowwoc.styler.formatter.internal.SourceCodeUtils;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 
 /**
@@ -29,7 +29,7 @@ public final class BraceAnalyzer
 	 * Analyzes the source code for brace style violations.
 	 *
 	 * @param context the transformation context
-	 * @param config the brace formatting configuration
+	 * @param config  the brace formatting configuration
 	 * @return a list of formatting violations (empty if no violations)
 	 */
 	public static List<FormattingViolation> analyze(TransformationContext context,
@@ -38,14 +38,16 @@ public final class BraceAnalyzer
 		List<FormattingViolation> violations = new ArrayList<>();
 		String sourceCode = context.sourceCode();
 
-		// Find all opening braces that are not inside strings, characters, or comments
+		// Get positions inside text and comments from AST
+		BitSet textAndComments = context.positionIndex().getTextAndCommentPositions();
+
+		// Scan for braces, skipping text and comments
 		for (int i = 0; i < sourceCode.length(); ++i)
 		{
 			context.checkDeadline();
 
-			if (sourceCode.charAt(i) == '{' && !SourceCodeUtils.isInLiteralOrComment(sourceCode, i))
+			if (sourceCode.charAt(i) == '{' && !textAndComments.get(i))
 			{
-				// Detect current style
 				BraceStyle currentStyle = detectCurrentStyle(sourceCode, i);
 				BraceStyle expectedStyle = config.braceStyle();
 
