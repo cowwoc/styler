@@ -28,6 +28,8 @@ trap 'echo "ERROR in auto-learn-from-mistakes.sh at line $LINENO: Command failed
 #                 (eliminates missed messages and removes need for rate limiting)
 #   - 2025-11-28: Added Pattern 12 (wrong working directory) for detecting commands
 #                 run from incorrect directories (not a git repo, missing pom.xml, etc.)
+#   - 2025-12-17: Added Pattern 13 (parse errors) for detecting jq/JSON parse errors
+#                 and other data format parsing failures
 
 # Read input from stdin (hook context JSON for PostToolUse)
 HOOK_CONTEXT=$(cat)
@@ -166,6 +168,20 @@ fi
 if [[ "$TOOL_NAME" == "Bash" ]] && echo "$TOOL_RESULT" | grep -qiE "No such file or directory.*(/workspace|/tasks)|cannot access.*/workspace|cd:.*no such file"; then
   MISTAKE_TYPE="wrong_working_directory"
   MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B2 -A3 -iE "No such file or directory|cannot access|cd:" | head -15)
+fi
+
+# Pattern 13: Parse errors (HIGH)
+# Detects jq parse errors, JSON parse errors, XML parse errors, etc.
+# These often indicate function signature mismatches or malformed data
+if echo "$TOOL_RESULT" | grep -qiE "parse error.*Invalid|parse error.*Unexpected|jq: error|JSON.parse.*SyntaxError|Invalid JSON|malformed JSON|Unexpected token|Unexpected end of"; then
+  MISTAKE_TYPE="parse_error"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B3 -A5 -iE "parse error|jq: error|JSON|SyntaxError|Invalid|malformed|Unexpected" | head -20)
+fi
+
+# Pattern 13b: jq-specific parse errors with line/column info
+if echo "$TOOL_RESULT" | grep -qiE "parse error.*at line [0-9]+|Invalid literal at line"; then
+  MISTAKE_TYPE="parse_error"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B3 -A5 -iE "parse error|Invalid literal" | head -20)
 fi
 
 # Also check last assistant message from conversation log (if rate limit allows)
