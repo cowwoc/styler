@@ -131,6 +131,7 @@ public enum TokenType
 	// Identifiers and comments
 	IDENTIFIER,
 	LINE_COMMENT,
+	MARKDOWN_DOC_COMMENT,  // JDK 23+ (JEP 467) - /// style documentation
 	BLOCK_COMMENT,
 	JAVADOC_COMMENT,
 

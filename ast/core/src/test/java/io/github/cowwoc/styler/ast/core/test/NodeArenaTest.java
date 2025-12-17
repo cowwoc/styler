@@ -71,7 +71,7 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			NodeIndex index = arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 5, 42);
+			NodeIndex index = arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 5);
 
 			requireThat(index.isValid(), "index.isValid()").isTrue();
 			requireThat(index.index(), "index.index()").isEqualTo(0);
@@ -87,7 +87,7 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			NodeIndex index = arena.allocateNode(NodeType.STRING_LITERAL, 10, 20, 0);
+			NodeIndex index = arena.allocateNode(NodeType.STRING_LITERAL, 10, 20);
 
 			requireThat(arena.getType(index), "arena.getType(index)").isEqualTo(NodeType.STRING_LITERAL);
 		}
@@ -101,7 +101,7 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			NodeIndex index = arena.allocateNode(NodeType.IDENTIFIER, 15, 25, 0);
+			NodeIndex index = arena.allocateNode(NodeType.IDENTIFIER, 15, 25);
 
 			requireThat(arena.getStart(index), "arena.getStart(index)").isEqualTo(15);
 		}
@@ -115,26 +115,9 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			NodeIndex index = arena.allocateNode(NodeType.IDENTIFIER, 15, 25, 0);
+			NodeIndex index = arena.allocateNode(NodeType.IDENTIFIER, 15, 25);
 
 			requireThat(arena.getEnd(index), "arena.getEnd(index)").isEqualTo(25);
-		}
-	}
-
-	/**
-	 * Tests that node data can be retrieved and modified.
-	 */
-	@Test
-	public void testGetAndSetData()
-	{
-		try (NodeArena arena = new NodeArena())
-		{
-			NodeIndex index = arena.allocateNode(NodeType.METHOD_INVOCATION, 0, 10, 123);
-
-			requireThat(arena.getData(index), "arena.getData(index)").isEqualTo(123);
-
-			arena.setData(index, 456);
-			requireThat(arena.getData(index), "arena.getData(index)").isEqualTo(456);
 		}
 	}
 
@@ -146,20 +129,23 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			NodeIndex first = arena.allocateNode(NodeType.CLASS_DECLARATION, 0, 100, 1);
-			NodeIndex second = arena.allocateNode(NodeType.METHOD_DECLARATION, 10, 50, 2);
-			NodeIndex third = arena.allocateNode(NodeType.RETURN_STATEMENT, 30, 40, 3);
+			NodeIndex first = arena.allocateNode(NodeType.CLASS_DECLARATION, 0, 100);
+			NodeIndex second = arena.allocateNode(NodeType.METHOD_DECLARATION, 10, 50);
+			NodeIndex third = arena.allocateNode(NodeType.RETURN_STATEMENT, 30, 40);
 
 			requireThat(arena.getNodeCount(), "arena.getNodeCount()").isEqualTo(3);
 
 			requireThat(arena.getType(first), "arena.getType(first)").isEqualTo(NodeType.CLASS_DECLARATION);
-			requireThat(arena.getData(first), "arena.getData(first)").isEqualTo(1);
+			requireThat(arena.getStart(first), "arena.getStart(first)").isEqualTo(0);
+			requireThat(arena.getEnd(first), "arena.getEnd(first)").isEqualTo(100);
 
 			requireThat(arena.getType(second), "arena.getType(second)").isEqualTo(NodeType.METHOD_DECLARATION);
-			requireThat(arena.getData(second), "arena.getData(second)").isEqualTo(2);
+			requireThat(arena.getStart(second), "arena.getStart(second)").isEqualTo(10);
+			requireThat(arena.getEnd(second), "arena.getEnd(second)").isEqualTo(50);
 
 			requireThat(arena.getType(third), "arena.getType(third)").isEqualTo(NodeType.RETURN_STATEMENT);
-			requireThat(arena.getData(third), "arena.getData(third)").isEqualTo(3);
+			requireThat(arena.getStart(third), "arena.getStart(third)").isEqualTo(30);
+			requireThat(arena.getEnd(third), "arena.getEnd(third)").isEqualTo(40);
 		}
 	}
 
@@ -173,12 +159,12 @@ public class NodeArenaTest
 		{
 			requireThat(arena.getCapacity(), "arena.getCapacity()").isEqualTo(2);
 
-			arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 1, 0);
-			arena.allocateNode(NodeType.INTEGER_LITERAL, 2, 3, 0);
+			arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 1);
+			arena.allocateNode(NodeType.INTEGER_LITERAL, 2, 3);
 			requireThat(arena.getCapacity(), "arena.getCapacity()").isEqualTo(2);
 
 			// This should trigger growth
-			arena.allocateNode(NodeType.INTEGER_LITERAL, 4, 5, 0);
+			arena.allocateNode(NodeType.INTEGER_LITERAL, 4, 5);
 			requireThat(arena.getCapacity(), "arena.getCapacity()").isEqualTo(4);
 			requireThat(arena.getNodeCount(), "arena.getNodeCount()").isEqualTo(3);
 		}
@@ -192,27 +178,24 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena(2))
 		{
-			NodeIndex first = arena.allocateNode(NodeType.STRING_LITERAL, 0, 10, 100);
-			NodeIndex second = arena.allocateNode(NodeType.IDENTIFIER, 20, 30, 200);
+			NodeIndex first = arena.allocateNode(NodeType.STRING_LITERAL, 0, 10);
+			NodeIndex second = arena.allocateNode(NodeType.IDENTIFIER, 20, 30);
 
 			// Trigger growth
-			NodeIndex third = arena.allocateNode(NodeType.METHOD_INVOCATION, 40, 50, 300);
+			NodeIndex third = arena.allocateNode(NodeType.METHOD_INVOCATION, 40, 50);
 
 			// Verify all data is preserved
 			requireThat(arena.getType(first), "arena.getType(first)").isEqualTo(NodeType.STRING_LITERAL);
 			requireThat(arena.getStart(first), "arena.getStart(first)").isEqualTo(0);
 			requireThat(arena.getEnd(first), "arena.getEnd(first)").isEqualTo(10);
-			requireThat(arena.getData(first), "arena.getData(first)").isEqualTo(100);
 
 			requireThat(arena.getType(second), "arena.getType(second)").isEqualTo(NodeType.IDENTIFIER);
 			requireThat(arena.getStart(second), "arena.getStart(second)").isEqualTo(20);
 			requireThat(arena.getEnd(second), "arena.getEnd(second)").isEqualTo(30);
-			requireThat(arena.getData(second), "arena.getData(second)").isEqualTo(200);
 
 			requireThat(arena.getType(third), "arena.getType(third)").isEqualTo(NodeType.METHOD_INVOCATION);
 			requireThat(arena.getStart(third), "arena.getStart(third)").isEqualTo(40);
 			requireThat(arena.getEnd(third), "arena.getEnd(third)").isEqualTo(50);
-			requireThat(arena.getData(third), "arena.getData(third)").isEqualTo(300);
 		}
 	}
 
@@ -224,8 +207,8 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena(100))
 		{
-			// 100 nodes * 16 bytes per node = 1600 bytes
-			requireThat(arena.getMemoryUsage(), "arena.getMemoryUsage()").isEqualTo(1600);
+			// 100 nodes * 12 bytes per node = 1200 bytes
+			requireThat(arena.getMemoryUsage(), "arena.getMemoryUsage()").isEqualTo(1200);
 		}
 	}
 
@@ -237,15 +220,13 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 1, 0);
+			arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 1);
 
 			// Out of bounds index
 			NodeIndex invalid = new NodeIndex(10);
 			assertThrows(IllegalArgumentException.class, () -> arena.getType(invalid));
 			assertThrows(IllegalArgumentException.class, () -> arena.getStart(invalid));
 			assertThrows(IllegalArgumentException.class, () -> arena.getEnd(invalid));
-			assertThrows(IllegalArgumentException.class, () -> arena.getData(invalid));
-			assertThrows(IllegalArgumentException.class, () -> arena.setData(invalid, 0));
 		}
 	}
 
@@ -260,8 +241,6 @@ public class NodeArenaTest
 			assertThrows(NullPointerException.class, () -> arena.getType(null));
 			assertThrows(NullPointerException.class, () -> arena.getStart(null));
 			assertThrows(NullPointerException.class, () -> arena.getEnd(null));
-			assertThrows(NullPointerException.class, () -> arena.getData(null));
-			assertThrows(NullPointerException.class, () -> arena.setData(null, 0));
 		}
 	}
 
@@ -273,7 +252,7 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 1, 0);
+			arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 1);
 
 			NodeIndex nullIndex = NodeIndex.NULL;
 			requireThat(nullIndex.isValid(), "nullIndex.isValid()").isFalse();
@@ -289,7 +268,7 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			arena.allocateNode(NodeType.INTEGER_LITERAL, -1, 5, 0);
+			arena.allocateNode(NodeType.INTEGER_LITERAL, -1, 5);
 		}
 	}
 
@@ -301,7 +280,7 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			arena.allocateNode(NodeType.INTEGER_LITERAL, 0, -1, 0);
+			arena.allocateNode(NodeType.INTEGER_LITERAL, 0, -1);
 		}
 	}
 
@@ -313,7 +292,7 @@ public class NodeArenaTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			arena.allocateNode(null, 0, 5, 0);
+			arena.allocateNode(null, 0, 5);
 		}
 	}
 }
