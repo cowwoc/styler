@@ -105,6 +105,32 @@ configuration values are missing. Falls back to defaults.
 🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
+## Branch Reference Resolution {#branch-reference-resolution}
+
+**When user says "rebase on X" or "merge X"**: Use LOCAL branch `X` first, not `origin/X`.
+
+**Resolution Order**:
+1. **Local branch exists**: Use `X` (e.g., `git rebase main`)
+2. **No local, remote exists**: Use `origin/X` (e.g., `git rebase origin/main`)
+3. **Neither exists**: Error - branch not found
+
+**Examples**:
+```bash
+# User says: "rebase on main"
+# ✅ CORRECT - Use local main
+git rebase main
+
+# ❌ WRONG - Don't default to origin/main when local exists
+git rebase origin/main
+```
+
+**Rationale**: Local branches represent the developer's working state. Remote branches may be stale or
+different from local. User intent is typically to work with local state unless explicitly requesting remote.
+
+**Exception**: If user explicitly says "origin/main" or "remote main", use the remote reference.
+
+---
+
 ## Git Working Directory Requirements {#git-working-directory-requirements}
 
 **MANDATORY RULE**: Working directory MUST be clean (all changes committed) before any state transition.
