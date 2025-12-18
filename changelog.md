@@ -1,5 +1,39 @@
 # Changelog
 
+## 2025-12-18
+
+### E5: Parser AST Node Coverage ✅
+
+**Completion Date**: 2025-12-18
+
+**Task**: `add-missing-ast-nodes`
+
+**Problem Solved**:
+- `parseRecordDeclaration()` parsed records but didn't allocate any AST node
+- `parseAnnotationDeclaration()` parsed annotation types but didn't allocate any AST node
+- This forced formatters to use regex+AST-filtering hybrid instead of pure AST traversal
+
+**Solution Implemented**:
+- Added `RECORD_DECLARATION` to NodeType enum
+- Updated `parseRecordDeclaration()` to return NodeIndex and allocate RECORD_DECLARATION node
+- Updated `parseAnnotationDeclaration()` to return NodeIndex and allocate ANNOTATION_DECLARATION node
+- Added ContextDetector support for RECORD_DECLARATION in formatter module
+
+**Files Created**:
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/NodeAllocationTest.java` (8 test cases)
+
+**Files Modified**:
+- `ast/core/src/main/java/io/github/cowwoc/styler/ast/core/NodeType.java` (+1 line)
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java` (+14 lines)
+- `formatter/src/main/java/io/github/cowwoc/styler/formatter/linelength/internal/ContextDetector.java` (+1 line)
+
+**Quality**:
+- All tests passing (including 8 new node allocation tests)
+- Zero Checkstyle violations
+- Pre-existing PMD violation in pipeline module (not introduced by this task)
+
+---
+
 ## 2025-12-17
 
 ### E3: Method Reference Parser Support ✅
