@@ -411,25 +411,8 @@ benchmarking, and validate with Maven plugin integration.
     - Use `Parser.getArena()` and `arena.getType(NodeIndex)` for node type verification
   - **Quality**: All parser tests validate both successful parsing AND correct AST structure
 
-### E5. Parser AST Node Coverage
-- [ ] **READY:** `add-missing-ast-nodes` - Add AST node allocation for records and improve identifier tracking
-  - **Dependencies**: E1 ✅ (parser error handling), E1.5 ✅ (AST extension)
-  - **Blocks**: None (enables cleaner formatter implementations)
-  - **Parallelizable With**: Any task
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Ensure all Java language constructs produce proper AST nodes
-  - **Current State**: Some constructs are parsed but don't allocate AST nodes
-  - **Problems Identified**:
-    - Records: `parseRecordDeclaration()` parses records but doesn't allocate any node (no RECORD_DECLARATION)
-    - Type references: Not all type usages produce IDENTIFIER or TYPE_REFERENCE nodes
-    - This forces formatters to use regex+AST-filtering hybrid instead of pure AST traversal
-  - **Scope**: Fix parser to allocate proper nodes for all constructs
-  - **Components**:
-    - Add `RECORD_DECLARATION` to NodeType enum
-    - Update `parseRecordDeclaration()` to allocate RECORD_DECLARATION node
-    - Audit other `parse*()` methods for missing node allocations
-    - Ensure all type references produce proper nodes for formatter consumption
-  - **Quality**: Formatters can use pure AST traversal without regex fallbacks
+### E5. Parser AST Node Coverage ✅ COMPLETE (2025-12-18)
+- [x] **COMPLETE:** `add-missing-ast-nodes` - Add AST node allocation for records and annotation declarations (2025-12-18)
 
 ---
 

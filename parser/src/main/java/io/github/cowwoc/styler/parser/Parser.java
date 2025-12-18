@@ -469,14 +469,35 @@ public final class Parser implements AutoCloseable
 		return arena.allocateNode(NodeType.ENUM_DECLARATION, start, end);
 	}
 
-	private void parseAnnotationDeclaration()
+	/**
+	 * Parses an annotation type declaration ({@code @interface Name { }}).
+	 * <p>
+	 * Expects the caller to have already consumed the {@code @} and {@code interface} tokens.
+	 *
+	 * @return a {@link NodeIndex} pointing to the allocated {@link NodeType#ANNOTATION_DECLARATION} node
+	 */
+	private NodeIndex parseAnnotationDeclaration()
 	{
+		// position - 2 points to '@' because caller consumed both '@' and 'interface' tokens
+		int start = tokens.get(position - 2).start();
 		expect(TokenType.IDENTIFIER); // Annotation name
 		parseClassBody();
+		int end = tokens.get(position - 1).end();
+		return arena.allocateNode(NodeType.ANNOTATION_DECLARATION, start, end);
 	}
 
-	private void parseRecordDeclaration()
+	/**
+	 * Parses a record declaration ({@code record Name(components) { }}).
+	 * <p>
+	 * Expects the caller to have already consumed the {@code record} keyword.
+	 *
+	 * @return a {@link NodeIndex} pointing to the allocated {@link NodeType#RECORD_DECLARATION} node
+	 */
+	private NodeIndex parseRecordDeclaration()
 	{
+		// position - 1 points to 'record' because caller consumed that keyword
+		int start = tokens.get(position - 1).start();
+
 		expect(TokenType.IDENTIFIER); // Record name
 
 		// Type parameters (optional)
@@ -509,6 +530,9 @@ public final class Parser implements AutoCloseable
 
 		// Record body (optional - can be empty)
 		parseClassBody();
+
+		int end = tokens.get(position - 1).end();
+		return arena.allocateNode(NodeType.RECORD_DECLARATION, start, end);
 	}
 
 	private void parseTypeParameters()
