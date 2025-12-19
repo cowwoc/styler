@@ -47,6 +47,7 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   ```
 - Use `requireThat()` for assertions, not manual if-throw
 - Don't chain redundant validators (`isNotEmpty()` implies `isNotNull()`)
+- Trust natural NPE from method calls (don't check null before calling methods that would throw NPE anyway)
 - Add JavaDoc comments to test classes/methods instead of `@SuppressWarnings("PMD.CommentRequired")`
 - No meaningless assertions - `assertTrue(true, ...)` always passes and tests nothing:
   ```java
@@ -272,3 +273,22 @@ Only suppress with documented legitimate reason. "Too much work" is NOT valid.
 **NcssCount violations**: Prefer breaking down the method into smaller helper methods over suppressing.
 Suppression is acceptable only when decomposition would harm readability (e.g., tightly coupled state
 machine logic where extraction creates unclear control flow).
+
+### @SuppressWarnings("unchecked") - Minimal Scope
+Never apply to entire method. Always apply to single expression:
+```java
+// ❌ WRONG - Method-level suppression
+@SuppressWarnings("unchecked")
+public <T> T getAttribute(Class<T> type) { ... }
+
+// ✅ CORRECT - Expression-level suppression
+public <T> T getAttribute(Class<T> type)
+{
+    if (type.isInstance(attribute))
+    {
+        @SuppressWarnings("unchecked") T result = (T) attribute;
+        return result;
+    }
+    return null;
+}
+```
