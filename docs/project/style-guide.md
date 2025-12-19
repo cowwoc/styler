@@ -399,6 +399,31 @@ requireThat(message, "message").isNotEmpty();
 requireThat(message, "message").contains("expected");
 ```
 
+**Trust Natural NPE from Method Calls** - Don't add explicit null checks when subsequent operations will naturally throw NPE:
+
+The JVM provides clear NPE messages when calling methods on null objects. Explicit null checks before method calls that would fail anyway are redundant and add noise.
+
+```java
+// ❌ BAD - Redundant: qualifiedName() will throw NPE if attribute is null
+requireThat(attribute, "attribute").isNotNull();
+requireThat(attribute.qualifiedName(), "qualifiedName").isEqualTo("java.util.*");
+
+// ✅ GOOD - Let natural NPE occur with clear stack trace
+requireThat(attribute.qualifiedName(), "qualifiedName").isEqualTo("java.util.*");
+
+// ❌ BAD - Redundant: isEmpty() will throw NPE if list is null
+requireThat(list, "list").isNotNull();
+requireThat(list.isEmpty(), "isEmpty").isFalse();
+
+// ✅ GOOD - Natural NPE is clearer than explicit check
+requireThat(list.isEmpty(), "isEmpty").isFalse();
+```
+
+**When explicit null checks ARE needed**:
+- Method parameter validation in public APIs
+- Checking fields that might legitimately be null
+- Scenarios where NPE would be confusing (nested calls, complex expressions)
+
 **Avoid Testing Compile-Time Constants** - Don't test what the compiler guarantees:
 - ❌ Testing that an enum value equals its defined constant (tautology)
 - ❌ Testing that a constant is positive/negative when defined that way
@@ -444,6 +469,28 @@ Choose exception type based on cause:
   ```java
   if (state == State.READY && !isInitialized()) {
       throw new AssertionError("READY state but not initialized");
+  }
+  ```
+
+  **Important**: Do NOT document `AssertionError` in JavaDoc `@throws` tags. Internal invariant violations
+  indicate bugs in our code, not conditions callers should handle. Only document exceptions that represent
+  expected failure modes from invalid input or state.
+
+  ```java
+  // ❌ BAD - Documents internal invariant violation
+  /**
+   * @throws AssertionError if attribute is missing
+   */
+  public void processNode(NodeIndex node) {
+      ImportAttribute attr = arena.getImportAttribute(node);  // May throw AssertionError
+  }
+
+  // ✅ GOOD - No @throws for AssertionError
+  /**
+   * Processes the import node.
+   */
+  public void processNode(NodeIndex node) {
+      ImportAttribute attr = arena.getImportAttribute(node);  // AssertionError not documented
   }
   ```
 

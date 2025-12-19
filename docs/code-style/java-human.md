@@ -408,6 +408,45 @@ public class BaseFormatter {
 }
 ```
 
+### SuppressWarnings - Minimal Scope for Unchecked Casts
+**Why minimal scope matters**: Applying `@SuppressWarnings("unchecked")` to an entire method hides all
+unchecked cast warnings in that method, including any new ones introduced later. This defeats the purpose
+of the warning system and makes code harder to audit for type safety issues.
+
+**The single-expression rule**: Always apply `@SuppressWarnings("unchecked")` to a single local variable
+assignment, not to a method or class declaration. This makes explicit exactly which cast is being suppressed.
+
+**Benefits of minimal scope**:
+- **Auditability**: Easy to search for and review each suppressed cast
+- **Safety net**: New unchecked casts will still trigger warnings
+- **Documentation**: The suppression acts as a marker for the specific unsafe operation
+- **Code review**: Reviewers can evaluate each suppression individually
+
+**Practical examples**:
+```java
+// ❌ WRONG - Suppresses warnings for entire method
+@SuppressWarnings("unchecked")
+public <T> T getAttribute(NodeIndex index, Class<T> type)
+{
+    NodeAttribute attribute = attributes.get(index);
+    if (type.isInstance(attribute))
+        return (T) attribute;
+    return null;
+}
+
+// ✅ CORRECT - Suppresses only the single cast expression
+public <T> T getAttribute(NodeIndex index, Class<T> type)
+{
+    NodeAttribute attribute = attributes.get(index);
+    if (type.isInstance(attribute))
+    {
+        @SuppressWarnings("unchecked") T result = (T) attribute;
+        return result;
+    }
+    return null;
+}
+```
+
 ### Class Visibility - Prefer Non-Exported Packages Over Package-Protected
 **Why this approach is preferred**: Instead of using package-private (default) visibility for implementation
 classes, prefer declaring them as `public` in a package that is not exported by `module-info.java`. This

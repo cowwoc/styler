@@ -657,6 +657,43 @@ code. This reduces visual clutter and makes non-default initializations more pro
 **Note**: This rule applies only when the assigned value equals Java's default. Non-default initializations
 (e.g., `private int maxDepth = 100;`) are required and should not be removed.
 
+### SuppressWarnings - Minimal Scope for Unchecked Casts
+**Detection Pattern**: `@SuppressWarnings("unchecked")` applied to method or class declarations
+**Violation**: `@SuppressWarnings("unchecked")\npublic void process() {`
+**Correct**: Apply to single local variable assignment: `@SuppressWarnings("unchecked") T result = (T) map.get(key);`
+**Detection Commands**:
+```bash
+# Find @SuppressWarnings("unchecked") on methods or classes
+grep -rn -B1 '@SuppressWarnings.*unchecked' --include="*.java" . | grep -E '(public|private|protected|void|class)'
+```
+**Examples**:
+```java
+// VIOLATION - Suppresses warnings for entire method
+@SuppressWarnings("unchecked")
+public <T> T getAttribute(NodeIndex index, Class<T> type)
+{
+    NodeAttribute attribute = attributes.get(index);
+    if (type.isInstance(attribute))
+        return (T) attribute;
+    return null;
+}
+
+// CORRECT - Suppresses only the single cast expression
+public <T> T getAttribute(NodeIndex index, Class<T> type)
+{
+    NodeAttribute attribute = attributes.get(index);
+    if (type.isInstance(attribute))
+    {
+        @SuppressWarnings("unchecked") T result = (T) attribute;
+        return result;
+    }
+    return null;
+}
+```
+**Rationale**: Applying `@SuppressWarnings("unchecked")` to an entire method hides potentially unsafe casts
+throughout the method body. Applying it to a single expression makes explicit exactly which cast is being
+suppressed, improves auditability, and ensures new unchecked operations added later will still trigger warnings.
+
 ### Class Declaration - Missing final Modifier
 **Detection Pattern**: `public\s+class\s+\w+\s+(extends\s+\w+\s*)?\{` (non-final classes)
 **Violation**: `public class ArgumentParser {` (not extended anywhere)
