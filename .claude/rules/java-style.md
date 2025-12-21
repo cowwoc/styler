@@ -29,6 +29,22 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 ### TestNG
 - No `@BeforeMethod`/`@AfterMethod` (creates shared state)
 - No `@Test(enabled = false)` (stub tests prohibited)
+- Use `@Test(expectedExceptions = X.class)` for exception tests, NOT `assertThrows()`:
+  ```java
+  // ❌ WRONG - JUnit style, not TestNG
+  @Test
+  public void shouldRejectNull()
+  {
+      assertThrows(IllegalArgumentException.class, () -> method(null));
+  }
+
+  // ✅ CORRECT - TestNG native exception testing
+  @Test(expectedExceptions = IllegalArgumentException.class)
+  public void shouldRejectNull()
+  {
+      method(null);
+  }
+  ```
 - Use `requireThat()` for assertions, not manual if-throw
 - Don't chain redundant validators (`isNotEmpty()` implies `isNotNull()`)
 - Add JavaDoc comments to test classes/methods instead of `@SuppressWarnings("PMD.CommentRequired")`
