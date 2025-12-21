@@ -1,6 +1,7 @@
 package io.github.cowwoc.styler.parser.test;
 
 import io.github.cowwoc.styler.ast.core.NodeIndex;
+import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
@@ -30,7 +31,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -56,7 +59,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -80,7 +85,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -104,7 +111,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -128,7 +137,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -152,7 +163,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -183,7 +196,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -205,7 +220,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -227,7 +244,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -253,7 +272,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -279,7 +300,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -303,7 +326,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -327,7 +352,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -351,7 +378,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -375,7 +404,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -397,7 +428,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -419,7 +452,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -441,7 +476,9 @@ public class StatementParserTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}

@@ -11,13 +11,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import io.github.cowwoc.styler.ast.core.NodeArena;
-import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
+import io.github.cowwoc.styler.parser.ParseError;
+import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
 import io.github.cowwoc.styler.pipeline.internal.DefaultTransformationContext;
 import io.github.cowwoc.styler.pipeline.internal.FormatResult;
@@ -316,11 +316,38 @@ public final class FileProcessingPipeline
 
 			// Parse source code
 			Parser parser = new Parser(sourceCode);
-			NodeIndex rootNode = parser.parse();
-			NodeArena arena = parser.getArena();
+			ParseResult result = parser.parse();
 
-			// Return parsed data for next stage
-			return new StageResult.Success(new ParsedData(arena, rootNode, sourceCode, context.filePath()));
+			return switch (result)
+			{
+				case ParseResult.Success success ->
+					new StageResult.Success(new ParsedData(parser.getArena(), success.rootNode(), sourceCode,
+						context.filePath()));
+				case ParseResult.Failure failure ->
+					new StageResult.Failure(formatParseErrors(context.filePath(), failure.errors()), null);
+			};
+		}
+
+		/**
+		 * Formats parse errors into a human-readable string.
+		 *
+		 * @param filePath the path to the file that failed to parse
+		 * @param errors   the list of parse errors
+		 * @return a formatted error message
+		 */
+		private String formatParseErrors(Path filePath, List<ParseError> errors)
+		{
+			StringBuilder sb = new StringBuilder();
+			for (ParseError error : errors)
+			{
+				if (!sb.isEmpty())
+				{
+					sb.append('\n');
+				}
+				sb.append(filePath).append(':').append(error.line()).append(':').
+					append(error.column()).append(": ").append(error.message());
+			}
+			return sb.toString();
 		}
 
 		@Override

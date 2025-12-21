@@ -108,7 +108,9 @@ public class BatchProcessorConcurrencyTest
 	}
 
 	/**
-	 * Tests that multiple batch processors can run concurrently with a shared pipeline.
+	 * Verifies that multiple batch processors can process files concurrently with a shared pipeline.
+	 * Each processor handles its own batch independently while sharing the underlying pipeline,
+	 * ensuring correct behavior under concurrent access patterns.
 	 */
 	@Test
 	// Try-with-resources cannot handle dynamically-sized collections of AutoCloseable resources
