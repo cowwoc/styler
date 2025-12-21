@@ -219,6 +219,96 @@ diff file.java.backup file.java  # Review changes
 - [ ] Have I considered context-aware matching?
 - [ ] For critical files, should I test on a copy first?
 
+## Bash Tool - Multi-Line Commands {#bash-multi-line-commands}
+
+**PROBLEM**: Parse errors when using multi-line bash commands with command substitution `$(...)`.
+
+**ERROR PATTERN**: `(eval):1: parse error near '('`
+
+**ROOT CAUSE**: The Bash tool uses `eval` internally, and command substitution `$(...)` with parentheses in
+multi-line commands causes parse errors.
+
+### Problem Example
+
+```bash
+# ❌ WRONG - Causes parse error
+BASE_COMMIT="43419ae"
+BACKUP_BRANCH="backup-123"
+FILES_COUNT=$(git diff --name-only "$BASE_COMMIT" "$BACKUP_BRANCH" | wc -l)
+echo "Files: $FILES_COUNT"
+```
+
+**Why this fails**: The eval mechanism cannot parse the command substitution syntax `$(...)` when combined
+with variable assignments in a multi-line command block.
+
+### Safe Alternatives
+
+#### 1. Break into separate bash calls
+
+```bash
+# ✅ CORRECT - Simple, no variable needed
+git diff --name-only 43419ae backup-123 | wc -l
+```
+
+**When to use**: Simple operations where you just need the output, not intermediate storage.
+
+#### 2. Use intermediate files
+
+```bash
+# ✅ CORRECT - Store results in temp file
+git diff --name-only 43419ae backup-123 > /tmp/files.txt
+wc -l < /tmp/files.txt
+```
+
+**When to use**: Multi-step operations where you need to inspect or reuse intermediate results.
+
+#### 3. Chain with && for dependencies
+
+```bash
+# ✅ CORRECT - Sequential execution
+git diff --name-only 43419ae HEAD | wc -l && echo "Count complete"
+```
+
+**When to use**: Commands that must run in sequence, where later commands depend on earlier ones succeeding.
+
+#### 4. Write script file for complex logic
+
+```bash
+# ✅ CORRECT - Create script file first, then execute
+cat > /tmp/verify.sh << 'EOF'
+#!/bin/bash
+BASE="$1"
+BACKUP="$2"
+FILES=$(git diff --name-only "$BASE" "$BACKUP" | wc -l)
+echo "Files changed: $FILES"
+EOF
+
+bash /tmp/verify.sh 43419ae backup-123
+```
+
+**When to use**: Complex multi-line scripts with loops, conditionals, or multiple command substitutions.
+
+### Decision Tree
+
+```
+Need command substitution $()?
+├─ Simple one-liner?
+│  └─ Use separate bash call (Alternative 1)
+├─ Need result for next command?
+│  └─ Use temp file (Alternative 2)
+├─ Sequential but no variable needed?
+│  └─ Chain with && (Alternative 3)
+└─ Complex logic with multiple steps?
+   └─ Write script file (Alternative 4)
+```
+
+### Prevention Checklist
+
+- [ ] Am I using `$(...)` in a multi-line bash command?
+- [ ] Can I split this into separate simple bash calls?
+- [ ] If complex, have I written a script file instead?
+- [ ] Have I tested the command works without parse errors?
+
 ## General Tool Usage Principles
 
 1.  **READ FIRST, EDIT SECOND**: Always read a file before editing to understand its structure and whitespace
