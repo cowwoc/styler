@@ -25,6 +25,7 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 - No `@since` tags (use git history)
 - Thread-safety notes go LAST in class JavaDoc
 - Compact constructors MUST have their own `@param` tags (not inherited from record declaration)
+- No `@throws AssertionError` - programming errors are unexpected and unrecoverable (not for callers to handle)
 
 ### TestNG
 - No `@BeforeMethod`/`@AfterMethod` (creates shared state)
@@ -84,6 +85,43 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   public void shouldCompleteWithoutDeadlock()
   {
       doWork();
+  }
+  ```
+- Test source strings: One statement per line (don't combine imports and declarations on same line):
+  ```java
+  // ❌ WRONG - Import and class on same line
+  String source = """
+      import java.util.*; class Test {}
+      """;
+
+  // ✅ CORRECT - Separate lines for clarity
+  String source = """
+      import java.util.*;
+      class Test {}
+      """;
+  ```
+- File cleanup: Use `TestFileFactory.deleteFilesQuietly()` instead of duplicating cleanup code:
+  ```java
+  // ❌ WRONG - Duplicate cleanup pattern
+  finally
+  {
+      for (Path file : files)
+      {
+          try
+          {
+              Files.deleteIfExists(file);
+          }
+          catch (IOException _)
+          {
+              // Intentionally ignored
+          }
+      }
+  }
+
+  // ✅ CORRECT - Use shared utility
+  finally
+  {
+      TestFileFactory.deleteFilesQuietly(files);
   }
   ```
 
