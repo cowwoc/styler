@@ -1,5 +1,57 @@
 # Changelog
 
+## 2025-12-16
+
+### E1: Parser Error Handling Enhancement ✅
+
+**Completion Date**: 2025-12-16
+
+**Task**: `add-parser-error-record`
+
+**Problem Solved**:
+- Parser threw exceptions for syntax errors, complicating error handling
+- No structured error information (line, column) available to callers
+- Exception-based control flow for expected parse failures was anti-pattern
+
+**Solution Implemented**:
+- Added `ParseError` record with position, line, column, message fields
+- Added sealed `ParseResult` interface with `Success` and `Failure` variants
+- Refactored `Parser.parse()` to return `ParseResult` instead of throwing
+- Updated `FileProcessingPipeline` ParseStage to handle `ParseResult` with pattern matching
+
+**Key Components**:
+- **ParseError record**: Structured error data with 0-based position, 1-based line/column
+- **ParseResult sealed interface**: Railway-Oriented Programming pattern
+  - `ParseResult.Success(NodeIndex rootNode)` - successful parse
+  - `ParseResult.Failure(List<ParseError> errors)` - parse failure with error details
+- **Parser.parse()**: Returns `ParseResult` enabling pattern matching by callers
+- **FileProcessingPipeline**: Updated to handle `ParseResult` with switch expression
+
+**Design Decisions**:
+- No error codes/severity enums (YAGNI - simple string messages sufficient)
+- ParseError is file-agnostic (caller adds file context, supports non-file sources)
+- Fail-fast initially (single error, no partial AST recovery)
+
+**Files Created**:
+- `parser/src/main/java/io/github/cowwoc/styler/parser/ParseError.java`
+- `parser/src/main/java/io/github/cowwoc/styler/parser/ParseResult.java`
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/ParseErrorTest.java`
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/ParseResultTest.java`
+
+**Files Modified**:
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java`
+- `pipeline/src/main/java/io/github/cowwoc/styler/pipeline/FileProcessingPipeline.java`
+- 6 existing parser test files updated for new API
+
+**Quality**:
+- All parser tests passing
+- Zero Checkstyle/PMD violations
+- Uses `@Test(expectedExceptions)` per TestNG style
+
+**Unblocks**: E2 (AST-based formatters benefit from structured parse errors)
+
+---
+
 ## 2025-12-15
 
 ### B1.5: Classpath Infrastructure ✅

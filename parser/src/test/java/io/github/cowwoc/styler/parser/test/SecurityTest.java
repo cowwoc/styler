@@ -1,6 +1,7 @@
 package io.github.cowwoc.styler.parser.test;
 
 import io.github.cowwoc.styler.ast.core.SecurityConfig;
+import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
@@ -104,7 +105,8 @@ public class SecurityTest
 		// Should parse successfully - just verifies the implementation has the limit logic
 		try (Parser parser = new Parser(source.toString()))
 		{
-			parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
 			// Successfully parsed - arena capacity limit logic exists in NodeArena.grow()
 			requireThat(parser.getArena().getNodeCount(), "parser.getArena().getNodeCount()").isPositive();
 		}
@@ -136,7 +138,8 @@ public class SecurityTest
 		// Should parse successfully - verifies memory monitoring exists
 		try (Parser parser = new Parser(source.toString()))
 		{
-			parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
 			// Successfully parsed - memory limit logic exists in NodeArena.allocateNode()
 			requireThat(parser.getArena().getNodeCount(), "parser.getArena().getNodeCount()").isPositive();
 		}
@@ -170,7 +173,8 @@ public class SecurityTest
 		// Should parse successfully - verifies timeout monitoring is in place
 		try (Parser parser = new Parser(source.toString()))
 		{
-			parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
 			// Successfully parsed - timeout check logic exists in consume() and enterDepth()
 			requireThat(parser.getArena().getNodeCount(), "parser.getArena().getNodeCount()").isPositive();
 		}
