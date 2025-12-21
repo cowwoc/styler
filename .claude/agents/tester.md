@@ -289,19 +289,20 @@ For each test case, specify:
   "category": "null_validation",
   "input": "null",
   "expected": "IllegalArgumentException",
-  "assertion": "assertThrows(IllegalArgumentException.class, () -> parser.parse(null))"
+  "assertion": "@Test(expectedExceptions = IllegalArgumentException.class)"
 }
 ```
 
 Implementation:
 ```java
-@Test
+/**
+ * Verifies that the parser rejects null input.
+ */
+@Test(expectedExceptions = IllegalArgumentException.class)
 public void shouldRejectNullInput()
 {
 	JavaParser parser = new JavaParser();
-
-	assertThrows(IllegalArgumentException.class, () -> parser.parse(null),
-		"Parser should reject null input");
+	parser.parse(null);
 }
 ```
 
