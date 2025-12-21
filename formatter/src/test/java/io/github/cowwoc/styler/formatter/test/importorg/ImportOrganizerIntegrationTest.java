@@ -38,7 +38,6 @@ public class ImportOrganizerIntegrationTest
 
 		String result = rule.format(context, List.of());
 
-		requireThat(result, "result").isNotNull();
 		requireThat(result.indexOf("java.util.List"), "javaPos").
 			isLessThan(result.indexOf("org.apache"));
 	}

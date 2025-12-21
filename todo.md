@@ -411,34 +411,6 @@ benchmarking, and validate with Maven plugin integration.
     - Use `Parser.getArena()` and `arena.getType(NodeIndex)` for node type verification
   - **Quality**: All parser tests validate both successful parsing AND correct AST structure
 
-### E6. AST Node Attributes and Semantic Context
-- [ ] **READY:** `add-ast-node-attributes` - Add attributes to existing AST nodes for formatter access
-  - **Dependencies**: E5 ✅
-  - **Problem**: Formatter performs extensive string parsing because AST nodes lack queryable attributes
-  - **Approach**: Add ATTRIBUTES to existing nodes (not child nodes - that bloats the AST)
-    - Standard AST design: operators/names are attributes, punctuation is implicit in structure
-    - CST (concrete syntax tree) approach of child nodes for everything is overkill
-  - **Gaps Identified** (from codebase analysis):
-    1. **Type Declarations** - Need attributes on CLASS/INTERFACE/ENUM/RECORD_DECLARATION:
-       - `getName()` → type name string
-       - `getNamePosition()` → position for formatter
-       - Currently: SymbolResolver.extractTypeNameAfterKeyword parses strings
-    2. **Import Declarations** - Need attributes on IMPORT_DECLARATION:
-       - `isStatic()` → boolean
-       - `getQualifiedName()` → full import path
-       - Currently: ImportExtractor parses "import static" string
-    3. **Package Declaration** - Need attribute:
-       - `getPackageName()` → package name string
-    4. **Colon Disambiguation** - Need semantic context (4 meanings):
-       - TERNARY (`a ? b : c`)
-       - ENHANCED_FOR (`for (x : list)`)
-       - CASE_LABEL (`case X:`)
-       - TYPE_BOUND (`<T extends Foo>` - not colon but similar ambiguity)
-    5. **Operators** - Position-based lookup is acceptable IF AST provides expression boundaries
-       - BinaryExpression positions let formatter find operator character
-       - No need for OPERATOR child nodes
-  - **Files Affected**: SymbolResolver, ImportExtractor (highest priority)
-  - **Scope**: Incremental - declaration attributes first (biggest pain point), then colon context
 
 ---
 

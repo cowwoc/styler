@@ -90,6 +90,22 @@ public record Token(TokenType type, int start, int end, String text)
 			type.ordinal() <= TokenType.URSHIFTASSIGN.ordinal();
 	}
 
+	/**
+	 * Returns the text of this token extracted from the source code.
+	 * <p>
+	 * This is a convenience method that extracts the substring from the source code
+	 * using this token's start and end positions.
+	 *
+	 * @param sourceCode the source code string
+	 * @return the token text
+	 * @throws NullPointerException      if {@code sourceCode} is null
+	 * @throws IndexOutOfBoundsException if token positions are outside source code bounds
+	 */
+	public String getText(String sourceCode)
+	{
+		return sourceCode.substring(start, end);
+	}
+
 	@Override
 	public String toString()
 	{

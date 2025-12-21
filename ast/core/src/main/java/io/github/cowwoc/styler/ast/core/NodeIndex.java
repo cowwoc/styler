@@ -11,38 +11,13 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 public record NodeIndex(int index)
 {
 	/**
-	 * Sentinel value representing an invalid/null node reference.
-	 */
-	public static final NodeIndex NULL = new NodeIndex(-1);
-
-	/**
 	 * Creates a new node index.
 	 *
 	 * @param index the zero-based index of the node in the arena
-	 * @throws IllegalArgumentException if {@code index} is less than -1
+	 * @throws IllegalArgumentException if {@code index} is negative
 	 */
 	public NodeIndex
 	{
-		requireThat(index, "index").isGreaterThanOrEqualTo(-1);
-	}
-
-	/**
-	 * Checks if this index represents a valid node reference.
-	 *
-	 * @return true if this is a valid node reference, false if it's NULL
-	 */
-	public boolean isValid()
-	{
-		return index >= 0;
-	}
-
-	@Override
-	public String toString()
-	{
-		if (isValid())
-		{
-			return "NodeIndex[" + index + "]";
-		}
-		return "NodeIndex[NULL]";
+		requireThat(index, "index").isNotNegative();
 	}
 }

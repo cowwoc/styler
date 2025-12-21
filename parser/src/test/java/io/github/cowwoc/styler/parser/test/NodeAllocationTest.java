@@ -23,7 +23,9 @@ public class NodeAllocationTest
 	@Test
 	public void shouldAllocateRecordDeclarationNode()
 	{
-		String source = "record Point(int x, int y) { }";
+		String source = """
+			record Point(int x, int y) { }
+			""";
 		try (Parser parser = new Parser(source))
 		{
 			ParseResult result = parser.parse();
@@ -43,7 +45,9 @@ public class NodeAllocationTest
 	@Test
 	public void shouldAllocateRecordDeclarationNodeForGenericRecord()
 	{
-		String source = "record Box<T>(T value) { }";
+		String source = """
+			record Box<T>(T value) { }
+			""";
 		try (Parser parser = new Parser(source))
 		{
 			ParseResult result = parser.parse();
@@ -63,7 +67,9 @@ public class NodeAllocationTest
 	@Test
 	public void shouldAllocateRecordDeclarationNodeForRecordWithImplements()
 	{
-		String source = "record Point(int x, int y) implements Comparable<Point> { }";
+		String source = """
+			record Point(int x, int y) implements Comparable<Point> { }
+			""";
 		try (Parser parser = new Parser(source))
 		{
 			ParseResult result = parser.parse();
@@ -105,7 +111,9 @@ public class NodeAllocationTest
 	@Test
 	public void shouldAllocateAnnotationDeclarationNode()
 	{
-		String source = "@interface MyAnnotation { }";
+		String source = """
+			@interface MyAnnotation { }
+			""";
 		try (Parser parser = new Parser(source))
 		{
 			ParseResult result = parser.parse();
@@ -150,7 +158,9 @@ public class NodeAllocationTest
 	@Test
 	public void shouldAllocateAnnotationDeclarationNodeWithAnnotation()
 	{
-		String source = "@Retention(RetentionPolicy.RUNTIME) @interface Marker { }";
+		String source = """
+			@Retention(RetentionPolicy.RUNTIME) @interface Marker { }
+			""";
 		try (Parser parser = new Parser(source))
 		{
 			ParseResult result = parser.parse();
@@ -169,7 +179,9 @@ public class NodeAllocationTest
 	@Test
 	public void shouldAllocateAnnotationDeclarationNodeForPublicAnnotation()
 	{
-		String source = "public @interface PublicConfig { }";
+		String source = """
+			public @interface PublicConfig { }
+			""";
 		try (Parser parser = new Parser(source))
 		{
 			ParseResult result = parser.parse();
