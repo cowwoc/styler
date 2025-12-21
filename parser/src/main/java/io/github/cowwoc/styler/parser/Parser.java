@@ -1,9 +1,12 @@
 package io.github.cowwoc.styler.parser;
 
+import io.github.cowwoc.styler.ast.core.ImportAttribute;
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.PackageAttribute;
 import io.github.cowwoc.styler.ast.core.SecurityConfig;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -244,9 +247,15 @@ public final class Parser implements AutoCloseable
 
 	private NodeIndex parsePackageDeclaration(int start)
 	{
+		// Capture the package name from the qualified name tokens
+		int nameStart = currentToken().start();
 		parseQualifiedName();
+		int nameEnd = tokens.get(position - 1).end();
+		String packageName = sourceCode.substring(nameStart, nameEnd);
+
 		expect(TokenType.SEMICOLON);
-		return arena.allocateNode(NodeType.PACKAGE_DECLARATION, start, tokens.get(position - 1).end());
+		PackageAttribute attribute = new PackageAttribute(packageName);
+		return arena.allocatePackageDeclaration(start, tokens.get(position - 1).end(), attribute);
 	}
 
 	private NodeIndex parseImportDeclaration()
@@ -255,33 +264,39 @@ public final class Parser implements AutoCloseable
 		expect(TokenType.IMPORT);
 		boolean isStatic = match(TokenType.STATIC);
 
-		// Parse qualified name, but handle wildcard imports
+		// Build the qualified name from tokens
+		StringBuilder qualifiedName = new StringBuilder();
 		expect(TokenType.IDENTIFIER);
+		qualifiedName.append(tokens.get(position - 1).getText(sourceCode));
+
 		while (currentToken().type() == TokenType.DOT)
 		{
 			consume(); // DOT
+			qualifiedName.append('.');
 			if (match(TokenType.STAR))
 			{
 				// Wildcard import: import java.util.*;
+				qualifiedName.append('*');
 				expect(TokenType.SEMICOLON);
 				int end = tokens.get(position - 1).end();
-				NodeType nodeType;
+				ImportAttribute attribute = new ImportAttribute(qualifiedName.toString());
 				if (isStatic)
-					nodeType = NodeType.STATIC_IMPORT_DECLARATION;
-				else
-					nodeType = NodeType.IMPORT_DECLARATION;
-				return arena.allocateNode(nodeType, start, end);
+				{
+					return arena.allocateStaticImportDeclaration(start, end, attribute);
+				}
+				return arena.allocateImportDeclaration(start, end, attribute);
 			}
 			expect(TokenType.IDENTIFIER);
+			qualifiedName.append(tokens.get(position - 1).getText(sourceCode));
 		}
 		expect(TokenType.SEMICOLON);
 		int end = tokens.get(position - 1).end();
-		NodeType nodeType;
+		ImportAttribute attribute = new ImportAttribute(qualifiedName.toString());
 		if (isStatic)
-			nodeType = NodeType.STATIC_IMPORT_DECLARATION;
-		else
-			nodeType = NodeType.IMPORT_DECLARATION;
-		return arena.allocateNode(nodeType, start, end);
+		{
+			return arena.allocateStaticImportDeclaration(start, end, attribute);
+		}
+		return arena.allocateImportDeclaration(start, end, attribute);
 	}
 
 	private NodeIndex parseQualifiedName()
@@ -369,7 +384,11 @@ public final class Parser implements AutoCloseable
 	{
 		// CLASS keyword already consumed, capture its position
 		int start = tokens.get(position - 1).start();
-		expect(TokenType.IDENTIFIER); // Class name
+
+		// Capture type name and position before consuming
+		Token nameToken = currentToken();
+		expect(TokenType.IDENTIFIER);
+		String typeName = nameToken.getText(sourceCode);
 
 		// Type parameters
 		if (match(TokenType.LT))
@@ -407,14 +426,19 @@ public final class Parser implements AutoCloseable
 		parseClassBody();
 
 		int end = tokens.get(position - 1).end();
-		return arena.allocateNode(NodeType.CLASS_DECLARATION, start, end);
+		TypeDeclarationAttribute attribute = new TypeDeclarationAttribute(typeName);
+		return arena.allocateClassDeclaration(start, end, attribute);
 	}
 
 	private NodeIndex parseInterfaceDeclaration()
 	{
 		// INTERFACE keyword already consumed, capture its position
 		int start = tokens.get(position - 1).start();
-		expect(TokenType.IDENTIFIER); // Interface name
+
+		// Capture type name and position before consuming
+		Token nameToken = currentToken();
+		expect(TokenType.IDENTIFIER);
+		String typeName = nameToken.getText(sourceCode);
 
 		if (match(TokenType.LT))
 		{
@@ -443,14 +467,19 @@ public final class Parser implements AutoCloseable
 		parseClassBody();
 
 		int end = tokens.get(position - 1).end();
-		return arena.allocateNode(NodeType.INTERFACE_DECLARATION, start, end);
+		TypeDeclarationAttribute attribute = new TypeDeclarationAttribute(typeName);
+		return arena.allocateInterfaceDeclaration(start, end, attribute);
 	}
 
 	private NodeIndex parseEnumDeclaration()
 	{
 		// ENUM keyword already consumed, capture its position
 		int start = tokens.get(position - 1).start();
-		expect(TokenType.IDENTIFIER); // Enum name
+
+		// Capture type name and position before consuming
+		Token nameToken = currentToken();
+		expect(TokenType.IDENTIFIER);
+		String typeName = nameToken.getText(sourceCode);
 
 		if (match(TokenType.IMPLEMENTS))
 		{
@@ -466,7 +495,8 @@ public final class Parser implements AutoCloseable
 		expect(TokenType.RBRACE);
 
 		int end = tokens.get(position - 1).end();
-		return arena.allocateNode(NodeType.ENUM_DECLARATION, start, end);
+		TypeDeclarationAttribute attribute = new TypeDeclarationAttribute(typeName);
+		return arena.allocateEnumDeclaration(start, end, attribute);
 	}
 
 	/**
@@ -480,10 +510,16 @@ public final class Parser implements AutoCloseable
 	{
 		// position - 2 points to '@' because caller consumed both '@' and 'interface' tokens
 		int start = tokens.get(position - 2).start();
-		expect(TokenType.IDENTIFIER); // Annotation name
+
+		// Capture type name and position before consuming
+		Token nameToken = currentToken();
+		expect(TokenType.IDENTIFIER);
+		String typeName = nameToken.getText(sourceCode);
+
 		parseClassBody();
 		int end = tokens.get(position - 1).end();
-		return arena.allocateNode(NodeType.ANNOTATION_DECLARATION, start, end);
+		TypeDeclarationAttribute attribute = new TypeDeclarationAttribute(typeName);
+		return arena.allocateAnnotationTypeDeclaration(start, end, attribute);
 	}
 
 	/**
@@ -498,7 +534,10 @@ public final class Parser implements AutoCloseable
 		// position - 1 points to 'record' because caller consumed that keyword
 		int start = tokens.get(position - 1).start();
 
-		expect(TokenType.IDENTIFIER); // Record name
+		// Capture type name and position before consuming
+		Token nameToken = currentToken();
+		expect(TokenType.IDENTIFIER);
+		String typeName = nameToken.getText(sourceCode);
 
 		// Type parameters (optional)
 		if (match(TokenType.LT))
@@ -532,7 +571,8 @@ public final class Parser implements AutoCloseable
 		parseClassBody();
 
 		int end = tokens.get(position - 1).end();
-		return arena.allocateNode(NodeType.RECORD_DECLARATION, start, end);
+		TypeDeclarationAttribute attribute = new TypeDeclarationAttribute(typeName);
+		return arena.allocateRecordDeclaration(start, end, attribute);
 	}
 
 	private void parseTypeParameters()

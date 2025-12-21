@@ -73,9 +73,6 @@ public class NodeArenaTest
 		{
 			NodeIndex index = arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 5);
 
-			requireThat(index.isValid(), "index.isValid()").
-				withContext(index, "index").
-				isTrue();
 			requireThat(index.index(), "index.index()").isEqualTo(0);
 			requireThat(arena.getNodeCount(), "arena.getNodeCount()").isEqualTo(1);
 		}
@@ -243,24 +240,6 @@ public class NodeArenaTest
 			assertThrows(NullPointerException.class, () -> arena.getType(null));
 			assertThrows(NullPointerException.class, () -> arena.getStart(null));
 			assertThrows(NullPointerException.class, () -> arena.getEnd(null));
-		}
-	}
-
-	/**
-	 * Tests that using NULL sentinel index throws IllegalArgumentException.
-	 */
-	@Test
-	public void testInvalidNodeIndexSentinel()
-	{
-		try (NodeArena arena = new NodeArena())
-		{
-			arena.allocateNode(NodeType.INTEGER_LITERAL, 0, 1);
-
-			NodeIndex nullIndex = NodeIndex.NULL;
-			requireThat(nullIndex.isValid(), "nullIndex.isValid()").
-				withContext(nullIndex, "nullIndex").
-				isFalse();
-			assertThrows(IllegalArgumentException.class, () -> arena.getType(nullIndex));
 		}
 	}
 

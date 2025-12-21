@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.pipeline.parallel.test;
 
+import static io.github.cowwoc.styler.pipeline.parallel.test.TestFileFactory.deleteFilesQuietly;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
@@ -50,17 +51,7 @@ public class BatchProcessorConcurrencyTest
 		}
 		finally
 		{
-			for (Path file : files)
-			{
-				try
-				{
-					Files.deleteIfExists(file);
-				}
-				catch (IOException _)
-				{
-					// Intentionally ignored
-				}
-			}
+			deleteFilesQuietly(files);
 		}
 	}
 
@@ -93,17 +84,7 @@ public class BatchProcessorConcurrencyTest
 		}
 		finally
 		{
-			for (Path file : files)
-			{
-				try
-				{
-					Files.deleteIfExists(file);
-				}
-				catch (IOException _)
-				{
-					// Intentionally ignored
-				}
-			}
+			deleteFilesQuietly(files);
 		}
 	}
 
@@ -118,52 +99,26 @@ public class BatchProcessorConcurrencyTest
 		FileProcessingPipeline pipeline = TestPipelineFactory.createDefaultPipeline();
 		ParallelProcessingConfig config = TestConfigFactory.createDefaultConfig();
 
-		// Create 3 batch processors with shared pipeline
-		List<List<Path>> fileBatches = new ArrayList<>();
-		List<BatchProcessor> processors = new ArrayList<>();
-
-		try
+		// Process 3 batches with separate processors sharing the pipeline
+		for (int b = 0; b < 3; ++b)
 		{
-			for (int b = 0; b < 3; b += 1)
+			List<Path> files = new ArrayList<>();
+			try
 			{
-				List<Path> files = new ArrayList<>();
-				for (int i = 0; i < 10; i += 1)
+				for (int i = 0; i < 10; ++i)
 				{
 					files.add(TestFileFactory.createValidJavaFile());
 				}
-				fileBatches.add(files);
-				processors.add(new DefaultBatchProcessor(pipeline, config));
-			}
 
-			// Process all 3 batches
-			for (int b = 0; b < 3; b += 1)
-			{
-				BatchResult result = processors.get(b).processFiles(fileBatches.get(b));
-				assertEquals(result.successCount(), 10, "Batch " + b + " should process all 10 files");
-			}
-		}
-		finally
-		{
-			// Close all processors
-			for (BatchProcessor processor : processors)
-			{
-				processor.close();
-			}
-
-			// Cleanup all files
-			for (List<Path> batch : fileBatches)
-			{
-				for (Path file : batch)
+				try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 				{
-					try
-					{
-						Files.deleteIfExists(file);
-					}
-					catch (IOException _)
-					{
-						// Intentionally ignored
-					}
+					BatchResult result = processor.processFiles(files);
+					assertEquals(result.successCount(), 10, "Batch " + b + " should process all 10 files");
 				}
+			}
+			finally
+			{
+				deleteFilesQuietly(files);
 			}
 		}
 	}
@@ -203,17 +158,7 @@ public class BatchProcessorConcurrencyTest
 		}
 		finally
 		{
-			for (Path file : files)
-			{
-				try
-				{
-					Files.deleteIfExists(file);
-				}
-				catch (IOException _)
-				{
-					// Intentionally ignored
-				}
-			}
+			deleteFilesQuietly(files);
 		}
 	}
 
@@ -261,17 +206,7 @@ public class BatchProcessorConcurrencyTest
 		}
 		finally
 		{
-			for (Path file : files)
-			{
-				try
-				{
-					Files.deleteIfExists(file);
-				}
-				catch (IOException _)
-				{
-					// Intentionally ignored
-				}
-			}
+			deleteFilesQuietly(files);
 		}
 	}
 }

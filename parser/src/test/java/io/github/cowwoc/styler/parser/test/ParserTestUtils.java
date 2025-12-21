@@ -27,9 +27,8 @@ public final class ParserTestUtils
 			switch (parser.parse())
 			{
 				case ParseResult.Success success ->
-					requireThat(success.rootNode().isValid(), "root.isValid()").
-						withContext(success.rootNode(), "rootNode").
-						isTrue();
+					requireThat(success.rootNode(), "rootNode").
+						isNotNull();
 				case ParseResult.Failure failure ->
 					throw new AssertionError("Expected Success but got: " + failure);
 			}

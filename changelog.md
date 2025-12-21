@@ -1,5 +1,69 @@
 # Changelog
 
+## 2025-12-21
+
+### E6: AST Node Attributes ✅
+
+**Completion Date**: 2025-12-21
+
+**Task**: `add-ast-node-attributes`
+
+**Problem Solved**:
+- Formatters performed extensive string parsing because AST nodes lacked queryable attributes
+- ImportExtractor parsed "import static" strings instead of using AST attributes
+- No way to query type declaration names, package names, or import qualified names from AST
+
+**Solution Implemented**:
+- Added attribute system to NodeArena for storing semantic data per AST node
+- Created `NodeAttribute` sealed interface with specialized attribute records
+- Implemented `ImportAttribute` with qualified name and static flag
+- Implemented `PackageAttribute` with package name
+- Implemented `TypeDeclarationAttribute` with type name
+- Parser populates attributes during parsing for import, package, and type declarations
+
+**Key Components**:
+- **NodeAttribute**: Sealed interface for type-safe attribute polymorphism
+- **ImportAttribute**: Record with `qualifiedName()` and `isStatic()` accessors
+- **PackageAttribute**: Record with `packageName()` accessor
+- **TypeDeclarationAttribute**: Record with `typeName()` accessor
+- **NodeArena**: Extended with attribute storage using parallel arrays
+  - `getImportAttribute()`, `getPackageAttribute()`, `getTypeDeclarationAttribute()` accessors
+  - `setImportAttribute()`, `setPackageAttribute()`, `setTypeDeclarationAttribute()` mutators
+- **Parser**: Populates attributes during parsing
+  - Import declarations extract qualified name and static flag
+  - Package declarations extract package name
+  - Type declarations (class/interface/enum/record) extract type name
+
+**Files Created**:
+- `ast/core/src/main/java/io/github/cowwoc/styler/ast/core/NodeAttribute.java`
+- `ast/core/src/main/java/io/github/cowwoc/styler/ast/core/ImportAttribute.java`
+- `ast/core/src/main/java/io/github/cowwoc/styler/ast/core/PackageAttribute.java`
+- `ast/core/src/main/java/io/github/cowwoc/styler/ast/core/TypeDeclarationAttribute.java`
+- `ast/core/src/test/java/io/github/cowwoc/styler/ast/core/test/NodeArenaAttributeTest.java`
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/ParserImportAttributeTest.java`
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/ParserPackageAttributeTest.java`
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/ParserTypeAttributeTest.java`
+- `formatter/src/test/java/io/github/cowwoc/styler/formatter/importorg/ImportExtractorAttributeTest.java`
+
+**Files Modified**:
+- `ast/core/src/main/java/io/github/cowwoc/styler/ast/core/NodeArena.java` (+117 lines)
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java` (+67 lines)
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Token.java` (+16 lines for identifier extraction)
+- `formatter/src/main/java/io/github/cowwoc/styler/formatter/importorg/internal/ImportExtractor.java` (simplified with AST attributes)
+- Test infrastructure files for attribute validation
+
+**Quality**:
+- All tests passing (537 total tests)
+- Zero Checkstyle/PMD violations
+- Style guide compliance (test source formatting, cleanup patterns)
+
+**Impact**:
+- ImportExtractor simplified by 25 lines using AST attributes instead of string parsing
+- Foundation for future semantic analysis (unused imports, type resolution)
+- Enables formatters to query semantic information without string parsing
+
+---
+
 ## 2025-12-18
 
 ### E5: Parser AST Node Coverage ✅

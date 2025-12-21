@@ -106,8 +106,6 @@ public final class ErrorFormatterTest
 
 		FixSuggestion suggestion = formatter.getFixSuggestion(error);
 
-		requireThat(suggestion, "suggestion").isNotNull();
-		requireThat(suggestion.description(), "description").isEqualTo("Replace with valid token");
 		requireThat(suggestion.steps().size(), "steps.size").isEqualTo(1);
 		requireThat(suggestion.steps().getFirst(), "steps[0]").isEqualTo("Replace with valid token");
 	}

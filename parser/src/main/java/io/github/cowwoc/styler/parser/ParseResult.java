@@ -32,16 +32,11 @@ public sealed interface ParseResult
 		 * Creates a new successful parse result.
 		 *
 		 * @param rootNode the root node of the parsed AST
-		 * @throws NullPointerException     if {@code rootNode} is {@code null}
-		 * @throws IllegalArgumentException if {@code rootNode} is not valid
+		 * @throws NullPointerException if {@code rootNode} is {@code null}
 		 */
 		public Success
 		{
 			requireThat(rootNode, "rootNode").isNotNull();
-			if (!rootNode.isValid())
-			{
-				throw new IllegalArgumentException("rootNode must be valid, got: " + rootNode);
-			}
 		}
 	}
 

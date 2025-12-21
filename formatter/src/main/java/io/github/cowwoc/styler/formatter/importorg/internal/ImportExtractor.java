@@ -78,8 +78,8 @@ public final class ImportExtractor
 			// -1 because endPosition is inclusive, pointing to the semicolon
 			int endPosition = arena.getEnd(node) - 1;
 
-			String nodeText = context.getSourceText(node);
-			String qualifiedName = extractQualifiedName(nodeText, isStatic);
+			// Get qualified name from the ImportAttribute stored in the AST node
+			String qualifiedName = arena.getImportAttribute(node).qualifiedName();
 
 			int lineNumber = context.getLineNumber(startPosition);
 
@@ -92,27 +92,6 @@ public final class ImportExtractor
 
 			imports.add(importDecl);
 		}
-	}
-
-	/**
-	 * Extracts the qualified name from import node text.
-	 *
-	 * @param nodeText the full import statement text (e.g., "import java.util.List;")
-	 * @param isStatic whether this is a static import
-	 * @return the qualified name (e.g., "java.util.List")
-	 */
-	private static String extractQualifiedName(String nodeText, boolean isStatic)
-	{
-		// Strip "import ", optionally "static ", and trailing ";"
-		String result = nodeText.strip();
-		result = result.substring("import ".length());
-		if (isStatic)
-		{
-			result = result.substring("static ".length());
-		}
-		// Remove semicolon and any trailing whitespace
-		result = result.replace(";", "").strip();
-		return result;
 	}
 
 	/**

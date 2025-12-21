@@ -29,16 +29,6 @@ public class ParseResultTest
 	}
 
 	/**
-	 * Verifies that Success rejects invalid root node (NodeIndex.NULL).
-	 * The root node must reference an actual node in the AST, not the null sentinel.
-	 */
-	@Test(expectedExceptions = IllegalArgumentException.class)
-	public void successShouldRejectInvalidRootNode()
-	{
-		new ParseResult.Success(NodeIndex.NULL);
-	}
-
-	/**
 	 * Verifies that Success accepts a valid root node and stores it correctly.
 	 * A valid NodeIndex (index >= 0) represents a real node in the AST.
 	 */

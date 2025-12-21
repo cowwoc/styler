@@ -17,9 +17,6 @@ public class NodeIndexTest
 	public void testValidIndex()
 	{
 		NodeIndex index = new NodeIndex(0);
-		requireThat(index.isValid(), "index.isValid()").
-			withContext(index, "index").
-			isTrue();
 		requireThat(index.index(), "index()").isEqualTo(0);
 	}
 
@@ -30,36 +27,16 @@ public class NodeIndexTest
 	public void testValidLargeIndex()
 	{
 		NodeIndex index = new NodeIndex(1_000_000);
-		requireThat(index.isValid(), "index.isValid()").
-			withContext(index, "index").
-			isTrue();
 		requireThat(index.index(), "index()").isEqualTo(1_000_000);
 	}
 
 	/**
-	 * Tests that the NULL sentinel is invalid and has index -1.
+	 * Tests that NodeIndex rejects negative index -1.
 	 */
-	@Test
-	public void testNullSentinel()
+	@Test(expectedExceptions = IllegalArgumentException.class)
+	public void testInvalidIndexNegativeOne()
 	{
-		NodeIndex nullIndex = NodeIndex.NULL;
-		requireThat(nullIndex.isValid(), "nullIndex.isValid()").
-			withContext(nullIndex, "nullIndex").
-			isFalse();
-		requireThat(nullIndex.index(), "index()").isEqualTo(-1);
-	}
-
-	/**
-	 * Tests that constructing NodeIndex with -1 creates an invalid index.
-	 */
-	@Test
-	public void testExplicitNullConstruction()
-	{
-		NodeIndex index = new NodeIndex(-1);
-		requireThat(index.isValid(), "index.isValid()").
-			withContext(index, "index").
-			isFalse();
-		requireThat(index.index(), "index()").isEqualTo(-1);
+		new NodeIndex(-1);
 	}
 
 	/**
@@ -128,17 +105,6 @@ public class NodeIndexTest
 	}
 
 	/**
-	 * Tests that NULL sentinel equals explicitly constructed -1 index.
-	 */
-	@Test
-	public void testNullSentinelEquality()
-	{
-		NodeIndex null1 = NodeIndex.NULL;
-		NodeIndex null2 = new NodeIndex(-1);
-		requireThat(null1, "null1").isEqualTo(null2);
-	}
-
-	/**
 	 * Tests that equal NodeIndex instances have equal hash codes.
 	 */
 	@Test
@@ -165,30 +131,10 @@ public class NodeIndexTest
 	 * Tests toString() format for valid indices.
 	 */
 	@Test
-	public void testToStringValid()
+	public void testToString()
 	{
 		NodeIndex index = new NodeIndex(42);
-		requireThat(index.toString(), "toString()").isEqualTo("NodeIndex[42]");
-	}
-
-	/**
-	 * Tests toString() format for NULL sentinel.
-	 */
-	@Test
-	public void testToStringNull()
-	{
-		NodeIndex nullIndex = NodeIndex.NULL;
-		requireThat(nullIndex.toString(), "toString()").isEqualTo("NodeIndex[NULL]");
-	}
-
-	/**
-	 * Tests toString() format for explicitly constructed -1 index.
-	 */
-	@Test
-	public void testToStringExplicitNull()
-	{
-		NodeIndex index = new NodeIndex(-1);
-		requireThat(index.toString(), "toString()").isEqualTo("NodeIndex[NULL]");
+		requireThat(index.toString(), "toString()").isEqualTo("NodeIndex[index=42]");
 	}
 
 	/**
