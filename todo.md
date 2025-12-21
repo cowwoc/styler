@@ -352,6 +352,52 @@ benchmarking, and validate with Maven plugin integration.
 
 ---
 
+## Phase E: Architecture Refinement
+
+**Goal**: Improve formatter architecture for better maintainability, accuracy, and extensibility.
+
+### E1. Parser Error Handling Enhancement ✅ COMPLETE (2025-12-16)
+- [x] **COMPLETE:** `add-parser-error-record` - Add ParseError record and update Parser to return errors in result (2025-12-16)
+
+### E2. AST-Based Formatter Migration
+- [ ] **BLOCKED:** `migrate-formatters-to-ast` - Migrate all formatting rules to AST-based processing
+  - **Dependencies**: B2.5 ✅ (pipeline stages), all formatters (B1 + C3) ✅, C4 (concurrency benchmark -
+    understand performance baseline before architectural changes)
+  - **Blocks**: None (architectural improvement, can be done incrementally)
+  - **Parallelizable With**: D1, D2, D3 (independent of polish tasks)
+  - **Estimated Effort**: 5-8 days
+  - **Purpose**: Replace string/regex-based formatting logic with AST-aware transformations for higher
+    accuracy and maintainability
+  - **Scope**: Refactor all 5 formatting rules to operate on AST nodes rather than raw text
+  - **Current State**: Formatters may use string manipulation or regex patterns that don't understand
+    Java syntax context (e.g., strings, comments, nested structures)
+  - **Target State**: All formatters traverse AST nodes and apply transformations based on node types,
+    ensuring context-aware formatting that respects language semantics
+  - **Components**:
+    - **AST Visitor Framework**: Base visitor pattern for formatting rules to traverse AST
+    - **LineLengthFormattingRule**: Use AST to identify safe break points (after operators, between
+      arguments, after annotations) rather than arbitrary character positions
+    - **ImportOrganizerFormattingRule**: Already somewhat AST-based; enhance to use AST import nodes
+      directly rather than text parsing
+    - **BraceFormattingRule**: Use AST to identify brace contexts (class, method, control structure,
+      lambda, initializer) for context-specific formatting
+    - **WhitespaceFormattingRule**: Use AST to understand operator context, method calls, type parameters
+      to apply appropriate spacing rules
+    - **IndentationFormattingRule**: Use AST depth and node types to calculate correct indentation levels
+  - **Benefits**:
+    - Eliminates false positives from formatting inside strings/comments
+    - Enables context-sensitive rules (different formatting for lambdas vs methods)
+    - Simplifies complex formatting logic by leveraging existing AST structure
+    - Improves accuracy for edge cases (nested generics, method references, text blocks)
+  - **Migration Strategy**:
+    - Migrate one formatter at a time with comprehensive before/after testing
+    - Maintain backward compatibility (same formatting output for common cases)
+    - Add AST context to violation reports for better AI agent guidance
+  - **Quality**: Regression tests comparing pre/post migration output, performance benchmarks to ensure
+    no degradation, comprehensive edge case coverage
+
+---
+
 ## Deferred Features (Out of MVP Scope)
 
 **Rationale**: These features are not essential for the MVP AI-integrated formatter. Implement only when

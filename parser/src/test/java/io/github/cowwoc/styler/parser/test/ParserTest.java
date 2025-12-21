@@ -1,6 +1,7 @@
 package io.github.cowwoc.styler.parser.test;
 
 import io.github.cowwoc.styler.ast.core.NodeIndex;
+import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
@@ -21,7 +22,9 @@ public class ParserTest
 	{
 		try (Parser parser = new Parser(""))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -47,7 +50,9 @@ public class ParserTest
 		String source = "class Test { void m() { int x = 42; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -63,7 +68,9 @@ public class ParserTest
 		String source = "class Test { void m() { String x = \"hello\"; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -79,7 +86,9 @@ public class ParserTest
 		String source = "class Test { void m() { Object x = myVariable; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -95,7 +104,9 @@ public class ParserTest
 		String source = "class Test { void m() { int x = 1 + 2; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -111,7 +122,9 @@ public class ParserTest
 		String source = "class Test { void m() { int x = 3 * 4; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -127,7 +140,9 @@ public class ParserTest
 		String source = "class Test { void m() { int x = 1 + 2 * 3; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -143,7 +158,9 @@ public class ParserTest
 		String source = "class Test { void m() { int x = (1 + 2) * 3; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -159,7 +176,9 @@ public class ParserTest
 		String source = "class Test { void m() { int x = -5; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -175,7 +194,9 @@ public class ParserTest
 		String source = "class Test { void m() { boolean x = !true; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -191,7 +212,9 @@ public class ParserTest
 		String source = "class Test { void m() { foo(); } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -207,7 +230,9 @@ public class ParserTest
 		String source = "class Test { void m() { foo(1, 2, 3); } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -223,7 +248,9 @@ public class ParserTest
 		String source = "class Test { void m() { Object x = obj.field; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -239,7 +266,9 @@ public class ParserTest
 		String source = "class Test { void m() { Object x = array[0]; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -255,7 +284,9 @@ public class ParserTest
 		String source = "class Test { void m() { x = 5; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -271,7 +302,9 @@ public class ParserTest
 		String source = "class Test { void m() { x += 5; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -287,7 +320,9 @@ public class ParserTest
 		String source = "class Test { void m() { Object result = x ? y : z; } }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -330,35 +365,38 @@ public class ParserTest
 
 		try (Parser parser = new Parser(source.toString()))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
 
 	/**
-	 * Tests that excessive nesting depth is rejected with ParserException.
+	 * Tests that excessive nesting depth is rejected with ParseResult.Failure.
 	 * Validates denial-of-service prevention by enforcing maximum depth limit,
 	 * protecting against stack overflow from pathological input.
 	 * This test creates 201 nested parentheses exceeding the 200 depth limit.
 	 */
-	@Test(expectedExceptions = Parser.ParserException.class)
+	@Test
 	public void testMaxDepthExceeded()
 	{
 		// Create deeply nested parenthesized expression
 		StringBuilder source = new StringBuilder();
-		for (int i = 0; i < 201; i += 1)
+		for (int i = 0; i < 201; ++i)
 		{
 			source.append('(');
 		}
 		source.append('1');
-		for (int i = 0; i < 201; i += 1)
+		for (int i = 0; i < 201; ++i)
 		{
 			source.append(')');
 		}
 
 		try (Parser parser = new Parser(source.toString()))
 		{
-			parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Failure.class);
 		}
 	}
 }

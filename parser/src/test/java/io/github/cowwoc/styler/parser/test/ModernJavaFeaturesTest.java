@@ -1,6 +1,7 @@
 package io.github.cowwoc.styler.parser.test;
 
 import io.github.cowwoc.styler.ast.core.NodeIndex;
+import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
@@ -22,7 +23,9 @@ public class ModernJavaFeaturesTest
 		String source = "record Point(int x, int y) { }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -38,7 +41,9 @@ public class ModernJavaFeaturesTest
 		String source = "record Box<T>(T value) { }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -54,7 +59,9 @@ public class ModernJavaFeaturesTest
 		String source = "record Point(int x, int y) implements Comparable<Point> { }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -76,7 +83,9 @@ public class ModernJavaFeaturesTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -92,7 +101,9 @@ public class ModernJavaFeaturesTest
 		String source = "sealed class Shape permits Circle, Rectangle { }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -108,7 +119,9 @@ public class ModernJavaFeaturesTest
 		String source = "sealed interface Shape permits Circle, Rectangle { }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -124,7 +137,9 @@ public class ModernJavaFeaturesTest
 		String source = "non-sealed class Square extends Shape { }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -146,7 +161,9 @@ public class ModernJavaFeaturesTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -162,7 +179,9 @@ public class ModernJavaFeaturesTest
 		String source = "sealed class Shape permits Circle, Rectangle, Triangle, Square { }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -178,7 +197,9 @@ public class ModernJavaFeaturesTest
 		String source = "record Person(String name, int age, String email, String phone) { }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -198,7 +219,9 @@ public class ModernJavaFeaturesTest
 			""";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -214,7 +237,9 @@ public class ModernJavaFeaturesTest
 		String source = "public record Point(int x, int y) { }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -230,7 +255,9 @@ public class ModernJavaFeaturesTest
 		String source = "sealed class Circle extends Shape permits FilledCircle, HollowCircle { }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}
@@ -246,7 +273,9 @@ public class ModernJavaFeaturesTest
 		String source = "record Empty() { }";
 		try (Parser parser = new Parser(source))
 		{
-			NodeIndex root = parser.parse();
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+			NodeIndex root = ((ParseResult.Success) result).rootNode();
 			requireThat(root.isValid(), "root.isValid()").isTrue();
 		}
 	}

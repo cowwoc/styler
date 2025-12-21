@@ -34,6 +34,7 @@ public final class Parser implements AutoCloseable
 	 */
 	private static final int TIMEOUT_CHECK_INTERVAL = 100;
 
+	private final String sourceCode;
 	private final List<Token> tokens;
 	private final NodeArena arena;
 	private final Instant parsingDeadline;
@@ -104,6 +105,7 @@ public final class Parser implements AutoCloseable
 				SecurityConfig.MAX_SOURCE_SIZE_BYTES + " bytes");
 		}
 
+		this.sourceCode = source;
 		Lexer lexer = new Lexer(source);
 		this.tokens = lexer.tokenize();
 
@@ -131,14 +133,47 @@ public final class Parser implements AutoCloseable
 	}
 
 	/**
-	 * Parses the source code and returns the root compilation unit node.
+	 * Parses the source code and returns the result.
 	 *
-	 * @return the root node index
-	 * @throws ParserException if parsing fails
+	 * @return the parse result containing either the root node or parse errors
 	 */
-	public NodeIndex parse()
+	public ParseResult parse()
 	{
-		return parseCompilationUnit();
+		try
+		{
+			return new ParseResult.Success(parseCompilationUnit());
+		}
+		catch (ParserException e)
+		{
+			ParseError error = createError(e.getMessage(), e.getPosition());
+			return new ParseResult.Failure(List.of(error));
+		}
+	}
+
+	/**
+	 * Creates a parse error with line and column information calculated from the position.
+	 *
+	 * @param message  the error message
+	 * @param position the 0-based character offset in source code
+	 * @return a new parse error with line and column information
+	 */
+	private ParseError createError(String message, int position)
+	{
+		int line = 1;
+		int column = 1;
+		for (int i = 0; i < position && i < sourceCode.length(); ++i)
+		{
+			if (sourceCode.charAt(i) == '\n')
+			{
+				++line;
+				column = 1;
+			}
+			else
+			{
+				++column;
+			}
+		}
+		return new ParseError(position, line, column, message);
 	}
 
 	private NodeIndex parseCompilationUnit()
