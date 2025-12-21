@@ -126,8 +126,6 @@ public final class StylerErrorOutputTest
 		TestException error = new TestException("Test error");
 
 		FixSuggestion suggestion = output.getFixSuggestion(error);
-
-		requireThat(suggestion, "suggestion").isNotNull();
 		requireThat(suggestion.description(), "description").isEqualTo("Add missing semicolon");
 	}
 

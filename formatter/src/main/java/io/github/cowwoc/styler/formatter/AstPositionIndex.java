@@ -82,14 +82,14 @@ public final class AstPositionIndex
 	 * Finds the smallest AST node enclosing the given position.
 	 *
 	 * @param position character offset in source code
-	 * @return the smallest enclosing node, or {@link NodeIndex#NULL} if no enclosing node found
+	 * @return the smallest enclosing node, or {@code null} if no enclosing node found
 	 * @throws IllegalArgumentException if position is negative
 	 */
 	public NodeIndex findEnclosingNode(int position)
 	{
 		requireThat(position, "position").isNotNegative();
 
-		NodeIndex smallest = NodeIndex.NULL;
+		NodeIndex smallest = null;
 		int smallestSize = Integer.MAX_VALUE;
 
 		// Linear search: check all intervals, track smallest that contains position

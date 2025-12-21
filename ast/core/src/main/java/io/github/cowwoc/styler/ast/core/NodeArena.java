@@ -3,6 +3,8 @@ package io.github.cowwoc.styler.ast.core;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -27,6 +29,7 @@ public final class NodeArena implements AutoCloseable
 	private static final int END_OFFSET = 8;
 
 	private final Arena arena;
+	private final Map<NodeIndex, NodeAttribute> attributes = new HashMap<>();
 	private MemorySegment segment;
 	private int nodeCount;
 	private int capacity;
@@ -102,6 +105,244 @@ public final class NodeArena implements AutoCloseable
 		NodeIndex result = new NodeIndex(nodeCount);
 		++nodeCount;
 		return result;
+	}
+
+	/**
+	 * Allocates an import declaration node with its associated attribute.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the import attribute containing the qualified name
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateImportDeclaration(int start, int end, ImportAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.IMPORT_DECLARATION, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates a static import declaration node with its associated attribute.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the import attribute containing the qualified name
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateStaticImportDeclaration(int start, int end, ImportAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.STATIC_IMPORT_DECLARATION, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates a package declaration node with its associated attribute.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the package attribute containing the package name
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocatePackageDeclaration(int start, int end, PackageAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.PACKAGE_DECLARATION, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates a class declaration node with its associated attribute.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the type declaration attribute containing the class name
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateClassDeclaration(int start, int end, TypeDeclarationAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.CLASS_DECLARATION, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates an interface declaration node with its associated attribute.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the type declaration attribute containing the interface name
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateInterfaceDeclaration(int start, int end, TypeDeclarationAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.INTERFACE_DECLARATION, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates an enum declaration node with its associated attribute.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the type declaration attribute containing the enum name
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateEnumDeclaration(int start, int end, TypeDeclarationAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.ENUM_DECLARATION, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates a record declaration node with its associated attribute.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the type declaration attribute containing the record name
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateRecordDeclaration(int start, int end, TypeDeclarationAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.RECORD_DECLARATION, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates an annotation type declaration node with its associated attribute.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the type declaration attribute containing the annotation type name
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateAnnotationTypeDeclaration(int start, int end, TypeDeclarationAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.ANNOTATION_DECLARATION, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Returns the import attribute associated with a node.
+	 *
+	 * @param index the node index
+	 * @return the import attribute
+	 * @throws NullPointerException     if {@code index} is null
+	 * @throws IllegalArgumentException if {@code index} is invalid or the node is not an import declaration
+	 */
+	public ImportAttribute getImportAttribute(NodeIndex index)
+	{
+		requireThat(index, "index").isNotNull();
+		validateIndex(index);
+		NodeType type = getType(index);
+		if (type != NodeType.IMPORT_DECLARATION && type != NodeType.STATIC_IMPORT_DECLARATION)
+		{
+			throw new IllegalArgumentException("Expected IMPORT_DECLARATION or STATIC_IMPORT_DECLARATION " +
+				"but was " + type);
+		}
+		NodeAttribute attribute = attributes.get(index);
+		if (attribute instanceof ImportAttribute importAttribute)
+		{
+			return importAttribute;
+		}
+		throw new AssertionError("Import node at position " + getStart(index) +
+			" is missing ImportAttribute");
+	}
+
+	/**
+	 * Returns the package attribute associated with a node.
+	 *
+	 * @param index the node index
+	 * @return the package attribute
+	 * @throws NullPointerException     if {@code index} is null
+	 * @throws IllegalArgumentException if {@code index} is invalid or the node is not a package declaration
+	 */
+	public PackageAttribute getPackageAttribute(NodeIndex index)
+	{
+		requireThat(index, "index").isNotNull();
+		validateIndex(index);
+		if (getType(index) != NodeType.PACKAGE_DECLARATION)
+		{
+			throw new IllegalArgumentException("Expected PACKAGE_DECLARATION but was " + getType(index));
+		}
+		NodeAttribute attribute = attributes.get(index);
+		if (attribute instanceof PackageAttribute packageAttribute)
+		{
+			return packageAttribute;
+		}
+		throw new AssertionError("Package node at position " + getStart(index) +
+			" is missing PackageAttribute");
+	}
+
+	/**
+	 * Returns the type declaration attribute associated with a node.
+	 *
+	 * @param index the node index
+	 * @return the type declaration attribute
+	 * @throws NullPointerException     if {@code index} is null
+	 * @throws IllegalArgumentException if {@code index} is invalid or the node is not a type declaration
+	 */
+	public TypeDeclarationAttribute getTypeDeclarationAttribute(NodeIndex index)
+	{
+		requireThat(index, "index").isNotNull();
+		validateIndex(index);
+		NodeType type = getType(index);
+		if (!isTypeDeclaration(type))
+		{
+			throw new IllegalArgumentException("Expected type declaration but was " + type);
+		}
+		NodeAttribute attribute = attributes.get(index);
+		if (attribute instanceof TypeDeclarationAttribute typeDeclarationAttribute)
+		{
+			return typeDeclarationAttribute;
+		}
+		throw new AssertionError("Type declaration node at position " + getStart(index) +
+			" is missing TypeDeclarationAttribute");
+	}
+
+	/**
+	 * Checks if the given node type is a type declaration.
+	 *
+	 * @param type the node type to check
+	 * @return {@code true} if the type is a class, interface, enum, record, or annotation declaration
+	 */
+	private static boolean isTypeDeclaration(NodeType type)
+	{
+		return switch (type)
+		{
+			case CLASS_DECLARATION, INTERFACE_DECLARATION, ENUM_DECLARATION,
+				RECORD_DECLARATION, ANNOTATION_DECLARATION -> true;
+			default -> false;
+		};
 	}
 
 	/**
@@ -199,9 +440,6 @@ public final class NodeArena implements AutoCloseable
 	private void validateIndex(NodeIndex index)
 	{
 		requireThat(index, "index").isNotNull();
-		requireThat(index.isValid(), "index.isValid()").
-			withContext(index, "index").
-			isTrue();
 		requireThat(index.index(), "index.index()").isLessThan(nodeCount);
 	}
 

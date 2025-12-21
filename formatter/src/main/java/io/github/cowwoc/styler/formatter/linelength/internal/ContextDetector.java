@@ -58,7 +58,7 @@ public final class ContextDetector
 		validatePosition(position);
 		NodeIndex node = positionIndex.findEnclosingNode(position);
 
-		if (!node.isValid())
+		if (node == null)
 		{
 			throw new AssertionError("Position " + position +
 				" not found in spatial index (should be in at least CompilationUnit)");
@@ -71,7 +71,7 @@ public final class ContextDetector
 	 * Finds smallest AST node enclosing position.
 	 *
 	 * @param position character offset in source code
-	 * @return node index, or NodeIndex.NULL if no enclosing node
+	 * @return node index, or {@code null} if no enclosing node
 	 * @throws IllegalArgumentException if position out of bounds
 	 */
 	public NodeIndex findEnclosingNode(int position)
