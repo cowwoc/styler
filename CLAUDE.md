@@ -329,6 +329,15 @@ jq '.state = "IMPLEMENTATION"' task.json | sponge task.json
 **Why This Happens**: Shell redirection (`>`) opens and truncates the output file BEFORE the command runs.
 The jq process then reads an empty file, producing empty output.
 
+**Bash Tool - Multi-Line Commands**:
+
+**⚠️ CRITICAL**: Avoid multi-line bash commands with command substitution `$(...)` - causes parse errors
+`(eval):1: parse error near '('`.
+
+**Safe patterns**: Break into separate calls, use temp files, chain with `&&`, or write script file first.
+See [tool-usage.md § Bash Multi-Line Commands](docs/optional-modules/tool-usage.md#bash-multi-line-commands)
+for detailed alternatives and decision tree.
+
 **Synchronous Tool Execution (Skill and SlashCommand)**:
 
 **⚠️ CRITICAL**: Skill and SlashCommand tools run SYNCHRONOUSLY, NOT like Task tool's async model.
