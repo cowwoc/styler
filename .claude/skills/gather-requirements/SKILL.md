@@ -221,9 +221,54 @@ Task tool call #3:
 
 **Result**: All agents start work concurrently, requirements gathered in parallel.
 
-### ❌ WRONG Pattern (Sequential)
+### ❌ WRONG Pattern (Sequential) - DO NOT DO THIS
+
+The following shows what NOT to do - invoking agents one at a time in separate messages:
 
 ```markdown
+# ❌ ANTI-PATTERN - Sequential invocation wastes time
+
+Message 1:
 Assistant: Invoking architect agent...
 [Task tool call: architect]
-[Wait for completion]
+
+[Wait for architect to complete - could take minutes]
+
+Message 2:
+Assistant: Now invoking tester agent...
+[Task tool call: tester]
+
+[Wait for tester to complete - more minutes wasted]
+
+Message 3:
+Assistant: Finally invoking formatter agent...
+[Task tool call: formatter]
+
+[Wait for formatter to complete]
+```
+
+**Problem**: Each agent runs sequentially, tripling the total time. If each agent takes 2 minutes,
+sequential = 6 minutes vs parallel = 2 minutes.
+
+---
+
+## Verification After Completion
+
+After all agents complete, verify reports exist:
+
+```bash
+TASK_NAME="your-task-name"
+ls -la /workspace/tasks/$TASK_NAME/*-requirements.md
+
+# Expected output:
+# {task-name}-architect-requirements.md
+# {task-name}-tester-requirements.md
+# {task-name}-formatter-requirements.md
+```
+
+## Related Skills
+
+- **task-init**: Initialize task before gathering requirements
+- **select-agents**: Determine which agents are needed
+- **synthesize-plan**: Next step after requirements gathered
+- **verify-requirements-complete**: Validate all reports exist

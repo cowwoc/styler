@@ -46,6 +46,7 @@ Before ANY implementation work, complete ALL steps in order:
 - [ ] Task coordination plan documented in task.md
 - [ ] Main agent role boundaries reviewed (NO source file creation - use Task tool to delegate)
 - [ ] Agent requirements prepared for Task tool invocation
+- [ ] **Agent prompts verified against task.md** (see [Agent Prompt Verification](#agent-prompt-verification))
 
 **Step 4: Pre-Flight Validation**
 - [ ] Main agent has NOT used Write/Edit on any .java/.ts/.py files
@@ -263,6 +264,36 @@ Edit: module-info.java            # VIOLATION!
 Edit: FormatterAPITest.java       # VIOLATION!
 Edit: pom.xml                     # VIOLATION!
 git commit -m "Fix compilation"   # Committing violations!
+```
+
+### ⚠️ MANDATORY: Agent Prompt Verification {#agent-prompt-verification}
+
+**CRITICAL**: Before invoking agents, verify prompts match task.md requirements EXACTLY.
+
+**Root Cause of Past Failures**: Main agent wrote prompts that contradicted task.md requirements. Example:
+- task.md said: "Report a violation when classpath not available"
+- Agent prompt said: "just preserve for now" (WRONG - contradicts task.md)
+
+**MANDATORY CHECKLIST before Task tool invocation**:
+- [ ] Re-read the relevant section of task.md for this agent's scope
+- [ ] For each behavior described in task.md, verify the prompt includes it
+- [ ] **Search for contradictions**: Does any phrase in the prompt suggest different behavior than task.md?
+- [ ] Pay special attention to edge cases and error handling (most common source of contradictions)
+
+**Red Flag Phrases** (in agent prompts that may indicate contradiction):
+- "for now" - suggests temporary behavior that may differ from requirements
+- "elsewhere" - defers responsibility that may never be implemented
+- "placeholder" - indicates incomplete requirement translation
+- "graceful degradation" - may silently hide errors instead of reporting them
+
+**Verification Pattern**:
+```
+1. Open task.md, find the behavior matrix/requirements table
+2. For each row in the matrix:
+   a. Is this scenario covered in the agent prompt?
+   b. Does the prompt specify the EXACT behavior from task.md?
+   c. If behavior involves "report violation" or "report error", is that explicit?
+3. If any mismatch found → FIX PROMPT before invoking agent
 ```
 
 ### ✅ CORRECT: Delegation Pattern {#correct-delegation-pattern}

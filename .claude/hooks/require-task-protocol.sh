@@ -32,9 +32,73 @@ if [[ "$TOOL_NAME" != "Write" && "$TOOL_NAME" != "Edit" ]]; then
 	exit 0
 fi
 
-# Only enforce for /workspace/tasks/** paths
+# ═══════════════════════════════════════════════════════════════
+# Check 0: Block /workspace/main/ source edits when task is active
+# ═══════════════════════════════════════════════════════════════
+# ADDED: 2025-12-16 after main agent edited NodeArena.java, Parser.java,
+# NodeArenaTest.java directly in /workspace/main/ while migrate-formatters-to-ast
+# task was active in SYNTHESIS state. This violated protocol-scope-specification.md
+# which requires ALL source code edits go through task worktrees, not directly to main.
+if [[ "$FILE_PATH" =~ ^/workspace/main/ ]]; then
+	# Check if this is Category B (source code requiring protocol)
+	if match_category_b "$FILE_PATH"; then
+		# Check for active tasks
+		TERMINAL_STATES=("COMPLETE" "ABANDONED" "CLEANUP")
+		for task_dir in /workspace/tasks/*/; do
+			[[ -d "$task_dir" ]] || continue
+			task_json="${task_dir}task.json"
+			[[ -f "$task_json" ]] || continue
+
+			state=$(jq -r '.state // "UNKNOWN"' "$task_json" 2>/dev/null || echo "UNKNOWN")
+			task_name=$(basename "$task_dir")
+
+			# Check if state is NOT terminal
+			is_terminal=false
+			for terminal in "${TERMINAL_STATES[@]}"; do
+				if [[ "$state" == "$terminal" ]]; then
+					is_terminal=true
+					break
+				fi
+			done
+
+			if [[ "$is_terminal" == "false" && "$state" != "UNKNOWN" ]]; then
+				# Active task found - block the edit
+				CATEGORY_REASON=$(get_category_reason "$FILE_PATH")
+				cat << EOF >&2
+❌ BLOCKED: Source Code Edit to Main Branch During Active Task
+
+You are attempting to edit:
+  $FILE_PATH
+
+This is Category B work (requires task protocol):
+  Type: $CATEGORY_REASON
+
+⚠️  ACTIVE TASK DETECTED: $task_name (state: $state)
+
+🚫 VIOLATION: When a task is active, source code changes MUST go through
+   the task worktree, not directly to /workspace/main/.
+
+✅ CORRECT APPROACH:
+1. Switch to task worktree: cd /workspace/tasks/$task_name/code/
+2. Make your edits there
+3. Edits will be merged to main when task completes
+
+📖 See: protocol-scope-specification.md § Category B: Protocol-Required Work
+
+🔧 Quick fix - edit the file in task worktree instead:
+   Edit: /workspace/tasks/$task_name/code/${FILE_PATH#/workspace/main/}
+EOF
+				output_hook_block "Blocked: Source code edits to /workspace/main/ not allowed while task '$task_name' is active. Use task worktree instead."
+				exit 0
+			fi
+		done
+	fi
+	exit 0  # Category A files (docs, hooks, config) are allowed on main
+fi
+
+# Only enforce for /workspace/tasks/** paths (from here on)
 if [[ ! "$FILE_PATH" =~ ^/workspace/tasks/ ]]; then
-	exit 0  # Allow root workspace edits
+	exit 0  # Other paths not covered
 fi
 
 # Extract task name from path
