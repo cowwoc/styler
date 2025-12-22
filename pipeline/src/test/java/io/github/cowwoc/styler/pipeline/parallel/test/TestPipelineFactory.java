@@ -6,7 +6,6 @@ import java.util.List;
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
-import io.github.cowwoc.styler.formatter.linelength.WrapStyle;
 import io.github.cowwoc.styler.pipeline.FileProcessingPipeline;
 import io.github.cowwoc.styler.security.SecurityConfig;
 
@@ -63,19 +62,6 @@ public final class TestPipelineFactory
 	 */
 	private static FormattingConfiguration createDefaultFormattingConfig()
 	{
-		return new LineLengthConfiguration(
-			"line-length",
-			120,  // maxLineLength
-			4,    // tabWidth
-			4,    // indentContinuationLines
-			WrapStyle.AFTER,  // methodChainWrap
-			WrapStyle.AFTER,  // methodArgumentsWrap
-			WrapStyle.AFTER,  // binaryExpressionWrap
-			WrapStyle.AFTER,  // methodParametersWrap
-			WrapStyle.AFTER,  // ternaryExpressionWrap
-			WrapStyle.AFTER,  // arrayInitializerWrap
-			WrapStyle.AFTER,  // annotationArgumentsWrap
-			WrapStyle.AFTER,  // genericTypeArgsWrap
-			true);  // wrapLongStrings
+		return LineLengthConfiguration.defaultConfig();
 	}
 }

@@ -5,11 +5,14 @@ import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.TransformationContext;
+import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
+import io.github.cowwoc.styler.formatter.importorg.internal.ImportAnalysisResult;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportAnalyzer;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportDeclaration;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportExtractor;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportGrouper;
+import io.github.cowwoc.styler.formatter.internal.ClasspathScanner;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -99,10 +102,18 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 
 		if (importConfig.removeUnusedImports())
 		{
-			Set<String> unused = ImportAnalyzer.findUnusedImports(imports, context);
+			ImportAnalysisResult analysisResult = analyzeImports(imports, context, importConfig);
+
+			// Add violation for unresolved symbols (if any)
+			if (!analysisResult.isResolutionComplete())
+			{
+				violations.add(createUnresolvedSymbolsViolation(analysisResult.unresolvedSymbols(), context));
+			}
+
+			// Add violations for unused imports
 			for (ImportDeclaration imp : imports)
 			{
-				if (unused.contains(imp.qualifiedName()))
+				if (analysisResult.unusedImports().contains(imp.qualifiedName()))
 				{
 					violations.add(createUnusedImportViolation(imp, context));
 				}
@@ -151,9 +162,9 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 		List<ImportDeclaration> imports = originalImports;
 		if (importConfig.removeUnusedImports())
 		{
-			Set<String> unused = ImportAnalyzer.findUnusedImports(imports, context);
+			ImportAnalysisResult analysisResult = analyzeImports(imports, context, importConfig);
 			imports = imports.stream().
-				filter(imp -> !unused.contains(imp.qualifiedName())).
+				filter(imp -> !analysisResult.unusedImports().contains(imp.qualifiedName())).
 				toList();
 		}
 		context.checkDeadline();
@@ -173,7 +184,7 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 	/**
 	 * Creates a violation for an unused import.
 	 *
-	 * @param imp the unused import
+	 * @param imp     the unused import
 	 * @param context the transformation context
 	 * @return a FormattingViolation
 	 */
@@ -194,6 +205,38 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 			imp.endPosition(),
 			lineNumber,
 			columnNumber,
+			List.of());
+	}
+
+	/**
+	 * Creates a violation for unresolved symbols during import analysis.
+	 * <p>
+	 * This is a file-level violation indicating that symbol resolution was incomplete,
+	 * typically due to missing classpath entries.
+	 *
+	 * @param unresolvedSymbols the symbols that could not be resolved
+	 * @param context           the transformation context
+	 * @return a FormattingViolation
+	 */
+	private FormattingViolation createUnresolvedSymbolsViolation(
+		Set<String> unresolvedSymbols,
+		TransformationContext context)
+	{
+		String symbolList = unresolvedSymbols.stream().
+			sorted().
+			collect(java.util.stream.Collectors.joining(", "));
+		String message = "Cannot expand wildcard imports: unresolved symbols [" + symbolList +
+			"]. Configure classpath or set expandWildcardImports=false";
+
+		return new DefaultFormattingViolation(
+			RULE_ID,
+			ViolationSeverity.WARNING,
+			message,
+			context.filePath(),
+			0,
+			0,
+			1,
+			1,
 			List.of());
 	}
 
@@ -304,5 +347,33 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 		result.append(source.substring(importEnd));
 
 		return result.toString();
+	}
+
+	/**
+	 * Analyzes imports to find unused ones and resolve wildcard imports.
+	 *
+	 * @param imports      all import declarations in the file
+	 * @param context      the transformation context
+	 * @param importConfig the import organizer configuration
+	 * @return analysis result containing unused imports and any unresolved symbols
+	 */
+	private ImportAnalysisResult analyzeImports(
+		List<ImportDeclaration> imports,
+		TransformationContext context,
+		ImportOrganizerConfiguration importConfig)
+	{
+		if (!importConfig.expandWildcardImports())
+		{
+			// No scanner needed - wildcards preserved silently without symbol resolution
+			return ImportAnalyzer.findUnusedImports(imports, context, importConfig, ClasspathScanner.empty());
+		}
+
+		// Scanner needed for symbol resolution. If classpath is not configured, scanner will be
+		// empty and resolution will fail gracefully (wildcards preserved, warning reported)
+		TypeResolutionConfig typeConfig = context.typeResolutionConfig();
+		try (ClasspathScanner scanner = ClasspathScanner.create(typeConfig))
+		{
+			return ImportAnalyzer.findUnusedImports(imports, context, importConfig, scanner);
+		}
 	}
 }

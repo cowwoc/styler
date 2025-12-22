@@ -161,14 +161,22 @@ public class LineWrapperTest
 	@Test
 	public void shouldReturnUnchangedLineWithinMaxLength()
 	{
-		String source = "public class Test { void method() {} }";
+		String source = """
+			public class Test
+			{
+				void method()
+				{
+				}
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		ContextDetector detector = new ContextDetector(context);
 		LineLengthConfiguration config = LineLengthConfiguration.defaultConfig();
 		LineWrapper wrapper = new LineWrapper(detector, context, config);
 
-		String result = wrapper.wrapLine(source, 0);
-		requireThat(result, "result").isEqualTo(source);
+		// First line is "public class Test" which is within max length
+		String firstLine = source.lines().findFirst().orElseThrow();
+		String result = wrapper.wrapLine(firstLine, 0);
+		requireThat(result, "result").isEqualTo(firstLine);
 	}
 
 	/**

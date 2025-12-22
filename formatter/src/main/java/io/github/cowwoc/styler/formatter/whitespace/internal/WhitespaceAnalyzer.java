@@ -85,7 +85,7 @@ public final class WhitespaceAnalyzer
 		WhitespaceFormattingConfiguration config, TransformationContext context,
 		List<FormattingViolation> violations)
 	{
-		if (!config.spaceAroundBinaryOperators() || !isBinaryOperator(sourceCode, position))
+		if (!config.spaceAroundBinaryOperator() || !isBinaryOperator(sourceCode, position))
 			return;
 
 		int opStart = getOperatorStart(sourceCode, position);
@@ -120,7 +120,7 @@ public final class WhitespaceAnalyzer
 		WhitespaceFormattingConfiguration config, TransformationContext context,
 		List<FormattingViolation> violations)
 	{
-		if (!config.spaceAfterControlKeywords() || !isControlKeyword(sourceCode, position))
+		if (!config.spaceAfterControlKeyword() || !isControlKeyword(sourceCode, position))
 			return;
 
 		int keywordStart = getKeywordStart(sourceCode, position);

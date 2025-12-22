@@ -14,54 +14,77 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  */
 public class ImportOrganizerConfigurationTest
 {
+	/**
+	 * Tests that null ruleId is rejected.
+	 */
 	@Test(expectedExceptions = NullPointerException.class)
 	void shouldRejectNullRuleId()
 	{
-		List<ImportGroup> groupOrder = List.of(ImportGroup.JAVA, ImportGroup.THIRD_PARTY,
-			ImportGroup.PROJECT);
-		new ImportOrganizerConfiguration(null, groupOrder, true, false, true, true, List.of());
+		ImportOrganizerConfiguration.builder().
+			ruleId(null).
+			build();
 	}
 
+	/**
+	 * Tests that empty ruleId is rejected.
+	 */
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	void shouldRejectEmptyRuleId()
 	{
-		List<ImportGroup> groupOrder = List.of(ImportGroup.JAVA, ImportGroup.THIRD_PARTY,
-			ImportGroup.PROJECT);
-		new ImportOrganizerConfiguration("", groupOrder, true, false, true, true, List.of());
+		ImportOrganizerConfiguration.builder().
+			ruleId("").
+			build();
 	}
 
+	/**
+	 * Tests that whitespace-only ruleId is rejected.
+	 */
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	void shouldRejectWhitespaceOnlyRuleId()
 	{
-		List<ImportGroup> groupOrder = List.of(ImportGroup.JAVA, ImportGroup.THIRD_PARTY,
-			ImportGroup.PROJECT);
-		new ImportOrganizerConfiguration("   ", groupOrder, true, false, true, true, List.of());
+		ImportOrganizerConfiguration.builder().
+			ruleId("   ").
+			build();
 	}
 
+	/**
+	 * Tests that null groupOrder is rejected.
+	 */
 	@Test(expectedExceptions = NullPointerException.class)
 	void shouldRejectNullGroupOrder()
 	{
-		new ImportOrganizerConfiguration("import-organizer", null, true, false, true, true, List.of());
+		ImportOrganizerConfiguration.builder().
+			groupOrder(null).
+			build();
 	}
 
+	/**
+	 * Tests that empty groupOrder is rejected.
+	 */
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	void shouldRejectEmptyGroupOrder()
 	{
-		new ImportOrganizerConfiguration("import-organizer", List.of(), true, false, true, true,
-			List.of());
+		ImportOrganizerConfiguration.builder().
+			groupOrder(List.of()).
+			build();
 	}
 
+	/**
+	 * Tests that ruleId is returned correctly.
+	 */
 	@Test
 	void shouldReturnCorrectRuleId()
 	{
-		List<ImportGroup> groupOrder = List.of(ImportGroup.JAVA, ImportGroup.THIRD_PARTY,
-			ImportGroup.PROJECT);
-		ImportOrganizerConfiguration config = new ImportOrganizerConfiguration("import-organizer",
-			groupOrder, true, false, true, true, List.of());
+		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.builder().
+			ruleId("custom-rule").
+			build();
 
-		requireThat(config.ruleId(), "ruleId").isEqualTo("import-organizer");
+		requireThat(config.ruleId(), "ruleId").isEqualTo("custom-rule");
 	}
 
+	/**
+	 * Tests that default configuration returns expected group order.
+	 */
 	@Test
 	void shouldReturnDefaultGroupOrder()
 	{
@@ -72,6 +95,9 @@ public class ImportOrganizerConfigurationTest
 		requireThat(config.groupOrder(), "groupOrder").isEqualTo(expected);
 	}
 
+	/**
+	 * Tests that default configuration has removeUnusedImports enabled.
+	 */
 	@Test
 	void shouldReturnRemoveUnusedDefault()
 	{
@@ -80,6 +106,9 @@ public class ImportOrganizerConfigurationTest
 		requireThat(config.removeUnusedImports(), "removeUnusedImports").isTrue();
 	}
 
+	/**
+	 * Tests that default configuration has sortImportsAlphabetically enabled.
+	 */
 	@Test
 	void shouldReturnSortAlphabeticallyDefault()
 	{
@@ -88,14 +117,16 @@ public class ImportOrganizerConfigurationTest
 		requireThat(config.sortImportsAlphabetically(), "sortImportsAlphabetically").isTrue();
 	}
 
+	/**
+	 * Tests that custom project pattern is accepted.
+	 */
 	@Test
 	void shouldAcceptCustomProjectPattern()
 	{
-		List<ImportGroup> groupOrder = List.of(ImportGroup.JAVA, ImportGroup.THIRD_PARTY,
-			ImportGroup.PROJECT);
 		CustomImportPattern customPattern = CustomImportPattern.of("PROJECT", "com\\.mycompany\\..*");
-		ImportOrganizerConfiguration config = new ImportOrganizerConfiguration("import-organizer",
-			groupOrder, true, false, true, true, List.of(customPattern));
+		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.builder().
+			customPatterns(List.of(customPattern)).
+			build();
 
 		requireThat(config.customPatterns(), "customPatterns").size().isEqualTo(1);
 		requireThat(config.customPatterns().getFirst().pattern().pattern(), "pattern").

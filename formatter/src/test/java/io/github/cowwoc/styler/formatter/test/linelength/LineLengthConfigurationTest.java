@@ -17,9 +17,9 @@ public class LineLengthConfigurationTest
 	@Test(expectedExceptions = NullPointerException.class)
 	public void shouldRejectNullRuleId()
 	{
-		new LineLengthConfiguration(null, 120, 4, 4,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, true);
+		LineLengthConfiguration.builder().
+			ruleId(null).
+			build();
 	}
 
 	/**
@@ -28,9 +28,9 @@ public class LineLengthConfigurationTest
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void shouldRejectEmptyRuleId()
 	{
-		new LineLengthConfiguration("", 120, 4, 4,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, true);
+		LineLengthConfiguration.builder().
+			ruleId("").
+			build();
 	}
 
 	/**
@@ -39,9 +39,9 @@ public class LineLengthConfigurationTest
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void shouldRejectWhitespaceOnlyRuleId()
 	{
-		new LineLengthConfiguration("   ", 120, 4, 4,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, true);
+		LineLengthConfiguration.builder().
+			ruleId("   ").
+			build();
 	}
 
 	/**
@@ -50,9 +50,9 @@ public class LineLengthConfigurationTest
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void shouldRejectMaxLineLengthBelowMinimum()
 	{
-		new LineLengthConfiguration("line-length", 39, 4, 4,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, true);
+		LineLengthConfiguration.builder().
+			maxLineLength(39).
+			build();
 	}
 
 	/**
@@ -61,9 +61,9 @@ public class LineLengthConfigurationTest
 	@Test(expectedExceptions = IllegalArgumentException.class)
 	public void shouldRejectMaxLineLengthAboveMaximum()
 	{
-		new LineLengthConfiguration("line-length", 501, 4, 4,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, true);
+		LineLengthConfiguration.builder().
+			maxLineLength(501).
+			build();
 	}
 
 	/**
@@ -72,9 +72,9 @@ public class LineLengthConfigurationTest
 	@Test
 	public void shouldAcceptMaxLineLengthAtMinimumBoundary()
 	{
-		LineLengthConfiguration config = new LineLengthConfiguration("line-length", 40, 4, 4,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, true);
+		LineLengthConfiguration config = LineLengthConfiguration.builder().
+			maxLineLength(40).
+			build();
 		requireThat(config.maxLineLength(), "maxLineLength").isEqualTo(40);
 	}
 
@@ -84,9 +84,9 @@ public class LineLengthConfigurationTest
 	@Test
 	public void shouldAcceptMaxLineLengthAtMaximumBoundary()
 	{
-		LineLengthConfiguration config = new LineLengthConfiguration("line-length", 500, 4, 4,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, true);
+		LineLengthConfiguration config = LineLengthConfiguration.builder().
+			maxLineLength(500).
+			build();
 		requireThat(config.maxLineLength(), "maxLineLength").isEqualTo(500);
 	}
 
@@ -96,10 +96,10 @@ public class LineLengthConfigurationTest
 	@Test
 	public void shouldReturnCorrectRuleId()
 	{
-		LineLengthConfiguration config = new LineLengthConfiguration("line-length", 120, 4, 4,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, true);
-		requireThat(config.ruleId(), "ruleId").isEqualTo("line-length");
+		LineLengthConfiguration config = LineLengthConfiguration.builder().
+			ruleId("custom-rule").
+			build();
+		requireThat(config.ruleId(), "ruleId").isEqualTo("custom-rule");
 	}
 
 	/**
@@ -138,8 +138,8 @@ public class LineLengthConfigurationTest
 	@Test(expectedExceptions = NullPointerException.class)
 	public void shouldRejectNullWrapStyle()
 	{
-		new LineLengthConfiguration("line-length", 120, 4, 4,
-			null, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, true);
+		LineLengthConfiguration.builder().
+			methodChainWrap(null).
+			build();
 	}
 }

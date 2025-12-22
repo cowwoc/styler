@@ -28,7 +28,10 @@ public class ImportExtractorAttributeTest
 		String source = """
 			import java.util.List;
 
-			class Test { List<String> items; }""";
+			class Test
+			{
+				List<String> items;
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
 		List<ImportDeclaration> imports = ImportExtractor.extract(context);
@@ -48,7 +51,10 @@ public class ImportExtractorAttributeTest
 		String source = """
 			import static java.lang.Math.PI;
 
-			class Test { double x = PI; }""";
+			class Test
+			{
+				double x = PI;
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
 		List<ImportDeclaration> imports = ImportExtractor.extract(context);
@@ -68,7 +74,10 @@ public class ImportExtractorAttributeTest
 		String source = """
 			import java.util.*;
 
-			class Test { List<String> items; }""";
+			class Test
+			{
+				List<String> items;
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
 		List<ImportDeclaration> imports = ImportExtractor.extract(context);

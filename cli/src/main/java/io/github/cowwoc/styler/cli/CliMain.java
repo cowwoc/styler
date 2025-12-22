@@ -18,7 +18,6 @@ import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerFormattingRule
 import io.github.cowwoc.styler.formatter.indentation.IndentationFormattingConfiguration;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
-import io.github.cowwoc.styler.formatter.linelength.WrapStyle;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.pipeline.FileProcessingPipeline;
 import io.github.cowwoc.styler.pipeline.PipelineResult;
@@ -265,20 +264,9 @@ public final class CliMain
 		requireThat(config, "config").isNotNull();
 
 		// Create configuration for each rule
-		LineLengthConfiguration lineLengthConfig = new LineLengthConfiguration(
-			"line-length",
-			config.maxLineLength(),
-			4,  // tabWidth
-			4,  // indentContinuationLines
-			WrapStyle.AFTER,  // methodChainWrap
-			WrapStyle.AFTER,  // methodArgumentsWrap
-			WrapStyle.AFTER,  // binaryExpressionWrap
-			WrapStyle.AFTER,  // methodParametersWrap
-			WrapStyle.AFTER,  // ternaryExpressionWrap
-			WrapStyle.AFTER,  // arrayInitializerWrap
-			WrapStyle.AFTER,  // annotationArgumentsWrap
-			WrapStyle.AFTER,  // genericTypeArgsWrap
-			true);  // wrapLongStrings
+		LineLengthConfiguration lineLengthConfig = LineLengthConfiguration.builder().
+			maxLineLength(config.maxLineLength()).
+			build();
 
 		ImportOrganizerConfiguration importConfig = ImportOrganizerConfiguration.defaultConfig();
 

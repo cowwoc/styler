@@ -109,7 +109,13 @@ public class BraceFormattingRuleTest
 	public void shouldUseDefaultConfigWhenEmptyListInAnalyze()
 	{
 		BraceFormattingRule rule = new BraceFormattingRule();
-		String source = "class Test { void method() { } }";
+		String source = """
+			class Test
+			{
+				void method()
+				{
+				}
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
 		List<FormattingViolation> violations = rule.analyze(context, List.of());
@@ -123,7 +129,13 @@ public class BraceFormattingRuleTest
 	public void shouldUseDefaultConfigWhenEmptyListInFormat()
 	{
 		BraceFormattingRule rule = new BraceFormattingRule();
-		String source = "class Test { void method() { } }";
+		String source = """
+			class Test
+			{
+				void method()
+				{
+				}
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
 		String result = rule.format(context, List.of());

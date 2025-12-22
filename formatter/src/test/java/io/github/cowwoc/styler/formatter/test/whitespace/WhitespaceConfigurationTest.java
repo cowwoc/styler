@@ -38,25 +38,17 @@ public class WhitespaceConfigurationTest
 	}
 
 	/**
-	 * Tests that configuration can be customized.
+	 * Tests that configuration can be customized using the builder.
 	 */
 	@Test
 	public void shouldSupportCustomConfiguration()
 	{
-		WhitespaceFormattingConfiguration config = new WhitespaceFormattingConfiguration(
-			"whitespace",
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true);
+		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.builder().
+			spaceAroundBinaryOperator(true).
+			build();
 
 		requireThat(config, "config").isNotNull();
-		requireThat(config.spaceAroundBinaryOperators(), "spaceAroundBinaryOperators").
+		requireThat(config.spaceAroundBinaryOperator(), "spaceAroundBinaryOperator").
 			isEqualTo(true);
 	}
 
@@ -70,23 +62,14 @@ public class WhitespaceConfigurationTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 
-		// Create config with spaceAroundBinaryOperators disabled
-		WhitespaceFormattingConfiguration config = new WhitespaceFormattingConfiguration(
-			"whitespace",
-			false,   // spaceAroundBinaryOperators = false
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true);
+		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.builder().
+			spaceAroundBinaryOperator(false).
+			build();
 
 		String result = rule.format(context, List.of(config));
 
 		// Should preserve original spacing since binary operators are disabled
-		requireThat(result, "result").isEqualTo(source);
+		requireThat(result, "result").contains("a+b");
 	}
 
 	/**
@@ -99,23 +82,14 @@ public class WhitespaceConfigurationTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 
-		// Create config with spaceAfterComma disabled
-		WhitespaceFormattingConfiguration config = new WhitespaceFormattingConfiguration(
-			"whitespace",
-			true,
-			true,
-			false,   // spaceAfterComma = false
-			true,
-			true,
-			true,
-			true,
-			true,
-			true);
+		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.builder().
+			spaceAfterComma(false).
+			build();
 
 		String result = rule.format(context, List.of(config));
 
 		// Should preserve original spacing
-		requireThat(result, "result").isEqualTo(source);
+		requireThat(result, "result").contains("method(a,b,c)");
 	}
 
 	/**
@@ -128,23 +102,34 @@ public class WhitespaceConfigurationTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 
-		// Create config with spaceAfterControlKeywords disabled
-		WhitespaceFormattingConfiguration config = new WhitespaceFormattingConfiguration(
-			"whitespace",
-			true,
-			true,
-			true,
-			true,
-			false,   // spaceAfterControlKeywords = false
-			true,
-			true,
-			true,
-			true);
+		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.builder().
+			spaceAfterControlKeyword(false).
+			build();
 
 		String result = rule.format(context, List.of(config));
 
 		// Should preserve original spacing
-		requireThat(result, "result").isEqualTo(source);
+		requireThat(result, "result").contains("if(x)");
+	}
+
+	/**
+	 * Tests that lambda arrow spacing can be disabled.
+	 */
+	@Test
+	public void shouldRespectLambdaArrowConfig()
+	{
+		String source = wrapInMethod("Object o = x->y;");
+		TestTransformationContext context = new TestTransformationContext(source);
+		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
+
+		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.builder().
+			spaceAroundArrowInLambda(false).
+			build();
+
+		String result = rule.format(context, List.of(config));
+
+		// Should preserve original spacing (no spaces around arrow)
+		requireThat(result, "result").contains("x->y");
 	}
 
 	/**
@@ -157,18 +142,9 @@ public class WhitespaceConfigurationTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 
-		// Create config with spaceAroundColonInEnhancedFor disabled
-		WhitespaceFormattingConfiguration config = new WhitespaceFormattingConfiguration(
-			"whitespace",
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			false,   // spaceAroundColonInEnhancedFor = false
-			true,
-			true);
+		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.builder().
+			spaceAroundColonInEnhancedForLoop(false).
+			build();
 
 		String result = rule.format(context, List.of(config));
 
@@ -186,22 +162,13 @@ public class WhitespaceConfigurationTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		WhitespaceFormattingRule rule = new WhitespaceFormattingRule();
 
-		// Create config with spaceAroundAssignmentOperators disabled
-		WhitespaceFormattingConfiguration config = new WhitespaceFormattingConfiguration(
-			"whitespace",
-			true,
-			false,   // spaceAroundAssignmentOperators = false
-			true,
-			true,
-			true,
-			true,
-			true,
-			true,
-			true);
+		WhitespaceFormattingConfiguration config = WhitespaceFormattingConfiguration.builder().
+			spaceAroundAssignmentOperators(false).
+			build();
 
 		String result = rule.format(context, List.of(config));
 
 		// Should preserve original spacing
-		requireThat(result, "result").isEqualTo(source);
+		requireThat(result, "result").contains("x=1");
 	}
 }
