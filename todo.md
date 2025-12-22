@@ -19,7 +19,7 @@
 - C3c: Indentation Formatting ✅ COMPLETE (2025-12-11)
 
 **Phase B**: ✅ COMPLETE (8/8 tasks)
-**Phase C**: In progress (3/6 tasks - C4, C5, C6 now unblocked)
+**Phase C**: In progress (4/6 tasks - C5, C6 now unblocked)
 
 **Phase A - ✅ COMPLETE (5/5 tasks)**:
 - ✅ A0: styler-formatter module (defines FormattingRule interfaces)
@@ -203,30 +203,13 @@ benchmarking, and validate with Maven plugin integration.
 
 - [x] **COMPLETE:** `implement-indentation-formatting` - Indentation formatting (tabs/spaces/mixed) (2025-12-11)
 
-### C4. Maven Plugin (Early Real-World Testing)
-- [ ] **READY:** `create-maven-plugin` - Maven plugin for build system integration
-  - **Dependencies**: B2.5 ✅ (functional pipeline), C1 ✅ (file discovery), C2 ✅ (parallel processing), B5 ✅
-    (CLI integration)
-  - **Blocks**: C5 (performance benchmarking uses Maven plugin), D1 (regression tests use Maven plugin), D2
-    (CI/CD uses Maven plugin)
-  - **Parallelizable With**: C6 (concurrency benchmark can run independently)
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Integrate styler into Maven builds for automated formatting
-  - **Scope**: Maven plugin with check/format goals, configuration integration
-  - **Components**:
-    - StylerCheckMojo: Validate formatting without changes
-    - StylerFormatMojo: Auto-fix formatting violations
-    - MavenConfigAdapter: Bridge Maven config to styler config
-    - GoalConfiguration: Maven-specific settings
-  - **Goals**: styler:check (validate), styler:format (fix), styler:help (usage)
-  - **Integration**: Uses CLI as dependency, Maven lifecycle integration
-  - **Real-World Testing**: Validate on actual Java projects (Spring, Guava, Commons)
-  - **Quality**: Incremental builds, build cache support, clear error reporting
+### C4. Maven Plugin (Early Real-World Testing) ✅ COMPLETE (2025-12-22)
+- [x] **COMPLETE:** `create-maven-plugin` - Maven plugin for build system integration (2025-12-22)
 
 ### C5. Performance Benchmarking
-- [ ] **BLOCKED:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
-  - **Dependencies**: B2.5 ✅ (functional pipeline), C4 (Maven plugin for running benchmarks), C2 ✅ (parallel
-    processing), all formatters (B1 + C3) ✅
+- [ ] **READY:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
+  - **Dependencies**: B2.5 ✅ (functional pipeline), C4 ✅ (Maven plugin), C2 ✅ (parallel processing), all
+    formatters (B1 + C3) ✅
   - **Blocks**: D1 (testing uses benchmarks for performance regression detection), D2 (CI/CD runs benchmark
     comparisons)
   - **Parallelizable With**: C6 (concurrency benchmark is separate empirical study)

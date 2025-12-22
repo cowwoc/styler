@@ -1,5 +1,58 @@
 # Changelog
 
+## 2025-12-22
+
+### C4: Maven Plugin ✅
+
+**Completion Date**: 2025-12-22
+
+**Task**: `create-maven-plugin`
+
+**Problem Solved**:
+- No build system integration for Styler - users had to invoke CLI manually
+- No way to validate formatting during Maven builds
+- No integration with Maven lifecycle phases
+
+**Solution Implemented**:
+- Created `styler-maven-plugin` module with `styler:check` and `styler:format` goals
+- Integrated with Maven lifecycle phases (verify, process-sources)
+- Leveraged existing `FileProcessingPipeline` for file processing
+- Hand-written plugin.xml descriptor (Java 25 not supported by maven-plugin-plugin's ASM)
+- Non-modular compilation with `<useModulePath>false</useModulePath>` to work with Maven's split-package APIs
+
+**Key Components**:
+- **AbstractStylerMojo**: Base class with shared configuration (configFile, sourceDirectories, includes/excludes, encoding)
+- **StylerCheckMojo**: `@Mojo(name="check")` - Validates formatting without modifying files, fails build on violations
+- **StylerFormatMojo**: `@Mojo(name="format")` - Auto-fixes formatting violations with optional backup and dry-run
+- **MavenConfigAdapter**: Bridges Ant-style glob patterns to Styler's file matching
+- **MavenResultHandler**: Formats pipeline results for Maven logging output
+
+**Files Created**:
+- `maven-plugin/pom.xml`
+- `maven-plugin/src/main/java/io/github/cowwoc/styler/maven/AbstractStylerMojo.java`
+- `maven-plugin/src/main/java/io/github/cowwoc/styler/maven/StylerCheckMojo.java`
+- `maven-plugin/src/main/java/io/github/cowwoc/styler/maven/StylerFormatMojo.java`
+- `maven-plugin/src/main/java/io/github/cowwoc/styler/maven/internal/MavenConfigAdapter.java`
+- `maven-plugin/src/main/java/io/github/cowwoc/styler/maven/internal/MavenResultHandler.java`
+- `maven-plugin/src/main/java/io/github/cowwoc/styler/maven/package-info.java`
+- `maven-plugin/src/main/java/io/github/cowwoc/styler/maven/internal/package-info.java`
+- `maven-plugin/src/main/resources/META-INF/maven/plugin.xml`
+
+**Files Modified**:
+- `pom.xml` (added maven-plugin to reactor modules)
+
+**Quality**:
+- All tests passing
+- Zero Checkstyle/PMD violations
+- Build compiles successfully with JPMS compatibility workaround
+
+**Unblocks**:
+- C5 (performance benchmarks)
+- D1 (regression test suite)
+- D2 (CI/CD pipeline)
+
+---
+
 ## 2025-12-21
 
 ### E6: AST Node Attributes ✅
@@ -384,7 +437,7 @@
 - Added NPE validation to ExecutionTimeoutException
 - Updated ExecutionTimeoutManager to use Instant/Duration
 
-**Unblocks**: C4 (concurrency benchmark), C5 (Maven plugin), C6 (performance benchmark), D1 (real-world testing)
+**Unblocks**: C4 (Maven plugin), C5 (performance benchmarks), C6 (concurrency benchmark), D1 (real-world testing)
 
 ---
 
@@ -438,7 +491,7 @@
 - Extracted SourceCodeUtils from WhitespaceAnalyzer for shared string/text block detection
 - Simplified BraceAnalyzer and BraceFixer using shared utilities
 
-**Unblocks**: C4 (concurrency benchmark now has all 5 rules: line length, imports, braces, whitespace, indentation)
+**Unblocks**: C6 (concurrency benchmark now has all 5 rules: line length, imports, braces, whitespace, indentation)
 
 ---
 
@@ -486,7 +539,7 @@
 - WhitespaceEdgeCaseTest: Lambdas, method refs, literals
 - WhitespaceConfigurationTest: Config validation
 
-**Unblocks**: C4 (concurrency benchmark needs 5 rules - now have 4 of 5)
+**Unblocks**: C6 (concurrency benchmark needs 5 rules - now have 4 of 5)
 
 ---
 
@@ -528,7 +581,7 @@
 - BraceAnalyzerTest: Core violation detection
 - BraceEdgeCaseTest: String literals, comments, nested constructs
 
-**Unblocks**: C4 (concurrency benchmark needs 5 rules - now have 3 of 5)
+**Unblocks**: C6 (concurrency benchmark needs 5 rules - now have 3 of 5)
 
 ---
 
@@ -575,7 +628,7 @@
 - VirtualThreadExecutorTest: Executor lifecycle, concurrency limits
 - ProgressCallbackTest: Progress tracking thread safety
 
-**Unblocks**: C4 (concurrency benchmark), C5 (Maven plugin parallel processing)
+**Unblocks**: C4 (Maven plugin parallel processing), C6 (concurrency benchmark)
 
 ---
 
@@ -621,7 +674,7 @@
 - GitignoreParserTest: Pattern parsing and matching
 - PatternMatcherTest: Glob pattern conversion
 
-**Unblocks**: C2 (virtual thread processing), C5 (Maven plugin)
+**Unblocks**: C2 (virtual thread processing), C4 (Maven plugin)
 
 ---
 
