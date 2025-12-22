@@ -635,6 +635,12 @@ public final class Parser implements AutoCloseable
 
 	private void parseTypeArguments()
 	{
+		// Handle diamond operator: <> with no type arguments
+		if (currentToken().type() == TokenType.GT)
+		{
+			expectGTInGeneric();
+			return;
+		}
 		parseTypeArgument();
 		while (match(TokenType.COMMA))
 		{

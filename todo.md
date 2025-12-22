@@ -425,7 +425,7 @@ benchmarking, and validate with Maven plugin integration.
   - **Quality**: All parser tests validate both successful parsing AND correct AST structure
 
 ### E5. Parser Bug: Generic Type Parameters
-- [ ] **READY:** `fix-generic-type-parsing` - Fix parser failure on generic type parameters
+- [x] **DONE:** `fix-generic-type-parsing` - Fix parser failure on generic type parameters (2025-12-22)
   - **Dependencies**: E1 ✅ (parser error handling)
   - **Blocks**: Self-hosting (styler cannot format its own codebase)
   - **Parallelizable With**: E6, E7
