@@ -2,31 +2,31 @@
 
 ## 🚀 READY TO WORK NOW (Multi-Instance Coordination)
 
-**Current Status**: Phase C in progress - C4 (Maven Plugin) ready, C5-C6 follow
+**Current Status**: Phase C in progress - `create-maven-plugin` complete, `create-jmh-benchmarks` and `benchmark-concurrency-models` now unblocked
 
 **COMPLETED**:
-- B1a: Line Length Formatter ✅ COMPLETE
-- B1b: Import Organization ✅ COMPLETE
-- B2: File Processing Pipeline Infrastructure ✅ COMPLETE
-- B2.5: Pipeline Stage Implementation ✅ COMPLETE (2025-12-13)
-- B3: AI Violation Output ✅ COMPLETE (2025-12-05)
-- B4: Error Catalog ✅ COMPLETE (2025-12-05)
-- B5: CLI Integration ✅ COMPLETE (2025-12-09)
-- C1: File Discovery ✅ COMPLETE (2025-12-09)
-- C2: Virtual Thread Processing ✅ COMPLETE (2025-12-10)
-- C3a: Brace Formatting ✅ COMPLETE (2025-12-10)
-- C3b: Whitespace Formatting ✅ COMPLETE (2025-12-11)
-- C3c: Indentation Formatting ✅ COMPLETE (2025-12-11)
+- `implement-line-length-formatter` - Line Length Formatter ✅ COMPLETE
+- `implement-import-organization` - Import Organization ✅ COMPLETE
+- `implement-file-processing-pipeline` - File Processing Pipeline Infrastructure ✅ COMPLETE
+- `implement-pipeline-stages` - Pipeline Stage Implementation ✅ COMPLETE (2025-12-13)
+- `implement-ai-violation-output` - AI Violation Output ✅ COMPLETE (2025-12-05)
+- `create-error-message-catalog` - Error Catalog ✅ COMPLETE (2025-12-05)
+- `implement-cli-formatter-integration` - CLI Integration ✅ COMPLETE (2025-12-09)
+- `implement-file-discovery` - File Discovery ✅ COMPLETE (2025-12-09)
+- `implement-virtual-thread-processing` - Virtual Thread Processing ✅ COMPLETE (2025-12-10)
+- `implement-brace-formatting` - Brace Formatting ✅ COMPLETE (2025-12-10)
+- `implement-whitespace-formatting` - Whitespace Formatting ✅ COMPLETE (2025-12-11)
+- `implement-indentation-formatting` - Indentation Formatting ✅ COMPLETE (2025-12-11)
 
 **Phase B**: ✅ COMPLETE (8/8 tasks)
-**Phase C**: In progress (4/6 tasks - C5, C6 now unblocked)
+**Phase C**: In progress (4/6 tasks - benchmarks now unblocked)
 
 **Phase A - ✅ COMPLETE (5/5 tasks)**:
-- ✅ A0: styler-formatter module (defines FormattingRule interfaces)
-- ✅ A1: Index-Overlay AST Parser (ast + parser modules)
-- ✅ A2: TOML Configuration (config module)
-- ✅ A3: CLI Arguments (cli module)
-- ✅ A4: Security Framework (security module)
+- ✅ `create-styler-formatter-module` - styler-formatter module (defines FormattingRule interfaces)
+- ✅ `implement-index-overlay-parser` - Index-Overlay AST Parser (ast + parser modules)
+- ✅ `implement-toml-configuration` - TOML Configuration (config module)
+- ✅ `implement-cli-arguments` - CLI Arguments (cli module)
+- ✅ `implement-security-framework` - Security Framework (security module)
 
 ---
 
@@ -99,14 +99,14 @@ B2-B5 have sequential dependencies.
 
 - [x] **COMPLETE:** `implement-import-organization` - Import grouping and unused import removal (2025-12-03)
 
-### B1.5. Classpath Infrastructure ✅ COMPLETE (2025-12-15)
+### Classpath Infrastructure ✅ COMPLETE (2025-12-15)
 
 - [x] **COMPLETE:** `add-classpath-support` - Enable passing project classpath/modulepath into Styler (2025-12-15)
 
 - [ ] **READY:** `resolve-wildcard-imports` - Enhance import organization with wildcard resolution
   - **Dependencies**: `implement-import-organization` ✅ COMPLETE, `add-classpath-support` ✅ COMPLETE
   - **Blocks**: None (optional enhancement)
-  - **Parallelizable With**: B2 and beyond (independent enhancement)
+  - **Parallelizable With**: Phase B and beyond (independent enhancement)
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Resolve `import java.util.*` to determine which classes are actually used
   - **Scope**: Extend ImportAnalyzer to use classpath for wildcard import analysis
@@ -121,21 +121,21 @@ B2-B5 have sequential dependencies.
   - **Integration**: Extends ImportAnalyzer from `implement-import-organization`
   - **Quality**: Comprehensive tests with sample classpaths, edge cases for nested classes
 
-### B2. File Processing Pipeline Infrastructure ✅ COMPLETE
+### File Processing Pipeline Infrastructure ✅ COMPLETE
 - [x] **COMPLETE:** `implement-file-processing-pipeline` - Pipeline infrastructure (2025-12-04)
   - **Delivered**: FileProcessingPipeline class, StageResult types, ProcessingContext, AbstractPipelineStage
-  - **Note**: Stage implementations return `StageResult.Skipped` - see B2.5 for actual implementation
+  - **Note**: Stage implementations return `StageResult.Skipped` - see `implement-pipeline-stages` for actual implementation
 
-### B2.5. Pipeline Stage Implementation (Critical Path)
+### Pipeline Stage Implementation (Critical Path)
 - [x] **COMPLETE:** `implement-pipeline-stages` - Wire parser and formatters into pipeline stages (2025-12-13)
-  - **Dependencies**: A1 ✅ (parser), B1 ✅ (2 rules), C3 ✅ (3 rules), B2 ✅ (pipeline infrastructure)
-  - **Blocks**: C4, C5, C6, D1 (all need functional pipeline to measure real work)
+  - **Dependencies**: `create-styler-parser-module` ✅, formatters ✅, `implement-file-processing-pipeline` ✅
+  - **Blocks**: `create-maven-plugin`, `create-jmh-benchmarks`, `benchmark-concurrency-models`, `add-regression-test-suite`
   - **Parallelizable With**: None (critical path)
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Make the pipeline actually process files (currently all stages return Skipped)
   - **Scope**: Implement the 4 pipeline stages to perform real work
   - **Components**:
-    - **ParseStage**: Use A1 parser to parse Java files into AST
+    - **ParseStage**: Use parser to parse Java files into AST
       - Input: File path from ProcessingContext
       - Output: Parsed AST stored in ProcessingContext
       - Error handling: Return StageResult.Failure for parse errors
@@ -148,20 +148,20 @@ B2-B5 have sequential dependencies.
       - Input: Violations from FormatStage
       - Output: Validated violation list with severity/priority
     - **OutputStage**: Write formatted output or report violations
-      - Validation-only mode: Report violations via B3 AI output
+      - Validation-only mode: Report violations via AI output
       - Fix mode: Write formatted code back to file
-  - **Integration**: Connects A1 parser, all formatting rules (B1 + C3), B3 violation output
+  - **Integration**: Connects parser, all formatting rules, violation output
   - **Verification**: Run `styler check` on a real Java file and see actual violations
   - **Quality**: Integration tests with real Java files, verify end-to-end processing
 
-### B3. Structured Violation Output (AI Agent Integration) ✅ COMPLETE
+### Structured Violation Output (AI Agent Integration) ✅ COMPLETE
 - [x] **COMPLETE:** `implement-ai-violation-output` - Structured violation feedback for AI agents (2025-12-05)
 
-### B3.5. Proactive Rules Summary Export
+### Proactive Rules Summary Export
 - [ ] **READY:** `implement-rules-summary-export` - Export formatting rules as markdown for AI pre-guidance
-  - **Dependencies**: B3 ✅ COMPLETE (AI output infrastructure), B1 ✅ (formatters define rules)
+  - **Dependencies**: `implement-ai-violation-output` ✅, formatters ✅
   - **Blocks**: None (optional enhancement)
-  - **Parallelizable With**: B4, B5
+  - **Parallelizable With**: `create-error-message-catalog`, `implement-cli-formatter-integration`
   - **Estimated Effort**: 1-2 days
   - **Purpose**: Allow AI agents to request formatting expectations before writing code
   - **Scope**: Markdown/JSON export of configured formatting rules and their settings
@@ -175,11 +175,11 @@ B2-B5 have sequential dependencies.
   - **Integration**: CLI flag `--explain-rules` or API method
   - **Quality**: Clear, actionable guidance for proactive compliance
 
-### B3.6. Context-Aware Violation Output for AI Agents
+### Context-Aware Violation Output for AI Agents
 - [ ] **READY:** `implement-ai-context-limiting` - Limit violation output to preserve AI agent context window
-  - **Dependencies**: B3 ✅ COMPLETE (AI output infrastructure)
+  - **Dependencies**: `implement-ai-violation-output` ✅
   - **Blocks**: None (optimization for AI workflows)
-  - **Parallelizable With**: B3.5, any Phase C/D/E task
+  - **Parallelizable With**: `implement-rules-summary-export`, any Phase C/D/E task
   - **Estimated Effort**: 1-2 days
   - **Purpose**: Avoid wasting AI agent context by limiting detailed violations to actionable count
   - **Problem**: AI agents have limited context windows; reporting 100+ violations wastes tokens on issues
@@ -205,17 +205,16 @@ B2-B5 have sequential dependencies.
   - **Detection**: CLI flag `--ai-mode` or `--max-violations=N`, or auto-detect from environment
   - **Quality**: Benchmark context savings, validate AI agents fix more violations per iteration
 
-### B4. Error Message Catalog ✅ COMPLETE
+### Error Message Catalog ✅ COMPLETE
 - [x] **COMPLETE:** `create-error-message-catalog` - Comprehensive error messages for AI and human users (2025-12-05)
 
-### B5. CLI Integration ✅ COMPLETE
+### CLI Integration ✅ COMPLETE
 - [x] **COMPLETE:** `implement-cli-formatter-integration` - Wire CLI → pipeline → output (2025-12-09)
-  -  **Integration**: Connects all Phase A and Phase B components (A3 CLI args, B2 pipeline, B3 output, B4
-    errors)
+  -  **Integration**: Connects all Phase A and Phase B components (CLI args, pipeline, output, errors)
   - **Quality**: Clear error messages, proper exit codes, progress reporting
   - **Estimated Effort**: 2-3 days
 
-### B6. Multi-Configuration Architecture ✅ COMPLETE (2025-12-14)
+### Multi-Configuration Architecture ✅ COMPLETE (2025-12-14)
 - [x] **COMPLETE:** `implement-multi-config-architecture` - Enable formatting rules to receive all configurations (2025-12-14)
 
 ---
@@ -225,24 +224,22 @@ B2-B5 have sequential dependencies.
 **Goal**: Scale to large codebases with parallel processing, build to 5 formatting rules for realistic
 benchmarking, and validate with Maven plugin integration.
 
-### C1. File Discovery ✅ COMPLETE (2025-12-09)
+### File Discovery ✅ COMPLETE (2025-12-09)
 
-### C2. Virtual Thread Processing (Thread-per-File Baseline) ✅ COMPLETE (2025-12-10)
+### Virtual Thread Processing (Thread-per-File Baseline) ✅ COMPLETE (2025-12-10)
 
-### C3. Additional Formatting Rules (Build to 5 Total Rules) ✅ COMPLETE
+### Additional Formatting Rules (Build to 5 Total Rules) ✅ COMPLETE
 
 - [x] **COMPLETE:** `implement-indentation-formatting` - Indentation formatting (tabs/spaces/mixed) (2025-12-11)
 
-### C4. Maven Plugin (Early Real-World Testing) ✅ COMPLETE (2025-12-22)
+### Maven Plugin (Early Real-World Testing) ✅ COMPLETE (2025-12-22)
 - [x] **COMPLETE:** `create-maven-plugin` - Maven plugin for build system integration (2025-12-22)
 
-### C5. Performance Benchmarking
+### Performance Benchmarking
 - [ ] **READY:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
-  - **Dependencies**: B2.5 ✅ (functional pipeline), C4 ✅ (Maven plugin), C2 ✅ (parallel processing), all
-    formatters (B1 + C3) ✅
-  - **Blocks**: D1 (testing uses benchmarks for performance regression detection), D2 (CI/CD runs benchmark
-    comparisons)
-  - **Parallelizable With**: C6 (concurrency benchmark is separate empirical study)
+  - **Dependencies**: `implement-pipeline-stages` ✅, `create-maven-plugin` ✅, `implement-virtual-thread-processing` ✅, all formatters ✅
+  - **Blocks**: `add-regression-test-suite`, `setup-github-actions-ci`
+  - **Parallelizable With**: `benchmark-concurrency-models`
   - **Estimated Effort**: 3-4 days
   - **Purpose**: Measure and validate parsing throughput, memory usage, scalability
   - **Scope**: JMH benchmark suite covering all scope.md performance targets
@@ -257,20 +254,19 @@ benchmarking, and validate with Maven plugin integration.
   - **Integration**: Separate benchmark module, uses production code
   - **Quality**: Statistical rigor, comprehensive coverage
 
-### C6. Concurrency Model Benchmark
+### Concurrency Model Benchmark
 - [ ] **READY:** `benchmark-concurrency-models` - Compare thread-per-file vs thread-per-block parallelism
-  - **Dependencies**: B2.5 ✅ (functional pipeline), C2 ✅ (thread-per-file baseline), C3 ✅ (3
-    rules), B1 ✅ (2 rules)
+  - **Dependencies**: `implement-pipeline-stages` ✅, `implement-virtual-thread-processing` ✅, all formatters ✅
   - **Blocks**: None (optional optimization study)
-  - **Parallelizable With**: C4 (Maven plugin development)
+  - **Parallelizable With**: `create-maven-plugin`
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Determine optimal concurrency strategy for styler through empirical testing
-  - **Scope**: Benchmark thread-per-file (baseline from C2) vs thread-per-block concurrency
+  - **Scope**: Benchmark thread-per-file (baseline from `implement-virtual-thread-processing`) vs thread-per-block concurrency
   - **Trigger Criteria**: Execute ONLY when `styler check` processes real Java files and reports actual
     violations (proving pipeline stages are functional)
-  - **Prerequisites**: B2.5 complete (pipeline does real work), 5 formatting rules integrated
+  - **Prerequisites**: `implement-pipeline-stages` complete (pipeline does real work), 5 formatting rules integrated
   - **Comparison Approaches**:
-    - **Thread-per-file (baseline)**: One virtual thread per file (current C2 implementation)
+    - **Thread-per-file (baseline)**: One virtual thread per file (current `implement-virtual-thread-processing` implementation)
     - **Thread-per-block**: Virtual threads for method-level parallelism within files
   - **Test Workload**: Real codebases (Spring Framework, Guava, Apache Commons) with all 5 formatting rules
   - **Benchmark Metrics**:
@@ -285,7 +281,7 @@ benchmarking, and validate with Maven plugin integration.
     - Memory constraints (512MB, 1GB, 2GB heap)
   - **Decision Criteria**: Implement thread-per-block only if >20% improvement over thread-per-file baseline
   - **Output**: Benchmark report with recommendation for production concurrency model
-  - **Integration**: Uses C2 (thread-per-file), all formatters (B1 + C3), real-world projects
+  - **Integration**: Uses `implement-virtual-thread-processing` (thread-per-file), all formatters, real-world projects
   - **Quality**: Statistical rigor, JMH methodology, 95% confidence intervals
 
 ---
@@ -296,10 +292,9 @@ benchmarking, and validate with Maven plugin integration.
 
 ### D1. Comprehensive Testing
 - [ ] **BLOCKED:** `add-regression-test-suite` - Real-world Java project regression tests
-  - **Dependencies**: B2.5 (functional pipeline), C5 (Maven plugin for running styler), all formatters (B1 +
-    C3) ✅
-  - **Blocks**: D2 (CI/CD needs complete test suite)
-  - **Parallelizable With**: D3 (documentation can be written in parallel)
+  - **Dependencies**: `implement-pipeline-stages`, `create-maven-plugin`, all formatters ✅
+  - **Blocks**: `setup-github-actions-ci`
+  - **Parallelizable With**: Essential Documentation tasks
   - **Estimated Effort**: 2-3 days (for regression suite)
   - **Purpose**: Prevent regressions by testing against real-world Java projects
   - **Scope**: Curated Java projects with before/after formatting comparisons
@@ -309,10 +304,9 @@ benchmarking, and validate with Maven plugin integration.
   - **Quality**: Golden file testing, failure analysis
 
 - [ ] **BLOCKED:** `add-cli-integration-tests` - End-to-end CLI integration tests
-  - **Dependencies**: B2.5 (functional pipeline), B5 ✅ (CLI integration), C1 ✅ (file discovery), C2 ✅
-    (parallel processing)
-  - **Blocks**: D2 (CI/CD needs complete test suite)
-  - **Parallelizable With**: D1 (regression suite), D3 (documentation)
+  - **Dependencies**: `implement-pipeline-stages`, `implement-cli-formatter-integration` ✅, `implement-file-discovery` ✅, `implement-virtual-thread-processing` ✅
+  - **Blocks**: `setup-github-actions-ci`
+  - **Parallelizable With**: `add-regression-test-suite`, Essential Documentation tasks
   - **Estimated Effort**: 1-2 days
   - **Purpose**: Validate complete CLI functionality with real Java files
   - **Scope**: Integration tests covering CLI arguments, file processing, output
@@ -320,12 +314,11 @@ benchmarking, and validate with Maven plugin integration.
   - **Integration**: Uses real Java files, temporary directories, process execution
   - **Quality**: Comprehensive scenario coverage, clear assertions
 
-### D2. CI/CD Pipeline
+### CI/CD Pipeline
 - [ ] **BLOCKED:** `setup-github-actions-ci` - Automated testing and release pipeline
-  -  **Dependencies**: D1 (all tests: regression + CLI integration), C6 (performance benchmarks), C5 (Maven
-    plugin)
+  -  **Dependencies**: Comprehensive Testing tasks, `create-jmh-benchmarks`, `create-maven-plugin`
   - **Blocks**: Production releases
-  - **Parallelizable With**: D3 (documentation)
+  - **Parallelizable With**: Essential Documentation tasks
   - **Estimated Effort**: 1-2 days
   - **Purpose**: Automated CI/CD for testing, building, releasing
   - **Scope**: GitHub Actions workflows for PR validation, releases, artifact publishing
@@ -338,9 +331,9 @@ benchmarking, and validate with Maven plugin integration.
 
 ### D3. Essential Documentation
 - [ ] **BLOCKED:** `create-user-documentation` - User guide and configuration reference
-  - **Dependencies**: B5 (CLI working), A2 ✅ COMPLETE (config system), C5 (Maven plugin)
+  - **Dependencies**: `implement-cli-formatter-integration`, `implement-configuration-system` ✅, `create-maven-plugin`
   - **Blocks**: Production release (documentation required for users)
-  - **Parallelizable With**: D1 (testing), D2 (CI/CD)
+  - **Parallelizable With**: Comprehensive Testing tasks, `setup-github-actions-ci`
   - **Estimated Effort**: 2-3 days (for user docs)
   - **Purpose**: Help users install, configure, and use styler
   - **Scope**: Installation guide, configuration reference, CLI usage, examples
@@ -353,9 +346,9 @@ benchmarking, and validate with Maven plugin integration.
   - **Quality**: Clear examples, troubleshooting section
 
 - [ ] **BLOCKED:** `create-api-documentation` - Javadoc for public APIs
-  - **Dependencies**: B1 (FormattingRule API), A2 ✅ COMPLETE (config APIs), C5 (Maven plugin APIs)
+  - **Dependencies**: formatters (FormattingRule API), `implement-configuration-system` ✅, `create-maven-plugin`
   - **Blocks**: Production release (API docs required for integration)
-  - **Parallelizable With**: D1 (testing), D2 (CI/CD), other D3 task (user docs)
+  - **Parallelizable With**: Comprehensive Testing tasks, `setup-github-actions-ci`, `create-user-documentation`
   - **Estimated Effort**: 1-2 days
   - **Purpose**: Document public APIs for library and plugin integration
   - **Scope**: Comprehensive Javadoc for public classes, interfaces, methods
@@ -369,13 +362,13 @@ benchmarking, and validate with Maven plugin integration.
 
 **Goal**: Improve formatter architecture for better maintainability, accuracy, and extensibility.
 
-### E1. Parser Error Handling Enhancement ✅ COMPLETE (2025-12-16)
+### Parser Error Handling Enhancement ✅ COMPLETE (2025-12-16)
 - [x] **COMPLETE:** `add-parser-error-record` - Add ParseError record and update Parser to return errors in result (2025-12-16)
 
-### E1.5. AST Extension for Formatter Support ✅ COMPLETE (2025-12-17)
+### AST Extension for Formatter Support ✅ COMPLETE (2025-12-17)
 - [x] **COMPLETE:** `extend-ast-support` - Extend AST parser to support all Java constructs needed by formatters (2025-12-17)
-  - **Dependencies**: E1 ✅ (parser error handling)
-  - **Blocks**: E2 (migrate-formatters-to-ast)
+  - **Dependencies**: `add-parser-error-record` ✅
+  - **Blocks**: `migrate-formatters-to-ast`
   - **Purpose**: Add missing AST node types and parsing support required for AST-based formatting
   - **Components**:
     - Add ENUM_CONSTANT node creation in Parser.parseEnumConstant()
@@ -384,9 +377,9 @@ benchmarking, and validate with Maven plugin integration.
     - Add missing TokenType entries for Java 21+ constructs
   - **Quality**: All 357 formatter tests passing
 
-### E2. AST-Based Formatter Migration ✅ COMPLETE (2025-12-17)
+### AST-Based Formatter Migration ✅ COMPLETE (2025-12-17)
 - [x] **COMPLETE:** `migrate-formatters-to-ast` - Migrate all formatting rules to AST-based processing (2025-12-17)
-  - **Dependencies**: E1.5 ✅ (extend-ast-support), B2.5 ✅ (pipeline stages), all formatters (B1 + C3) ✅
+  - **Dependencies**: `extend-ast-support` ✅, `implement-pipeline-stages` ✅, all formatters ✅
   - **Purpose**: Replace string/regex-based formatting logic with AST-aware transformations for higher
     accuracy and maintainability
   - **Components Migrated**:
@@ -400,16 +393,16 @@ benchmarking, and validate with Maven plugin integration.
   - **Removed**: SourceCodeUtils (replaced by AST-based position index)
   - **Quality**: All 357 formatter tests passing
 
-### E3. Method Reference Parser Support ✅ COMPLETE (2025-12-17)
+### Method Reference Parser Support ✅ COMPLETE (2025-12-17)
 - [x] **COMPLETE:** `add-method-reference-support` - Add parser support for method reference expressions (2025-12-17)
-  - **Dependencies**: E1 ✅ (parser error handling), E1.5 ✅ (AST extension)
+  - **Dependencies**: `add-parser-error-record` ✅, `extend-ast-support` ✅
   - **Purpose**: Enable parsing of method reference expressions (`Type::method`, `object::method`)
   - **Implementation**: Added DOUBLE_COLON handling in parsePostfix() for static, instance, and constructor refs
   - **Quality**: 24 parser tests for all method reference variants
 
-### E4. Parser Test AST Validation
+### Parser Test AST Validation
 - [ ] **READY:** `add-parser-ast-validation` - Update all parser tests to validate AST node types
-  - **Dependencies**: E1 ✅ (parser error handling)
+  - **Dependencies**: `add-parser-error-record` ✅
   - **Blocks**: None (quality improvement)
   - **Parallelizable With**: Any task
   - **Estimated Effort**: 1-2 days
@@ -424,11 +417,11 @@ benchmarking, and validate with Maven plugin integration.
     - Use `Parser.getArena()` and `arena.getType(NodeIndex)` for node type verification
   - **Quality**: All parser tests validate both successful parsing AND correct AST structure
 
-### E5. Parser Bug: Generic Type Parameters
+### Parser Bug: Generic Type Parameters
 - [x] **DONE:** `fix-generic-type-parsing` - Fix parser failure on generic type parameters (2025-12-22)
-  - **Dependencies**: E1 ✅ (parser error handling)
+  - **Dependencies**: `add-parser-error-record` ✅
   - **Blocks**: Self-hosting (styler cannot format its own codebase)
-  - **Parallelizable With**: E6, E7
+  - **Parallelizable With**: `fix-class-literal-parsing`, `fix-comment-in-expression-parsing`
   - **Estimated Effort**: 1-2 days
   - **Purpose**: Enable parsing of generic type parameters like `Optional<?>`, `Supplier<Path>`, `Consumer<?>`
   - **Current Error**: `Expected IDENTIFIER but found GT at position X`
@@ -444,11 +437,11 @@ benchmarking, and validate with Maven plugin integration.
   - **Verification**: Run `styler:check` on styler codebase - no GT-related errors
   - **Quality**: Parser tests for all generic type variants
 
-### E6. Parser Bug: Class Literals
+### Parser Bug: Class Literals
 - [ ] **READY:** `fix-class-literal-parsing` - Fix parser failure on `.class` literals
-  - **Dependencies**: E1 ✅ (parser error handling)
+  - **Dependencies**: `add-parser-error-record` ✅
   - **Blocks**: Self-hosting (styler cannot format its own codebase)
-  - **Parallelizable With**: E5, E7
+  - **Parallelizable With**: `fix-generic-type-parsing`, `fix-comment-in-expression-parsing`
   - **Estimated Effort**: 0.5-1 day
   - **Purpose**: Enable parsing of class literal expressions like `String.class`, `Integer.class`
   - **Current Error**: `Expected identifier after '.' but found CLASS`
@@ -461,11 +454,11 @@ benchmarking, and validate with Maven plugin integration.
   - **Verification**: Run `styler:check` on styler codebase - no CLASS-related errors
   - **Quality**: Parser tests for class literal expressions
 
-### E7. Parser Bug: Comments in Expressions
+### Parser Bug: Comments in Expressions
 - [ ] **READY:** `fix-comment-in-expression-parsing` - Fix parser failure when comments appear in expressions
-  - **Dependencies**: E1 ✅ (parser error handling)
+  - **Dependencies**: `add-parser-error-record` ✅
   - **Blocks**: Self-hosting (styler cannot format its own codebase)
-  - **Parallelizable With**: E5, E6
+  - **Parallelizable With**: `fix-generic-type-parsing`, `fix-class-literal-parsing`
   - **Estimated Effort**: 1 day
   - **Purpose**: Enable parsing of code with line comments appearing within expressions
   - **Current Error**: `Unexpected token in expression: LINE_COMMENT at position X`
