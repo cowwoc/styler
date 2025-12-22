@@ -30,6 +30,8 @@ trap 'echo "ERROR in auto-learn-from-mistakes.sh at line $LINENO: Command failed
 #                 run from incorrect directories (not a git repo, missing pom.xml, etc.)
 #   - 2025-12-17: Added Pattern 13 (parse errors) for detecting jq/JSON parse errors
 #                 and other data format parsing failures
+#   - 2025-12-22: Added Pattern 14 (bash parse errors) for detecting shell parse errors
+#                 from command substitution $(...) in multi-line commands
 
 # Read input from stdin (hook context JSON for PostToolUse)
 HOOK_CONTEXT=$(cat)
@@ -182,6 +184,14 @@ fi
 if echo "$TOOL_RESULT" | grep -qiE "parse error.*at line [0-9]+|Invalid literal at line"; then
   MISTAKE_TYPE="parse_error"
   MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B3 -A5 -iE "parse error|Invalid literal" | head -20)
+fi
+
+# Pattern 14: Bash/zsh shell parse errors (HIGH)
+# Detects shell parsing failures from command substitution $(...) in multi-line commands
+# Format: (eval):N: parse error near '...'
+if [[ "$TOOL_NAME" == "Bash" ]] && echo "$TOOL_RESULT" | grep -qE "\(eval\):[0-9]+:.*parse error"; then
+  MISTAKE_TYPE="bash_parse_error"
+  MISTAKE_DETAILS=$(echo "$TOOL_RESULT" | grep -B2 -A3 -E "\(eval\):[0-9]+:|parse error" | head -15)
 fi
 
 # Also check last assistant message from conversation log (if rate limit allows)
