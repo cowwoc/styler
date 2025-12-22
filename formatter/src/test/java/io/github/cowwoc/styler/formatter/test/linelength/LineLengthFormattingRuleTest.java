@@ -6,7 +6,6 @@ import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
-import io.github.cowwoc.styler.formatter.linelength.WrapStyle;
 import org.testng.annotations.Test;
 
 import java.util.List;
@@ -125,8 +124,13 @@ public class LineLengthFormattingRuleTest
 	public void shouldDetectLinesExceedingMaxLength()
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
-		// Create a line that exceeds default max length of 120
-		String longLine = "public class Test { void method() { String s = \"" + "a".repeat(100) + "\"; } }";
+		// Create a source where one line exceeds default max length of 120 (string literal makes it > 120)
+		String longLine = """
+			class Test
+			{
+				String s = \"""" + "a".repeat(110) + """
+			";
+			}""";
 		TestTransformationContext context = new TestTransformationContext(longLine);
 
 		List<FormattingViolation> violations = rule.analyze(context, List.of());
@@ -141,15 +145,20 @@ public class LineLengthFormattingRuleTest
 	public void shouldRespectCustomMaxLength()
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
-		// Create a line that exceeds 40 characters
-		String source = "class Test { void method() { int x = 1; } }";
+		// Create a source where one line exceeds 40 characters
+		String source = """
+			class Test
+			{
+				void aMethodNameThatMakesThisLineExceedFortyCharacters()
+				{
+				}
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
-		// With max length 40, should report violation (line is 43 chars)
-		LineLengthConfiguration strictConfig = new LineLengthConfiguration(
-			"line-length", 40, 4, 4,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER,
-			WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, WrapStyle.AFTER, true);
+		// With max length 40, should report violation
+		LineLengthConfiguration strictConfig = LineLengthConfiguration.builder().
+			maxLineLength(40).
+			build();
 
 		List<FormattingViolation> violations = rule.analyze(context, List.of(strictConfig));
 		requireThat(violations, "violations").isNotEmpty();
@@ -192,9 +201,11 @@ public class LineLengthFormattingRuleTest
 	{
 		LineLengthFormattingRule rule = new LineLengthFormattingRule();
 		String source = """
-			class Test {
-			    void method() {
-			    }
+			class Test
+			{
+				void method()
+				{
+				}
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 

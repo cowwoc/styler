@@ -1,10 +1,10 @@
 package io.github.cowwoc.styler.formatter.test.importorg;
 
-import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
-
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
+import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerConfiguration;
 import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerFormattingRule;
+import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import org.testng.annotations.Test;
 
 import java.util.List;
@@ -16,6 +16,15 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  */
 public class ImportOrganizerFormattingRuleTest
 {
+	/**
+	 * Configuration for tests that don't need classpath scanning.
+	 * Uses {@code expandWildcardImports = false} to avoid scanner requirements.
+	 */
+	private static final ImportOrganizerConfiguration NO_WILDCARD_CONFIG =
+		ImportOrganizerConfiguration.builder().
+			expandWildcardImports(false).
+			build();
+
 	/**
 	 * Tests that the rule returns the correct ID.
 	 */
@@ -139,7 +148,8 @@ public class ImportOrganizerFormattingRuleTest
 		TestTransformationContext context = new TestTransformationContext(source);
 		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
 
-		List<FormattingViolation> violations = rule.analyze(context, List.of());
+		// Use NO_WILDCARD_CONFIG to avoid scanner requirements (no classpath in test)
+		List<FormattingViolation> violations = rule.analyze(context, List.of(NO_WILDCARD_CONFIG));
 
 		requireThat(violations, "violations").isEmpty();
 	}

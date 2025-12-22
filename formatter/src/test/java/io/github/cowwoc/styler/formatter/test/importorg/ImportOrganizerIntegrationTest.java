@@ -105,7 +105,10 @@ public class ImportOrganizerIntegrationTest
 			import java.util.List;
 			import java.util.List;
 
-			class Test { List x; }""";
+			class Test
+			{
+				List x;
+			}""";
 
 		int sourceCount = countOccurrences(source, "import java.util.List");
 		requireThat(sourceCount, "sourceCount").isEqualTo(2);
