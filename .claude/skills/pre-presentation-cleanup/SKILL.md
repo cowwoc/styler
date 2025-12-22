@@ -51,7 +51,35 @@ git branch -D ${TASK_NAME}-tester 2>/dev/null || true
 git branch -D ${TASK_NAME}-formatter 2>/dev/null || true
 ```
 
-### Step 3: Squash Commits
+### Step 3: Update Archival Files (MANDATORY)
+
+**⚠️ CRITICAL**: The task branch commit MUST include todo.md and changelog.md updates.
+This ensures the atomic commit includes both implementation AND archival.
+
+```bash
+TASK_NAME="{task-name}"
+cd /workspace/tasks/$TASK_NAME/code
+
+# Update todo.md: Mark task complete (change status from IN_PROGRESS to DONE)
+# Update changelog.md: Add task completion entry with date and summary
+
+# Stage archival files
+git add todo.md changelog.md
+```
+
+**Archival Content Requirements**:
+
+**todo.md update**:
+- Change task status from `IN_PROGRESS` to `DONE`
+- Add completion date
+- Keep task entry for reference (will be cleaned in CLEANUP)
+
+**changelog.md update**:
+- Add entry under current date section
+- Format: `- [task-name] Brief description of what was accomplished`
+- Include key deliverables
+
+### Step 4: Squash Commits (Including Archival)
 
 Use the `git-squash` skill to squash ALL task branch commits into ONE:
 
@@ -59,11 +87,22 @@ Use the `git-squash` skill to squash ALL task branch commits into ONE:
 # From task worktree
 cd /workspace/tasks/$TASK_NAME/code
 
+# IMPORTANT: Ensure todo.md and changelog.md are staged BEFORE squashing
+git status  # Should show todo.md and changelog.md as staged
+
 # Use git-squash skill (provides backup, verification, cleanup)
 # Target: single commit with all changes since branching from main
+# The squashed commit MUST include: implementation + todo.md + changelog.md
 ```
 
-### Step 4: Verify Cleanup
+**Post-Squash Verification**:
+```bash
+# Verify archival files are in the commit
+git show --stat | grep "todo.md" || echo "❌ ERROR: todo.md not in commit"
+git show --stat | grep "changelog.md" || echo "❌ ERROR: changelog.md not in commit"
+```
+
+### Step 5: Verify Cleanup
 
 ```bash
 # Verify only task branch remains (no agent branches)
@@ -71,12 +110,16 @@ git branch | grep $TASK_NAME
 # Expected output: ONLY "{task-name}" (no -architect, -tester, -formatter suffixes)
 ```
 
-### Step 5: Verify Single Commit
+### Step 6: Verify Single Commit with Archival
 
 ```bash
 # Count commits ahead of main
 git rev-list --count main..$TASK_NAME
 # Expected output: 1
+
+# MANDATORY: Verify archival files are included
+git show --stat | grep -E "todo.md|changelog.md"
+# Expected: Both todo.md and changelog.md appear in commit
 ```
 
 ## Complete Cleanup Script
@@ -174,6 +217,28 @@ $ git branch | grep my-task
   my-task
 ```
 
+### Mistake: Missing Archival Files in Commit
+
+```bash
+# ❌ WRONG: Presenting without archival
+$ git show --stat
+  Parser.java   | 10 ++++
+  Test.java     | 50 +++++++++++
+  2 files changed, 60 insertions(+)
+# Missing: todo.md and changelog.md!
+
+# ✅ CORRECT: Commit includes archival files
+$ git show --stat
+  Parser.java   | 10 ++++
+  Test.java     | 50 +++++++++++
+  todo.md       |  2 +-
+  changelog.md  |  3 +++
+  4 files changed, 63 insertions(+), 1 deletion(-)
+```
+
+**Why This Matters**: The merge commit MUST be atomic - including both implementation
+AND archival. Presenting without archival requires rework after user approval.
+
 ## Workflow Integration
 
 ```
@@ -185,9 +250,10 @@ $ git branch | grep my-task
         ↓
 Step 1: Remove agent worktrees
 Step 2: Delete agent branches
-Step 3: Squash commits (git-squash skill)
-Step 4: Verify only task branch
-Step 5: Verify single commit
+Step 3: Update archival files (todo.md + changelog.md) ← CRITICAL
+Step 4: Squash commits (including archival)
+Step 5: Verify only task branch
+Step 6: Verify single commit with archival
         ↓
 [Present clean commit to user]
         ↓
@@ -196,7 +262,8 @@ Step 5: Verify single commit
 
 ## Related Skills
 
-- **git-squash**: Used in Step 3 to squash commits
+- **git-squash**: Used in Step 4 to squash commits
+- **archive-task**: Alternative skill for archival (updates todo.md + changelog.md atomically)
 - **task-cleanup**: Used AFTER merge to main (removes task branch and worktree)
 - **state-transition**: Manages state machine transitions
 
@@ -206,6 +273,9 @@ Before presenting to user, confirm:
 
 - [ ] All agent worktrees removed
 - [ ] All agent branches deleted
-- [ ] Commits squashed to single commit
+- [ ] **todo.md updated** (task status changed to DONE)
+- [ ] **changelog.md updated** (task completion entry added)
+- [ ] Commits squashed to single commit (including archival files)
 - [ ] `git branch | grep {task}` shows ONLY task branch
 - [ ] `git rev-list --count main..{task}` returns `1`
+- [ ] `git show --stat` shows todo.md AND changelog.md in commit
