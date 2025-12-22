@@ -87,17 +87,25 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
       doWork();
   }
   ```
-- Test source strings: One statement per line (don't combine imports and declarations on same line):
+- Test source strings: One statement per line (format code naturally, not compacted):
   ```java
-  // ❌ WRONG - Import and class on same line
-  String source = """
-      import java.util.*; class Test {}
-      """;
-
-  // ✅ CORRECT - Separate lines for clarity
+  // ❌ WRONG - Multiple statements on same line
   String source = """
       import java.util.*;
-      class Test {}
+      class Test { void foo() { int x = 1; } }
+      """;
+
+  // ✅ CORRECT - Natural formatting with separate lines
+  String source = """
+      import java.util.*;
+
+      class Test
+      {
+          void foo()
+          {
+              int x = 1;
+          }
+      }
       """;
   ```
 - File cleanup: Use `TestFileFactory.deleteFilesQuietly()` instead of duplicating cleanup code:
@@ -153,15 +161,20 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
       this.items = List.copyOf(items);
   }
   ```
-- Import types, never use FQNs in code (including in nested types):
+- Import types, never use FQNs in code or JavaDoc:
   ```java
   // ❌ WRONG - FQN in record/class declaration
   private record Helper() implements com.example.SomeInterface {}
 
-  // ✅ CORRECT - Import at top, use simple name
+  // ❌ WRONG - FQN in JavaDoc @throws
+  /** @throws java.io.IOException if file read fails */
+
+  // ✅ CORRECT - Import at top, use simple name everywhere
   import com.example.SomeInterface;
+  import java.io.IOException;
   // ...
   private record Helper() implements SomeInterface {}
+  /** @throws IOException if file read fails */
   ```
 - `Optional` only as return type, never as parameter
 - Explicit types preferred over `var` (use `var` only for long generics)
