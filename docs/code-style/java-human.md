@@ -872,6 +872,41 @@ code months later.
 **Codebase consistency**: When refactoring existing methods, prefer clarity. If a method name seems unclear
 during code review, it's a good candidate for renaming to a more descriptive alternative.
 
+### JavaDoc/Comments/Errors - Use "empty" Not "blank" for String Validation
+
+**Why "empty" over "blank"**: When code uses `isNotBlank()` or similar methods that check for both null and
+whitespace-only strings, documentation should use "empty" rather than "blank" in `@throws` clauses, error
+messages, and comments. The term "empty" is more universally understood by users to mean "contains no
+meaningful content."
+
+**Scope**: This applies to JavaDoc `@throws` clauses, exception messages shown to users, and explanatory
+comments.
+
+**Example**:
+```java
+// ❌ WRONG - Uses "blank" in documentation
+/**
+ * @param name the user's name
+ * @throws IllegalArgumentException if {@code name} is blank
+ */
+public void setName(String name)
+{
+    requireThat(name, "name").isNotBlank();
+}
+
+// ✅ CORRECT - Uses "empty" for user-facing documentation
+/**
+ * @param name the user's name
+ * @throws IllegalArgumentException if {@code name} is empty
+ */
+public void setName(String name)
+{
+    requireThat(name, "name").isNotBlank();
+}
+```
+
+**Note**: The method call `isNotBlank()` remains unchanged - only the documentation terminology changes.
+
 ## 📚 Navigation
 
 ### Related Documentation
