@@ -568,7 +568,12 @@ CORRECT SEQUENCE:
 12. If build passes → proceed to REVIEW state
 13. If build fails → main agent MAY fix OR re-delegate to agents
 14. After REVIEW state with unanimous approval → transition to AWAITING_USER_APPROVAL state
-15. **Present implementation summary and request explicit user approval** (via message output):
+15. **MANDATORY: Invoke `pre-presentation-cleanup` skill** before presenting to user:
+    - Remove all agent worktrees
+    - Delete agent branches (keep task branch)
+    - Squash all task branch commits into ONE commit using `git-squash` skill
+    - Verify cleanup: only task branch remains, exactly 1 commit
+16. **Present implementation summary and request explicit user approval** (via message output):
     ```
     Implementation complete and validated.
 
@@ -579,15 +584,11 @@ CORRECT SEQUENCE:
 
     May I proceed to COMPLETE and merge to main?
     ```
-16. WAIT for user approval response (BLOCKED until received)
-17. User must respond with explicit approval (e.g., "approved", "yes", "proceed")
-18. After user approves, create flag: `touch /workspace/tasks/{task-name}/user-approval-obtained.flag`
-19. Transition to COMPLETE state (hook will verify flag exists)
-20. **Delete agent branches** (before squash to keep history clean):
-    ```bash
-    git branch -D {task-name}-architect {task-name}-tester {task-name}-formatter
-    ```
-21. **Pre-Merge Validation** (MANDATORY):
+17. WAIT for user approval response (BLOCKED until received)
+18. User must respond with explicit approval (e.g., "approved", "yes", "proceed")
+19. After user approves, create flag: `touch /workspace/tasks/{task-name}/user-approval-obtained.flag`
+20. Transition to COMPLETE state (hook will verify flag exists)
+21. **Pre-Merge Validation** (verify cleanup from step 15):
 
     > 🚨 **CRITICAL GIT WORKFLOW VIOLATION PATTERN**
     >
