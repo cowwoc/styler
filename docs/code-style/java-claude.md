@@ -1272,6 +1272,28 @@ public String formatSource(SourceFile file) { ... }
 **Rationale**: Clear method names improve code comprehension. Abbreviated names require mental translation and
 reduce readability, especially during code review and debugging.
 
+### JavaDoc/Comments/Errors - Use "empty" Not "blank" for String Validation
+
+**Detection Pattern**: `@throws.*if.*is blank|".*is blank"`
+
+**What to Look For**: Documentation and error messages that say "is blank" when describing string validation
+that rejects null/whitespace-only values.
+
+```java
+// VIOLATION - Uses "blank" in documentation
+/**
+ * @throws IllegalArgumentException if {@code name} is blank
+ */
+
+// CORRECT - Uses "empty" for user-facing documentation
+/**
+ * @throws IllegalArgumentException if {@code name} is empty
+ */
+```
+
+**Rationale**: "Empty" is more universally understood to mean "contains no meaningful content" and is
+preferred in user-facing documentation and error messages.
+
 ## Optimized Detection Commands
 
 **Performance Strategy**: Batch similar patterns, use parallel execution, generate complete violation reports.

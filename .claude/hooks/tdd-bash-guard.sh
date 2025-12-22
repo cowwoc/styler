@@ -16,6 +16,8 @@
 #   - Test files (src/test/)
 #   - Infrastructure files (module-info.java, package-info.java)
 #   - TDD mode is active
+#   - Git conflict resolution (rebase/merge in progress)
+#   - Git conflict resolution commands (checkout --ours/--theirs, add)
 
 set -euo pipefail
 trap 'echo "ERROR in tdd-bash-guard.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
@@ -55,6 +57,24 @@ fi
 # Skip if only targeting infrastructure files
 if [[ "$COMMAND" =~ (module-info|package-info)\.java ]] && \
    [[ ! "$COMMAND" =~ [^-]info\.java ]]; then
+    exit 0
+fi
+
+# Skip if in git rebase/merge state (conflict resolution)
+GIT_DIR=$(git rev-parse --git-dir 2>/dev/null || echo "")
+if [[ -n "$GIT_DIR" ]]; then
+    if [[ -d "$GIT_DIR/rebase-merge" ]] || [[ -d "$GIT_DIR/rebase-apply" ]] || [[ -f "$GIT_DIR/MERGE_HEAD" ]]; then
+        exit 0
+    fi
+fi
+
+# Skip git conflict resolution commands
+if [[ "$COMMAND" =~ git\ (checkout|add|restore|reset)\ .*(--ours|--theirs|\.java) ]]; then
+    exit 0
+fi
+
+# Skip read-only operations (grep, cat for viewing, diff)
+if [[ "$COMMAND" =~ ^(grep|cat|diff|head|tail|less|more)\ .*\.java ]]; then
     exit 0
 fi
 
