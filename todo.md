@@ -2,7 +2,7 @@
 
 ## 🚀 READY TO WORK NOW (Multi-Instance Coordination)
 
-**Current Status**: Phase B in progress (B6 ready), Phase C tasks C4-C6 unblocked
+**Current Status**: Phase C in progress - C4 (Maven Plugin) ready, C5-C6 follow
 
 **COMPLETED**:
 - B1a: Line Length Formatter ✅ COMPLETE
@@ -203,12 +203,53 @@ benchmarking, and validate with Maven plugin integration.
 
 - [x] **COMPLETE:** `implement-indentation-formatting` - Indentation formatting (tabs/spaces/mixed) (2025-12-11)
 
-### C4. Concurrency Model Benchmark
+### C4. Maven Plugin (Early Real-World Testing)
+- [ ] **READY:** `create-maven-plugin` - Maven plugin for build system integration
+  - **Dependencies**: B2.5 ✅ (functional pipeline), C1 ✅ (file discovery), C2 ✅ (parallel processing), B5 ✅
+    (CLI integration)
+  - **Blocks**: C5 (performance benchmarking uses Maven plugin), D1 (regression tests use Maven plugin), D2
+    (CI/CD uses Maven plugin)
+  - **Parallelizable With**: C6 (concurrency benchmark can run independently)
+  - **Estimated Effort**: 2-3 days
+  - **Purpose**: Integrate styler into Maven builds for automated formatting
+  - **Scope**: Maven plugin with check/format goals, configuration integration
+  - **Components**:
+    - StylerCheckMojo: Validate formatting without changes
+    - StylerFormatMojo: Auto-fix formatting violations
+    - MavenConfigAdapter: Bridge Maven config to styler config
+    - GoalConfiguration: Maven-specific settings
+  - **Goals**: styler:check (validate), styler:format (fix), styler:help (usage)
+  - **Integration**: Uses CLI as dependency, Maven lifecycle integration
+  - **Real-World Testing**: Validate on actual Java projects (Spring, Guava, Commons)
+  - **Quality**: Incremental builds, build cache support, clear error reporting
+
+### C5. Performance Benchmarking
+- [ ] **BLOCKED:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
+  - **Dependencies**: B2.5 ✅ (functional pipeline), C4 (Maven plugin for running benchmarks), C2 ✅ (parallel
+    processing), all formatters (B1 + C3) ✅
+  - **Blocks**: D1 (testing uses benchmarks for performance regression detection), D2 (CI/CD runs benchmark
+    comparisons)
+  - **Parallelizable With**: C6 (concurrency benchmark is separate empirical study)
+  - **Estimated Effort**: 3-4 days
+  - **Purpose**: Measure and validate parsing throughput, memory usage, scalability
+  - **Scope**: JMH benchmark suite covering all scope.md performance targets
+  - **Benchmarks**:
+    - ParsingThroughputBenchmark: ≥10,000 tokens/sec
+    - MemoryUsageBenchmark: ≤512MB per 1000 files
+    - FormattingThroughputBenchmark: ≥100 files/sec
+    - ScalabilityBenchmark: Linear scaling to 32 cores
+    - VirtualThreadComparisonBenchmark: Virtual vs platform threads
+    - RealWorldProjectBenchmark: Spring Framework, Guava, JUnit5
+  - **Configuration**: Fork=3, proper warmup/measurement, 95% confidence intervals
+  - **Integration**: Separate benchmark module, uses production code
+  - **Quality**: Statistical rigor, comprehensive coverage
+
+### C6. Concurrency Model Benchmark
 - [ ] **READY:** `benchmark-concurrency-models` - Compare thread-per-file vs thread-per-block parallelism
   - **Dependencies**: B2.5 ✅ (functional pipeline), C2 ✅ (thread-per-file baseline), C3 ✅ (3
     rules), B1 ✅ (2 rules)
-  - **Blocks**: C5 (Maven plugin should use optimal concurrency model if thread-per-block wins)
-  - **Parallelizable With**: None (needs functional pipeline first)
+  - **Blocks**: None (optional optimization study)
+  - **Parallelizable With**: C4 (Maven plugin development)
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Determine optimal concurrency strategy for styler through empirical testing
   - **Scope**: Benchmark thread-per-file (baseline from C2) vs thread-per-block concurrency
@@ -233,47 +274,6 @@ benchmarking, and validate with Maven plugin integration.
   - **Output**: Benchmark report with recommendation for production concurrency model
   - **Integration**: Uses C2 (thread-per-file), all formatters (B1 + C3), real-world projects
   - **Quality**: Statistical rigor, JMH methodology, 95% confidence intervals
-
-### C5. Maven Plugin (Early Real-World Testing)
-- [ ] **READY:** `create-maven-plugin` - Maven plugin for build system integration
-  - **Dependencies**: B2.5 ✅ (functional pipeline), C1 ✅ (file discovery), C2 ✅ (parallel processing), B5 ✅
-    (CLI integration)
-  -  **Blocks**: C6 (performance benchmarking uses Maven plugin), D1 (regression tests use Maven plugin), D2
-    (CI/CD uses Maven plugin)
-  - **Parallelizable With**: C4 (concurrency benchmark can run independently)
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Integrate styler into Maven builds for automated formatting
-  - **Scope**: Maven plugin with check/format goals, configuration integration
-  - **Components**:
-    - StylerCheckMojo: Validate formatting without changes
-    - StylerFormatMojo: Auto-fix formatting violations
-    - MavenConfigAdapter: Bridge Maven config to styler config
-    - GoalConfiguration: Maven-specific settings
-  - **Goals**: styler:check (validate), styler:format (fix), styler:help (usage)
-  - **Integration**: Uses CLI as dependency, Maven lifecycle integration
-  - **Real-World Testing**: Validate on actual Java projects (Spring, Guava, Commons)
-  - **Quality**: Incremental builds, build cache support, clear error reporting
-
-### C6. Performance Benchmarking
-- [ ] **BLOCKED:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
-  - **Dependencies**: B2.5 ✅ (functional pipeline), C5 (Maven plugin for running benchmarks), C2 ✅ (parallel
-    processing), all formatters (B1 + C3) ✅
-  -  **Blocks**: D1 (testing uses benchmarks for performance regression detection), D2 (CI/CD runs benchmark
-    comparisons)
-  - **Parallelizable With**: C4 (concurrency benchmark is separate empirical study)
-  - **Estimated Effort**: 3-4 days
-  - **Purpose**: Measure and validate parsing throughput, memory usage, scalability
-  - **Scope**: JMH benchmark suite covering all scope.md performance targets
-  - **Benchmarks**:
-    - ParsingThroughputBenchmark: ≥10,000 tokens/sec
-    - MemoryUsageBenchmark: ≤512MB per 1000 files
-    - FormattingThroughputBenchmark: ≥100 files/sec
-    - ScalabilityBenchmark: Linear scaling to 32 cores
-    - VirtualThreadComparisonBenchmark: Virtual vs platform threads
-    - RealWorldProjectBenchmark: Spring Framework, Guava, JUnit5
-  - **Configuration**: Fork=3, proper warmup/measurement, 95% confidence intervals
-  - **Integration**: Separate benchmark module, uses production code
-  - **Quality**: Statistical rigor, comprehensive coverage
 
 ---
 
