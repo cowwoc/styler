@@ -51,6 +51,40 @@
 - D1 (regression test suite)
 - D2 (CI/CD pipeline)
 
+### E5: Generic Type Parsing ✅
+
+**Completion Date**: 2025-12-22
+
+**Task**: `fix-generic-type-parsing`
+
+**Problem Solved**:
+- Parser failed on generic type parameters like `Optional<?>`, `Supplier<Path>`, `Map<K,V>`
+- Parser failed on diamond operator `new ArrayList<>()`
+- Error: "Expected IDENTIFIER but found GT at position X"
+- Blocked self-hosting (styler cannot format its own codebase)
+
+**Solution Implemented**:
+- Extended `parseGenericTypeArguments()` in Parser.java to handle:
+  - Wildcard types (`?`, `? extends Type`, `? super Type`)
+  - Diamond operator (empty `<>` in constructor calls)
+  - Nested generic types (`Map<String, List<Integer>>`)
+- Added comprehensive test coverage in GenericTypeParserTest.java
+
+**Files Modified**:
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java` (6 lines)
+
+**Files Created**:
+- `parser/src/test/java/io/github/cowwoc/styler/parser/GenericTypeParserTest.java` (186 lines, 10 tests)
+
+**Quality**:
+- All 10 tests passing
+- Zero Checkstyle/PMD violations
+- Build compiles successfully
+
+**Unblocks**:
+- Self-hosting (styler can now format its own codebase)
+- E6, E7 (parallelizable tasks)
+
 ---
 
 ## 2025-12-21
