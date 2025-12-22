@@ -29,6 +29,26 @@ public final class ClasspathScanner implements AutoCloseable
 	private final AtomicBoolean closed = new AtomicBoolean();
 
 	/**
+	 * Creates an empty scanner that contains no classes.
+	 * <p>
+	 * Use this when symbol resolution is not needed (e.g., when wildcard expansion is disabled).
+	 * This avoids the overhead of scanning the classpath.
+	 *
+	 * @return an empty scanner
+	 */
+	public static ClasspathScanner empty()
+	{
+		// Disable all scanning to create a minimal empty result
+		ClassGraph classGraph = new ClassGraph();
+		classGraph.disableNestedJarScanning();
+		classGraph.disableModuleScanning();
+		classGraph.disableDirScanning();
+		classGraph.disableJarScanning();
+		ScanResult result = classGraph.scan();
+		return new ClasspathScanner(result);
+	}
+
+	/**
 	 * Creates a scanner for the given type resolution configuration.
 	 *
 	 * @param config the type resolution configuration

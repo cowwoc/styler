@@ -103,7 +103,10 @@ public class ImportExtractorTest
 		String source = """
 			import java.util.List;
 
-			class Test { List<String> items; }""";
+			class Test
+			{
+				List<String> items;
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
 		List<ImportDeclaration> imports = ImportExtractor.extract(context);
@@ -124,7 +127,10 @@ public class ImportExtractorTest
 		String source = """
 			import static java.lang.Math.max;
 
-			class Test { int x = max(1, 2); }""";
+			class Test
+			{
+				int x = max(1, 2);
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
 		List<ImportDeclaration> imports = ImportExtractor.extract(context);
@@ -144,7 +150,10 @@ public class ImportExtractorTest
 		String source = """
 			import java.util.*;
 
-			class Test { List<String> items; }""";
+			class Test
+			{
+				List<String> items;
+			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 
 		List<ImportDeclaration> imports = ImportExtractor.extract(context);

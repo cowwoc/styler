@@ -1,7 +1,6 @@
 package io.github.cowwoc.styler.formatter.test.importorg;
 
 import io.github.cowwoc.styler.formatter.importorg.CustomImportPattern;
-import io.github.cowwoc.styler.formatter.importorg.ImportGroup;
 import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerConfiguration;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportDeclaration;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportGrouper;
@@ -90,11 +89,10 @@ public class ImportGrouperTest
 		List<ImportDeclaration> imports = List.of(
 			new ImportDeclaration("io.github.cowwoc.styler.Foo", false, 0, 35, 1),
 			new ImportDeclaration("org.apache.Bar", false, 36, 55, 2));
-		List<ImportGroup> order = List.of(ImportGroup.JAVA, ImportGroup.JAVAX, ImportGroup.THIRD_PARTY,
-			ImportGroup.PROJECT);
 		CustomImportPattern customPattern = CustomImportPattern.of("PROJECT", "io\\.github\\.cowwoc\\..*");
-		ImportOrganizerConfiguration config = new ImportOrganizerConfiguration(
-			"import-organizer", order, true, false, true, true, List.of(customPattern));
+		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.builder().
+			customPatterns(List.of(customPattern)).
+			build();
 
 		String result = ImportGrouper.organizeImports(imports, config);
 
@@ -145,10 +143,9 @@ public class ImportGrouperTest
 			new ImportDeclaration("java.util.List", false, 0, 20, 1),
 			new ImportDeclaration("org.testng.Assert.assertEquals", true, 21, 55, 2),
 			new ImportDeclaration("org.apache.Foo", false, 56, 75, 3));
-		List<ImportGroup> order = List.of(ImportGroup.JAVA, ImportGroup.JAVAX, ImportGroup.THIRD_PARTY,
-			ImportGroup.PROJECT);
-		ImportOrganizerConfiguration config = new ImportOrganizerConfiguration(
-			"import-organizer", order, true, true, true, true, List.of());  // staticImportsFirst=true
+		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.builder().
+			staticImportsFirst(true).
+			build();
 
 		String result = ImportGrouper.organizeImports(imports, config);
 

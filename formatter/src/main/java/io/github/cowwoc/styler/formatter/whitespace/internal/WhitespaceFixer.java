@@ -94,7 +94,7 @@ public final class WhitespaceFixer
 					continue;
 
 				// For other operators, check binary operators config
-				if (current != '=' && !config.spaceAroundBinaryOperators())
+				if (current != '=' && !config.spaceAroundBinaryOperator())
 					continue;
 
 				fixBinaryOperatorSpacing(result, i, config);
@@ -102,7 +102,7 @@ public final class WhitespaceFixer
 			}
 
 			// Fix control keyword spacing
-			if (config.spaceAfterControlKeywords() && isControlKeywordStart(str, i))
+			if (config.spaceAfterControlKeyword() && isControlKeywordStart(str, i))
 				fixControlKeywordSpacing(result, i);
 
 			// Fix "else if" - ensure space between them
