@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+	<name>Styler Maven Plugin</name>
+	<description>Maven plugin for Styler Java Code Formatter</description>
+	<groupId>io.github.cowwoc.styler</groupId>
+	<artifactId>styler-maven-plugin</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<goalPrefix>styler</goalPrefix>
+	<isolatedRealm>false</isolatedRealm>
+	<inheritedByDefault>true</inheritedByDefault>
+	<mojos>
+		<mojo>
+			<goal>check</goal>
+			<description>Validates Java source file formatting without modifying files.</description>
+			<requiresDirectInvocation>false</requiresDirectInvocation>
+			<requiresProject>true</requiresProject>
+			<requiresReports>false</requiresReports>
+			<aggregator>false</aggregator>
+			<requiresOnline>false</requiresOnline>
+			<inheritedByDefault>true</inheritedByDefault>
+			<phase>verify</phase>
+			<implementation>io.github.cowwoc.styler.maven.StylerCheckMojo</implementation>
+			<language>java</language>
+			<instantiationStrategy>per-lookup</instantiationStrategy>
+			<executionStrategy>once-per-session</executionStrategy>
+			<threadSafe>true</threadSafe>
+			<parameters>
+				<parameter>
+					<name>project</name>
+					<type>org.apache.maven.project.MavenProject</type>
+					<required>true</required>
+					<editable>false</editable>
+					<description>The Maven project.</description>
+				</parameter>
+				<parameter>
+					<name>configFile</name>
+					<type>java.io.File</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>Path to the Styler configuration file.</description>
+				</parameter>
+				<parameter>
+					<name>sourceDirectories</name>
+					<type>java.util.List</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>List of source directories to process.</description>
+				</parameter>
+				<parameter>
+					<name>testSourceDirectories</name>
+					<type>java.util.List</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>List of test source directories to process.</description>
+				</parameter>
+				<parameter>
+					<name>includes</name>
+					<type>java.util.List</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>List of file patterns to include.</description>
+				</parameter>
+				<parameter>
+					<name>excludes</name>
+					<type>java.util.List</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>List of file patterns to exclude.</description>
+				</parameter>
+				<parameter>
+					<name>failOnViolation</name>
+					<type>boolean</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>Whether to fail the build if violations are found.</description>
+				</parameter>
+				<parameter>
+					<name>skip</name>
+					<type>boolean</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>Whether to skip plugin execution.</description>
+				</parameter>
+				<parameter>
+					<name>encoding</name>
+					<type>java.lang.String</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>The character encoding to use.</description>
+				</parameter>
+			</parameters>
+			<configuration>
+				<project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
+				<configFile implementation="java.io.File">${styler.configFile}</configFile>
+				<sourceDirectories implementation="java.util.List">${styler.sourceDirectories}</sourceDirectories>
+				<testSourceDirectories implementation="java.util.List">${styler.testSourceDirectories}</testSourceDirectories>
+				<includes implementation="java.util.List" default-value="**/*.java">${styler.includes}</includes>
+				<excludes implementation="java.util.List">${styler.excludes}</excludes>
+				<failOnViolation implementation="boolean" default-value="true">${styler.failOnViolation}</failOnViolation>
+				<skip implementation="boolean" default-value="false">${styler.skip}</skip>
+				<encoding implementation="java.lang.String" default-value="UTF-8">${styler.encoding}</encoding>
+			</configuration>
+		</mojo>
+		<mojo>
+			<goal>format</goal>
+			<description>Formats Java source files by applying style fixes.</description>
+			<requiresDirectInvocation>false</requiresDirectInvocation>
+			<requiresProject>true</requiresProject>
+			<requiresReports>false</requiresReports>
+			<aggregator>false</aggregator>
+			<requiresOnline>false</requiresOnline>
+			<inheritedByDefault>true</inheritedByDefault>
+			<phase>process-sources</phase>
+			<implementation>io.github.cowwoc.styler.maven.StylerFormatMojo</implementation>
+			<language>java</language>
+			<instantiationStrategy>per-lookup</instantiationStrategy>
+			<executionStrategy>once-per-session</executionStrategy>
+			<threadSafe>true</threadSafe>
+			<parameters>
+				<parameter>
+					<name>project</name>
+					<type>org.apache.maven.project.MavenProject</type>
+					<required>true</required>
+					<editable>false</editable>
+					<description>The Maven project.</description>
+				</parameter>
+				<parameter>
+					<name>configFile</name>
+					<type>java.io.File</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>Path to the Styler configuration file.</description>
+				</parameter>
+				<parameter>
+					<name>sourceDirectories</name>
+					<type>java.util.List</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>List of source directories to process.</description>
+				</parameter>
+				<parameter>
+					<name>testSourceDirectories</name>
+					<type>java.util.List</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>List of test source directories to process.</description>
+				</parameter>
+				<parameter>
+					<name>includes</name>
+					<type>java.util.List</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>List of file patterns to include.</description>
+				</parameter>
+				<parameter>
+					<name>excludes</name>
+					<type>java.util.List</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>List of file patterns to exclude.</description>
+				</parameter>
+				<parameter>
+					<name>failOnViolation</name>
+					<type>boolean</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>Whether to fail the build if violations are found.</description>
+				</parameter>
+				<parameter>
+					<name>skip</name>
+					<type>boolean</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>Whether to skip plugin execution.</description>
+				</parameter>
+				<parameter>
+					<name>encoding</name>
+					<type>java.lang.String</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>The character encoding to use.</description>
+				</parameter>
+				<parameter>
+					<name>dryRun</name>
+					<type>boolean</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>Whether to perform a dry run without modifying files.</description>
+				</parameter>
+				<parameter>
+					<name>backupOriginals</name>
+					<type>boolean</type>
+					<required>false</required>
+					<editable>true</editable>
+					<description>Whether to create backup copies of original files.</description>
+				</parameter>
+			</parameters>
+			<configuration>
+				<project implementation="org.apache.maven.project.MavenProject" default-value="${project}"/>
+				<configFile implementation="java.io.File">${styler.configFile}</configFile>
+				<sourceDirectories implementation="java.util.List">${styler.sourceDirectories}</sourceDirectories>
+				<testSourceDirectories implementation="java.util.List">${styler.testSourceDirectories}</testSourceDirectories>
+				<includes implementation="java.util.List" default-value="**/*.java">${styler.includes}</includes>
+				<excludes implementation="java.util.List">${styler.excludes}</excludes>
+				<failOnViolation implementation="boolean" default-value="true">${styler.failOnViolation}</failOnViolation>
+				<skip implementation="boolean" default-value="false">${styler.skip}</skip>
+				<encoding implementation="java.lang.String" default-value="UTF-8">${styler.encoding}</encoding>
+				<dryRun implementation="boolean" default-value="false">${styler.dryRun}</dryRun>
+				<backupOriginals implementation="boolean" default-value="false">${styler.backupOriginals}</backupOriginals>
+			</configuration>
+		</mojo>
+	</mojos>
+	<dependencies>
+		<dependency>
+			<groupId>io.github.cowwoc.styler</groupId>
+			<artifactId>styler-pipeline</artifactId>
+			<type>jar</type>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.cowwoc.styler</groupId>
+			<artifactId>styler-config</artifactId>
+			<type>jar</type>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.cowwoc.styler</groupId>
+			<artifactId>styler-discovery</artifactId>
+			<type>jar</type>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.cowwoc.styler</groupId>
+			<artifactId>styler-formatter</artifactId>
+			<type>jar</type>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.cowwoc.styler</groupId>
+			<artifactId>styler-security</artifactId>
+			<type>jar</type>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>io.github.cowwoc.requirements</groupId>
+			<artifactId>requirements-java</artifactId>
+			<type>jar</type>
+			<version>12.0</version>
+		</dependency>
+	</dependencies>
+</plugin>
