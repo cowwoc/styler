@@ -330,3 +330,19 @@ public <T> T getAttribute(Class<T> type)
     return null;
 }
 ```
+
+### JavaDoc/Comments/Errors - Use "empty" Not "blank"
+When documenting string validation that checks for null/whitespace-only values, use "empty" in user-facing text:
+```java
+// ❌ WRONG - Uses "blank" in documentation
+/**
+ * @throws IllegalArgumentException if {@code name} is blank
+ */
+
+// ✅ CORRECT - Uses "empty" for user-facing documentation
+/**
+ * @throws IllegalArgumentException if {@code name} is empty
+ */
+```
+
+**Note**: The method call `isNotBlank()` remains unchanged - only the documentation terminology changes.

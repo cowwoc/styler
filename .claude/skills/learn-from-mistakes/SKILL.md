@@ -83,6 +83,47 @@ jq '.phase = "PREVENT"' /tmp/lfm_state_${SESSION_ID}.json > /tmp/tmp.json && mv 
 jq '.phase = "FIX"' /tmp/lfm_state_${SESSION_ID}.json > /tmp/tmp.json && mv /tmp/tmp.json /tmp/lfm_state_${SESSION_ID}.json
 ```
 
+### FIX Phase: Content Restoration Requirements
+
+**⚠️ CRITICAL: When restoring deleted content, ALWAYS retrieve original from git history first.**
+
+**DO NOT** write content from memory or understanding. **DO** copy the original exactly.
+
+**Mandatory Restoration Procedure**:
+
+```bash
+# Step 1: Find the commit that originally added the content
+git log --all --oneline --source | grep -i "<keyword>"
+
+# Step 2: Retrieve the EXACT original content
+git show <original-commit>:<file-path> | grep -A50 "<section-header>"
+
+# Step 3: Copy that content EXACTLY into the target file
+# DO NOT paraphrase, restructure, or "improve" the content
+
+# Step 4: Verify restoration matches original
+diff <(git show <original-commit>:<file-path> | grep -A50 "<section>") \
+     <(cat <current-file> | grep -A50 "<section>")
+# Empty diff = exact match ✅
+```
+
+**Common Mistake**:
+```
+❌ WRONG - Writing from memory/understanding:
+   "I need to add the 'empty' section to java-human.md"
+   → Writes paraphrased content with different structure
+
+✅ CORRECT - Retrieve original first:
+   git show e31ff13:docs/code-style/java-human.md | grep -A35 "Use \"empty\""
+   → Copy that exact content
+```
+
+**Why This Matters**: Paraphrased content may:
+- Have different structure (headers, bullet lists vs paragraphs)
+- Miss details (like `@param` tags in examples)
+- Use different terminology
+- Fail verification when compared to original
+
 **To complete workflow**:
 ```bash
 echo '{"phase":"COMPLETE"}' > /tmp/lfm_state_${SESSION_ID}.json

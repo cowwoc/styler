@@ -39,6 +39,32 @@ defines what Claude does when the command is invoked.
 - `docs/optional-modules/` (potentially user-facing)
 - `todo.md`, `docs/code-style/*-human.md`
 
+**⚠️ SPECIAL HANDLING: Style Documentation Files**
+
+When compressing `.claude/rules/*.md` or `docs/code-style/*-claude.md`:
+
+**NEVER remove style rule sections** (lines starting with `### `). These are intentionally-added
+detection patterns and rules. Compression can:
+- ✅ Condense explanatory text within sections
+- ✅ Shorten verbose rationale paragraphs
+- ✅ Combine redundant examples
+- ❌ **NEVER** delete entire `### Section Name` blocks
+- ❌ **NEVER** remove detection patterns or code examples
+
+**Verification Required**: After compression, count section headers:
+```bash
+ORIGINAL_SECTIONS=$(grep -c "^### " /tmp/original-{filename})
+COMPRESSED_SECTIONS=$(grep -c "^### " /tmp/compressed-{filename}-v${VERSION}.md)
+if [ "$COMPRESSED_SECTIONS" -lt "$ORIGINAL_SECTIONS" ]; then
+  echo "❌ ERROR: Section(s) removed! Original: $ORIGINAL_SECTIONS, Compressed: $COMPRESSED_SECTIONS"
+  echo "   Style rule sections must be preserved. Iterate to restore missing sections."
+fi
+```
+
+**Why This Protection Exists**: Session from 2025-12-19 had documentation update remove
+intentionally-added "Use 'empty' Not 'blank'" style rule section, causing repeated data loss
+during subsequent rebases.
+
 **If forbidden**, respond:
 ```
 This compression process only applies to Claude-facing documentation.
