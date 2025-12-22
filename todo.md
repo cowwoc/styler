@@ -175,6 +175,36 @@ B2-B5 have sequential dependencies.
   - **Integration**: CLI flag `--explain-rules` or API method
   - **Quality**: Clear, actionable guidance for proactive compliance
 
+### B3.6. Context-Aware Violation Output for AI Agents
+- [ ] **READY:** `implement-ai-context-limiting` - Limit violation output to preserve AI agent context window
+  - **Dependencies**: B3 ✅ COMPLETE (AI output infrastructure)
+  - **Blocks**: None (optimization for AI workflows)
+  - **Parallelizable With**: B3.5, any Phase C/D/E task
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Avoid wasting AI agent context by limiting detailed violations to actionable count
+  - **Problem**: AI agents have limited context windows; reporting 100+ violations wastes tokens on issues
+    the agent won't fix before re-running the check
+  - **Scope**: Smart output limiting when caller is an AI agent
+  - **Design Considerations** (not prescriptive - investigate optimal approach):
+    - Limit detailed violations to N (configurable, e.g., 10-20) that agent can realistically fix
+    - **Priority-based selection** (NOT chronological order):
+      - By severity (errors before warnings)
+      - By frequency (most common violation types first - higher impact per fix)
+      - By locality (cluster violations in same file - reduces context switching)
+    - Provide terse summary for remaining violations (type + count)
+  - **Example Output**:
+    ```
+    Top 15 violations by priority (47 total):
+    [... full violation details for highest-priority 15 ...]
+
+    Summary of remaining 32 violations:
+    - LINE_LENGTH: 18 violations across 12 files
+    - IMPORT_ORDER: 8 violations across 5 files
+    - INDENTATION: 6 violations across 4 files
+    ```
+  - **Detection**: CLI flag `--ai-mode` or `--max-violations=N`, or auto-detect from environment
+  - **Quality**: Benchmark context savings, validate AI agents fix more violations per iteration
+
 ### B4. Error Message Catalog ✅ COMPLETE
 - [x] **COMPLETE:** `create-error-message-catalog` - Comprehensive error messages for AI and human users (2025-12-05)
 
@@ -394,6 +424,60 @@ benchmarking, and validate with Maven plugin integration.
     - Use `Parser.getArena()` and `arena.getType(NodeIndex)` for node type verification
   - **Quality**: All parser tests validate both successful parsing AND correct AST structure
 
+### E5. Parser Bug: Generic Type Parameters
+- [ ] **READY:** `fix-generic-type-parsing` - Fix parser failure on generic type parameters
+  - **Dependencies**: E1 ✅ (parser error handling)
+  - **Blocks**: Self-hosting (styler cannot format its own codebase)
+  - **Parallelizable With**: E6, E7
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Enable parsing of generic type parameters like `Optional<?>`, `Supplier<Path>`, `Consumer<?>`
+  - **Current Error**: `Expected IDENTIFIER but found GT at position X`
+  - **Affected Files**: ConfigDiscovery.java, ExecutionTimeoutManager.java, Node.java, PathResolver.java,
+    FormatterDriver.java, and others
+  - **Root Cause**: Parser expects identifier after `<` but encounters `>` (for wildcards) or type name
+    followed by `>`
+  - **Scope**: Fix generic type parameter parsing in type references
+  - **Components**:
+    - Handle wildcard types (`?`, `? extends T`, `? super T`)
+    - Handle nested generics (`Map<String, List<Integer>>`)
+    - Handle diamond operator (`new ArrayList<>()`)
+  - **Verification**: Run `styler:check` on styler codebase - no GT-related errors
+  - **Quality**: Parser tests for all generic type variants
+
+### E6. Parser Bug: Class Literals
+- [ ] **READY:** `fix-class-literal-parsing` - Fix parser failure on `.class` literals
+  - **Dependencies**: E1 ✅ (parser error handling)
+  - **Blocks**: Self-hosting (styler cannot format its own codebase)
+  - **Parallelizable With**: E5, E7
+  - **Estimated Effort**: 0.5-1 day
+  - **Purpose**: Enable parsing of class literal expressions like `String.class`, `Integer.class`
+  - **Current Error**: `Expected identifier after '.' but found CLASS`
+  - **Affected Files**: SecurityConfigTest.java, RecursionDepthTrackerTest.java, PathSanitizerTest.java
+  - **Root Cause**: Parser's member access handling doesn't recognize `class` as a valid suffix after `.`
+  - **Scope**: Handle `.class` as a valid postfix expression
+  - **Components**:
+    - Recognize `class` keyword after `.` in postfix expressions
+    - Handle `Type.class`, `Type[].class`, `primitive.class` variants
+  - **Verification**: Run `styler:check` on styler codebase - no CLASS-related errors
+  - **Quality**: Parser tests for class literal expressions
+
+### E7. Parser Bug: Comments in Expressions
+- [ ] **READY:** `fix-comment-in-expression-parsing` - Fix parser failure when comments appear in expressions
+  - **Dependencies**: E1 ✅ (parser error handling)
+  - **Blocks**: Self-hosting (styler cannot format its own codebase)
+  - **Parallelizable With**: E5, E6
+  - **Estimated Effort**: 1 day
+  - **Purpose**: Enable parsing of code with line comments appearing within expressions
+  - **Current Error**: `Unexpected token in expression: LINE_COMMENT at position X`
+  - **Affected Files**: FileValidatorTest.java, ExecutionTimeoutManagerTest.java, MemoryMonitorTest.java
+  - **Root Cause**: Parser's expression parsing doesn't skip/handle comment tokens
+  - **Scope**: Handle comments appearing within expressions without breaking parsing
+  - **Components**:
+    - Skip LINE_COMMENT tokens during expression parsing
+    - Skip BLOCK_COMMENT tokens during expression parsing
+    - Preserve comment positions for formatter (comments are formatting-relevant)
+  - **Verification**: Run `styler:check` on styler codebase - no LINE_COMMENT-related errors
+  - **Quality**: Parser tests for expressions containing comments
 
 ---
 
