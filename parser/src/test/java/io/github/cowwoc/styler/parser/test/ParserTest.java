@@ -2,24 +2,49 @@ package io.github.cowwoc.styler.parser.test;
 
 import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
+import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
 import org.testng.annotations.Test;
 
+import java.util.Set;
+
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.ast.core.NodeType.ARRAY_ACCESS;
+import static io.github.cowwoc.styler.ast.core.NodeType.ASSIGNMENT_EXPRESSION;
+import static io.github.cowwoc.styler.ast.core.NodeType.BINARY_EXPRESSION;
+import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
+import static io.github.cowwoc.styler.ast.core.NodeType.BOOLEAN_LITERAL;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
+import static io.github.cowwoc.styler.ast.core.NodeType.CONDITIONAL_EXPRESSION;
+import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
+import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
+import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
+import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
+import static io.github.cowwoc.styler.ast.core.NodeType.STRING_LITERAL;
+import static io.github.cowwoc.styler.ast.core.NodeType.UNARY_EXPRESSION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseSucceeds;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
 
 /**
- * Thread-safe tests for Parser.
+ * Tests for parsing expressions, literals, and basic language constructs.
  */
 public class ParserTest
 {
 	/**
 	 * Tests that parser handles empty source input gracefully.
-	 * Validates that parsing empty string produces valid AST without errors,
-	 * which is an edge case for lexer and parser initialization.
+	 * Empty source produces a zero-width COMPILATION_UNIT at [0, 0).
 	 */
 	@Test
 	public void testEmptySource()
 	{
-		assertParseSucceeds("");
+		Set<SemanticNode> actual = parseSemanticAst("");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 0));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -40,7 +65,23 @@ public class ParserTest
 	@Test
 	public void testIntegerLiteralExpression()
 	{
-		assertParseSucceeds("class Test { void m() { int x = 42; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					int x = 42;
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 45),
+			semanticNode(CLASS_DECLARATION, 0, 44, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 42),
+			semanticNode(BLOCK, 24, 42),
+			semanticNode(INTEGER_LITERAL, 36, 38));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -51,7 +92,24 @@ public class ParserTest
 	@Test
 	public void testStringLiteralExpression()
 	{
-		assertParseSucceeds("class Test { void m() { String x = \"hello\"; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					String x = "hello";
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 53),
+			semanticNode(CLASS_DECLARATION, 0, 52, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 50),
+			semanticNode(BLOCK, 24, 50),
+			semanticNode(QUALIFIED_NAME, 28, 34),
+			semanticNode(STRING_LITERAL, 39, 46));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -62,7 +120,24 @@ public class ParserTest
 	@Test
 	public void testIdentifierExpression()
 	{
-		assertParseSucceeds("class Test { void m() { Object x = myVariable; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					Object x = myVariable;
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 56),
+			semanticNode(CLASS_DECLARATION, 0, 55, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 53),
+			semanticNode(BLOCK, 24, 53),
+			semanticNode(QUALIFIED_NAME, 28, 34),
+			semanticNode(IDENTIFIER, 39, 49));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -73,7 +148,25 @@ public class ParserTest
 	@Test
 	public void testBinaryAddition()
 	{
-		assertParseSucceeds("class Test { void m() { int x = 1 + 2; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					int x = 1 + 2;
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 48),
+			semanticNode(CLASS_DECLARATION, 0, 47, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 45),
+			semanticNode(BLOCK, 24, 45),
+			semanticNode(BINARY_EXPRESSION, 36, 41),
+			semanticNode(INTEGER_LITERAL, 36, 37),
+			semanticNode(INTEGER_LITERAL, 40, 41));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -84,7 +177,25 @@ public class ParserTest
 	@Test
 	public void testBinaryMultiplication()
 	{
-		assertParseSucceeds("class Test { void m() { int x = 3 * 4; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					int x = 3 * 4;
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 48),
+			semanticNode(CLASS_DECLARATION, 0, 47, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 45),
+			semanticNode(BLOCK, 24, 45),
+			semanticNode(BINARY_EXPRESSION, 36, 41),
+			semanticNode(INTEGER_LITERAL, 36, 37),
+			semanticNode(INTEGER_LITERAL, 40, 41));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -95,7 +206,27 @@ public class ParserTest
 	@Test
 	public void testOperatorPrecedence()
 	{
-		assertParseSucceeds("class Test { void m() { int x = 1 + 2 * 3; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					int x = 1 + 2 * 3;
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 52),
+			semanticNode(CLASS_DECLARATION, 0, 51, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 49),
+			semanticNode(BLOCK, 24, 49),
+			semanticNode(BINARY_EXPRESSION, 36, 45),
+			semanticNode(BINARY_EXPRESSION, 40, 45),
+			semanticNode(INTEGER_LITERAL, 36, 37),
+			semanticNode(INTEGER_LITERAL, 40, 41),
+			semanticNode(INTEGER_LITERAL, 44, 45));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -106,7 +237,27 @@ public class ParserTest
 	@Test
 	public void testParenthesizedExpression()
 	{
-		assertParseSucceeds("class Test { void m() { int x = (1 + 2) * 3; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					int x = (1 + 2) * 3;
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 54),
+			semanticNode(CLASS_DECLARATION, 0, 53, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 51),
+			semanticNode(BLOCK, 24, 51),
+			semanticNode(BINARY_EXPRESSION, 37, 47),
+			semanticNode(BINARY_EXPRESSION, 37, 42),
+			semanticNode(INTEGER_LITERAL, 37, 38),
+			semanticNode(INTEGER_LITERAL, 41, 42),
+			semanticNode(INTEGER_LITERAL, 46, 47));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -117,7 +268,24 @@ public class ParserTest
 	@Test
 	public void testUnaryMinus()
 	{
-		assertParseSucceeds("class Test { void m() { int x = -5; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					int x = -5;
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 45),
+			semanticNode(CLASS_DECLARATION, 0, 44, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 42),
+			semanticNode(BLOCK, 24, 42),
+			semanticNode(UNARY_EXPRESSION, 36, 38),
+			semanticNode(INTEGER_LITERAL, 37, 38));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -128,7 +296,24 @@ public class ParserTest
 	@Test
 	public void testUnaryNot()
 	{
-		assertParseSucceeds("class Test { void m() { boolean x = !true; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					boolean x = !true;
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 52),
+			semanticNode(CLASS_DECLARATION, 0, 51, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 49),
+			semanticNode(BLOCK, 24, 49),
+			semanticNode(UNARY_EXPRESSION, 40, 45),
+			semanticNode(BOOLEAN_LITERAL, 41, 45));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -139,7 +324,25 @@ public class ParserTest
 	@Test
 	public void testMethodCall()
 	{
-		assertParseSucceeds("class Test { void m() { foo(); } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					foo();
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 40),
+			semanticNode(CLASS_DECLARATION, 0, 39, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 37),
+			semanticNode(BLOCK, 24, 37),
+			semanticNode(METHOD_INVOCATION, 28, 33),
+			semanticNode(QUALIFIED_NAME, 28, 31),
+			semanticNode(IDENTIFIER, 28, 31));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -150,7 +353,28 @@ public class ParserTest
 	@Test
 	public void testMethodCallWithArguments()
 	{
-		assertParseSucceeds("class Test { void m() { foo(1, 2, 3); } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					foo(1, 2, 3);
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 47),
+			semanticNode(CLASS_DECLARATION, 0, 46, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 44),
+			semanticNode(BLOCK, 24, 44),
+			semanticNode(METHOD_INVOCATION, 28, 40),
+			semanticNode(QUALIFIED_NAME, 28, 31),
+			semanticNode(IDENTIFIER, 28, 31),
+			semanticNode(INTEGER_LITERAL, 32, 33),
+			semanticNode(INTEGER_LITERAL, 35, 36),
+			semanticNode(INTEGER_LITERAL, 38, 39));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -161,7 +385,25 @@ public class ParserTest
 	@Test
 	public void testFieldAccess()
 	{
-		assertParseSucceeds("class Test { void m() { Object x = obj.field; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					Object x = obj.field;
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 55),
+			semanticNode(CLASS_DECLARATION, 0, 54, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 52),
+			semanticNode(BLOCK, 24, 52),
+			semanticNode(QUALIFIED_NAME, 28, 34),
+			semanticNode(FIELD_ACCESS, 39, 48),
+			semanticNode(IDENTIFIER, 39, 42));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -172,7 +414,26 @@ public class ParserTest
 	@Test
 	public void testArrayAccess()
 	{
-		assertParseSucceeds("class Test { void m() { Object x = array[0]; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					Object x = array[0];
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 54),
+			semanticNode(CLASS_DECLARATION, 0, 53, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 51),
+			semanticNode(BLOCK, 24, 51),
+			semanticNode(QUALIFIED_NAME, 28, 34),
+			semanticNode(ARRAY_ACCESS, 39, 47),
+			semanticNode(IDENTIFIER, 39, 44),
+			semanticNode(INTEGER_LITERAL, 45, 46));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -183,7 +444,26 @@ public class ParserTest
 	@Test
 	public void testAssignment()
 	{
-		assertParseSucceeds("class Test { void m() { x = 5; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					x = 5;
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 40),
+			semanticNode(CLASS_DECLARATION, 0, 39, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 37),
+			semanticNode(BLOCK, 24, 37),
+			semanticNode(ASSIGNMENT_EXPRESSION, 28, 33),
+			semanticNode(QUALIFIED_NAME, 28, 29),
+			semanticNode(IDENTIFIER, 28, 29),
+			semanticNode(INTEGER_LITERAL, 32, 33));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -194,7 +474,26 @@ public class ParserTest
 	@Test
 	public void testCompoundAssignment()
 	{
-		assertParseSucceeds("class Test { void m() { x += 5; } }");
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					x += 5;
+				}
+			}
+			""");
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 41),
+			semanticNode(CLASS_DECLARATION, 0, 40, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 38),
+			semanticNode(BLOCK, 24, 38),
+			semanticNode(ASSIGNMENT_EXPRESSION, 28, 34),
+			semanticNode(QUALIFIED_NAME, 28, 29),
+			semanticNode(IDENTIFIER, 28, 29),
+			semanticNode(INTEGER_LITERAL, 33, 34));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -205,20 +504,28 @@ public class ParserTest
 	@Test
 	public void testTernaryOperator()
 	{
-		assertParseSucceeds("class Test { void m() { Object result = x ? y : z; } }");
-	}
+		Set<SemanticNode> actual = parseSemanticAst("""
+			class Test
+			{
+				void m()
+				{
+					Object result = x ? y : z;
+				}
+			}
+			""");
 
-	// Note: Lambda expression parsing is incomplete - test disabled pending full implementation
-	// @Test
-	// public void testLambdaExpression()
-	// {
-	// 	String source = "class Test { void m() { process(x -> x + 1); } }";
-	// 	try (Parser parser = new Parser(source))
-	// 	{
-	// 		NodeIndex root = parser.parse();
-	// 		requireThat(root.isValid(), "root.isValid()").isTrue();
-	// 	}
-	// }
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 60),
+			semanticNode(CLASS_DECLARATION, 0, 59, "Test"),
+			semanticNode(METHOD_DECLARATION, 14, 57),
+			semanticNode(BLOCK, 24, 57),
+			semanticNode(QUALIFIED_NAME, 28, 34),
+			semanticNode(CONDITIONAL_EXPRESSION, 44, 53),
+			semanticNode(IDENTIFIER, 44, 45),
+			semanticNode(IDENTIFIER, 48, 49),
+			semanticNode(IDENTIFIER, 52, 53));
+		requireThat(actual, "actual").isEqualTo(expected);
+	}
 
 	/**
 	 * Tests maximum allowed nesting depth boundary.
@@ -229,17 +536,26 @@ public class ParserTest
 	@Test
 	public void testMaxDepthBoundary()
 	{
-		// Validate that maximum allowed depth (199 nesting levels = depth 200) succeeds
-		// This ensures the security constraint allows valid deeply nested expressions
-		// Note: 199 parentheses creates depth=200 because the inner literal requires one more depth
-		StringBuilder source = new StringBuilder("class Test { void m() { int x = ");
+		StringBuilder source = new StringBuilder("""
+			class Test
+			{
+				void m()
+				{
+					int x =""");
+		source.append(' ');
 		for (int i = 0; i < 199; ++i)
 			source.append('(');
 		source.append('1');
 		for (int i = 0; i < 199; ++i)
 			source.append(')');
-		source.append("; } }");
+		source.append("""
+			;
+				}
+			}
+			""");
 
+		// Verify parsing succeeds without checking exact positions
+		// due to dynamically generated deeply nested structure
 		assertParseSucceeds(source.toString());
 	}
 
@@ -252,7 +568,6 @@ public class ParserTest
 	@Test
 	public void testMaxDepthExceeded()
 	{
-		// Create deeply nested parenthesized expression
 		StringBuilder source = new StringBuilder();
 		for (int i = 0; i < 201; ++i)
 			source.append('(');
