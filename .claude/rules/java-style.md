@@ -50,6 +50,24 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 - Don't chain redundant validators (`isNotEmpty()` implies `isNotNull()`)
 - Trust natural NPE from method calls (don't check null before calling methods that would throw NPE anyway)
 - Add JavaDoc comments to test classes/methods instead of `@SuppressWarnings("PMD.CommentRequired")`
+- Test class JavaDoc should describe the **category of tests** (what functionality is being tested), not
+  boilerplate about thread safety or validation patterns:
+  ```java
+  // ❌ WRONG - Boilerplate about thread safety and validation style
+  /**
+   * Thread-safe tests for Parser class declarations.
+   * <p>
+   * Each test validates both successful parsing AND correct AST structure using the two-step
+   * parse-then-compare pattern.
+   */
+  public class ClassParserTest { }
+
+  // ✅ CORRECT - Describes what category of tests the class contains
+  /**
+   * Tests for parsing class, interface, and enum declarations.
+   */
+  public class ClassParserTest { }
+  ```
 - No meaningless assertions - `assertTrue(true, ...)` always passes and tests nothing:
   ```java
   // ❌ WRONG - Useless assertion that always passes
