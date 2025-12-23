@@ -1,12 +1,29 @@
 package io.github.cowwoc.styler.parser.test;
 
+import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
 import org.testng.annotations.Test;
 
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseSucceeds;
+import java.util.Set;
+
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.ast.core.NodeType.BINARY_EXPRESSION;
+import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
+import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
+import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
+import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
+import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
+import static io.github.cowwoc.styler.ast.core.NodeType.RECORD_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
 
 /**
- * Thread-safe tests for modern Java features (JDK 16-25).
- * Tests records, sealed classes, pattern matching, and other modern constructs.
+ * Tests for parsing modern Java features (JDK 16+): records, sealed classes, and pattern matching.
  */
 public class ModernJavaFeaturesTest
 {
@@ -17,8 +34,17 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testSimpleRecord()
 	{
-		assertParseSucceeds("record Point(int x, int y) { }");
+		String source = """
+			record Point(int x, int y) { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 31),
+			semanticNode(RECORD_DECLARATION, 0, 30, "Point"));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
+
 
 	/**
 	 * Tests record declarations with generic type parameters.
@@ -28,7 +54,16 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testRecordWithGenericTypes()
 	{
-		assertParseSucceeds("record Box<T>(T value) { }");
+		String source = """
+			record Box<T>(T value) { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 27),
+			semanticNode(RECORD_DECLARATION, 0, 26, "Box"),
+			semanticNode(QUALIFIED_NAME, 14, 15));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -39,7 +74,17 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testRecordWithImplements()
 	{
-		assertParseSucceeds("record Point(int x, int y) implements Comparable<Point> { }");
+		String source = """
+			record Point(int x, int y) implements Comparable<Point> { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 60),
+			semanticNode(RECORD_DECLARATION, 0, 59, "Point"),
+			semanticNode(QUALIFIED_NAME, 38, 48),
+			semanticNode(QUALIFIED_NAME, 49, 54));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -50,13 +95,34 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testRecordWithMethods()
 	{
-		assertParseSucceeds("""
-			record Point(int x, int y) {
-				public double distance() {
+		String source = """
+			record Point(int x, int y)
+			{
+				public double distance()
+				{
 					return Math.sqrt(x * x + y * y);
 				}
 			}
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 98),
+			semanticNode(RECORD_DECLARATION, 0, 97, "Point"),
+			semanticNode(METHOD_DECLARATION, 30, 95),
+			semanticNode(RETURN_STATEMENT, 60, 92),
+			semanticNode(METHOD_INVOCATION, 67, 91),
+			semanticNode(FIELD_ACCESS, 67, 76),
+			semanticNode(IDENTIFIER, 67, 71),
+			semanticNode(IDENTIFIER, 77, 78),
+			semanticNode(IDENTIFIER, 81, 82),
+			semanticNode(IDENTIFIER, 85, 86),
+			semanticNode(IDENTIFIER, 89, 90),
+			semanticNode(BLOCK, 56, 95),
+			semanticNode(BINARY_EXPRESSION, 77, 82),
+			semanticNode(BINARY_EXPRESSION, 85, 90),
+			semanticNode(BINARY_EXPRESSION, 77, 90));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -67,7 +133,17 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testSealedClass()
 	{
-		assertParseSucceeds("sealed class Shape permits Circle, Rectangle { }");
+		String source = """
+			sealed class Shape permits Circle, Rectangle { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 49),
+			semanticNode(CLASS_DECLARATION, 7, 48, "Shape"),
+			semanticNode(QUALIFIED_NAME, 27, 33),
+			semanticNode(QUALIFIED_NAME, 35, 44));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -78,7 +154,17 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testSealedInterface()
 	{
-		assertParseSucceeds("sealed interface Shape permits Circle, Rectangle { }");
+		String source = """
+			sealed interface Shape permits Circle, Rectangle { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 53),
+			semanticNode(INTERFACE_DECLARATION, 7, 52, "Shape"),
+			semanticNode(QUALIFIED_NAME, 31, 37),
+			semanticNode(QUALIFIED_NAME, 39, 48));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -89,7 +175,16 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testNonSealedClass()
 	{
-		assertParseSucceeds("non-sealed class Square extends Shape { }");
+		String source = """
+			non-sealed class Square extends Shape { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 42),
+			semanticNode(CLASS_DECLARATION, 11, 41, "Square"),
+			semanticNode(QUALIFIED_NAME, 32, 37));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -100,13 +195,24 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testVarKeyword()
 	{
-		assertParseSucceeds("""
-			public class Test {
-				public void method() {
+		String source = """
+			public class Test
+			{
+				public void method()
+				{
 					var x = 10;
 				}
 			}
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 64),
+			semanticNode(CLASS_DECLARATION, 7, 63, "Test"),
+			semanticNode(METHOD_DECLARATION, 21, 61),
+			semanticNode(BLOCK, 43, 61),
+			semanticNode(INTEGER_LITERAL, 55, 57));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -117,7 +223,19 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testMultipleSealedPermits()
 	{
-		assertParseSucceeds("sealed class Shape permits Circle, Rectangle, Triangle, Square { }");
+		String source = """
+			sealed class Shape permits Circle, Rectangle, Triangle, Square { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 67),
+			semanticNode(CLASS_DECLARATION, 7, 66, "Shape"),
+			semanticNode(QUALIFIED_NAME, 27, 33),
+			semanticNode(QUALIFIED_NAME, 35, 44),
+			semanticNode(QUALIFIED_NAME, 46, 54),
+			semanticNode(QUALIFIED_NAME, 56, 62));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -128,7 +246,18 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testRecordWithMultipleComponents()
 	{
-		assertParseSucceeds("record Person(String name, int age, String email, String phone) { }");
+		String source = """
+			record Person(String name, int age, String email, String phone) { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 68),
+			semanticNode(RECORD_DECLARATION, 0, 67, "Person"),
+			semanticNode(QUALIFIED_NAME, 14, 20),
+			semanticNode(QUALIFIED_NAME, 36, 42),
+			semanticNode(QUALIFIED_NAME, 50, 56));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -139,11 +268,19 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testNestedRecord()
 	{
-		assertParseSucceeds("""
-			public class Container {
+		String source = """
+			public class Container
+			{
 				record Inner(int value) { }
 			}
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 56),
+			semanticNode(CLASS_DECLARATION, 7, 55, "Container"),
+			semanticNode(RECORD_DECLARATION, 26, 53, "Inner"));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -154,7 +291,15 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testPublicRecord()
 	{
-		assertParseSucceeds("public record Point(int x, int y) { }");
+		String source = """
+			public record Point(int x, int y) { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 38),
+			semanticNode(RECORD_DECLARATION, 7, 37, "Point"));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -165,7 +310,18 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testSealedClassWithExtends()
 	{
-		assertParseSucceeds("sealed class Circle extends Shape permits FilledCircle, HollowCircle { }");
+		String source = """
+			sealed class Circle extends Shape permits FilledCircle, HollowCircle { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 73),
+			semanticNode(CLASS_DECLARATION, 7, 72, "Circle"),
+			semanticNode(QUALIFIED_NAME, 28, 33),
+			semanticNode(QUALIFIED_NAME, 42, 54),
+			semanticNode(QUALIFIED_NAME, 56, 68));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -176,6 +332,14 @@ public class ModernJavaFeaturesTest
 	@Test
 	public void testRecordWithEmptyBody()
 	{
-		assertParseSucceeds("record Empty() { }");
+		String source = """
+			record Empty() { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 19),
+			semanticNode(RECORD_DECLARATION, 0, 18, "Empty"));
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

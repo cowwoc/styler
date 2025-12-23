@@ -1,5 +1,40 @@
 # Changelog
 
+## 2025-12-24
+
+### Parser Test AST Validation ✅
+
+**Completion Date**: 2025-12-24
+
+**Task**: `add-parser-ast-validation`
+
+**Problem Solved**:
+- Parser tests only verified parsing succeeded without exceptions
+- No validation that correct AST node types were created
+- Could miss parser bugs where wrong node types are generated
+
+**Solution Implemented**:
+- Created `SemanticNode` record for AST node representation (type, start, end, attributeValue)
+- Created `parseSemanticAst()` to extract all nodes from parsed source
+- Created `semanticNode()` factory methods for building expected AST
+- Added `assertParseSucceeds()` and `assertParseFails()` utilities
+- Tests now validate complete AST structure using Set equality
+
+**Key Components**:
+- **ParserTestUtils**: Test utilities for AST validation
+- **SemanticNode**: Value-based record with type, positions, and optional attribute value
+- **parseSemanticAst()**: Parses source and returns Set of all SemanticNodes
+- **extractAttributeValue()**: Extracts qualified names for imports, type names for declarations
+
+**Files Created**:
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/ParserTestUtils.java`
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/ParserTestUtilsTest.java`
+
+**Quality**:
+- 12 tests validating ParserTestUtils functionality
+- Full set comparison ensures complete AST validation
+- Position-based distinction for nodes with same type
+
 ## 2025-12-22
 
 ### C4: Maven Plugin ✅
