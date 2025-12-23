@@ -400,23 +400,6 @@ benchmarking, and validate with Maven plugin integration.
   - **Implementation**: Added DOUBLE_COLON handling in parsePostfix() for static, instance, and constructor refs
   - **Quality**: 24 parser tests for all method reference variants
 
-### Parser Test AST Validation
-- [ ] **READY:** `add-parser-ast-validation` - Update all parser tests to validate AST node types
-  - **Dependencies**: `add-parser-error-record` ✅
-  - **Blocks**: None (quality improvement)
-  - **Parallelizable With**: Any task
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Ensure parser tests verify correct AST structure, not just successful parsing
-  - **Current State**: Tests use `assertParseSucceeds()` which only checks parsing doesn't throw exceptions
-  - **Problem**: Tests don't verify that correct NodeType values are created in the AST
-  - **Scope**: Enhance ParserTestUtils and all parser tests to validate AST node types
-  - **Components**:
-    - Add `assertContainsNodeType(NodeType expected, String source)` utility method
-    - Add `assertNodeTypeAt(NodeType expected, int position, String source)` for position-specific checks
-    - Update existing parser tests to verify expected node types are present in AST
-    - Use `Parser.getArena()` and `arena.getType(NodeIndex)` for node type verification
-  - **Quality**: All parser tests validate both successful parsing AND correct AST structure
-
 ### Parser Bug: Generic Type Parameters
 - [x] **DONE:** `fix-generic-type-parsing` - Fix parser failure on generic type parameters (2025-12-22)
   - **Dependencies**: `add-parser-error-record` ✅
@@ -471,6 +454,51 @@ benchmarking, and validate with Maven plugin integration.
     - Preserve comment positions for formatter (comments are formatting-relevant)
   - **Verification**: Run `styler:check` on styler codebase - no LINE_COMMENT-related errors
   - **Quality**: Parser tests for expressions containing comments
+
+### Parser Enhancement: Missing Node Types
+- [ ] **READY:** `add-parameterized-type-nodes` - Create AST nodes for parameterized types
+  - **Dependencies**: `add-parser-error-record` ✅, `fix-generic-type-parsing` ✅
+  - **Blocks**: None (enhancement for better AST fidelity)
+  - **Parallelizable With**: `add-wildcard-type-nodes`, `add-parameter-declaration-nodes`
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Create PARAMETERIZED_TYPE nodes for generic type usage (`List<String>`, `Map<K,V>`)
+  - **Current State**: Parser recognizes parameterized types but only creates QUALIFIED_NAME nodes for
+    the base type, without capturing the type arguments
+  - **Scope**: Create PARAMETERIZED_TYPE nodes with proper child structure
+  - **Components**:
+    - PARAMETERIZED_TYPE node for the overall type (`List<String>`)
+    - Child QUALIFIED_NAME for base type (`List`)
+    - Child nodes for type arguments (`String`)
+  - **Quality**: Parser tests validating PARAMETERIZED_TYPE node creation and structure
+
+- [ ] **READY:** `add-wildcard-type-nodes` - Create AST nodes for wildcard types
+  - **Dependencies**: `add-parser-error-record` ✅, `fix-generic-type-parsing` ✅
+  - **Blocks**: None (enhancement for better AST fidelity)
+  - **Parallelizable With**: `add-parameterized-type-nodes`, `add-parameter-declaration-nodes`
+  - **Estimated Effort**: 1 day
+  - **Purpose**: Create WILDCARD_TYPE nodes for bounded/unbounded wildcards (`?`, `? extends T`, `? super T`)
+  - **Current State**: Parser recognizes wildcards but doesn't create explicit WILDCARD_TYPE nodes
+  - **Scope**: Create WILDCARD_TYPE nodes with bound information
+  - **Components**:
+    - WILDCARD_TYPE node for unbounded wildcards (`?`)
+    - WILDCARD_TYPE with upper bound for `? extends T`
+    - WILDCARD_TYPE with lower bound for `? super T`
+  - **Quality**: Parser tests validating WILDCARD_TYPE node creation for all wildcard variants
+
+- [ ] **READY:** `add-parameter-declaration-nodes` - Create AST nodes for method/constructor parameters
+  - **Dependencies**: `add-parser-error-record` ✅
+  - **Blocks**: None (enhancement for better AST fidelity)
+  - **Parallelizable With**: `add-parameterized-type-nodes`, `add-wildcard-type-nodes`
+  - **Estimated Effort**: 1 day
+  - **Purpose**: Create PARAMETER_DECLARATION nodes for method and constructor parameters
+  - **Current State**: Parser parses parameters correctly but only creates QUALIFIED_NAME nodes for types
+  - **Scope**: Create PARAMETER_DECLARATION nodes for each parameter with type and name
+  - **Components**:
+    - PARAMETER_DECLARATION node with attribute for parameter name
+    - Child node for parameter type
+    - Support for varargs parameters (`String... args`)
+    - Support for final parameters (`final String name`)
+  - **Quality**: Parser tests validating PARAMETER_DECLARATION node creation
 
 ---
 

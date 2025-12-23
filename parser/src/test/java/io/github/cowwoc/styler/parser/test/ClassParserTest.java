@@ -1,11 +1,29 @@
 package io.github.cowwoc.styler.parser.test;
 
+import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
 import org.testng.annotations.Test;
 
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseSucceeds;
+import java.util.Set;
+
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
+import static io.github.cowwoc.styler.ast.core.NodeType.CONSTRUCTOR_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_CONSTANT;
+import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.IMPORT_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PACKAGE_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
+import static io.github.cowwoc.styler.ast.core.NodeType.STATIC_IMPORT_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
 
 /**
- * Thread-safe tests for Parser class declarations.
+ * Tests for parsing class, interface, and enum declarations.
  */
 public class ClassParserTest
 {
@@ -16,7 +34,16 @@ public class ClassParserTest
 	@Test
 	public void testSimpleClassDeclaration()
 	{
-		assertParseSucceeds("public class HelloWorld { }");
+		String source = """
+			public class HelloWorld { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 28),
+			semanticNode(CLASS_DECLARATION, 7, 27, "HelloWorld"));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -27,12 +54,23 @@ public class ClassParserTest
 	@Test
 	public void testClassWithMethod()
 	{
-		assertParseSucceeds("""
-			public class Test {
-				public void foo() {
+		String source = """
+			public class Test
+			{
+				public void foo()
+				{
 				}
 			}
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 47),
+			semanticNode(CLASS_DECLARATION, 7, 46, "Test"),
+			semanticNode(METHOD_DECLARATION, 21, 44),
+			semanticNode(BLOCK, 40, 44));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -43,11 +81,20 @@ public class ClassParserTest
 	@Test
 	public void testClassWithField()
 	{
-		assertParseSucceeds("""
-			public class Test {
+		String source = """
+			public class Test
+			{
 				private int x;
 			}
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 38),
+			semanticNode(CLASS_DECLARATION, 7, 37, "Test"),
+			semanticNode(FIELD_DECLARATION, 21, 35));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -58,12 +105,23 @@ public class ClassParserTest
 	@Test
 	public void testClassWithConstructor()
 	{
-		assertParseSucceeds("""
-			public class Test {
-				public Test() {
+		String source = """
+			public class Test
+			{
+				public Test()
+				{
 				}
 			}
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 43),
+			semanticNode(CLASS_DECLARATION, 7, 42, "Test"),
+			semanticNode(CONSTRUCTOR_DECLARATION, 21, 40),
+			semanticNode(BLOCK, 36, 40));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -74,7 +132,17 @@ public class ClassParserTest
 	@Test
 	public void testClassWithExtends()
 	{
-		assertParseSucceeds("public class Child extends Parent { }");
+		String source = """
+			public class Child extends Parent { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 38),
+			semanticNode(CLASS_DECLARATION, 7, 37, "Child"),
+			semanticNode(QUALIFIED_NAME, 27, 33));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -85,7 +153,17 @@ public class ClassParserTest
 	@Test
 	public void testClassWithImplements()
 	{
-		assertParseSucceeds("public class Test implements Runnable { }");
+		String source = """
+			public class Test implements Runnable { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 42),
+			semanticNode(CLASS_DECLARATION, 7, 41, "Test"),
+			semanticNode(QUALIFIED_NAME, 29, 37));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -96,7 +174,16 @@ public class ClassParserTest
 	@Test
 	public void testClassWithGenerics()
 	{
-		assertParseSucceeds("public class Box<T> { }");
+		String source = """
+			public class Box<T> { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 24),
+			semanticNode(CLASS_DECLARATION, 7, 23, "Box"));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -107,7 +194,16 @@ public class ClassParserTest
 	@Test
 	public void testInterface()
 	{
-		assertParseSucceeds("public interface Test { }");
+		String source = """
+			public interface Test { }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 26),
+			semanticNode(INTERFACE_DECLARATION, 7, 25, "Test"));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -118,7 +214,19 @@ public class ClassParserTest
 	@Test
 	public void testEnum()
 	{
-		assertParseSucceeds("public enum Color { RED, GREEN, BLUE }");
+		String source = """
+			public enum Color { RED, GREEN, BLUE }
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 39),
+			semanticNode(ENUM_DECLARATION, 7, 38, "Color"),
+			semanticNode(ENUM_CONSTANT, 20, 23),
+			semanticNode(ENUM_CONSTANT, 25, 30),
+			semanticNode(ENUM_CONSTANT, 32, 36));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -129,10 +237,20 @@ public class ClassParserTest
 	@Test
 	public void testPackageDeclaration()
 	{
-		assertParseSucceeds("""
+		String source = """
 			package com.example;
+
 			public class Test { }
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 44),
+			semanticNode(PACKAGE_DECLARATION, 0, 20, "com.example"),
+			semanticNode(CLASS_DECLARATION, 29, 43, "Test"),
+			semanticNode(QUALIFIED_NAME, 8, 19));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -143,10 +261,19 @@ public class ClassParserTest
 	@Test
 	public void testImportDeclaration()
 	{
-		assertParseSucceeds("""
+		String source = """
 			import java.util.List;
+
 			public class Test { }
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 46),
+			semanticNode(IMPORT_DECLARATION, 0, 22, "java.util.List"),
+			semanticNode(CLASS_DECLARATION, 31, 45, "Test"));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -157,10 +284,19 @@ public class ClassParserTest
 	@Test
 	public void testStaticImport()
 	{
-		assertParseSucceeds("""
+		String source = """
 			import static java.lang.Math.PI;
+
 			public class Test { }
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 56),
+			semanticNode(STATIC_IMPORT_DECLARATION, 0, 32, "java.lang.Math.PI"),
+			semanticNode(CLASS_DECLARATION, 41, 55, "Test"));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -171,10 +307,19 @@ public class ClassParserTest
 	@Test
 	public void testWildcardImport()
 	{
-		assertParseSucceeds("""
+		String source = """
 			import java.util.*;
+
 			public class Test { }
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 43),
+			semanticNode(IMPORT_DECLARATION, 0, 19, "java.util.*"),
+			semanticNode(CLASS_DECLARATION, 28, 42, "Test"));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -185,12 +330,24 @@ public class ClassParserTest
 	@Test
 	public void testMethodWithParameters()
 	{
-		assertParseSucceeds("""
-			public class Test {
-				public void foo(int x, String y) {
+		String source = """
+			public class Test
+			{
+				public void foo(int x, String y)
+				{
 				}
 			}
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 62),
+			semanticNode(CLASS_DECLARATION, 7, 61, "Test"),
+			semanticNode(METHOD_DECLARATION, 21, 59),
+			semanticNode(BLOCK, 55, 59),
+			semanticNode(QUALIFIED_NAME, 44, 50));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -201,12 +358,24 @@ public class ClassParserTest
 	@Test
 	public void testMethodWithVarargs()
 	{
-		assertParseSucceeds("""
-			public class Test {
-				public void foo(String... args) {
+		String source = """
+			public class Test
+			{
+				public void foo(String... args)
+				{
 				}
 			}
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 61),
+			semanticNode(CLASS_DECLARATION, 7, 60, "Test"),
+			semanticNode(METHOD_DECLARATION, 21, 58),
+			semanticNode(BLOCK, 54, 58),
+			semanticNode(QUALIFIED_NAME, 37, 43));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -217,11 +386,23 @@ public class ClassParserTest
 	@Test
 	public void testMethodWithThrows()
 	{
-		assertParseSucceeds("""
-			public class Test {
-				public void foo() throws Exception {
+		String source = """
+			public class Test
+			{
+				public void foo() throws Exception
+				{
 				}
 			}
-			""");
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 64),
+			semanticNode(CLASS_DECLARATION, 7, 63, "Test"),
+			semanticNode(METHOD_DECLARATION, 21, 61),
+			semanticNode(BLOCK, 57, 61),
+			semanticNode(QUALIFIED_NAME, 46, 55));
+
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }
