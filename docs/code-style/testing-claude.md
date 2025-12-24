@@ -6,6 +6,64 @@ This document contains testing patterns and detection rules optimized for Claude
 
 ---
 
+## 🔍 PARSER TEST PATTERNS {#parser-test-patterns}
+
+### Unit Tests vs Integration Tests
+
+Parser tests have two distinct utilities with DIFFERENT purposes:
+
+| Utility | Purpose | Use Case |
+|---------|---------|----------|
+| `parseSemanticAst()` | Parse + return AST nodes | Unit tests that validate node types |
+| `assertParseSucceeds()` | Parse only, verify no crash | Integration/smoke tests on real files |
+
+### When to Use Each
+
+**`parseSemanticAst()` + AST comparison** (REQUIRED for ALL feature tests):
+- Testing a new parser feature (e.g., class literals, generics)
+- Verifying specific node types are created
+- Testing node positions/attributes
+- **Any test validating parser correctness**
+
+**`assertParseSucceeds()` - Limited Value** (consider avoiding):
+- ONLY legitimate use: Smoke tests on real project files where maintaining expected AST is impractical
+- **Does NOT validate semantic correctness** - only that parser doesn't crash
+- **Prefer `parseSemanticAst()` for all new tests** - it validates both success AND correctness
+
+### 🚨 CRITICAL: Unit Test Requirements
+
+**Parser unit tests MUST validate AST structure**, not just parsing success:
+
+```java
+// ❌ WRONG - Only verifies parsing doesn't crash
+@Test
+public void classLiteralInExpression()
+{
+    String source = "String s = String.class.getName();";
+    assertParseSucceeds(source);  // Tests NOTHING about CLASS_LITERAL node!
+}
+
+// ✅ CORRECT - Validates correct AST nodes are created
+@Test
+public void classLiteralInExpression()
+{
+    String source = "String s = String.class.getName();";
+    Set<SemanticNode> actual = parseSemanticAst(source);
+    Set<SemanticNode> expected = Set.of(
+        // ... expected nodes including CLASS_LITERAL
+    );
+    requireThat(actual, "actual").isEqualTo(expected);
+}
+```
+
+### Detection Patterns
+
+- ✅ `parseSemanticAst\(.*\).*isEqualTo\(expected\)` - Correct AST validation
+- ❌ `assertParseSucceeds\(` in `*ParserTest.java` - Wrong utility for unit tests
+- ✅ `assertParseSucceeds\(` in `IntegrationTest.java` - Correct for integration tests
+
+---
+
 ## 🔍 DETECTION PATTERNS
 
 ### JPMS-Compliant Test Structure
