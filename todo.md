@@ -420,22 +420,8 @@ benchmarking, and validate with Maven plugin integration.
   - **Verification**: Run `styler:check` on styler codebase - no GT-related errors
   - **Quality**: Parser tests for all generic type variants
 
-### Parser Bug: Class Literals
-- [ ] **READY:** `fix-class-literal-parsing` - Fix parser failure on `.class` literals
-  - **Dependencies**: `add-parser-error-record` ✅
-  - **Blocks**: Self-hosting (styler cannot format its own codebase)
-  - **Parallelizable With**: `fix-generic-type-parsing`, `fix-comment-in-expression-parsing`
-  - **Estimated Effort**: 0.5-1 day
-  - **Purpose**: Enable parsing of class literal expressions like `String.class`, `Integer.class`
-  - **Current Error**: `Expected identifier after '.' but found CLASS`
-  - **Affected Files**: SecurityConfigTest.java, RecursionDepthTrackerTest.java, PathSanitizerTest.java
-  - **Root Cause**: Parser's member access handling doesn't recognize `class` as a valid suffix after `.`
-  - **Scope**: Handle `.class` as a valid postfix expression
-  - **Components**:
-    - Recognize `class` keyword after `.` in postfix expressions
-    - Handle `Type.class`, `Type[].class`, `primitive.class` variants
-  - **Verification**: Run `styler:check` on styler codebase - no CLASS-related errors
-  - **Quality**: Parser tests for class literal expressions
+### Parser Bug: Class Literals ✅ COMPLETE (2025-12-24)
+- [x] **DONE:** `fix-class-literal-parsing` - Fix parser failure on `.class` literals (2025-12-24)
 
 ### Parser Bug: Comments in Expressions
 - [ ] **READY:** `fix-comment-in-expression-parsing` - Fix parser failure when comments appear in expressions

@@ -45,6 +45,7 @@ public enum NodeType
 	THIS_EXPRESSION,
 	SUPER_EXPRESSION,
 	ARRAY_INITIALIZER,
+	CLASS_LITERAL,
 
 	// Statements
 	BLOCK,

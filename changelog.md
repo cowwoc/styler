@@ -2,6 +2,43 @@
 
 ## 2025-12-24
 
+### E7: Class Literal Parsing ✅
+
+**Completion Date**: 2025-12-24
+
+**Task**: `fix-class-literal-parsing`
+
+**Problem Solved**:
+- Parser failed on class literal expressions like `String.class`, `int.class`, `String[].class`
+- Error: "Expected identifier after '.' but found CLASS"
+- Blocked self-hosting (styler cannot format its own codebase)
+
+**Solution Implemented**:
+- Added `CLASS_LITERAL` node type to NodeType enum
+- Modified `Parser.parsePostfix()` to handle CLASS token after DOT
+- Added `parseArrayAccessOrClassLiteral()` helper for `Type[].class` patterns
+- Added primitive type class literal handling in `parsePrimary()` for `int.class`, `void.class`
+- Updated `ContextDetector.classifyNode()` to include CLASS_LITERAL in switch expression
+
+**Files Modified**:
+- `ast/core/src/main/java/io/github/cowwoc/styler/ast/core/NodeType.java` (+1 line)
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java` (+85 lines)
+- `formatter/src/main/java/io/github/cowwoc/styler/formatter/linelength/internal/ContextDetector.java` (+1 line)
+
+**Files Created**:
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/ClassLiteralParserTest.java` (15 tests)
+
+**Quality**:
+- All 15 new class literal tests passing
+- Full test suite (218 tests) passing
+- Zero Checkstyle/PMD violations
+- CLASS-related parsing errors eliminated
+
+**Unblocks**:
+- Self-hosting progress (remaining issues are LINE_COMMENT parsing - separate task)
+
+---
+
 ### Parser Test AST Validation ✅
 
 **Completion Date**: 2025-12-24

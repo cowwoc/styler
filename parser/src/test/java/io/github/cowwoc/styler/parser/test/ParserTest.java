@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.parser.test;
 
+import io.github.cowwoc.styler.ast.core.SecurityConfig;
 import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
 import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
@@ -24,7 +25,6 @@ import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
 import static io.github.cowwoc.styler.ast.core.NodeType.STRING_LITERAL;
 import static io.github.cowwoc.styler.ast.core.NodeType.UNARY_EXPRESSION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseSucceeds;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
 
@@ -529,13 +529,13 @@ public class ParserTest
 
 	/**
 	 * Tests maximum allowed nesting depth boundary.
-	 * Validates that parser accepts valid deeply nested expressions up to depth 200,
+	 * Validates that parser accepts valid deeply nested expressions up to {@link SecurityConfig#MAX_PARSE_DEPTH},
 	 * ensuring security constraints don't reject legitimate code.
-	 * This test creates 199 nested parentheses (depth 200 with inner literal).
 	 */
 	@Test
 	public void testMaxDepthBoundary()
 	{
+		int nestedParentheses = SecurityConfig.MAX_PARSE_DEPTH - 1;
 		StringBuilder source = new StringBuilder("""
 			class Test
 			{
@@ -543,10 +543,10 @@ public class ParserTest
 				{
 					int x =""");
 		source.append(' ');
-		for (int i = 0; i < 199; ++i)
+		for (int i = 0; i < nestedParentheses; ++i)
 			source.append('(');
 		source.append('1');
-		for (int i = 0; i < 199; ++i)
+		for (int i = 0; i < nestedParentheses; ++i)
 			source.append(')');
 		source.append("""
 			;
@@ -556,23 +556,27 @@ public class ParserTest
 
 		// Verify parsing succeeds without checking exact positions
 		// due to dynamically generated deeply nested structure
-		assertParseSucceeds(source.toString());
+		try (Parser parser = new Parser(source.toString()))
+		{
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		}
 	}
 
 	/**
 	 * Tests that excessive nesting depth is rejected with ParseResult.Failure.
 	 * Validates denial-of-service prevention by enforcing maximum depth limit,
 	 * protecting against stack overflow from pathological input.
-	 * This test creates 201 nested parentheses exceeding the 200 depth limit.
 	 */
 	@Test
 	public void testMaxDepthExceeded()
 	{
+		int nestedParentheses = SecurityConfig.MAX_PARSE_DEPTH + 1;
 		StringBuilder source = new StringBuilder();
-		for (int i = 0; i < 201; ++i)
+		for (int i = 0; i < nestedParentheses; ++i)
 			source.append('(');
 		source.append('1');
-		for (int i = 0; i < 201; ++i)
+		for (int i = 0; i < nestedParentheses; ++i)
 			source.append(')');
 
 		try (Parser parser = new Parser(source.toString()))
