@@ -1787,27 +1787,29 @@ public final class Parser implements AutoCloseable
 			}
 			else if (match(TokenType.DOT))
 			{
-				// Field access or method reference
+				// Field access, class literal, or method reference
 				if (currentToken().type() == TokenType.IDENTIFIER)
 				{
 					int end = currentToken().end();
 					consume();
 					left = arena.allocateNode(NodeType.FIELD_ACCESS, start, end);
 				}
+				else if (match(TokenType.CLASS))
+				{
+					// Class literal: Type.class, Type[].class
+					int end = tokens.get(position - 1).end();
+					left = arena.allocateNode(NodeType.CLASS_LITERAL, start, end);
+				}
 				else
 				{
 					throw new ParserException(
-						"Expected identifier after '.' but found " + currentToken().type(),
+						"Expected identifier or 'class' after '.' but found " + currentToken().type(),
 						currentToken().start());
 				}
 			}
 			else if (match(TokenType.LBRACKET))
 			{
-				// Array access
-				parseExpression();
-				expect(TokenType.RBRACKET);
-				int end = tokens.get(position - 1).end();
-				left = arena.allocateNode(NodeType.ARRAY_ACCESS, start, end);
+				left = parseArrayAccessOrClassLiteral(start);
 			}
 			else if (match(TokenType.DOUBLE_COLON))
 			{
@@ -1846,6 +1848,35 @@ public final class Parser implements AutoCloseable
 		}
 
 		return left;
+	}
+
+	/**
+	 * Parses array access or array type class literal after LBRACKET consumed.
+	 * Handles {@code array[index]} for array access and {@code Type[].class} for class literals.
+	 *
+	 * @param start the start position of the expression
+	 * @return the parsed node (ARRAY_ACCESS or CLASS_LITERAL)
+	 */
+	private NodeIndex parseArrayAccessOrClassLiteral(int start)
+	{
+		// Check for array type class literal: Type[].class or Type[][].class
+		if (match(TokenType.RBRACKET))
+		{
+			// Empty brackets - array type for class literal
+			while (match(TokenType.LBRACKET))
+			{
+				expect(TokenType.RBRACKET);
+			}
+			expect(TokenType.DOT);
+			expect(TokenType.CLASS);
+			int end = tokens.get(position - 1).end();
+			return arena.allocateNode(NodeType.CLASS_LITERAL, start, end);
+		}
+		// Array access with expression
+		parseExpression();
+		expect(TokenType.RBRACKET);
+		int end = tokens.get(position - 1).end();
+		return arena.allocateNode(NodeType.ARRAY_ACCESS, start, end);
 	}
 
 	private NodeIndex parsePrimary()
@@ -1906,6 +1937,21 @@ public final class Parser implements AutoCloseable
 			{
 				// Array initializer: {1, 2, 3}
 				return parseArrayInitializer(start);
+			}
+
+			if (isPrimitiveType(token.type()))
+			{
+				// Primitive type class literal: int.class, void.class, int[].class
+				consume();
+				// Handle array dimensions: int[].class, int[][].class
+				while (match(TokenType.LBRACKET))
+				{
+					expect(TokenType.RBRACKET);
+				}
+				expect(TokenType.DOT);
+				expect(TokenType.CLASS);
+				int classEnd = tokens.get(position - 1).end();
+				return arena.allocateNode(NodeType.CLASS_LITERAL, start, classEnd);
 			}
 
 			if (match(TokenType.SWITCH))
