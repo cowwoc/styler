@@ -26,6 +26,9 @@ available for troubleshooting: main-agent-coordination.md, task-protocol-core.md
 - Use `--ff-only` for all merges to main (linear history)
 - Hooks enforce protocol compliance
 
+**Task Prioritization**: Bug fixes MUST be prioritized before new features, unless the new feature will
+replace the feature containing the bugs.
+
 **SUB-AGENTS**: If you are a stakeholder agent (architect, engineer, formatter), this file contains
 universal guidance only. You MUST also read `/workspace/main/docs/project/task-protocol-agents.md`
 
