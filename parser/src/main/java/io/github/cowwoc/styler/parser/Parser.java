@@ -1768,6 +1768,7 @@ public final class Parser implements AutoCloseable
 
 		while (true)
 		{
+			parseComments();
 			int start = arena.getStart(left);
 
 			if (match(TokenType.LPAREN))
@@ -1787,6 +1788,7 @@ public final class Parser implements AutoCloseable
 			}
 			else if (match(TokenType.DOT))
 			{
+				parseComments();
 				// Field access, class literal, or method reference
 				if (currentToken().type() == TokenType.IDENTIFIER)
 				{
@@ -1813,6 +1815,7 @@ public final class Parser implements AutoCloseable
 			}
 			else if (match(TokenType.DOUBLE_COLON))
 			{
+				parseComments();
 				// Method reference: Type::method or Type::new
 				int end;
 				if (match(TokenType.NEW))
@@ -1885,6 +1888,7 @@ public final class Parser implements AutoCloseable
 
 		try
 		{
+			parseComments();
 			Token token = currentToken();
 			int start = token.start();
 			int end = token.end();
@@ -1967,6 +1971,21 @@ public final class Parser implements AutoCloseable
 				consume();
 				NodeIndex body = parseExpression();
 				return arena.allocateNode(NodeType.LAMBDA_EXPRESSION, start, arena.getEnd(body));
+			}
+
+			// Handle unary operators that appear after comments (e.g., /* comment */ -5)
+			TokenType type = token.type();
+			boolean isUnaryOperator = switch (type)
+			{
+				case MINUS, PLUS, NOT, TILDE, INC, DEC -> true;
+				default -> false;
+			};
+			if (isUnaryOperator)
+			{
+				consume();
+				NodeIndex operand = parsePrimary();
+				int operandEnd = arena.getEnd(operand);
+				return arena.allocateNode(NodeType.UNARY_EXPRESSION, start, operandEnd);
 			}
 
 			throw new ParserException(
