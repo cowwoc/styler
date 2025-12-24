@@ -189,27 +189,6 @@ public final class ParserTestUtils
 	}
 
 	/**
-	 * Asserts that the given source code parses successfully and returns a valid root node.
-	 *
-	 * @param source the source code to parse
-	 * @throws AssertionError if parsing fails or the root node is invalid
-	 */
-	public static void assertParseSucceeds(String source)
-	{
-		try (Parser parser = new Parser(source))
-		{
-			switch (parser.parse())
-			{
-				case ParseResult.Success success ->
-					requireThat(success.rootNode(), "rootNode").
-						isNotNull();
-				case ParseResult.Failure failure ->
-					throw new AssertionError("Expected Success but got: " + failure);
-			}
-		}
-	}
-
-	/**
 	 * Asserts that the given source code fails to parse.
 	 * Used to verify that malformed syntax is correctly rejected by the parser.
 	 *
