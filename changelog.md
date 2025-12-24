@@ -2,6 +2,58 @@
 
 ## 2025-12-24
 
+### E9: Enum Constant Comment Parsing ✅
+
+**Completion Date**: 2025-12-24
+
+**Task**: `fix-enum-constant-comments`
+
+**Problem Solved**:
+- Parser failed when comments appeared in enum constant lists
+- Error: "Unexpected token: LINE_COMMENT" or block comment errors
+- Blocked self-hosting (styler cannot format its own codebase)
+
+**Solution Implemented**:
+- Added `parseComments()` calls in `parseEnumBody()` at 3 strategic locations:
+  - Before checking for first constant (handles empty enums with comments)
+  - After matching COMMA (handles comments after commas)
+  - After constant loop exits (handles comments after last constant)
+- Added `parseComments()` call at start of `parseEnumConstant()` to handle comments before constant name
+
+**Files Modified**:
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java` (+7 lines)
+
+**Files Created**:
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/EnumCommentParserTest.java` (15 tests)
+
+**Test Rewrite (LFM Fix)**:
+- Rewrote all 15 tests to use proper AST comparison (`isEqualTo(expected)`)
+- Replaced weak count-based assertions with exact position/type verification
+- Tests now validate complete AST structure including node types, positions, and attributes
+
+**Test Cases**:
+1. Line comment between enum constants
+2. Block comment between constants
+3. JavaDoc comment between constants
+4. Comment after last constant (no trailing comma)
+5. Trailing comma with comment
+6. Comment in empty enum body
+7. Multiple comments between constants
+8. Comment before first constant
+9. JavaDoc on individual enum constant
+10. Mixed comments (line + block)
+11-15. Various edge cases for comment positions
+
+**Quality**:
+- All 236 tests passing
+- Zero Checkstyle/PMD violations
+- Enum comment parsing errors eliminated
+
+**Unblocks**:
+- Self-hosting progress
+
+---
+
 ### E8: Comment in Expression Parsing ✅
 
 **Completion Date**: 2025-12-24
