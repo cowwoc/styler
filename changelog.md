@@ -2,6 +2,49 @@
 
 ## 2025-12-24
 
+### E8: Comment in Expression Parsing ✅
+
+**Completion Date**: 2025-12-24
+
+**Task**: `fix-comment-in-expression-parsing`
+
+**Problem Solved**:
+- Parser failed when comments appeared within expressions
+- Error: "Unexpected token in expression: LINE_COMMENT at position X"
+- Blocked self-hosting (styler cannot format its own codebase)
+
+**Solution Implemented**:
+- Added `parseComments()` calls in `parsePrimary()` to skip comments before examining tokens
+- Added `parseComments()` calls in `parsePostfix()` loop to skip comments between postfix operators
+- Added `parseComments()` after DOT and DOUBLE_COLON matching to handle `obj. // comment\n field` patterns
+- Added unary operator handling in `parsePrimary()` to handle `/* comment */ -5` patterns
+
+**Files Modified**:
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java` (+17 lines)
+
+**Files Created**:
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/CommentInExpressionTest.java` (7 tests)
+
+**Test Cases**:
+1. Line comment between binary operators: `1 + // comment\n 2`
+2. Block comment between binary operators: `1 + /* comment */ 2`
+3. Comment before primary expression: `= // comment\n 42`
+4. Comment in method arguments: `call(arg1, // comment\n arg2)`
+5. Comment after dot operator: `obj. // comment\n field`
+6. Comment in array access: `array[/* comment */ 0]`
+7. Comment before unary operator: `/* comment */ -5`
+
+**Quality**:
+- All 7 new tests passing
+- Full parser test suite passing
+- Zero Checkstyle/PMD violations
+- LINE_COMMENT-related parsing errors eliminated
+
+**Unblocks**:
+- Self-hosting progress (remaining issues are other parser bugs)
+
+---
+
 ### E7: Class Literal Parsing ✅
 
 **Completion Date**: 2025-12-24
