@@ -8,9 +8,9 @@
 
 Per task prioritization rule, bug fixes take precedence over new features:
 
-- [ ] **READY:** `fix-enum-constant-comments` - Fix parser failure when comments appear in enum constant lists
-  - **Blocks**: Self-hosting (styler cannot format its own codebase)
-  - **Details**: See Phase E below
+- [x] **COMPLETE:** `fix-enum-constant-comments` - Fix parser failure when comments appear in enum constant lists ✅
+  - **Completed**: 2025-12-24
+  - **Details**: Added parseComments() calls in parseEnumBody() and parseEnumConstant()
 
 - [ ] **READY:** `fix-nested-type-references` - Fix parser failure on nested class type references
   - **Blocks**: Self-hosting (styler cannot format its own codebase)
@@ -446,29 +446,25 @@ benchmarking, and validate with Maven plugin integration.
 ### Parser Bug: Comments in Expressions ✅ COMPLETE (2025-12-24)
 - [x] **DONE:** `fix-comment-in-expression-parsing` - Fix parser failure when comments appear in expressions (2025-12-24)
 
-### Parser Bug: Comments in Enum Constant Lists
-- [ ] **READY:** `fix-enum-constant-comments` - Fix parser failure when comments appear in enum constant lists
-  - **Dependencies**: `add-parser-error-record` ✅
-  - **Blocks**: Self-hosting (styler cannot format its own codebase)
+### Parser Bug: Comments in Enum Constant Lists ✅ COMPLETE (2025-12-24)
+- [x] **DONE:** `fix-enum-constant-comments` - Fix parser failure when comments appear in enum constant lists (2025-12-24)
+
+### Parser Enhancement: Systematic Comment Handling
+- [ ] **READY:** `fix-remaining-comment-gaps` - Handle comments in all remaining parser locations
+  - **Dependencies**: `fix-enum-constant-comments` ✅
+  - **Blocks**: None (enhancement for edge cases)
   - **Parallelizable With**: `fix-nested-type-references`, `fix-import-organizer-bounds`
-  - **Estimated Effort**: 1 day
-  - **Purpose**: Enable parsing of enums with comments between constants
-  - **Current Error**: `Expected IDENTIFIER but found LINE_COMMENT` or `JAVADOC_COMMENT`
-  - **Affected Files**: NodeType.java, Audience.java
-  - **Example**:
-    ```java
-    public enum NodeType {
-        // Comments section    ← Parser fails here
-        LINE_COMMENT,
-        /**
-         * JavaDoc for constant
-         */
-        AI,                    ← Parser fails here too
-    }
-    ```
-  - **Root Cause**: Parser expects identifier after `{` or `,` but encounters comment token
-  - **Scope**: Skip comments when parsing enum constant list
-  - **Quality**: Parser tests for enums with various comment placements
+  - **Estimated Effort**: 2-3 days
+  - **Purpose**: Systematically add parseComments() calls to all locations where comments can appear
+  - **Known Gaps** (from analysis):
+    - Method/constructor parameters (between params)
+    - Block statements (after opening brace, before closing brace)
+    - Control flow statements (if/else, for, while, switch, try/catch)
+    - Array initializers (between elements)
+    - Lambda expressions (between arrow and body)
+    - Type parameters/arguments (between generic type params)
+  - **Priority**: Lower than self-hosting blockers - these are edge cases
+  - **Quality**: Parser tests for comment placement in each identified location
 
 ### Parser Bug: Nested Type References
 - [ ] **READY:** `fix-nested-type-references` - Fix parser failure on nested class type references

@@ -687,11 +687,15 @@ public final class Parser implements AutoCloseable
 
 	private void parseEnumBody()
 	{
+		// Handle comments before the first constant (or before SEMICOLON/RBRACE if no constants)
+		parseComments();
 		if (currentToken().type() != TokenType.SEMICOLON && currentToken().type() != TokenType.RBRACE)
 		{
 			parseEnumConstant();
 			while (match(TokenType.COMMA))
 			{
+				// Handle comments after comma (e.g., trailing comma with comment before semicolon)
+				parseComments();
 				if (currentToken().type() == TokenType.SEMICOLON || currentToken().type() == TokenType.RBRACE)
 				{
 					break;
@@ -699,6 +703,8 @@ public final class Parser implements AutoCloseable
 				parseEnumConstant();
 			}
 		}
+		// Handle comments after the last constant (before semicolon or rbrace)
+		parseComments();
 
 		if (match(TokenType.SEMICOLON))
 		{
@@ -711,6 +717,7 @@ public final class Parser implements AutoCloseable
 
 	private void parseEnumConstant()
 	{
+		parseComments();
 		int start = currentToken().start();
 		expect(TokenType.IDENTIFIER);
 		if (match(TokenType.LPAREN) && !match(TokenType.RPAREN))
