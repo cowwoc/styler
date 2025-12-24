@@ -4,6 +4,22 @@
 
 **Current Status**: Phase C in progress - `create-maven-plugin` complete, `create-jmh-benchmarks` and `benchmark-concurrency-models` now unblocked
 
+### 🐛 Priority: Bug Fixes (Work These First)
+
+Per task prioritization rule, bug fixes take precedence over new features:
+
+- [ ] **READY:** `fix-enum-constant-comments` - Fix parser failure when comments appear in enum constant lists
+  - **Blocks**: Self-hosting (styler cannot format its own codebase)
+  - **Details**: See Phase E below
+
+- [ ] **READY:** `fix-nested-type-references` - Fix parser failure on nested class type references
+  - **Blocks**: Self-hosting (styler cannot format its own codebase)
+  - **Details**: See Phase E below
+
+- [ ] **READY:** `fix-import-organizer-bounds` - Fix StringIndexOutOfBoundsException in ImportOrganizerFormattingRule
+  - **Blocks**: Self-hosting (styler cannot format its own codebase)
+  - **Details**: See Phase E below
+
 **COMPLETED**:
 - `implement-line-length-formatter` - Line Length Formatter ✅ COMPLETE
 - `implement-import-organization` - Import Organization ✅ COMPLETE
@@ -46,6 +62,10 @@
 - Completed tasks are REMOVED from todo.md (entire entry deleted)
 - Completed tasks are ADDED to changelog.md under completion date
 - When checking dependencies: search BOTH todo.md AND changelog.md
+
+**Task Prioritization**:
+- Bug fixes MUST be prioritized before new features
+- Exception: New features that replace the buggy feature may take precedence
 
 **Before Starting a Task**:
 1. ✅ Verify task status is `READY` (not BLOCKED)
@@ -423,23 +443,63 @@ benchmarking, and validate with Maven plugin integration.
 ### Parser Bug: Class Literals ✅ COMPLETE (2025-12-24)
 - [x] **DONE:** `fix-class-literal-parsing` - Fix parser failure on `.class` literals (2025-12-24)
 
-### Parser Bug: Comments in Expressions
-- [ ] **READY:** `fix-comment-in-expression-parsing` - Fix parser failure when comments appear in expressions
+### Parser Bug: Comments in Expressions ✅ COMPLETE (2025-12-24)
+- [x] **DONE:** `fix-comment-in-expression-parsing` - Fix parser failure when comments appear in expressions (2025-12-24)
+
+### Parser Bug: Comments in Enum Constant Lists
+- [ ] **READY:** `fix-enum-constant-comments` - Fix parser failure when comments appear in enum constant lists
   - **Dependencies**: `add-parser-error-record` ✅
   - **Blocks**: Self-hosting (styler cannot format its own codebase)
-  - **Parallelizable With**: `fix-generic-type-parsing`, `fix-class-literal-parsing`
+  - **Parallelizable With**: `fix-nested-type-references`, `fix-import-organizer-bounds`
   - **Estimated Effort**: 1 day
-  - **Purpose**: Enable parsing of code with line comments appearing within expressions
-  - **Current Error**: `Unexpected token in expression: LINE_COMMENT at position X`
-  - **Affected Files**: FileValidatorTest.java, ExecutionTimeoutManagerTest.java, MemoryMonitorTest.java
-  - **Root Cause**: Parser's expression parsing doesn't skip/handle comment tokens
-  - **Scope**: Handle comments appearing within expressions without breaking parsing
-  - **Components**:
-    - Skip LINE_COMMENT tokens during expression parsing
-    - Skip BLOCK_COMMENT tokens during expression parsing
-    - Preserve comment positions for formatter (comments are formatting-relevant)
-  - **Verification**: Run `styler:check` on styler codebase - no LINE_COMMENT-related errors
-  - **Quality**: Parser tests for expressions containing comments
+  - **Purpose**: Enable parsing of enums with comments between constants
+  - **Current Error**: `Expected IDENTIFIER but found LINE_COMMENT` or `JAVADOC_COMMENT`
+  - **Affected Files**: NodeType.java, Audience.java
+  - **Example**:
+    ```java
+    public enum NodeType {
+        // Comments section    ← Parser fails here
+        LINE_COMMENT,
+        /**
+         * JavaDoc for constant
+         */
+        AI,                    ← Parser fails here too
+    }
+    ```
+  - **Root Cause**: Parser expects identifier after `{` or `,` but encounters comment token
+  - **Scope**: Skip comments when parsing enum constant list
+  - **Quality**: Parser tests for enums with various comment placements
+
+### Parser Bug: Nested Type References
+- [ ] **READY:** `fix-nested-type-references` - Fix parser failure on nested class type references
+  - **Dependencies**: `add-parser-error-record` ✅
+  - **Blocks**: Self-hosting (styler cannot format its own codebase)
+  - **Parallelizable With**: `fix-enum-constant-comments`, `fix-import-organizer-bounds`
+  - **Estimated Effort**: 1 day
+  - **Purpose**: Enable parsing of nested/inner class type references like `OuterClass.InnerClass`
+  - **Current Error**: `Expected SEMICOLON but found DOT`
+  - **Affected Files**: NodeArena.java (line 24: `ValueLayout.OfInt`)
+  - **Example**:
+    ```java
+    private static final ValueLayout.OfInt INT_LAYOUT = ValueLayout.JAVA_INT;
+    ```
+  - **Root Cause**: Parser parses `ValueLayout` as complete type, expects semicolon, finds `.`
+  - **Scope**: Handle qualified type names that reference nested classes
+  - **Quality**: Parser tests for nested class type references in various contexts
+
+### Formatter Bug: Import Organizer Bounds Error
+- [ ] **READY:** `fix-import-organizer-bounds` - Fix StringIndexOutOfBoundsException in ImportOrganizerFormattingRule
+  - **Dependencies**: None
+  - **Blocks**: Self-hosting (styler cannot format its own codebase)
+  - **Parallelizable With**: `fix-enum-constant-comments`, `fix-nested-type-references`
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Fix crash when analyzing imports in certain files
+  - **Current Error**: `Range [130, 128) out of bounds for length 2379` in `importsAreOrganized()`
+  - **Affected Files**: ExecutionTimeoutManager.java, ExecutionTimeoutException.java
+  - **Root Cause**: Start position > end position when calling `substring()` at line 310
+  - **Location**: `ImportOrganizerFormattingRule.importsAreOrganized():310`
+  - **Scope**: Fix bounds calculation in import organization analysis
+  - **Quality**: Add test case that reproduces the crash, verify fix
 
 ### Parser Enhancement: Missing Node Types
 - [ ] **READY:** `add-parameterized-type-nodes` - Create AST nodes for parameterized types
