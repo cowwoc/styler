@@ -16,9 +16,9 @@ Per task prioritization rule, bug fixes take precedence over new features:
   - **Completed**: 2025-12-25
   - **Details**: Added qualified type reference support in parseType()
 
-- [ ] **READY:** `fix-import-organizer-bounds` - Fix StringIndexOutOfBoundsException in ImportOrganizerFormattingRule
-  - **Blocks**: Self-hosting (styler cannot format its own codebase)
-  - **Details**: See Phase E below
+- [x] **COMPLETE:** `fix-import-organizer-bounds` - Fix StringIndexOutOfBoundsException in ImportOrganizerFormattingRule ✅
+  - **Completed**: 2025-12-25
+  - **Details**: Fixed bounds calculation in importsAreOrganized() and replaceImportSection()
 
 **COMPLETED**:
 - `implement-line-length-formatter` - Line Length Formatter ✅ COMPLETE
@@ -485,19 +485,29 @@ benchmarking, and validate with Maven plugin integration.
 ### Parser Bug: Nested Type References ✅ COMPLETE (2025-12-25)
 - [x] **DONE:** `fix-nested-type-references` - Fix parser failure on nested class type references (2025-12-25)
 
-### Formatter Bug: Import Organizer Bounds Error
-- [ ] **READY:** `fix-import-organizer-bounds` - Fix StringIndexOutOfBoundsException in ImportOrganizerFormattingRule
+### Formatter Bug: Import Organizer Bounds Error ✅ COMPLETE (2025-12-25)
+- [x] **DONE:** `fix-import-organizer-bounds` - Fix StringIndexOutOfBoundsException in ImportOrganizerFormattingRule (2025-12-25)
+  - Fixed bounds calculation in importsAreOrganized() and replaceImportSection()
+  - Added explicit bounds check before charAt() call
+  - Sorted imports by source position for cleaner bounds calculation
+
+### AST Simplification: Collapse Import Node Types
+- [ ] **READY:** `collapse-import-node-types` - Merge STATIC_IMPORT_DECLARATION into IMPORT_DECLARATION
   - **Dependencies**: None
-  - **Blocks**: Self-hosting (styler cannot format its own codebase)
-  - **Parallelizable With**: `fix-enum-constant-comments`, `fix-nested-type-references`
-  - **Estimated Effort**: 0.5 days
-  - **Purpose**: Fix crash when analyzing imports in certain files
-  - **Current Error**: `Range [130, 128) out of bounds for length 2379` in `importsAreOrganized()`
-  - **Affected Files**: ExecutionTimeoutManager.java, ExecutionTimeoutException.java
-  - **Root Cause**: Start position > end position when calling `substring()` at line 310
-  - **Location**: `ImportOrganizerFormattingRule.importsAreOrganized():310`
-  - **Scope**: Fix bounds calculation in import organization analysis
-  - **Quality**: Add test case that reproduces the crash, verify fix
+  - **Blocks**: None (simplification for cleaner model)
+  - **Parallelizable With**: Any Phase E task
+  - **Estimated Effort**: 1 day
+  - **Purpose**: Simplify AST model - "static" is a modifier, not a different construct
+  - **Proposed Change**:
+    - Add `isStatic()` to `ImportAttribute`
+    - Parser creates `IMPORT_DECLARATION` for both, setting attribute
+    - Remove `STATIC_IMPORT_DECLARATION` from `NodeType` enum
+    - Update `ImportExtractor` to use single `findNodesByType()` call
+  - **Benefits**:
+    - Single query returns all imports in position order (no sorting needed)
+    - Cleaner semantic model (static is a modifier, like public/private)
+    - Simpler consumer code
+  - **Quality**: Update all usages, verify import organization still works
 
 ### Parser Enhancement: Node-Based Complexity Limiting
 - [ ] **READY:** `refactor-parser-depth-limiting` - Replace recursion depth limit with node count limit

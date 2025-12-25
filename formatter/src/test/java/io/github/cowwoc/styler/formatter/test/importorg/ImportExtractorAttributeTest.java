@@ -91,12 +91,8 @@ public class ImportExtractorAttributeTest
 	/**
 	 * Verifies extraction of multiple import types with correct ordering.
 	 * <p>
-	 * Tests that ImportExtractor correctly processes:
-	 * <ul>
-	 *   <li>Regular imports (java.util.List, java.util.Map, java.io.*)</li>
-	 *   <li>Static imports (java.lang.Math.abs)</li>
-	 * </ul>
-	 * Regular imports are processed before static imports in the result list.
+	 * Tests that ImportExtractor correctly processes regular and static imports,
+	 * returning them sorted by source position (not grouped by type).
 	 */
 	@Test
 	public void shouldExtractMultipleImportTypes()
@@ -120,8 +116,7 @@ public class ImportExtractorAttributeTest
 
 		requireThat(imports.size(), "imports.size()").isEqualTo(4);
 
-		// ImportExtractor processes regular imports first, then static imports.
-		// So the order is: List, Map, io.* (all regular), then Math.abs (static).
+		// Imports are sorted by source position (not grouped by type)
 
 		// First import: java.util.List
 		requireThat(imports.get(0).qualifiedName(), "first.qualifiedName").
@@ -134,14 +129,14 @@ public class ImportExtractorAttributeTest
 			isEqualTo("java.util.Map");
 		requireThat(imports.get(1).isStatic(), "second.isStatic").isFalse();
 
-		// Third import: java.io.* (regular wildcard import, before static)
+		// Third import: static java.lang.Math.abs (appears before java.io.* in source)
 		requireThat(imports.get(2).qualifiedName(), "third.qualifiedName").
-			isEqualTo("java.io.*");
-		requireThat(imports.get(2).isWildcard(), "third.isWildcard").isTrue();
-
-		// Fourth import: static java.lang.Math.abs
-		requireThat(imports.get(3).qualifiedName(), "fourth.qualifiedName").
 			isEqualTo("java.lang.Math.abs");
-		requireThat(imports.get(3).isStatic(), "fourth.isStatic").isTrue();
+		requireThat(imports.get(2).isStatic(), "third.isStatic").isTrue();
+
+		// Fourth import: java.io.*
+		requireThat(imports.get(3).qualifiedName(), "fourth.qualifiedName").
+			isEqualTo("java.io.*");
+		requireThat(imports.get(3).isWildcard(), "fourth.isWildcard").isTrue();
 	}
 }

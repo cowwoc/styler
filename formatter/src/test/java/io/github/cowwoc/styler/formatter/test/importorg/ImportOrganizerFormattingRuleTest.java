@@ -188,4 +188,30 @@ public class ImportOrganizerFormattingRuleTest
 
 		requireThat(result, "result").isNotNull();
 	}
+
+	/**
+	 * Verifies that import analysis works correctly when static imports appear before regular imports.
+	 * This is a regression test for the StringIndexOutOfBoundsException bug.
+	 */
+	@Test
+	void shouldHandleStaticImportBeforeRegularImport()
+	{
+		String source = """
+			package test;
+
+			import static java.lang.Math.PI;
+			import java.util.List;
+
+			class Test
+			{
+				List<Double> values = List.of(PI);
+			}
+			""";
+		TestTransformationContext context = new TestTransformationContext(source);
+		ImportOrganizerFormattingRule rule = new ImportOrganizerFormattingRule();
+
+		// Parse and analyze - should not throw StringIndexOutOfBoundsException
+		rule.analyze(context, List.of(NO_WILDCARD_CONFIG));
+		// Test passes if we reach here without exception
+	}
 }
