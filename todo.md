@@ -304,6 +304,22 @@ benchmarking, and validate with Maven plugin integration.
   - **Integration**: Uses `implement-virtual-thread-processing` (thread-per-file), all formatters, real-world projects
   - **Quality**: Statistical rigor, JMH methodology, 95% confidence intervals
 
+### Tool Performance Comparison
+- [ ] **BLOCKED:** `benchmark-tool-comparison` - Compare Styler performance vs Checkstyle/PMD
+  - **Dependencies**: `create-jmh-benchmarks` (reuses benchmark infrastructure)
+  - **Blocks**: None (competitive analysis)
+  - **Parallelizable With**: None
+  - **Estimated Effort**: 2-3 days
+  - **Purpose**: Validate Styler is competitive with established tools
+  - **Scope**: Benchmark equivalent rule checks across tools
+  - **Comparisons**:
+    - Line length checking: Styler vs Checkstyle LineLength
+    - Import ordering: Styler vs Checkstyle ImportOrder
+    - Brace placement: Styler vs Checkstyle LeftCurly/RightCurly
+  - **Metrics**: Throughput (files/sec), memory usage, startup time
+  - **Integration**: Reuses BenchmarkResourceManager, SampleCodeGenerator from create-jmh-benchmarks
+  - **Quality**: Fair comparison with equivalent configurations
+
 ---
 
 ## Phase D: Polish & Production Readiness
