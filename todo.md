@@ -12,9 +12,9 @@ Per task prioritization rule, bug fixes take precedence over new features:
   - **Completed**: 2025-12-24
   - **Details**: Added parseComments() calls in parseEnumBody() and parseEnumConstant()
 
-- [ ] **READY:** `fix-nested-type-references` - Fix parser failure on nested class type references
-  - **Blocks**: Self-hosting (styler cannot format its own codebase)
-  - **Details**: See Phase E below
+- [x] **COMPLETE:** `fix-nested-type-references` - Fix parser failure on nested class type references ✅
+  - **Completed**: 2025-12-25
+  - **Details**: Added qualified type reference support in parseType()
 
 - [ ] **READY:** `fix-import-organizer-bounds` - Fix StringIndexOutOfBoundsException in ImportOrganizerFormattingRule
   - **Blocks**: Self-hosting (styler cannot format its own codebase)
