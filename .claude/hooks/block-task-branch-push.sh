@@ -1,10 +1,10 @@
 #!/bin/bash
-# Blocks pushing task/agent branches to remote origin
+# Validates task/agent branch pushes to remote origin
 #
 # TRIGGER: PreToolUse on Bash commands containing "git push"
-# PURPOSE: Task branches are local workspaces - only main gets pushed
-# ADDED: After mistake where task+agent branches were pushed to origin (session ec47cea5)
-# PREVENTS: Polluting remote with temporary task branches
+# PURPOSE: Allow task branches to be pushed for review (PRs)
+# BLOCKS: Agent branches (task-architect, task-tester, etc.) - these should never be pushed
+# UPDATED: 2025-12-25 - Allow task branch pushes for review purposes
 
 set -euo pipefail
 
@@ -34,34 +34,24 @@ if [[ "$COMMAND" =~ git[[:space:]]+push[[:space:]]+[a-zA-Z] ]] && [[ ! "$COMMAND
     exit 0
 fi
 
-# Check if any task-related branch patterns in the push
-# Task branches follow pattern: {task-name} or {task-name}-{agent}
-# Look for common task indicators in branch names being pushed
-
 # Get current branch if no branch specified
 CURRENT_BRANCH=$(cd /workspace/main 2>/dev/null && git branch --show-current 2>/dev/null || echo "")
 
-# Detect task branch patterns:
-# 1. Branch name contains common task prefixes
-# 2. Branch ends with -architect, -engineer, -formatter, -tester, etc.
-# 3. We're in a task worktree
+# Agent branch pattern - these should NEVER be pushed
+# Agent branches end with -architect, -engineer, -formatter, -tester, etc.
+AGENT_PATTERN="-architect$|-engineer$|-formatter$|-tester$|-optimizer$|-hacker$|-builder$|-designer$"
 
-TASK_PATTERN="implement-|add-|fix-|refactor-|update-|create-|-architect$|-engineer$|-formatter$|-tester$|-optimizer$|-hacker$"
+# Block agent branches (internal implementation detail, not for review)
+if [[ -n "$CURRENT_BRANCH" ]] && [[ "$CURRENT_BRANCH" =~ $AGENT_PATTERN ]]; then
+    REASON="Push blocked: '$CURRENT_BRANCH' is an agent branch.
 
-# Check if current branch matches task pattern
-if [[ -n "$CURRENT_BRANCH" ]] && [[ "$CURRENT_BRANCH" =~ $TASK_PATTERN ]]; then
-    REASON="Push blocked: '$CURRENT_BRANCH' appears to be a task/agent branch.
-
-Task branches should remain LOCAL. Only main branch gets pushed to origin.
+Agent branches are internal implementation details and should not be pushed.
+Only task branches (for review) and main (after merge) should be pushed.
 
 Workflow:
-1. Complete work on task branch (local)
-2. Squash commits into single commit (git rebase -i)
-3. Merge to main with --ff-only
-4. Push main to origin
-
-If you need to push this branch for a specific reason, use:
-  git push origin $CURRENT_BRANCH --force  # Explicitly bypass check"
+1. Merge agent work to task branch
+2. Push task branch for review (allowed)
+3. After approval, merge to main and push main"
 
     jq -n \
         --arg reason "$REASON" \
@@ -72,12 +62,12 @@ If you need to push this branch for a specific reason, use:
     exit 0
 fi
 
-# Check if command explicitly names a task branch
+# Check if command explicitly names an agent branch
 for WORD in $COMMAND; do
-    if [[ "$WORD" =~ $TASK_PATTERN ]]; then
-        REASON="Push blocked: '$WORD' appears to be a task/agent branch name.
+    if [[ "$WORD" =~ $AGENT_PATTERN ]]; then
+        REASON="Push blocked: '$WORD' appears to be an agent branch name.
 
-Task branches should remain LOCAL. Only main branch gets pushed."
+Agent branches should not be pushed to origin."
 
         jq -n \
             --arg reason "$REASON" \
@@ -89,4 +79,5 @@ Task branches should remain LOCAL. Only main branch gets pushed."
     fi
 done
 
+# Task branches (fix-, implement-, add-, etc.) are now ALLOWED for review purposes
 exit 0

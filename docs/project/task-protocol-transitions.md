@@ -419,12 +419,17 @@ jq --arg old "$OLD_STATE" \
 
 **Creating Checkpoint State**:
 ```bash
-# After REVIEW state with unanimous approval, create commit and update lock
-COMMIT_SHA=$(git rev-parse HEAD)
+# After REVIEW state with unanimous approval, push branch and update lock
 TASK_NAME="your-task-name"
 LOCK_FILE="/workspace/tasks/${TASK_NAME}/task.json"
 
-# Update lock to AWAITING_USER_APPROVAL state with checkpoint data
+# Step 1: Push task branch to origin for review
+git push origin "$TASK_NAME"
+
+# Step 2: Get commit SHA after push
+COMMIT_SHA=$(git rev-parse HEAD)
+
+# Step 3: Update lock to AWAITING_USER_APPROVAL state with checkpoint data
 jq --arg sha "$COMMIT_SHA" \
    --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
    '.state = "AWAITING_USER_APPROVAL" |
@@ -434,6 +439,11 @@ jq --arg sha "$COMMIT_SHA" \
       "presented_at": $timestamp,
       "approved": false
     }' "$LOCK_FILE" > "${LOCK_FILE}.tmp" && mv "${LOCK_FILE}.tmp" "$LOCK_FILE"
+
+# Step 4: Present changes to user with commit SHA and remote branch
+echo "Task branch pushed to origin for review"
+echo "Commit: $COMMIT_SHA"
+echo "Remote: origin/$TASK_NAME"
 ```
 
 **Marking Checkpoint as Approved**:
