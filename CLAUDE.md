@@ -301,6 +301,32 @@ items"; wait to add items until you're ready to work on them
 **Example acknowledgment**: "I noticed your request to [X]. Adding to TodoWrite and will address after
 completing [current task]." OR "Your feedback about [X] impacts this work - addressing now."
 
+### Auto-Detected Mistake Handling {#auto-detected-mistake-handling}
+
+**When `auto-learn-from-mistakes.sh` hook outputs a MANDATORY TodoWrite directive**:
+
+1. **Check existing TodoWrite entries** for matching "LFM:" prefix with same mistake type
+2. **If entry exists**: Do nothing (deduplication - violation already tracked)
+3. **If entry NOT exists**: Add the entry immediately using TodoWrite tool
+4. **Work the entry**: Eventually invoke learn-from-mistakes skill to investigate
+
+**Deduplication Key**: Entries with prefix "LFM: Investigate {mistake_type}" are deduplicated by mistake type.
+Same mistake type from different tools = same entry (don't duplicate).
+
+**Why TodoWrite instead of rate limiting**: Rate limiting (5-minute window) caused missed violations and
+produced a log file nobody processed. TodoWrite provides natural deduplication and ensures violations are
+visible and eventually addressed.
+
+**Example directive from hook**:
+```
+📚 MISTAKE DETECTED: build_failure
+
+**MANDATORY**: Check TodoWrite for existing entry, add if not present:
+{"content": "LFM: Investigate build_failure from Bash", "status": "pending", ...}
+```
+
+**Agent action**: Check if "LFM: Investigate build_failure" already in TodoWrite. If not, add it.
+
 ## 🛠️ TOOL USAGE BEST PRACTICES
 
 **For complete tool usage guide, see**:
