@@ -836,6 +836,14 @@ public final class Parser implements AutoCloseable
 		int checkpoint = position;
 		consume(); // Consume first identifier (could be type, constructor name, or field name)
 
+		// Handle qualified type names: Outer.Inner, ValueLayout.OfInt, etc.
+		while (match(TokenType.DOT))
+		{
+			if (currentToken().type() != TokenType.IDENTIFIER)
+				break;
+			consume();
+		}
+
 		if (match(TokenType.LPAREN))
 		{
 			// Constructor (no return type, identifier is constructor name)

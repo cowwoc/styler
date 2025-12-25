@@ -1,5 +1,47 @@
 # Changelog
 
+## 2025-12-25
+
+### E10: Nested Type Reference Parsing ✅
+
+**Completion Date**: 2025-12-25
+
+**Task**: `fix-nested-type-references`
+
+**Problem Solved**:
+- Parser failed on qualified/nested type references like `ValueLayout.OfInt`
+- Error: "Expected SEMICOLON but found DOT"
+- Blocked self-hosting (styler cannot format its own codebase)
+
+**Solution Implemented**:
+- Modified `parseIdentifierMember()` to continue parsing DOT-separated segments for qualified type names
+- Handles nested class references (`OuterClass.InnerClass`), static member access, and qualified types
+- Uses loop to parse complete qualified name before determining if it's a type or member access
+
+**Files Modified**:
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java`
+
+**Files Created**:
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/NestedTypeReferenceTest.java` (6 tests)
+
+**Test Cases**:
+1. Nested class type in field declaration (`ValueLayout.OfInt`)
+2. Nested class type in local variable
+3. Nested class type in method parameter
+4. Nested class type in method return type
+5. Static field access through nested type
+6. Deeply nested type reference (3+ levels)
+
+**Quality**:
+- All 242 tests passing
+- Zero Checkstyle/PMD violations
+- Nested type reference parsing errors eliminated
+
+**Unblocks**:
+- Self-hosting progress (remaining issue: import organizer bounds error)
+
+---
+
 ## 2025-12-24
 
 ### E9: Enum Constant Comment Parsing ✅
