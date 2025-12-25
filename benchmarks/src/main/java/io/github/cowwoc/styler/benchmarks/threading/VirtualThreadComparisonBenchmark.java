@@ -1,22 +1,31 @@
 package io.github.cowwoc.styler.benchmarks.threading;
 
+import io.github.cowwoc.styler.benchmarks.internal.BenchmarkTransformationContext;
 import io.github.cowwoc.styler.benchmarks.util.SampleCodeGenerator;
+import io.github.cowwoc.styler.formatter.FormattingConfiguration;
+import io.github.cowwoc.styler.formatter.FormattingRule;
+import io.github.cowwoc.styler.formatter.TransformationContext;
+import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
+import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
+import io.github.cowwoc.styler.parser.Parser;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Warmup;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Compares performance of virtual threads versus platform threads for file processing.
@@ -31,7 +40,7 @@ import java.util.concurrent.Executors;
  */
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@State(org.openjdk.jmh.annotations.Scope.Benchmark)
+@State(Scope.Benchmark)
 @Fork(value = 3, jvmArgs = {"-Xms1g", "-Xmx1g"})
 @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
@@ -50,6 +59,9 @@ public class VirtualThreadComparisonBenchmark
 	private int concurrentTasks;
 
 	private List<String> testFiles;
+	private List<TransformationContext> contexts;
+	private FormattingRule lineLengthRule;
+	private List<FormattingConfiguration> configs;
 
 	/**
 	 * Generates test files for threading benchmarks.
@@ -59,14 +71,25 @@ public class VirtualThreadComparisonBenchmark
 	{
 		// Generate enough files to support concurrent task benchmarking
 		testFiles = SampleCodeGenerator.generateFiles(100, SampleCodeGenerator.Size.SMALL);
+
+		// Pre-parse all files to create transformation contexts
+		contexts = new ArrayList<>(testFiles.size());
+		for (String source : testFiles)
+		{
+			contexts.add(new BenchmarkTransformationContext(source));
+		}
+
+		// Initialize formatting rule
+		lineLengthRule = new LineLengthFormattingRule();
+		configs = List.of(LineLengthConfiguration.defaultConfig());
 	}
 
 	/**
 	 * Benchmarks concurrent file processing using the specified thread type.
 	 *
 	 * Creates virtual or platform threads based on the threadType parameter and processes
-	 * files concurrently. Measures throughput to compare thread type performance. Simulates
-	 * realistic I/O workload by cycling through available test files.
+	 * files concurrently. Measures throughput to compare thread type performance. Uses
+	 * actual Styler formatting on pre-parsed contexts.
 	 *
 	 * @return count of tasks completed successfully
 	 */
@@ -78,18 +101,14 @@ public class VirtualThreadComparisonBenchmark
 		try
 		{
 			int completed = 0;
-			for (int i = 0; i < concurrentTasks && i < testFiles.size(); ++i)
+			for (int i = 0; i < concurrentTasks && i < contexts.size(); ++i)
 			{
-				String file = testFiles.get(i % testFiles.size());
+				TransformationContext context = contexts.get(i % contexts.size());
 				executor.submit(() ->
 				{
-					// Simulate file processing work
-					long sum = 0;
-					for (char c : file.toCharArray())
-					{
-						sum += c;
-					}
-					return sum > 0;
+					// Format using actual Styler APIs
+					String result = lineLengthRule.format(context, configs);
+					return !result.isEmpty();
 				});
 				++completed;
 			}
@@ -144,10 +163,10 @@ public class VirtualThreadComparisonBenchmark
 	}
 
 	/**
-	 * Simulates I/O-bound workload with concurrent processing.
+	 * Benchmarks I/O-bound workload with concurrent processing.
 	 *
-	 * Processes multiple files with potential blocking operations to test thread type
-	 * performance on realistic I/O workloads. Virtual threads are expected to show
+	 * Processes multiple files with actual parsing and formatting to test thread type
+	 * performance on realistic workloads. Virtual threads are expected to show
 	 * significantly better performance on I/O-bound tasks.
 	 *
 	 * @return count of processed operations
@@ -160,14 +179,13 @@ public class VirtualThreadComparisonBenchmark
 		try
 		{
 			int processed = 0;
-			for (String file : testFiles)
+			for (TransformationContext context : contexts)
 			{
 				executor.submit(() ->
 				{
-					// Simulate I/O bound work: parsing and validation
-					int length = file.length();
-					String checksum = String.valueOf(length);
-					return checksum.equals(String.valueOf(length));
+					// Format using actual Styler APIs
+					String result = lineLengthRule.format(context, configs);
+					return !result.isEmpty();
 				});
 				++processed;
 			}

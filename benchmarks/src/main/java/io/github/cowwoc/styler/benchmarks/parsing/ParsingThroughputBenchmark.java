@@ -1,15 +1,20 @@
 package io.github.cowwoc.styler.benchmarks.parsing;
 
 import io.github.cowwoc.styler.benchmarks.util.SampleCodeGenerator;
+import io.github.cowwoc.styler.parser.Lexer;
+import io.github.cowwoc.styler.parser.ParseResult;
+import io.github.cowwoc.styler.parser.Parser;
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.BenchmarkMode;
-import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Warmup;
 
 import java.util.concurrent.TimeUnit;
@@ -24,9 +29,9 @@ import java.util.concurrent.TimeUnit;
  * Methodology: Uses JMH with 3 forks, 5 warmup iterations, and 10 measurement iterations to
  * achieve 99.9% confidence intervals. Heap is constrained to 512MB to match production limits.
  */
-@BenchmarkMode(org.openjdk.jmh.annotations.Mode.Throughput)
+@BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@State(org.openjdk.jmh.annotations.Scope.Benchmark)
+@State(Scope.Benchmark)
 @Fork(value = 3, jvmArgs = {"-Xms512m", "-Xmx512m"})
 @Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 1, timeUnit = TimeUnit.SECONDS)
@@ -62,12 +67,15 @@ public class ParsingThroughputBenchmark
 	 * Tests complete parsing pipeline from lexical analysis through AST node creation. Measures
 	 * throughput in operations per second.
 	 *
-	 * @return the source code being parsed
+	 * @return 1 if parsing succeeded, 0 otherwise
 	 */
 	@Benchmark
-	public String parseSourceCode()
+	public int parseSourceCode()
 	{
-		return sourceCode;
+		Parser parser = new Parser(sourceCode);
+		if (parser.parse() instanceof ParseResult.Success)
+			return 1;
+		return 0;
 	}
 
 	/**
@@ -76,11 +84,12 @@ public class ParsingThroughputBenchmark
 	 * Tests lexer performance without AST construction. Useful for isolating tokenization
 	 * bottlenecks from full parsing overhead.
 	 *
-	 * @return number of tokens in the source code
+	 * @return the count of tokens from the source code
 	 */
 	@Benchmark
 	public int tokenizeOnly()
 	{
-		return sourceCode.length();
+		Lexer lexer = new Lexer(sourceCode);
+		return lexer.tokenize().size();
 	}
 }

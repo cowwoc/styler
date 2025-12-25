@@ -1,17 +1,26 @@
 package io.github.cowwoc.styler.benchmarks.realworld;
 
+import io.github.cowwoc.styler.benchmarks.internal.BenchmarkTransformationContext;
 import io.github.cowwoc.styler.benchmarks.util.BenchmarkResourceManager;
 import io.github.cowwoc.styler.benchmarks.util.SampleCodeGenerator;
+import io.github.cowwoc.styler.formatter.FormattingConfiguration;
+import io.github.cowwoc.styler.formatter.FormattingRule;
+import io.github.cowwoc.styler.formatter.TransformationContext;
+import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
+import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
+import io.github.cowwoc.styler.parser.ParseResult;
+import io.github.cowwoc.styler.parser.Parser;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Warmup;
 
 import java.nio.file.Files;
@@ -32,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  */
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@State(org.openjdk.jmh.annotations.Scope.Benchmark)
+@State(Scope.Benchmark)
 @Fork(value = 3, jvmArgs = {"-Xms2g", "-Xmx2g"})
 @Warmup(iterations = 2)
 @Measurement(iterations = 5)
@@ -47,6 +56,8 @@ public class RealWorldProjectBenchmark
 	private List<Path> projectFiles;
 	private long fileCount;
 	private long totalBytes;
+	private FormattingRule lineLengthRule;
+	private List<FormattingConfiguration> configs;
 
 	/**
 	 * Loads project files from cache or downloads from Maven Central.
@@ -73,6 +84,10 @@ public class RealWorldProjectBenchmark
 			List<String> samples = SampleCodeGenerator.generateFiles(100, SampleCodeGenerator.Size.MEDIUM);
 			totalBytes = samples.stream().mapToLong(String::length).sum();
 		}
+
+		// Initialize formatting rule
+		lineLengthRule = new LineLengthFormattingRule();
+		configs = List.of(LineLengthConfiguration.defaultConfig());
 	}
 
 	/**
@@ -95,9 +110,10 @@ public class RealWorldProjectBenchmark
 				if (Files.exists(file))
 				{
 					String content = Files.readString(file);
-					// Simulate processing: count non-whitespace chars
-					long nonWhitespace = content.chars().filter(c -> !Character.isWhitespace(c)).count();
-					if (nonWhitespace > 0)
+					// Parse and format using actual Styler APIs
+					TransformationContext context = new BenchmarkTransformationContext(content);
+					String result = lineLengthRule.format(context, configs);
+					if (!result.isEmpty())
 					{
 						++processed;
 					}
@@ -130,7 +146,10 @@ public class RealWorldProjectBenchmark
 				if (Files.exists(file))
 				{
 					String source = Files.readString(file);
-					if (!source.isEmpty())
+					// Parse using actual Styler Parser
+					Parser parser = new Parser(source);
+					ParseResult result = parser.parse();
+					if (result instanceof ParseResult.Success)
 					{
 						++parsed;
 					}

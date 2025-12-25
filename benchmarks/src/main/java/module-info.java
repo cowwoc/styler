@@ -15,5 +15,5 @@ module io.github.cowwoc.styler.benchmarks
 	exports io.github.cowwoc.styler.benchmarks.scalability;
 	exports io.github.cowwoc.styler.benchmarks.threading;
 	exports io.github.cowwoc.styler.benchmarks.realworld;
-	exports io.github.cowwoc.styler.benchmarks.util;
+	// util package not exported - internal use only, avoids JPMS export warnings
 }

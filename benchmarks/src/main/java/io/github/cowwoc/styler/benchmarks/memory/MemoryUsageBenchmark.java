@@ -1,19 +1,29 @@
 package io.github.cowwoc.styler.benchmarks.memory;
 
+import io.github.cowwoc.styler.benchmarks.internal.BenchmarkTransformationContext;
 import io.github.cowwoc.styler.benchmarks.util.SampleCodeGenerator;
+import io.github.cowwoc.styler.formatter.FormattingConfiguration;
+import io.github.cowwoc.styler.formatter.FormattingRule;
+import io.github.cowwoc.styler.formatter.TransformationContext;
+import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
+import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
+import io.github.cowwoc.styler.parser.ParseResult;
+import io.github.cowwoc.styler.parser.Parser;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -29,7 +39,7 @@ import java.util.concurrent.TimeUnit;
  */
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@State(org.openjdk.jmh.annotations.Scope.Benchmark)
+@State(Scope.Benchmark)
 @Fork(value = 3, jvmArgs = {"-Xms64m", "-Xmx768m", "-XX:+UseG1GC"})
 @Warmup(iterations = 0)
 @Measurement(iterations = 5)
@@ -42,6 +52,8 @@ public class MemoryUsageBenchmark
 	private int fileCount;
 
 	private List<String> sourceFiles;
+	private FormattingRule lineLengthRule;
+	private List<FormattingConfiguration> configs;
 
 	/**
 	 * Generates sample source files for memory benchmarking.
@@ -50,6 +62,8 @@ public class MemoryUsageBenchmark
 	public void setup()
 	{
 		sourceFiles = SampleCodeGenerator.generateFiles(fileCount, SampleCodeGenerator.Size.MEDIUM);
+		lineLengthRule = new LineLengthFormattingRule();
+		configs = List.of(LineLengthConfiguration.defaultConfig());
 	}
 
 	/**
@@ -69,13 +83,16 @@ public class MemoryUsageBenchmark
 		System.gc();
 		long beforeMemory = runtime.totalMemory() - runtime.freeMemory();
 
-		// Simulate processing multiple files
-		long totalLength = 0;
+		// Parse and format files using actual Styler APIs
+		List<TransformationContext> contexts = new ArrayList<>(sourceFiles.size());
 		for (String source : sourceFiles)
 		{
-			blackhole.consume(source);
-			totalLength += source.length();
+			TransformationContext context = new BenchmarkTransformationContext(source);
+			contexts.add(context);
+			String result = lineLengthRule.format(context, configs);
+			blackhole.consume(result);
 		}
+		blackhole.consume(contexts);
 
 		System.gc();
 		long afterMemory = runtime.totalMemory() - runtime.freeMemory();

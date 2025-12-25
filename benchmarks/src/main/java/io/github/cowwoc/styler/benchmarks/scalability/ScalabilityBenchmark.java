@@ -1,18 +1,26 @@
 package io.github.cowwoc.styler.benchmarks.scalability;
 
+import io.github.cowwoc.styler.benchmarks.internal.BenchmarkTransformationContext;
 import io.github.cowwoc.styler.benchmarks.util.SampleCodeGenerator;
+import io.github.cowwoc.styler.formatter.FormattingConfiguration;
+import io.github.cowwoc.styler.formatter.FormattingRule;
+import io.github.cowwoc.styler.formatter.TransformationContext;
+import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
+import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
+import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Warmup;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -29,7 +37,7 @@ import java.util.concurrent.TimeUnit;
  */
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@State(org.openjdk.jmh.annotations.Scope.Benchmark)
+@State(Scope.Benchmark)
 @Fork(value = 3, jvmArgs = {"-Xms2g", "-Xmx2g"})
 @Warmup(iterations = 3, time = 2, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
@@ -42,7 +50,9 @@ public class ScalabilityBenchmark
 	private int threadCount;
 
 	private List<String> testFiles;
-	private long operationCount;
+	private List<TransformationContext> contexts;
+	private FormattingRule lineLengthRule;
+	private List<FormattingConfiguration> configs;
 
 	/**
 	 * Generates test files for scalability benchmarking.
@@ -52,7 +62,17 @@ public class ScalabilityBenchmark
 	{
 		// Generate a large batch of files for parallel processing
 		testFiles = SampleCodeGenerator.generateFiles(1000, SampleCodeGenerator.Size.SMALL);
-		operationCount = 0;
+
+		// Pre-parse all files to create transformation contexts
+		contexts = new ArrayList<>(testFiles.size());
+		for (String source : testFiles)
+		{
+			contexts.add(new BenchmarkTransformationContext(source));
+		}
+
+		// Initialize formatting rule
+		lineLengthRule = new LineLengthFormattingRule();
+		configs = List.of(LineLengthConfiguration.defaultConfig());
 	}
 
 	/**
@@ -70,14 +90,14 @@ public class ScalabilityBenchmark
 		long processed = 0;
 
 		// Distribute files across threads
-		int filesPerThread = testFiles.size() / Math.max(1, threadCount);
+		int filesPerThread = contexts.size() / Math.max(1, threadCount);
 		for (int t = 0; t < threadCount; ++t)
 		{
 			int start = t * filesPerThread;
 			int end;
 			if (t == threadCount - 1)
 			{
-				end = testFiles.size();
+				end = contexts.size();
 			}
 			else
 			{
@@ -86,10 +106,13 @@ public class ScalabilityBenchmark
 
 			for (int i = start; i < end; ++i)
 			{
-				String file = testFiles.get(i);
-				// Simulate work on each file
-				++processed;
-				operationCount += file.length();
+				TransformationContext context = contexts.get(i);
+				// Format using actual Styler APIs
+				String result = lineLengthRule.format(context, configs);
+				if (!result.isEmpty())
+				{
+					++processed;
+				}
 			}
 		}
 
@@ -108,10 +131,14 @@ public class ScalabilityBenchmark
 	public long processSequentially()
 	{
 		long processed = 0;
-		for (String file : testFiles)
+		for (TransformationContext context : contexts)
 		{
-			++processed;
-			operationCount += file.length();
+			// Format using actual Styler APIs
+			String result = lineLengthRule.format(context, configs);
+			if (!result.isEmpty())
+			{
+				++processed;
+			}
 		}
 		return processed;
 	}
