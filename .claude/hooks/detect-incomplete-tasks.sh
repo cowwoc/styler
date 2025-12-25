@@ -4,8 +4,13 @@
 # CREATED: 2025-12-02 after implement-line-length-formatter was merged but left
 # with AWAITING_USER_APPROVAL state and orphaned worktree/branch
 #
+# UPDATED: 2025-12-25 - Fixed false positive when task branch equals main (freshly created)
+# and added session ownership check to prevent taking over active tasks from other instances
+#
 # PREVENTS: Tasks remaining in incomplete state after merge to main
 # DETECTS: Tasks where content is on main but cleanup never happened
+#
+# ⚠️ CRITICAL: This hook must NOT recommend cleanup for tasks owned by other sessions
 
 set -euo pipefail
 
@@ -42,8 +47,9 @@ for task_dir in /workspace/tasks/*/; do
 		continue
 	fi
 
-	# Get task state
+	# Get task state and session_id
 	STATE=$(jq -r '.state // "UNKNOWN"' "$TASK_JSON" 2>/dev/null || echo "UNKNOWN")
+	TASK_SESSION_ID=$(jq -r '.session_id // ""' "$TASK_JSON" 2>/dev/null || echo "")
 
 	# Check if task is in a non-final state (not CLEANUP or after)
 	case "$STATE" in
@@ -52,18 +58,30 @@ for task_dir in /workspace/tasks/*/; do
 			continue
 			;;
 		*)
-			# Check if task was merged to main
-			# Use proper ancestry check - only flag if task branch is ancestor of main
+			# Check if task was actually merged to main (not just created from main)
 			cd /workspace/main
 
-			# Check if task branch exists and is ancestor of main
+			# A task is truly merged if:
+			# 1. Task branch exists
+			# 2. Task branch is ancestor of main (main contains task's commits)
+			# 3. Task branch has commits BEYOND where it forked from main
+			#    (otherwise it's just freshly created and equals main)
 			MERGED_COMMIT=""
 			if git rev-parse --verify "$TASK_NAME" >/dev/null 2>&1; then
-				# Task branch exists - check if it's merged into main
-				if git merge-base --is-ancestor "$TASK_NAME" main 2>/dev/null; then
-					# Get the merge commit or last task branch commit
-					MERGED_COMMIT=$(git log --oneline -1 "$TASK_NAME" 2>/dev/null || echo "")
+				TASK_HEAD=$(git rev-parse "$TASK_NAME" 2>/dev/null)
+				MAIN_HEAD=$(git rev-parse main 2>/dev/null)
+
+				# If task branch equals main, it's NOT merged - just freshly created
+				if [[ "$TASK_HEAD" != "$MAIN_HEAD" ]]; then
+					# Task branch has diverged from main
+					# Check if task's commits are now in main (merged)
+					if git merge-base --is-ancestor "$TASK_NAME" main 2>/dev/null; then
+						# Task branch is ancestor of main AND different from main
+						# This means task was merged to main
+						MERGED_COMMIT=$(git log --oneline -1 "$TASK_NAME" 2>/dev/null || echo "")
+					fi
 				fi
+				# If TASK_HEAD == MAIN_HEAD, task branch is freshly created, skip it
 			fi
 
 			if [[ -n "$MERGED_COMMIT" ]]; then
@@ -71,6 +89,7 @@ for task_dir in /workspace/tasks/*/; do
 				FOUND_INCOMPLETE=true
 				WORKTREE_EXISTS="No"
 				BRANCH_EXISTS="No"
+				SESSION_WARNING=""
 
 				# Check for orphaned worktree
 				if [[ -d "/workspace/tasks/${TASK_NAME}/code" ]]; then
@@ -84,6 +103,15 @@ for task_dir in /workspace/tasks/*/; do
 					BRANCH_EXISTS="Yes"
 				fi
 
+				# Session ownership check - warn if task belongs to different session
+				if [[ -n "$TASK_SESSION_ID" ]]; then
+					SESSION_WARNING="
+**⚠️ Session ID**: \`${TASK_SESSION_ID}\`
+**WARNING**: This task has a session_id. Before cleanup, verify the owning session
+is no longer active. Use \`verify-task-ownership\` skill if unsure.
+"
+				fi
+
 				MESSAGE+="
 ## ⚠️ INCOMPLETE TASK DETECTED: \`${TASK_NAME}\`
 
@@ -91,7 +119,7 @@ for task_dir in /workspace/tasks/*/; do
 **Merged Commit**: \`${MERGED_COMMIT}\`
 **Orphaned Worktree**: ${WORKTREE_EXISTS}
 **Orphaned Branch**: ${BRANCH_EXISTS}
-
+${SESSION_WARNING}
 **Action Required**: Complete CLEANUP for this task before starting new work.
 
 \`\`\`bash
