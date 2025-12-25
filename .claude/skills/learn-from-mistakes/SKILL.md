@@ -1025,6 +1025,37 @@ git branch -D "$BACKUP_BRANCH"
 rm /tmp/learn-from-mistakes-rollback.txt
 ```
 
+**⚠️ CRITICAL: Prevention Changes Go Directly to Main**
+
+Per `protocol-scope-specification.md` Category A, configuration and documentation files are **non-protocol
+work** that should be committed directly to `/workspace/main/`, NOT bundled into task branches.
+
+**Prevention files (commit to main directly)**:
+- `.claude/hooks/*.sh` - Hook scripts
+- `.claude/agents/*.md` - Agent configurations
+- `.claude/skills/*/SKILL.md` - Skill documentation
+- `CLAUDE.md` - Main configuration
+- `docs/project/*.md` - Protocol documentation
+
+**Workflow when inside task worktree**:
+```bash
+# WRONG: Edit config in task worktree and include in task commit
+cd /workspace/tasks/my-task/code
+Edit: CLAUDE.md  # ❌ This bundles config change with task work
+
+# CORRECT: Edit config directly on main
+cd /workspace/main
+Edit: CLAUDE.md  # ✅ Prevention change stays on main
+git add CLAUDE.md && git commit -m "LFM: Add prevention for X mistake"
+cd /workspace/tasks/my-task/code  # Return to task work
+```
+
+**Why This Matters**: Task branches should contain ONLY task implementation. Bundling process improvements
+into task commits:
+- Mixes concerns (task work vs process improvements)
+- Makes task history harder to understand
+- Requires re-doing the squash if process change needs adjustment
+
 **For Each Update**:
 
 1. **Read** current config: `.claude/agents/{agent-name}.md` or `docs/project/{protocol-file}.md`

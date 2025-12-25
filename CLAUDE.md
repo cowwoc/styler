@@ -26,6 +26,20 @@ available for troubleshooting: main-agent-coordination.md, task-protocol-core.md
 - Use `--ff-only` for all merges to main (linear history)
 - Hooks enforce protocol compliance
 
+> 🚨 **MANDATORY PRE-APPROVAL CLEANUP** {#mandatory-pre-approval-cleanup}
+>
+> **BEFORE presenting changes for user approval**, you MUST complete cleanup:
+> 1. Remove all agent worktrees
+> 2. Delete all agent branches (`{task}-architect`, `{task}-tester`, `{task}-formatter`)
+> 3. Squash all task commits into ONE commit (use `git-squash` skill)
+> 4. Verify: `git branch | grep {task}` shows ONLY task branch (no agent suffixes)
+> 5. Verify: `git rev-list --count main..{task}` returns `1`
+>
+> **Invoke `pre-presentation-cleanup` skill** to execute these steps.
+>
+> ❌ VIOLATION: Presenting multiple commits or agent branches for approval
+> ✅ CORRECT: Present single, clean commit after full cleanup
+
 **Task Prioritization**: Bug fixes MUST be prioritized before new features, unless the new feature will
 replace the feature containing the bugs.
 
