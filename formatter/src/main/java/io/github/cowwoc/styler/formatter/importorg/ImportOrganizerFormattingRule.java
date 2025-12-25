@@ -305,9 +305,10 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 			return true;
 		}
 
-		int importStart = imports.get(0).startPosition();
-		int importEnd = imports.get(imports.size() - 1).endPosition() + 1;
-		String currentImportSection = context.sourceCode().substring(importStart, importEnd).strip();
+		// Imports are sorted by position, so first/last give section bounds
+		int importStart = imports.getFirst().startPosition();
+		int importEnd = imports.getLast().endPosition();
+		String currentImportSection = context.sourceCode().substring(importStart, importEnd + 1).strip();
 
 		return currentImportSection.equals(organized.strip());
 	}
@@ -333,18 +334,20 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 			return source;
 		}
 
-		int importStart = imports.get(0).startPosition();
-		int importEnd = imports.get(imports.size() - 1).endPosition() + 1;
+		// Imports are sorted by position, so first/last give section bounds
+		int importStart = imports.getFirst().startPosition();
+		// +1 because endPosition is inclusive
+		int sectionEnd = imports.getLast().endPosition() + 1;
 
 		StringBuilder result = new StringBuilder().
 			append(source, 0, importStart).
 			append(organized);
-		if (importEnd < source.length() && source.charAt(importEnd) != '\n')
+		if (sectionEnd < source.length() && source.charAt(sectionEnd) != '\n')
 		{
 			result.append('\n');
 		}
 
-		result.append(source.substring(importEnd));
+		result.append(source.substring(sectionEnd));
 
 		return result.toString();
 	}
