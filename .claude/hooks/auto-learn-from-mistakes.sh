@@ -213,68 +213,37 @@ if [[ -z "$MISTAKE_TYPE" ]]; then
   exit 0
 fi
 
-# Rate limiting: Check if we've triggered recently
-MISTAKE_LOG="/tmp/mistake-detection-log.json"
-touch "$MISTAKE_LOG"
-
-# Initialize log if empty
-if [[ ! -s "$MISTAKE_LOG" ]]; then
-  echo "[]" > "$MISTAKE_LOG"
-fi
-
-# Check for recent mistakes (within last 5 minutes)
-FIVE_MINUTES_AGO=$(date -d '5 minutes ago' -Iseconds 2>/dev/null || date -v-5M -Iseconds 2>/dev/null || echo "")
-if [[ -n "$FIVE_MINUTES_AGO" ]]; then
-  RECENT_MISTAKES=$(jq --arg cutoff "$FIVE_MINUTES_AGO" '[.[] | select(.timestamp > $cutoff)]' "$MISTAKE_LOG")
-  RECENT_COUNT=$(echo "$RECENT_MISTAKES" | jq 'length')
-
-  if [[ "$RECENT_COUNT" -gt 0 ]]; then
-    # Already prompted recently, just log and pass through
-    TIMESTAMP=$(date -Iseconds)
-    jq --arg type "$MISTAKE_TYPE" \
-       --arg tool "$TOOL_NAME" \
-       --arg timestamp "$TIMESTAMP" \
-       --arg details "$MISTAKE_DETAILS" \
-       '. += [{type: $type, tool: $tool, timestamp: $timestamp, details: $details}]' \
-       "$MISTAKE_LOG" > "${MISTAKE_LOG}.tmp" && mv "${MISTAKE_LOG}.tmp" "$MISTAKE_LOG"
-
-    echo "$HOOK_CONTEXT"
-    exit 0
-  fi
-fi
-
-# Log this mistake
-TIMESTAMP=$(date -Iseconds)
-jq --arg type "$MISTAKE_TYPE" \
-   --arg tool "$TOOL_NAME" \
-   --arg timestamp "$TIMESTAMP" \
-   --arg details "$MISTAKE_DETAILS" \
-   '. += [{type: $type, tool: $tool, timestamp: $timestamp, details: $details}]' \
-   "$MISTAKE_LOG" > "${MISTAKE_LOG}.tmp" && mv "${MISTAKE_LOG}.tmp" "$MISTAKE_LOG"
-
 # Output the original hook context
 echo "$HOOK_CONTEXT"
 
-# Output recommendation to invoke learn-from-mistakes
+# Construct a unique TodoWrite entry ID for deduplication
+# Format: "LFM: {mistake_type}" - agent can check if this exists in TodoWrite
+TODOWRITE_CONTENT="LFM: Investigate ${MISTAKE_TYPE} from ${TOOL_NAME}"
+TODOWRITE_ACTIVE="Investigating ${MISTAKE_TYPE} mistake"
+
+# Output TodoWrite directive - agent MUST check if entry exists before adding
+# This approach uses TodoWrite as the deduplication mechanism instead of rate limiting
+# See CLAUDE.md § Auto-Detected Mistake Handling for the enforcement rule
 cat >&2 << EOF
 
-📚 MISTAKE DETECTED: $MISTAKE_TYPE
+📚 MISTAKE DETECTED: ${MISTAKE_TYPE}
 
-A significant mistake was detected in the $TOOL_NAME tool result.
+**MANDATORY**: Check TodoWrite for existing entry, add if not present:
 
-**Recommendation**: Invoke the learn-from-mistakes skill:
-
-\`\`\`
-Skill: learn-from-mistakes
-
-Context: Detected $MISTAKE_TYPE during $TOOL_NAME execution.
-
-Details: $MISTAKE_DETAILS
-
-Please analyze the root cause and recommend prevention measures.
+\`\`\`json
+{
+  "content": "${TODOWRITE_CONTENT}",
+  "status": "pending",
+  "activeForm": "${TODOWRITE_ACTIVE}"
+}
 \`\`\`
 
-This analysis will help prevent similar mistakes in future sessions.
+**Context**: Detected ${MISTAKE_TYPE} during ${TOOL_NAME} execution.
+
+**Details**: ${MISTAKE_DETAILS}
+
+**Why TodoWrite?**: Deduplication happens naturally - if entry already exists,
+don't add again. This ensures all violations are tracked and eventually addressed.
 
 EOF
 
