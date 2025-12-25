@@ -2,6 +2,42 @@
 
 ## 2025-12-25
 
+### E11: Import Organizer Bounds Error Fix ✅
+
+**Completion Date**: 2025-12-25
+
+**Task**: `fix-import-organizer-bounds`
+
+**Problem Solved**:
+- StringIndexOutOfBoundsException when static imports appear before regular imports in source code
+- Error: `Range [130, 128) out of bounds for length 2379`
+- Blocked self-hosting (styler cannot format its own codebase)
+
+**Root Cause**:
+- `ImportExtractor.extract()` adds regular imports first, then static imports to the list
+- `importsAreOrganized()` and `replaceImportSection()` assumed list order equals source position order
+- When static imports appear before regular imports, `startPosition > endPosition` causing bounds error
+
+**Solution Implemented**:
+- Modified `importsAreOrganized()` to iterate through all imports to find actual min/max positions
+- Modified `replaceImportSection()` with same fix
+- No longer assumes list order equals source file position order
+
+**Files Modified**:
+- `formatter/src/main/java/io/github/cowwoc/styler/formatter/importorg/ImportOrganizerFormattingRule.java`
+
+**Test Cases Added**:
+- `shouldHandleStaticImportBeforeRegularImport()` - regression test for the bounds error
+
+**Quality**:
+- All 13 ImportOrganizerFormattingRuleTest tests passing
+- Zero Checkstyle/PMD violations
+
+**Unblocks**:
+- Self-hosting progress (one less blocker)
+
+---
+
 ### E10: Nested Type Reference Parsing ✅
 
 **Completion Date**: 2025-12-25

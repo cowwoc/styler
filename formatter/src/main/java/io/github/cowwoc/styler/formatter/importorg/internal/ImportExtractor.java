@@ -7,6 +7,7 @@ import io.github.cowwoc.styler.formatter.AstPositionIndex;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
@@ -52,6 +53,8 @@ public final class ImportExtractor
 		processImportNodes(context, positionIndex, arena, NodeType.IMPORT_DECLARATION, false, imports);
 		processImportNodes(context, positionIndex, arena, NodeType.STATIC_IMPORT_DECLARATION, true, imports);
 
+		// Sort by source position so first/last elements give import section bounds
+		imports.sort(Comparator.comparingInt(ImportDeclaration::startPosition));
 		return imports;
 	}
 
