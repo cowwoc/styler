@@ -79,7 +79,7 @@ public final class SecurityConfig
 	 * <strong>Performance:</strong> Checked on every recursive call to parseUnary() and
 	 * parsePrimary(), minimal overhead (integer increment + comparison).
 	 */
-	public static final int MAX_PARSE_DEPTH = 200;
+	public static final int MAX_PARSE_DEPTH = 30;
 
 	/**
 	 * Parsing timeout in milliseconds (30 seconds).

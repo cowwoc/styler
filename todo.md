@@ -466,22 +466,8 @@ benchmarking, and validate with Maven plugin integration.
   - **Priority**: Lower than self-hosting blockers - these are edge cases
   - **Quality**: Parser tests for comment placement in each identified location
 
-### Parser Bug: Nested Type References
-- [ ] **READY:** `fix-nested-type-references` - Fix parser failure on nested class type references
-  - **Dependencies**: `add-parser-error-record` ✅
-  - **Blocks**: Self-hosting (styler cannot format its own codebase)
-  - **Parallelizable With**: `fix-enum-constant-comments`, `fix-import-organizer-bounds`
-  - **Estimated Effort**: 1 day
-  - **Purpose**: Enable parsing of nested/inner class type references like `OuterClass.InnerClass`
-  - **Current Error**: `Expected SEMICOLON but found DOT`
-  - **Affected Files**: NodeArena.java (line 24: `ValueLayout.OfInt`)
-  - **Example**:
-    ```java
-    private static final ValueLayout.OfInt INT_LAYOUT = ValueLayout.JAVA_INT;
-    ```
-  - **Root Cause**: Parser parses `ValueLayout` as complete type, expects semicolon, finds `.`
-  - **Scope**: Handle qualified type names that reference nested classes
-  - **Quality**: Parser tests for nested class type references in various contexts
+### Parser Bug: Nested Type References ✅ COMPLETE (2025-12-25)
+- [x] **DONE:** `fix-nested-type-references` - Fix parser failure on nested class type references (2025-12-25)
 
 ### Formatter Bug: Import Organizer Bounds Error
 - [ ] **READY:** `fix-import-organizer-bounds` - Fix StringIndexOutOfBoundsException in ImportOrganizerFormattingRule
@@ -496,6 +482,28 @@ benchmarking, and validate with Maven plugin integration.
   - **Location**: `ImportOrganizerFormattingRule.importsAreOrganized():310`
   - **Scope**: Fix bounds calculation in import organization analysis
   - **Quality**: Add test case that reproduces the crash, verify fix
+
+### Parser Enhancement: Node-Based Complexity Limiting
+- [ ] **READY:** `refactor-parser-depth-limiting` - Replace recursion depth limit with node count limit
+  - **Dependencies**: None
+  - **Blocks**: None (enhancement for robustness)
+  - **Parallelizable With**: Any Phase E task
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Make parser complexity limiting implementation-independent
+  - **Current Problem**: `MAX_PARSE_DEPTH` limits recursion depth, which depends on JVM stack size and
+    parser bytecode layout - fragile and unpredictable
+  - **Proposed Solution**:
+    - Primary limit: Node count (checked in `NodeArena.allocateNode()`)
+    - Backup limit: Keep recursion depth as safety net with generous value (500+)
+  - **Benefits**:
+    - Node count is implementation-independent (works with recursive or iterative parser)
+    - Predictable behavior regardless of parser refactoring
+    - "Max 100,000 nodes" is easier to reason about than "max 200 recursions"
+  - **Implementation**:
+    - Add `maxNodes` parameter to `NodeArena` or `SecurityConfig`
+    - Check in `allocateNode()`: throw `ParseException` if exceeded
+    - Keep `MAX_PARSE_DEPTH` as backup with higher value
+  - **Quality**: Tests for both limits, verify no StackOverflowError possible
 
 ### Parser Enhancement: Missing Node Types
 - [ ] **READY:** `add-parameterized-type-nodes` - Create AST nodes for parameterized types

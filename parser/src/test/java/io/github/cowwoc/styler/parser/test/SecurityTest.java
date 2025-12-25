@@ -157,14 +157,14 @@ public class SecurityTest
 	public void testParsingTimeoutLogicExists()
 	{
 		// Create moderately complex nested expressions within limits
-		// 199 nested parentheses = maximum allowed depth
+		int nestedParentheses = SecurityConfig.MAX_PARSE_DEPTH - 1;
 		StringBuilder source = new StringBuilder("class Test { void m() { int x = ");
-		for (int i = 0; i < 199; i += 1)
+		for (int i = 0; i < nestedParentheses; ++i)
 		{
 			source.append('(');
 		}
 		source.append('1');
-		for (int i = 0; i < 199; i += 1)
+		for (int i = 0; i < nestedParentheses; ++i)
 		{
 			source.append(')');
 		}
