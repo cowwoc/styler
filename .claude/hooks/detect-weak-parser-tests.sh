@@ -59,6 +59,19 @@ for pattern in "${WEAK_PATTERNS[@]}"; do
     fi
 done
 
+# Pattern 2: parseSemanticAst with count-based assertions instead of AST comparison
+# ADDED: 2025-12-24 after EnumCommentParserTest used parseSemanticAst but only counted
+# node types instead of comparing against expected AST structure.
+USES_PARSE_SEMANTIC=$(grep -c 'parseSemanticAst' "$FILE_PATH" 2>/dev/null || echo "0")
+HAS_AST_COMPARISON=$(grep -c 'isEqualTo(expected)' "$FILE_PATH" 2>/dev/null || echo "0")
+HAS_COUNT_ASSERTIONS=$(grep -cE '\.stream\(\).*\.filter\(.*\.count\(\)' "$FILE_PATH" 2>/dev/null || echo "0")
+
+if [[ "$USES_PARSE_SEMANTIC" -gt 0 && "$HAS_AST_COMPARISON" -eq 0 && "$HAS_COUNT_ASSERTIONS" -gt 0 ]]; then
+    ISSUES_FOUND=true
+    ISSUES="${ISSUES}\n  - Count-based assertions on SemanticNode (${HAS_COUNT_ASSERTIONS} occurrences)"
+    ISSUES="${ISSUES}\n    File uses parseSemanticAst() but only counts nodes instead of comparing AST"
+fi
+
 if $ISSUES_FOUND; then
     cat >&2 << 'EOF'
 
