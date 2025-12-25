@@ -70,13 +70,25 @@ if echo "$COMMAND" | grep -qE "cd[[:space:]]+(/workspace/main|['\"]*/workspace/m
 	CURRENT_BRANCH="main"
 fi
 
-# Method 2: Check current working directory's branch
+# Method 2: Check the branch of the directory where command will execute
 # BUG FIX: 2025-12-15 - Was checking /workspace/main's branch instead of $PWD's branch
-# This caused false positives when rebasing task branches from their worktrees
-# because it would see main's branch is "main" and block, even though
-# the actual command runs in a task worktree on a different branch
+# BUG FIX: 2025-12-25 - If command starts with "cd /path && ...", check that path's branch
+#                       instead of the hook process's current directory
 if [ -z "$CURRENT_BRANCH" ]; then
-	CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
+	# Check if command starts with cd to a different directory
+	CD_TARGET=""
+	if echo "$COMMAND" | grep -qE "^cd[[:space:]]+" ; then
+		# Extract cd target (handles: cd /path, cd '/path', cd "/path")
+		CD_TARGET=$(echo "$COMMAND" | sed -n "s/^cd[[:space:]]*['\"]\\{0,1\\}\\([^'\";&|]*\\)['\"]\\{0,1\\}.*/\\1/p" | head -1)
+	fi
+
+	if [ -n "$CD_TARGET" ] && [ -d "$CD_TARGET" ]; then
+		# Check branch in the target directory
+		CURRENT_BRANCH=$(git -C "$CD_TARGET" branch --show-current 2>/dev/null || echo "")
+	else
+		# Fallback to current directory
+		CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
+	fi
 fi
 
 # Method 3: Check if we're in a task worktree (not main)
