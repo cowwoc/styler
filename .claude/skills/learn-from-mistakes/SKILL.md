@@ -1025,12 +1025,12 @@ git branch -D "$BACKUP_BRANCH"
 rm /tmp/learn-from-mistakes-rollback.txt
 ```
 
-**⚠️ CRITICAL: Prevention Changes Go Directly to Main**
+**⚠️ CRITICAL: Prevention Changes in Separate Commit on Task Branch**
 
-Per `protocol-scope-specification.md` Category A, configuration and documentation files are **non-protocol
-work** that should be committed directly to `/workspace/main/`, NOT bundled into task branches.
+Per `protocol-scope-specification.md` Category A, configuration and documentation files should be committed
+as a **separate commit BEFORE the implementation commit** on the task branch.
 
-**Prevention files (commit to main directly)**:
+**Prevention files (separate commit on task branch)**:
 - `.claude/hooks/*.sh` - Hook scripts
 - `.claude/agents/*.md` - Agent configurations
 - `.claude/skills/*/SKILL.md` - Skill documentation
@@ -1039,22 +1039,31 @@ work** that should be committed directly to `/workspace/main/`, NOT bundled into
 
 **Workflow when inside task worktree**:
 ```bash
-# WRONG: Edit config in task worktree and include in task commit
+# Work in task worktree
 cd /workspace/tasks/my-task/code
-Edit: CLAUDE.md  # ❌ This bundles config change with task work
 
-# CORRECT: Edit config directly on main
-cd /workspace/main
-Edit: CLAUDE.md  # ✅ Prevention change stays on main
-git add CLAUDE.md && git commit -m "LFM: Add prevention for X mistake"
-cd /workspace/tasks/my-task/code  # Return to task work
+# Make config changes
+Edit: CLAUDE.md
+Edit: .claude/hooks/my-hook.sh
+
+# Commit config changes SEPARATELY from implementation
+git add CLAUDE.md .claude/hooks/my-hook.sh
+git commit -m "LFM: Add prevention for X mistake"
+
+# Continue with implementation work
+Edit: Parser.java
+git add Parser.java
+git commit -m "Implement feature X"
+
+# Final branch structure:
+# Commit 1: "LFM: Add prevention for X mistake" (config)
+# Commit 2: "Implement feature X" (implementation)
 ```
 
-**Why This Matters**: Task branches should contain ONLY task implementation. Bundling process improvements
-into task commits:
-- Mixes concerns (task work vs process improvements)
-- Makes task history harder to understand
-- Requires re-doing the squash if process change needs adjustment
+**Why This Matters**: Separating config from implementation:
+- Keeps concerns separated (process improvements vs task work)
+- Makes review easier (config changes visible in their own commit)
+- Both changes flow to main together when task branch is merged
 
 **For Each Update**:
 

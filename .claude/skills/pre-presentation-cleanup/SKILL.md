@@ -10,8 +10,12 @@ allowed-tools: Bash, Read
 in AWAITING_USER_APPROVAL state.
 
 **Why This Matters**: Presenting changes with unsquashed commits or lingering agent branches
-requires rework and creates a poor user experience. Complete cleanup first, then present a clean
-single commit for review.
+requires rework and creates a poor user experience. Complete cleanup first, then present clean
+commits for review.
+
+**Commit Structure**: Task branch should have TWO commits (or one if no config changes):
+1. **Config commit** (first, if applicable): `.claude/`, `docs/project/`, `CLAUDE.md` changes
+2. **Implementation commit** (second): Source code, tests, `changelog.md`, `todo.md` changes
 
 ## When to Use This Skill
 
@@ -79,27 +83,63 @@ git add todo.md changelog.md
 - Format: `- [task-name] Brief description of what was accomplished`
 - Include key deliverables
 
-### Step 4: Squash Commits (Including Archival)
+### Step 4: Squash Commits (Two-Commit Structure)
 
-Use the `git-squash` skill to squash ALL task branch commits into ONE:
+Squash task branch commits into TWO commits (or one if no config changes):
 
+**Step 4a: Identify file categories**
 ```bash
 # From task worktree
 cd /workspace/tasks/$TASK_NAME/code
 
-# IMPORTANT: Ensure todo.md and changelog.md are staged BEFORE squashing
-git status  # Should show todo.md and changelog.md as staged
+# List all changed files
+git diff --name-only main...HEAD
 
-# Use git-squash skill (provides backup, verification, cleanup)
-# Target: single commit with all changes since branching from main
-# The squashed commit MUST include: implementation + todo.md + changelog.md
+# Categorize:
+# CONFIG FILES: .claude/*, docs/project/*, CLAUDE.md
+# IMPLEMENTATION FILES: Everything else (*.java, tests, changelog.md, todo.md)
+```
+
+**Step 4b: Create config commit (if config files changed)**
+```bash
+# If any .claude/, docs/project/, or CLAUDE.md files changed:
+# 1. Create a separate commit with ONLY config files
+# 2. Use git rebase -i to reorder/squash config changes into first commit
+
+# Example: If you have mixed commits, use interactive rebase to:
+# - Move all config file changes into first commit
+# - Move all implementation changes into second commit
+```
+
+**Step 4c: Create implementation commit**
+```bash
+# Squash all implementation changes (source, tests, changelog, todo) into second commit
+# Use git-squash skill for the implementation portion
+
+# IMPORTANT: Ensure todo.md and changelog.md are in the implementation commit
+git status  # Should show todo.md and changelog.md staged
 ```
 
 **Post-Squash Verification**:
 ```bash
-# Verify archival files are in the commit
-git show --stat | grep "todo.md" || echo "❌ ERROR: todo.md not in commit"
-git show --stat | grep "changelog.md" || echo "❌ ERROR: changelog.md not in commit"
+# Count commits (should be 1 or 2)
+git rev-list --count main..$TASK_NAME
+# Expected: 1 (no config changes) or 2 (has config changes)
+
+# Verify commit structure
+git log --oneline main..$TASK_NAME
+# Expected format:
+#   abc123 Implement feature X (implementation commit - LAST)
+#   def456 Update config for feature X (config commit - FIRST, if applicable)
+
+# Verify archival files are in IMPLEMENTATION commit (last commit)
+git show --stat HEAD | grep "todo.md" || echo "❌ ERROR: todo.md not in commit"
+git show --stat HEAD | grep "changelog.md" || echo "❌ ERROR: changelog.md not in commit"
+
+# Verify config files are in CONFIG commit (if applicable)
+if git rev-list --count main..$TASK_NAME | grep -q "2"; then
+  git show --stat HEAD~1 | grep -E "\.claude|docs/project|CLAUDE\.md"
+fi
 ```
 
 ### Step 5: Verify Cleanup
@@ -110,16 +150,26 @@ git branch | grep $TASK_NAME
 # Expected output: ONLY "{task-name}" (no -architect, -tester, -formatter suffixes)
 ```
 
-### Step 6: Verify Single Commit with Archival
+### Step 6: Verify Commit Structure
 
 ```bash
 # Count commits ahead of main
-git rev-list --count main..$TASK_NAME
-# Expected output: 1
+COMMIT_COUNT=$(git rev-list --count main..$TASK_NAME)
+echo "Commits: $COMMIT_COUNT"
+# Expected output: 1 (no config) or 2 (with config)
 
-# MANDATORY: Verify archival files are included
-git show --stat | grep -E "todo.md|changelog.md"
-# Expected: Both todo.md and changelog.md appear in commit
+# If 2 commits, verify structure:
+if [ "$COMMIT_COUNT" -eq 2 ]; then
+  echo "Config commit (first):"
+  git show --stat HEAD~1 | head -10
+  echo ""
+  echo "Implementation commit (second):"
+  git show --stat HEAD | head -15
+fi
+
+# MANDATORY: Verify archival files are in implementation commit (HEAD)
+git show --stat HEAD | grep -E "todo.md|changelog.md"
+# Expected: Both todo.md and changelog.md appear in HEAD commit
 ```
 
 ## Complete Cleanup Script
@@ -151,9 +201,11 @@ for agent in architect tester formatter; do
   fi
 done
 
-# Step 3: Squash commits (use git-squash skill or manual)
-echo "Step 3: Squash commits using git-squash skill..."
-echo "  → Use git-squash skill to squash all commits into one"
+# Step 3: Squash commits (two-commit structure)
+echo "Step 3: Organizing commits (config first, implementation second)..."
+echo "  → Check for config files: .claude/*, docs/project/*, CLAUDE.md"
+echo "  → Squash config changes into first commit (if any)"
+echo "  → Squash implementation changes into second commit"
 
 # Step 4: Verify cleanup
 echo "Step 4: Verifying cleanup..."
@@ -166,14 +218,16 @@ else
   echo "  ✅ Only task branch remains"
 fi
 
-# Step 5: Verify single commit
-echo "Step 5: Verifying single commit..."
+# Step 5: Verify commit structure
+echo "Step 5: Verifying commit structure..."
 COMMIT_COUNT=$(git rev-list --count main..$TASK_NAME)
 if [ "$COMMIT_COUNT" -eq 1 ]; then
-  echo "  ✅ Single commit verified"
+  echo "  ✅ Single commit (no config changes)"
+elif [ "$COMMIT_COUNT" -eq 2 ]; then
+  echo "  ✅ Two commits (config + implementation)"
 else
-  echo "  ❌ ERROR: Found $COMMIT_COUNT commits (expected 1)"
-  echo "  Use git-squash skill to squash commits"
+  echo "  ❌ ERROR: Found $COMMIT_COUNT commits (expected 1 or 2)"
+  echo "  Squash into: 1. config commit, 2. implementation commit"
   exit 1
 fi
 
@@ -196,10 +250,40 @@ User, here are the changes:
 ```
 
 ```
-✅ CORRECT:
+✅ CORRECT (with config changes):
+[Complete all cleanup steps first]
+User, here are the changes:
+  commit def456 - Update hook for X handling (config)
+  commit xyz789 - Implement feature X with tests (implementation)
+```
+
+```
+✅ CORRECT (no config changes):
 [Complete all cleanup steps first]
 User, here is the change:
   commit xyz789 - Implement feature X with tests and formatting
+```
+
+### Mistake: Mixing Config and Implementation in Same Commit
+
+```
+❌ WRONG: Single commit with mixed files
+$ git show --stat HEAD
+  .claude/hooks/my-hook.sh   | 10 ++++
+  Parser.java                | 50 +++++++
+  Test.java                  | 30 +++++
+
+✅ CORRECT: Separate commits
+$ git log --oneline main..HEAD
+  xyz789 Implement parser feature
+  def456 Add validation hook
+
+$ git show --stat HEAD~1  # Config commit
+  .claude/hooks/my-hook.sh   | 10 ++++
+
+$ git show --stat HEAD      # Implementation commit
+  Parser.java                | 50 +++++++
+  Test.java                  | 30 +++++
 ```
 
 ### Mistake: Subagent Branches Still Visible
@@ -251,11 +335,13 @@ AND archival. Presenting without archival requires rework after user approval.
 Step 1: Remove agent worktrees
 Step 2: Delete agent branches
 Step 3: Update archival files (todo.md + changelog.md) ← CRITICAL
-Step 4: Squash commits (including archival)
+Step 4: Squash into two commits:
+        4a. Config commit (if .claude/docs changes exist)
+        4b. Implementation commit (source, tests, archival)
 Step 5: Verify only task branch
-Step 6: Verify single commit with archival
+Step 6: Verify commit structure (1 or 2 commits)
         ↓
-[Present clean commit to user]
+[Present clean commits to user]
         ↓
 [Wait for user approval]
 ```
@@ -275,7 +361,9 @@ Before presenting to user, confirm:
 - [ ] All agent branches deleted
 - [ ] **todo.md updated** (task status changed to DONE)
 - [ ] **changelog.md updated** (task completion entry added)
-- [ ] Commits squashed to single commit (including archival files)
+- [ ] Config files (if any) squashed into FIRST commit
+- [ ] Implementation files squashed into LAST commit (including archival)
 - [ ] `git branch | grep {task}` shows ONLY task branch
-- [ ] `git rev-list --count main..{task}` returns `1`
-- [ ] `git show --stat` shows todo.md AND changelog.md in commit
+- [ ] `git rev-list --count main..{task}` returns `1` or `2`
+- [ ] `git show --stat HEAD` shows todo.md AND changelog.md in implementation commit
+- [ ] If 2 commits: `git show --stat HEAD~1` shows ONLY config files (.claude/, docs/project/, CLAUDE.md)

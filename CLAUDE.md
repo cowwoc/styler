@@ -31,14 +31,16 @@ available for troubleshooting: main-agent-coordination.md, task-protocol-core.md
 > **BEFORE presenting changes for user approval**, you MUST complete cleanup:
 > 1. Remove all agent worktrees
 > 2. Delete all agent branches (`{task}-architect`, `{task}-tester`, `{task}-formatter`)
-> 3. Squash all task commits into ONE commit (use `git-squash` skill)
+> 3. Squash commits into **TWO commits** (config first, implementation second):
+>    - **Commit 1**: `.claude/`, `docs/project/`, `CLAUDE.md` changes (if any)
+>    - **Commit 2**: Source code, tests, `changelog.md`, `todo.md` changes
 > 4. Verify: `git branch | grep {task}` shows ONLY task branch (no agent suffixes)
-> 5. Verify: `git rev-list --count main..{task}` returns `1`
+> 5. Verify: `git rev-list --count main..{task}` returns `1` or `2` (depending on config changes)
 >
 > **Invoke `pre-presentation-cleanup` skill** to execute these steps.
 >
-> ❌ VIOLATION: Presenting multiple commits or agent branches for approval
-> ✅ CORRECT: Present single, clean commit after full cleanup
+> ❌ VIOLATION: Mixing config and implementation in same commit
+> ✅ CORRECT: Config commit (if any) before implementation commit
 
 **Task Prioritization**: Bug fixes MUST be prioritized before new features, unless the new feature will
 replace the feature containing the bugs.
