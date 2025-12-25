@@ -176,7 +176,7 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
   reject (violations found) - If ANY reject → back to IMPLEMENTATION rounds. **After unanimous approval, MUST
   transition to AWAITING_USER_APPROVAL state**
 -  **AWAITING_USER_APPROVAL**: **MANDATORY CHECKPOINT STATE - All agents accepted, changes committed to task
-  branch, waiting for user review and approval before finalizing. Main agent MUST present changes, ask for
+  branch, task branch pushed to origin for review. Main agent MUST push branch, present changes, ask for
   approval, wait for user response, create approval flag, then transition to COMPLETE. This state CANNOT be
   skipped.**
 -  **SCOPE_NEGOTIATION**: Determine what work can be deferred when agents reject due to scope concerns (ONLY
@@ -492,7 +492,8 @@ VALIDATION: Agent stops to ask "should I fix this or delegate it?"
 - **NOT A VIOLATION**: This checkpoint is EXPECTED and part of autonomous completion protocol
 
 **Checkpoint 2: [CHANGE REVIEW] - After REVIEW, Before COMPLETE**
-- MANDATORY: Present completed changes with commit SHA to user
+- MANDATORY: Push task branch to origin for review
+- MANDATORY: Present completed changes with commit SHA and remote branch to user
 - MANDATORY: Wait for explicit user review approval
 - PROHIBITED: Assuming user approval from unanimous agent approval alone
 - PROHIBITED: Proceeding to COMPLETE without clear user confirmation
@@ -1214,7 +1215,18 @@ IF (audit-protocol-compliance skill returns FAILED):
 The todo.md and changelog.md updates MUST be part of the task branch commit BEFORE merging to main.
 This ensures the atomic commit includes both implementation AND archival.
 
-**Transition Steps**:
+**Pre-Approval Steps** (before presenting to user):
+
+1. **Push task branch to origin** for review:
+   ```bash
+   git push origin {task-branch-name}
+   ```
+
+2. **Present changes to user** with commit SHA and remote branch URL
+
+3. **Wait for explicit user approval**
+
+**Transition Steps** (after user approves):
 
 1. **Create approval flag**:
    ```bash

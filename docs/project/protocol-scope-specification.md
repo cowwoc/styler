@@ -8,9 +8,18 @@
 
 Not all work requires the full task protocol. This document categorizes all work types to determine when task.json and the full protocol state machine are required.
 
-## Category A: Non-Protocol Work (NO task.json required) {#non-protocol-work}
+## Category A: Configuration & Documentation Work {#non-protocol-work}
 
-Work that can be performed directly on main branch without task protocol isolation.
+Work that does NOT require task.json or the full protocol state machine, but MUST be committed on the task
+branch in a **separate commit before** the task implementation commit when done during a task.
+
+**Commit Structure on Task Branch** (before user approval):
+1. **Config/docs commit** (first): `.claude/`, `docs/project/`, `CLAUDE.md` changes
+2. **Implementation commit** (second): Source code, tests, changelog, todo changes
+
+**Squashing Rule**: During pre-presentation cleanup, squash into TWO commits (not one):
+- Squash all config/docs changes into first commit
+- Squash all implementation changes into second commit
 
 ### Documentation & Configuration
 
@@ -48,7 +57,6 @@ Work that can be performed directly on main branch without task protocol isolati
 **Operations**:
 - `git commit`, `git push`, `git pull`
 - `git branch`, `git checkout`, `git merge`
-- Working on main branch for non-protocol files
 - `.git/` directory operations
 
 ### IDE & Personal Settings
@@ -422,21 +430,27 @@ See: docs/project/protocol-scope-specification.md § Category B
 
 ## Examples {#examples}
 
-### ✅ Valid Non-Protocol Work
+### ✅ Valid Category A Work (During Task)
 
 ```bash
-# Improving documentation
-cd /workspace/main
-vim CLAUDE.md  # Category A - allowed
+# When working on a task, Category A files go in SEPARATE commit on task branch
+cd /workspace/tasks/my-task/code
 
-# Fixing hook
-vim .claude/hooks/my-hook.sh  # Category A - allowed
+# Improving documentation (separate commit from implementation)
+vim CLAUDE.md  # Category A - commit separately
+
+# Fixing hook (separate commit from implementation)
+vim .claude/hooks/my-hook.sh  # Category A - commit separately
 
 # Updating root build config
-vim pom.xml  # Category A (root level) - allowed
+vim pom.xml  # Category A (root level) - commit separately
 
 # Exploratory research
-vim docs/studies/explore-library-x.md  # Category A - allowed
+vim docs/studies/explore-library-x.md  # Category A - commit separately
+
+# Final task branch structure:
+# Commit 1: "Update hook for X handling" (all Category A changes)
+# Commit 2: "Implement feature Y" (all implementation changes)
 ```
 
 ### ❌ Invalid Non-Protocol Work
