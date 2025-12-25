@@ -255,24 +255,12 @@ benchmarking, and validate with Maven plugin integration.
 ### Maven Plugin (Early Real-World Testing) ✅ COMPLETE (2025-12-22)
 - [x] **COMPLETE:** `create-maven-plugin` - Maven plugin for build system integration (2025-12-22)
 
-### Performance Benchmarking
-- [ ] **READY:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
-  - **Dependencies**: `implement-pipeline-stages` ✅, `create-maven-plugin` ✅, `implement-virtual-thread-processing` ✅, all formatters ✅
-  - **Blocks**: `add-regression-test-suite`, `setup-github-actions-ci`
-  - **Parallelizable With**: `benchmark-concurrency-models`
-  - **Estimated Effort**: 3-4 days
-  - **Purpose**: Measure and validate parsing throughput, memory usage, scalability
-  - **Scope**: JMH benchmark suite covering all scope.md performance targets
-  - **Benchmarks**:
-    - ParsingThroughputBenchmark: ≥10,000 tokens/sec
-    - MemoryUsageBenchmark: ≤512MB per 1000 files
-    - FormattingThroughputBenchmark: ≥100 files/sec
-    - ScalabilityBenchmark: Linear scaling to 32 cores
-    - VirtualThreadComparisonBenchmark: Virtual vs platform threads
-    - RealWorldProjectBenchmark: Spring Framework, Guava, JUnit5
-  - **Configuration**: Fork=3, proper warmup/measurement, 95% confidence intervals
-  - **Integration**: Separate benchmark module, uses production code
-  - **Quality**: Statistical rigor, comprehensive coverage
+### Performance Benchmarking ✅ COMPLETE (2025-12-25)
+- [x] **COMPLETE:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks (2025-12-25)
+  - **Delivered**: New `styler-benchmarks` module with 6 benchmark classes (13 methods)
+  - **Benchmarks**: ParsingThroughput, MemoryUsage, FormattingThroughput, Scalability, VirtualThreadComparison, RealWorldProject
+  - **Utilities**: BenchmarkResourceManager, SampleCodeGenerator
+  - **Run**: `./mvnw package -Pbenchmarks -pl benchmarks -am && java -jar benchmarks/target/benchmarks.jar`
 
 ### Concurrency Model Benchmark
 - [ ] **READY:** `benchmark-concurrency-models` - Compare thread-per-file vs thread-per-block parallelism

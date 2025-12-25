@@ -2,6 +2,46 @@
 
 ## 2025-12-25
 
+### C3: JMH Benchmark Suite ✅
+
+**Completion Date**: 2025-12-25
+
+**Task**: `create-jmh-benchmarks`
+
+**Purpose**: Validate performance claims from scope.md with comprehensive JMH benchmarks
+
+**Module Created**: `styler-benchmarks`
+
+**Benchmark Classes** (6 classes, 13 benchmark methods):
+- **ParsingThroughputBenchmark**: Validates ≥10,000 tokens/sec parsing throughput
+- **MemoryUsageBenchmark**: Validates ≤512MB per 1000 files memory usage
+- **FormattingThroughputBenchmark**: Validates ≥100 files/sec formatting throughput
+- **ScalabilityBenchmark**: Tests linear scaling to 32 cores (≥75% efficiency)
+- **VirtualThreadComparisonBenchmark**: Compares virtual vs platform threads
+- **RealWorldProjectBenchmark**: Benchmarks Spring Framework, Guava, JUnit5
+
+**Utility Classes**:
+- **BenchmarkResourceManager**: Downloads/caches real-world projects with 30-day validity
+- **SampleCodeGenerator**: Generates synthetic Java code (small/medium/large sizes)
+
+**JMH Configuration**:
+- Fork=3 for statistical validity
+- Warmup=5 iterations, Measurement=10 iterations
+- 99.9% confidence intervals
+
+**Build & Run**:
+```bash
+./mvnw package -Pbenchmarks -pl benchmarks -am
+java -jar benchmarks/target/benchmarks.jar
+```
+
+**Quality**:
+- All Checkstyle/PMD checks pass
+- Module compiles and verifies cleanly
+- Executable benchmark JAR (6.4MB) builds successfully
+
+---
+
 ### E10: Nested Type Reference Parsing ✅
 
 **Completion Date**: 2025-12-25

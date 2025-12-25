@@ -22,6 +22,7 @@
 		<module>pipeline</module>
 		<module>cli</module>
 		<module>maven-plugin</module>
+		<module>benchmarks</module>
 	</modules>
 
 	<properties>
@@ -148,6 +149,16 @@
 			<groupId>io.github.classgraph</groupId>
 			<artifactId>classgraph</artifactId>
 			<version>4.8.179</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-core</artifactId>
+			<version>1.37</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openjdk.jmh</groupId>
+			<artifactId>jmh-generator-annprocess</artifactId>
+			<version>1.37</version>
 		</dependency>
 		</dependencies>
 	</dependencyManagement>
