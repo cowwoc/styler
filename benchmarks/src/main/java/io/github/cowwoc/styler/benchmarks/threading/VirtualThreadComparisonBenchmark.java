@@ -11,17 +11,14 @@ import io.github.cowwoc.styler.parser.Parser;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -58,31 +55,12 @@ public class VirtualThreadComparisonBenchmark
 	@Param({"100", "1000", "10000"})
 	private int concurrentTasks;
 
-	private List<String> testFiles;
-	private List<TransformationContext> contexts;
-	private FormattingRule lineLengthRule;
-	private List<FormattingConfiguration> configs;
-
-	/**
-	 * Generates test files for threading benchmarks.
-	 */
-	@Setup(Level.Trial)
-	public void setup()
-	{
-		// Generate enough files to support concurrent task benchmarking
-		testFiles = SampleCodeGenerator.generateFiles(100, SampleCodeGenerator.Size.SMALL);
-
-		// Pre-parse all files to create transformation contexts
-		contexts = new ArrayList<>(testFiles.size());
-		for (String source : testFiles)
-		{
-			contexts.add(new BenchmarkTransformationContext(source));
-		}
-
-		// Initialize formatting rule
-		lineLengthRule = new LineLengthFormattingRule();
-		configs = List.of(LineLengthConfiguration.defaultConfig());
-	}
+	private List<TransformationContext> contexts = SampleCodeGenerator.
+		generateFiles(100, SampleCodeGenerator.Size.SMALL).stream().
+		<TransformationContext>map(BenchmarkTransformationContext::new).
+		toList();
+	private FormattingRule lineLengthRule = new LineLengthFormattingRule();
+	private List<FormattingConfiguration> configs = List.of(LineLengthConfiguration.defaultConfig());
 
 	/**
 	 * Benchmarks concurrent file processing using the specified thread type.

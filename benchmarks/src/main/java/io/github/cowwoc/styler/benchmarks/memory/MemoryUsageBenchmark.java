@@ -52,8 +52,8 @@ public class MemoryUsageBenchmark
 	private int fileCount;
 
 	private List<String> sourceFiles;
-	private FormattingRule lineLengthRule;
-	private List<FormattingConfiguration> configs;
+	private FormattingRule lineLengthRule = new LineLengthFormattingRule();
+	private List<FormattingConfiguration> configs = List.of(LineLengthConfiguration.defaultConfig());
 
 	/**
 	 * Generates sample source files for memory benchmarking.
@@ -62,8 +62,6 @@ public class MemoryUsageBenchmark
 	public void setup()
 	{
 		sourceFiles = SampleCodeGenerator.generateFiles(fileCount, SampleCodeGenerator.Size.MEDIUM);
-		lineLengthRule = new LineLengthFormattingRule();
-		configs = List.of(LineLengthConfiguration.defaultConfig());
 	}
 
 	/**

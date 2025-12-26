@@ -56,8 +56,8 @@ public class RealWorldProjectBenchmark
 	private List<Path> projectFiles;
 	private long fileCount;
 	private long totalBytes;
-	private FormattingRule lineLengthRule;
-	private List<FormattingConfiguration> configs;
+	private FormattingRule lineLengthRule = new LineLengthFormattingRule();
+	private List<FormattingConfiguration> configs = List.of(LineLengthConfiguration.defaultConfig());
 
 	/**
 	 * Loads project files from cache or downloads from Maven Central.
@@ -84,10 +84,6 @@ public class RealWorldProjectBenchmark
 			List<String> samples = SampleCodeGenerator.generateFiles(100, SampleCodeGenerator.Size.MEDIUM);
 			totalBytes = samples.stream().mapToLong(String::length).sum();
 		}
-
-		// Initialize formatting rule
-		lineLengthRule = new LineLengthFormattingRule();
-		configs = List.of(LineLengthConfiguration.defaultConfig());
 	}
 
 	/**
