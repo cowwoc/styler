@@ -20,6 +20,16 @@ Per task prioritization rule, bug fixes take precedence over new features:
   - **Completed**: 2025-12-25
   - **Details**: Fixed bounds calculation in importsAreOrganized() and replaceImportSection()
 
+- [ ] **READY:** `fix-node-arena-memory-limit` - Fix NodeArena memory limit exceeded during batch processing
+  - **Dependencies**: None
+  - **Blocks**: `benchmark-concurrency-models`, memory benchmarks
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Fix IllegalStateException when processing large batches of files
+  - **Current Error**: `Memory limit exceeded: 538MB exceeds maximum of 536MB` in NodeArena.allocateNode()
+  - **Root Cause**: NodeArena enforces 512MB limit but batch processing of 1000 files exceeds this
+  - **Scope**: Either increase limit, make it configurable, or reset arena between files
+  - **Discovered By**: JMH benchmark MemoryUsageBenchmark processing 1000 files
+
 **COMPLETED**:
 - `implement-line-length-formatter` - Line Length Formatter ✅ COMPLETE
 - `implement-import-organization` - Import Organization ✅ COMPLETE
