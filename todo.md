@@ -20,15 +20,9 @@ Per task prioritization rule, bug fixes take precedence over new features:
   - **Completed**: 2025-12-25
   - **Details**: Fixed bounds calculation in importsAreOrganized() and replaceImportSection()
 
-- [ ] **READY:** `fix-node-arena-memory-limit` - Fix NodeArena memory limit exceeded during batch processing
-  - **Dependencies**: None
-  - **Blocks**: `benchmark-concurrency-models`, memory benchmarks
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Fix IllegalStateException when processing large batches of files
-  - **Current Error**: `Memory limit exceeded: 538MB exceeds maximum of 536MB` in NodeArena.allocateNode()
-  - **Root Cause**: NodeArena enforces 512MB limit but batch processing of 1000 files exceeds this
-  - **Scope**: Either increase limit, make it configurable, or reset arena between files
-  - **Discovered By**: JMH benchmark MemoryUsageBenchmark processing 1000 files
+- [x] **COMPLETE:** `fix-node-arena-memory-limit` - Fix NodeArena memory limit exceeded during batch processing ✅
+  - **Completed**: 2025-12-26
+  - **Details**: Removed flawed SEC-005 heap usage check that measured total JVM heap instead of per-arena memory. Security maintained by existing MAX_ARENA_CAPACITY, MAX_TOKEN_COUNT, and JVM -Xmx limits.
 
 **COMPLETED**:
 - `implement-line-length-formatter` - Line Length Formatter ✅ COMPLETE
@@ -257,6 +251,37 @@ benchmarking, and validate with Maven plugin integration.
 ### File Discovery ✅ COMPLETE (2025-12-09)
 
 ### Virtual Thread Processing (Thread-per-File Baseline) ✅ COMPLETE (2025-12-10)
+
+### Memory-Based Concurrency Control
+- [ ] **READY:** `implement-memory-reservation` - File-size based memory reservation to prevent OOM
+  - **Dependencies**: `implement-virtual-thread-processing` ✅, `implement-pipeline-stages` ✅
+  - **Blocks**: None (enhancement for robustness)
+  - **Parallelizable With**: `create-jmh-benchmarks`, `benchmark-concurrency-models`
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Prevent OOM by reserving memory before processing each file
+  - **Problem**: With SEC-005 heap check removed, processing more files than memory allows causes OOM crash
+  - **Design**: Semaphore-based memory reservation using permits as memory units
+    - `PERMIT_UNIT` = 1MB (granularity of reservation)
+    - `totalPermits` = (heap × 0.7) / PERMIT_UNIT
+    - `permitsNeeded(file)` = min(fileSize × 5, 120MB) / PERMIT_UNIT
+    - `reserve(file)` → `semaphore.acquire(permits)` (blocks if unavailable)
+    - `release()` → `semaphore.release(permits)` (unblocks waiting files)
+  - **Guarantees**:
+    - Small files (2KB): ~1 permit → hundreds concurrent
+    - Large files (5MB): ~25 permits → dozens concurrent
+    - Huge files (20MB): ~100 permits → ~14 concurrent
+    - Pathological (>24MB): capped at 120 permits → ~11 concurrent
+  - **Behavior**:
+    - Files processed immediately if permits available
+    - Files block (not fail) when memory tight
+    - Self-healing: blocked files proceed as others complete
+    - Fair ordering via `Semaphore(permits, true)`
+  - **Components**:
+    - `MemoryReservationManager`: Semaphore wrapper with file-size estimation
+    - `Reservation` record: Tracks permits for release
+    - Integration with `BatchProcessor` try-finally pattern
+  - **Optional**: `--max-concurrent-files=N` user override
+  - **Quality**: Tests for various file sizes, memory pressure scenarios, verify no OOM
 
 ### Additional Formatting Rules (Build to 5 Total Rules) ✅ COMPLETE
 

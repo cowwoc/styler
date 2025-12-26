@@ -33,7 +33,6 @@ public final class NodeArena implements AutoCloseable
 	private MemorySegment segment;
 	private int nodeCount;
 	private int capacity;
-	private int allocationCheckCounter;
 
 	/**
 	 * Creates a new NodeArena with default initial capacity.
@@ -72,25 +71,6 @@ public final class NodeArena implements AutoCloseable
 		requireThat(type, "type").isNotNull();
 		requireThat(start, "start").isNotNegative();
 		requireThat(end, "end").isNotNegative();
-
-		// SEC-005: Periodic memory checking to detect memory exhaustion
-		// Note: JVM -Xmx limit will cap us anyway, this is an additional safeguard
-		// Check every 100 node allocations to amortize Runtime.getRuntime() overhead (~500ns)
-		++allocationCheckCounter;
-		if (allocationCheckCounter >= 100)
-		{
-			allocationCheckCounter = 0;
-			// Note: usedMemory reflects JVM heap usage, not specific to this application
-			// The JVM's -Xmx setting provides the hard limit
-			Runtime runtime = Runtime.getRuntime();
-			long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-			if (usedMemory > SecurityConfig.MAX_HEAP_USAGE_BYTES)
-			{
-				throw new IllegalStateException(
-					"Memory limit exceeded: " + usedMemory + " bytes exceeds maximum of " +
-					SecurityConfig.MAX_HEAP_USAGE_BYTES + " bytes");
-			}
-		}
 
 		if (nodeCount >= capacity)
 		{

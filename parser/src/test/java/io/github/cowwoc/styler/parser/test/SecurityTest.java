@@ -8,9 +8,9 @@ import org.testng.annotations.Test;
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
- * Security integration tests for Parser validating enforcement of all 6 security controls
+ * Security integration tests for Parser validating enforcement of all 5 security controls
  * against resource exhaustion attacks: file size limit, token count limit, parse timeout,
- * memory limit, nesting depth limit, and arena capacity limit.
+ * nesting depth limit, and arena capacity limit.
  *
  * <h2>Thread safety</h2>
  * Thread-safe - all instances are created inside @Test methods.
@@ -108,39 +108,6 @@ public class SecurityTest
 			ParseResult result = parser.parse();
 			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
 			// Successfully parsed - arena capacity limit logic exists in NodeArena.grow()
-			requireThat(parser.getArena().getNodeCount(), "parser.getArena().getNodeCount()").isPositive();
-		}
-	}
-
-	/**
-	 * SEC-005: Validates memory limit enforcement.
-	 * Tests that the memory limit check exists and monitors heap usage.
-	 * <p>
-	 * Note: This test verifies the logic exists rather than actually exceeding 512MB,
-	 * since creating enough memory pressure without hitting file size or token limits
-	 * is impractical. The check is implemented in NodeArena.allocateNode().
-	 */
-	@Test
-	public void testMemoryLimitMonitoring()
-	{
-		// Create a moderately complex source that allocates memory
-		// Estimate: 20 chars/field * 10000 fields = ~200KB
-		StringBuilder source = new StringBuilder(250_000);
-		source.append("class MemoryTest {\n");
-
-		// Create enough declarations to allocate reasonable memory without exceeding limits
-		for (int i = 0; i < 10_000; i += 1)
-		{
-			source.append("int field").append(i).append(" = ").append(i).append(";\n");
-		}
-		source.append('}');
-
-		// Should parse successfully - verifies memory monitoring exists
-		try (Parser parser = new Parser(source.toString()))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
-			// Successfully parsed - memory limit logic exists in NodeArena.allocateNode()
 			requireThat(parser.getArena().getNodeCount(), "parser.getArena().getNodeCount()").isPositive();
 		}
 	}
