@@ -7,8 +7,6 @@ import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
-import io.github.cowwoc.styler.parser.ParseResult;
-import io.github.cowwoc.styler.parser.Parser;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -23,19 +21,26 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.infra.Blackhole;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Benchmarks memory usage and heap efficiency.
  *
- * Validates the performance claim of <=512MB heap usage per 1000 files processed. Uses JMH's
- * GC profiler to capture garbage collection overhead and peak memory consumption. This benchmark
- * measures single-run behavior rather than throughput to assess memory characteristics accurately.
+ * <p>
+ * Validates the performance claim of {@literal <=}512MB heap usage per 1000 files processed.
+ * Run with JMH's GC profiler to capture allocation rates and GC overhead:
+ * <pre>{@code
+ * java -jar benchmarks.jar MemoryUsageBenchmark -prof gc
+ * }</pre>
  *
- * Methodology: Uses SingleShotTime mode with multiple iterations (no warmup) to measure initial
- * and peak memory usage. Results help identify memory leaks and inefficient data structures.
+ * <p>
+ * Key metrics reported by the GC profiler:
+ * <ul>
+ *   <li>{@code gc.alloc.rate.norm} - bytes allocated per operation</li>
+ *   <li>{@code gc.alloc.rate} - allocation rate in MB/sec</li>
+ *   <li>{@code gc.count} / {@code gc.time} - GC frequency and pause time</li>
+ * </ul>
  */
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -65,54 +70,28 @@ public class MemoryUsageBenchmark
 	}
 
 	/**
-	 * Measures peak heap memory usage when processing files.
+	 * Processes files to measure memory allocation via JMH profiler.
 	 *
-	 * Tests memory efficiency by tracking heap consumption before and after processing a batch
-	 * of files. Uses explicit garbage collection to isolate memory consumed by the processing
-	 * operation itself.
+	 * <p>
+	 * Run with {@code -prof gc} to get allocation metrics. The profiler reports bytes allocated
+	 * per operation ({@code gc.alloc.rate.norm}), which divided by {@code fileCount} gives
+	 * per-file memory usage.
 	 *
 	 * @param blackhole JMH blackhole to prevent dead-code elimination
-	 * @return peak memory bytes consumed
+	 * @return count of processed files
 	 */
 	@Benchmark
-	public long measurePeakMemory(Blackhole blackhole)
+	public int processFiles(Blackhole blackhole)
 	{
-		Runtime runtime = Runtime.getRuntime();
-		System.gc();
-		long beforeMemory = runtime.totalMemory() - runtime.freeMemory();
-
-		// Parse and format files using actual Styler APIs
-		List<TransformationContext> contexts = new ArrayList<>(sourceFiles.size());
+		int processed = 0;
 		for (String source : sourceFiles)
 		{
 			TransformationContext context = new BenchmarkTransformationContext(source);
-			contexts.add(context);
 			String result = lineLengthRule.format(context, configs);
+			blackhole.consume(context);
 			blackhole.consume(result);
+			++processed;
 		}
-		blackhole.consume(contexts);
-
-		System.gc();
-		long afterMemory = runtime.totalMemory() - runtime.freeMemory();
-		return afterMemory - beforeMemory;
-	}
-
-	/**
-	 * Measures average memory per file.
-	 *
-	 * Divides peak memory usage by file count to understand per-file memory footprint.
-	 *
-	 * @param blackhole JMH blackhole to prevent dead-code elimination
-	 * @return average memory bytes per file
-	 */
-	@Benchmark
-	public long measureAverageMemoryPerFile(Blackhole blackhole)
-	{
-		long peakMemory = measurePeakMemory(blackhole);
-		if (fileCount > 0)
-		{
-			return peakMemory / fileCount;
-		}
-		return 0;
+		return processed;
 	}
 }
