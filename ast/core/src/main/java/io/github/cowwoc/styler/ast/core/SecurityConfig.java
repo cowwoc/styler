@@ -8,7 +8,7 @@ package io.github.cowwoc.styler.ast.core;
  * Java source files rarely exceed these limits, but malicious inputs could cause DoS.
  * <p>
  * <strong>Threat Model:</strong> Resource exhaustion attacks via crafted input files.
- * <br><strong>Defense Strategy:</strong> Multi-layered limits (file size, tokens, nodes, memory, time, depth).
+ * <br><strong>Defense Strategy:</strong> Multi-layered limits (file size, tokens, nodes, time, depth).
  */
 public final class SecurityConfig
 {
@@ -100,26 +100,6 @@ public final class SecurityConfig
 	 * in ~20 seconds; 30-second timeout provides safety margin without false positives.
 	 */
 	public static final long PARSING_TIMEOUT_MS = 30_000; // 30 seconds
-
-	/**
-	 * Maximum heap usage in bytes (512MB).
-	 * <p>
-	 * <strong>SEC-005: Memory Usage Monitoring</strong>
-	 * <p>
-	 * <strong>Rationale:</strong> Prevents memory exhaustion from cumulative allocations
-	 * (tokens + arena + intermediate parsing data structures). Typical parsing consumes
-	 * 50-100MB; 512MB provides 5x-10x safety margin while preventing multi-GB attacks.
-	 * <p>
-	 * <strong>Threat Prevention:</strong> Blocks memory exhaustion attacks that bypass
-	 * individual limits (e.g., 900K tokens + 9M nodes = individually legal but combined fatal).
-	 * <p>
-	 * <strong>Performance:</strong> Runtime.getRuntime() checks performed every 100 recursive
-	 * calls to amortize overhead (~500ns per check, ~5ns amortized cost per call).
-	 * <p>
-	 * <strong>Tradeoff:</strong> Check frequency balances security (detect runaway memory
-	 * within ~100 parsing operations) vs performance (avoid checking on every method call).
-	 */
-	public static final long MAX_HEAP_USAGE_BYTES = 512 * 1024 * 1024; // 512MB
 
 	private SecurityConfig()
 	{

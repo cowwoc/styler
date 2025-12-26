@@ -1,5 +1,51 @@
 # Changelog
 
+## 2025-12-26
+
+### E12: NodeArena Memory Limit Fix ✅
+
+**Completion Date**: 2025-12-26
+
+**Task**: `fix-node-arena-memory-limit`
+
+**Problem Solved**:
+- IllegalStateException when processing large batches of files (1000 files in JMH benchmarks)
+- Error: `Memory limit exceeded: 538MB exceeds maximum of 536MB`
+- SEC-005 heap usage check measured **total JVM heap** instead of per-arena memory
+
+**Root Cause**:
+- `NodeArena.allocateNode()` checked total JVM heap every 100 allocations
+- When batch processing 1000 files (each with its own arena), total heap naturally exceeds 512MB
+- The check was fundamentally incorrect for batch processing scenarios
+
+**Solution Implemented**:
+- Removed flawed SEC-005 heap usage check from `NodeArena.allocateNode()`
+- Removed identical check from `Parser.enterDepth()`
+- Removed `MAX_HEAP_USAGE_BYTES` constant from `SecurityConfig`
+- Security maintained by existing controls:
+  - MAX_ARENA_CAPACITY (10M nodes, ~120MB per arena)
+  - MAX_TOKEN_COUNT (1M tokens)
+  - MAX_SOURCE_SIZE_BYTES (10MB)
+  - PARSING_TIMEOUT_MS (30s)
+  - JVM -Xmx (actual hard memory limit)
+
+**Files Modified**:
+- `ast/core/src/main/java/io/github/cowwoc/styler/ast/core/NodeArena.java` - Removed allocationCheckCounter field and SEC-005 check
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java` - Removed MEMORY_CHECK_INTERVAL, depthCheckCounter, SEC-005 check
+- `ast/core/src/main/java/io/github/cowwoc/styler/ast/core/SecurityConfig.java` - Removed MAX_HEAP_USAGE_BYTES, updated JavaDoc
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/SecurityTest.java` - Removed testMemoryLimitMonitoring, updated JavaDoc
+
+**Quality**:
+- All 650 tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+**Unblocks**:
+- JMH benchmark execution with large file batches
+- Batch processing workflows
+
+---
+
 ## 2025-12-25
 
 ### E11: Import Organizer Bounds Error Fix ✅

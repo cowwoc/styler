@@ -26,12 +26,6 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 public final class Parser implements AutoCloseable
 {
 	/**
-	 * Frequency of memory usage checks during parsing.
-	 * Checked every 100 calls to amortize Runtime.getRuntime() overhead (~500ns) to ~5ns per call.
-	 */
-	private static final int MEMORY_CHECK_INTERVAL = 100;
-
-	/**
 	 * Frequency of timeout checks during token consumption.
 	 * Checked every 100 token consumptions to amortize System.currentTimeMillis() overhead (~100ns).
 	 */
@@ -45,18 +39,8 @@ public final class Parser implements AutoCloseable
 	private int depth;
 
 	/**
-	 * Counter for periodic memory checks in enterDepth().
-	 * Reset to 0 every {@link #MEMORY_CHECK_INTERVAL} calls.
-	 * Separate from tokenCheckCounter to allow independent tuning of check frequencies
-	 * based on different performance characteristics (memory checks are more expensive).
-	 */
-	private int depthCheckCounter;
-
-	/**
 	 * Counter for periodic timeout checks in consume().
 	 * Reset to 0 every {@link #TIMEOUT_CHECK_INTERVAL} calls.
-	 * Separate from depthCheckCounter to allow independent tuning of check frequencies
-	 * based on different calling patterns (token consumption vs recursion depth).
 	 */
 	private int tokenCheckCounter;
 
@@ -2273,28 +2257,21 @@ public final class Parser implements AutoCloseable
 	// Depth checking
 
 	/**
-	 * Enters a new recursion depth level with 3-tier security monitoring.
+	 * Enters a new recursion depth level with 2-tier security monitoring.
 	 * <p>
-	 * <strong>Security Strategy:</strong> Multi-layered defense combining timeout detection,
-	 * memory monitoring, and stack depth limiting to prevent resource exhaustion attacks.
+	 * <strong>Security Strategy:</strong> Multi-layered defense combining timeout detection
+	 * and stack depth limiting to prevent resource exhaustion attacks.
 	 * <p>
 	 * <strong>Tier 1 - Timeout Protection (SEC-006):</strong> Checks parsing deadline on EVERY
 	 * call to detect hung parsers. Overhead: ~100ns per call (System.currentTimeMillis()).
 	 * <p>
-	 * <strong>Tier 2 - Memory Protection (SEC-005):</strong> Checks heap usage every 100 calls
-	 * to detect memory exhaustion. Periodic checking amortizes ~500ns cost to ~5ns per call.
-	 * <p>
-	 * <strong>Tier 3 - Stack Protection:</strong> Checks recursion depth on EVERY call to
+	 * <strong>Tier 2 - Stack Protection:</strong> Checks recursion depth on EVERY call to
 	 * prevent stack overflow. Overhead: negligible (integer comparison).
-	 * <p>
-	 * <strong>Performance Tradeoff:</strong> Memory checks occur every 100 calls rather than
-	 * every call to balance security (detect runaway memory within ~100 operations) against
-	 * performance (avoid expensive Runtime.getRuntime() calls in tight loops).
 	 * <p>
 	 * <strong>Call Frequency:</strong> This method is called from parseUnary() and parsePrimary()
 	 * during expression parsing, typically 10-1000 times per file depending on expression complexity.
 	 *
-	 * @throws ParserException if timeout exceeded, memory limit reached, or max depth exceeded
+	 * @throws ParserException if timeout exceeded or max depth exceeded
 	 */
 	private void enterDepth()
 	{
@@ -2305,22 +2282,6 @@ public final class Parser implements AutoCloseable
 				"Parsing timeout exceeded (" + SecurityConfig.PARSING_TIMEOUT_MS + "ms) at position " +
 				currentToken().start(),
 				currentToken().start());
-		}
-
-		// SEC-005: Check memory usage periodically to reduce overhead
-		++depthCheckCounter;
-		if (depthCheckCounter >= MEMORY_CHECK_INTERVAL)
-		{
-			depthCheckCounter = 0;
-			Runtime runtime = Runtime.getRuntime();
-			long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-			if (usedMemory > SecurityConfig.MAX_HEAP_USAGE_BYTES)
-			{
-				throw new ParserException(
-					"Memory limit exceeded: " + usedMemory + " bytes exceeds maximum of " +
-					SecurityConfig.MAX_HEAP_USAGE_BYTES + " bytes at position " + currentToken().start(),
-					currentToken().start());
-			}
 		}
 
 		++depth;
