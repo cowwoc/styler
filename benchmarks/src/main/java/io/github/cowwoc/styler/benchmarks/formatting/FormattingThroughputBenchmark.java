@@ -50,34 +50,23 @@ public class FormattingThroughputBenchmark
 	@Param({"lineLength", "braceStyle", "indentation", "all"})
 	private String ruleSet;
 
-	private List<TransformationContext> contexts;
-	private FormattingRule lineLengthRule;
-	private FormattingRule braceRule;
-	private FormattingRule indentationRule;
-	private List<FormattingConfiguration> lineLengthConfigs;
-	private List<FormattingConfiguration> braceConfigs;
-	private List<FormattingConfiguration> indentationConfigs;
-	private List<FormattingConfiguration> allConfigs;
-
-	/**
-	 * Creates a new benchmark with pre-generated source files and formatting rules.
-	 */
-	public FormattingThroughputBenchmark()
-	{
-		List<String> sourceFiles = SampleCodeGenerator.generateFiles(50, SampleCodeGenerator.Size.MEDIUM);
-		this.contexts = sourceFiles.stream().
-			<TransformationContext>map(BenchmarkTransformationContext::new).
-			toList();
-		this.lineLengthRule = new LineLengthFormattingRule();
-		this.braceRule = new BraceFormattingRule();
-		this.indentationRule = new IndentationFormattingRule();
-		this.lineLengthConfigs = List.of(LineLengthConfiguration.defaultConfig());
-		this.braceConfigs = List.of(BraceFormattingConfiguration.defaultConfig());
-		this.indentationConfigs = List.of(IndentationFormattingConfiguration.defaultConfig());
-		this.allConfigs = List.of(LineLengthConfiguration.defaultConfig(),
-			BraceFormattingConfiguration.defaultConfig(),
-			IndentationFormattingConfiguration.defaultConfig());
-	}
+	private List<TransformationContext> contexts = SampleCodeGenerator.
+		generateFiles(50, SampleCodeGenerator.Size.MEDIUM).stream().
+		<TransformationContext>map(BenchmarkTransformationContext::new).
+		toList();
+	private FormattingRule lineLengthRule = new LineLengthFormattingRule();
+	private FormattingRule braceRule = new BraceFormattingRule();
+	private FormattingRule indentationRule = new IndentationFormattingRule();
+	private List<FormattingConfiguration> lineLengthConfigs =
+		List.of(LineLengthConfiguration.defaultConfig());
+	private List<FormattingConfiguration> braceConfigs =
+		List.of(BraceFormattingConfiguration.defaultConfig());
+	private List<FormattingConfiguration> indentationConfigs =
+		List.of(IndentationFormattingConfiguration.defaultConfig());
+	private List<FormattingConfiguration> allConfigs = List.of(
+		LineLengthConfiguration.defaultConfig(),
+		BraceFormattingConfiguration.defaultConfig(),
+		IndentationFormattingConfiguration.defaultConfig());
 
 	/**
 	 * Benchmarks formatting with specified rule set.
