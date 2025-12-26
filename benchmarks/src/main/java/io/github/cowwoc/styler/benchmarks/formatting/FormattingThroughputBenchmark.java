@@ -14,18 +14,14 @@ import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -54,7 +50,6 @@ public class FormattingThroughputBenchmark
 	@Param({"lineLength", "braceStyle", "indentation", "all"})
 	private String ruleSet;
 
-	private List<String> sourceFiles;
 	private List<TransformationContext> contexts;
 	private FormattingRule lineLengthRule;
 	private FormattingRule braceRule;
@@ -65,43 +60,23 @@ public class FormattingThroughputBenchmark
 	private List<FormattingConfiguration> allConfigs;
 
 	/**
-	 * Generates sample source files and pre-parses them for formatting benchmarks.
+	 * Creates a new benchmark with pre-generated source files and formatting rules.
 	 */
-	@Setup(Level.Trial)
-	public void setup()
+	public FormattingThroughputBenchmark()
 	{
-		// Generate a batch of medium-sized files for consistent benchmarking
-		sourceFiles = SampleCodeGenerator.generateFiles(50, SampleCodeGenerator.Size.MEDIUM);
-
-		// Pre-parse all source files to create transformation contexts
-		contexts = new ArrayList<>(sourceFiles.size());
-		for (String source : sourceFiles)
-		{
-			contexts.add(new BenchmarkTransformationContext(source));
-		}
-
-		// Initialize formatting rules
-		lineLengthRule = new LineLengthFormattingRule();
-		braceRule = new BraceFormattingRule();
-		indentationRule = new IndentationFormattingRule();
-
-		// Initialize configurations
-		lineLengthConfigs = List.of(LineLengthConfiguration.defaultConfig());
-		braceConfigs = List.of(BraceFormattingConfiguration.defaultConfig());
-		indentationConfigs = List.of(IndentationFormattingConfiguration.defaultConfig());
-		allConfigs = List.of(LineLengthConfiguration.defaultConfig(),
+		List<String> sourceFiles = SampleCodeGenerator.generateFiles(50, SampleCodeGenerator.Size.MEDIUM);
+		this.contexts = sourceFiles.stream().
+			<TransformationContext>map(BenchmarkTransformationContext::new).
+			toList();
+		this.lineLengthRule = new LineLengthFormattingRule();
+		this.braceRule = new BraceFormattingRule();
+		this.indentationRule = new IndentationFormattingRule();
+		this.lineLengthConfigs = List.of(LineLengthConfiguration.defaultConfig());
+		this.braceConfigs = List.of(BraceFormattingConfiguration.defaultConfig());
+		this.indentationConfigs = List.of(IndentationFormattingConfiguration.defaultConfig());
+		this.allConfigs = List.of(LineLengthConfiguration.defaultConfig(),
 			BraceFormattingConfiguration.defaultConfig(),
 			IndentationFormattingConfiguration.defaultConfig());
-	}
-
-	/**
-	 * Cleans up resources after benchmarking.
-	 */
-	@TearDown(Level.Trial)
-	public void teardown()
-	{
-		sourceFiles.clear();
-		contexts.clear();
 	}
 
 	/**
