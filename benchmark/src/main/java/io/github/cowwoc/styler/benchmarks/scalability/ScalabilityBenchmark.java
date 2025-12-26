@@ -23,19 +23,21 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Benchmarks parallel processing scalability across multiple processor cores.
- *
- * Validates linear scaling of file processing throughput from 1 to 32 cores. Measures speedup
- * ratio at each thread count to verify that parallelization overhead is minimal and efficiency
- * remains above 75% (speedup >= 0.75 * N for N cores).
- *
- * Methodology: Uses JMH parameterized benchmarks to test fixed thread counts. Results help
- * identify synchronization bottlenecks and thread pool efficiency. Includes higher memory
- * allocation (2GB) to prevent GC contention during parallel workloads.
+ * Benchmarks parallel processing scalability with virtual threads.
+ * <p>
+ * Validates linear scaling of file processing throughput using virtual threads with
+ * semaphore-based concurrency control (matching the main codebase's VirtualThreadExecutor).
+ * Measures speedup ratio at each concurrency level to verify that parallelization overhead
+ * is minimal.
+ * <p>
+ * Methodology: Uses JMH parameterized benchmarks with virtual threads and semaphore permits
+ * to control concurrency (1, 2, 4, 8, 16, or 32 concurrent tasks). Results help identify
+ * synchronization bottlenecks and concurrency efficiency.
  */
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
@@ -46,10 +48,10 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ScalabilityBenchmark
 {
 	/**
-	 * Number of processor cores to use: 1, 2, 4, 8, 16, or 32.
+	 * Maximum concurrent tasks (semaphore permits): 1, 2, 4, 8, 16, or 32.
 	 */
 	@Param({"1", "2", "4", "8", "16", "32"})
-	private int threadCount;
+	private int maxConcurrency;
 
 	private List<TransformationContext> contexts = SampleCodeGenerator.
 		generateFiles(1000, SampleCodeGenerator.Size.SMALL).stream().
@@ -59,10 +61,11 @@ public class ScalabilityBenchmark
 	private List<FormattingConfiguration> configs = List.of(LineLengthConfiguration.defaultConfig());
 
 	/**
-	 * Benchmarks concurrent file processing at the configured thread count.
+	 * Benchmarks concurrent file processing using virtual threads with semaphore control.
 	 * <p>
-	 * Distributes files across a fixed thread pool and processes them in parallel. Measures
-	 * overall throughput (files/second) to compute speedup ratios and efficiency metrics.
+	 * Uses virtual threads with a semaphore to limit concurrency, matching the pattern used
+	 * in the main codebase's {@code VirtualThreadExecutor}. Each file is processed by its own
+	 * virtual thread, with the semaphore controlling how many run simultaneously.
 	 *
 	 * @return count of processed files
 	 * @throws Exception if thread execution fails
@@ -70,29 +73,36 @@ public class ScalabilityBenchmark
 	@Benchmark
 	public long processWithConcurrency() throws Exception
 	{
-		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+		ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+		Semaphore semaphore = new Semaphore(maxConcurrency);
 		AtomicLong processed = new AtomicLong(0);
 		List<Future<?>> futures = new ArrayList<>();
 
 		try
 		{
-			// Distribute files across threads
-			int filesPerThread = contexts.size() / Math.max(1, threadCount);
-			for (int t = 0; t < threadCount; ++t)
+			for (TransformationContext context : contexts)
 			{
-				int start = t * filesPerThread;
-				int end = (t == threadCount - 1) ? contexts.size() : (t + 1) * filesPerThread;
-
 				futures.add(executor.submit(() ->
 				{
-					for (int i = start; i < end; ++i)
+					try
 					{
-						TransformationContext context = contexts.get(i);
-						String result = lineLengthRule.format(context, configs);
-						if (!result.isEmpty())
+						semaphore.acquire();
+						try
 						{
-							processed.incrementAndGet();
+							String result = lineLengthRule.format(context, configs);
+							if (!result.isEmpty())
+							{
+								processed.incrementAndGet();
+							}
 						}
+						finally
+						{
+							semaphore.release();
+						}
+					}
+					catch (InterruptedException e)
+					{
+						Thread.currentThread().interrupt();
 					}
 				}));
 			}
