@@ -22,7 +22,7 @@
 		<module>pipeline</module>
 		<module>cli</module>
 		<module>maven-plugin</module>
-		<module>benchmarks</module>
+		<module>benchmark</module>
 	</modules>
 
 	<properties>

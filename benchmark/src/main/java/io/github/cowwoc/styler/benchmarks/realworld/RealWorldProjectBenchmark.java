@@ -2,7 +2,6 @@ package io.github.cowwoc.styler.benchmarks.realworld;
 
 import io.github.cowwoc.styler.benchmarks.internal.BenchmarkTransformationContext;
 import io.github.cowwoc.styler.benchmarks.util.BenchmarkResourceManager;
-import io.github.cowwoc.styler.benchmarks.util.SampleCodeGenerator;
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.TransformationContext;
@@ -30,14 +29,13 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Benchmarks performance against real-world Java projects.
- *
+ * <p>
  * Validates formatter performance on actual production codebases: Spring Framework, Guava, and
  * JUnit 5. Tests against code with diverse styles, complexity levels, and naming conventions to
  * ensure consistent performance across realistic scenarios.
- *
+ * <p>
  * Methodology: Uses SingleShotTime mode to measure total processing time for each project.
  * Projects are downloaded from Maven Central and cached locally to minimize network overhead.
- * Falls back to synthetic samples if download fails.
  */
 @BenchmarkMode(Mode.SingleShotTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -61,12 +59,19 @@ public class RealWorldProjectBenchmark
 
 	/**
 	 * Loads project files from cache or downloads from Maven Central.
+	 *
+	 * @throws Exception if the download fails or no files are found
 	 */
 	@Setup(Level.Trial)
 	public void setup() throws Exception
 	{
 		projectFiles = BenchmarkResourceManager.getProjectFiles(projectName);
 		fileCount = projectFiles.size();
+
+		if (fileCount == 0)
+		{
+			throw new IllegalStateException("No Java files found for project: " + projectName);
+		}
 
 		// Precalculate total bytes to avoid I/O during benchmark
 		totalBytes = 0;
@@ -76,13 +81,6 @@ public class RealWorldProjectBenchmark
 			{
 				totalBytes += Files.size(file);
 			}
-		}
-
-		// Fallback to synthetic samples if no files were found
-		if (fileCount == 0)
-		{
-			List<String> samples = SampleCodeGenerator.generateFiles(100, SampleCodeGenerator.Size.MEDIUM);
-			totalBytes = samples.stream().mapToLong(String::length).sum();
 		}
 	}
 

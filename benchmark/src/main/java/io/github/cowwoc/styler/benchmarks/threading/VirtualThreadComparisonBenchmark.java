@@ -7,7 +7,6 @@ import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
-import io.github.cowwoc.styler.parser.Parser;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -19,9 +18,11 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -64,118 +65,130 @@ public class VirtualThreadComparisonBenchmark
 
 	/**
 	 * Benchmarks concurrent file processing using the specified thread type.
-	 *
+	 * <p>
 	 * Creates virtual or platform threads based on the threadType parameter and processes
 	 * files concurrently. Measures throughput to compare thread type performance. Uses
 	 * actual Styler formatting on pre-parsed contexts.
 	 *
 	 * @return count of tasks completed successfully
+	 * @throws Exception if thread execution fails
 	 */
 	@Benchmark
 	public int processWithThreadType() throws Exception
 	{
 		ExecutorService executor = createExecutor();
+		List<Future<Boolean>> futures = new ArrayList<>();
 
 		try
 		{
-			int completed = 0;
-			for (int i = 0; i < concurrentTasks && i < contexts.size(); ++i)
+			int taskCount = Math.min(concurrentTasks, contexts.size());
+			for (int i = 0; i < taskCount; ++i)
 			{
 				TransformationContext context = contexts.get(i % contexts.size());
-				executor.submit(() ->
+				futures.add(executor.submit(() ->
 				{
-					// Format using actual Styler APIs
 					String result = lineLengthRule.format(context, configs);
 					return !result.isEmpty();
-				});
-				++completed;
+				}));
 			}
-			executor.shutdown();
-			++completed;
+
+			// Wait for all tasks and count successes
+			int completed = 0;
+			for (Future<Boolean> future : futures)
+			{
+				if (future.get())
+				{
+					++completed;
+				}
+			}
 			return completed;
 		}
 		finally
 		{
-			if (!executor.isShutdown())
-			{
-				executor.shutdownNow();
-			}
+			executor.shutdown();
 		}
 	}
 
 	/**
 	 * Measures thread creation overhead.
-	 *
-	 * Creates and destroys threads without actual work to isolate the overhead of thread
-	 * creation and initialization. Helps identify whether thread type differences are due
-	 * to creation overhead or execution characteristics.
+	 * <p>
+	 * Creates threads and waits for completion to isolate the overhead of thread creation
+	 * and initialization. Helps identify whether thread type differences are due to creation
+	 * overhead or execution characteristics.
 	 *
 	 * @return count of threads created
+	 * @throws Exception if thread execution fails
 	 */
 	@Benchmark
-	public int measureThreadCreationOverhead()
+	public int measureThreadCreationOverhead() throws Exception
 	{
 		ExecutorService executor = createExecutor();
+		List<Future<?>> futures = new ArrayList<>();
 
 		try
 		{
-			int threadsCreated = 0;
 			for (int i = 0; i < 100; ++i)
 			{
-				executor.submit(() ->
+				futures.add(executor.submit(() ->
 				{
 					// Minimal work: just a return statement
-				});
-				++threadsCreated;
+				}));
 			}
-			executor.shutdown();
-			return threadsCreated;
+
+			// Wait for all threads to complete
+			for (Future<?> future : futures)
+			{
+				future.get();
+			}
+			return futures.size();
 		}
 		finally
 		{
-			if (!executor.isShutdown())
-			{
-				executor.shutdownNow();
-			}
+			executor.shutdown();
 		}
 	}
 
 	/**
 	 * Benchmarks I/O-bound workload with concurrent processing.
-	 *
+	 * <p>
 	 * Processes multiple files with actual parsing and formatting to test thread type
 	 * performance on realistic workloads. Virtual threads are expected to show
 	 * significantly better performance on I/O-bound tasks.
 	 *
 	 * @return count of processed operations
+	 * @throws Exception if thread execution fails
 	 */
 	@Benchmark
-	public int measureIOBoundWorkload()
+	public int measureIOBoundWorkload() throws Exception
 	{
 		ExecutorService executor = createExecutor();
+		List<Future<Boolean>> futures = new ArrayList<>();
 
 		try
 		{
-			int processed = 0;
 			for (TransformationContext context : contexts)
 			{
-				executor.submit(() ->
+				futures.add(executor.submit(() ->
 				{
-					// Format using actual Styler APIs
 					String result = lineLengthRule.format(context, configs);
 					return !result.isEmpty();
-				});
-				++processed;
+				}));
 			}
-			executor.shutdown();
+
+			// Wait for all tasks and count successes
+			int processed = 0;
+			for (Future<Boolean> future : futures)
+			{
+				if (future.get())
+				{
+					++processed;
+				}
+			}
 			return processed;
 		}
 		finally
 		{
-			if (!executor.isShutdown())
-			{
-				executor.shutdownNow();
-			}
+			executor.shutdown();
 		}
 	}
 

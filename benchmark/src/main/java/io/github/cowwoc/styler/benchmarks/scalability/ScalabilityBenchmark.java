@@ -18,8 +18,13 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Benchmarks parallel processing scalability across multiple processor cores.
@@ -55,46 +60,55 @@ public class ScalabilityBenchmark
 
 	/**
 	 * Benchmarks concurrent file processing at the configured thread count.
-	 *
-	 * Simulates parallel processing of files using the specified number of threads. Measures
+	 * <p>
+	 * Distributes files across a fixed thread pool and processes them in parallel. Measures
 	 * overall throughput (files/second) to compute speedup ratios and efficiency metrics.
-	 * Actual parallelization is simulated with thread-count-aware distribution of work.
 	 *
 	 * @return count of processed files
+	 * @throws Exception if thread execution fails
 	 */
 	@Benchmark
-	public long processWithConcurrency()
+	public long processWithConcurrency() throws Exception
 	{
-		long processed = 0;
+		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+		AtomicLong processed = new AtomicLong(0);
+		List<Future<?>> futures = new ArrayList<>();
 
-		// Distribute files across threads
-		int filesPerThread = contexts.size() / Math.max(1, threadCount);
-		for (int t = 0; t < threadCount; ++t)
+		try
 		{
-			int start = t * filesPerThread;
-			int end;
-			if (t == threadCount - 1)
+			// Distribute files across threads
+			int filesPerThread = contexts.size() / Math.max(1, threadCount);
+			for (int t = 0; t < threadCount; ++t)
 			{
-				end = contexts.size();
-			}
-			else
-			{
-				end = (t + 1) * filesPerThread;
+				int start = t * filesPerThread;
+				int end = (t == threadCount - 1) ? contexts.size() : (t + 1) * filesPerThread;
+
+				futures.add(executor.submit(() ->
+				{
+					for (int i = start; i < end; ++i)
+					{
+						TransformationContext context = contexts.get(i);
+						String result = lineLengthRule.format(context, configs);
+						if (!result.isEmpty())
+						{
+							processed.incrementAndGet();
+						}
+					}
+				}));
 			}
 
-			for (int i = start; i < end; ++i)
+			// Wait for all tasks to complete
+			for (Future<?> future : futures)
 			{
-				TransformationContext context = contexts.get(i);
-				// Format using actual Styler APIs
-				String result = lineLengthRule.format(context, configs);
-				if (!result.isEmpty())
-				{
-					++processed;
-				}
+				future.get();
 			}
 		}
+		finally
+		{
+			executor.shutdown();
+		}
 
-		return processed;
+		return processed.get();
 	}
 
 	/**

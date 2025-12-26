@@ -1,7 +1,5 @@
 package io.github.cowwoc.styler.benchmarks.util;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -21,10 +19,10 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 
 /**
  * Manages sample files and real-world project downloads for benchmarks.
- *
+ * <p>
  * This manager caches downloaded project sources in {@code ~/.styler/benchmark-cache/} with a 30-day
- * expiration. When downloads fail, it provides fallback synthetic samples. Extracted Java files are
- * cached locally to minimize repeated downloads and network overhead during benchmark runs.
+ * expiration. Extracted Java files are cached locally to minimize repeated downloads and network
+ * overhead during benchmark runs.
  */
 public class BenchmarkResourceManager
 {
@@ -90,28 +88,23 @@ public class BenchmarkResourceManager
 	 * Retrieves Java source files for a project, downloading and caching as needed.
 	 *
 	 * @param projectName name of the project (spring-framework, guava, or junit5)
-	 * @return list of Java file paths; returns synthetic samples if download fails
+	 * @return list of Java file paths
+	 * @throws IllegalArgumentException if {@code projectName} is unknown
+	 * @throws IOException              if download or extraction fails
+	 * @throws InterruptedException     if the download is interrupted
 	 */
-	public static List<Path> getProjectFiles(String projectName)
+	public static List<Path> getProjectFiles(String projectName) throws IOException, InterruptedException
 	{
 		requireThat(projectName, "projectName").isNotEmpty();
 
 		Project project = parseProjectName(projectName);
 		if (project == null)
 		{
-			// Fallback to synthetic samples for unknown projects
-			return generateFallbackSamples(projectName);
+			throw new IllegalArgumentException("Unknown project: " + projectName +
+				". Supported projects: spring-framework, guava, junit5");
 		}
 
-		try
-		{
-			return getOrDownloadProject(project);
-		}
-		catch (Exception e)
-		{
-			// Graceful fallback to synthetic samples on download failure
-			return generateFallbackSamples(projectName);
-		}
+		return getOrDownloadProject(project);
 	}
 
 	/**
@@ -233,29 +226,5 @@ public class BenchmarkResourceManager
 			case "junit5", "junit" -> Project.JUNIT5;
 			default -> null;
 		};
-	}
-
-	private static List<Path> generateFallbackSamples(String projectName)
-	{
-		// Return synthetic samples when real project files are unavailable
-		List<Path> fallback = new ArrayList<>();
-		List<String> samples = SampleCodeGenerator.generateFiles(100, SampleCodeGenerator.Size.MEDIUM);
-
-		try
-		{
-			Path tmpDir = Files.createTempDirectory("styler-benchmark-fallback");
-			for (int i = 0; i < samples.size(); ++i)
-			{
-				Path file = tmpDir.resolve("Sample" + i + ".java");
-				Files.writeString(file, samples.get(i));
-				fallback.add(file);
-			}
-		}
-		catch (IOException _)
-		{
-			// If temp directory creation fails, return empty list
-		}
-
-		return fallback;
 	}
 }
