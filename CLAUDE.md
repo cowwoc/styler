@@ -765,11 +765,19 @@ build/test/quality failures, incorrect assumptions, tool misuse, working directo
 violations, logical/mathematical errors (contradictory statements, threshold miscomparison, wrong decision
 path)
 
-**When to Invoke**: IMMEDIATELY after identifying the mistake: "I notice I [made mistake]. This is a [type
-of deviation]. Invoking learn-from-mistakes skill to analyze and prevent recurrence."
+**When to Invoke**: IMMEDIATELY after identifying the mistake, invoke via **general-purpose subagent**:
+
+```
+Task(
+  subagent_type: "general-purpose",
+  description: "Investigate mistake and implement prevention",
+  prompt: "Invoke the learn-from-mistakes skill to investigate [describe mistake]...",
+  model: "opus"
+)
+```
 
 **Enforcement**: Audits invoke for ANY violation; normal work invoke for own/other/user-reported mistakes; no
-"small mistake" or "already know" excuses
+"small mistake" or "already know" excuses. Always use general-purpose subagent for isolation.
 
 ## Essential References
 

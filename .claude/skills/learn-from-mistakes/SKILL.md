@@ -4,6 +4,20 @@ description: Investigate agent mistakes, perform root cause analysis, and update
 allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 
+> **🚨 MANDATORY INVOCATION PATTERN**
+>
+> This skill MUST be invoked using the Task tool with `subagent_type: "general-purpose"`:
+> ```
+> Task(
+>   subagent_type: "general-purpose",
+>   description: "Investigate mistake and implement prevention",
+>   prompt: "Invoke the learn-from-mistakes skill to investigate [describe mistake]...",
+>   model: "opus"
+> )
+> ```
+> DO NOT run this skill inline in the main conversation. The investigation and prevention workflow
+> requires focused context that benefits from subagent isolation.
+
 # Learn From Mistake Skill
 
 **Purpose**: Investigate agent mistakes, perform root cause analysis, update agent configurations, and TEST fixes by reproducing the original mistake to verify prevention.
