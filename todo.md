@@ -501,6 +501,42 @@ benchmarking, and validate with Maven plugin integration.
 ### Parser Bug: Comments in Enum Constant Lists ✅ COMPLETE (2025-12-24)
 - [x] **DONE:** `fix-enum-constant-comments` - Fix parser failure when comments appear in enum constant lists (2025-12-24)
 
+### Parser Bug: Type Annotations on Type Bounds
+- [ ] **READY:** `fix-type-annotation-bounds` - Fix parser failure on type annotations in type parameter bounds
+  - **Dependencies**: `add-parser-error-record` ✅
+  - **Blocks**: `create-jmh-benchmarks` RealWorldProjectBenchmark (cannot parse 73% of Guava files)
+  - **Parallelizable With**: `fix-local-variable-annotations`
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Enable parsing of type annotations in type parameter bounds like `@Nullable` in `V extends @Nullable Object`
+  - **Current Error**: `Expected IDENTIFIER but found AT at position X`
+  - **Affected Files**: Guava (ListenableFuture.java, etc.), many generics-heavy libraries
+  - **Root Cause**: Parser expects identifier after `extends` in type bounds, but encounters `@` for annotation
+  - **Scope**: Add annotation parsing support before type names in type bounds
+  - **Examples to Support**:
+    - `<V extends @Nullable Object>`
+    - `<T extends @NonNull Comparable<T>>`
+    - `<K extends @ReadOnly Map<?, ?>>`
+  - **Verification**: Parse Guava's ListenableFuture.java successfully
+  - **Quality**: Parser tests for annotated type bounds
+
+### Parser Bug: Local Variable Annotations
+- [ ] **READY:** `fix-local-variable-annotations` - Fix parser failure on annotations for local variables
+  - **Dependencies**: `add-parser-error-record` ✅
+  - **Blocks**: `create-jmh-benchmarks` RealWorldProjectBenchmark (parse failures in real-world code)
+  - **Parallelizable With**: `fix-type-annotation-bounds`
+  - **Estimated Effort**: 1 day
+  - **Purpose**: Enable parsing of annotations on local variable declarations
+  - **Current Error**: Parser fails when encountering annotations before local variable type
+  - **Affected Files**: Code with `@SuppressWarnings("unchecked")` on local variables, Checker Framework annotations
+  - **Root Cause**: Parser doesn't expect annotations at start of local variable declarations
+  - **Scope**: Add annotation parsing before type in local variable declarations
+  - **Examples to Support**:
+    - `@SuppressWarnings("unchecked") List<T> result = ...`
+    - `@Nullable String value = maybeNull();`
+    - `final @NonNull Object obj = requireNonNull(input);`
+  - **Verification**: Parse Spring/Guava files with annotated local variables
+  - **Quality**: Parser tests for annotated local variable declarations
+
 ### Parser Enhancement: Systematic Comment Handling
 - [ ] **READY:** `fix-remaining-comment-gaps` - Handle comments in all remaining parser locations
   - **Dependencies**: `fix-enum-constant-comments` ✅
