@@ -2,6 +2,40 @@
 
 ## 2025-12-27
 
+### Type Annotation Bounds Parser Fix ✅
+
+**Completion Date**: 2025-12-27
+
+**Task**: `fix-type-annotation-bounds`
+
+**Problem Solved**:
+- Parser failed on type annotations in type parameter bounds
+- Error: `Expected IDENTIFIER but found AT at position X`
+- Blocked parsing of 73% of Guava files (ListenableFuture.java, etc.)
+
+**Solution Implemented**:
+- Added annotation parsing loop at start of `parseType()` method
+- Reuses existing `parseAnnotation()` method for annotation handling
+- Single change point fixes all contexts (type parameters, wildcards, type arguments)
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added 5-line annotation loop
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/TypeAnnotationBoundsParserTest.java` - 15 test cases
+
+**Test Coverage**:
+- Simple annotated bounds: `<V extends @Nullable Object>`
+- Generic bounds: `<T extends @NonNull Comparable<T>>`
+- Multiple annotations: `<T extends @Immutable @NonNull List<?>>`
+- Wildcard bounds: `? extends @NonNull Number`, `? super @NonNull Integer`
+- Intersection types: `@NonNull Serializable & @Immutable Cloneable`
+- Qualified annotations: `@javax.annotation.Nullable`
+- Parameterized annotations: `@Size(min = 1)`
+- Regression tests for unannotated bounds
+
+---
+
 ### Memory Reservation System for Batch Processing ✅
 
 **Completion Date**: 2025-12-27

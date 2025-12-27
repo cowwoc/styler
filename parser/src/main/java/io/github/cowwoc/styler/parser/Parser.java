@@ -584,6 +584,11 @@ public final class Parser implements AutoCloseable
 
 	private void parseType()
 	{
+		// Parse type annotations (e.g., @Nullable, @NonNull)
+		while (currentToken().type() == TokenType.AT)
+		{
+			parseAnnotation();
+		}
 		if (isPrimitiveType(currentToken().type()))
 		{
 			consume();

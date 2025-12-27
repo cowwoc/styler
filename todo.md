@@ -501,23 +501,11 @@ benchmarking, and validate with Maven plugin integration.
 ### Parser Bug: Comments in Enum Constant Lists ✅ COMPLETE (2025-12-24)
 - [x] **DONE:** `fix-enum-constant-comments` - Fix parser failure when comments appear in enum constant lists (2025-12-24)
 
-### Parser Bug: Type Annotations on Type Bounds
-- [ ] **READY:** `fix-type-annotation-bounds` - Fix parser failure on type annotations in type parameter bounds
+### Parser Bug: Type Annotations on Type Bounds ✅ COMPLETE (2025-12-27)
+- [x] **DONE:** `fix-type-annotation-bounds` - Fix parser failure on type annotations in type parameter bounds (2025-12-27)
   - **Dependencies**: `add-parser-error-record` ✅
-  - **Blocks**: `create-jmh-benchmarks` RealWorldProjectBenchmark (cannot parse 73% of Guava files)
-  - **Parallelizable With**: `fix-local-variable-annotations`
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Enable parsing of type annotations in type parameter bounds like `@Nullable` in `V extends @Nullable Object`
-  - **Current Error**: `Expected IDENTIFIER but found AT at position X`
-  - **Affected Files**: Guava (ListenableFuture.java, etc.), many generics-heavy libraries
-  - **Root Cause**: Parser expects identifier after `extends` in type bounds, but encounters `@` for annotation
-  - **Scope**: Add annotation parsing support before type names in type bounds
-  - **Examples to Support**:
-    - `<V extends @Nullable Object>`
-    - `<T extends @NonNull Comparable<T>>`
-    - `<K extends @ReadOnly Map<?, ?>>`
-  - **Verification**: Parse Guava's ListenableFuture.java successfully
-  - **Quality**: Parser tests for annotated type bounds
+  - **Solution**: Added annotation parsing loop at start of parseType() method
+  - **Files Modified**: Parser.java (5 lines added), TypeAnnotationBoundsParserTest.java (15 tests)
 
 ### Parser Bug: Local Variable Annotations
 - [ ] **READY:** `fix-local-variable-annotations` - Fix parser failure on annotations for local variables
