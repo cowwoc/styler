@@ -529,6 +529,36 @@ benchmarking, and validate with Maven plugin integration.
   - **Solution**: Added annotation and FINAL consumption in parseExpressionOrVariableStatement(), tryParseEnhancedForHeader(), parseResource(), and comment handling in parseBlock()
   - **Files Modified**: Parser.java (30+ lines), LocalAnnotationTest.java (15 tests)
 
+### Parser Enhancement: Advanced Switch Pattern Matching
+- [ ] **READY:** `add-guarded-pattern-support` - Add parser support for guarded patterns in switch
+  - **Dependencies**: `fix-switch-expressions` ✅
+  - **Blocks**: `add-record-pattern-support`
+  - **Parallelizable With**: `fix-remaining-comment-gaps`
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Support guarded patterns with `when` clause in switch expressions (Java 21+)
+  - **Syntax**: `case Integer i when i > 0 ->`, `case String s when s.length() > 5 ->`
+  - **Scope**: Parse `when` keyword followed by boolean expression after type pattern
+  - **Components**:
+    - Detect WHEN keyword after type pattern in parseCaseLabelElement()
+    - Parse boolean guard expression after WHEN
+    - Create GUARDED_PATTERN node type for AST representation
+  - **Quality**: Parser tests for guarded patterns, edge cases with complex guards
+
+- [ ] **BLOCKED:** `add-record-pattern-support` - Add parser support for record patterns in switch
+  - **Dependencies**: `add-guarded-pattern-support`
+  - **Blocks**: None (enhancement)
+  - **Parallelizable With**: None
+  - **Estimated Effort**: 2-3 days
+  - **Purpose**: Support record pattern matching in switch expressions (Java 21+)
+  - **Syntax**: `case Point(int x, int y) ->`, `case Box(Point(int x, int y)) ->`
+  - **Scope**: Parse record deconstruction patterns with nested patterns
+  - **Components**:
+    - Detect record pattern syntax (type followed by parenthesized component patterns)
+    - Parse nested component patterns recursively
+    - Support nested record patterns for complex deconstruction
+    - Create RECORD_PATTERN node type for AST representation
+  - **Quality**: Parser tests for record patterns, nested patterns, edge cases
+
 ### Parser Enhancement: Systematic Comment Handling
 - [ ] **READY:** `fix-remaining-comment-gaps` - Handle comments in all remaining parser locations
   - **Dependencies**: `fix-enum-constant-comments` ✅
