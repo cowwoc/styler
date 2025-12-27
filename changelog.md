@@ -2,6 +2,40 @@
 
 ## 2025-12-27
 
+### Switch Expression Parser Fix ✅
+
+**Completion Date**: 2025-12-27
+
+**Task**: `fix-switch-expressions`
+
+**Problem Solved**:
+- Parser failed on modern Java switch syntax (Java 14+ and 21+)
+- Error: `Expected COLON but found COMMA` on `case 'L', 'l' ->`
+- Error: `Expected COLON but found IDENTIFIER` on `case ParseResult.Success success ->`
+- Root cause: `parseSwitchStatement()` only supported old-style `case X:` syntax
+
+**Solution Implemented**:
+- Added `parseCaseLabelElement()` helper to handle all case label variants
+- Added `tryParseTypePattern()` for lookahead-based type pattern detection
+- Updated `parseSwitchStatement()` to support multi-label cases and arrow syntax
+- Added type pattern support (`case Type varName ->`) to both switch parsers
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added helper methods and updated switch parsing
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/SwitchExpressionParserTest.java` - 7 test cases
+
+**Test Coverage**:
+- Multi-label arrow: `case 'a', 'b', 'c' -> true`
+- Single case arrow: `case 1 -> 10`
+- Switch expressions with string returns
+- Boolean selector switch expressions
+- Nested switch expressions
+- Switch expressions in variable assignment
+
+---
+
 ### Unicode Escape Lexer Fix ✅
 
 **Completion Date**: 2025-12-27

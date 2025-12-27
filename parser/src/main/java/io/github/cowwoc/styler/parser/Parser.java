@@ -1269,18 +1269,47 @@ public final class Parser implements AutoCloseable
 		{
 			if (match(TokenType.CASE))
 			{
-				parseExpression();
+				// Parse first case label element
+				parseCaseLabelElement();
+				// Handle multiple case labels: case 1, 2, 3 -> or case 'L', 'l':
+				while (match(TokenType.COMMA))
+				{
+					parseCaseLabelElement();
+				}
 			}
 			else
 			{
 				consume(); // DEFAULT
 			}
-			expect(TokenType.COLON);
-			while (currentToken().type() != TokenType.CASE &&
-				currentToken().type() != TokenType.DEFAULT &&
-				currentToken().type() != TokenType.RBRACE)
+
+			if (match(TokenType.ARROW))
 			{
-				parseStatement();
+				// Arrow case: case 1 -> expr; or case 1 -> { ... }
+				if (currentToken().type() == TokenType.LBRACE)
+				{
+					parseBlock();
+				}
+				else if (currentToken().type() == TokenType.THROW)
+				{
+					consume();
+					parseExpression();
+					expect(TokenType.SEMICOLON);
+				}
+				else
+				{
+					parseStatement();
+				}
+			}
+			else
+			{
+				// Colon case (traditional): case 1:
+				expect(TokenType.COLON);
+				while (currentToken().type() != TokenType.CASE &&
+					currentToken().type() != TokenType.DEFAULT &&
+					currentToken().type() != TokenType.RBRACE)
+				{
+					parseStatement();
+				}
 			}
 		}
 		expect(TokenType.RBRACE);
@@ -1300,11 +1329,12 @@ public final class Parser implements AutoCloseable
 		{
 			if (match(TokenType.CASE))
 			{
-				// Can have multiple case labels: case 1, 2, 3 ->
-				parseExpression();
+				// Parse first case label element (may be expression or type pattern)
+				parseCaseLabelElement();
+				// Handle multiple case labels: case 1, 2, 3 ->
 				while (match(TokenType.COMMA))
 				{
-					parseExpression();
+					parseCaseLabelElement();
 				}
 			}
 			else
@@ -1350,6 +1380,78 @@ public final class Parser implements AutoCloseable
 		expect(TokenType.RBRACE);
 		int end = tokens.get(position - 1).end();
 		return arena.allocateNode(NodeType.SWITCH_EXPRESSION, start, end);
+	}
+
+	/**
+	 * Parses a single case label element in a switch statement or expression.
+	 * Handles:
+	 * <ul>
+	 *   <li>Constant expressions: {@code case 1}, {@code case 'L'}, {@code case FOO}</li>
+	 *   <li>Type patterns: {@code case String s}, {@code case Foo.Bar bar}, {@code case Type _}</li>
+	 *   <li>{@code null} keyword: {@code case null}</li>
+	 *   <li>{@code default} keyword: {@code case null, default}</li>
+	 * </ul>
+	 * Type patterns are distinguished from constant expressions by checking if an identifier
+	 * (potentially qualified) is followed by another identifier or underscore.
+	 */
+	private void parseCaseLabelElement()
+	{
+		// Handle special keywords that can appear as case labels
+		if (match(TokenType.NULL_LITERAL))
+		{
+			return;
+		}
+		if (match(TokenType.DEFAULT))
+		{
+			return;
+		}
+
+		// Try to detect type pattern: Type identifier or Type _
+		// Type patterns look like: String s, Foo.Bar bar, Integer _, etc.
+		if (currentToken().type() == TokenType.IDENTIFIER && tryParseTypePattern())
+		{
+			return;
+		}
+
+		// Parse as regular expression
+		parseExpression();
+	}
+
+	/**
+	 * Attempts to parse a type pattern in a case label.
+	 * A type pattern has the form: Type patternVariable (e.g., String s, Foo.Bar bar, Integer _)
+	 *
+	 * @return {@code true} if a type pattern was successfully parsed, {@code false} if the current
+	 *         position should be treated as a regular expression
+	 */
+	private boolean tryParseTypePattern()
+	{
+		int checkpoint = position;
+
+		// Parse potential type (may be qualified like Foo.Bar.Baz)
+		consume(); // First identifier
+		while (match(TokenType.DOT))
+		{
+			if (currentToken().type() != TokenType.IDENTIFIER)
+			{
+				// Not a qualified name, restore position
+				position = checkpoint;
+				return false;
+			}
+			consume();
+		}
+
+		// Check if next token is an identifier (pattern variable)
+		// This includes both named variables (s, bar) and unnamed pattern (_)
+		if (currentToken().type() == TokenType.IDENTIFIER)
+		{
+			consume();
+			return true;
+		}
+
+		// Not a type pattern, restore position
+		position = checkpoint;
+		return false;
 	}
 
 	private NodeIndex parseReturnStatement()
