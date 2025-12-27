@@ -32,6 +32,24 @@ Per task prioritization rule, bug fixes take precedence over new features:
   - **Completed**: 2025-12-27
   - **Details**: Modified parseRelational() to handle instanceof specially with type + optional pattern variable
 
+- [ ] **READY:** `fix-unicode-escape-literals` - Fix lexer failure on Unicode escapes in character/string literals
+  - **Dependencies**: None
+  - **Blocks**: Self-hosting (parser can't parse its own code)
+  - **Symptoms**: `Parser.java:73:25: Expected RPAREN but found IDENTIFIER` on `'\uFFFD'`
+  - **Root Cause**: `scanCharLiteral()` advances 2 chars for escapes, but `\uXXXX` is 6 chars
+  - **Scope**: Fix Lexer to handle Unicode escapes (`\uXXXX`) in char and string literals
+
+- [ ] **READY:** `fix-switch-expressions` - Fix parser failure on switch expressions with arrow syntax and pattern matching
+  - **Dependencies**: None
+  - **Blocks**: Self-hosting (parser can't parse its own code)
+  - **Symptoms**:
+    - `Lexer.java:279:14: Expected COLON but found COMMA` on `case 'L', 'l' ->`
+    - `ParserTest.java:586:30: Expected COLON but found IDENTIFIER` on `case ParseResult.Success success ->`
+  - **Root Causes**:
+    - `parseSwitchStatement()` only supports old-style `case X:` syntax
+    - Neither switch parser supports pattern matching (`case Type varName ->`)
+  - **Scope**: Update parseSwitchStatement() to support arrow syntax, multi-label cases, and pattern matching
+
 **COMPLETED**:
 - `implement-line-length-formatter` - Line Length Formatter ✅ COMPLETE
 - `implement-import-organization` - Import Organization ✅ COMPLETE
