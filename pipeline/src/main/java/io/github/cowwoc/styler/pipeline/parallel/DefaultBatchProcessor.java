@@ -2,6 +2,8 @@ package io.github.cowwoc.styler.pipeline.parallel;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
@@ -16,6 +18,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import io.github.cowwoc.styler.pipeline.FileProcessingPipeline;
 import io.github.cowwoc.styler.pipeline.PipelineResult;
+import io.github.cowwoc.styler.pipeline.parallel.internal.MemoryReservationManager;
+import io.github.cowwoc.styler.pipeline.parallel.internal.Reservation;
 import io.github.cowwoc.styler.pipeline.parallel.internal.VirtualThreadExecutor;
 
 /**
@@ -147,13 +151,32 @@ public final class DefaultBatchProcessor implements BatchProcessor
 			throw new IllegalStateException("Processor has been closed");
 		}
 
+		MemoryReservationManager memoryManager = new MemoryReservationManager();
 		CountDownLatch latch = new CountDownLatch(files.size());
 
 		for (Path file : files)
 		{
+			long fileSize;
+			try
+			{
+				fileSize = Files.size(file);
+			}
+			catch (IOException e)
+			{
+				errors.put(file, "Failed to get file size: " + e.getMessage());
+				errorCount.incrementAndGet();
+				int completed = completedCount.incrementAndGet();
+				latch.countDown();
+				if (config.progressCallback() != null)
+				{
+					config.progressCallback().onProgress(completed, files.size(), file);
+				}
+				continue;
+			}
+
 			executor.submit(() ->
 			{
-				try
+				try (Reservation _ = memoryManager.reserve(fileSize))
 				{
 					// Process the file through the pipeline
 					try (PipelineResult result = pipeline.processFile(file))
