@@ -1754,8 +1754,34 @@ public final class Parser implements AutoCloseable
 
 	private NodeIndex parseRelational()
 	{
-		return parseBinaryExpression(this::parseShift,
-			TokenType.LT, TokenType.GT, TokenType.LE, TokenType.GE, TokenType.INSTANCEOF);
+		NodeIndex left = parseShift();
+
+		while (matchesAny(TokenType.LT, TokenType.GT, TokenType.LE, TokenType.GE))
+		{
+			NodeIndex right = parseShift();
+			int start = arena.getStart(left);
+			int end = arena.getEnd(right);
+			left = arena.allocateNode(NodeType.BINARY_EXPRESSION, start, end);
+		}
+
+		// Handle instanceof specially - requires type reference, optionally followed by pattern variable
+		if (match(TokenType.INSTANCEOF))
+		{
+			int start = arena.getStart(left);
+			parseType();
+
+			int end = tokens.get(position - 1).end();
+			// Check for optional pattern variable (Java 16+ pattern matching)
+			if (currentToken().type() == TokenType.IDENTIFIER)
+			{
+				consume();
+				end = tokens.get(position - 1).end();
+			}
+
+			return arena.allocateNode(NodeType.BINARY_EXPRESSION, start, end);
+		}
+
+		return left;
 	}
 
 	private NodeIndex parseShift()
