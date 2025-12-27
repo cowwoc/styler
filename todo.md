@@ -36,16 +36,9 @@ Per task prioritization rule, bug fixes take precedence over new features:
   - **Completed**: 2025-12-27
   - **Details**: Added `consumeEscapeSequence()` helper to handle both standard escapes and Unicode escapes (backslash-u plus 4 hex digits). Updated `scanCharLiteral()`, `scanStringLiteral()`, and `scanTextBlock()` to use new helper.
 
-- [ ] **READY:** `fix-switch-expressions` - Fix parser failure on switch expressions with arrow syntax and pattern matching
-  - **Dependencies**: None
-  - **Blocks**: Self-hosting (parser can't parse its own code)
-  - **Symptoms**:
-    - `Lexer.java:279:14: Expected COLON but found COMMA` on `case 'L', 'l' ->`
-    - `ParserTest.java:586:30: Expected COLON but found IDENTIFIER` on `case ParseResult.Success success ->`
-  - **Root Causes**:
-    - `parseSwitchStatement()` only supports old-style `case X:` syntax
-    - Neither switch parser supports pattern matching (`case Type varName ->`)
-  - **Scope**: Update parseSwitchStatement() to support arrow syntax, multi-label cases, and pattern matching
+- [x] **COMPLETE:** `fix-switch-expressions` - Fix parser failure on switch expressions with arrow syntax and pattern matching ✅
+  - **Completed**: 2025-12-27
+  - **Details**: Added `parseCaseLabelElement()` and `tryParseTypePattern()` helper methods. Updated `parseSwitchStatement()` to support multi-label cases and arrow syntax. Added type pattern support (`case Type varName ->`) to both switch parsers.
 
 **COMPLETED**:
 - `implement-line-length-formatter` - Line Length Formatter ✅ COMPLETE
