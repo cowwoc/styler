@@ -1,5 +1,50 @@
 # Changelog
 
+## 2025-12-27
+
+### Memory Reservation System for Batch Processing ✅
+
+**Completion Date**: 2025-12-27
+
+**Task**: `implement-memory-reservation`
+
+**Problem Solved**:
+- Batch file processing with virtual threads could exhaust heap memory
+- Without throttling, all files started processing simultaneously
+- Memory exhaustion caused JVM OOM crashes
+
+**Solution Implemented**:
+- Semaphore-based memory reservation using permits as memory units (1MB each)
+- `totalPermits = (maxMemory() * 0.7) / 1MB` - 70% of heap available for processing
+- `permitsNeeded = max(1, (fileSize * 5) / 1MB)` - 5x multiplier for AST overhead
+- Fail-fast check: throws error if file requires more permits than available
+- Unfair semaphore for better throughput under contention
+- `Reservation` record with AutoCloseable for try-with-resources pattern
+
+**Components**:
+- `MemoryReservationManager` - Semaphore wrapper with file-size-based permit calculation
+- `Reservation` - AutoCloseable handle for automatic permit release
+- `DefaultBatchProcessor` integration - wraps file processing with reservation
+
+**Files Created**:
+- `pipeline/src/main/java/.../parallel/internal/MemoryReservationManager.java`
+- `pipeline/src/main/java/.../parallel/internal/Reservation.java`
+- `pipeline/src/test/java/.../parallel/test/MemoryReservationManagerTest.java`
+- `pipeline/src/test/java/.../parallel/test/MemoryReservationManagerConcurrencyTest.java`
+- `pipeline/src/test/java/.../parallel/test/MemoryReservationManagerEdgeCaseTest.java`
+- `pipeline/src/test/java/.../parallel/test/ReservationTest.java`
+- `pipeline/src/test/java/.../parallel/test/BatchProcessorMemoryReservationIntegrationTest.java`
+
+**Files Modified**:
+- `pipeline/src/main/java/.../parallel/DefaultBatchProcessor.java` - Added reservation integration
+
+**Quality**:
+- All 155 tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ## 2025-12-26
 
 ### E12: NodeArena Memory Limit Fix ✅
