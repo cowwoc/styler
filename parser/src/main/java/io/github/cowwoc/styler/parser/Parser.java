@@ -2250,7 +2250,7 @@ public final class Parser implements AutoCloseable
 		Token current = currentToken();
 		if (position < tokens.size() - 1)
 		{
-			position += 1;
+			++position;
 		}
 		return current;
 	}

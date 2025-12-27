@@ -240,6 +240,19 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   // -1 because endPosition is inclusive, pointing to semicolon
   int adjusted = position - 1;
   ```
+- Extract repeated element access to local variable:
+  ```java
+  // ❌ WRONG - Repeated collection access
+  requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.STRING);
+  requireThat(tokens.get(0).text(), "tokens.get(0).text()").isEqualTo("hello");
+  requireThat(tokens.get(0).start(), "tokens.get(0).start()").isEqualTo(0);
+
+  // ✅ CORRECT - Extract to local variable
+  Token token = tokens.get(0);
+  requireThat(token.type(), "token.type()").isEqualTo(TokenType.STRING);
+  requireThat(token.text(), "token.text()").isEqualTo("hello");
+  requireThat(token.start(), "token.start()").isEqualTo(0);
+  ```
 
 ### Time Calculations
 Use `Instant` and `Duration` instead of `long` for time measurements:

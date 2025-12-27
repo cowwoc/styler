@@ -32,12 +32,9 @@ Per task prioritization rule, bug fixes take precedence over new features:
   - **Completed**: 2025-12-27
   - **Details**: Modified parseRelational() to handle instanceof specially with type + optional pattern variable
 
-- [ ] **READY:** `fix-unicode-escape-literals` - Fix lexer failure on Unicode escapes in character/string literals
-  - **Dependencies**: None
-  - **Blocks**: Self-hosting (parser can't parse its own code)
-  - **Symptoms**: `Parser.java:73:25: Expected RPAREN but found IDENTIFIER` on `'\uFFFD'`
-  - **Root Cause**: `scanCharLiteral()` advances 2 chars for escapes, but `\uXXXX` is 6 chars
-  - **Scope**: Fix Lexer to handle Unicode escapes (`\uXXXX`) in char and string literals
+- [x] **COMPLETE:** `fix-unicode-escape-literals` - Fix lexer failure on Unicode escapes in character/string literals ✅
+  - **Completed**: 2025-12-27
+  - **Details**: Added `consumeEscapeSequence()` helper to handle both standard escapes and Unicode escapes (backslash-u plus 4 hex digits). Updated `scanCharLiteral()`, `scanStringLiteral()`, and `scanTextBlock()` to use new helper.
 
 - [ ] **READY:** `fix-switch-expressions` - Fix parser failure on switch expressions with arrow syntax and pattern matching
   - **Dependencies**: None

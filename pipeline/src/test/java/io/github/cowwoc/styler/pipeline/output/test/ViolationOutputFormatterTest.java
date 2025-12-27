@@ -431,7 +431,7 @@ public class ViolationOutputFormatterTest
 		index = str.indexOf(substring, index);
 		while (index != -1)
 		{
-			count += 1;
+			++count;
 			index += substring.length();
 			index = str.indexOf(substring, index);
 		}
