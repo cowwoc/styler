@@ -1018,6 +1018,12 @@ public final class Parser implements AutoCloseable
 		expect(TokenType.LBRACE);
 		while (!match(TokenType.RBRACE))
 		{
+			parseComments();
+			if (currentToken().type() == TokenType.RBRACE)
+			{
+				// Let match() in while condition consume the RBRACE
+				continue;
+			}
 			if (currentToken().type() == TokenType.EOF)
 			{
 				throw new ParserException("Unexpected EOF in block", currentToken().start());
@@ -1148,6 +1154,16 @@ public final class Parser implements AutoCloseable
 		{
 			if (!looksLikeTypeStart())
 				return false;
+			// Consume declaration annotations (before FINAL)
+			while (currentToken().type() == TokenType.AT)
+			{
+				parseAnnotation();
+			}
+			// Consume FINAL modifier if present
+			if (currentToken().type() == TokenType.FINAL)
+			{
+				consume();
+			}
 			parseType();
 			if (currentToken().type() != TokenType.IDENTIFIER)
 				return false;
@@ -1169,7 +1185,7 @@ public final class Parser implements AutoCloseable
 	private boolean looksLikeTypeStart()
 	{
 		TokenType type = currentToken().type();
-		return type == TokenType.FINAL || isPrimitiveType(type) || type == TokenType.IDENTIFIER;
+		return type == TokenType.AT || type == TokenType.FINAL || isPrimitiveType(type) || type == TokenType.IDENTIFIER;
 	}
 
 	private NodeIndex parseForStatement()
@@ -1419,6 +1435,11 @@ public final class Parser implements AutoCloseable
 
 	private void parseResource()
 	{
+		// Consume declaration annotations (e.g., @Cleanup)
+		while (currentToken().type() == TokenType.AT)
+		{
+			parseAnnotation();
+		}
 		if (currentToken().type() == TokenType.FINAL)
 		{
 			consume();
@@ -1465,6 +1486,16 @@ public final class Parser implements AutoCloseable
 	{
 		try
 		{
+			// Consume declaration annotations (before FINAL modifier)
+			while (currentToken().type() == TokenType.AT)
+			{
+				parseAnnotation();
+			}
+			// Consume optional FINAL modifier
+			if (currentToken().type() == TokenType.FINAL)
+			{
+				consume();
+			}
 			parseType();
 			if (currentToken().type() != TokenType.IDENTIFIER)
 			{
@@ -1514,7 +1545,8 @@ public final class Parser implements AutoCloseable
 		int checkpoint = position;
 
 		// Try to parse as variable declaration
-		if ((currentToken().type() == TokenType.FINAL ||
+		if ((currentToken().type() == TokenType.AT ||
+			currentToken().type() == TokenType.FINAL ||
 			currentToken().type() == TokenType.VAR ||
 			isPrimitiveType(currentToken().type()) ||
 			currentToken().type() == TokenType.IDENTIFIER) &&

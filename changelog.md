@@ -2,6 +2,40 @@
 
 ## 2025-12-27
 
+### Local Variable Annotation Parser Fix ✅
+
+**Completion Date**: 2025-12-27
+
+**Task**: `fix-local-variable-annotations`
+
+**Problem Solved**:
+- Parser failed on annotations before local variable declarations
+- Error: "Unexpected token in expression: AT" for `@SuppressWarnings("unchecked") List<String> result = null;`
+- Also failed on comment-only blocks: "Unexpected token in expression: RBRACE"
+
+**Solution Implemented**:
+- Added `parseComments()` call inside `parseBlock()` loop to handle comment tokens
+- Added RBRACE check after consuming comments to properly exit loop
+- Follows existing pattern from `parseClassBody()` method
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added comment handling in `parseBlock()`
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/LocalAnnotationTest.java` - 15 test cases
+
+**Test Coverage**:
+- Single annotation: `@SuppressWarnings("unchecked") List<String> result = null;`
+- Final modifier: `final int x = 1;`
+- Final with annotation: `final @NonNull Object obj = new Object();`
+- Multiple annotations: `@Deprecated @SuppressWarnings("unused") int x = 1;`
+- Enhanced for-loop: `for (@NonNull String s : list)`
+- Try-with-resources: `try (@SuppressWarnings("resource") InputStream in = null)`
+- Var with annotation: `@SuppressWarnings("unchecked") var x = List.of(1, 2, 3);`
+- Comment-only blocks: Catch blocks with only `// ignored` comments
+
+---
+
 ### Type Annotation Bounds Parser Fix ✅
 
 **Completion Date**: 2025-12-27
