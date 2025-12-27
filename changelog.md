@@ -2,6 +2,39 @@
 
 ## 2025-12-27
 
+### Unicode Escape Lexer Fix ✅
+
+**Completion Date**: 2025-12-27
+
+**Task**: `fix-unicode-escape-literals`
+
+**Problem Solved**:
+- Lexer failed to properly handle Unicode escape sequences in character/string literals
+- Error: `Expected RPAREN but found IDENTIFIER` for `'\uFFFD'` in Parser.java
+- Root cause: `scanCharLiteral()` and similar methods advanced 2 chars for escapes, but Unicode escapes are 6 chars
+
+**Solution Implemented**:
+- Added `consumeEscapeSequence()` helper method to centralize escape handling
+- Added `isHexDigit()` helper for Unicode escape validation
+- Updated `scanCharLiteral()`, `scanStringLiteral()`, and `scanTextBlock()` to use new helper
+- Unicode escape handling follows JLS: skips all 'u' chars (allows multiple u's) then 4 hex digits
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Lexer.java` - Added `consumeEscapeSequence()` and `isHexDigit()` methods
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/LexerUnicodeEscapeTest.java` - 12 test cases
+
+**Test Coverage**:
+- Char literals: `'\u0041'` (A), `'\uFFFD'` (replacement character)
+- String literals: `"\u0048ello"`, multiple escapes `"\u0048\u0065\u006C\u006C\u006F"`
+- Text blocks: Unicode escapes within text blocks
+- Mixed escapes: Standard and Unicode escapes together `"\n\u0041\t"`
+- Edge cases: Extended Unicode escapes with multiple 'u' chars
+- Regression tests: Parser.java pattern that originally failed
+
+---
+
 ### Pattern Matching Instanceof Parser Fix ✅
 
 **Completion Date**: 2025-12-27

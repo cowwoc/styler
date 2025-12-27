@@ -168,7 +168,7 @@ public final class Lexer
 	{
 		while (position < source.length() && Character.isWhitespace(source.charAt(position)))
 		{
-			position += 1;
+			++position;
 		}
 	}
 
@@ -182,7 +182,7 @@ public final class Lexer
 
 		while (position < source.length() && source.charAt(position) != '\n')
 		{
-			position += 1;
+			++position;
 		}
 		String text = source.substring(start, position);
 		TokenType type;
@@ -205,7 +205,7 @@ public final class Lexer
 				position += 2;
 				break;
 			}
-			position += 1;
+			++position;
 		}
 
 		String text = source.substring(start, position);
@@ -225,7 +225,7 @@ public final class Lexer
 	{
 		while (position < source.length() && Character.isJavaIdentifierPart(source.charAt(position)))
 		{
-			position += 1;
+			++position;
 		}
 
 		String text = source.substring(start, position);
@@ -258,18 +258,18 @@ public final class Lexer
 
 			if (Character.isDigit(ch) || ch == '_')
 			{
-				position += 1;
+				++position;
 			}
 			else if (ch == '.' && !hasDecimal && !hasExponent)
 			{
 				hasDecimal = true;
-				position += 1;
+				++position;
 			}
 			else if ((ch == 'e' || ch == 'E') && !hasExponent)
 			{
 				hasExponent = true;
 				hasDecimal = true; // Exponents imply floating point
-				position += 1;
+				++position;
 				consumeOptionalExponentSign();
 			}
 			else
@@ -278,11 +278,11 @@ public final class Lexer
 				{
 					case 'L', 'l' ->
 					{
-						position += 1;
+						++position;
 					}
 					case 'F', 'f', 'D', 'd' ->
 					{
-						position += 1;
+						++position;
 						hasDecimal = true;
 					}
 					default ->
@@ -326,13 +326,13 @@ public final class Lexer
 		{
 			char next = source.charAt(position);
 			if (next == '+' || next == '-')
-				position += 1;
+				++position;
 		}
 	}
 
 	private Token scanStringLiteral(int start)
 	{
-		position += 1;
+		++position;
 
 		// Check for text block: """
 		if (position + 1 < source.length() &&
@@ -347,16 +347,17 @@ public final class Lexer
 			char ch = source.charAt(position);
 			if (ch == '"')
 			{
-				position += 1;
+				++position;
 				break;
 			}
 			if (ch == '\\')
 			{
-				position += 2;
+				++position;
+				consumeEscapeSequence();
 			}
 			else
 			{
-				position += 1;
+				++position;
 			}
 		}
 
@@ -399,7 +400,8 @@ public final class Lexer
 			}
 			if (source.charAt(position) == '\\')
 			{
-				position += 2;
+				++position;
+				consumeEscapeSequence();
 			}
 			else
 			{
@@ -412,27 +414,65 @@ public final class Lexer
 
 	private Token scanCharLiteral(int start)
 	{
-		position += 1;
+		++position;
 
 		if (position < source.length())
 		{
 			if (source.charAt(position) == '\\')
 			{
-				position += 2;
+				++position;
+				consumeEscapeSequence();
 			}
 			else
 			{
-				position += 1;
+				++position;
 			}
 		}
 
 		if (position < source.length() && source.charAt(position) == '\'')
 		{
-			position += 1;
+			++position;
 		}
 
 		String text = source.substring(start, position);
 		return new Token(TokenType.CHAR_LITERAL, start, position, text);
+	}
+
+	/**
+	 * Consumes an escape sequence starting after the backslash.
+	 * Handles standard escapes ({@code \n}, {@code \t}, etc.) and Unicode escapes (backslash-u plus 4 hex
+	 * digits). The backslash has already been consumed when this method is called.
+	 */
+	private void consumeEscapeSequence()
+	{
+		if (position >= source.length())
+			return;
+
+		if (source.charAt(position) == 'u')
+		{
+			// Unicode escape: skip all 'u' chars (JLS allows multiple 'u' chars before hex digits)
+			while (position < source.length() && source.charAt(position) == 'u')
+			{
+				++position;
+			}
+			// Skip up to 4 hex digits
+			int hexCount = 0;
+			while (position < source.length() && hexCount < 4 && isHexDigit(source.charAt(position)))
+			{
+				++position;
+				++hexCount;
+			}
+		}
+		else
+		{
+			// Standard escape: skip single character
+			++position;
+		}
+	}
+
+	private boolean isHexDigit(char ch)
+	{
+		return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
 	}
 
 	/**
@@ -446,7 +486,7 @@ public final class Lexer
 	{
 		if (position < source.length() && source.charAt(position) == expected)
 		{
-			position += 1;
+			++position;
 			return true;
 		}
 		return false;
@@ -455,7 +495,7 @@ public final class Lexer
 	private Token scanOperatorOrSeparator(int start)
 	{
 		char ch = source.charAt(position);
-		position += 1;
+		++position;
 
 		// After incrementing position, check the character AT current position
 		// (not ahead of it, which peek() would do)
