@@ -28,6 +28,10 @@ Per task prioritization rule, bug fixes take precedence over new features:
   - **Completed**: 2025-12-27
   - **Details**: Added annotation/FINAL consumption in parseExpressionOrVariableStatement(), tryParseEnhancedForHeader(), parseResource(), and comment handling in parseBlock()
 
+- [x] **COMPLETE:** `fix-pattern-matching-instanceof` - Fix parser failure on pattern matching instanceof ✅
+  - **Completed**: 2025-12-27
+  - **Details**: Modified parseRelational() to handle instanceof specially with type + optional pattern variable
+
 **COMPLETED**:
 - `implement-line-length-formatter` - Line Length Formatter ✅ COMPLETE
 - `implement-import-organization` - Import Organization ✅ COMPLETE
