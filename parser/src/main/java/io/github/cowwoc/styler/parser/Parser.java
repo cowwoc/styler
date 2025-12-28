@@ -600,10 +600,14 @@ public final class Parser implements AutoCloseable
 		}
 		else
 		{
+			int typeStart = currentToken().start();
 			parseQualifiedName();
 			if (match(TokenType.LT))
 			{
 				parseTypeArguments();
+				// Create PARAMETERIZED_TYPE node wrapping base type and type arguments
+				int typeEnd = tokens.get(position - 1).end();
+				arena.allocateNode(NodeType.PARAMETERIZED_TYPE, typeStart, typeEnd);
 			}
 		}
 

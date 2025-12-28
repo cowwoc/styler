@@ -2,6 +2,35 @@
 
 ## 2025-12-28
 
+### Parameterized Type AST Nodes ✅
+
+**Completion Date**: 2025-12-28
+
+**Task**: `add-parameterized-type-nodes`
+
+**Problem Solved**:
+- Parser recognized generic types like `List<String>` but only created separate `QUALIFIED_NAME` nodes
+- No structural representation to indicate type arguments belonged to the base type
+- Formatters couldn't properly analyze generic type structure
+
+**Solution Implemented**:
+- Modified `parseType()` to allocate `PARAMETERIZED_TYPE` nodes when type arguments are present
+- Captures start position before `parseQualifiedName()`, creates node after `parseTypeArguments()`
+- Works correctly with RSHIFT/URSHIFT token splitting for nested generics
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Add `PARAMETERIZED_TYPE` node creation
+- `parser/src/test/java/.../parser/test/GenericTypeParserTest.java` - Update 10 tests, add 1 new test
+
+**Test Coverage**:
+- Diamond operator: `ArrayList<>`, `HashMap<>`
+- Simple generics: `List<String>`, `Map<String, Integer>`
+- Nested generics: `Map<String, List<Integer>>`, `Map<String, Map<Integer, List<String>>>`
+- Wildcards: `List<?>`, `List<? extends Number>`, `Consumer<? super Integer>`
+- Multiple type arguments: `BiFunction<String, Integer, Boolean>`
+
+---
+
 ### Record Pattern Parser Support ✅
 
 **Completion Date**: 2025-12-28

@@ -12,6 +12,7 @@ import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
 import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
 import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
@@ -44,9 +45,11 @@ public class GenericTypeParserTest
 			semanticNode(CLASS_DECLARATION, 0, 71, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 69),
 			semanticNode(BLOCK, 24, 69),
+			semanticNode(PARAMETERIZED_TYPE, 28, 40),
 			semanticNode(QUALIFIED_NAME, 28, 32),
 			semanticNode(QUALIFIED_NAME, 33, 39),
 			semanticNode(OBJECT_CREATION, 48, 65),
+			semanticNode(PARAMETERIZED_TYPE, 52, 63),
 			semanticNode(QUALIFIED_NAME, 52, 61));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -74,10 +77,12 @@ public class GenericTypeParserTest
 			semanticNode(CLASS_DECLARATION, 0, 76, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 74),
 			semanticNode(BLOCK, 24, 74),
+			semanticNode(PARAMETERIZED_TYPE, 28, 48),
 			semanticNode(QUALIFIED_NAME, 28, 31),
 			semanticNode(QUALIFIED_NAME, 32, 38),
 			semanticNode(QUALIFIED_NAME, 40, 47),
 			semanticNode(OBJECT_CREATION, 55, 70),
+			semanticNode(PARAMETERIZED_TYPE, 59, 68),
 			semanticNode(QUALIFIED_NAME, 59, 66));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -105,11 +110,14 @@ public class GenericTypeParserTest
 			semanticNode(CLASS_DECLARATION, 0, 86, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 84),
 			semanticNode(BLOCK, 24, 84),
+			semanticNode(PARAMETERIZED_TYPE, 28, 40),
 			semanticNode(QUALIFIED_NAME, 28, 32),
 			semanticNode(QUALIFIED_NAME, 33, 39),
 			semanticNode(OBJECT_CREATION, 48, 80),
+			semanticNode(PARAMETERIZED_TYPE, 52, 63),
 			semanticNode(QUALIFIED_NAME, 52, 61),
 			semanticNode(OBJECT_CREATION, 64, 79),
+			semanticNode(PARAMETERIZED_TYPE, 68, 77),
 			semanticNode(QUALIFIED_NAME, 68, 75));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -135,6 +143,7 @@ public class GenericTypeParserTest
 			semanticNode(COMPILATION_UNIT, 0, 52),
 			semanticNode(CLASS_DECLARATION, 0, 51, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 49),
+			semanticNode(PARAMETERIZED_TYPE, 27, 38),
 			semanticNode(QUALIFIED_NAME, 27, 35),
 			semanticNode(BLOCK, 45, 49));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -161,6 +170,7 @@ public class GenericTypeParserTest
 			semanticNode(COMPILATION_UNIT, 0, 67),
 			semanticNode(CLASS_DECLARATION, 0, 66, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 64),
+			semanticNode(PARAMETERIZED_TYPE, 27, 49),
 			semanticNode(QUALIFIED_NAME, 27, 31),
 			semanticNode(QUALIFIED_NAME, 42, 48),
 			semanticNode(BLOCK, 60, 64));
@@ -188,6 +198,7 @@ public class GenericTypeParserTest
 			semanticNode(COMPILATION_UNIT, 0, 70),
 			semanticNode(CLASS_DECLARATION, 0, 69, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 67),
+			semanticNode(PARAMETERIZED_TYPE, 26, 51),
 			semanticNode(QUALIFIED_NAME, 26, 34),
 			semanticNode(QUALIFIED_NAME, 43, 50),
 			semanticNode(BLOCK, 63, 67));
@@ -213,6 +224,7 @@ public class GenericTypeParserTest
 			semanticNode(COMPILATION_UNIT, 0, 48),
 			semanticNode(CLASS_DECLARATION, 0, 47, "Test"),
 			semanticNode(FIELD_DECLARATION, 14, 45),
+			semanticNode(PARAMETERIZED_TYPE, 26, 40),
 			semanticNode(QUALIFIED_NAME, 18, 24),
 			semanticNode(QUALIFIED_NAME, 26, 30),
 			semanticNode(QUALIFIED_NAME, 31, 38));
@@ -238,6 +250,7 @@ public class GenericTypeParserTest
 			semanticNode(COMPILATION_UNIT, 0, 57),
 			semanticNode(CLASS_DECLARATION, 0, 56, "Test"),
 			semanticNode(FIELD_DECLARATION, 14, 54),
+			semanticNode(PARAMETERIZED_TYPE, 26, 49),
 			semanticNode(QUALIFIED_NAME, 18, 24),
 			semanticNode(QUALIFIED_NAME, 26, 30),
 			semanticNode(QUALIFIED_NAME, 41, 47));
@@ -263,10 +276,12 @@ public class GenericTypeParserTest
 			semanticNode(COMPILATION_UNIT, 0, 66),
 			semanticNode(CLASS_DECLARATION, 0, 65, "Test"),
 			semanticNode(FIELD_DECLARATION, 14, 63),
+			semanticNode(PARAMETERIZED_TYPE, 26, 40),
 			semanticNode(QUALIFIED_NAME, 18, 24),
 			semanticNode(QUALIFIED_NAME, 26, 30),
 			semanticNode(QUALIFIED_NAME, 31, 38),
 			semanticNode(OBJECT_CREATION, 47, 62),
+			semanticNode(PARAMETERIZED_TYPE, 51, 60),
 			semanticNode(QUALIFIED_NAME, 51, 58));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -293,6 +308,35 @@ public class GenericTypeParserTest
 			semanticNode(QUALIFIED_NAME, 25, 31),
 			semanticNode(QUALIFIED_NAME, 33, 40),
 			semanticNode(QUALIFIED_NAME, 42, 49));
+		requireThat(actual, "actual").isEqualTo(expected);
+	}
+
+	/**
+	 * Tests parsing of deeply nested generics (3+ levels) with URSHIFT token splitting.
+	 * The {@code >>>} operator in nested generics must be correctly split by the parser
+	 * to distinguish it from type argument closing brackets.
+	 */
+	@Test
+	public void testDeeplyNestedGenerics()
+	{
+		String source = """
+			class Test
+			{
+				Map<String, Map<Integer, List<String>>> deep;
+			}
+			""";
+		Set<SemanticNode> actual = parseSemanticAst(source);
+		Set<SemanticNode> expected = Set.of(
+			semanticNode(COMPILATION_UNIT, 0, 62),
+			semanticNode(CLASS_DECLARATION, 0, 61, "Test"),
+			semanticNode(FIELD_DECLARATION, 14, 59),
+			semanticNode(PARAMETERIZED_TYPE, 26, 53),
+			semanticNode(PARAMETERIZED_TYPE, 39, 53),
+			semanticNode(QUALIFIED_NAME, 18, 24),
+			semanticNode(QUALIFIED_NAME, 26, 29),
+			semanticNode(QUALIFIED_NAME, 30, 37),
+			semanticNode(QUALIFIED_NAME, 39, 43),
+			semanticNode(QUALIFIED_NAME, 44, 50));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }
