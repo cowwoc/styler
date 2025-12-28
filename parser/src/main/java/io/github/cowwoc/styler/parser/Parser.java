@@ -1418,16 +1418,22 @@ public final class Parser implements AutoCloseable
 	}
 
 	/**
-	 * Attempts to parse a type pattern in a case label.
-	 * A type pattern has the form: Type patternVariable (e.g., String s, Foo.Bar bar, Integer _)
-	 * Optionally followed by a guard expression: Type patternVariable when guardExpr
+	 * Attempts to parse a type pattern or record pattern in a case label.
+	 * <ul>
+	 *   <li>Type pattern: {@code Type patternVariable} (e.g., {@code String s}, {@code Foo.Bar bar},
+	 *       {@code Integer _})</li>
+	 *   <li>Record pattern: {@code Type(componentPatterns...)} (e.g., {@code Point(int x, int y)},
+	 *       {@code Box(String _)})</li>
+	 * </ul>
+	 * Both may be followed by a guard expression: {@code when guardExpr}
 	 *
-	 * @return {@code true} if a type pattern was successfully parsed, {@code false} if the current
+	 * @return {@code true} if a pattern was successfully parsed, {@code false} if the current
 	 *         position should be treated as a regular expression
 	 */
 	private boolean tryParseTypePattern()
 	{
 		int checkpoint = position;
+		int typeStart = currentToken().start();
 
 		// Parse potential type (may be qualified like Foo.Bar.Baz)
 		consume(); // First identifier
@@ -1440,6 +1446,13 @@ public final class Parser implements AutoCloseable
 				return false;
 			}
 			consume();
+		}
+
+		// Check if this is a record pattern: Type(components...)
+		if (currentToken().type() == TokenType.LPAREN)
+		{
+			parseRecordPattern(typeStart);
+			return true;
 		}
 
 		// Check if next token is an identifier (pattern variable)
@@ -1458,6 +1471,128 @@ public final class Parser implements AutoCloseable
 		// Not a type pattern, restore position
 		position = checkpoint;
 		return false;
+	}
+
+	/**
+	 * Parses a record pattern after the type name has been consumed.
+	 * Record patterns have the form: {@code Type(componentPattern, componentPattern, ...)}
+	 * <p>
+	 * Examples:
+	 * <ul>
+	 *   <li>{@code Point(int x, int y)}</li>
+	 *   <li>{@code Empty()}</li>
+	 *   <li>{@code Box(Point(int x, int y))}</li>
+	 *   <li>{@code Point(int x, int y) when x > 0}</li>
+	 * </ul>
+	 *
+	 * @param typeStart the start position of the type name
+	 * @return the node index of the record pattern
+	 */
+	private NodeIndex parseRecordPattern(int typeStart)
+	{
+		expect(TokenType.LPAREN);
+		parseRecordPatternComponents();
+		expect(TokenType.RPAREN);
+
+		// Check for optional guard: "when" expression
+		if (isContextualKeyword("when"))
+		{
+			parseGuardExpression();
+		}
+
+		int end = tokens.get(position - 1).end();
+		return arena.allocateNode(NodeType.RECORD_PATTERN, typeStart, end);
+	}
+
+	/**
+	 * Parses the component patterns inside a record pattern's parentheses.
+	 * Handles empty component lists and comma-separated component patterns.
+	 */
+	private void parseRecordPatternComponents()
+	{
+		// Handle empty component list: Empty()
+		if (currentToken().type() == TokenType.RPAREN)
+		{
+			return;
+		}
+
+		parseComponentPattern();
+		while (match(TokenType.COMMA))
+		{
+			parseComponentPattern();
+		}
+	}
+
+	/**
+	 * Parses a single component pattern within a record pattern.
+	 * Component patterns can be:
+	 * <ul>
+	 *   <li>Unnamed pattern: {@code _}</li>
+	 *   <li>Type pattern: {@code Type variable} (e.g., {@code int x}, {@code String s},
+	 *       {@code var x}, {@code String[] items})</li>
+	 *   <li>Nested record pattern: {@code Type(components...)} (e.g., {@code Point(int x, int y)})</li>
+	 * </ul>
+	 */
+	private void parseComponentPattern()
+	{
+		// Check for unnamed pattern: _
+		if (currentToken().type() == TokenType.IDENTIFIER &&
+			"_".equals(currentToken().getText(sourceCode)))
+		{
+			consume();
+			return;
+		}
+
+		// Parse type (may be primitive, var, or qualified reference type)
+		int componentTypeStart = currentToken().start();
+		if (isPrimitiveType(currentToken().type()))
+		{
+			consume();
+		}
+		else if (currentToken().type() == TokenType.VAR)
+		{
+			// Type inference with 'var' keyword
+			consume();
+		}
+		else if (currentToken().type() == TokenType.IDENTIFIER)
+		{
+			consume();
+			while (match(TokenType.DOT))
+			{
+				if (currentToken().type() != TokenType.IDENTIFIER)
+				{
+					throw new ParserException(
+						"Expected identifier after '.' in type", currentToken().start());
+				}
+				consume();
+			}
+		}
+		else
+		{
+			throw new ParserException(
+				"Expected type in component pattern", currentToken().start());
+		}
+
+		// Handle array dimensions (e.g., String[], int[][])
+		while (match(TokenType.LBRACKET))
+		{
+			expect(TokenType.RBRACKET);
+		}
+
+		// Determine what follows the type:
+		// - LPAREN -> nested record pattern
+		// - IDENTIFIER -> type pattern with variable name
+		if (currentToken().type() == TokenType.LPAREN)
+		{
+			// Nested record pattern
+			parseRecordPattern(componentTypeStart);
+		}
+		else if (currentToken().type() == TokenType.IDENTIFIER)
+		{
+			// Type pattern: consume the variable name
+			consume();
+		}
+		// else: just a type without variable (could happen in some edge cases)
 	}
 
 	/**

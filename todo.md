@@ -295,29 +295,6 @@ benchmarking, and validate with Maven plugin integration.
 
 **Goal**: Improve formatter architecture for better maintainability, accuracy, and extensibility.
 
-### Parser Enhancement: Advanced Switch Pattern Matching
-- [x] **DONE:** `add-guarded-pattern-support` - Add parser support for guarded patterns in switch ✅
-  - **Completed**: 2025-12-28
-  - **Dependencies**: `fix-switch-expressions` ✅
-  - **Blocks**: `add-record-pattern-support`
-  - **Purpose**: Support guarded patterns with `when` clause in switch expressions (Java 21+)
-  - **Syntax**: `case Integer i when i > 0 ->`, `case String s when s.length() > 5 ->`
-
-- [ ] **BLOCKED:** `add-record-pattern-support` - Add parser support for record patterns in switch
-  - **Dependencies**: `add-guarded-pattern-support`
-  - **Blocks**: None (enhancement)
-  - **Parallelizable With**: None
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Support record pattern matching in switch expressions (Java 21+)
-  - **Syntax**: `case Point(int x, int y) ->`, `case Box(Point(int x, int y)) ->`
-  - **Scope**: Parse record deconstruction patterns with nested patterns
-  - **Components**:
-    - Detect record pattern syntax (type followed by parenthesized component patterns)
-    - Parse nested component patterns recursively
-    - Support nested record patterns for complex deconstruction
-    - Create RECORD_PATTERN node type for AST representation
-  - **Quality**: Parser tests for record patterns, nested patterns, edge cases
-
 ### Parser Enhancement: Systematic Comment Handling
 - [ ] **READY:** `fix-remaining-comment-gaps` - Handle comments in all remaining parser locations
   - **Dependencies**: `fix-enum-constant-comments` ✅
