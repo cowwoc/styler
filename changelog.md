@@ -1,5 +1,49 @@
 # Changelog
 
+## 2025-12-28
+
+### Guarded Pattern Parser Support ✅
+
+**Completion Date**: 2025-12-28
+
+**Task**: `add-guarded-pattern-support`
+
+**Problem Solved**:
+- Parser failed on Java 21+ guarded patterns in switch expressions/statements
+- Syntax `case Type varName when condition ->` was not recognized
+- The `when` keyword is contextual (only a keyword after type patterns, valid identifier elsewhere)
+
+**Solution Implemented**:
+- Added `isContextualKeyword()` method to detect contextual keywords like `when`
+- Added `parseGuardExpression()` to parse guard conditions after `when`
+- Updated `parseCaseLabelElement()` to check for optional guard after type patterns
+- Handles both arrow (`->`) and colon (`:`) switch syntax
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added guard pattern handling
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/GuardedPatternParserTest.java` - 22 test cases
+
+**Test Coverage**:
+- Simple type patterns with guard: `case String s when s.length() > 5 ->`
+- Qualified type patterns: `case java.lang.String s when s.isEmpty() ->`
+- Numeric comparisons: `case Integer i when i > 0 ->`
+- Complex boolean expressions: `case Integer i when i > 0 && i < 100 ->`
+- Method calls in guards: `case String s when s.isEmpty() ->`
+- Chained method calls: `case String s when s.strip().toLowerCase().startsWith("hello") ->`
+- Field access: `case Integer i when i > this.threshold ->`
+- Static method calls: `case Integer i when Integer.signum(i) > 0 ->`
+- instanceof in guards: `case String s when extra instanceof Integer ->`
+- Local variable references: `case String s when s.length() >= minLength ->`
+- Multiple guarded cases in same switch
+- Mix of guarded and unguarded patterns
+- Nested switch expressions with guards
+- Switch statement (colon) syntax with guards
+- `when` as variable name outside switch (contextual keyword verification)
+
+---
+
 ## 2025-12-27
 
 ### Switch Expression Parser Fix ✅

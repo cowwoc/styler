@@ -1420,6 +1420,7 @@ public final class Parser implements AutoCloseable
 	/**
 	 * Attempts to parse a type pattern in a case label.
 	 * A type pattern has the form: Type patternVariable (e.g., String s, Foo.Bar bar, Integer _)
+	 * Optionally followed by a guard expression: Type patternVariable when guardExpr
 	 *
 	 * @return {@code true} if a type pattern was successfully parsed, {@code false} if the current
 	 *         position should be treated as a regular expression
@@ -1446,12 +1447,45 @@ public final class Parser implements AutoCloseable
 		if (currentToken().type() == TokenType.IDENTIFIER)
 		{
 			consume();
+			// Check for optional guard: "when" expression
+			if (isContextualKeyword("when"))
+			{
+				parseGuardExpression();
+			}
 			return true;
 		}
 
 		// Not a type pattern, restore position
 		position = checkpoint;
 		return false;
+	}
+
+	/**
+	 * Checks if the current token is an identifier that matches a contextual keyword.
+	 * Contextual keywords like "when" are only treated as keywords in specific contexts,
+	 * not as reserved words throughout the language.
+	 *
+	 * @param keyword the contextual keyword to check for
+	 * @return {@code true} if the current token is an identifier matching the keyword
+	 */
+	private boolean isContextualKeyword(String keyword)
+	{
+		return currentToken().type() == TokenType.IDENTIFIER &&
+			currentToken().getText(sourceCode).equals(keyword);
+	}
+
+	/**
+	 * Parses a guard expression following the "when" contextual keyword in a guarded pattern.
+	 * The "when" keyword must have already been detected via {@link #isContextualKeyword(String)}.
+	 * <p>
+	 * Example: {@code case String s when s.length() > 5 -> ...}
+	 */
+	private void parseGuardExpression()
+	{
+		// Consume the "when" contextual keyword
+		consume();
+		// Parse the guard condition expression
+		parseExpression();
 	}
 
 	private NodeIndex parseReturnStatement()
