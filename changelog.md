@@ -2,6 +2,45 @@
 
 ## 2025-12-28
 
+### Record Pattern Parser Support ✅
+
+**Completion Date**: 2025-12-28
+
+**Task**: `add-record-pattern-support`
+
+**Problem Solved**:
+- Parser failed on Java 21+ record patterns in switch expressions/statements
+- Syntax `case Point(int x, int y) ->` was not recognized
+- Nested patterns like `case Box(Point(int x, int y)) ->` were not supported
+
+**Solution Implemented**:
+- Added `RECORD_PATTERN` to `NodeType` enum for AST representation
+- Added `parseRecordPattern(int typeStart)` method for record pattern parsing
+- Added `parseRecordPatternComponents()` helper for component list parsing
+- Added `parseComponentPattern()` helper for individual component parsing
+- Modified `tryParseTypePattern()` to detect `LPAREN` after type for record patterns
+- Updated `ContextDetector` to handle new `RECORD_PATTERN` node type
+
+**Files Modified**:
+- `ast/core/src/main/java/.../ast/core/NodeType.java` - Added `RECORD_PATTERN`
+- `parser/src/main/java/.../parser/Parser.java` - Added record pattern parsing
+- `formatter/src/main/java/.../linelength/internal/ContextDetector.java` - Handle `RECORD_PATTERN`
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/RecordPatternParserTest.java` - 23 test cases
+
+**Test Coverage**:
+- Simple patterns: `case Point(int x, int y) ->`, `case Empty() ->`
+- Nested patterns: `case Box(Point(int x, int y)) ->`, `case Outer(Middle(Inner(int x))) ->`
+- With guards: `case Point(int x, int y) when x > 0 ->`
+- Qualified types: `case java.awt.Point(int x, int y) ->`
+- Unnamed patterns: `case Point(int x, _) ->`
+- Type inference: `case Point(var x, var y) ->`
+- Switch expressions and statements
+- Multiple record pattern cases
+
+---
+
 ### Guarded Pattern Parser Support ✅
 
 **Completion Date**: 2025-12-28

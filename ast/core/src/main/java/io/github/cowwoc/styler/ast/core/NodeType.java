@@ -99,5 +99,8 @@ public enum NodeType
 	ANNOTATION_ELEMENT,
 
 	// Modifiers
-	MODIFIERS
+	MODIFIERS,
+
+	// Patterns
+	RECORD_PATTERN
 }
