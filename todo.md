@@ -4,65 +4,10 @@
 
 **Current Status**: Phase C in progress - `create-maven-plugin` complete, `create-jmh-benchmarks` and `benchmark-concurrency-models` now unblocked
 
-### 🐛 Priority: Bug Fixes (Work These First)
-
-Per task prioritization rule, bug fixes take precedence over new features:
-
-- [x] **COMPLETE:** `fix-enum-constant-comments` - Fix parser failure when comments appear in enum constant lists ✅
-  - **Completed**: 2025-12-24
-  - **Details**: Added parseComments() calls in parseEnumBody() and parseEnumConstant()
-
-- [x] **COMPLETE:** `fix-nested-type-references` - Fix parser failure on nested class type references ✅
-  - **Completed**: 2025-12-25
-  - **Details**: Added qualified type reference support in parseType()
-
-- [x] **COMPLETE:** `fix-import-organizer-bounds` - Fix StringIndexOutOfBoundsException in ImportOrganizerFormattingRule ✅
-  - **Completed**: 2025-12-25
-  - **Details**: Fixed bounds calculation in importsAreOrganized() and replaceImportSection()
-
-- [x] **COMPLETE:** `fix-node-arena-memory-limit` - Fix NodeArena memory limit exceeded during batch processing ✅
-  - **Completed**: 2025-12-26
-  - **Details**: Removed flawed SEC-005 heap usage check that measured total JVM heap instead of per-arena memory. Security maintained by existing MAX_ARENA_CAPACITY, MAX_TOKEN_COUNT, and JVM -Xmx limits.
-
-- [x] **COMPLETE:** `fix-local-variable-annotations` - Fix parser failure on annotations for local variables ✅
-  - **Completed**: 2025-12-27
-  - **Details**: Added annotation/FINAL consumption in parseExpressionOrVariableStatement(), tryParseEnhancedForHeader(), parseResource(), and comment handling in parseBlock()
-
-- [x] **COMPLETE:** `fix-pattern-matching-instanceof` - Fix parser failure on pattern matching instanceof ✅
-  - **Completed**: 2025-12-27
-  - **Details**: Modified parseRelational() to handle instanceof specially with type + optional pattern variable
-
-- [x] **COMPLETE:** `fix-unicode-escape-literals` - Fix lexer failure on Unicode escapes in character/string literals ✅
-  - **Completed**: 2025-12-27
-  - **Details**: Added `consumeEscapeSequence()` helper to handle both standard escapes and Unicode escapes (backslash-u plus 4 hex digits). Updated `scanCharLiteral()`, `scanStringLiteral()`, and `scanTextBlock()` to use new helper.
-
-- [x] **COMPLETE:** `fix-switch-expressions` - Fix parser failure on switch expressions with arrow syntax and pattern matching ✅
-  - **Completed**: 2025-12-27
-  - **Details**: Added `parseCaseLabelElement()` and `tryParseTypePattern()` helper methods. Updated `parseSwitchStatement()` to support multi-label cases and arrow syntax. Added type pattern support (`case Type varName ->`) to both switch parsers.
-
-**COMPLETED**:
-- `implement-line-length-formatter` - Line Length Formatter ✅ COMPLETE
-- `implement-import-organization` - Import Organization ✅ COMPLETE
-- `implement-file-processing-pipeline` - File Processing Pipeline Infrastructure ✅ COMPLETE
-- `implement-pipeline-stages` - Pipeline Stage Implementation ✅ COMPLETE (2025-12-13)
-- `implement-ai-violation-output` - AI Violation Output ✅ COMPLETE (2025-12-05)
-- `create-error-message-catalog` - Error Catalog ✅ COMPLETE (2025-12-05)
-- `implement-cli-formatter-integration` - CLI Integration ✅ COMPLETE (2025-12-09)
-- `implement-file-discovery` - File Discovery ✅ COMPLETE (2025-12-09)
-- `implement-virtual-thread-processing` - Virtual Thread Processing ✅ COMPLETE (2025-12-10)
-- `implement-brace-formatting` - Brace Formatting ✅ COMPLETE (2025-12-10)
-- `implement-whitespace-formatting` - Whitespace Formatting ✅ COMPLETE (2025-12-11)
-- `implement-indentation-formatting` - Indentation Formatting ✅ COMPLETE (2025-12-11)
-
 **Phase B**: ✅ COMPLETE (8/8 tasks)
 **Phase C**: In progress (4/6 tasks - benchmarks now unblocked)
 
-**Phase A - ✅ COMPLETE (5/5 tasks)**:
-- ✅ `create-styler-formatter-module` - styler-formatter module (defines FormattingRule interfaces)
-- ✅ `implement-index-overlay-parser` - Index-Overlay AST Parser (ast + parser modules)
-- ✅ `implement-toml-configuration` - TOML Configuration (config module)
-- ✅ `implement-cli-arguments` - CLI Arguments (cli module)
-- ✅ `implement-security-framework` - Security Framework (security module)
+**Phase A**: ✅ COMPLETE (5/5 tasks)
 
 ---
 
@@ -134,15 +79,6 @@ delivers working AI agent integration.
 **Coordination**: B1 tasks can run in parallel (2 instances). After B1 completes,
 B2-B5 have sequential dependencies.
 
-### B1. Minimal Formatting Rules (MVP) ✅ COMPLETE
-- [x] **COMPLETE:** `implement-line-length-formatter` - Context-aware line wrapping with AST integration (2025-12-02)
-
-- [x] **COMPLETE:** `implement-import-organization` - Import grouping and unused import removal (2025-12-03)
-
-### Classpath Infrastructure ✅ COMPLETE (2025-12-15)
-
-- [x] **COMPLETE:** `add-classpath-support` - Enable passing project classpath/modulepath into Styler (2025-12-15)
-
 - [ ] **READY:** `resolve-wildcard-imports` - Enhance import organization with wildcard resolution
   - **Dependencies**: `implement-import-organization` ✅ COMPLETE, `add-classpath-support` ✅ COMPLETE
   - **Blocks**: None (optional enhancement)
@@ -160,42 +96,6 @@ B2-B5 have sequential dependencies.
     - Fall back to conservative mode when no classpath provided
   - **Integration**: Extends ImportAnalyzer from `implement-import-organization`
   - **Quality**: Comprehensive tests with sample classpaths, edge cases for nested classes
-
-### File Processing Pipeline Infrastructure ✅ COMPLETE
-- [x] **COMPLETE:** `implement-file-processing-pipeline` - Pipeline infrastructure (2025-12-04)
-  - **Delivered**: FileProcessingPipeline class, StageResult types, ProcessingContext, AbstractPipelineStage
-  - **Note**: Stage implementations return `StageResult.Skipped` - see `implement-pipeline-stages` for actual implementation
-
-### Pipeline Stage Implementation (Critical Path)
-- [x] **COMPLETE:** `implement-pipeline-stages` - Wire parser and formatters into pipeline stages (2025-12-13)
-  - **Dependencies**: `create-styler-parser-module` ✅, formatters ✅, `implement-file-processing-pipeline` ✅
-  - **Blocks**: `create-maven-plugin`, `create-jmh-benchmarks`, `benchmark-concurrency-models`, `add-regression-test-suite`
-  - **Parallelizable With**: None (critical path)
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Make the pipeline actually process files (currently all stages return Skipped)
-  - **Scope**: Implement the 4 pipeline stages to perform real work
-  - **Components**:
-    - **ParseStage**: Use parser to parse Java files into AST
-      - Input: File path from ProcessingContext
-      - Output: Parsed AST stored in ProcessingContext
-      - Error handling: Return StageResult.Failure for parse errors
-    - **FormatStage**: Apply all 5 formatting rules to parsed AST
-      - Input: AST from ParseStage
-      - Apply: LineLengthFormattingRule, ImportOrganizerFormattingRule, BraceFormattingRule,
-        WhitespaceFormattingRule, IndentationFormattingRule
-      - Output: Formatted source code and/or list of violations
-    - **ValidationStage**: Collect and aggregate violations from formatting
-      - Input: Violations from FormatStage
-      - Output: Validated violation list with severity/priority
-    - **OutputStage**: Write formatted output or report violations
-      - Validation-only mode: Report violations via AI output
-      - Fix mode: Write formatted code back to file
-  - **Integration**: Connects parser, all formatting rules, violation output
-  - **Verification**: Run `styler check` on a real Java file and see actual violations
-  - **Quality**: Integration tests with real Java files, verify end-to-end processing
-
-### Structured Violation Output (AI Agent Integration) ✅ COMPLETE
-- [x] **COMPLETE:** `implement-ai-violation-output` - Structured violation feedback for AI agents (2025-12-05)
 
 ### Proactive Rules Summary Export
 - [ ] **READY:** `implement-rules-summary-export` - Export formatting rules as markdown for AI pre-guidance
@@ -245,67 +145,12 @@ B2-B5 have sequential dependencies.
   - **Detection**: CLI flag `--ai-mode` or `--max-violations=N`, or auto-detect from environment
   - **Quality**: Benchmark context savings, validate AI agents fix more violations per iteration
 
-### Error Message Catalog ✅ COMPLETE
-- [x] **COMPLETE:** `create-error-message-catalog` - Comprehensive error messages for AI and human users (2025-12-05)
-
-### CLI Integration ✅ COMPLETE
-- [x] **COMPLETE:** `implement-cli-formatter-integration` - Wire CLI → pipeline → output (2025-12-09)
-  -  **Integration**: Connects all Phase A and Phase B components (CLI args, pipeline, output, errors)
-  - **Quality**: Clear error messages, proper exit codes, progress reporting
-  - **Estimated Effort**: 2-3 days
-
-### Multi-Configuration Architecture ✅ COMPLETE (2025-12-14)
-- [x] **COMPLETE:** `implement-multi-config-architecture` - Enable formatting rules to receive all configurations (2025-12-14)
-
 ---
 
 ## Phase C: Scale & Real-World Testing
 
 **Goal**: Scale to large codebases with parallel processing, build to 5 formatting rules for realistic
 benchmarking, and validate with Maven plugin integration.
-
-### File Discovery ✅ COMPLETE (2025-12-09)
-
-### Virtual Thread Processing (Thread-per-File Baseline) ✅ COMPLETE (2025-12-10)
-
-### Memory-Based Concurrency Control ✅ COMPLETE (2025-12-27)
-- [x] **DONE:** `implement-memory-reservation` - File-size based memory reservation to prevent OOM ✅
-  - **Completed**: 2025-12-27
-  - **Dependencies**: `implement-virtual-thread-processing` ✅, `implement-pipeline-stages` ✅
-  - **Blocks**: None (enhancement for robustness)
-  - **Parallelizable With**: `create-jmh-benchmarks`, `benchmark-concurrency-models`
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Prevent OOM by reserving memory before processing each file
-  - **Problem**: With SEC-005 heap check removed, processing more files than memory allows causes OOM crash
-  - **Design**: Semaphore-based memory reservation using permits as memory units
-    - `PERMIT_UNIT` = 1MB (granularity of reservation)
-    - `totalPermits` = (heap × 0.7) / PERMIT_UNIT
-    - `permitsNeeded(file)` = min(fileSize × 5, 120MB) / PERMIT_UNIT
-    - `reserve(file)` → `semaphore.acquire(permits)` (blocks if unavailable)
-    - `release()` → `semaphore.release(permits)` (unblocks waiting files)
-  - **Guarantees**:
-    - Small files (2KB): ~1 permit → hundreds concurrent
-    - Large files (5MB): ~25 permits → dozens concurrent
-    - Huge files (20MB): ~100 permits → ~14 concurrent
-    - Pathological (>24MB): capped at 120 permits → ~11 concurrent
-  - **Behavior**:
-    - Files processed immediately if permits available
-    - Files block (not fail) when memory tight
-    - Self-healing: blocked files proceed as others complete
-    - Fair ordering via `Semaphore(permits, true)`
-  - **Components**:
-    - `MemoryReservationManager`: Semaphore wrapper with file-size estimation
-    - `Reservation` record: Tracks permits for release
-    - Integration with `BatchProcessor` try-finally pattern
-  - **Optional**: `--max-concurrent-files=N` user override
-  - **Quality**: Tests for various file sizes, memory pressure scenarios, verify no OOM
-
-### Additional Formatting Rules (Build to 5 Total Rules) ✅ COMPLETE
-
-- [x] **COMPLETE:** `implement-indentation-formatting` - Indentation formatting (tabs/spaces/mixed) (2025-12-11)
-
-### Maven Plugin (Early Real-World Testing) ✅ COMPLETE (2025-12-22)
-- [x] **COMPLETE:** `create-maven-plugin` - Maven plugin for build system integration (2025-12-22)
 
 ### Performance Benchmarking
 - [ ] **READY:** `create-jmh-benchmarks` - Validate performance claims with JMH benchmarks
@@ -450,85 +295,6 @@ benchmarking, and validate with Maven plugin integration.
 
 **Goal**: Improve formatter architecture for better maintainability, accuracy, and extensibility.
 
-### Parser Error Handling Enhancement ✅ COMPLETE (2025-12-16)
-- [x] **COMPLETE:** `add-parser-error-record` - Add ParseError record and update Parser to return errors in result (2025-12-16)
-
-### AST Extension for Formatter Support ✅ COMPLETE (2025-12-17)
-- [x] **COMPLETE:** `extend-ast-support` - Extend AST parser to support all Java constructs needed by formatters (2025-12-17)
-  - **Dependencies**: `add-parser-error-record` ✅
-  - **Blocks**: `migrate-formatters-to-ast`
-  - **Purpose**: Add missing AST node types and parsing support required for AST-based formatting
-  - **Components**:
-    - Add ENUM_CONSTANT node creation in Parser.parseEnumConstant()
-    - Add SWITCH_EXPRESSION to indent-producing node types
-    - Fix duplicate BLOCK node allocation in lambda parsing
-    - Add missing TokenType entries for Java 21+ constructs
-  - **Quality**: All 357 formatter tests passing
-
-### AST-Based Formatter Migration ✅ COMPLETE (2025-12-17)
-- [x] **COMPLETE:** `migrate-formatters-to-ast` - Migrate all formatting rules to AST-based processing (2025-12-17)
-  - **Dependencies**: `extend-ast-support` ✅, `implement-pipeline-stages` ✅, all formatters ✅
-  - **Purpose**: Replace string/regex-based formatting logic with AST-aware transformations for higher
-    accuracy and maintainability
-  - **Components Migrated**:
-    - **AstPositionIndex**: New spatial index for efficient position-to-node lookup in AST
-    - **TransformationContext**: Updated to expose AST via NodeArena and AstPositionIndex
-    - **BraceFormattingRule**: Uses AST to exclude literals/comments from brace detection
-    - **WhitespaceFormattingRule**: Uses AST for context-aware spacing rules
-    - **IndentationFormattingRule**: Uses AST depth for indentation calculation
-    - **ImportOrganizerFormattingRule**: Enhanced with AST-based literal/comment exclusion
-    - **LineLengthFormattingRule**: Uses AST for context detection
-  - **Removed**: SourceCodeUtils (replaced by AST-based position index)
-  - **Quality**: All 357 formatter tests passing
-
-### Method Reference Parser Support ✅ COMPLETE (2025-12-17)
-- [x] **COMPLETE:** `add-method-reference-support` - Add parser support for method reference expressions (2025-12-17)
-  - **Dependencies**: `add-parser-error-record` ✅, `extend-ast-support` ✅
-  - **Purpose**: Enable parsing of method reference expressions (`Type::method`, `object::method`)
-  - **Implementation**: Added DOUBLE_COLON handling in parsePostfix() for static, instance, and constructor refs
-  - **Quality**: 24 parser tests for all method reference variants
-
-### Parser Bug: Generic Type Parameters
-- [x] **DONE:** `fix-generic-type-parsing` - Fix parser failure on generic type parameters (2025-12-22)
-  - **Dependencies**: `add-parser-error-record` ✅
-  - **Blocks**: Self-hosting (styler cannot format its own codebase)
-  - **Parallelizable With**: `fix-class-literal-parsing`, `fix-comment-in-expression-parsing`
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Enable parsing of generic type parameters like `Optional<?>`, `Supplier<Path>`, `Consumer<?>`
-  - **Current Error**: `Expected IDENTIFIER but found GT at position X`
-  - **Affected Files**: ConfigDiscovery.java, ExecutionTimeoutManager.java, Node.java, PathResolver.java,
-    FormatterDriver.java, and others
-  - **Root Cause**: Parser expects identifier after `<` but encounters `>` (for wildcards) or type name
-    followed by `>`
-  - **Scope**: Fix generic type parameter parsing in type references
-  - **Components**:
-    - Handle wildcard types (`?`, `? extends T`, `? super T`)
-    - Handle nested generics (`Map<String, List<Integer>>`)
-    - Handle diamond operator (`new ArrayList<>()`)
-  - **Verification**: Run `styler:check` on styler codebase - no GT-related errors
-  - **Quality**: Parser tests for all generic type variants
-
-### Parser Bug: Class Literals ✅ COMPLETE (2025-12-24)
-- [x] **DONE:** `fix-class-literal-parsing` - Fix parser failure on `.class` literals (2025-12-24)
-
-### Parser Bug: Comments in Expressions ✅ COMPLETE (2025-12-24)
-- [x] **DONE:** `fix-comment-in-expression-parsing` - Fix parser failure when comments appear in expressions (2025-12-24)
-
-### Parser Bug: Comments in Enum Constant Lists ✅ COMPLETE (2025-12-24)
-- [x] **DONE:** `fix-enum-constant-comments` - Fix parser failure when comments appear in enum constant lists (2025-12-24)
-
-### Parser Bug: Type Annotations on Type Bounds ✅ COMPLETE (2025-12-27)
-- [x] **DONE:** `fix-type-annotation-bounds` - Fix parser failure on type annotations in type parameter bounds (2025-12-27)
-  - **Dependencies**: `add-parser-error-record` ✅
-  - **Solution**: Added annotation parsing loop at start of parseType() method
-  - **Files Modified**: Parser.java (5 lines added), TypeAnnotationBoundsParserTest.java (15 tests)
-
-### Parser Bug: Local Variable Annotations ✅ COMPLETE (2025-12-27)
-- [x] **DONE:** `fix-local-variable-annotations` - Fix parser failure on annotations for local variables (2025-12-27)
-  - **Dependencies**: `add-parser-error-record` ✅
-  - **Solution**: Added annotation and FINAL consumption in parseExpressionOrVariableStatement(), tryParseEnhancedForHeader(), parseResource(), and comment handling in parseBlock()
-  - **Files Modified**: Parser.java (30+ lines), LocalAnnotationTest.java (15 tests)
-
 ### Parser Enhancement: Advanced Switch Pattern Matching
 - [ ] **READY:** `add-guarded-pattern-support` - Add parser support for guarded patterns in switch
   - **Dependencies**: `fix-switch-expressions` ✅
@@ -563,7 +329,7 @@ benchmarking, and validate with Maven plugin integration.
 - [ ] **READY:** `fix-remaining-comment-gaps` - Handle comments in all remaining parser locations
   - **Dependencies**: `fix-enum-constant-comments` ✅
   - **Blocks**: None (enhancement for edge cases)
-  - **Parallelizable With**: `fix-nested-type-references`, `fix-import-organizer-bounds`
+  - **Parallelizable With**: Any Phase E task
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Systematically add parseComments() calls to all locations where comments can appear
   - **Known Gaps** (from analysis):
@@ -575,15 +341,6 @@ benchmarking, and validate with Maven plugin integration.
     - Type parameters/arguments (between generic type params)
   - **Priority**: Lower than self-hosting blockers - these are edge cases
   - **Quality**: Parser tests for comment placement in each identified location
-
-### Parser Bug: Nested Type References ✅ COMPLETE (2025-12-25)
-- [x] **DONE:** `fix-nested-type-references` - Fix parser failure on nested class type references (2025-12-25)
-
-### Formatter Bug: Import Organizer Bounds Error ✅ COMPLETE (2025-12-25)
-- [x] **DONE:** `fix-import-organizer-bounds` - Fix StringIndexOutOfBoundsException in ImportOrganizerFormattingRule (2025-12-25)
-  - Fixed bounds calculation in importsAreOrganized() and replaceImportSection()
-  - Added explicit bounds check before charAt() call
-  - Sorted imports by source position for cleaner bounds calculation
 
 ### AST Simplification: Collapse Import Node Types
 - [ ] **READY:** `collapse-import-node-types` - Merge STATIC_IMPORT_DECLARATION into IMPORT_DECLARATION
