@@ -56,26 +56,33 @@ Before ANY implementation work, complete ALL steps in order:
 **If ANY checkbox unchecked → STOP and complete setup before proceeding**
 
 **Standard Implementation Workflow Template**:
+
+> ⚠️ **CRITICAL: Use task-init Skill for Task Initialization**
+>
+> NEVER manually create task.json. The `task-init` skill ensures:
+> - Proper state machine initialization (starts at INIT, not IMPLEMENTATION)
+> - Complete `transition_log` array for state sequence validation
+> - All required worktrees and branches created atomically
+> - Session ownership tracking
+>
+> **Manual task.json creation WILL block agents** - the `require-task-protocol.sh` hook
+> validates that `transition_log` contains all required states before allowing IMPLEMENTATION
+> state operations.
+
 ```bash
-# Step 1: Create task worktree
-git worktree add /workspace/tasks/{task-name}/code -b {task-name}
+# Step 1: Initialize task using skill (creates everything atomically)
+/workspace/main/.claude/scripts/task-init.sh "{task-name}" "" "$SESSION_ID"
+
+# Step 2: Change to task worktree
 cd /workspace/tasks/{task-name}/code
 
-# Step 2: Initialize task.json (REQUIRED before source file work)
-cat > /workspace/tasks/{task-name}/task.json <<EOF
-{
-  "task_name": "{task-name}",
-  "state": "IMPLEMENTATION",
-  "created": "$(date -Iseconds)"
-}
-EOF
+# Step 3: Transition through required states using state-transition skill
+# INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION
+# Each transition MUST be recorded in transition_log
 
-# Step 3: Create agent worktrees
-mkdir -p /workspace/tasks/{task-name}/agents
-git worktree add /workspace/tasks/{task-name}/agents/architect/code \
-  -b {task-name}-architect
-git worktree add /workspace/tasks/{task-name}/agents/quality/code \
-  -b {task-name}-quality
+# For state transitions, use:
+/workspace/main/.claude/scripts/state-transition.sh "{task-name}" "CLASSIFIED"
+# ... continue through states as protocol requires
 
 # Step 4: Invoke agents (NOT implement directly)
 Task tool: architect
@@ -87,11 +94,11 @@ cd /workspace/tasks/{task-name}/code
 git merge {task-name}-architect
 ```
 
-**Worktree Creation Helper**:
-```bash
-source /workspace/main/.claude/hooks/lib/worktree-manager.sh
-create_agent_worktree "{task-name}" "{agent-name}"
-```
+**Why task-init is Required**:
+- Creates task.json with `state: "INIT"` and empty `transition_log`
+- Creates all worktrees atomically (task + agent worktrees)
+- Validates preconditions before creating infrastructure
+- Rolls back cleanly on any error
 
 ## 🚨 LOCK OWNERSHIP & TASK RECOVERY {#lock-ownership}
 
@@ -114,15 +121,33 @@ After context compaction, `check-lock-ownership.sh` SessionStart hook checks for
 7. **NEVER remove lock files unless you own them** - session_id must match
 8. **If lock acquisition fails** - Select alternative task, do NOT delete the lock
 
-**Lock File Format**:
+**Lock File Format** (task.json):
 ```json
 {
-  "session_id": "unique-session-identifier",
   "task_name": "task-name-matching-filename",
+  "session_id": "unique-session-identifier",
   "state": "INIT",
-  "created_at": "2025-10-16T14:32:00Z"
+  "created": "2025-10-16T14:32:00-05:00",
+  "phase": "initialization",
+  "agents": {
+    "architect": {"status": "not_started"},
+    "tester": {"status": "not_started"},
+    "formatter": {"status": "not_started"}
+  },
+  "transition_log": [
+    {"from": null, "to": "INIT", "timestamp": "2025-10-16T14:32:00-05:00"}
+  ]
 }
 ```
+
+> ⚠️ **CRITICAL: transition_log is MANDATORY**
+>
+> The `require-task-protocol.sh` hook validates that transition_log contains all required
+> states before IMPLEMENTATION. Missing transition_log entries will BLOCK all Write/Edit
+> operations to task directories - including for sub-agents in their agent worktrees.
+>
+> **ALWAYS use `task-init.sh` script or `state-transition.sh` script** to ensure
+> transition_log is properly populated.
 
 **Valid state values**: INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS, IMPLEMENTATION, VALIDATION, REVIEW,
 AWAITING_USER_APPROVAL, COMPLETE, CLEANUP

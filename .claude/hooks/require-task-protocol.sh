@@ -220,10 +220,14 @@ You skipped: INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS states entirely.
 
 📖 See: task-protocol-core.md § State Machine Architecture
 📖 See: CLAUDE.md § MANDATORY USER APPROVAL CHECKPOINTS
+📖 See: CLAUDE.md § Task Initialization (task-initialization-critical)
 
-🔧 FIX: Delete task.json and restart with proper state sequence:
+🔧 FIX: Delete task.json and use task-init skill to restart properly:
    rm $TASK_JSON
-   # Then follow protocol from INIT state
+   rm -rf /workspace/tasks/$TASK_NAME
+   # Use task-init skill (creates task.json with proper transition_log):
+   /workspace/main/.claude/scripts/task-init.sh "$TASK_NAME" "" "\$SESSION_ID"
+   # Then transition through states using state-transition.sh
 EOF
 			# Use proper permission system
 			output_hook_block "Blocked: State sequence skipped. task.json created with IMPLEMENTATION without going through required states."
@@ -259,9 +263,15 @@ Each state serves a critical purpose:
 - SYNTHESIS: Implementation planning + USER APPROVAL CHECKPOINT
 - IMPLEMENTATION: Actual implementation by stakeholder agents
 
-✅ CORRECT APPROACH: Follow complete state sequence without skipping
+✅ CORRECT APPROACH: Use task-init skill and state-transition.sh to ensure proper sequence
+
+🔧 FIX: Recreate task using task-init skill:
+   rm -rf /workspace/tasks/$TASK_NAME
+   /workspace/main/.claude/scripts/task-init.sh "$TASK_NAME" "" "\$SESSION_ID"
+   # Then use state-transition.sh to progress through states
 
 📖 See: task-protocol-core.md § State Definitions
+📖 See: CLAUDE.md § Task Initialization (task-initialization-critical)
 EOF
 				# Use proper permission system
 				output_hook_block "Blocked: Skipped required state $required_state in state progression."

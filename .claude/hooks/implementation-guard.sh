@@ -78,18 +78,21 @@ if [[ ! -f "$TASK_JSON" ]]; then
         echo "Target: $TARGET_PATH" >&2
         echo "Task: $TASK_NAME" >&2
         echo "" >&2
-        echo "REQUIRED FIRST STEP: Create task.json with initial state before any source file work." >&2
+        echo "REQUIRED FIRST STEP: Use task-init skill to create proper task infrastructure." >&2
         echo "" >&2
-        echo "Example:" >&2
-        echo "  cat > /workspace/tasks/$TASK_NAME/task.json <<EOF" >&2
-        echo "  {" >&2
-        echo "    \"task_name\": \"$TASK_NAME\"," >&2
-        echo "    \"state\": \"IMPLEMENTATION\"," >&2
-        echo "    \"created\": \"\$(date -Iseconds)\"" >&2
-        echo "  }" >&2
-        echo "  EOF" >&2
+        echo "⚠️ NEVER manually create task.json - use the task-init skill:" >&2
         echo "" >&2
-        echo "See: /workspace/main/docs/project/task-protocol-core.md § State Management" >&2
+        echo "  /workspace/main/.claude/scripts/task-init.sh \"$TASK_NAME\" \"\" \"\$SESSION_ID\"" >&2
+        echo "" >&2
+        echo "The task-init skill ensures:" >&2
+        echo "  - task.json starts at INIT state (not IMPLEMENTATION)" >&2
+        echo "  - transition_log is properly initialized" >&2
+        echo "  - All worktrees and branches created atomically" >&2
+        echo "" >&2
+        echo "Then use state-transition.sh to progress through states:" >&2
+        echo "  INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION" >&2
+        echo "" >&2
+        echo "See: CLAUDE.md § Task Initialization (task-initialization-critical)" >&2
         # Use proper permission system
         output_hook_block "Blocked: INIT state - must progress through CLASSIFIED/REQUIREMENTS/SYNTHESIS states before creating source files." ""
         exit 0
