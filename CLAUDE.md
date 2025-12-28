@@ -529,6 +529,17 @@ isolation)
 
 **Locks**: Multi-instance coordination via lock files at `/workspace/tasks/{task-name}/task.json`
 
+> ⚠️ **CRITICAL: Task Initialization** {#task-initialization-critical}
+>
+> **NEVER manually create task.json**. Always use the `task-init` skill which:
+> - Creates task.json with `state: "INIT"` (not IMPLEMENTATION)
+> - Initializes `transition_log` array for state sequence validation
+> - Creates all worktrees atomically
+>
+> **Manual task.json creation blocks agents**: The `require-task-protocol.sh` hook validates
+> that transition_log contains all required states (INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS)
+> before allowing IMPLEMENTATION state operations.
+
 **⚠️ CRITICAL**: Before working on existing tasks, use `verify-task-ownership` skill to check session
 ownership and prevent conflicts with other Claude instances.
 

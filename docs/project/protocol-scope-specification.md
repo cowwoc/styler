@@ -372,19 +372,16 @@ Source code implementation requires task protocol isolation.
 
 REQUIRED ACTIONS:
 
-1. Initialize task protocol:
+1. Initialize task protocol using task-init skill:
 
+   /workspace/main/.claude/scripts/task-init.sh "my-task" "" "$SESSION_ID"
    cd /workspace/tasks/my-task/code
-   cat > ../task.json <<EOF
-   {
-     "session_id": "$SESSION_ID",
-     "task_name": "my-task",
-     "state": "INIT",
-     "created_at": "$(date -Iseconds)"
-   }
-   EOF
 
-2. Follow task protocol state machine (INIT → CLASSIFIED → IMPLEMENTATION)
+   NOTE: NEVER manually create task.json - the task-init skill ensures proper
+   transition_log initialization. Manual creation will block agents.
+
+2. Follow task protocol state machine (INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION)
+   Use state-transition.sh for each transition to populate transition_log properly.
 
 3. Use stakeholder agents for source code implementation
 
@@ -474,22 +471,20 @@ vim docs/studies/implement-feature-y.md  # Category B (matches todo.md) - BLOCKE
 ### ✅ Valid Protocol Work
 
 ```bash
-# Create task for feature implementation
-git worktree add /workspace/tasks/my-feature/code -b my-feature
+# Initialize task using task-init skill (creates worktrees, branches, and task.json atomically)
+/workspace/main/.claude/scripts/task-init.sh "my-feature" "" "$SESSION_ID"
 cd /workspace/tasks/my-feature/code
 
-# Initialize protocol
-cat > ../task.json <<EOF
-{
-  "session_id": "$SESSION_ID",
-  "task_name": "my-feature",
-  "state": "INIT",
-  "created_at": "$(date -Iseconds)"
-}
-EOF
+# NOTE: NEVER manually create task.json - task-init ensures proper transition_log
+# initialization. Manual creation causes require-task-protocol.sh hook to block
+# all Write/Edit operations (including for sub-agents).
 
-# Now source code work is allowed
-vim formatter/src/main/java/NewFeature.java  # Category B with protocol - allowed
+# Transition through states using state-transition.sh
+/workspace/main/.claude/scripts/state-transition.sh "my-feature" "CLASSIFIED"
+# ... continue through REQUIREMENTS, SYNTHESIS, then IMPLEMENTATION
+
+# Now source code work is allowed (after proper state progression)
+# Use stakeholder agents for implementation during IMPLEMENTATION state
 ```
 
 ## Migration Path {#migration}
@@ -497,9 +492,9 @@ vim formatter/src/main/java/NewFeature.java  # Category B with protocol - allowe
 For existing work started without protocol:
 
 1. **If work is in progress**:
-   - Create task.json retroactively
-   - Set state based on current progress
-   - Continue with protocol going forward
+   - Use `task-init.sh` to create proper task infrastructure
+   - Manually add required transition_log entries using jq
+   - Continue with protocol going forward using `state-transition.sh`
 
 2. **If work is complete**:
    - Document as protocol violation in audit
@@ -507,8 +502,9 @@ For existing work started without protocol:
    - Keep completed work (if quality is acceptable)
 
 3. **If work is planned**:
-   - Initialize task.json BEFORE starting
-   - Follow protocol from beginning
+   - Use `task-init.sh` skill BEFORE starting
+   - Use `state-transition.sh` for all state transitions
+   - NEVER manually create task.json
 
 ## FAQ {#faq}
 
