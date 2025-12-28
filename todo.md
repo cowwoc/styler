@@ -353,25 +353,10 @@ benchmarking, and validate with Maven plugin integration.
   - **Quality**: Tests for both limits, verify no StackOverflowError possible
 
 ### Parser Enhancement: Missing Node Types
-- [ ] **READY:** `add-parameterized-type-nodes` - Create AST nodes for parameterized types
-  - **Dependencies**: `add-parser-error-record` ✅, `fix-generic-type-parsing` ✅
-  - **Blocks**: None (enhancement for better AST fidelity)
-  - **Parallelizable With**: `add-wildcard-type-nodes`, `add-parameter-declaration-nodes`
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Create PARAMETERIZED_TYPE nodes for generic type usage (`List<String>`, `Map<K,V>`)
-  - **Current State**: Parser recognizes parameterized types but only creates QUALIFIED_NAME nodes for
-    the base type, without capturing the type arguments
-  - **Scope**: Create PARAMETERIZED_TYPE nodes with proper child structure
-  - **Components**:
-    - PARAMETERIZED_TYPE node for the overall type (`List<String>`)
-    - Child QUALIFIED_NAME for base type (`List`)
-    - Child nodes for type arguments (`String`)
-  - **Quality**: Parser tests validating PARAMETERIZED_TYPE node creation and structure
-
 - [ ] **READY:** `add-wildcard-type-nodes` - Create AST nodes for wildcard types
   - **Dependencies**: `add-parser-error-record` ✅, `fix-generic-type-parsing` ✅
   - **Blocks**: None (enhancement for better AST fidelity)
-  - **Parallelizable With**: `add-parameterized-type-nodes`, `add-parameter-declaration-nodes`
+  - **Parallelizable With**: `add-parameter-declaration-nodes`
   - **Estimated Effort**: 1 day
   - **Purpose**: Create WILDCARD_TYPE nodes for bounded/unbounded wildcards (`?`, `? extends T`, `? super T`)
   - **Current State**: Parser recognizes wildcards but doesn't create explicit WILDCARD_TYPE nodes
@@ -385,7 +370,7 @@ benchmarking, and validate with Maven plugin integration.
 - [ ] **READY:** `add-parameter-declaration-nodes` - Create AST nodes for method/constructor parameters
   - **Dependencies**: `add-parser-error-record` ✅
   - **Blocks**: None (enhancement for better AST fidelity)
-  - **Parallelizable With**: `add-parameterized-type-nodes`, `add-wildcard-type-nodes`
+  - **Parallelizable With**: `add-wildcard-type-nodes`
   - **Estimated Effort**: 1 day
   - **Purpose**: Create PARAMETER_DECLARATION nodes for method and constructor parameters
   - **Current State**: Parser parses parameters correctly but only creates QUALIFIED_NAME nodes for types
