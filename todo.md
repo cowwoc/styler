@@ -296,19 +296,12 @@ benchmarking, and validate with Maven plugin integration.
 **Goal**: Improve formatter architecture for better maintainability, accuracy, and extensibility.
 
 ### Parser Enhancement: Advanced Switch Pattern Matching
-- [ ] **READY:** `add-guarded-pattern-support` - Add parser support for guarded patterns in switch
+- [x] **DONE:** `add-guarded-pattern-support` - Add parser support for guarded patterns in switch ✅
+  - **Completed**: 2025-12-28
   - **Dependencies**: `fix-switch-expressions` ✅
   - **Blocks**: `add-record-pattern-support`
-  - **Parallelizable With**: `fix-remaining-comment-gaps`
-  - **Estimated Effort**: 1-2 days
   - **Purpose**: Support guarded patterns with `when` clause in switch expressions (Java 21+)
   - **Syntax**: `case Integer i when i > 0 ->`, `case String s when s.length() > 5 ->`
-  - **Scope**: Parse `when` keyword followed by boolean expression after type pattern
-  - **Components**:
-    - Detect WHEN keyword after type pattern in parseCaseLabelElement()
-    - Parse boolean guard expression after WHEN
-    - Create GUARDED_PATTERN node type for AST representation
-  - **Quality**: Parser tests for guarded patterns, edge cases with complex guards
 
 - [ ] **BLOCKED:** `add-record-pattern-support` - Add parser support for record patterns in switch
   - **Dependencies**: `add-guarded-pattern-support`
