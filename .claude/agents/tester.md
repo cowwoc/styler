@@ -459,4 +459,11 @@ for complete guidance on parser test patterns and detection rules.
 **BEFORE performing ANY work, MUST read**:
 1. `/workspace/main/docs/project/task-protocol-agents.md`
 2. `/workspace/main/docs/project/quality-guide.md`
-3. `/workspace/main/docs/code-style/testing-claude.md` (for parser tests)
+3. `/workspace/main/docs/project/style-guide.md` (especially "Extract Repeated Element Access" section)
+4. `/workspace/main/docs/code-style/testing-claude.md` (for parser tests)
+
+**Test Source String Requirements** (from java-style.md):
+- ALWAYS use text blocks (`"""`) for multi-line source strings in tests
+- NEVER use escape sequences (`\n`, `\t`) for source code - use text blocks instead
+- NEVER add comments that duplicate source content (text blocks are self-documenting)
+- Format test source code naturally with one statement per line

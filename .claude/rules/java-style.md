@@ -115,15 +115,22 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
       doWork();
   }
   ```
-- Test source strings: One statement per line (format code naturally, not compacted):
+- Test source strings: MUST use text blocks with natural formatting (one statement per line):
   ```java
-  // ❌ WRONG - Multiple statements on same line
+  // ❌ WRONG - Escape sequences instead of text block
+  String source = "public class Test\n{\n\tvoid foo()\n\t{\n\t}\n}\n";
+
+  // ❌ WRONG - Redundant comment duplicating source content
+  // source: public class Test\n{\n\tvoid foo()...
+  String source = "...";
+
+  // ❌ WRONG - Text block but compacted (multiple statements on same line)
   String source = """
       import java.util.*;
       class Test { void foo() { int x = 1; } }
       """;
 
-  // ✅ CORRECT - Natural formatting with separate lines
+  // ✅ CORRECT - Text block with natural formatting
   String source = """
       import java.util.*;
 
@@ -136,6 +143,11 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
       }
       """;
   ```
+  **Key requirements:**
+  - ALWAYS use text blocks (`"""`) for multi-line source strings
+  - NEVER use escape sequences (`\n`, `\t`) for source code
+  - NEVER add comments that duplicate the source content (text blocks are self-documenting)
+  - Format code naturally with one statement per line
 - File cleanup: Use `TestFileFactory.deleteFilesQuietly()` instead of duplicating cleanup code:
   ```java
   // ❌ WRONG - Duplicate cleanup pattern
