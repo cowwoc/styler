@@ -1073,6 +1073,15 @@ public final class Parser implements AutoCloseable
 
 	private void parseStatement()
 	{
+		// Check for labeled statement: IDENTIFIER COLON
+		int checkpoint = position;
+		if (match(TokenType.IDENTIFIER) && match(TokenType.COLON))
+		{
+			parseLabeledStatement(checkpoint);
+			return;
+		}
+		position = checkpoint;
+
 		TokenType type = currentToken().type();
 
 		if (type == TokenType.IF)
@@ -1136,6 +1145,20 @@ public final class Parser implements AutoCloseable
 			// Expression statement or variable declaration
 			parseExpressionOrVariableStatement();
 		}
+	}
+
+	/**
+	 * Parses a labeled statement.
+	 * A labeled statement has the form: {@code label: statement}
+	 *
+	 * @param labelStart the position where the label starts
+	 * @return the node index for the labeled statement
+	 */
+	private NodeIndex parseLabeledStatement(int labelStart)
+	{
+		parseStatement();
+		int end = previousToken().end();
+		return arena.allocateNode(NodeType.LABELED_STATEMENT, labelStart, end);
 	}
 
 	private NodeIndex parseBreakStatement()
