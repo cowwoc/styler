@@ -2,6 +2,43 @@
 
 ## 2025-12-29
 
+### Labeled Statement Support ✅
+
+**Completion Date**: 2025-12-29
+
+**Task**: `add-labeled-statement-support`
+
+**Problem Solved**:
+- Parser did not support labeled statements like `outer: for (...)`
+- No `LABELED_STATEMENT` node type existed for AST representation
+- Labels are used with break/continue to exit nested loops
+
+**Solution Implemented**:
+- Added `LABELED_STATEMENT` to `NodeType` enum
+- Added checkpoint/backtrack pattern in `parseStatement()` to detect `IDENTIFIER COLON`
+- Added `parseLabeledStatement()` method that recursively parses the inner statement
+- Node spans from label identifier to inner statement end
+
+**Files Modified**:
+- `ast/core/src/main/java/.../ast/core/NodeType.java` - Added LABELED_STATEMENT
+- `parser/src/main/java/.../parser/Parser.java` - Added parsing logic
+- `formatter/src/main/java/.../linelength/internal/ContextDetector.java` - Added switch case
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/LabeledStatementParserTest.java` - 3 tests
+
+**Test Coverage**:
+- Labeled for loops: `outer: for (...) { }`
+- Labeled while loops: `retry: while (...) { }`
+- Nested labels: `a: b: for (...) { }`
+
+**Quality**:
+- All tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ### Parameter Declaration AST Nodes ✅
 
 **Completion Date**: 2025-12-29

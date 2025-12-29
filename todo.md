@@ -360,22 +360,6 @@ benchmarking, and validate with Maven plugin integration.
 
 **Priority**: These are basic Java features that should already be supported. Required for correct parsing.
 
-- [ ] **READY:** `add-labeled-statement-support` - Parse labeled statements (label: statement)
-  - **Dependencies**: None
-  - **Blocks**: None (required for correct parsing)
-  - **Parallelizable With**: Any Phase E parser task
-  - **Estimated Effort**: 0.5 days
-  - **Purpose**: Parse labeled statements like `outer: for (...)`
-  - **Current Gap**: `parseStatement()` does not check for `IDENTIFIER COLON` pattern
-  - **Syntax**:
-    - `outer: for (int i = 0; i < 10; i++) { ... }`
-    - `retry: while (true) { ... break retry; ... }`
-  - **Implementation**:
-    - Add `LABELED_STATEMENT` to `NodeType` enum
-    - In `parseStatement()`, check for `IDENTIFIER COLON` at start
-    - If found, consume label and colon, then recursively call `parseStatement()`
-  - **Quality**: Parser tests for labeled for/while/do-while, break/continue with labels
-
 - [ ] **READY:** `add-yield-statement-support` - Parse yield statements in switch expressions
   - **Dependencies**: None
   - **Blocks**: None (required for correct switch expression parsing)
