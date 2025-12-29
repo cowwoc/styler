@@ -1028,3 +1028,5 @@ When complete:
 - **Operations guide**: [task-protocol-operations.md](task-protocol-operations.md) - Patterns and examples (for main agent)
 - **Architecture**: [architecture.md](architecture.md) - Project structure and design
 - **Build system**: [build-system.md](build-system.md) - Maven commands and configuration
+- **Style guide**: [style-guide.md](style-guide.md) - Code style validation requirements
+- **Quality guide**: [quality-guide.md](quality-guide.md) - Code quality and testing standards
