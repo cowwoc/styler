@@ -117,6 +117,46 @@ For every API design:
 
 ---
 
+## 🚨 ENUM MODIFICATION REQUIREMENTS {#enum-modification-requirements}
+
+**CRITICAL**: When adding values to an enum, you MUST identify and update ALL exhaustive switch statements.
+
+Java requires exhaustive switch statements to cover all enum values. Adding a new enum value without updating all
+switches causes compilation errors.
+
+**MANDATORY DISCOVERY PROCESS** (during Requirements/Analysis):
+
+1. **Search for all usages of the enum**:
+   ```bash
+   grep -rn "EnumName" --include="*.java" | grep -v "test/"
+   ```
+
+2. **Identify exhaustive switch statements**: Look for files containing:
+   - `switch (enumVariable)` without `default:` case
+   - `return switch (enumVariable)` expressions (always exhaustive)
+   - Java compiler warning `switch expression does not cover all possible input values`
+
+3. **Document ALL affected files** in the implementation specification.
+
+**Specification Template for Enum Changes**:
+```
+## Files to Modify
+
+1. **{EnumFile}.java**: Add `NEW_VALUE` enum constant
+2. **{File1WithSwitch}.java**: Add case for `NEW_VALUE` in switch
+3. **{File2WithSwitch}.java**: Add case for `NEW_VALUE` in switch
+...
+
+### Discovery Evidence
+Command: grep -rn "EnumName" --include="*.java" | grep -v "test/"
+Files found: [list]
+Exhaustive switches identified: [list with line numbers]
+```
+
+**Validation**: After implementation, run `./mvnw compile` to verify all switches are updated.
+
+---
+
 ## 🚨 REQUIREMENTS DETAIL FOR IMPLEMENTATION SPECIFICATIONS
 
 **CRITICAL PRINCIPLE**: When generating specifications for implementation (by yourself or others), provide sufficient

@@ -68,6 +68,7 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
    */
   public class ClassParserTest { }
   ```
+- Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` - see [testing-claude.md](../../docs/code-style/testing-claude.md#parser-test-patterns)
 - No meaningless assertions - `assertTrue(true, ...)` always passes and tests nothing:
   ```java
   // ❌ WRONG - Useless assertion that always passes

@@ -469,6 +469,82 @@ Validation Mode: Analyzes project patterns, specifies "Use requirements-java req
 Implementation Mode: Implements using requirements-java per validation mode guidance
 ```
 
+## 🚫 Hook Blocking: Return Errors, Never Workaround {#hook-blocking-return-errors}
+
+**CRITICAL**: When a hook blocks your Write/Edit operation, you MUST return an error to the main agent.
+**NEVER** attempt to workaround using Bash or other tools.
+
+### Why Hooks Block Operations
+
+Hooks enforce protocol compliance. If you're blocked, it means either:
+1. **Main agent error**: Protocol state wasn't set up correctly (most common)
+2. **Your error**: You're writing to the wrong location
+3. **Protocol violation**: A required step was skipped
+
+### Correct Response to Hook Blocking
+
+```
+1. Read the hook's error message carefully
+2. Update your status.json to BLOCKED
+3. Return immediately with the error details
+4. Let main agent fix the protocol issue
+```
+
+**status.json when blocked by hook**:
+```json
+{
+  "agent": "{agent-name}",
+  "task": "{task-name}",
+  "status": "BLOCKED",
+  "blocked_by": "hook_protocol_violation",
+  "details": "Hook error: [paste exact error message from hook]",
+  "updated_at": "2025-01-01T00:00:00Z"
+}
+```
+
+### ❌ PROHIBITED: Bash Workarounds
+
+**NEVER use Bash to bypass Write/Edit blocking:**
+
+```bash
+# ❌ PROHIBITED - Bypasses hook enforcement
+echo "class Foo {}" > /workspace/tasks/my-task/agents/architect/code/Foo.java
+
+# ❌ PROHIBITED - Uses cat heredoc to create files
+cat > /workspace/tasks/my-task/agents/architect/code/Foo.java << 'EOF'
+class Foo {}
+EOF
+
+# ❌ PROHIBITED - Uses tee to write files
+echo "class Foo {}" | tee /workspace/tasks/my-task/agents/architect/code/Foo.java
+```
+
+**Why workarounds are prohibited**:
+1. **Masks protocol violations**: Main agent never learns about the error
+2. **Bypasses safety checks**: Hooks exist to prevent invalid states
+3. **Creates audit failures**: Files created without proper tracking
+4. **Wastes tokens**: Workarounds take more effort than returning error
+
+### ✅ CORRECT: Return Error to Main Agent
+
+```
+❌ WRONG (workaround):
+   Agent: "The hook is blocking me, let me use Bash instead..."
+   [Uses Bash to create file]
+   [Main agent never knows there was a problem]
+
+✅ CORRECT (return error):
+   Agent: "I am BLOCKED by require-task-protocol.sh hook.
+          Error: 'State sequence skipped - missing SYNTHESIS in transition_log'
+
+          The main agent must fix task.json before I can proceed.
+
+          Required fix: Add SYNTHESIS to transition_log before IMPLEMENTATION."
+   [Updates status.json with BLOCKED]
+   [Returns immediately]
+   [Main agent sees error and fixes protocol]
+```
+
 ### Plan Flexibility: Specifications vs Prescriptions {#plan-flexibility}
 
 **Implementation plans specify OUTCOMES, not rigid implementation steps.**

@@ -43,6 +43,15 @@ public void classLiteralInExpression()
     assertParseSucceeds(source);  // Tests NOTHING about CLASS_LITERAL node!
 }
 
+// ❌ WRONG - isNotEmpty() is a WEAK assertion (equally bad as assertParseSucceeds)
+@Test
+public void recordPatternInSwitch()
+{
+    String source = "case Point(int x, int y) -> ...";
+    Set<SemanticNode> actual = parseSemanticAst(source);
+    requireThat(actual, "actual").isNotEmpty();  // Tests NOTHING about RECORD_PATTERN node!
+}
+
 // ✅ CORRECT - Validates correct AST nodes are created
 @Test
 public void classLiteralInExpression()
@@ -50,15 +59,25 @@ public void classLiteralInExpression()
     String source = "String s = String.class.getName();";
     Set<SemanticNode> actual = parseSemanticAst(source);
     Set<SemanticNode> expected = Set.of(
-        // ... expected nodes including CLASS_LITERAL
+        semanticNode(COMPILATION_UNIT, 0, 60),
+        semanticNode(CLASS_DECLARATION, 0, 59, "Test"),
+        semanticNode(CLASS_LITERAL, 41, 53),  // Verify the new node type!
+        // ... other expected nodes
     );
     requireThat(actual, "actual").isEqualTo(expected);
 }
 ```
 
+**Why `isNotEmpty()` is WRONG for parser tests:**
+- Non-empty only means SOME nodes were produced - NOT that the CORRECT nodes exist
+- The new feature (e.g., `RECORD_PATTERN`, `GUARDED_PATTERN`) might not be created at all
+- Test passes even if parser produces completely wrong AST structure
+- Use `isEqualTo(expected)` with explicit expected nodes including the NEW node type
+
 ### Detection Patterns
 
 - ✅ `parseSemanticAst\(.*\).*isEqualTo\(expected\)` - Correct AST validation
+- ❌ `parseSemanticAst\(.*\).*isNotEmpty\(\)` - Weak assertion, tests nothing about new feature
 - ❌ `assertParseSucceeds\(` in `*ParserTest.java` - Wrong utility for unit tests
 - ✅ `assertParseSucceeds\(` in `IntegrationTest.java` - Correct for integration tests
 

@@ -263,6 +263,31 @@ preference matters (naming, style)
 **Do NOT ask if**: Optimal solution is clear; one option is obviously better; you're seeking permission to
 do the right thing
 
+### User Change Requests During AWAITING_USER_APPROVAL {#user-change-requests-awaiting-approval}
+
+**CRITICAL ANTI-PATTERN**: When user requests changes during AWAITING_USER_APPROVAL state and a hook blocks
+agent invocation, do NOT present options to the user.
+
+**The Mistake Pattern**:
+1. Task is in AWAITING_USER_APPROVAL state
+2. User says "fix the weak assertions" (change request)
+3. Hook blocks agent invocation (correctly enforcing state machine)
+4. ❌ Agent presents options: "Would you like me to: 1) transition back, 2) wait, 3) something else?"
+
+**The Correct Pattern**:
+1. Task is in AWAITING_USER_APPROVAL state
+2. User says "fix the weak assertions" (change request)
+3. Hook blocks agent invocation (correctly enforcing state machine)
+4. ✅ Agent immediately: transition state to IMPLEMENTATION, re-invoke agents, do the work
+
+**Why This Is Clear**: The user's change request IS the instruction. Asking "should I do what you asked?"
+is redundant permission-seeking. The optimal action (transition back and do the work) is obvious.
+
+**Decision Rule**: When user requests changes during any approval checkpoint:
+- User request = implicit approval to do the work
+- State transition backward = obvious prerequisite (not a decision requiring user input)
+- No options needed = execute immediately
+
 ### Required Justification Process
 
 When considering downgrade from optimal solution: (1) Document effort (2) Identify blockers (3) Consult

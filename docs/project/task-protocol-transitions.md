@@ -465,6 +465,30 @@ if [ "$CHECKPOINT_APPROVED" != "true" ]; then
 fi
 ```
 
+### Backward Transition: AWAITING_USER_APPROVAL → IMPLEMENTATION {#backward-transition-awaiting-implementation}
+
+**When user requests changes during AWAITING_USER_APPROVAL**, transition back to IMPLEMENTATION immediately.
+
+**No Permission Needed**: The user's change request IS the instruction to do the work. Do NOT present options
+or ask for confirmation.
+
+**PROHIBITED Patterns**:
+- ❌ "Would you like me to: 1) transition back, 2) wait, 3) create follow-up task?"
+- ❌ "The hook blocked agent invocation. Options: ..."
+- ❌ "Should I transition back to IMPLEMENTATION to make these changes?"
+
+**REQUIRED Pattern**:
+```bash
+# User requests changes → Immediately transition back
+jq '.state = "IMPLEMENTATION" | .transitions += [{"from": "AWAITING_USER_APPROVAL", "to": "IMPLEMENTATION",
+    "timestamp": "'$(date -Iseconds)'", "reason": "User requested changes"}]' task.json > task.json.tmp && \
+    mv task.json.tmp task.json
+
+# Then invoke agents to implement the requested changes
+```
+
+**See also**: [CLAUDE.md § User Change Requests During AWAITING_USER_APPROVAL](../../CLAUDE.md#user-change-requests-awaiting-approval)
+
 ### Dynamic Agent Addition Mid-Task {#dynamic-agent-addition-mid-task}
 
 **CRITICAL GUIDANCE**: Agent selection is typically finalized during CLASSIFIED state, but circumstances may require adding agents after initial selection. This section clarifies when and how to add agents dynamically.
