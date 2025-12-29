@@ -15,6 +15,7 @@ import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
 import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
+import static io.github.cowwoc.styler.ast.core.NodeType.WILDCARD_TYPE;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
 
@@ -146,6 +147,7 @@ public class GenericTypeParserTest
 			semanticNode(METHOD_DECLARATION, 14, 49),
 			semanticNode(PARAMETERIZED_TYPE, 27, 38),
 			semanticNode(QUALIFIED_NAME, 27, 35),
+			semanticNode(WILDCARD_TYPE, 36, 37),
 			semanticNode(PARAMETER_DECLARATION, 27, 42, "opt"),
 			semanticNode(BLOCK, 45, 49));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -174,6 +176,7 @@ public class GenericTypeParserTest
 			semanticNode(METHOD_DECLARATION, 14, 64),
 			semanticNode(PARAMETERIZED_TYPE, 27, 49),
 			semanticNode(QUALIFIED_NAME, 27, 31),
+			semanticNode(WILDCARD_TYPE, 32, 48),
 			semanticNode(QUALIFIED_NAME, 42, 48),
 			semanticNode(PARAMETER_DECLARATION, 27, 57, "numbers"),
 			semanticNode(BLOCK, 60, 64));
@@ -203,6 +206,7 @@ public class GenericTypeParserTest
 			semanticNode(METHOD_DECLARATION, 14, 67),
 			semanticNode(PARAMETERIZED_TYPE, 26, 51),
 			semanticNode(QUALIFIED_NAME, 26, 34),
+			semanticNode(WILDCARD_TYPE, 35, 50),
 			semanticNode(QUALIFIED_NAME, 43, 50),
 			semanticNode(PARAMETER_DECLARATION, 26, 60, "consumer"),
 			semanticNode(BLOCK, 63, 67));
@@ -231,6 +235,7 @@ public class GenericTypeParserTest
 			semanticNode(PARAMETERIZED_TYPE, 26, 40),
 			semanticNode(QUALIFIED_NAME, 18, 24),
 			semanticNode(QUALIFIED_NAME, 26, 30),
+			semanticNode(QUALIFIED_NAME, 26, 40),
 			semanticNode(QUALIFIED_NAME, 31, 38));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -257,6 +262,8 @@ public class GenericTypeParserTest
 			semanticNode(PARAMETERIZED_TYPE, 26, 49),
 			semanticNode(QUALIFIED_NAME, 18, 24),
 			semanticNode(QUALIFIED_NAME, 26, 30),
+			semanticNode(QUALIFIED_NAME, 26, 49),
+			semanticNode(WILDCARD_TYPE, 31, 47),
 			semanticNode(QUALIFIED_NAME, 41, 47));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -283,6 +290,7 @@ public class GenericTypeParserTest
 			semanticNode(PARAMETERIZED_TYPE, 26, 40),
 			semanticNode(QUALIFIED_NAME, 18, 24),
 			semanticNode(QUALIFIED_NAME, 26, 30),
+			semanticNode(QUALIFIED_NAME, 26, 40),
 			semanticNode(QUALIFIED_NAME, 31, 38),
 			semanticNode(OBJECT_CREATION, 47, 62),
 			semanticNode(PARAMETERIZED_TYPE, 51, 60),
@@ -338,8 +346,10 @@ public class GenericTypeParserTest
 			semanticNode(PARAMETERIZED_TYPE, 39, 53),
 			semanticNode(QUALIFIED_NAME, 18, 24),
 			semanticNode(QUALIFIED_NAME, 26, 29),
+			semanticNode(QUALIFIED_NAME, 26, 53),
 			semanticNode(QUALIFIED_NAME, 30, 37),
 			semanticNode(QUALIFIED_NAME, 39, 43),
+			semanticNode(QUALIFIED_NAME, 39, 53),
 			semanticNode(QUALIFIED_NAME, 44, 50));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}

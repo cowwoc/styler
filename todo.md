@@ -353,20 +353,8 @@ benchmarking, and validate with Maven plugin integration.
   - **Quality**: Tests for both limits, verify no StackOverflowError possible
 
 ### Parser Enhancement: Missing Node Types
-- [ ] **READY:** `add-wildcard-type-nodes` - Create AST nodes for wildcard types
-  - **Dependencies**: `add-parser-error-record` ✅, `fix-generic-type-parsing` ✅
-  - **Blocks**: None (enhancement for better AST fidelity)
-  - **Parallelizable With**: `add-parameter-declaration-nodes`
-  - **Estimated Effort**: 1 day
-  - **Purpose**: Create WILDCARD_TYPE nodes for bounded/unbounded wildcards (`?`, `? extends T`, `? super T`)
-  - **Current State**: Parser recognizes wildcards but doesn't create explicit WILDCARD_TYPE nodes
-  - **Scope**: Create WILDCARD_TYPE nodes with bound information
-  - **Components**:
-    - WILDCARD_TYPE node for unbounded wildcards (`?`)
-    - WILDCARD_TYPE with upper bound for `? extends T`
-    - WILDCARD_TYPE with lower bound for `? super T`
-  - **Quality**: Parser tests validating WILDCARD_TYPE node creation for all wildcard variants
 
+*All previously listed tasks (add-wildcard-type-nodes, add-parameterized-type-nodes, add-parameter-declaration-nodes) have been completed.*
 
 ---
 
