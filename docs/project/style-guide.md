@@ -538,6 +538,106 @@ requireThat(name, "name").isNotBlank();
 - `isNotBlank()` → implies `isNotEmpty()` (non-blank strings cannot be empty)
 - `size().isEqualTo(n)` where n > 0 → implies `isNotEmpty()` (positive size means not empty)
 
+### Extract Repeated Element Access {#extract-repeated-element-access}
+
+**Extract repeated collection/array element access to a local variable.** When the same element is accessed
+multiple times, extract it to a named local variable.
+
+```java
+// ❌ BAD: Repeated collection access
+requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.STRING);
+requireThat(tokens.get(0).text(), "tokens.get(0).text()").isEqualTo("hello");
+requireThat(tokens.get(0).start(), "tokens.get(0).start()").isEqualTo(0);
+
+// ✅ GOOD: Extract to local variable
+Token token = tokens.get(0);
+requireThat(token.type(), "token.type()").isEqualTo(TokenType.STRING);
+requireThat(token.text(), "token.text()").isEqualTo("hello");
+requireThat(token.start(), "token.start()").isEqualTo(0);
+```
+
+**Why this matters**:
+- Improves readability by giving the accessed element a meaningful name
+- Reduces visual noise from repeated index expressions
+- Makes the code easier to modify (change index in one place)
+- Can improve performance by avoiding redundant lookups (though this is usually minor)
+
+**When to extract**: If the same element is accessed 2 or more times, extract it to a local variable.
+
+**⚠️ CRITICAL: Trace Execution Paths First** {#extract-trace-execution-paths}
+
+Before applying this rule, **trace all execution paths** to verify the index expression refers to the same
+element in each path. Beware of:
+- Index variables modified inside conditional blocks
+- Loop iterations that change index state
+- Method calls that mutate position/index state
+
+```java
+// ❌ INCOMPLETE FIX: Fails to recognize execution path differences
+Token wildcardToken = tokens.get(position - 1);
+int start = wildcardToken.start();
+
+if (match(TokenType.EXTENDS) || match(TokenType.SUPER))
+{
+    parseType();  // ⚠️ This modifies `position`!
+}
+Token lastToken = tokens.get(position - 1);  // Different token if branch taken!
+int end = lastToken.end();
+return arena.allocateNode(NodeType.WILDCARD_TYPE, start, end);
+
+// ✅ CORRECT: Return early in each branch to properly reuse variables
+Token wildcardToken = tokens.get(position - 1);
+int start = wildcardToken.start();
+
+if (match(TokenType.EXTENDS) || match(TokenType.SUPER))
+{
+    parseType();  // position changes
+    Token boundToken = tokens.get(position - 1);  // Different token
+    return arena.allocateNode(NodeType.WILDCARD_TYPE, start, boundToken.end());
+}
+// Unbounded: reuse wildcardToken since position hasn't changed
+return arena.allocateNode(NodeType.WILDCARD_TYPE, start, wildcardToken.end());
+```
+
+**Execution Path Verification Checklist**:
+1. Identify all uses of the index expression (e.g., `tokens.get(position - 1)`)
+2. For each use, trace backward: Can any code between uses modify the index variable?
+3. If YES: The accesses refer to DIFFERENT elements - do NOT share a variable across paths
+4. If NO: Safe to extract to a shared variable
+
+**⚠️ CRITICAL: Check for Existing Helper Methods First** {#check-existing-helper-methods}
+
+Before extracting to a local variable, **check if the class already has a helper method** for similar access
+patterns. Follow existing patterns rather than creating ad-hoc solutions.
+
+```java
+// ❌ BAD: Ignoring existing pattern
+// Class already has currentToken() returning tokens.get(position)
+// But agent uses tokens.get(position - 1) repeatedly without checking for helpers
+Token prevToken = tokens.get(position - 1);  // 50+ occurrences across class!
+
+// ✅ GOOD: Check for existing helpers, follow the pattern
+// 1. Search class for existing helpers: "private.*Token.*tokens.get"
+// 2. Found: currentToken() returns tokens.get(position)
+// 3. Create parallel helper: previousToken() returns tokens.get(position - 1)
+private Token previousToken()
+{
+    return tokens.get(position - 1);
+}
+```
+
+**Pre-Fix Checklist** (MANDATORY before applying extraction):
+1. **Search for existing helpers**: Look for methods that access `tokens`, `list`, `array` etc.
+2. **Identify naming patterns**: If `currentX()` exists, expect `previousX()` or `nextX()` pattern
+3. **Count occurrences**: Use grep to count how many times the expression appears in the class/file
+4. **Choose abstraction level**:
+   - 2-3 occurrences in same method → Local variable
+   - 3+ occurrences across multiple methods → Helper method
+   - Existing helper pattern → Follow the pattern (create parallel helper)
+
+**Why this matters**: Agents have repeatedly extracted to local variables while missing the opportunity to
+create helper methods that follow existing patterns, leading to multiple fix iterations.
+
 ### Local Variable Type Inference (var) {#var-usage}
 
 **`var` should be the exception, not the rule.** Only use `var` when it **significantly reduces verbosity**

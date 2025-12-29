@@ -254,6 +254,15 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   requireThat(token.text(), "token.text()").isEqualTo("hello");
   requireThat(token.start(), "token.start()").isEqualTo(0);
   ```
+  **⚠️ CRITICAL**: Before extracting, trace execution paths - if index variable can change between accesses
+  (e.g., `position` modified in conditional block), the accesses may refer to DIFFERENT elements. See
+  [style-guide.md § Trace Execution Paths](../../docs/project/style-guide.md#extract-trace-execution-paths).
+- **Check for existing helper methods first**: Before extracting to local variable, search for existing
+  helper methods (e.g., if `currentToken()` exists, create `previousToken()` for `tokens.get(position - 1)`).
+  See [style-guide.md § Check Existing Helper Methods](../../docs/project/style-guide.md#check-existing-helper-methods).
+  - 2-3 occurrences in same method → Local variable
+  - 3+ occurrences across multiple methods → Helper method
+  - Existing helper pattern → Follow the pattern
 
 ### Time Calculations
 Use `Instant` and `Duration` instead of `long` for time measurements:
