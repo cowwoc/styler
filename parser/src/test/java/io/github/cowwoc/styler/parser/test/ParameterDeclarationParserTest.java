@@ -356,6 +356,7 @@ public final class ParameterDeclarationParserTest
 			semanticNode(NodeType.QUALIFIED_NAME, 37, 40),
 			semanticNode(NodeType.QUALIFIED_NAME, 41, 47),
 			semanticNode(NodeType.QUALIFIED_NAME, 49, 53),
+			semanticNode(NodeType.QUALIFIED_NAME, 49, 63),
 			semanticNode(NodeType.QUALIFIED_NAME, 54, 61),
 			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 68, "data"),
 			semanticNode(NodeType.BLOCK, 71, 75));

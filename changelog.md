@@ -50,6 +50,41 @@
 
 ## 2025-12-28
 
+### Wildcard Type AST Node Support ✅
+
+**Completion Date**: 2025-12-28
+
+**Task**: `add-wildcard-type-nodes`
+
+**Problem Solved**:
+- Parser recognized wildcards (`?`, `? extends T`, `? super T`) but did not create AST nodes
+- `WILDCARD_TYPE` existed in NodeType enum but was unused
+- Wildcard information was lost from the AST
+
+**Solution Implemented**:
+- Modified `parseTypeArgument()` to return `NodeIndex` and create `WILDCARD_TYPE` nodes
+- Unbounded wildcards (`?`) span just the `?` token
+- Bounded wildcards (`? extends T`, `? super T`) span from `?` to end of bound type
+- No new attributes needed - bound type determinable from AST structure
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added WILDCARD_TYPE node creation
+- `parser/src/test/java/.../parser/test/WildcardTypeParserTest.java` - New test class (9 tests)
+- `parser/src/test/java/.../parser/test/GenericTypeParserTest.java` - Updated expected outputs
+- `parser/src/test/java/.../parser/test/ClassLiteralParserTest.java` - Added WILDCARD_TYPE expectations
+- `parser/src/test/java/.../parser/test/TypeAnnotationBoundsParserTest.java` - Added WILDCARD_TYPE expectations
+
+**Test Coverage**:
+- Unbounded wildcards: `List<?>`
+- Upper-bounded wildcards: `List<? extends Number>`
+- Lower-bounded wildcards: `Consumer<? super Integer>`
+- Nested wildcards: `Map<String, List<?>>`
+- Multiple wildcards: `Map<?, ?>`
+- Wildcards in fields, method params, return types, local variables
+- Type annotations on wildcard bounds
+
+---
+
 ### Parameterized Type AST Nodes ✅
 
 **Completion Date**: 2025-12-28
