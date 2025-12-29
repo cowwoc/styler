@@ -134,10 +134,12 @@ public class ParseOptions {
 
 **JDK 25 Features Supported**:
 - Pattern matching for switch expressions
-- String templates with embedded expressions
-- Unnamed classes and instance main methods
-- Record patterns and enhanced pattern matching
-- Sequenced collections and improved generics
+- Record patterns and guarded patterns with `when` clause
+- Unnamed/implicit classes and instance main methods (JEP 512)
+- Flexible constructor bodies - statements before super()/this() (JEP 513)
+- Module import declarations (JEP 511)
+- Sealed classes and interfaces
+- Text blocks
 
 **Parser Memory Management**:
 
