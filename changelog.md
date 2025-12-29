@@ -40,6 +40,50 @@
 
 ---
 
+### Binary, Hexadecimal, and Octal Literal Support ✅
+
+**Completion Date**: 2025-12-29
+
+**Task**: `add-binary-hex-literals`
+
+**Problem Solved**:
+- Lexer only handled decimal numeric literals via `Character.isDigit()`
+- Binary literals (`0b1010`), hex literals (`0xDEAD`), and octal literals (`0755`) were not tokenized
+- Hex float literals (`0x1.0p10`) with binary exponents were not supported
+- Underscore separators in numeric literals were not handled
+
+**Solution Implemented**:
+- Refactored `scanNumber()` with prefix-based dispatch pattern
+- Added `scanBinaryLiteral()` for `0b`/`0B` prefix binary literals
+- Added `scanHexLiteral()` for `0x`/`0X` prefix hex integer literals
+- Added `scanHexFloatLiteral()` for hex floating-point literals with `p`/`P` exponent
+- Added `scanOctalLiteral()` for leading-zero octal literals
+- Added `isBinaryDigit()` and `isOctalDigit()` helper methods
+- Supports underscore separators in all numeric literal types
+- Supports type suffixes: `L`/`l` for long, `f`/`F`/`d`/`D` for floats
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Lexer.java` - Added all numeric literal scanning methods
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/LexerBinaryLiteralTest.java` - 8 tests
+- `parser/src/test/java/.../parser/test/LexerHexLiteralTest.java` - 10 tests
+- `parser/src/test/java/.../parser/test/LexerHexFloatLiteralTest.java` - 12 tests
+- `parser/src/test/java/.../parser/test/LexerOctalLiteralTest.java` - 9 tests
+
+**Test Coverage**:
+- Binary: basic, with underscores, long suffix, invalid digits
+- Hex integers: basic, uppercase prefix, underscores, long suffix
+- Hex floats: basic, binary exponent, fractional parts, type suffixes
+- Octal: basic, with underscores, long suffix, invalid digits (8/9)
+
+**Quality**:
+- All 39 new tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ### Labeled Statement Support ✅
 
 **Completion Date**: 2025-12-29

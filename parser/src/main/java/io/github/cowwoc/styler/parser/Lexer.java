@@ -248,7 +248,21 @@ public final class Lexer
 
 	private Token scanNumber(int start)
 	{
-		// Simplified number scanning - handles integers, longs, floats, doubles
+		// Check for binary (0b/0B) or hexadecimal (0x/0X) prefix
+		if (source.charAt(position) == '0' && position + 1 < source.length())
+		{
+			char nextChar = source.charAt(position + 1);
+			if (nextChar == 'b' || nextChar == 'B')
+			{
+				return scanBinaryLiteral(start);
+			}
+			if (nextChar == 'x' || nextChar == 'X')
+			{
+				return scanHexLiteral(start);
+			}
+		}
+
+		// Decimal number scanning - handles integers, longs, floats, doubles
 		boolean hasDecimal = false;
 		boolean hasExponent = false;
 
@@ -268,7 +282,7 @@ public final class Lexer
 			else if ((ch == 'e' || ch == 'E') && !hasExponent)
 			{
 				hasExponent = true;
-				hasDecimal = true; // Exponents imply floating point
+				hasDecimal = true;
 				++position;
 				consumeOptionalExponentSign();
 			}
@@ -314,6 +328,184 @@ public final class Lexer
 			type = TokenType.INTEGER_LITERAL;
 		}
 
+		return new Token(type, start, position, text);
+	}
+
+	/**
+	 * Checks if the given character is a binary digit ({@code 0} or {@code 1}).
+	 *
+	 * @param ch the character to test
+	 * @return true if character is a binary digit, false otherwise
+	 */
+	private boolean isBinaryDigit(char ch)
+	{
+		return ch == '0' || ch == '1';
+	}
+
+
+	/**
+	 * Scans a binary integer literal starting with {@code 0b} or {@code 0B}.
+	 * Handles underscores in binary digits and optional {@code L}/{@code l} suffix.
+	 *
+	 * @param start the starting position of the literal
+	 * @return the token for the scanned binary literal
+	 */
+	private Token scanBinaryLiteral(int start)
+	{
+		// Skip "0b" or "0B" prefix
+		position += 2;
+
+		// Scan binary digits and underscores
+		while (position < source.length())
+		{
+			char ch = source.charAt(position);
+			if (isBinaryDigit(ch) || ch == '_')
+			{
+				++position;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		// Check for long suffix
+		if (position < source.length() && (source.charAt(position) == 'L' || source.charAt(position) == 'l'))
+		{
+			++position;
+			String text = source.substring(start, position);
+			return new Token(TokenType.LONG_LITERAL, start, position, text);
+		}
+
+		String text = source.substring(start, position);
+		return new Token(TokenType.INTEGER_LITERAL, start, position, text);
+	}
+
+	/**
+	 * Scans a hexadecimal literal starting with {@code 0x} or {@code 0X}.
+	 * Handles hexadecimal digits, underscores, optional floating-point notation with binary exponent,
+	 * and suffixes ({@code L}/{@code l}/{@code F}/{@code f}/{@code D}/{@code d}).
+	 *
+	 * @param start the starting position of the literal
+	 * @return the token for the scanned hexadecimal literal
+	 */
+	private Token scanHexLiteral(int start)
+	{
+		// Skip "0x" or "0X" prefix
+		position += 2;
+
+		// Scan hexadecimal digits and underscores
+		while (position < source.length())
+		{
+			char ch = source.charAt(position);
+			if (isHexDigit(ch) || ch == '_')
+			{
+				++position;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		// Check for hexadecimal floating-point literal
+		if (position < source.length() && source.charAt(position) == '.')
+		{
+			return scanHexFloatLiteral(start);
+		}
+
+		// Check for binary exponent (p or P)
+		if (position < source.length() && (source.charAt(position) == 'p' || source.charAt(position) == 'P'))
+		{
+			return scanHexFloatLiteral(start);
+		}
+
+		// Check for long suffix
+		if (position < source.length() && (source.charAt(position) == 'L' || source.charAt(position) == 'l'))
+		{
+			++position;
+			String text = source.substring(start, position);
+			return new Token(TokenType.LONG_LITERAL, start, position, text);
+		}
+
+		String text = source.substring(start, position);
+		return new Token(TokenType.INTEGER_LITERAL, start, position, text);
+	}
+
+	/**
+	 * Scans a hexadecimal floating-point literal.
+	 * Handles the optional fractional part after {@code .} and requires a binary exponent ({@code p}/{@code P})
+	 * followed by an optional sign and decimal exponent digits. Supports suffixes
+	 * ({@code f}/{@code F}/{@code d}/{@code D}).
+	 *
+	 * @param start the starting position of the literal
+	 * @return the token for the scanned hexadecimal floating-point literal
+	 */
+	private Token scanHexFloatLiteral(int start)
+	{
+		// Handle fractional part if present
+		if (position < source.length() && source.charAt(position) == '.')
+		{
+			++position;
+			// Scan hexadecimal digits and underscores in fractional part
+			while (position < source.length())
+			{
+				char ch = source.charAt(position);
+				if (isHexDigit(ch) || ch == '_')
+				{
+					++position;
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+
+		// Binary exponent is required for hexadecimal floating-point literals
+		if (position < source.length() && (source.charAt(position) == 'p' || source.charAt(position) == 'P'))
+		{
+			++position;
+
+			// Optional sign for exponent
+			if (position < source.length() && (source.charAt(position) == '+' || source.charAt(position) == '-'))
+			{
+				++position;
+			}
+
+			// Decimal exponent digits
+			while (position < source.length())
+			{
+				char ch = source.charAt(position);
+				if (Character.isDigit(ch) || ch == '_')
+				{
+					++position;
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+
+		// Check for floating-point suffix (f/F or d/D, or none defaults to double)
+		TokenType type = TokenType.DOUBLE_LITERAL;
+		if (position < source.length())
+		{
+			char ch = source.charAt(position);
+			if (ch == 'f' || ch == 'F')
+			{
+				++position;
+				type = TokenType.FLOAT_LITERAL;
+			}
+			else if (ch == 'd' || ch == 'D')
+			{
+				++position;
+				type = TokenType.DOUBLE_LITERAL;
+			}
+		}
+
+		String text = source.substring(start, position);
 		return new Token(type, start, position, text);
 	}
 
