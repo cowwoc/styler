@@ -419,6 +419,36 @@ requireThat(list.isEmpty(), "isEmpty").isFalse();
 requireThat(list.isEmpty(), "isEmpty").isFalse();
 ```
 
+**Don't Validate Before Calling Methods That Already Validate** - If you pass a parameter to a method that
+validates it internally, don't validate the same parameter before the call:
+
+```java
+// Given a helper method that validates its parameter:
+private void validateIndex(NodeIndex index)
+{
+    requireThat(index, "index").isNotNull();
+    requireThat(index.index(), "index.index()").isLessThan(nodeCount);
+}
+
+// ❌ BAD - Redundant: validateIndex() already checks isNotNull()
+public ImportAttribute getImportAttribute(NodeIndex index)
+{
+    requireThat(index, "index").isNotNull();  // REDUNDANT
+    validateIndex(index);
+    // ...
+}
+
+// ✅ GOOD - Let validateIndex() handle the validation
+public ImportAttribute getImportAttribute(NodeIndex index)
+{
+    validateIndex(index);  // Already validates null
+    // ...
+}
+```
+
+**When copying patterns from existing methods**, check what the called helper methods validate to avoid
+duplicating their validation.
+
 **When explicit null checks ARE needed**:
 - Method parameter validation in public APIs
 - Checking fields that might legitimately be null
@@ -563,6 +593,24 @@ requireThat(token.start(), "token.start()").isEqualTo(0);
 - Can improve performance by avoiding redundant lookups (though this is usually minor)
 
 **When to extract**: If the same element is accessed 2 or more times, extract it to a local variable.
+
+**When NOT to extract**: Do NOT create local variables for single-use expressions. If an expression is
+evaluated only once, call it directly inline.
+
+```java
+// ❌ WRONG - single use, no need for variable
+Token boundToken = previousToken();
+return arena.allocateNode(..., boundToken.end());
+
+// ✅ CORRECT - single use, call directly
+return arena.allocateNode(..., previousToken().end());
+
+// ✅ CORRECT - used twice, variable is needed
+Token wildcardToken = previousToken();
+int start = wildcardToken.start();  // first use
+...
+return arena.allocateNode(..., wildcardToken.end());  // second use
+```
 
 **⚠️ CRITICAL: Trace Execution Paths First** {#extract-trace-execution-paths}
 
