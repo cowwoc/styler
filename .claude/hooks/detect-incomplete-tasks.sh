@@ -7,10 +7,16 @@
 # UPDATED: 2025-12-25 - Fixed false positive when task branch equals main (freshly created)
 # and added session ownership check to prevent taking over active tasks from other instances
 #
+# UPDATED: 2025-12-29 - Removed inline cleanup commands for tasks owned by other sessions.
+# Now REQUIRES use of verify-task-ownership skill first. This prevents agents from
+# rationalizing "these are abandoned" and deleting without verification.
+# See LFM: ignored-verify-task-ownership
+#
 # PREVENTS: Tasks remaining in incomplete state after merge to main
 # DETECTS: Tasks where content is on main but cleanup never happened
 #
-# ⚠️ CRITICAL: This hook must NOT recommend cleanup for tasks owned by other sessions
+# ⚠️ CRITICAL: This hook must NOT provide cleanup commands for tasks owned by other sessions.
+# The block-foreign-task-cleanup.sh hook enforces this, but we also don't provide the commands.
 
 set -euo pipefail
 
@@ -103,23 +109,46 @@ for task_dir in /workspace/tasks/*/; do
 					BRANCH_EXISTS="Yes"
 				fi
 
-				# Session ownership check - warn if task belongs to different session
-				if [[ -n "$TASK_SESSION_ID" ]]; then
-					SESSION_WARNING="
-**⚠️ Session ID**: \`${TASK_SESSION_ID}\`
-**WARNING**: This task has a session_id. Before cleanup, verify the owning session
-is no longer active. Use \`verify-task-ownership\` skill if unsure.
-"
-				fi
+				# Get current session from environment
+				CURRENT_SESSION="${CLAUDE_SESSION_ID:-unknown}"
 
-				MESSAGE+="
+				# Differentiate output based on session ownership
+				if [[ -n "$TASK_SESSION_ID" ]] && [[ "$TASK_SESSION_ID" != "$CURRENT_SESSION" ]]; then
+					# DIFFERENT SESSION - Must use verify-task-ownership skill first
+					MESSAGE+="
+## 🚫 INCOMPLETE TASK (FOREIGN SESSION): \`${TASK_NAME}\`
+
+**Current State**: \`${STATE}\` (expected: CLEANUP)
+**Merged Commit**: \`${MERGED_COMMIT}\`
+**Orphaned Worktree**: ${WORKTREE_EXISTS}
+**Orphaned Branch**: ${BRANCH_EXISTS}
+**Task Session**: \`${TASK_SESSION_ID}\`
+**Your Session**: \`${CURRENT_SESSION}\`
+
+### ⚠️ MANDATORY: Use verify-task-ownership skill BEFORE cleanup
+
+This task is owned by a DIFFERENT Claude session. You CANNOT assume it is abandoned.
+
+**DO NOT copy-paste cleanup commands.** The block-foreign-task-cleanup hook will BLOCK them.
+
+**REQUIRED ACTION:**
+\`\`\`
+Skill: verify-task-ownership
+Args: ${TASK_NAME}
+\`\`\`
+
+The skill will check if the task is truly abandoned and provide safe cleanup steps.
+
+"
+				else
+					# SAME SESSION or no session - Provide cleanup commands
+					MESSAGE+="
 ## ⚠️ INCOMPLETE TASK DETECTED: \`${TASK_NAME}\`
 
 **Current State**: \`${STATE}\` (expected: CLEANUP)
 **Merged Commit**: \`${MERGED_COMMIT}\`
 **Orphaned Worktree**: ${WORKTREE_EXISTS}
 **Orphaned Branch**: ${BRANCH_EXISTS}
-${SESSION_WARNING}
 **Action Required**: Complete CLEANUP for this task before starting new work.
 
 \`\`\`bash
@@ -144,6 +173,7 @@ git worktree list
 git branch | grep ${TASK_NAME} || echo \"Branch cleaned\"
 \`\`\`
 "
+				fi
 			fi
 			;;
 	esac

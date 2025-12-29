@@ -25,6 +25,7 @@
 | **Best Practices** | [Best Practices](#best-practices) |
 | **Error Recovery** | [Error Recovery Protocols](#error-recovery-protocols) |
 | **Session Interruption** | [Session Interruption Recovery](#recovery-procedure-1-session-interruption-recovery) |
+| **Multi-Instance Coordination** | [Multi-Instance Coordination](#multi-instance-coordination) |
 | **Agent Failures** | [Agent Partial Completion](#recovery-procedure-2-agent-partial-completion) |
 | **Build Failures** | [Build Failure Recovery](#recovery-procedure-3-build-failure-after-partial-implementation) |
 | **State Corruption** | [State Corruption Recovery](#recovery-procedure-4-state-corruption-recovery) |
@@ -1865,6 +1866,65 @@ update_todo_with_violation_report()
 - These are expected interaction points in the workflow
 - These do NOT violate the "autonomous completion" principle
 - These ensure user oversight at critical decision points
+
+### Multi-Instance Coordination {#multi-instance-coordination}
+
+Multiple Claude instances may run concurrently. The `session_id` field in `task.json` tracks which instance
+owns each task. **Use `verify-task-ownership` skill before working on or cleaning up foreign tasks.**
+
+#### PROHIBITED: Task Ownership Takeover {#prohibited-task-ownership-takeover}
+
+**NEVER modify session_id in task.json directly to "take ownership" of a task.**
+
+**The Mistake Pattern:**
+```bash
+# Agent reads task.json, sees different session_id
+# Thinking: "the session_id is different, but since this is my task to work on, I should take ownership"
+# ❌ WRONG: Modifies session_id to their own
+jq '.session_id = "my-session-id"' task.json > tmp && mv tmp task.json
+```
+
+**Why This Is Prohibited:**
+- The original session may still be actively working on the task
+- Session_id is the coordination mechanism - modifying it breaks multi-instance coordination
+- The task may already be completed and merged (wasted effort)
+
+**Correct Approach:** Use `verify-task-ownership` skill which:
+- Checks if task is truly abandoned vs actively in progress
+- Provides safe cleanup commands if abandoned
+- Guides you to choose a different task if owned by active session
+
+#### PROHIBITED: Cleanup of Foreign Tasks Without Verification {#prohibited-foreign-task-cleanup}
+
+**NEVER cleanup tasks owned by different sessions without using verify-task-ownership skill first.**
+
+**The Mistake Pattern:**
+```bash
+# SessionStart hook shows tasks owned by different sessions
+# Thinking: "These are ABANDONED tasks... safe to clean up"
+# ❌ WRONG: Runs cleanup commands without verification
+git worktree remove --force /workspace/tasks/task-name/code
+rm -rf /workspace/tasks/task-name
+```
+
+**Why This Is Prohibited:**
+- You cannot determine if a session is "no longer active" without verification
+- The hook `block-foreign-task-cleanup.sh` will BLOCK these commands
+- Tasks in SYNTHESIS state with agents "not_started" are NOT necessarily abandoned
+
+**Correct Approach:**
+1. When SessionStart detects foreign tasks, use the skill first:
+   ```
+   Skill: verify-task-ownership
+   Args: {task-name}
+   ```
+2. Only cleanup after the skill confirms the task is truly abandoned
+3. The skill provides safe cleanup commands in its output
+
+**Prohibited Rationalizations:**
+- ❌ "These are ABANDONED tasks... safe to clean up"
+- ❌ "The sessions are no longer active"
+- ❌ "Tasks in SYNTHESIS with agents not_started are abandoned"
 
 ### Tool Call Batching {#tool-call-batching}
 **Optimization patterns:**

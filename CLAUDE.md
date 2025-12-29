@@ -565,8 +565,11 @@ isolation)
 > that transition_log contains all required states (INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS)
 > before allowing IMPLEMENTATION state operations.
 
-**⚠️ CRITICAL**: Before working on existing tasks, use `verify-task-ownership` skill to check session
-ownership and prevent conflicts with other Claude instances.
+**⚠️ CRITICAL: Multi-Instance Coordination**: Before working on or cleaning up tasks owned by different
+sessions, use `verify-task-ownership` skill. NEVER modify `session_id` directly or cleanup foreign tasks
+without verification. See [task-protocol-operations.md §
+Multi-Instance Coordination](docs/project/task-protocol-operations.md#multi-instance-coordination) for
+prohibited patterns and correct approach.
 
 **Branch Management**:
 
