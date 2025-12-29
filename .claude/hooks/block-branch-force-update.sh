@@ -7,6 +7,7 @@
 #
 # PREVENTS: Bypassing merge workflow by directly moving main branch pointer
 # ENFORCES: All task merges must go through git merge --ff-only
+# EXCEPTION: Allows during squash/rebase when backup branch exists (backup-before-squash-*, backup-before-rebase-*)
 #
 # Triggers: PreToolUse (tool:Bash matcher in settings.json)
 
@@ -47,6 +48,14 @@ if [[ ! "$COMMAND" =~ git[[:space:]]+branch[[:space:]]+(-f|--force)[[:space:]]+m
 fi
 
 log_hook_start "block-branch-force-update" "PreToolUse"
+
+# Allow during legitimate squash/rebase operations
+# Detection: backup branch exists with squash/rebase pattern
+BACKUP_BRANCHES=$(git branch --list 'backup-before-squash-*' 'backup-before-rebase-*' 2>/dev/null || true)
+if [[ -n "$BACKUP_BRANCHES" ]]; then
+	log_hook_end "block-branch-force-update" "PreToolUse" "Allowed: squash/rebase backup branch detected"
+	exit 0
+fi
 
 # Extract what HEAD/commit is being used
 # This catches: git branch -f main HEAD, git branch -f main <commit>
