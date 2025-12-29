@@ -15,6 +15,7 @@ import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
 import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
 import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
 import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseFails;
@@ -48,6 +49,7 @@ public final class ClassLiteralParserTest
 			semanticNode(CLASS_DECLARATION, 0, 59, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 57),
 			semanticNode(BLOCK, 24, 57),
+			semanticNode(PARAMETERIZED_TYPE, 28, 36),
 			semanticNode(QUALIFIED_NAME, 28, 33),
 			semanticNode(CLASS_LITERAL, 41, 53),
 			semanticNode(IDENTIFIER, 41, 47));
@@ -76,6 +78,7 @@ public final class ClassLiteralParserTest
 			semanticNode(CLASS_DECLARATION, 0, 69, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 67),
 			semanticNode(BLOCK, 24, 67),
+			semanticNode(PARAMETERIZED_TYPE, 28, 36),
 			semanticNode(QUALIFIED_NAME, 28, 33),
 			semanticNode(CLASS_LITERAL, 41, 63),
 			semanticNode(FIELD_ACCESS, 41, 50),
@@ -106,6 +109,7 @@ public final class ClassLiteralParserTest
 			semanticNode(CLASS_DECLARATION, 0, 64, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 62),
 			semanticNode(BLOCK, 24, 62),
+			semanticNode(PARAMETERIZED_TYPE, 28, 36),
 			semanticNode(QUALIFIED_NAME, 28, 33),
 			semanticNode(CLASS_LITERAL, 41, 58),
 			semanticNode(FIELD_ACCESS, 41, 52),
@@ -135,6 +139,7 @@ public final class ClassLiteralParserTest
 			semanticNode(CLASS_DECLARATION, 0, 56, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 54),
 			semanticNode(BLOCK, 24, 54),
+			semanticNode(PARAMETERIZED_TYPE, 28, 36),
 			semanticNode(QUALIFIED_NAME, 28, 33),
 			semanticNode(CLASS_LITERAL, 41, 50));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -162,6 +167,7 @@ public final class ClassLiteralParserTest
 			semanticNode(CLASS_DECLARATION, 0, 57, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 55),
 			semanticNode(BLOCK, 24, 55),
+			semanticNode(PARAMETERIZED_TYPE, 28, 36),
 			semanticNode(QUALIFIED_NAME, 28, 33),
 			semanticNode(CLASS_LITERAL, 41, 51));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -189,6 +195,7 @@ public final class ClassLiteralParserTest
 			semanticNode(CLASS_DECLARATION, 0, 61, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 59),
 			semanticNode(BLOCK, 24, 59),
+			semanticNode(PARAMETERIZED_TYPE, 28, 36),
 			semanticNode(QUALIFIED_NAME, 28, 33),
 			semanticNode(CLASS_LITERAL, 41, 55),
 			semanticNode(IDENTIFIER, 41, 47));
@@ -217,6 +224,7 @@ public final class ClassLiteralParserTest
 			semanticNode(CLASS_DECLARATION, 0, 58, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 56),
 			semanticNode(BLOCK, 24, 56),
+			semanticNode(PARAMETERIZED_TYPE, 28, 36),
 			semanticNode(QUALIFIED_NAME, 28, 33),
 			semanticNode(CLASS_LITERAL, 41, 52));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -244,6 +252,7 @@ public final class ClassLiteralParserTest
 			semanticNode(CLASS_DECLARATION, 0, 60, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 58),
 			semanticNode(BLOCK, 24, 58),
+			semanticNode(PARAMETERIZED_TYPE, 28, 36),
 			semanticNode(QUALIFIED_NAME, 28, 33),
 			semanticNode(CLASS_LITERAL, 41, 54));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -329,6 +338,7 @@ public final class ClassLiteralParserTest
 			semanticNode(CLASS_DECLARATION, 0, 81, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 79),
 			semanticNode(BLOCK, 24, 79),
+			semanticNode(PARAMETERIZED_TYPE, 28, 36),
 			semanticNode(QUALIFIED_NAME, 28, 33),
 			semanticNode(CONDITIONAL_EXPRESSION, 41, 75),
 			semanticNode(IDENTIFIER, 41, 45),

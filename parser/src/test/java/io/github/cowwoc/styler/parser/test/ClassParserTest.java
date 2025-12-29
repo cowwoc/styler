@@ -17,6 +17,7 @@ import static io.github.cowwoc.styler.ast.core.NodeType.IMPORT_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.PACKAGE_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
 import static io.github.cowwoc.styler.ast.core.NodeType.STATIC_IMPORT_DECLARATION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
@@ -344,6 +345,8 @@ public class ClassParserTest
 			semanticNode(COMPILATION_UNIT, 0, 62),
 			semanticNode(CLASS_DECLARATION, 7, 61, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 59),
+			semanticNode(PARAMETER_DECLARATION, 37, 42, "x"),
+			semanticNode(PARAMETER_DECLARATION, 44, 52, "y"),
 			semanticNode(BLOCK, 55, 59),
 			semanticNode(QUALIFIED_NAME, 44, 50));
 
@@ -372,6 +375,7 @@ public class ClassParserTest
 			semanticNode(COMPILATION_UNIT, 0, 61),
 			semanticNode(CLASS_DECLARATION, 7, 60, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 58),
+			semanticNode(PARAMETER_DECLARATION, 37, 51, "args"),
 			semanticNode(BLOCK, 54, 58),
 			semanticNode(QUALIFIED_NAME, 37, 43));
 

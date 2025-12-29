@@ -13,6 +13,7 @@ import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
@@ -145,6 +146,7 @@ public class GenericTypeParserTest
 			semanticNode(METHOD_DECLARATION, 14, 49),
 			semanticNode(PARAMETERIZED_TYPE, 27, 38),
 			semanticNode(QUALIFIED_NAME, 27, 35),
+			semanticNode(PARAMETER_DECLARATION, 27, 42, "opt"),
 			semanticNode(BLOCK, 45, 49));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -173,6 +175,7 @@ public class GenericTypeParserTest
 			semanticNode(PARAMETERIZED_TYPE, 27, 49),
 			semanticNode(QUALIFIED_NAME, 27, 31),
 			semanticNode(QUALIFIED_NAME, 42, 48),
+			semanticNode(PARAMETER_DECLARATION, 27, 57, "numbers"),
 			semanticNode(BLOCK, 60, 64));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -201,6 +204,7 @@ public class GenericTypeParserTest
 			semanticNode(PARAMETERIZED_TYPE, 26, 51),
 			semanticNode(QUALIFIED_NAME, 26, 34),
 			semanticNode(QUALIFIED_NAME, 43, 50),
+			semanticNode(PARAMETER_DECLARATION, 26, 60, "consumer"),
 			semanticNode(BLOCK, 63, 67));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}

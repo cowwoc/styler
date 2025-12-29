@@ -4,6 +4,8 @@ import io.github.cowwoc.styler.ast.core.NodeType;
 import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
 import org.testng.annotations.Test;
 
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
+
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
@@ -37,6 +39,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 41, 47),
+			semanticNode(PARAMETER_DECLARATION, 41, 51, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 66, 69),
 			semanticNode(NodeType.IDENTIFIER, 97, 98),
 			semanticNode(NodeType.FIELD_ACCESS, 97, 105),
@@ -83,6 +86,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 41, 47),
+			semanticNode(PARAMETER_DECLARATION, 41, 51, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 66, 69),
 			semanticNode(NodeType.IDENTIFIER, 107, 108),
 			semanticNode(NodeType.FIELD_ACCESS, 107, 116),
@@ -125,6 +129,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 43, 49),
+			semanticNode(PARAMETER_DECLARATION, 43, 53, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 75, 78),
 			semanticNode(NodeType.IDENTIFIER, 107, 108),
 			semanticNode(NodeType.INTEGER_LITERAL, 111, 112),
@@ -168,6 +173,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 46, 52),
+			semanticNode(PARAMETER_DECLARATION, 46, 56, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 78, 81),
 			semanticNode(NodeType.IDENTIFIER, 110, 111),
 			semanticNode(NodeType.INTEGER_LITERAL, 114, 115),
@@ -217,6 +223,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 46, 52),
+			semanticNode(PARAMETER_DECLARATION, 46, 56, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 78, 81),
 			semanticNode(NodeType.IDENTIFIER, 110, 111),
 			semanticNode(NodeType.INTEGER_LITERAL, 115, 118),
@@ -260,6 +267,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 43, 49),
+			semanticNode(PARAMETER_DECLARATION, 43, 53, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 75, 78),
 			semanticNode(NodeType.IDENTIFIER, 106, 107),
 			semanticNode(NodeType.FIELD_ACCESS, 106, 115),
@@ -307,6 +315,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 46, 52),
+			semanticNode(PARAMETER_DECLARATION, 46, 56, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 78, 81),
 			semanticNode(NodeType.IDENTIFIER, 110, 111),
 			semanticNode(NodeType.INTEGER_LITERAL, 114, 115),
@@ -364,6 +373,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 44, 50),
+			semanticNode(PARAMETER_DECLARATION, 44, 54, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 76, 79),
 			semanticNode(NodeType.IDENTIFIER, 107, 108),
 			semanticNode(NodeType.FIELD_ACCESS, 107, 115),
@@ -426,6 +436,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 44, 50),
+			semanticNode(PARAMETER_DECLARATION, 44, 54, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 76, 79),
 			semanticNode(NodeType.STRING_LITERAL, 101, 113),
 			semanticNode(NodeType.IDENTIFIER, 137, 138),
@@ -475,6 +486,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 44, 50),
+			semanticNode(PARAMETER_DECLARATION, 44, 54, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 76, 79),
 			semanticNode(NodeType.IDENTIFIER, 108, 109),
 			semanticNode(NodeType.FIELD_ACCESS, 108, 117),
@@ -559,6 +571,7 @@ public class GuardedPatternParserTest
 			semanticNode(NodeType.INTEGER_LITERAL, 45, 48),
 			semanticNode(NodeType.FIELD_DECLARATION, 21, 49),
 			semanticNode(NodeType.QUALIFIED_NAME, 77, 83),
+			semanticNode(PARAMETER_DECLARATION, 77, 87, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 109, 112),
 			semanticNode(NodeType.IDENTIFIER, 141, 142),
 			semanticNode(NodeType.THIS_EXPRESSION, 145, 149),
@@ -606,7 +619,9 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 44, 50),
+			semanticNode(PARAMETER_DECLARATION, 44, 56, "outer"),
 			semanticNode(NodeType.QUALIFIED_NAME, 58, 64),
+			semanticNode(PARAMETER_DECLARATION, 58, 70, "inner"),
 			semanticNode(NodeType.IDENTIFIER, 92, 97),
 			semanticNode(NodeType.IDENTIFIER, 125, 126),
 			semanticNode(NodeType.FIELD_ACCESS, 125, 133),
@@ -663,6 +678,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 41, 47),
+			semanticNode(PARAMETER_DECLARATION, 41, 51, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 66, 69),
 			semanticNode(NodeType.IDENTIFIER, 97, 98),
 			semanticNode(NodeType.FIELD_ACCESS, 97, 105),
@@ -725,6 +741,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 46, 52),
+			semanticNode(PARAMETER_DECLARATION, 46, 56, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 78, 81),
 			semanticNode(NodeType.IDENTIFIER, 109, 110),
 			semanticNode(NodeType.FIELD_ACCESS, 109, 122),
@@ -782,6 +799,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 44, 50),
+			semanticNode(PARAMETER_DECLARATION, 44, 54, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 76, 79),
 			semanticNode(NodeType.IDENTIFIER, 107, 108),
 			semanticNode(NodeType.FIELD_ACCESS, 107, 115),
@@ -850,6 +868,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 46, 52),
+			semanticNode(PARAMETER_DECLARATION, 46, 56, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 78, 81),
 			semanticNode(NodeType.IDENTIFIER, 110, 111),
 			semanticNode(NodeType.INTEGER_LITERAL, 115, 116),
@@ -898,6 +917,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 46, 52),
+			semanticNode(PARAMETER_DECLARATION, 46, 56, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 78, 81),
 			semanticNode(NodeType.IDENTIFIER, 110, 117),
 			semanticNode(NodeType.FIELD_ACCESS, 110, 124),
@@ -960,6 +980,7 @@ public class GuardedPatternParserTest
 			semanticNode(NodeType.INTEGER_LITERAL, 45, 48),
 			semanticNode(NodeType.FIELD_DECLARATION, 21, 49),
 			semanticNode(NodeType.QUALIFIED_NAME, 77, 83),
+			semanticNode(PARAMETER_DECLARATION, 77, 87, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 109, 112),
 			semanticNode(NodeType.IDENTIFIER, 141, 142),
 			semanticNode(NodeType.IDENTIFIER, 145, 154),
@@ -1004,7 +1025,9 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 44, 50),
+			semanticNode(PARAMETER_DECLARATION, 44, 54, "obj"),
 			semanticNode(NodeType.QUALIFIED_NAME, 56, 62),
+			semanticNode(PARAMETER_DECLARATION, 56, 68, "extra"),
 			semanticNode(NodeType.IDENTIFIER, 90, 93),
 			semanticNode(NodeType.IDENTIFIER, 121, 126),
 			semanticNode(NodeType.QUALIFIED_NAME, 138, 145),
@@ -1047,6 +1070,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 44, 50),
+			semanticNode(PARAMETER_DECLARATION, 44, 54, "obj"),
 			semanticNode(NodeType.IDENTIFIER, 76, 79),
 			semanticNode(NodeType.IDENTIFIER, 107, 108),
 			semanticNode(NodeType.FIELD_ACCESS, 107, 114),
@@ -1099,6 +1123,7 @@ public class GuardedPatternParserTest
 			""");
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 46, 52),
+			semanticNode(PARAMETER_DECLARATION, 46, 56, "obj"),
 			semanticNode(NodeType.INTEGER_LITERAL, 79, 80),
 			semanticNode(NodeType.INTEGER_LITERAL, 100, 103),
 			semanticNode(NodeType.IDENTIFIER, 122, 125),

@@ -367,20 +367,6 @@ benchmarking, and validate with Maven plugin integration.
     - WILDCARD_TYPE with lower bound for `? super T`
   - **Quality**: Parser tests validating WILDCARD_TYPE node creation for all wildcard variants
 
-- [ ] **READY:** `add-parameter-declaration-nodes` - Create AST nodes for method/constructor parameters
-  - **Dependencies**: `add-parser-error-record` ✅
-  - **Blocks**: None (enhancement for better AST fidelity)
-  - **Parallelizable With**: `add-wildcard-type-nodes`
-  - **Estimated Effort**: 1 day
-  - **Purpose**: Create PARAMETER_DECLARATION nodes for method and constructor parameters
-  - **Current State**: Parser parses parameters correctly but only creates QUALIFIED_NAME nodes for types
-  - **Scope**: Create PARAMETER_DECLARATION nodes for each parameter with type and name
-  - **Components**:
-    - PARAMETER_DECLARATION node with attribute for parameter name
-    - Child node for parameter type
-    - Support for varargs parameters (`String... args`)
-    - Support for final parameters (`final String name`)
-  - **Quality**: Parser tests validating PARAMETER_DECLARATION node creation
 
 ---
 

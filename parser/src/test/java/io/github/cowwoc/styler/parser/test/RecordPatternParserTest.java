@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
 
@@ -52,7 +53,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 54, 146),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 146),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 148, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 149));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 149),
+			semanticNode(PARAMETER_DECLARATION, 41, 51, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -91,7 +93,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 54, 150),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 150),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 152, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 153));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 153),
+			semanticNode(PARAMETER_DECLARATION, 41, 51, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -134,7 +137,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 54, 163),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 163),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 165, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 166));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 166),
+			semanticNode(PARAMETER_DECLARATION, 41, 51, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -173,7 +177,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 53, 152),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 152),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 154, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 155));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 155),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -210,7 +215,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 49, 159),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 159),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 161, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 162));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 162),
+			semanticNode(PARAMETER_DECLARATION, 36, 46, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -254,7 +260,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 54, 161),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 161),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 163, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 164));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 164),
+			semanticNode(PARAMETER_DECLARATION, 41, 51, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -291,7 +298,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 53, 155),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 155),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 157, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 158));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 158),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -331,7 +339,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 57, 187),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 187),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 189, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 190));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 190),
+			semanticNode(PARAMETER_DECLARATION, 44, 54, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -386,7 +395,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 55, 233),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 233),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 235, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 236));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 236),
+			semanticNode(PARAMETER_DECLARATION, 42, 52, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -432,7 +442,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 59, 229),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 229),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 231, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 232));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 232),
+			semanticNode(PARAMETER_DECLARATION, 46, 56, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -486,7 +497,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 59, 266),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 266),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 268, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 269));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 269),
+			semanticNode(PARAMETER_DECLARATION, 46, 56, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -531,7 +543,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 59, 256),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 256),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 258, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 259));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 259),
+			semanticNode(PARAMETER_DECLARATION, 46, 56, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -574,7 +587,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 57, 185),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 185),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 187, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 188));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 188),
+			semanticNode(PARAMETER_DECLARATION, 44, 54, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -612,7 +626,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 53, 178),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 178),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 180, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 181));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 181),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -683,7 +698,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 54, 313),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 313),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 315, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 316));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 316),
+			semanticNode(PARAMETER_DECLARATION, 41, 51, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -729,7 +745,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 57, 225),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 225),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 227, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 228));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 228),
+			semanticNode(PARAMETER_DECLARATION, 44, 54, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -783,7 +800,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 53, 252),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 252),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 254, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 255));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 255),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -834,7 +852,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 57, 272),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 272),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 274, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 275));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 275),
+			semanticNode(PARAMETER_DECLARATION, 44, 54, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -873,7 +892,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 49, 139),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 139),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 141, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 142));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 142),
+			semanticNode(PARAMETER_DECLARATION, 36, 46, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -908,7 +928,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 50, 136),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 136),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 138, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 139));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 139),
+			semanticNode(PARAMETER_DECLARATION, 37, 47, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -963,7 +984,9 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 73, 365),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 365),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 367, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 368));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 368),
+			semanticNode(PARAMETER_DECLARATION, 44, 56, "outer"),
+			semanticNode(PARAMETER_DECLARATION, 58, 70, "inner"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -1006,7 +1029,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 57, 197),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 197),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 199, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 200));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 200),
+			semanticNode(PARAMETER_DECLARATION, 44, 54, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -1042,7 +1066,8 @@ public class RecordPatternParserTest
 			semanticNode(NodeType.BLOCK, 51, 154),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 154),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 156, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 157));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 157),
+			semanticNode(PARAMETER_DECLARATION, 38, 48, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

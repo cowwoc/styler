@@ -148,6 +148,8 @@ public final class ParserTestUtils
 			case CLASS_DECLARATION, INTERFACE_DECLARATION, ENUM_DECLARATION,
 				RECORD_DECLARATION, ANNOTATION_DECLARATION ->
 				arena.getTypeDeclarationAttribute(index).typeName();
+			case PARAMETER_DECLARATION ->
+				arena.getParameterAttribute(index).name();
 			default -> null;
 		};
 	}
