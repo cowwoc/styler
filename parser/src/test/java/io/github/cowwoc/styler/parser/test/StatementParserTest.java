@@ -25,6 +25,7 @@ import static io.github.cowwoc.styler.ast.core.NodeType.IF_STATEMENT;
 import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
 import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
 import static io.github.cowwoc.styler.ast.core.NodeType.SWITCH_STATEMENT;
@@ -412,6 +413,7 @@ public class StatementParserTest
 			semanticNode(BLOCK, 50, 65),
 			semanticNode(CATCH_CLAUSE, 68, 105),
 			semanticNode(QUALIFIED_NAME, 75, 84),
+			semanticNode(PARAMETER_DECLARATION, 75, 86, "e"),
 			semanticNode(BLOCK, 90, 105),
 			semanticNode(QUALIFIED_NAME, 55, 56),
 			semanticNode(IDENTIFIER, 55, 56),

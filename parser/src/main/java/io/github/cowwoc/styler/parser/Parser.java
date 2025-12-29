@@ -5,6 +5,7 @@ import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.ast.core.NodeType;
 import io.github.cowwoc.styler.ast.core.PackageAttribute;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
 import io.github.cowwoc.styler.ast.core.SecurityConfig;
 import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 
@@ -961,9 +962,12 @@ public final class Parser implements AutoCloseable
 		return arena.allocateNode(nodeType, start, end);
 	}
 
-	private void parseParameter()
+	private NodeIndex parseParameter()
 	{
-		// Modifiers
+		int start = currentToken().start();
+		boolean isFinal = false;
+
+		// Modifiers (annotations and final)
 		while (currentToken().type() == TokenType.FINAL || currentToken().type() == TokenType.AT)
 		{
 			if (currentToken().type() == TokenType.AT)
@@ -973,15 +977,37 @@ public final class Parser implements AutoCloseable
 			else
 			{
 				consume();
+				isFinal = true;
 			}
 		}
 
 		parseType();
-		if (match(TokenType.ELLIPSIS))
+		boolean isVarargs = match(TokenType.ELLIPSIS);
+
+		// Check for receiver parameter (ClassName this)
+		boolean isReceiver = currentToken().type() == TokenType.THIS;
+		String parameterName;
+		if (isReceiver)
 		{
-			// Varargs
+			parameterName = "this";
+			consume();
 		}
-		expect(TokenType.IDENTIFIER);
+		else
+		{
+			Token nameToken = currentToken();
+			expect(TokenType.IDENTIFIER);
+			parameterName = nameToken.getText(sourceCode);
+		}
+
+		// Handle C-style array syntax: String args[]
+		while (match(TokenType.LBRACKET))
+		{
+			expect(TokenType.RBRACKET);
+		}
+
+		int end = tokens.get(position - 1).end();
+		ParameterAttribute attribute = new ParameterAttribute(parameterName, isVarargs, isFinal, isReceiver);
+		return arena.allocateParameterDeclaration(start, end, attribute);
 	}
 
 	private NodeIndex parseFieldRest(int start)

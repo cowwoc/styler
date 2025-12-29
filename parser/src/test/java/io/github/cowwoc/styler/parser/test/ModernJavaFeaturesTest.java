@@ -16,6 +16,8 @@ import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
 import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
 import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
 import static io.github.cowwoc.styler.ast.core.NodeType.RECORD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
@@ -41,7 +43,9 @@ public class ModernJavaFeaturesTest
 
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 31),
-			semanticNode(RECORD_DECLARATION, 0, 30, "Point"));
+			semanticNode(RECORD_DECLARATION, 0, 30, "Point"),
+			semanticNode(PARAMETER_DECLARATION, 13, 18, "x"),
+			semanticNode(PARAMETER_DECLARATION, 20, 25, "y"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -62,7 +66,8 @@ public class ModernJavaFeaturesTest
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 27),
 			semanticNode(RECORD_DECLARATION, 0, 26, "Box"),
-			semanticNode(QUALIFIED_NAME, 14, 15));
+			semanticNode(QUALIFIED_NAME, 14, 15),
+			semanticNode(PARAMETER_DECLARATION, 14, 21, "value"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -82,8 +87,11 @@ public class ModernJavaFeaturesTest
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 60),
 			semanticNode(RECORD_DECLARATION, 0, 59, "Point"),
+			semanticNode(PARAMETERIZED_TYPE, 38, 55),
 			semanticNode(QUALIFIED_NAME, 38, 48),
-			semanticNode(QUALIFIED_NAME, 49, 54));
+			semanticNode(QUALIFIED_NAME, 49, 54),
+			semanticNode(PARAMETER_DECLARATION, 13, 18, "x"),
+			semanticNode(PARAMETER_DECLARATION, 20, 25, "y"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -121,7 +129,9 @@ public class ModernJavaFeaturesTest
 			semanticNode(BLOCK, 56, 95),
 			semanticNode(BINARY_EXPRESSION, 77, 82),
 			semanticNode(BINARY_EXPRESSION, 85, 90),
-			semanticNode(BINARY_EXPRESSION, 77, 90));
+			semanticNode(BINARY_EXPRESSION, 77, 90),
+			semanticNode(PARAMETER_DECLARATION, 13, 18, "x"),
+			semanticNode(PARAMETER_DECLARATION, 20, 25, "y"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -256,7 +266,11 @@ public class ModernJavaFeaturesTest
 			semanticNode(RECORD_DECLARATION, 0, 67, "Person"),
 			semanticNode(QUALIFIED_NAME, 14, 20),
 			semanticNode(QUALIFIED_NAME, 36, 42),
-			semanticNode(QUALIFIED_NAME, 50, 56));
+			semanticNode(QUALIFIED_NAME, 50, 56),
+			semanticNode(PARAMETER_DECLARATION, 14, 25, "name"),
+			semanticNode(PARAMETER_DECLARATION, 27, 34, "age"),
+			semanticNode(PARAMETER_DECLARATION, 36, 48, "email"),
+			semanticNode(PARAMETER_DECLARATION, 50, 62, "phone"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -279,7 +293,8 @@ public class ModernJavaFeaturesTest
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 56),
 			semanticNode(CLASS_DECLARATION, 7, 55, "Container"),
-			semanticNode(RECORD_DECLARATION, 26, 53, "Inner"));
+			semanticNode(RECORD_DECLARATION, 26, 53, "Inner"),
+			semanticNode(PARAMETER_DECLARATION, 39, 48, "value"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -298,7 +313,9 @@ public class ModernJavaFeaturesTest
 
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 38),
-			semanticNode(RECORD_DECLARATION, 7, 37, "Point"));
+			semanticNode(RECORD_DECLARATION, 7, 37, "Point"),
+			semanticNode(PARAMETER_DECLARATION, 20, 25, "x"),
+			semanticNode(PARAMETER_DECLARATION, 27, 32, "y"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 

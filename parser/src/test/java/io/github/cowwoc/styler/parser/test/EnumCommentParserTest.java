@@ -17,6 +17,7 @@ import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
 import static io.github.cowwoc.styler.ast.core.NodeType.JAVADOC_COMMENT;
 import static io.github.cowwoc.styler.ast.core.NodeType.LINE_COMMENT;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
@@ -293,6 +294,8 @@ public class EnumCommentParserTest
 			semanticNode(ENUM_CONSTANT, 51, 54),
 			semanticNode(ENUM_CONSTANT, 57, 65),
 			semanticNode(METHOD_DECLARATION, 69, 117),
+			semanticNode(PARAMETER_DECLARATION, 86, 91, "a"),
+			semanticNode(PARAMETER_DECLARATION, 93, 98, "b"),
 			semanticNode(BLOCK, 101, 117),
 			semanticNode(RETURN_STATEMENT, 105, 114),
 			semanticNode(INTEGER_LITERAL, 112, 113));

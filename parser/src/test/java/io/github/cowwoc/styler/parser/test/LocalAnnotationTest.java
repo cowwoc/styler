@@ -23,6 +23,8 @@ import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.NULL_LITERAL;
 import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
 import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
 import static io.github.cowwoc.styler.ast.core.NodeType.STRING_LITERAL;
 import static io.github.cowwoc.styler.ast.core.NodeType.TRY_STATEMENT;
@@ -58,6 +60,7 @@ public class LocalAnnotationTest
 			semanticNode(BLOCK, 43, 118),
 			semanticNode(QUALIFIED_NAME, 48, 64),
 			semanticNode(STRING_LITERAL, 65, 76),
+			semanticNode(PARAMETERIZED_TYPE, 78, 100),
 			semanticNode(QUALIFIED_NAME, 78, 92),
 			semanticNode(QUALIFIED_NAME, 93, 99),
 			semanticNode(NULL_LITERAL, 110, 114));
@@ -226,6 +229,7 @@ public class LocalAnnotationTest
 			semanticNode(CLASS_DECLARATION, 7, 154, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 152),
 			semanticNode(BLOCK, 43, 152),
+			semanticNode(PARAMETERIZED_TYPE, 47, 69),
 			semanticNode(QUALIFIED_NAME, 47, 61),
 			semanticNode(QUALIFIED_NAME, 62, 68),
 			semanticNode(NULL_LITERAL, 77, 81),
@@ -268,6 +272,7 @@ public class LocalAnnotationTest
 			semanticNode(CLASS_DECLARATION, 7, 160, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 158),
 			semanticNode(BLOCK, 43, 158),
+			semanticNode(PARAMETERIZED_TYPE, 47, 69),
 			semanticNode(QUALIFIED_NAME, 47, 61),
 			semanticNode(QUALIFIED_NAME, 62, 68),
 			semanticNode(NULL_LITERAL, 77, 81),
@@ -324,6 +329,7 @@ public class LocalAnnotationTest
 			semanticNode(FIELD_ACCESS, 128, 135),
 			semanticNode(CATCH_CLAUSE, 145, 186),
 			semanticNode(QUALIFIED_NAME, 152, 161),
+			semanticNode(PARAMETER_DECLARATION, 152, 163, "e"),
 			semanticNode(BLOCK, 167, 186),
 			semanticNode(LINE_COMMENT, 172, 182));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -367,6 +373,7 @@ public class LocalAnnotationTest
 			semanticNode(METHOD_INVOCATION, 113, 122),
 			semanticNode(CATCH_CLAUSE, 130, 171),
 			semanticNode(QUALIFIED_NAME, 137, 146),
+			semanticNode(PARAMETER_DECLARATION, 137, 148, "e"),
 			semanticNode(BLOCK, 152, 171),
 			semanticNode(LINE_COMMENT, 157, 167));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -412,6 +419,7 @@ public class LocalAnnotationTest
 			semanticNode(FIELD_ACCESS, 137, 144),
 			semanticNode(CATCH_CLAUSE, 154, 195),
 			semanticNode(QUALIFIED_NAME, 161, 170),
+			semanticNode(PARAMETER_DECLARATION, 161, 172, "e"),
 			semanticNode(BLOCK, 176, 195),
 			semanticNode(LINE_COMMENT, 181, 191));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -519,6 +527,7 @@ public class LocalAnnotationTest
 			semanticNode(IDENTIFIER, 65, 70),
 			semanticNode(ASSIGNMENT_EXPRESSION, 65, 84),
 			semanticNode(STRING_LITERAL, 73, 84),
+			semanticNode(PARAMETERIZED_TYPE, 86, 108),
 			semanticNode(QUALIFIED_NAME, 86, 100),
 			semanticNode(QUALIFIED_NAME, 101, 107),
 			semanticNode(NULL_LITERAL, 116, 120));

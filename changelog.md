@@ -1,5 +1,53 @@
 # Changelog
 
+## 2025-12-29
+
+### Parameter Declaration AST Nodes ✅
+
+**Completion Date**: 2025-12-29
+
+**Task**: `add-parameter-declaration-nodes`
+
+**Problem Solved**:
+- Parser parsed method/constructor parameters but didn't create dedicated AST nodes for them
+- PARAMETER_DECLARATION NodeType existed but was never used
+- No way to programmatically access parameter metadata (name, modifiers, varargs status)
+
+**Solution Implemented**:
+- Created `ParameterAttribute` record to store parameter semantic data (name, isVarargs, isFinal, isReceiver)
+- Added `ParameterAttribute` to `NodeAttribute` sealed interface
+- Added `allocateParameterDeclaration()` and `getParameterAttribute()` methods to `NodeArena`
+- Modified `parseParameter()` in Parser.java to return `NodeIndex` and create PARAMETER_DECLARATION nodes
+- Supports all parameter variants: regular, final, varargs, receiver parameters, C-style array syntax
+
+**Files Created**:
+- `ast/core/src/main/java/.../ast/core/ParameterAttribute.java` - Parameter semantic data record
+- `parser/src/test/java/.../parser/test/ParameterDeclarationParserTest.java` - 20 comprehensive tests
+
+**Files Modified**:
+- `ast/core/src/main/java/.../ast/core/NodeAttribute.java` - Added ParameterAttribute to permits
+- `ast/core/src/main/java/.../ast/core/NodeArena.java` - Added allocation and accessor methods
+- `parser/src/main/java/.../parser/Parser.java` - Modified parseParameter() for node creation
+- `parser/src/test/java/.../parser/test/ParserTestUtils.java` - Added PARAMETER_DECLARATION support
+- 12 existing test files updated to include PARAMETER_DECLARATION nodes in expected results
+
+**Test Coverage**:
+- Simple parameters: `int x`, `String name`
+- Final parameters: `final int count`
+- Varargs: `String... args`
+- Annotations: `@NonNull String value`
+- Complex types: generics, arrays, multi-dimensional arrays
+- Receiver parameters: `ClassName this`
+- C-style array syntax: `String args[]`
+- Context tests: methods, constructors, lambdas, catch clauses
+
+**Quality**:
+- All 366 tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ## 2025-12-28
 
 ### Parameterized Type AST Nodes ✅

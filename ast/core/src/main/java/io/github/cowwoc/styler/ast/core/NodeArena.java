@@ -232,6 +232,24 @@ public final class NodeArena implements AutoCloseable
 	}
 
 	/**
+	 * Allocates a parameter declaration node with its associated attribute.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the parameter attribute containing the parameter name and flags
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateParameterDeclaration(int start, int end, ParameterAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.PARAMETER_DECLARATION, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
 	 * Returns the import attribute associated with a node.
 	 *
 	 * @param index the node index
@@ -241,7 +259,6 @@ public final class NodeArena implements AutoCloseable
 	 */
 	public ImportAttribute getImportAttribute(NodeIndex index)
 	{
-		requireThat(index, "index").isNotNull();
 		validateIndex(index);
 		NodeType type = getType(index);
 		if (type != NodeType.IMPORT_DECLARATION && type != NodeType.STATIC_IMPORT_DECLARATION)
@@ -268,7 +285,6 @@ public final class NodeArena implements AutoCloseable
 	 */
 	public PackageAttribute getPackageAttribute(NodeIndex index)
 	{
-		requireThat(index, "index").isNotNull();
 		validateIndex(index);
 		if (getType(index) != NodeType.PACKAGE_DECLARATION)
 		{
@@ -293,7 +309,6 @@ public final class NodeArena implements AutoCloseable
 	 */
 	public TypeDeclarationAttribute getTypeDeclarationAttribute(NodeIndex index)
 	{
-		requireThat(index, "index").isNotNull();
 		validateIndex(index);
 		NodeType type = getType(index);
 		if (!isTypeDeclaration(type))
@@ -307,6 +322,30 @@ public final class NodeArena implements AutoCloseable
 		}
 		throw new AssertionError("Type declaration node at position " + getStart(index) +
 			" is missing TypeDeclarationAttribute");
+	}
+
+	/**
+	 * Returns the parameter attribute associated with a node.
+	 *
+	 * @param index the node index
+	 * @return the parameter attribute
+	 * @throws NullPointerException     if {@code index} is null
+	 * @throws IllegalArgumentException if {@code index} is invalid or the node is not a parameter declaration
+	 */
+	public ParameterAttribute getParameterAttribute(NodeIndex index)
+	{
+		validateIndex(index);
+		if (getType(index) != NodeType.PARAMETER_DECLARATION)
+		{
+			throw new IllegalArgumentException("Expected PARAMETER_DECLARATION but was " + getType(index));
+		}
+		NodeAttribute attribute = attributes.get(index);
+		if (attribute instanceof ParameterAttribute parameterAttribute)
+		{
+			return parameterAttribute;
+		}
+		throw new AssertionError("Parameter node at position " + getStart(index) +
+			" is missing ParameterAttribute");
 	}
 
 	/**

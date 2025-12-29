@@ -14,6 +14,7 @@ import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
 import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
 import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
 import static io.github.cowwoc.styler.ast.core.NodeType.STRING_LITERAL;
 import static io.github.cowwoc.styler.ast.core.NodeType.SWITCH_EXPRESSION;
@@ -50,6 +51,7 @@ public class SwitchExpressionParserTest
 			semanticNode(COMPILATION_UNIT, 0, 139),
 			semanticNode(CLASS_DECLARATION, 7, 138, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 136),
+			semanticNode(PARAMETER_DECLARATION, 40, 47, "ch"),
 			semanticNode(BLOCK, 50, 136),
 			semanticNode(RETURN_STATEMENT, 54, 133),
 			semanticNode(SWITCH_EXPRESSION, 61, 132),
@@ -88,6 +90,7 @@ public class SwitchExpressionParserTest
 			semanticNode(COMPILATION_UNIT, 0, 131),
 			semanticNode(CLASS_DECLARATION, 7, 130, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 128),
+			semanticNode(PARAMETER_DECLARATION, 36, 41, "x"),
 			semanticNode(BLOCK, 44, 128),
 			semanticNode(RETURN_STATEMENT, 48, 125),
 			semanticNode(SWITCH_EXPRESSION, 55, 124),
@@ -126,6 +129,7 @@ public class SwitchExpressionParserTest
 			semanticNode(COMPILATION_UNIT, 0, 146),
 			semanticNode(CLASS_DECLARATION, 7, 145, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 143),
+			semanticNode(PARAMETER_DECLARATION, 39, 44, "x"),
 			semanticNode(BLOCK, 47, 143),
 			semanticNode(RETURN_STATEMENT, 51, 140),
 			semanticNode(SWITCH_EXPRESSION, 58, 139),
@@ -162,6 +166,7 @@ public class SwitchExpressionParserTest
 			semanticNode(COMPILATION_UNIT, 0, 97),
 			semanticNode(CLASS_DECLARATION, 7, 96, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 94),
+			semanticNode(PARAMETER_DECLARATION, 36, 41, "x"),
 			semanticNode(BLOCK, 44, 94),
 			semanticNode(RETURN_STATEMENT, 48, 91),
 			semanticNode(SWITCH_EXPRESSION, 55, 90),
@@ -195,6 +200,7 @@ public class SwitchExpressionParserTest
 			semanticNode(COMPILATION_UNIT, 0, 133),
 			semanticNode(CLASS_DECLARATION, 7, 132, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 130),
+			semanticNode(PARAMETER_DECLARATION, 39, 48, "b"),
 			semanticNode(BLOCK, 51, 130),
 			semanticNode(RETURN_STATEMENT, 55, 127),
 			semanticNode(SWITCH_EXPRESSION, 62, 126),
@@ -235,6 +241,8 @@ public class SwitchExpressionParserTest
 			semanticNode(COMPILATION_UNIT, 0, 176),
 			semanticNode(CLASS_DECLARATION, 7, 175, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 173),
+			semanticNode(PARAMETER_DECLARATION, 36, 41, "x"),
+			semanticNode(PARAMETER_DECLARATION, 43, 48, "y"),
 			semanticNode(BLOCK, 51, 173),
 			semanticNode(RETURN_STATEMENT, 55, 170),
 			semanticNode(SWITCH_EXPRESSION, 62, 169),
@@ -274,6 +282,7 @@ public class SwitchExpressionParserTest
 			semanticNode(COMPILATION_UNIT, 0, 122),
 			semanticNode(CLASS_DECLARATION, 7, 121, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 119),
+			semanticNode(PARAMETER_DECLARATION, 37, 42, "x"),
 			semanticNode(BLOCK, 45, 119),
 			semanticNode(SWITCH_EXPRESSION, 62, 115),
 			semanticNode(IDENTIFIER, 70, 71),

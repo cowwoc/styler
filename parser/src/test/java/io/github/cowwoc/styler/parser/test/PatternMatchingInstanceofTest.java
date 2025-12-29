@@ -7,6 +7,8 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
 
@@ -50,7 +52,8 @@ public class PatternMatchingInstanceofTest
 			semanticNode(NodeType.BLOCK, 53, 122),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 122),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 124, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 125));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 125),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -76,6 +79,7 @@ public class PatternMatchingInstanceofTest
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(NodeType.QUALIFIED_NAME, 40, 46),
 			semanticNode(NodeType.IDENTIFIER, 61, 64),
+			semanticNode(PARAMETERIZED_TYPE, 76, 98),
 			semanticNode(NodeType.QUALIFIED_NAME, 76, 90),
 			semanticNode(NodeType.QUALIFIED_NAME, 91, 97),
 			semanticNode(NodeType.BINARY_EXPRESSION, 61, 103),
@@ -92,7 +96,8 @@ public class PatternMatchingInstanceofTest
 			semanticNode(NodeType.BLOCK, 53, 151),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 151),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 153, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 154));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 154),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -133,7 +138,8 @@ public class PatternMatchingInstanceofTest
 			semanticNode(NodeType.BLOCK, 53, 152),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 152),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 154, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 155));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 155),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -174,7 +180,8 @@ public class PatternMatchingInstanceofTest
 			semanticNode(NodeType.BLOCK, 53, 127),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 127),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 129, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 130));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 130),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -219,7 +226,8 @@ public class PatternMatchingInstanceofTest
 			semanticNode(NodeType.BLOCK, 53, 140),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 140),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 142, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 143));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 143),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -259,7 +267,8 @@ public class PatternMatchingInstanceofTest
 			semanticNode(NodeType.BLOCK, 53, 135),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 135),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 137, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 138));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 138),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -299,7 +308,8 @@ public class PatternMatchingInstanceofTest
 			semanticNode(NodeType.BLOCK, 53, 138),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 138),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 140, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 141));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 141),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -338,7 +348,8 @@ public class PatternMatchingInstanceofTest
 			semanticNode(NodeType.BLOCK, 53, 146),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 146),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 148, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 149));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 149),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -384,7 +395,9 @@ public class PatternMatchingInstanceofTest
 			semanticNode(NodeType.BLOCK, 67, 170),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 170),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 172, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 173));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 173),
+			semanticNode(PARAMETER_DECLARATION, 40, 51, "obj1"),
+			semanticNode(PARAMETER_DECLARATION, 53, 64, "obj2"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -423,7 +436,8 @@ public class PatternMatchingInstanceofTest
 			semanticNode(NodeType.BLOCK, 53, 134),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 134),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 136, "Test"),
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 137));
+			semanticNode(NodeType.COMPILATION_UNIT, 0, 137),
+			semanticNode(PARAMETER_DECLARATION, 40, 50, "obj"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 

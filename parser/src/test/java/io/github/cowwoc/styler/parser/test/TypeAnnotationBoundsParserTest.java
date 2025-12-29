@@ -9,12 +9,14 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
 import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
 import static io.github.cowwoc.styler.ast.core.NodeType.ASSIGNMENT_EXPRESSION;
 import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
 import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
 import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
 import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
@@ -67,6 +69,7 @@ public class TypeAnnotationBoundsParserTest
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 51),
 			semanticNode(CLASS_DECLARATION, 0, 50, "Sorter"),
+			semanticNode(PARAMETERIZED_TYPE, 32, 46),
 			semanticNode(QUALIFIED_NAME, 24, 31),
 			semanticNode(QUALIFIED_NAME, 32, 42),
 			semanticNode(QUALIFIED_NAME, 43, 44));
@@ -89,6 +92,7 @@ public class TypeAnnotationBoundsParserTest
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 56),
 			semanticNode(CLASS_DECLARATION, 0, 55, "Holder"),
+			semanticNode(PARAMETERIZED_TYPE, 43, 51),
 			semanticNode(QUALIFIED_NAME, 24, 33),
 			semanticNode(QUALIFIED_NAME, 35, 42),
 			semanticNode(QUALIFIED_NAME, 43, 47));
@@ -277,10 +281,13 @@ public class TypeAnnotationBoundsParserTest
 			semanticNode(COMPILATION_UNIT, 0, 85),
 			semanticNode(CLASS_DECLARATION, 0, 84, "Util"),
 			semanticNode(METHOD_DECLARATION, 14, 82),
+			semanticNode(PARAMETERIZED_TYPE, 34, 48),
 			semanticNode(QUALIFIED_NAME, 26, 33),
 			semanticNode(QUALIFIED_NAME, 34, 44),
 			semanticNode(QUALIFIED_NAME, 45, 46),
+			semanticNode(PARAMETER_DECLARATION, 55, 58, "a"),
 			semanticNode(QUALIFIED_NAME, 55, 56),
+			semanticNode(PARAMETER_DECLARATION, 60, 63, "b"),
 			semanticNode(QUALIFIED_NAME, 60, 61),
 			semanticNode(BLOCK, 66, 82),
 			semanticNode(RETURN_STATEMENT, 70, 79),
@@ -304,6 +311,7 @@ public class TypeAnnotationBoundsParserTest
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 42),
 			semanticNode(CLASS_DECLARATION, 0, 41, "Sorter"),
+			semanticNode(PARAMETERIZED_TYPE, 23, 37),
 			semanticNode(QUALIFIED_NAME, 23, 33),
 			semanticNode(QUALIFIED_NAME, 34, 35));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -373,6 +381,8 @@ public class TypeAnnotationBoundsParserTest
 			semanticNode(CLASS_DECLARATION, 0, 79, "Factory"),
 			semanticNode(METHOD_DECLARATION, 17, 77),
 			semanticNode(BLOCK, 32, 77),
+			semanticNode(PARAMETERIZED_TYPE, 36, 48),
+			semanticNode(PARAMETERIZED_TYPE, 60, 71),
 			semanticNode(QUALIFIED_NAME, 36, 40),
 			semanticNode(QUALIFIED_NAME, 41, 47),
 			semanticNode(OBJECT_CREATION, 56, 73),
