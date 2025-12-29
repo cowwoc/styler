@@ -49,6 +49,15 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 - Use `requireThat()` for assertions, not manual if-throw
 - Don't chain redundant validators (`isNotEmpty()` implies `isNotNull()`)
 - Trust natural NPE from method calls (don't check null before calling methods that would throw NPE anyway)
+- Don't validate before calling methods that already validate the same parameter:
+  ```java
+  // ❌ WRONG - validateIndex() already checks isNotNull()
+  requireThat(index, "index").isNotNull();
+  validateIndex(index);
+
+  // ✅ CORRECT - Let validateIndex() handle validation
+  validateIndex(index);
+  ```
 - Add JavaDoc comments to test classes/methods instead of `@SuppressWarnings("PMD.CommentRequired")`
 - Test class JavaDoc should describe the **category of tests** (what functionality is being tested), not
   boilerplate about thread safety or validation patterns:
@@ -241,18 +250,25 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   // -1 because endPosition is inclusive, pointing to semicolon
   int adjusted = position - 1;
   ```
-- Extract repeated element access to local variable:
+- Extract repeated element access to local variable (but **only for 2+ uses**):
   ```java
-  // ❌ WRONG - Repeated collection access
+  // ❌ WRONG - Repeated collection access (3 uses, needs variable)
   requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.STRING);
   requireThat(tokens.get(0).text(), "tokens.get(0).text()").isEqualTo("hello");
   requireThat(tokens.get(0).start(), "tokens.get(0).start()").isEqualTo(0);
 
-  // ✅ CORRECT - Extract to local variable
+  // ✅ CORRECT - Extract to local variable (used 3 times)
   Token token = tokens.get(0);
   requireThat(token.type(), "token.type()").isEqualTo(TokenType.STRING);
   requireThat(token.text(), "token.text()").isEqualTo("hello");
   requireThat(token.start(), "token.start()").isEqualTo(0);
+
+  // ❌ WRONG - Single use, no need for variable
+  Token boundToken = previousToken();
+  return arena.allocateNode(..., boundToken.end());
+
+  // ✅ CORRECT - Single use, call directly inline
+  return arena.allocateNode(..., previousToken().end());
   ```
   **⚠️ CRITICAL**: Before extracting, trace execution paths - if index variable can change between accesses
   (e.g., `position` modified in conditional block), the accesses may refer to DIFFERENT elements. See
