@@ -394,7 +394,7 @@ benchmarking, and validate with Maven plugin integration.
     - Consume YIELD, parse expression, expect SEMICOLON
   - **Quality**: Parser tests for yield in switch blocks, nested switches
 
-- [ ] **READY:** `add-multi-catch-support` - Parse union types in catch clauses (JDK 7+)
+- [x] **DONE:** `add-multi-catch-support` - Parse union types in catch clauses (JDK 7+)
   - **Dependencies**: None
   - **Blocks**: None (required for correct exception handling parsing)
   - **Parallelizable With**: Any Phase E parser task
