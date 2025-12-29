@@ -950,6 +950,12 @@ public final class Parser implements AutoCloseable
 			}
 		}
 
+		// Annotation element default value (for @interface methods)
+		if (match(TokenType.DEFAULT))
+		{
+			parseExpression();
+		}
+
 		// Method body or semicolon
 		if (match(TokenType.SEMICOLON))
 		{

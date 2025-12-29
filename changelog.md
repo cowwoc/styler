@@ -2,6 +2,43 @@
 
 ## 2025-12-29
 
+### Annotation Element Defaults ✅
+
+**Completion Date**: 2025-12-29
+
+**Task**: `add-annotation-element-defaults`
+
+**Problem Solved**:
+- Parser did not handle `default value` clause in annotation type element declarations
+- Annotation types like `@interface Config { String name() default "test"; }` failed to parse
+
+**Solution Implemented**:
+- Added DEFAULT token handling in `parseMethodRest()` after throws clause, before semicolon/block
+- Simple 6-line addition: check for DEFAULT token, parse expression if found
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added DEFAULT handling in parseMethodRest()
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/AnnotationElementDefaultTest.java` - 8 tests
+
+**Test Coverage**:
+- Primitive defaults: String, int, boolean
+- Array defaults: empty `{}`, non-empty `{"a", "b"}`
+- Class literal defaults: `Object.class`
+- Elements without defaults (regression)
+- Mixed elements with and without defaults
+
+**Known Limitation**:
+- Nested annotation defaults (`@Foo default @Bar`) require `add-nested-annotation-values` task
+
+**Quality**:
+- All 8 tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ### Multi-Catch Support ✅
 
 **Completion Date**: 2025-12-29
