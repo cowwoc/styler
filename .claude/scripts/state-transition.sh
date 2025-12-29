@@ -23,7 +23,7 @@ TIMESTAMP=$(date -Iseconds)
 FROM_STATE=$(jq -r '.state' "$TASK_DIR/task.json")
 
 # Get last transition timestamp for duration calculation
-LAST_TRANSITION=$(jq -r '.transitions[-1].timestamp // .created' "$TASK_DIR/task.json")
+LAST_TRANSITION=$(jq -r '.transition_log[-1].timestamp // .created' "$TASK_DIR/task.json")
 if [ -n "$LAST_TRANSITION" ] && [ "$LAST_TRANSITION" != "null" ]; then
     LAST_TS=$(date -d "$LAST_TRANSITION" +%s)
     CURRENT_TS=$(date +%s)
@@ -33,8 +33,9 @@ else
 fi
 
 # Update state with transition record
+# FIXED: Use .transition_log field (not .transitions) to match require-task-protocol.sh validation
 jq --arg from "$FROM_STATE" --arg to "$TO_STATE" --arg ts "$TIMESTAMP" --arg dur "$DURATION_SECONDS" \
-   '.state = $to | .transitions += [{"from": $from, "to": $to, "timestamp": $ts, "duration_seconds": ($dur | tonumber)}]' \
+   '.state = $to | .transition_log += [{"from": $from, "to": $to, "timestamp": $ts, "duration_seconds": ($dur | tonumber)}]' \
    "$TASK_DIR/task.json" > "$TASK_DIR/task.json.tmp"
 mv "$TASK_DIR/task.json.tmp" "$TASK_DIR/task.json"
 

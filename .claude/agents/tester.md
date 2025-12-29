@@ -430,8 +430,33 @@ test isolation.
 
 ---
 
+## 🚨 PARSER TEST REQUIREMENTS {#parser-test-requirements}
+
+**When testing parser features**, you MUST validate AST structure, not just parsing success:
+
+```java
+// ❌ WRONG - isNotEmpty() is a WEAK assertion
+Set<SemanticNode> actual = parseSemanticAst(source);
+requireThat(actual, "actual").isNotEmpty();  // Tests NOTHING about new node type!
+
+// ✅ CORRECT - Compare actual AST to expected AST structure
+Set<SemanticNode> actual = parseSemanticAst(source);
+Set<SemanticNode> expected = Set.of(
+    semanticNode(COMPILATION_UNIT, 0, 60),
+    semanticNode(RECORD_PATTERN, 10, 25),  // Verify the NEW node type!
+    // ... other expected nodes
+);
+requireThat(actual, "actual").isEqualTo(expected);
+```
+
+**See**: [testing-claude.md § parser-test-patterns](../../docs/code-style/testing-claude.md#parser-test-patterns)
+for complete guidance on parser test patterns and detection rules.
+
+---
+
 ## 🚨 MANDATORY STARTUP PROTOCOL
 
 **BEFORE performing ANY work, MUST read**:
 1. `/workspace/main/docs/project/task-protocol-agents.md`
 2. `/workspace/main/docs/project/quality-guide.md`
+3. `/workspace/main/docs/code-style/testing-claude.md` (for parser tests)

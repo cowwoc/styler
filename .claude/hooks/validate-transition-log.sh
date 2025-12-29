@@ -15,9 +15,10 @@ set -euo pipefail
 # Read tool context from stdin
 CONTEXT=$(cat)
 
-TOOL_NAME=$(echo "$CONTEXT" | jq -r '.tool.name // empty' 2>/dev/null)
-TOOL_INPUT=$(echo "$CONTEXT" | jq -r '.tool.input.command // empty' 2>/dev/null)
-TOOL_OUTPUT=$(echo "$CONTEXT" | jq -r '.result.stdout // empty' 2>/dev/null)
+# FIXED: Use correct field names (tool_name, not tool.name)
+TOOL_NAME=$(echo "$CONTEXT" | jq -r '.tool_name // empty' 2>/dev/null)
+TOOL_INPUT=$(echo "$CONTEXT" | jq -r '.tool_input.command // empty' 2>/dev/null)
+TOOL_OUTPUT=$(echo "$CONTEXT" | jq -r '.tool_result.stdout // empty' 2>/dev/null)
 
 # Only check Bash commands that touched task.json
 if [[ "$TOOL_NAME" != "Bash" ]]; then
