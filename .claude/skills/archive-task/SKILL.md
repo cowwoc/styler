@@ -41,10 +41,16 @@ allowed-tools: Bash, Read, Edit, Write
 ### 2. Updates todo.md
 
 ```bash
-# Marks task complete:
+# REMOVES task entry completely (do NOT mark with [x]):
 BEFORE: - [ ] implement-formatter-api
-AFTER:  - [x] implement-formatter-api
+        - **Dependencies**: None
+        - **Blocks**: None
+        ...
+AFTER:  (entire entry deleted)
 ```
+
+**CRITICAL**: Tasks are REMOVED from todo.md, NOT marked with `[x]`. The `[x]` pattern is a common mistake
+that violates the archival protocol.
 
 ### 3. Updates changelog.md
 
@@ -63,8 +69,9 @@ AFTER:  - [x] implement-formatter-api
 ```bash
 # Single commit with both files:
 git add todo.md changelog.md
-git commit -m "Update todo.md: Mark implement-formatter-api complete
+git commit -m "Archive task: implement-formatter-api
 
+Removed task entry from todo.md.
 Added changelog entry:
 - Added FormattingRule interface
 - Implemented RuleEngine class
@@ -282,14 +289,17 @@ On any error:
 
 ## Todo.md Update Patterns
 
-### Simple Checkbox
+**CRITICAL**: Tasks are REMOVED completely from todo.md, NOT marked with `[x]`.
+The `[x]` checkbox pattern is WRONG and violates the archival protocol.
+
+### Simple Entry
 
 ```markdown
 BEFORE:
 - [ ] implement-formatter-api
 
 AFTER:
-- [x] implement-formatter-api
+(entire entry deleted from todo.md)
 ```
 
 ### With Sub-tasks
@@ -297,25 +307,23 @@ AFTER:
 ```markdown
 BEFORE:
 - [ ] implement-formatter-api
-  - [ ] Design API
-  - [ ] Implement core
-  - [ ] Add tests
+  - Dependencies: None
+  - Blocks: Other tasks
+  - Estimated Effort: 2 days
+  - Purpose: Description here
 
 AFTER:
-- [x] implement-formatter-api
-  - [x] Design API
-  - [x] Implement core
-  - [x] Add tests
+(entire entry including all sub-items deleted from todo.md)
 ```
 
-### With Priority/Category
+### Common Mistake to AVOID
 
 ```markdown
-BEFORE:
-- [ ] **HIGH**: implement-formatter-api
+❌ WRONG - Do NOT mark with [x]:
+- [x] implement-formatter-api
 
-AFTER:
-- [x] **HIGH**: implement-formatter-api
+✅ CORRECT - DELETE the entire entry:
+(entry no longer exists in todo.md)
 ```
 
 ## Changelog.md Update Patterns
