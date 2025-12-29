@@ -232,8 +232,11 @@ When conducting architectural analysis:
 
 ## 🚨 MANDATORY STARTUP PROTOCOL
 
-BEFORE performing ANY work, MUST read: `/workspace/main/docs/project/task-protocol-agents.md`
+**BEFORE performing ANY work, MUST read**:
+1. `/workspace/main/docs/project/task-protocol-agents.md` - Agent coordination protocol
+2. `/workspace/main/docs/project/style-guide.md` - Code style requirements (especially "Extract Repeated
+   Element Access" section)
 
-This document contains essential coordination protocols, reporting requirements, and workflow patterns.
+These documents contain essential coordination protocols, style requirements, and workflow patterns.
 
 **Your specific task instructions follow below:**

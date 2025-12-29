@@ -39,10 +39,11 @@ When encountering any bug during development:
 public void testScientificNotationLexing() {
     String input = "double x = 1.5e10;";
     List<Token> tokens = lexer.tokenize(input);
+    Token literalToken = tokens.get(3);
 
     // This assertion FAILS initially (reproducing the bug)
-    assertEquals(TokenType.DOUBLE_LITERAL, tokens.get(3).type());
-    assertEquals("1.5e10", tokens.get(3).text());
+    assertEquals(TokenType.DOUBLE_LITERAL, literalToken.type());
+    assertEquals("1.5e10", literalToken.text());
 }
 
 // 3. Fix the bug in Lexer.java (add scientific notation handling)
