@@ -165,9 +165,9 @@ You attempted to merge a task branch that doesn't include documentation updates.
    git checkout ${MERGE_BRANCH}
    \`\`\`
 
-2. **Update todo.md** - Mark task complete:
+2. **Update todo.md** - DELETE the task entry completely:
    \`\`\`markdown
-   - [x] **COMPLETE:** \`${MERGE_BRANCH}\` - Description ($(date +%Y-%m-%d))
+   (Delete the entire task entry from todo.md - do NOT mark with [x])
    \`\`\`
 
 3. **Update changelog.md** - Document changes:
