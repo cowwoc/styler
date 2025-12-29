@@ -356,6 +356,485 @@ benchmarking, and validate with Maven plugin integration.
 
 *All previously listed tasks (add-wildcard-type-nodes, add-parameterized-type-nodes, add-parameter-declaration-nodes) have been completed.*
 
+### Parser Enhancement: Missing Core Java Features
+
+**Priority**: These are basic Java features that should already be supported. Required for correct parsing.
+
+- [ ] **READY:** `add-labeled-statement-support` - Parse labeled statements (label: statement)
+  - **Dependencies**: None
+  - **Blocks**: None (required for correct parsing)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse labeled statements like `outer: for (...)`
+  - **Current Gap**: `parseStatement()` does not check for `IDENTIFIER COLON` pattern
+  - **Syntax**:
+    - `outer: for (int i = 0; i < 10; i++) { ... }`
+    - `retry: while (true) { ... break retry; ... }`
+  - **Implementation**:
+    - Add `LABELED_STATEMENT` to `NodeType` enum
+    - In `parseStatement()`, check for `IDENTIFIER COLON` at start
+    - If found, consume label and colon, then recursively call `parseStatement()`
+  - **Quality**: Parser tests for labeled for/while/do-while, break/continue with labels
+
+- [ ] **READY:** `add-yield-statement-support` - Parse yield statements in switch expressions
+  - **Dependencies**: None
+  - **Blocks**: None (required for correct switch expression parsing)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse `yield value;` statements in switch expressions (JDK 14+)
+  - **Current Gap**: `parseStatement()` does not handle `YIELD` token type
+  - **Syntax**: `yield expression;` - returns a value from switch expression
+  - **Example**:
+    ```java
+    int result = switch (x) {
+        case 1 -> 10;
+        case 2 -> { int temp = compute(); yield temp * 2; }
+        default -> 0;
+    };
+    ```
+  - **Implementation**:
+    - Add `YIELD_STATEMENT` to `NodeType` enum
+    - In `parseStatement()`, add case for `TokenType.YIELD`
+    - Consume YIELD, parse expression, expect SEMICOLON
+  - **Quality**: Parser tests for yield in switch blocks, nested switches
+
+- [ ] **READY:** `add-multi-catch-support` - Parse union types in catch clauses (JDK 7+)
+  - **Dependencies**: None
+  - **Blocks**: None (required for correct exception handling parsing)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse `catch (IOException | SQLException e)` multi-catch syntax
+  - **Current Gap**: `parseCatchClause()` calls `parseParameter()` which calls `parseType()` -
+    neither handles union types with `|` separator
+  - **Syntax**: `catch (ExceptionType1 | ExceptionType2 | ... variableName)`
+  - **Example**:
+    ```java
+    try { ... }
+    catch (IOException | SQLException | ParseException e) {
+        e.printStackTrace();
+    }
+    ```
+  - **Implementation**:
+    - Add `UNION_TYPE` to `NodeType` enum (or handle inline)
+    - Create `parseCatchParameter()` method that handles union types
+    - Parse first type, then while `BITOR` found, parse additional types
+    - Modify `parseCatchClause()` to call `parseCatchParameter()` instead
+  - **Quality**: Parser tests for 2-way, 3-way, and many-type unions
+
+- [ ] **READY:** `add-local-type-declarations` - Parse local classes/interfaces/records/enums in methods
+  - **Dependencies**: None
+  - **Blocks**: None (required for correct method body parsing)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 1 day
+  - **Purpose**: Parse type declarations inside method bodies (JDK 16+ for interfaces/enums)
+  - **Current Gap**: `parseStatement()` does not check for CLASS/INTERFACE/ENUM/RECORD tokens
+  - **Syntax**: Type declarations inside method/constructor/initializer blocks
+  - **Example**:
+    ```java
+    void process() {
+        record Point(int x, int y) { }  // Local record (JDK 16+)
+        interface Validator { boolean validate(); }  // Local interface (JDK 16+)
+        class Helper { void help() { } }  // Local class (Java 1.1+)
+        enum Status { OK, ERROR }  // Local enum (JDK 16+)
+    }
+    ```
+  - **Implementation**:
+    - In `parseStatement()`, check for CLASS/INTERFACE/ENUM/RECORD tokens
+    - If found, delegate to existing `parseClassDeclaration()`/etc. methods
+    - Local types can have modifiers (final for classes, static NOT allowed)
+  - **Quality**: Parser tests for each local type kind, nested local types
+
+- [ ] **READY:** `add-module-info-parsing` - Parse module-info.java module declarations
+  - **Dependencies**: None
+  - **Blocks**: None (required for JPMS module support)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 2-3 days
+  - **Purpose**: Parse module-info.java files with module declarations (JDK 9+)
+  - **Current Gap**: Parser only handles compilation units with package/import/type declarations
+  - **Syntax**: `module name { requires/exports/opens/uses/provides directives }`
+  - **Example**:
+    ```java
+    module com.example.app {
+        requires java.base;
+        requires transitive java.sql;
+        exports com.example.api;
+        opens com.example.internal to framework;
+        uses com.example.spi.Service;
+        provides com.example.spi.Service with com.example.impl.ServiceImpl;
+    }
+    ```
+  - **Implementation**:
+    - Add MODULE token type and related directive tokens
+    - Add `MODULE_DECLARATION`, `REQUIRES_DIRECTIVE`, `EXPORTS_DIRECTIVE`, etc. to NodeType
+    - Detect module-info.java files or `module` keyword at compilation unit level
+    - Parse module name, then directives until closing brace
+  - **Quality**: Parser tests for all directive types, qualified names, modifiers
+
+- [ ] **READY:** `add-annotation-element-defaults` - Parse default values in annotation type elements
+  - **Dependencies**: None
+  - **Blocks**: None (required for correct annotation type parsing)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse `default value` clause in annotation type element declarations
+  - **Current Gap**: `parseMethodRest()` expects semicolon or block after params, not `default`
+  - **Syntax**: `Type name() default value;` in @interface body
+  - **Example**:
+    ```java
+    @interface Configuration {
+        String name() default "default";
+        int priority() default 0;
+        String[] tags() default {};
+    }
+    ```
+  - **Implementation**:
+    - In `parseMethodRest()`, after RPAREN and before SEMICOLON, check for DEFAULT token
+    - If found, consume DEFAULT and parse expression (the default value)
+    - Then expect SEMICOLON
+  - **Quality**: Parser tests for primitive, String, array, annotation, and class literal defaults
+
+- [ ] **READY:** `add-try-resource-variable` - Parse try-with-resources with existing variables (JDK 9+)
+  - **Dependencies**: None
+  - **Blocks**: None (required for correct try-with-resources parsing)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse effectively-final variable references in try-with-resources (JDK 9+)
+  - **Current Gap**: `parseResource()` requires full declaration (Type name = expr), not just identifier
+  - **Syntax**: `try (existingVar)` or `try (existingVar; anotherVar)`
+  - **Example**:
+    ```java
+    BufferedReader br = new BufferedReader(new FileReader(file));
+    try (br) {  // Just variable reference, no declaration
+        return br.readLine();
+    }
+    ```
+  - **Implementation**:
+    - In `parseResource()`, first try parsing as simple identifier (or qualified name)
+    - If next token is SEMICOLON or RPAREN, it's a variable reference (done)
+    - Otherwise backtrack and parse as full declaration (current behavior)
+  - **Quality**: Parser tests for single variable, multiple variables, mixed declaration/reference
+
+- [ ] **READY:** `add-package-annotations` - Parse package-info.java with package annotations
+  - **Dependencies**: None
+  - **Blocks**: None (required for complete package-info.java support)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse annotations before package declaration in package-info.java files
+  - **Current Gap**: `parseCompilationUnit()` checks for PACKAGE before handling annotations
+  - **Syntax**: Annotations directly before `package` keyword
+  - **Example**:
+    ```java
+    @Nullable
+    @SuppressWarnings("all")
+    package com.example.api;
+    ```
+  - **Implementation**:
+    - In `parseCompilationUnit()`, before checking for PACKAGE, consume any annotations
+    - Store package annotations as part of package declaration node
+    - Handle case where annotations exist but no package (error or implicit package)
+  - **Quality**: Parser tests for single/multiple annotations, annotation with values
+
+- [ ] **READY:** `add-cast-expressions` - Parse cast expressions including intersection casts
+  - **Dependencies**: None
+  - **Blocks**: None (required for correct expression parsing)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 1 day
+  - **Purpose**: Parse type cast expressions `(Type) expr` and intersection casts `(A & B) expr`
+  - **Current Gap**: `parseParenthesizedOrLambda()` treats `(Type)` as parenthesized expression,
+    not as cast operator - the following expression is not parsed as the cast operand
+  - **Syntax**: `(Type) expression` or `(Type1 & Type2) expression`
+  - **Example**:
+    ```java
+    String s = (String) obj;
+    Comparable<?> c = (Serializable & Comparable<?>) value;
+    int x = (int) longValue;
+    ```
+  - **Implementation**:
+    - In `parseParenthesizedOrLambda()`, after parsing `(Type)`, check if next token starts expr
+    - If so, this is a cast: parse operand and create CAST_EXPRESSION node
+    - For intersection casts, parse `Type & Type & ...` inside parens
+    - Tricky: distinguish `(a) + b` (parenthesized) from `(A) + b` (cast of unary +)
+  - **Disambiguation Strategy**: After `(X)`, if X could be a type AND next token can start an
+    expression, treat as cast. Requires lookahead or backtracking.
+  - **Quality**: Parser tests for primitive casts, reference casts, intersection casts, array casts
+
+- [ ] **READY:** `add-binary-hex-literals` - Tokenize binary and hexadecimal numeric literals
+  - **Dependencies**: None
+  - **Blocks**: None (required for correct numeric literal parsing)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Tokenize binary (`0b1010`) and hex (`0xDEAD`) literals (JDK 7+)
+  - **Current Gap**: `scanNumber()` only handles decimal digits via `Character.isDigit()`
+  - **Syntax**: `0b` or `0B` prefix for binary, `0x` or `0X` prefix for hex
+  - **Example**:
+    ```java
+    int binary = 0b1010_1100;
+    int hex = 0xDEAD_BEEF;
+    long big = 0xFFFF_FFFF_FFFF_FFFFL;
+    ```
+  - **Implementation**:
+    - In `scanNumber()`, after first digit, check for `0b`/`0B` or `0x`/`0X` prefix
+    - For binary: scan `[01_]+` then optional `L` suffix
+    - For hex integers: scan `[0-9a-fA-F_]+` then optional `L` suffix
+    - For hex floats: scan `0x[0-9a-fA-F_]+.[0-9a-fA-F_]*p[+-]?[0-9]+` with `f`/`d` suffix
+      - Note: hex floats use `p`/`P` for binary exponent, not `e`/`E`
+      - Example: `0x1.0p10` = 1024.0, `0x1.8p1f` = 3.0f
+    - Also handle octal (leading 0 without b/x) if not already working
+  - **Quality**: Lexer tests for binary/hex/octal with underscores, suffixes, hex floats
+
+- [ ] **READY:** `add-qualified-this-super` - Parse qualified this/super expressions
+  - **Dependencies**: None
+  - **Blocks**: None (required for inner class references)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse `Outer.this` and `Outer.super` expressions for inner classes
+  - **Current Gap**: `parsePostfix()` after DOT only checks for IDENTIFIER or CLASS, not THIS/SUPER
+  - **Syntax**: `QualifiedType.this` or `QualifiedType.super`
+  - **Example**:
+    ```java
+    class Outer {
+        class Inner {
+            void method() {
+                Outer.this.field = 1;      // Reference outer instance
+                Outer.super.toString();    // Call outer's super method
+            }
+        }
+    }
+    ```
+  - **Implementation**:
+    - In `parsePostfix()`, after DOT, also check for THIS and SUPER tokens
+    - If found, create appropriate qualified this/super expression node
+    - May reuse THIS_EXPRESSION/SUPER_EXPRESSION or add QUALIFIED_THIS/QUALIFIED_SUPER
+  - **Quality**: Parser tests for qualified this, qualified super, method calls on them
+
+- [ ] **READY:** `add-explicit-type-arguments` - Parse explicit type arguments on method/constructor/reference calls
+  - **Dependencies**: None
+  - **Blocks**: None (required for generic method invocation)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5-1 day
+  - **Purpose**: Parse explicit type arguments like `obj.<String>method()`, `new <T>Foo()`, and `List::<String>of`
+  - **Current Gap**:
+    - `parsePostfix()` after DOT expects IDENTIFIER, not LT for type arguments
+    - `parsePostfix()` after DOUBLE_COLON expects IDENTIFIER or NEW, not LT for type arguments
+  - **Syntax**:
+    - Method invocation: `receiver.<TypeArgs>methodName(args)`
+    - Constructor: `new <TypeArgs>ClassName(args)`
+    - Method reference: `Type::<TypeArgs>methodName` or `Type::<TypeArgs>new`
+  - **Example**:
+    ```java
+    Collections.<String>emptyList();
+    this.<T>genericMethod();
+    obj.<String, Integer>method();
+    new <String>GenericConstructor();
+    List::<String>of;                    // method reference with type args
+    ArrayList::<String>new;              // constructor reference with type args
+    ```
+  - **Implementation**:
+    - In `parsePostfix()`, after DOT, check for LT before IDENTIFIER
+    - In `parsePostfix()`, after DOUBLE_COLON, check for LT before IDENTIFIER or NEW
+    - If LT found, parse type arguments, then expect IDENTIFIER or NEW
+    - In `parseNewExpression()`, check for LT before type name
+  - **Quality**: Parser tests for method invocations, constructors, method references with type args
+
+- [ ] **READY:** `add-array-dimension-annotations` - Parse type annotations on array dimensions (JDK 8+)
+  - **Dependencies**: None
+  - **Blocks**: None (obscure JSR 308 feature)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse annotations between type name and array brackets (JSR 308, JDK 8+)
+  - **Current Gap**: `parseType()` parses `[]` but doesn't check for `@` before each `[`
+  - **Syntax**: `Type @Annotation []` or `@A Type @B [] @C []`
+  - **Example**:
+    ```java
+    String @NonNull [] names;                    // annotation on array type
+    @NonNull String @Nullable [] @ReadOnly [] matrix;  // per-dimension annotations
+    ```
+  - **Implementation**:
+    - In `parseType()`, before each `match(LBRACKET)`, check for and consume annotations
+    - Annotations apply to that specific array dimension
+    - Handle multiple dimensions with different annotations
+  - **Priority**: Lower - obscure feature, rarely used in practice
+  - **Quality**: Parser tests for single/multiple dimensions with annotations
+
+- [ ] **READY:** `add-qualified-class-instantiation` - Parse `outer.new Inner()` syntax
+  - **Dependencies**: None
+  - **Blocks**: None (required for inner class instantiation)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse qualified class instance creation for inner classes
+  - **Current Gap**: `parsePostfix()` after DOT only handles IDENTIFIER/CLASS, not NEW
+  - **Syntax**: `expression.new InnerClass(args)` or `expression.new <T>InnerClass(args)`
+  - **Example**:
+    ```java
+    Outer outer = new Outer();
+    Outer.Inner inner = outer.new Inner();           // qualified instantiation
+    outer.new Inner().method();                       // chained
+    getOuter().new Inner();                           // expression qualifier
+    ```
+  - **Implementation**:
+    - In `parsePostfix()`, after DOT, check for NEW token
+    - If found, parse inner class instantiation (type, optional type args, arguments)
+    - Create appropriate OBJECT_CREATION node with qualifier info
+  - **Quality**: Parser tests for simple/chained/expression qualifiers
+
+- [ ] **READY:** `add-array-type-method-references` - Parse array type constructor references (Type[]::new)
+  - **Dependencies**: None
+  - **Blocks**: None (required for correct method reference parsing)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse array constructor references like `int[]::new` and `String[][]::new`
+  - **Current Gap**: `parseArrayAccessOrClassLiteral()` after empty brackets `[]` always expects `.class`
+    (line 2243: `expect(TokenType.DOT)`), not `::new` for array constructor references
+  - **Syntax**: `PrimitiveOrReferenceType[]...[]::new`
+  - **Example**:
+    ```java
+    IntFunction<int[]> f = int[]::new;
+    Function<Integer, String[]> g = String[]::new;
+    BiFunction<Integer, Integer, int[][]> h = int[][]::new;
+    ```
+  - **Implementation**:
+    - In `parseArrayAccessOrClassLiteral()`, after consuming empty brackets, check for either:
+      - DOT CLASS → class literal (current behavior)
+      - DOUBLE_COLON NEW → array constructor reference (new case)
+    - For constructor reference, create METHOD_REFERENCE node with array type as qualifier
+    - May need to refactor to return control to `parsePostfix()` for the `::new` handling
+  - **Quality**: Parser tests for primitive arrays, reference arrays, multi-dimensional arrays
+
+- [ ] **READY:** `add-nested-annotation-values` - Parse nested annotations in annotation element values
+  - **Dependencies**: None
+  - **Blocks**: None (required for correct annotation parsing)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse nested annotations like `@Foo(@Bar)` and `@Foo(value = @Bar(1))`
+  - **Current Gap**: `parsePrimary()` doesn't handle AT token - throws "Unexpected token in expression: AT"
+    when encountering `@` inside annotation element values
+  - **Syntax**: `@AnnotationName(elementValue)` where elementValue can be another annotation
+  - **Example**:
+    ```java
+    @Target({ElementType.FIELD, ElementType.METHOD})    // Array of enum constants - works
+    @Repeatable(@FooContainer)                          // Nested annotation - FAILS
+    @interface Foo { }
+
+    @JsonProperty(@JsonAlias("name"))                   // Nested annotation - FAILS
+    private String field;
+    ```
+  - **Implementation**:
+    - In `parsePrimary()`, add case for AT token
+    - When AT encountered in expression context, call `parseAnnotation()` as a value
+    - Return appropriate node (reuse ANNOTATION or create ANNOTATION_VALUE node)
+  - **Quality**: Parser tests for single nested annotation, annotation in array, deeply nested
+
+- [ ] **READY:** `add-unicode-escape-preprocessing` - Handle Unicode escapes outside string literals
+  - **Dependencies**: None
+  - **Blocks**: None (required for JLS compliance)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Handle Unicode escapes (`\uXXXX`) anywhere in Java source, not just strings
+  - **Current Gap**: Lexer only processes Unicode escapes inside string/char literals via
+    `consumeEscapeSequence()`. Code like `int \u0041 = 1;` (valid Java for `int A = 1;`) fails to parse.
+  - **JLS Reference**: §3.3 - Unicode escapes are processed as a translation step BEFORE lexical analysis
+  - **Syntax**: `\uXXXX` where XXXX is 4 hex digits, can appear in identifiers, keywords, operators
+  - **Example**:
+    ```java
+    int \u0041 = 1;           // Same as: int A = 1;
+    \u0070ublic class Test {} // Same as: public class Test {}
+    String s \u003D "hi";     // Same as: String s = "hi";
+    ```
+  - **Implementation**:
+    - Option A: Preprocess entire source to expand Unicode escapes before lexing
+      - Simpler but loses original source representation
+    - Option B: Handle in lexer by checking for `\u` pattern during identifier/keyword scanning
+      - More complex but preserves original text for formatting output
+    - For a formatter, Option B is preferred to preserve source fidelity
+    - Need to handle `\uuuuXXXX` (multiple u's allowed per JLS)
+  - **Priority**: Lower - rarely used outside strings in practice, but required for full JLS compliance
+  - **Quality**: Lexer tests for Unicode escapes in identifiers, keywords, operators
+
+### Parser Enhancement: JDK 25 Language Features
+
+**Priority**: These are REQUIRED for "100% JDK 25 support" claim in scope.md. Should be completed before
+production release.
+
+- [ ] **READY:** `add-module-import-declarations` - Support JEP 511 module import syntax
+  - **Dependencies**: None
+  - **Blocks**: None (enhancement for full JDK 25 support)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Parse `import module java.base;` declarations (JEP 511 - finalized in JDK 25)
+  - **Syntax**:
+    - `import module java.base;` - imports all public types exported by the module
+    - Can appear alongside regular and static imports
+  - **Implementation**:
+    - Add `MODULE_IMPORT_DECLARATION` to `NodeType` enum
+    - Extend `parseImportDeclaration()` to check for `module` keyword after `import`
+    - Add `ModuleImportAttribute` with module name
+    - Update `ImportExtractor` to handle module imports
+  - **Quality**: Parser tests for module import declarations, integration with import organizer
+
+- [ ] **READY:** `add-flexible-constructor-bodies` - Support JEP 513 statements before super()/this()
+  - **Dependencies**: None
+  - **Blocks**: None (enhancement for full JDK 25 support)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Allow statements before `super()` or `this()` calls (JEP 513 - finalized in JDK 25)
+  - **Current Limitation**: Parser requires `super()` or `this()` as first statement in constructor
+  - **JDK 25 Change**: Constructors may now contain statements before explicit constructor invocation
+  - **Example**:
+    ```java
+    public Child(int value) {
+        if (value < 0) throw new IllegalArgumentException("value must be non-negative");
+        super(validate(value));  // Statements allowed before this!
+    }
+    ```
+  - **Implementation**:
+    - Modify `parseConstructorBody()` to allow arbitrary statements before super()/this()
+    - Remove early validation that enforces super()/this() as first statement
+    - Track whether explicit constructor invocation has been encountered
+  - **Quality**: Parser tests for statements before super(), before this(), and error cases
+
+- [ ] **READY:** `add-compact-source-files` - Support JEP 512 implicit classes and instance main
+  - **Dependencies**: None
+  - **Blocks**: None (enhancement for full JDK 25 support)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 2-3 days
+  - **Purpose**: Parse implicit/unnamed classes and instance main methods (JEP 512 - finalized in JDK 25)
+  - **Features to Support**:
+    - Files without explicit class declaration (implicit class)
+    - Instance main method: `void main()` or `void main(String[] args)` (not static)
+    - Top-level fields, methods without enclosing class
+  - **Example**:
+    ```java
+    // No class declaration needed - this is a complete Java file
+    void main() {
+        System.out.println("Hello, World!");
+    }
+    ```
+  - **Implementation**:
+    - Add `IMPLICIT_CLASS_DECLARATION` to `NodeType` enum
+    - Modify `parseCompilationUnit()` to detect absence of class/interface declaration
+    - When no type declaration found, wrap top-level members in implicit class node
+    - Handle instance main method signature detection
+  - **Scope Limitation**: Focus on parsing correctness; formatting of implicit classes secondary
+  - **Quality**: Parser tests for implicit classes, instance main, mixed with imports/package
+
+- [ ] **BLOCKED:** `add-primitive-type-patterns` - Support JEP 507 primitive patterns (preview)
+  - **Dependencies**: None
+  - **Blocks**: None (preview feature, lower priority)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Parse primitive types in pattern matching (JEP 507 - third preview in JDK 25)
+  - **Status**: BLOCKED - Preview feature, defer until finalized or user demand
+  - **Features When Implemented**:
+    - `case int i when i > 0 ->` in switch expressions
+    - `obj instanceof int i` for primitive patterns
+    - Primitive type patterns in record patterns
+  - **Note**: Current parser may already handle these as type patterns work; needs verification
+
+### Parser Enhancement: String Templates (REMOVED - Do Not Implement)
+
+**Note**: String Templates (JEP 430, 459, 465) were preview features in JDK 21-23 but were **REMOVED** from
+JDK 25. Do NOT implement string template parsing. The architecture.md reference to "string templates" is
+outdated and should be corrected.
+
 ---
 
 ## Deferred Features (Out of MVP Scope)
