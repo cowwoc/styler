@@ -2,6 +2,44 @@
 
 ## 2025-12-29
 
+### Multi-Catch Support ✅
+
+**Completion Date**: 2025-12-29
+
+**Task**: `add-multi-catch-support`
+
+**Problem Solved**:
+- Parser did not support JDK 7+ multi-catch syntax: `catch (IOException | SQLException e)`
+- No `UNION_TYPE` node type existed for AST representation of union types
+
+**Solution Implemented**:
+- Added `UNION_TYPE` to `NodeType` enum (after `WILDCARD_TYPE`)
+- Created dedicated `parseCatchParameter()` method in Parser for catch clause parameters
+- Modified `parseCatchClause()` to call `parseCatchParameter()` instead of `parseParameter()`
+- Union type parsing handles `|` operator between exception types
+
+**Files Modified**:
+- `ast/core/src/main/java/.../ast/core/NodeType.java` - Added UNION_TYPE
+- `parser/src/main/java/.../parser/Parser.java` - Added parseCatchParameter() method
+- `formatter/src/main/java/.../linelength/internal/ContextDetector.java` - Added UNION_TYPE case
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/MultiCatchParserTest.java` - 5 tests
+
+**Test Coverage**:
+- Two-exception union: `catch (IOException | SQLException e)`
+- Three-exception union: `catch (IOException | SQLException | TimeoutException e)`
+- Simple catch regression: Ensures single-exception catch still works
+- Final modifier: `catch (final IOException | SQLException e)`
+- Fully qualified names: `catch (java.io.IOException | java.sql.SQLException e)`
+
+**Quality**:
+- All tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ### Labeled Statement Support ✅
 
 **Completion Date**: 2025-12-29

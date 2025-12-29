@@ -1017,6 +1017,59 @@ public final class Parser implements AutoCloseable
 		return arena.allocateParameterDeclaration(start, end, attribute);
 	}
 
+	/**
+	 * Parses a catch clause parameter, handling union types for multi-catch (JDK 7+).
+	 * <p>
+	 * Handles both simple exception types ({@code catch (Exception e)}) and union types
+	 * ({@code catch (IOException | SQLException e)}).
+	 *
+	 * @return a {@link NodeIndex} pointing to the allocated parameter node
+	 */
+	private NodeIndex parseCatchParameter()
+	{
+		int start = currentToken().start();
+		boolean isFinal = false;
+
+		// Modifiers (annotations and final)
+		while (currentToken().type() == TokenType.FINAL || currentToken().type() == TokenType.AT)
+		{
+			if (currentToken().type() == TokenType.AT)
+			{
+				parseAnnotation();
+			}
+			else
+			{
+				consume();
+				isFinal = true;
+			}
+		}
+
+		// Parse first exception type
+		int typeStart = currentToken().start();
+		parseType();
+
+		// Check for union type (multi-catch): Type1 | Type2 | ...
+		if (currentToken().type() == TokenType.BITOR)
+		{
+			while (match(TokenType.BITOR))
+			{
+				parseType();
+			}
+			// Create UNION_TYPE node spanning all exception types
+			int typeEnd = previousToken().end();
+			arena.allocateNode(NodeType.UNION_TYPE, typeStart, typeEnd);
+		}
+
+		// Parameter name
+		Token nameToken = currentToken();
+		expect(TokenType.IDENTIFIER);
+		String parameterName = nameToken.getText(sourceCode);
+
+		int end = previousToken().end();
+		ParameterAttribute attribute = new ParameterAttribute(parameterName, false, isFinal, false);
+		return arena.allocateParameterDeclaration(start, end, attribute);
+	}
+
 	private NodeIndex parseFieldRest(int start)
 	{
 		// Array dimensions or initializer
@@ -1748,7 +1801,7 @@ public final class Parser implements AutoCloseable
 		int start = currentToken().start();
 		expect(TokenType.CATCH);
 		expect(TokenType.LPAREN);
-		parseParameter();
+		parseCatchParameter();
 		expect(TokenType.RPAREN);
 		parseBlock();
 		int end = previousToken().end();

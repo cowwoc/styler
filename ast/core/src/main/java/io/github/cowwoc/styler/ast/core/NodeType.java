@@ -93,6 +93,7 @@ public enum NodeType
 	PARAMETERIZED_TYPE,
 	TYPE_PARAMETER,
 	WILDCARD_TYPE,
+	UNION_TYPE,
 	PRIMITIVE_TYPE,
 
 	// Annotations

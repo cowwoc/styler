@@ -148,7 +148,7 @@ public final class ContextDetector
 
 			// Type-related - not wrappable
 			case TYPE_REFERENCE, ARRAY_TYPE, TYPE_PARAMETER,
-				WILDCARD_TYPE, PRIMITIVE_TYPE -> WrapContext.NOT_WRAPPABLE;
+				WILDCARD_TYPE, UNION_TYPE, PRIMITIVE_TYPE -> WrapContext.NOT_WRAPPABLE;
 
 			// Annotations - handled specially above
 			case ANNOTATION_ELEMENT -> WrapContext.NOT_WRAPPABLE;
