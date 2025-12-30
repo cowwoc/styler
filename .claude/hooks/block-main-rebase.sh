@@ -79,7 +79,8 @@ if [ -z "$CURRENT_BRANCH" ]; then
 	CD_TARGET=""
 	if echo "$COMMAND" | grep -qE "^cd[[:space:]]+" ; then
 		# Extract cd target (handles: cd /path, cd '/path', cd "/path")
-		CD_TARGET=$(echo "$COMMAND" | sed -n "s/^cd[[:space:]]*['\"]\\{0,1\\}\\([^'\";&|]*\\)['\"]\\{0,1\\}.*/\\1/p" | head -1)
+		# Use xargs to trim trailing whitespace before && or other operators
+		CD_TARGET=$(echo "$COMMAND" | sed -n "s/^cd[[:space:]]*['\"]\\{0,1\\}\\([^'\";&|]*\\)['\"]\\{0,1\\}.*/\\1/p" | head -1 | xargs)
 	fi
 
 	if [ -n "$CD_TARGET" ] && [ -d "$CD_TARGET" ]; then
