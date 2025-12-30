@@ -1104,8 +1104,9 @@ public final class Parser implements AutoCloseable
 		}
 	}
 
-	private void parseAnnotation()
+	private NodeIndex parseAnnotation()
 	{
+		int start = currentToken().start();
 		expect(TokenType.AT);
 		parseQualifiedName();
 		if (match(TokenType.LPAREN) && !match(TokenType.RPAREN))
@@ -1117,6 +1118,8 @@ public final class Parser implements AutoCloseable
 			}
 			expect(TokenType.RPAREN);
 		}
+		int end = previousToken().end();
+		return arena.allocateNode(NodeType.ANNOTATION, start, end);
 	}
 
 	private NodeIndex parseMethodRest(int start, boolean isConstructor)
@@ -2672,19 +2675,7 @@ public final class Parser implements AutoCloseable
 			if (token.isLiteral())
 			{
 				consume();
-				NodeType nodeType = switch (token.type())
-				{
-					case INTEGER_LITERAL -> NodeType.INTEGER_LITERAL;
-					case LONG_LITERAL -> NodeType.LONG_LITERAL;
-					case FLOAT_LITERAL -> NodeType.FLOAT_LITERAL;
-					case DOUBLE_LITERAL -> NodeType.DOUBLE_LITERAL;
-					case BOOLEAN_LITERAL -> NodeType.BOOLEAN_LITERAL;
-					case CHAR_LITERAL -> NodeType.CHAR_LITERAL;
-					case STRING_LITERAL -> NodeType.STRING_LITERAL;
-					case NULL_LITERAL -> NodeType.NULL_LITERAL;
-					default -> throw new ParserException("Unexpected literal type: " + token.type(), start);
-				};
-				return arena.allocateNode(nodeType, start, end);
+				return parseLiteralExpression(token, start, end);
 			}
 
 			if (token.type() == TokenType.IDENTIFIER)
@@ -2719,19 +2710,15 @@ public final class Parser implements AutoCloseable
 				return parseArrayInitializer(start);
 			}
 
+			if (token.type() == TokenType.AT)
+			{
+				return parseAnnotation();
+			}
+
 			if (isPrimitiveType(token.type()))
 			{
-				// Primitive type class literal: int.class, void.class, int[].class
 				consume();
-				// Handle array dimensions: int[].class, int[][].class
-				while (match(TokenType.LBRACKET))
-				{
-					expect(TokenType.RBRACKET);
-				}
-				expect(TokenType.DOT);
-				expect(TokenType.CLASS);
-				int classEnd = previousToken().end();
-				return arena.allocateNode(NodeType.CLASS_LITERAL, start, classEnd);
+				return parsePrimitiveClassLiteral(start);
 			}
 
 			if (match(TokenType.SWITCH))
@@ -2772,6 +2759,49 @@ public final class Parser implements AutoCloseable
 		{
 			exitDepth();
 		}
+	}
+
+	/**
+	 * Parses a literal expression (integer, long, float, double, boolean, char, string, null).
+	 *
+	 * @param token the literal token
+	 * @param start the start position
+	 * @param end   the end position
+	 * @return the node index for the literal
+	 */
+	private NodeIndex parseLiteralExpression(Token token, int start, int end)
+	{
+		NodeType nodeType = switch (token.type())
+		{
+			case INTEGER_LITERAL -> NodeType.INTEGER_LITERAL;
+			case LONG_LITERAL -> NodeType.LONG_LITERAL;
+			case FLOAT_LITERAL -> NodeType.FLOAT_LITERAL;
+			case DOUBLE_LITERAL -> NodeType.DOUBLE_LITERAL;
+			case BOOLEAN_LITERAL -> NodeType.BOOLEAN_LITERAL;
+			case CHAR_LITERAL -> NodeType.CHAR_LITERAL;
+			case STRING_LITERAL -> NodeType.STRING_LITERAL;
+			case NULL_LITERAL -> NodeType.NULL_LITERAL;
+			default -> throw new ParserException("Unexpected literal type: " + token.type(), start);
+		};
+		return arena.allocateNode(nodeType, start, end);
+	}
+
+	/**
+	 * Parses a primitive type class literal (e.g., {@code int.class}, {@code void.class}, {@code int[].class}).
+	 *
+	 * @param start the start position
+	 * @return the node index for the class literal
+	 */
+	private NodeIndex parsePrimitiveClassLiteral(int start)
+	{
+		while (match(TokenType.LBRACKET))
+		{
+			expect(TokenType.RBRACKET);
+		}
+		expect(TokenType.DOT);
+		expect(TokenType.CLASS);
+		int classEnd = previousToken().end();
+		return arena.allocateNode(NodeType.CLASS_LITERAL, start, classEnd);
 	}
 
 	private NodeIndex parseNewExpression(int start)

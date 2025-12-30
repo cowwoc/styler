@@ -6,6 +6,7 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.ARRAY_INITIALIZER;
 import static io.github.cowwoc.styler.ast.core.NodeType.ASSIGNMENT_EXPRESSION;
 import static io.github.cowwoc.styler.ast.core.NodeType.BINARY_EXPRESSION;
@@ -58,6 +59,7 @@ public class LocalAnnotationTest
 			semanticNode(CLASS_DECLARATION, 7, 120, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 118),
 			semanticNode(BLOCK, 43, 118),
+			semanticNode(ANNOTATION, 47, 77),
 			semanticNode(QUALIFIED_NAME, 48, 64),
 			semanticNode(STRING_LITERAL, 65, 76),
 			semanticNode(PARAMETERIZED_TYPE, 78, 100),
@@ -113,6 +115,7 @@ public class LocalAnnotationTest
 			semanticNode(CLASS_DECLARATION, 7, 82, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 80),
 			semanticNode(BLOCK, 43, 80),
+			semanticNode(ANNOTATION, 47, 56),
 			semanticNode(QUALIFIED_NAME, 48, 56),
 			semanticNode(QUALIFIED_NAME, 57, 63),
 			semanticNode(NULL_LITERAL, 72, 76));
@@ -140,6 +143,7 @@ public class LocalAnnotationTest
 			semanticNode(CLASS_DECLARATION, 7, 93, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 91),
 			semanticNode(BLOCK, 43, 91),
+			semanticNode(ANNOTATION, 53, 61),
 			semanticNode(QUALIFIED_NAME, 54, 61),
 			semanticNode(QUALIFIED_NAME, 62, 68),
 			semanticNode(OBJECT_CREATION, 75, 87),
@@ -168,7 +172,9 @@ public class LocalAnnotationTest
 			semanticNode(CLASS_DECLARATION, 7, 99, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 97),
 			semanticNode(BLOCK, 43, 97),
+			semanticNode(ANNOTATION, 47, 55),
 			semanticNode(QUALIFIED_NAME, 48, 55),
+			semanticNode(ANNOTATION, 56, 83),
 			semanticNode(QUALIFIED_NAME, 57, 73),
 			semanticNode(STRING_LITERAL, 74, 82),
 			semanticNode(INTEGER_LITERAL, 92, 93));
@@ -196,8 +202,10 @@ public class LocalAnnotationTest
 			semanticNode(CLASS_DECLARATION, 7, 109, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 107),
 			semanticNode(BLOCK, 43, 107),
+			semanticNode(ANNOTATION, 47, 74),
 			semanticNode(QUALIFIED_NAME, 48, 64),
 			semanticNode(STRING_LITERAL, 65, 73),
+			semanticNode(ANNOTATION, 81, 89),
 			semanticNode(QUALIFIED_NAME, 82, 89),
 			semanticNode(QUALIFIED_NAME, 90, 96),
 			semanticNode(STRING_LITERAL, 101, 103));
@@ -234,6 +242,7 @@ public class LocalAnnotationTest
 			semanticNode(QUALIFIED_NAME, 62, 68),
 			semanticNode(NULL_LITERAL, 77, 81),
 			semanticNode(ENHANCED_FOR_STATEMENT, 85, 149),
+			semanticNode(ANNOTATION, 90, 98),
 			semanticNode(QUALIFIED_NAME, 91, 98),
 			semanticNode(QUALIFIED_NAME, 99, 105),
 			semanticNode(IDENTIFIER, 110, 114),
@@ -277,6 +286,7 @@ public class LocalAnnotationTest
 			semanticNode(QUALIFIED_NAME, 62, 68),
 			semanticNode(NULL_LITERAL, 77, 81),
 			semanticNode(ENHANCED_FOR_STATEMENT, 85, 155),
+			semanticNode(ANNOTATION, 96, 104),
 			semanticNode(QUALIFIED_NAME, 97, 104),
 			semanticNode(QUALIFIED_NAME, 105, 111),
 			semanticNode(IDENTIFIER, 116, 120),
@@ -319,6 +329,7 @@ public class LocalAnnotationTest
 			semanticNode(METHOD_DECLARATION, 21, 189),
 			semanticNode(BLOCK, 43, 189),
 			semanticNode(TRY_STATEMENT, 47, 186),
+			semanticNode(ANNOTATION, 52, 81),
 			semanticNode(QUALIFIED_NAME, 53, 69),
 			semanticNode(STRING_LITERAL, 70, 80),
 			semanticNode(QUALIFIED_NAME, 82, 101),
@@ -364,6 +375,7 @@ public class LocalAnnotationTest
 			semanticNode(METHOD_DECLARATION, 21, 174),
 			semanticNode(BLOCK, 43, 174),
 			semanticNode(TRY_STATEMENT, 47, 171),
+			semanticNode(ANNOTATION, 58, 66),
 			semanticNode(QUALIFIED_NAME, 59, 66),
 			semanticNode(QUALIFIED_NAME, 67, 86),
 			semanticNode(NULL_LITERAL, 92, 96),
@@ -408,8 +420,10 @@ public class LocalAnnotationTest
 			semanticNode(METHOD_DECLARATION, 21, 198),
 			semanticNode(BLOCK, 43, 198),
 			semanticNode(TRY_STATEMENT, 47, 195),
+			semanticNode(ANNOTATION, 52, 81),
 			semanticNode(QUALIFIED_NAME, 53, 69),
 			semanticNode(STRING_LITERAL, 70, 80),
+			semanticNode(ANNOTATION, 82, 90),
 			semanticNode(QUALIFIED_NAME, 83, 90),
 			semanticNode(QUALIFIED_NAME, 91, 110),
 			semanticNode(NULL_LITERAL, 116, 120),
@@ -446,6 +460,7 @@ public class LocalAnnotationTest
 			semanticNode(CLASS_DECLARATION, 7, 118, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 116),
 			semanticNode(BLOCK, 43, 116),
+			semanticNode(ANNOTATION, 47, 77),
 			semanticNode(QUALIFIED_NAME, 48, 64),
 			semanticNode(STRING_LITERAL, 65, 76),
 			semanticNode(METHOD_INVOCATION, 86, 112),
@@ -484,6 +499,7 @@ public class LocalAnnotationTest
 			semanticNode(METHOD_DECLARATION, 21, 140),
 			semanticNode(BLOCK, 43, 140),
 			semanticNode(FOR_STATEMENT, 47, 137),
+			semanticNode(ANNOTATION, 52, 79),
 			semanticNode(QUALIFIED_NAME, 53, 69),
 			semanticNode(STRING_LITERAL, 70, 78),
 			semanticNode(INTEGER_LITERAL, 88, 89),
@@ -523,6 +539,7 @@ public class LocalAnnotationTest
 			semanticNode(CLASS_DECLARATION, 7, 126, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 124),
 			semanticNode(BLOCK, 43, 124),
+			semanticNode(ANNOTATION, 47, 85),
 			semanticNode(QUALIFIED_NAME, 48, 64),
 			semanticNode(IDENTIFIER, 65, 70),
 			semanticNode(ASSIGNMENT_EXPRESSION, 65, 84),
@@ -555,6 +572,7 @@ public class LocalAnnotationTest
 			semanticNode(CLASS_DECLARATION, 7, 124, "Test"),
 			semanticNode(METHOD_DECLARATION, 21, 122),
 			semanticNode(BLOCK, 43, 122),
+			semanticNode(ANNOTATION, 47, 91),
 			semanticNode(QUALIFIED_NAME, 48, 64),
 			semanticNode(ARRAY_INITIALIZER, 65, 90),
 			semanticNode(STRING_LITERAL, 66, 77),

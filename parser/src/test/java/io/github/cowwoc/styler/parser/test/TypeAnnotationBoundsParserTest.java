@@ -6,6 +6,7 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
 import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
@@ -48,6 +49,7 @@ public class TypeAnnotationBoundsParserTest
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 48),
 			semanticNode(CLASS_DECLARATION, 0, 47, "Container"),
+			semanticNode(ANNOTATION, 26, 35),
 			semanticNode(QUALIFIED_NAME, 27, 35),
 			semanticNode(QUALIFIED_NAME, 36, 42));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -71,6 +73,7 @@ public class TypeAnnotationBoundsParserTest
 			semanticNode(COMPILATION_UNIT, 0, 51),
 			semanticNode(CLASS_DECLARATION, 0, 50, "Sorter"),
 			semanticNode(PARAMETERIZED_TYPE, 32, 46),
+			semanticNode(ANNOTATION, 23, 31),
 			semanticNode(QUALIFIED_NAME, 24, 31),
 			semanticNode(QUALIFIED_NAME, 32, 42),
 			semanticNode(QUALIFIED_NAME, 43, 44));
@@ -94,7 +97,9 @@ public class TypeAnnotationBoundsParserTest
 			semanticNode(COMPILATION_UNIT, 0, 56),
 			semanticNode(CLASS_DECLARATION, 0, 55, "Holder"),
 			semanticNode(PARAMETERIZED_TYPE, 43, 51),
+			semanticNode(ANNOTATION, 23, 33),
 			semanticNode(QUALIFIED_NAME, 24, 33),
+			semanticNode(ANNOTATION, 34, 42),
 			semanticNode(QUALIFIED_NAME, 35, 42),
 			semanticNode(QUALIFIED_NAME, 43, 47),
 			semanticNode(WILDCARD_TYPE, 48, 49));
@@ -120,6 +125,7 @@ public class TypeAnnotationBoundsParserTest
 			semanticNode(CLASS_DECLARATION, 0, 59, "Wrapper"),
 			semanticNode(FIELD_DECLARATION, 17, 57),
 			semanticNode(WILDCARD_TYPE, 22, 47),
+			semanticNode(ANNOTATION, 32, 40),
 			semanticNode(QUALIFIED_NAME, 33, 40),
 			semanticNode(QUALIFIED_NAME, 41, 47));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -144,6 +150,7 @@ public class TypeAnnotationBoundsParserTest
 			semanticNode(CLASS_DECLARATION, 0, 60, "Sink"),
 			semanticNode(FIELD_DECLARATION, 14, 58),
 			semanticNode(WILDCARD_TYPE, 23, 47),
+			semanticNode(ANNOTATION, 31, 39),
 			semanticNode(QUALIFIED_NAME, 32, 39),
 			semanticNode(QUALIFIED_NAME, 40, 47));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -165,8 +172,10 @@ public class TypeAnnotationBoundsParserTest
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 73),
 			semanticNode(CLASS_DECLARATION, 0, 72, "Copier"),
+			semanticNode(ANNOTATION, 23, 31),
 			semanticNode(QUALIFIED_NAME, 24, 31),
 			semanticNode(QUALIFIED_NAME, 32, 44),
+			semanticNode(ANNOTATION, 47, 57),
 			semanticNode(QUALIFIED_NAME, 48, 57),
 			semanticNode(QUALIFIED_NAME, 58, 67));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -190,6 +199,7 @@ public class TypeAnnotationBoundsParserTest
 			semanticNode(COMPILATION_UNIT, 0, 40),
 			semanticNode(CLASS_DECLARATION, 0, 39, "Person"),
 			semanticNode(FIELD_DECLARATION, 16, 37),
+			semanticNode(ANNOTATION, 16, 24),
 			semanticNode(QUALIFIED_NAME, 17, 24));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -210,6 +220,7 @@ public class TypeAnnotationBoundsParserTest
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 62),
 			semanticNode(CLASS_DECLARATION, 0, 61, "Holder"),
+			semanticNode(ANNOTATION, 23, 49),
 			semanticNode(QUALIFIED_NAME, 24, 49),
 			semanticNode(QUALIFIED_NAME, 50, 56));
 		requireThat(actual, "actual").isEqualTo(expected);
@@ -233,6 +244,7 @@ public class TypeAnnotationBoundsParserTest
 			semanticNode(COMPILATION_UNIT, 0, 48),
 			semanticNode(CLASS_DECLARATION, 0, 47, "Holder"),
 			semanticNode(FIELD_DECLARATION, 16, 45),
+			semanticNode(ANNOTATION, 16, 30),
 			semanticNode(QUALIFIED_NAME, 17, 21),
 			semanticNode(IDENTIFIER, 22, 25),
 			semanticNode(ASSIGNMENT_EXPRESSION, 22, 29),
@@ -260,6 +272,7 @@ public class TypeAnnotationBoundsParserTest
 			semanticNode(CLASS_DECLARATION, 0, 40, "Cache"),
 			semanticNode(FIELD_DECLARATION, 15, 38),
 			semanticNode(QUALIFIED_NAME, 19, 29),
+			semanticNode(ANNOTATION, 19, 27),
 			semanticNode(QUALIFIED_NAME, 20, 27),
 			semanticNode(QUALIFIED_NAME, 28, 29),
 			semanticNode(QUALIFIED_NAME, 31, 32));
@@ -288,6 +301,7 @@ public class TypeAnnotationBoundsParserTest
 			semanticNode(CLASS_DECLARATION, 0, 84, "Util"),
 			semanticNode(METHOD_DECLARATION, 14, 82),
 			semanticNode(PARAMETERIZED_TYPE, 34, 48),
+			semanticNode(ANNOTATION, 25, 33),
 			semanticNode(QUALIFIED_NAME, 26, 33),
 			semanticNode(QUALIFIED_NAME, 34, 44),
 			semanticNode(QUALIFIED_NAME, 45, 46),
@@ -339,6 +353,7 @@ public class TypeAnnotationBoundsParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
 			semanticNode(COMPILATION_UNIT, 0, 31),
+			semanticNode(ANNOTATION, 0, 11),
 			semanticNode(QUALIFIED_NAME, 1, 11),
 			semanticNode(CLASS_DECLARATION, 12, 30, "OldClass"));
 		requireThat(actual, "actual").isEqualTo(expected);

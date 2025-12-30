@@ -6,6 +6,7 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION;
 import static io.github.cowwoc.styler.ast.core.NodeType.ASSIGNMENT_EXPRESSION;
 import static io.github.cowwoc.styler.ast.core.NodeType.BINARY_EXPRESSION;
 import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
@@ -262,6 +263,7 @@ public final class LocalTypeDeclarationParserTest
 			semanticNode(CLASS_DECLARATION, 0, 95, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 93),
 			semanticNode(BLOCK, 24, 93),
+			semanticNode(ANNOTATION, 28, 58),
 			semanticNode(QUALIFIED_NAME, 29, 45),
 			semanticNode(STRING_LITERAL, 46, 57),
 			semanticNode(CLASS_DECLARATION, 61, 90, "AnnotatedHelper"));
@@ -295,6 +297,7 @@ public final class LocalTypeDeclarationParserTest
 			semanticNode(CLASS_DECLARATION, 0, 91, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 89),
 			semanticNode(BLOCK, 24, 89),
+			semanticNode(ANNOTATION, 28, 39),
 			semanticNode(QUALIFIED_NAME, 29, 39),
 			semanticNode(RECORD_DECLARATION, 42, 86, "DeprecatedPoint"),
 			semanticNode(PARAMETER_DECLARATION, 65, 70, "x"),
@@ -330,6 +333,7 @@ public final class LocalTypeDeclarationParserTest
 			semanticNode(CLASS_DECLARATION, 0, 102, "Test"),
 			semanticNode(METHOD_DECLARATION, 14, 100),
 			semanticNode(BLOCK, 24, 100),
+			semanticNode(ANNOTATION, 28, 48),
 			semanticNode(QUALIFIED_NAME, 29, 48),
 			semanticNode(INTERFACE_DECLARATION, 51, 97, "Processor"),
 			semanticNode(METHOD_DECLARATION, 78, 93));

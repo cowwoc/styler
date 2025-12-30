@@ -2,6 +2,46 @@
 
 ## 2025-12-30
 
+### Nested Annotation Values ✅
+
+**Completion Date**: 2025-12-30
+
+**Task**: `add-nested-annotation-values`
+
+**Problem Solved**:
+- Parser threw "Unexpected token in expression: AT" when encountering nested annotations
+- Could not parse valid Java code like `@Repeatable(@FooContainer)` or `@JsonProperty(@JsonAlias("name"))`
+
+**Solution Implemented**:
+- Modified `parseAnnotation()` to return `NodeIndex` instead of `void`
+- Creates `ANNOTATION` node with proper start/end positions
+- Added AT token case in `parsePrimary()` to handle annotations as expression values
+- Extracted `parseLiteralExpression()` and `parsePrimitiveClassLiteral()` helper methods
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - parseAnnotation() returns NodeIndex, parsePrimary() handles AT
+- `parser/src/test/java/.../parser/test/LocalAnnotationTest.java` - Added expected ANNOTATION nodes
+- `parser/src/test/java/.../parser/test/ParameterDeclarationParserTest.java` - Added expected ANNOTATION nodes
+- `parser/src/test/java/.../parser/test/TypeAnnotationBoundsParserTest.java` - Added expected ANNOTATION nodes
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/NestedAnnotationParserTest.java` - 6 tests
+
+**Test Coverage**:
+- Single nested annotation: `@Foo(@Bar)`
+- Nested annotation with value: `@Foo(@Bar(1))`
+- Nested annotations in array: `@Foo({@Bar, @Baz})`
+- Deeply nested annotations: `@Foo(@Bar(@Baz(@Qux)))`
+- Mixed array elements: `@Foo({1, @Bar, "text"})`
+- Nested annotation in default value
+
+**Quality**:
+- All tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ### Local Type Declaration Support ✅
 
 **Completion Date**: 2025-12-30
