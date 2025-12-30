@@ -37,8 +37,12 @@ trap 'echo "ERROR in auto-learn-from-mistakes.sh at line $LINENO: Command failed
 HOOK_CONTEXT=$(cat)
 
 # Extract tool name and result from context
-TOOL_NAME=$(echo "$HOOK_CONTEXT" | jq -r '.tool.name // "unknown"')
-TOOL_RESULT=$(echo "$HOOK_CONTEXT" | jq -r '.result.output // .result.content // ""')
+# Note: Claude Code uses tool_name (not tool.name) and tool_response (not result)
+TOOL_NAME=$(echo "$HOOK_CONTEXT" | jq -r '.tool_name // "unknown"')
+# Combine stdout and stderr for error detection
+TOOL_STDOUT=$(echo "$HOOK_CONTEXT" | jq -r '.tool_response.stdout // ""')
+TOOL_STDERR=$(echo "$HOOK_CONTEXT" | jq -r '.tool_response.stderr // ""')
+TOOL_RESULT="${TOOL_STDOUT}${TOOL_STDERR}"
 
 # Extract session ID for conversation log access
 SESSION_ID=$(echo "$HOOK_CONTEXT" | jq -r '.session_id // ""')
@@ -207,44 +211,43 @@ if [[ -z "$MISTAKE_TYPE" ]] && [[ -n "$LAST_ASSISTANT_MESSAGE" ]]; then
   fi
 fi
 
-# If no mistake detected, pass through
+# If no mistake detected, exit silently
 if [[ -z "$MISTAKE_TYPE" ]]; then
-  echo "$HOOK_CONTEXT"
   exit 0
 fi
-
-# Output the original hook context
-echo "$HOOK_CONTEXT"
 
 # Construct a unique TodoWrite entry ID for deduplication
 # Format: "LFM: {mistake_type}" - agent can check if this exists in TodoWrite
 TODOWRITE_CONTENT="LFM: Investigate ${MISTAKE_TYPE} from ${TOOL_NAME}"
 TODOWRITE_ACTIVE="Investigating ${MISTAKE_TYPE} mistake"
 
-# Output TodoWrite directive - agent MUST check if entry exists before adding
-# This approach uses TodoWrite as the deduplication mechanism instead of rate limiting
-# See CLAUDE.md § Auto-Detected Mistake Handling for the enforcement rule
-cat >&2 << EOF
-
+# Output structured JSON with additionalContext for Claude to see
+# PostToolUse hooks need hookSpecificOutput.additionalContext to communicate back
+# See Claude Code docs: hooks.md#posttooluse-decision-control
+ADDITIONAL_CONTEXT=$(cat << EOF
 📚 MISTAKE DETECTED: ${MISTAKE_TYPE}
 
 **MANDATORY**: Check TodoWrite for existing entry, add if not present:
-
-\`\`\`json
-{
-  "content": "${TODOWRITE_CONTENT}",
-  "status": "pending",
-  "activeForm": "${TODOWRITE_ACTIVE}"
-}
-\`\`\`
+- content: "${TODOWRITE_CONTENT}"
+- status: "pending"
+- activeForm: "${TODOWRITE_ACTIVE}"
 
 **Context**: Detected ${MISTAKE_TYPE} during ${TOOL_NAME} execution.
-
 **Details**: ${MISTAKE_DETAILS}
+EOF
+)
 
-**Why TodoWrite?**: Deduplication happens naturally - if entry already exists,
-don't add again. This ensures all violations are tracked and eventually addressed.
+# Escape the context for JSON (newlines, quotes, backslashes)
+ESCAPED_CONTEXT=$(echo "$ADDITIONAL_CONTEXT" | jq -Rs .)
 
+# Output structured JSON to stdout
+cat << EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PostToolUse",
+    "additionalContext": ${ESCAPED_CONTEXT}
+  }
+}
 EOF
 
 exit 0
