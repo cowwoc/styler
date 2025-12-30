@@ -1,5 +1,44 @@
 # Changelog
 
+## 2025-12-30
+
+### Local Type Declaration Support ✅
+
+**Completion Date**: 2025-12-30
+
+**Task**: `add-local-type-declarations`
+
+**Problem Solved**:
+- Parser did not support local type declarations inside method bodies
+- Local classes (Java 1.1+), interfaces, enums, and records (JDK 16+) failed to parse
+- `parseStatement()` did not check for CLASS/INTERFACE/ENUM/RECORD tokens
+
+**Solution Implemented**:
+- Added `isLocalTypeDeclarationStart()` for lookahead detection of modifiers/annotations
+- Added `parseLocalTypeDeclaration()` that delegates to existing parse methods
+- Added `skipBalancedParens()` helper for skipping annotation arguments during lookahead
+- Modified `parseStatement()` to detect and dispatch local type declarations
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added 3 new methods + statement dispatch
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/LocalTypeDeclarationParserTest.java` - 24 tests
+
+**Test Coverage**:
+- Basic local types: class, interface, enum, record
+- Modifiers: final, abstract, annotations
+- Nesting contexts: method, constructor, initializer, static initializer, lambda
+- Complex types: members, default methods, enum constructors
+- Inheritance: extends, implements clauses
+
+**Quality**:
+- All 24 tests passing (471 total parser tests)
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ## 2025-12-29
 
 ### Yield Statement Support ✅
