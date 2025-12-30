@@ -244,6 +244,29 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
       default -> false;
   };
   ```
+- Prefer switch over if-else-if chains with 3+ branches (when the condition tests the same variable):
+  ```java
+  // ❌ WRONG - Long if-else-if chain
+  if (type == TokenType.STRING)
+      handleString();
+  else if (type == TokenType.NUMBER)
+      handleNumber();
+  else if (type == TokenType.IDENTIFIER)
+      handleIdentifier();
+  else
+      handleOther();
+
+  // ✅ CORRECT - Switch statement
+  switch (type)
+  {
+      case STRING -> handleString();
+      case NUMBER -> handleNumber();
+      case IDENTIFIER -> handleIdentifier();
+      default -> handleOther();
+  }
+  ```
+  **When NOT to convert**: Complex conditions (e.g., `x > 5 && x < 10`), conditions on different variables,
+  or when the switch would require pattern matching not available in Java 21.
 - Comments above the line they describe, not trailing:
   ```java
   // ✅ CORRECT - Comment above
