@@ -1171,6 +1171,10 @@ public final class Parser implements AutoCloseable
 		{
 			parseThrowStatement();
 		}
+		else if (type == TokenType.YIELD)
+		{
+			parseYieldStatement();
+		}
 		else if (type == TokenType.TRY)
 		{
 			parseTryStatement();
@@ -1763,6 +1767,27 @@ public final class Parser implements AutoCloseable
 		expect(TokenType.SEMICOLON);
 		int end = previousToken().end();
 		return arena.allocateNode(NodeType.THROW_STATEMENT, start, end);
+	}
+
+	/**
+	 * Parses a yield statement within a switch expression block.
+	 * <p>
+	 * The yield statement (JDK 14+) returns a value from a switch expression block.
+	 * It differs from return in that it yields a value to the enclosing switch expression,
+	 * not from the enclosing method.
+	 * <p>
+	 * Syntax: {@code yield expression;}
+	 *
+	 * @return a {@link NodeIndex} pointing to the allocated {@link NodeType#YIELD_STATEMENT} node
+	 */
+	private NodeIndex parseYieldStatement()
+	{
+		int start = currentToken().start();
+		expect(TokenType.YIELD);
+		parseExpression();
+		expect(TokenType.SEMICOLON);
+		int end = previousToken().end();
+		return arena.allocateNode(NodeType.YIELD_STATEMENT, start, end);
 	}
 
 	private NodeIndex parseTryStatement()

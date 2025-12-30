@@ -372,28 +372,6 @@ benchmarking, and validate with Maven plugin integration.
 
 **Priority**: These are basic Java features that should already be supported. Required for correct parsing.
 
-- [ ] **READY:** `add-yield-statement-support` - Parse yield statements in switch expressions
-  - **Dependencies**: None
-  - **Blocks**: None (required for correct switch expression parsing)
-  - **Parallelizable With**: Any Phase E parser task
-  - **Estimated Effort**: 0.5 days
-  - **Purpose**: Parse `yield value;` statements in switch expressions (JDK 14+)
-  - **Current Gap**: `parseStatement()` does not handle `YIELD` token type
-  - **Syntax**: `yield expression;` - returns a value from switch expression
-  - **Example**:
-    ```java
-    int result = switch (x) {
-        case 1 -> 10;
-        case 2 -> { int temp = compute(); yield temp * 2; }
-        default -> 0;
-    };
-    ```
-  - **Implementation**:
-    - Add `YIELD_STATEMENT` to `NodeType` enum
-    - In `parseStatement()`, add case for `TokenType.YIELD`
-    - Consume YIELD, parse expression, expect SEMICOLON
-  - **Quality**: Parser tests for yield in switch blocks, nested switches
-
 - [ ] **READY:** `add-local-type-declarations` - Parse local classes/interfaces/records/enums in methods
   - **Dependencies**: None
   - **Blocks**: None (required for correct method body parsing)
