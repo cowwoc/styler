@@ -324,6 +324,20 @@ benchmarking, and validate with Maven plugin integration.
   - **Priority**: Lower than self-hosting blockers - these are edge cases
   - **Quality**: Parser tests for comment placement in each identified location
 
+### Code Style: Switch Statement Refactoring
+- [ ] **READY:** `refactor-if-else-to-switch` - Convert if-else-if chains (3+ branches) to switch statements
+  - **Dependencies**: None
+  - **Blocks**: None (code style improvement)
+  - **Parallelizable With**: Any Phase E task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Apply code style rule: prefer switch over if-else-if chains with 3+ branches
+  - **Scope**: Scan entire codebase for if-else-if chains testing same variable, convert to switch
+  - **Known Candidates** (from analysis):
+    - `Parser.java:1338-1413` - parseStatement() with 15+ TokenType checks
+    - `Parser.java:2912-2935` - comment type parsing with 4 branches
+  - **Exclusions**: Chains with complex conditions, method calls with side effects, different variables
+  - **Quality**: Verify build passes, no behavior changes
+
 ### AST Simplification: Collapse Import Node Types
 - [ ] **READY:** `collapse-import-node-types` - Merge STATIC_IMPORT_DECLARATION into IMPORT_DECLARATION
   - **Dependencies**: None
