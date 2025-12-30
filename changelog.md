@@ -2,6 +2,38 @@
 
 ## 2025-12-30
 
+### Parse Package Annotations in package-info.java ✅
+
+**Task**: `add-package-annotations`
+
+**Problem Solved**:
+- Parser did not support annotations before `package` keyword in `package-info.java` files
+- `parseCompilationUnit()` checked for `PACKAGE` token before handling annotations
+
+**Solution Implemented**:
+- Modified `parseCompilationUnit()` to parse annotations before `package` keyword
+- Added `hasPackageLevelAnnotations()` helper with lookahead to detect package annotations
+- Added `isAnnotationTypeDeclaration()` helper to distinguish `@interface` declarations
+- `PACKAGE_DECLARATION` node now spans from first annotation to semicolon
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added package annotation parsing (+88 lines)
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/PackageAnnotationParserTest.java` - 7 tests (+227 lines)
+
+**Test Coverage**:
+- Single/multiple marker annotations before package
+- Annotations with values (single, array, qualified names)
+- Comments between annotations
+- Error handling for annotations without package declaration
+
+**Quality**:
+- All 532 tests passing
+- Zero Checkstyle/PMD violations
+
+---
+
 ### Expand TokenType Acronyms to Full Names ✅
 
 **Task**: `expand-tokentype-acronyms`
