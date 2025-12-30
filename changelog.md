@@ -2,6 +2,70 @@
 
 ## 2025-12-30
 
+### Refactor If-Else-If Chains to Switch Statements ✅
+
+**Task**: `refactor-if-else-to-switch`
+
+**Problem Solved**:
+- Parser contained long if-else-if chains testing same variable against enum constants
+- Code style rule: prefer switch over if-else-if chains with 3+ branches
+
+**Solution Implemented**:
+- Converted `parseStatement()` 16-branch if-else-if chain to switch with arrow syntax
+- Converted `parseComments()` 4-branch if-else-if chain to switch with arrow syntax
+- Combined related cases (CLASS, INTERFACE, ENUM, RECORD) using multiple case labels
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Refactored 2 methods
+
+**Quality**:
+- All tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+- No behavior changes
+
+---
+
+### Qualified This/Super Expression Support ✅
+
+**Completion Date**: 2025-12-30
+
+**Task**: `add-qualified-this-super`
+
+**Problem Solved**:
+- Parser did not support qualified `this` and `super` expressions for inner classes
+- `Outer.this` and `Outer.super` expressions failed to parse
+- `parsePostfix()` after DOT only handled IDENTIFIER and CLASS tokens
+
+**Solution Implemented**:
+- Added THIS and SUPER token handling in `parsePostfix()` after DOT
+- Reused existing `THIS_EXPRESSION` and `SUPER_EXPRESSION` node types
+- Updated error message to include 'this' and 'super' in expected tokens
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added THIS/SUPER handling in parsePostfix()
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/QualifiedThisSuperParserTest.java` - 12 tests
+
+**Test Coverage**:
+- Simple qualified this: `Outer.this`
+- Simple qualified super: `Outer.super.method()`
+- Nested qualified this: `Middle.this` in deeply nested classes
+- Qualified this in assignment, return, method arguments
+- Qualified super method calls and field access
+- Chained method calls on qualified super
+- Generic outer class qualified this: `Outer<T>.this`
+- Qualified this in inner class constructor
+- Qualified this in comparison expressions
+
+**Quality**:
+- All 12 tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ### Nested Annotation Values ✅
 
 **Completion Date**: 2025-12-30

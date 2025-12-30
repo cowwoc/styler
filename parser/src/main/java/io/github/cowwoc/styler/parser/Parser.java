@@ -1338,81 +1338,31 @@ public final class Parser implements AutoCloseable
 
 		TokenType type = currentToken().type();
 
-		if (type == TokenType.IF)
+		switch (type)
 		{
-			parseIfStatement();
-		}
-		else if (type == TokenType.FOR)
-		{
-			parseForStatement();
-		}
-		else if (type == TokenType.WHILE)
-		{
-			parseWhileStatement();
-		}
-		else if (type == TokenType.DO)
-		{
-			parseDoWhileStatement();
-		}
-		else if (type == TokenType.SWITCH)
-		{
-			parseSwitchStatement();
-		}
-		else if (type == TokenType.RETURN)
-		{
-			parseReturnStatement();
-		}
-		else if (type == TokenType.THROW)
-		{
-			parseThrowStatement();
-		}
-		else if (type == TokenType.YIELD)
-		{
-			parseYieldStatement();
-		}
-		else if (type == TokenType.TRY)
-		{
-			parseTryStatement();
-		}
-		else if (type == TokenType.SYNCHRONIZED)
-		{
-			parseSynchronizedStatement();
-		}
-		else if (type == TokenType.BREAK)
-		{
-			parseBreakStatement();
-		}
-		else if (type == TokenType.CONTINUE)
-		{
-			parseContinueStatement();
-		}
-		else if (type == TokenType.ASSERT)
-		{
-			parseAssertStatement();
-		}
-		else if (type == TokenType.SEMICOLON)
-		{
-			consume(); // Empty statement
-		}
-		else if (type == TokenType.LBRACE)
-		{
-			parseBlock();
-		}
-		else if (type == TokenType.CLASS || type == TokenType.INTERFACE ||
-			type == TokenType.ENUM || type == TokenType.RECORD)
-		{
-			// Local type declaration without modifiers
-			parseLocalTypeDeclaration();
-		}
-		else if (isLocalTypeDeclarationStart())
-		{
-			// Local type declaration with modifiers (final, abstract, annotations, etc.)
-			parseLocalTypeDeclaration();
-		}
-		else
-		{
-			// Expression statement or variable declaration
-			parseExpressionOrVariableStatement();
+			case IF -> parseIfStatement();
+			case FOR -> parseForStatement();
+			case WHILE -> parseWhileStatement();
+			case DO -> parseDoWhileStatement();
+			case SWITCH -> parseSwitchStatement();
+			case RETURN -> parseReturnStatement();
+			case THROW -> parseThrowStatement();
+			case YIELD -> parseYieldStatement();
+			case TRY -> parseTryStatement();
+			case SYNCHRONIZED -> parseSynchronizedStatement();
+			case BREAK -> parseBreakStatement();
+			case CONTINUE -> parseContinueStatement();
+			case ASSERT -> parseAssertStatement();
+			case SEMICOLON -> consume();
+			case LBRACE -> parseBlock();
+			case CLASS, INTERFACE, ENUM, RECORD -> parseLocalTypeDeclaration();
+			default ->
+			{
+				if (isLocalTypeDeclarationStart())
+					parseLocalTypeDeclaration();
+				else
+					parseExpressionOrVariableStatement();
+			}
 		}
 	}
 
@@ -2660,10 +2610,22 @@ public final class Parser implements AutoCloseable
 					int end = previousToken().end();
 					left = arena.allocateNode(NodeType.CLASS_LITERAL, start, end);
 				}
+				else if (match(TokenType.THIS))
+				{
+					// Qualified this: Outer.this
+					int end = previousToken().end();
+					left = arena.allocateNode(NodeType.THIS_EXPRESSION, start, end);
+				}
+				else if (match(TokenType.SUPER))
+				{
+					// Qualified super: Outer.super
+					int end = previousToken().end();
+					left = arena.allocateNode(NodeType.SUPER_EXPRESSION, start, end);
+				}
 				else
 				{
 					throw new ParserException(
-						"Expected identifier or 'class' after '.' but found " + currentToken().type(),
+						"Expected identifier, 'class', 'this', or 'super' after '.' but found " + currentToken().type(),
 						currentToken().start());
 				}
 			}
@@ -3018,29 +2980,32 @@ public final class Parser implements AutoCloseable
 			int start = token.start();
 			int end = token.end();
 
-			if (token.type() == TokenType.JAVADOC_COMMENT)
+			switch (token.type())
 			{
-				consume();
-				arena.allocateNode(NodeType.JAVADOC_COMMENT, start, end);
-			}
-			else if (token.type() == TokenType.BLOCK_COMMENT)
-			{
-				consume();
-				arena.allocateNode(NodeType.BLOCK_COMMENT, start, end);
-			}
-			else if (token.type() == TokenType.MARKDOWN_DOC_COMMENT)
-			{
-				consume();
-				arena.allocateNode(NodeType.MARKDOWN_DOC_COMMENT, start, end);
-			}
-			else if (token.type() == TokenType.LINE_COMMENT)
-			{
-				consume();
-				arena.allocateNode(NodeType.LINE_COMMENT, start, end);
-			}
-			else
-			{
-				break;
+				case JAVADOC_COMMENT ->
+				{
+					consume();
+					arena.allocateNode(NodeType.JAVADOC_COMMENT, start, end);
+				}
+				case BLOCK_COMMENT ->
+				{
+					consume();
+					arena.allocateNode(NodeType.BLOCK_COMMENT, start, end);
+				}
+				case MARKDOWN_DOC_COMMENT ->
+				{
+					consume();
+					arena.allocateNode(NodeType.MARKDOWN_DOC_COMMENT, start, end);
+				}
+				case LINE_COMMENT ->
+				{
+					consume();
+					arena.allocateNode(NodeType.LINE_COMMENT, start, end);
+				}
+				default ->
+				{
+					return;
+				}
 			}
 		}
 	}
