@@ -39,6 +39,43 @@
 
 ---
 
+### Cast Expression Parsing Support
+
+**Task**: `add-cast-expressions`
+
+**Problem Solved**:
+- Parser treated `(Type)` as parenthesized expression, not as cast operator
+- Cast operand was not parsed as part of the cast expression
+- Intersection casts `(Type1 & Type2) expr` were not supported
+
+**Solution Implemented**:
+- Added `tryCastExpression()` method with lookahead-based disambiguation
+- Added `canStartUnaryExpression()` and `canStartUnaryExpressionNotPlusMinus()` helper methods
+- Modified `parseParenthesizedOrLambda()` to detect and parse cast expressions
+- Implemented JLS 15.16 disambiguation: primitive casts allow `+`/`-` operands, reference casts do not
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added cast expression parsing
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/CastExpressionParserTest.java` - 27 tests
+
+**Test Coverage**:
+- Primitive type casts (int, double)
+- Reference type casts (String, qualified names, generics)
+- Intersection casts (two types, three types, qualified types)
+- Array casts (single/multi-dimensional, primitive arrays)
+- Disambiguation tests (parenthesized vs cast, unary plus/minus)
+- Chained casts, cast with method calls, cast in expressions
+- Error cases (incomplete cast, malformed intersection)
+
+**Quality**:
+- All 27 tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ## 2025-12-29
 
 ### Yield Statement Support ✅

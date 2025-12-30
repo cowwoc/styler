@@ -440,29 +440,6 @@ benchmarking, and validate with Maven plugin integration.
     - Handle case where annotations exist but no package (error or implicit package)
   - **Quality**: Parser tests for single/multiple annotations, annotation with values
 
-- [ ] **READY:** `add-cast-expressions` - Parse cast expressions including intersection casts
-  - **Dependencies**: None
-  - **Blocks**: None (required for correct expression parsing)
-  - **Parallelizable With**: Any Phase E parser task
-  - **Estimated Effort**: 1 day
-  - **Purpose**: Parse type cast expressions `(Type) expr` and intersection casts `(A & B) expr`
-  - **Current Gap**: `parseParenthesizedOrLambda()` treats `(Type)` as parenthesized expression,
-    not as cast operator - the following expression is not parsed as the cast operand
-  - **Syntax**: `(Type) expression` or `(Type1 & Type2) expression`
-  - **Example**:
-    ```java
-    String s = (String) obj;
-    Comparable<?> c = (Serializable & Comparable<?>) value;
-    int x = (int) longValue;
-    ```
-  - **Implementation**:
-    - In `parseParenthesizedOrLambda()`, after parsing `(Type)`, check if next token starts expr
-    - If so, this is a cast: parse operand and create CAST_EXPRESSION node
-    - For intersection casts, parse `Type & Type & ...` inside parens
-    - Tricky: distinguish `(a) + b` (parenthesized) from `(A) + b` (cast of unary +)
-  - **Disambiguation Strategy**: After `(X)`, if X could be a type AND next token can start an
-    expression, treat as cast. Requires lookahead or backtracking.
-  - **Quality**: Parser tests for primitive casts, reference casts, intersection casts, array casts
 
 - [ ] **READY:** `add-qualified-this-super` - Parse qualified this/super expressions
   - **Dependencies**: None
