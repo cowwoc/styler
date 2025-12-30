@@ -176,11 +176,35 @@ public final class Parser implements AutoCloseable
 	{
 		int start = currentToken().start();
 
-		// Package declaration
+		// Package declaration (may be preceded by annotations in package-info.java)
 		parseComments();
+
+		// Check for package-level annotations
+		// Only consume annotations if they are followed by 'package' keyword (not @interface or class)
+		int packageAnnotationsStart = -1;
+		if (hasPackageLevelAnnotations())
+		{
+			packageAnnotationsStart = currentToken().start();
+			while (currentToken().type() == TokenType.AT_SIGN && !isAnnotationTypeDeclaration())
+			{
+				parseAnnotation();
+				parseComments();
+			}
+		}
+
 		if (match(TokenType.PACKAGE))
 		{
-			parsePackageDeclaration(start);
+			// Package declaration start: first annotation if present, else 'package' keyword position
+			int effectiveStart;
+			if (packageAnnotationsStart >= 0)
+			{
+				effectiveStart = packageAnnotationsStart;
+			}
+			else
+			{
+				effectiveStart = previousToken().start();
+			}
+			parsePackageDeclaration(effectiveStart);
 		}
 
 		// Import declarations
@@ -228,6 +252,66 @@ public final class Parser implements AutoCloseable
 				FINAL, ABSTRACT, STRICTFP -> true;
 			default -> false;
 		};
+	}
+
+	/**
+	 * Checks if the current token is {@code @} and the next is {@code interface},
+	 * indicating an annotation type declaration.
+	 *
+	 * @return {@code true} if this is the start of an annotation type declaration
+	 */
+	private boolean isAnnotationTypeDeclaration()
+	{
+		return currentToken().type() == TokenType.AT_SIGN &&
+			position + 1 < tokens.size() &&
+			tokens.get(position + 1).type() == TokenType.INTERFACE;
+	}
+
+	/**
+	 * Uses lookahead to check if annotations at the current position are package-level annotations.
+	 * <p>
+	 * Package-level annotations are annotations that appear before the {@code package} keyword
+	 * in package-info.java files. This method looks ahead through annotations (skipping annotation
+	 * type declarations) to find if they precede a {@code package} keyword.
+	 *
+	 * @return {@code true} if the current position has annotations followed by a package declaration
+	 */
+	private boolean hasPackageLevelAnnotations()
+	{
+		if (currentToken().type() != TokenType.AT_SIGN)
+		{
+			return false;
+		}
+		// Don't treat @interface as package annotation
+		if (isAnnotationTypeDeclaration())
+		{
+			return false;
+		}
+
+		// Save position for lookahead
+		int checkpoint = position;
+
+		// Skip annotations and comments until we find either PACKAGE or something else
+		while (currentToken().type() == TokenType.AT_SIGN && !isAnnotationTypeDeclaration())
+		{
+			// Skip the annotation
+			consume(); // @
+			parseQualifiedName();
+			if (match(TokenType.LEFT_PARENTHESIS))
+			{
+				skipBalancedParens();
+			}
+			// Skip any comments between annotations
+			while (currentToken().type() == TokenType.LINE_COMMENT ||
+				currentToken().type() == TokenType.BLOCK_COMMENT)
+			{
+				consume();
+			}
+		}
+
+		boolean isPackageAnnotation = currentToken().type() == TokenType.PACKAGE;
+		position = checkpoint;
+		return isPackageAnnotation;
 	}
 
 	private NodeIndex parsePackageDeclaration(int start)
