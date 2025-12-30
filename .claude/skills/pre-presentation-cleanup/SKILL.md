@@ -37,13 +37,32 @@ Execute ALL steps before presenting changes to user:
 
 ### Step 1: Remove Agent Worktrees
 
+**CRITICAL**: Use FULL ABSOLUTE PATHS for worktree removal. Git worktree commands require the exact path.
+
+**⚠️ IMPORTANT**: Execute each worktree removal as a SEPARATE bash command to avoid multi-line parse errors.
+Do NOT combine multiple `git worktree remove` commands in a single multi-line bash call.
+
+```bash
+# ✅ CORRECT: Separate bash calls (each command standalone)
+TASK_NAME="{task-name}"
+git worktree remove /workspace/tasks/$TASK_NAME/agents/architect/code --force 2>/dev/null || true
+
+# Second separate call
+git worktree remove /workspace/tasks/$TASK_NAME/agents/tester/code --force 2>/dev/null || true
+
+# Third separate call
+git worktree remove /workspace/tasks/$TASK_NAME/agents/formatter/code --force 2>/dev/null || true
+
+# ❌ WRONG: Multi-line command (causes parse errors)
+# git worktree remove /path1 --force
+# git worktree remove /path2 --force
+# git worktree remove /path3 --force
+```
+
+**Alternative - Single Line with Chaining**:
 ```bash
 TASK_NAME="{task-name}"
-
-# Remove all agent worktrees
-git worktree remove /workspace/tasks/$TASK_NAME/agents/architect/code --force 2>/dev/null || true
-git worktree remove /workspace/tasks/$TASK_NAME/agents/tester/code --force 2>/dev/null || true
-git worktree remove /workspace/tasks/$TASK_NAME/agents/formatter/code --force 2>/dev/null || true
+git worktree remove /workspace/tasks/$TASK_NAME/agents/architect/code --force 2>/dev/null || true && git worktree remove /workspace/tasks/$TASK_NAME/agents/tester/code --force 2>/dev/null || true && git worktree remove /workspace/tasks/$TASK_NAME/agents/formatter/code --force 2>/dev/null || true
 ```
 
 ### Step 2: Delete Subagent Branches

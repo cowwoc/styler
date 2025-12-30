@@ -4,9 +4,10 @@
 > **Audience:** All sub-agents
 > **Purpose:** Agent coordination protocol, worktree structure, and status tracking
 
-## 🚨 MANDATORY: Read This Document at Startup {#mandatory-read-this-document-at-startup}
+## MANDATORY: Read This Document at Startup {#mandatory-read-this-document-at-startup}
 
-ALL sub-agents MUST read this document BEFORE performing any work to ensure proper coordination, worktree usage, status tracking, and iterative collaboration.
+ALL sub-agents MUST read this document BEFORE performing any work to ensure proper coordination, worktree
+usage, status tracking, and iterative collaboration.
 
 ## Worktree Structure {#worktree-structure}
 
@@ -112,7 +113,7 @@ ALL sub-agents MUST read this document BEFORE performing any work to ensure prop
 
 ### Mandatory Completion Verification (Implementation Mode) {#mandatory-completion-verification}
 
-**⚠️ CRITICAL: Before marking status as COMPLETE, agents MUST verify compilation succeeds.**
+**CRITICAL: Before marking status as COMPLETE, agents MUST verify compilation succeeds.**
 
 Agents that change API signatures, add parameters, or modify interfaces often break callers. The agent
 MUST verify all affected code compiles before reporting completion.
@@ -192,7 +193,7 @@ cat > /workspace/tasks/{TASK}/agents/{AGENT}/status.json <<EOF
 EOF
 ```
 
-**Stakeholder Agents in REQUIREMENTS/VALIDATION Mode after reviewing**:
+**Stakeholder Agents in VALIDATION Mode after reviewing**:
 
 ```bash
 TASK_SHA=$(git -C /workspace/tasks/{TASK}/code rev-parse HEAD)
@@ -321,7 +322,7 @@ Write: FileMetadata.java
 # → Catches any new errors early
 ```
 
-### ⚠️ CRITICAL: Commit Partial Progress {#commit-partial-progress}
+### CRITICAL: Commit Partial Progress {#commit-partial-progress}
 
 **ALWAYS commit your work, even if tests fail.** Partial progress is better than no progress.
 
@@ -361,7 +362,7 @@ Remaining: list of known issues"
 - Before reporting any error or blocker
 - At regular intervals during long implementations
 
-### ⚠️ CRITICAL: Style Violations (Checkstyle/PMD) - MUST FIX, NEVER GIVE UP {#style-violations-must-fix}
+### CRITICAL: Style Violations (Checkstyle/PMD) - MUST FIX, NEVER GIVE UP {#style-violations-must-fix}
 
 **Pre-commit hooks will block commits with style violations.** This is NOT an excuse to leave work uncommitted.
 
@@ -469,7 +470,7 @@ Validation Mode: Analyzes project patterns, specifies "Use requirements-java req
 Implementation Mode: Implements using requirements-java per validation mode guidance
 ```
 
-## 🚫 Hook Blocking: Return Errors, Never Workaround {#hook-blocking-return-errors}
+## Hook Blocking: Return Errors, Never Workaround {#hook-blocking-return-errors}
 
 **CRITICAL**: When a hook blocks your Write/Edit operation, you MUST return an error to the main agent.
 **NEVER** attempt to workaround using Bash or other tools.
@@ -502,7 +503,7 @@ Hooks enforce protocol compliance. If you're blocked, it means either:
 }
 ```
 
-### ❌ PROHIBITED: Bash Workarounds
+### PROHIBITED: Bash Workarounds
 
 **NEVER use Bash to bypass Write/Edit blocking:**
 
@@ -525,7 +526,7 @@ echo "class Foo {}" | tee /workspace/tasks/my-task/agents/architect/code/Foo.jav
 3. **Creates audit failures**: Files created without proper tracking
 4. **Wastes tokens**: Workarounds take more effort than returning error
 
-### ✅ CORRECT: Return Error to Main Agent
+### CORRECT: Return Error to Main Agent
 
 ```
 ❌ WRONG (workaround):
