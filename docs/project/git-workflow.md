@@ -977,13 +977,45 @@ echo "REORDER VIOLATION - Restarting with corrected plan"
 
 **Use Cherry-pick Method Instead When**:
 - Working with commits from different branches/remotes
-- Need very fine-grained control over individual commit application  
+- Need very fine-grained control over individual commit application
 - Interactive rebase repeatedly fails due to complex conflicts (>50 commits with extensive conflicts)
 - Working with a corrupted or unusual git history structure
 
 **Note on Chronological Preservation**: Interactive rebase is fully capable of maintaining chronological order
 in all scenarios when proper planning and verification procedures are followed. The complexity lies in human
 planning, not in git's technical capabilities.
+
+### When to Abandon Recovery and Start Fresh {#when-to-abandon-recovery}
+
+**Sometimes the fastest path forward is to abandon a diverged branch and re-apply changes cleanly.**
+
+**Consider Starting Fresh When**:
+- Branch has diverged significantly from main (>10 conflicts during rebase)
+- Multiple failed rebase/cherry-pick attempts with no clear resolution
+- Changes are well-understood and can be re-applied manually
+- Time spent on recovery exceeds time to re-do the work
+
+**Fresh Start Procedure**:
+```bash
+# 1. Save your current work (document what was changed)
+git diff main > /tmp/my-changes.patch  # Optional: save as patch
+
+# 2. Create fresh branch from main
+git checkout main
+git pull origin main  # Ensure up-to-date
+git checkout -b my-task-fresh
+
+# 3. Re-apply changes manually
+# For bulk renames: Re-run the rename script with correct mappings
+# For code changes: Re-implement using the patch as reference
+
+# 4. Run tests to verify
+./mvnw verify -Dmaven.build.cache.enabled=false
+```
+
+**REAL-WORLD EXAMPLE**: A bulk TokenType rename task diverged after a failed rebase. After two recovery
+attempts (rebase abort, cherry-pick with conflicts), resetting to main and re-applying the rename script
+took 10 minutes vs. 30+ minutes of failed recovery attempts.
 
 ## Cherry-pick Method (Advanced/Fallback Approach) {#cherry-pick-method-advancedfallback-approach}
 
