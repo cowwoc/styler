@@ -525,6 +525,38 @@ Cache is configured via `.mvn/maven-build-cache-config.xml`:
 These directories are saved as ZIP artifacts (e.g., `styler-ast-core-mvn-cache-ext-extra-output-3.zip`)
 containing all compiled classes including module-info.class.
 
+### Stale Cache False Positives {#stale-cache-false-positives}
+
+**Symptom**: Tests unexpectedly PASS after making code changes that should cause failures.
+
+**Root Cause**: Build cache may return cached test results from before your changes were applied. This is
+especially problematic when:
+- Applying bulk rename operations
+- Making changes to shared enum/constant values
+- Modifying method signatures used across multiple modules
+
+**Solution**:
+```bash
+# Disable build cache explicitly when debugging test failures
+./mvnw test -Dmaven.build.cache.enabled=false
+
+# Or for full validation
+./mvnw verify -Dmaven.build.cache.enabled=false
+
+# Alternative: Clear cache entirely
+rm -rf ~/.m2/build-cache/ && ./mvnw verify
+```
+
+**When to Disable Cache**:
+- After bulk rename/refactor operations across multiple files
+- When test results seem inconsistent with code changes
+- When debugging test failures that "shouldn't" occur
+- After git operations that change significant portions of codebase (rebase, cherry-pick)
+
+**REAL-WORLD EXAMPLE**: After renaming `TokenType.EQ` to `TokenType.EQUAL` across 20+ files, tests
+initially passed due to cached results. Running with `-Dmaven.build.cache.enabled=false` revealed 26
+actual test failures from a semantic mapping error.
+
 ### Performance Benefits {#performance-benefits}
 
 Build cache provides significant performance improvements for JPMS projects:

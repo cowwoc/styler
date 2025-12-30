@@ -309,11 +309,82 @@ Need command substitution $()?
 - [ ] If complex, have I written a script file instead?
 - [ ] Have I tested the command works without parse errors?
 
+## Bulk Rename Operations {#bulk-rename-operations}
+
+**PROBLEM**: Incorrect semantic mappings in bulk rename scripts cause cascading test failures.
+
+**ROOT CAUSE**: When renaming enum values, variable names, or identifiers across a codebase, mapping errors
+can introduce semantic bugs that pass compilation but fail tests.
+
+**REAL-WORLD EXAMPLE**: Renaming `TokenType.EQ` to `TokenType.ASSIGN` instead of `TokenType.EQUAL`:
+- `EQ` represents `==` (equality comparison)
+- `ASSIGN` represents `=` (assignment operator)
+- Result: 26 test failures, parser producing wrong AST node types
+
+**PREVENTION STRATEGIES**:
+
+### 1. Create explicit mapping table with semantic validation
+
+```markdown
+| Old Name | New Name       | Symbol | Semantic Check        |
+|----------|----------------|--------|----------------------|
+| EQ       | EQUAL          | ==     | Equality comparison  |
+| ASSIGN   | ASSIGN         | =      | Assignment operator  |
+| NE       | NOT_EQUAL      | !=     | Not equal comparison |
+```
+
+**Key**: The "Symbol" column provides independent verification that old→new maintains semantic meaning.
+
+### 2. Verify each mapping against source comments
+
+```bash
+# Extract current comment to verify semantic meaning
+grep "EQ," TokenType.java
+# Output: EQ,              // ==
+
+# Verify new name matches the semantic meaning
+# EQ (==) → EQUAL (equality) ✅ CORRECT
+# EQ (==) → ASSIGN (assignment) ❌ WRONG - ASSIGN is =
+```
+
+### 3. Run tests BEFORE committing bulk renames
+
+```bash
+# Apply rename script
+perl -pi -e 's/TokenType\.EQ\b/TokenType.EQUAL/g' *.java
+
+# IMMEDIATELY run tests (not after all files changed)
+./mvnw test -Dmaven.build.cache.enabled=false
+
+# If tests fail, diagnose root cause before continuing
+```
+
+### 4. Use semantic patterns, not just syntax patterns
+
+```perl
+# ❌ DANGEROUS - No semantic context
+s/TokenType\.EQ\b/TokenType.ASSIGN/g
+
+# ✅ SAFER - Include comment verification step first
+# Step 1: Verify EQ means "==" in source
+# Step 2: Confirm EQUAL is correct target (not ASSIGN)
+# Step 3: Apply rename
+s/TokenType\.EQ\b/TokenType.EQUAL/g
+```
+
+**CHECKLIST BEFORE BULK RENAME**:
+- [ ] Created mapping table with old name, new name, AND semantic meaning?
+- [ ] Verified each mapping against source comments/documentation?
+- [ ] Confirmed no name collisions (e.g., both EQ and ASSIGN exist)?
+- [ ] Will run tests immediately after applying rename?
+- [ ] Disabled build cache for test run?
+
 ## General Tool Usage Principles
 
-1.  **READ FIRST, EDIT SECOND**: Always read a file before editing to understand its structure and whitespace
+1. **READ FIRST, EDIT SECOND**: Always read a file before editing to understand its structure and whitespace
    style
 2. **VERIFY BEFORE EXECUTING**: Use preview/dry-run options when available
 3. **ABSOLUTE OVER RELATIVE**: Prefer absolute paths to eliminate directory confusion
 4. **SPECIFIC OVER BROAD**: Make patterns as specific as possible to avoid unintended matches
 5. **TEST BEFORE COMMIT**: For bulk operations, test on a subset or copy first
+6. **SEMANTIC VALIDATION**: For rename operations, verify the semantic meaning is preserved
