@@ -372,28 +372,6 @@ benchmarking, and validate with Maven plugin integration.
 
 **Priority**: These are basic Java features that should already be supported. Required for correct parsing.
 
-- [ ] **READY:** `add-local-type-declarations` - Parse local classes/interfaces/records/enums in methods
-  - **Dependencies**: None
-  - **Blocks**: None (required for correct method body parsing)
-  - **Parallelizable With**: Any Phase E parser task
-  - **Estimated Effort**: 1 day
-  - **Purpose**: Parse type declarations inside method bodies (JDK 16+ for interfaces/enums)
-  - **Current Gap**: `parseStatement()` does not check for CLASS/INTERFACE/ENUM/RECORD tokens
-  - **Syntax**: Type declarations inside method/constructor/initializer blocks
-  - **Example**:
-    ```java
-    void process() {
-        record Point(int x, int y) { }  // Local record (JDK 16+)
-        interface Validator { boolean validate(); }  // Local interface (JDK 16+)
-        class Helper { void help() { } }  // Local class (Java 1.1+)
-        enum Status { OK, ERROR }  // Local enum (JDK 16+)
-    }
-    ```
-  - **Implementation**:
-    - In `parseStatement()`, check for CLASS/INTERFACE/ENUM/RECORD tokens
-    - If found, delegate to existing `parseClassDeclaration()`/etc. methods
-    - Local types can have modifiers (final for classes, static NOT allowed)
-  - **Quality**: Parser tests for each local type kind, nested local types
 
 - [ ] **READY:** `add-module-info-parsing` - Parse module-info.java module declarations
   - **Dependencies**: None

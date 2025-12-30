@@ -1203,6 +1203,17 @@ public final class Parser implements AutoCloseable
 		{
 			parseBlock();
 		}
+		else if (type == TokenType.CLASS || type == TokenType.INTERFACE ||
+			type == TokenType.ENUM || type == TokenType.RECORD)
+		{
+			// Local type declaration without modifiers
+			parseLocalTypeDeclaration();
+		}
+		else if (isLocalTypeDeclarationStart())
+		{
+			// Local type declaration with modifiers (final, abstract, annotations, etc.)
+			parseLocalTypeDeclaration();
+		}
 		else
 		{
 			// Expression statement or variable declaration
@@ -1222,6 +1233,88 @@ public final class Parser implements AutoCloseable
 		parseStatement();
 		int end = previousToken().end();
 		return arena.allocateNode(NodeType.LABELED_STATEMENT, labelStart, end);
+	}
+
+	/**
+	 * Checks if the current position starts a local type declaration.
+	 * <p>
+	 * Uses lookahead to detect modifiers/annotations followed by type keywords
+	 * ({@code class}, {@code interface}, {@code enum}, {@code record}).
+	 * This method performs lookahead without permanently consuming tokens.
+	 *
+	 * @return {@code true} if a local type declaration starts at the current position
+	 */
+	private boolean isLocalTypeDeclarationStart()
+	{
+		int checkpoint = position;
+		// Skip modifiers and annotations
+		while (isModifier(currentToken().type()) ||
+			currentToken().type() == TokenType.AT ||
+			currentToken().type() == TokenType.SEALED ||
+			currentToken().type() == TokenType.NON_SEALED)
+		{
+			if (currentToken().type() == TokenType.AT)
+			{
+				consume();
+				parseQualifiedName();
+				if (match(TokenType.LPAREN))
+				{
+					skipBalancedParens();
+				}
+			}
+			else
+			{
+				consume();
+			}
+		}
+		boolean result = switch (currentToken().type())
+		{
+			case CLASS, INTERFACE, ENUM, RECORD -> true;
+			default -> false;
+		};
+		position = checkpoint;
+		return result;
+	}
+
+	/**
+	 * Parses a local type declaration (class, interface, enum, or record).
+	 * <p>
+	 * Local types are type declarations that appear inside method bodies, constructors,
+	 * or initializer blocks. This method handles modifiers (such as {@code final},
+	 * {@code abstract}, {@code sealed}, and annotations) that may precede the type keyword,
+	 * then delegates to {@link #parseNestedTypeDeclaration()}.
+	 */
+	private void parseLocalTypeDeclaration()
+	{
+		skipMemberModifiers();
+		parseNestedTypeDeclaration();
+	}
+
+	/**
+	 * Skips tokens until matching closing parenthesis is found.
+	 * <p>
+	 * Used for lookahead when skipping annotation arguments. Assumes the opening
+	 * parenthesis has already been consumed. Counts parenthesis depth and consumes
+	 * tokens until the depth returns to zero.
+	 */
+	private void skipBalancedParens()
+	{
+		int depth = 1;
+		while (depth > 0 && currentToken().type() != TokenType.EOF)
+		{
+			if (match(TokenType.LPAREN))
+			{
+				++depth;
+			}
+			else if (match(TokenType.RPAREN))
+			{
+				--depth;
+			}
+			else
+			{
+				consume();
+			}
+		}
 	}
 
 	private NodeIndex parseBreakStatement()
