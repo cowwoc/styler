@@ -1,877 +1,200 @@
 # Claude Code Configuration Guide
 
-> **Version:** 3.0 | **Last Updated:** 2025-10-18
-> **Related Documents:** [main-agent-coordination.md](docs/project/main-agent-coordination.md) •
+> **Version:** 4.0 | **Last Updated:** 2025-12-30
+> **Related:** [main-agent-coordination.md](docs/project/main-agent-coordination.md) •
 [task-protocol-agents.md](docs/project/task-protocol-agents.md) •
 [style-guide.md](docs/project/style-guide.md) • [quality-guide.md](docs/project/quality-guide.md)
 
-Styler Java Code Formatter project configuration and universal guidance for all agents.
+Styler Java Code Formatter - universal guidance for all agents.
 
 ## MANDATORY STARTUP PROTOCOL
 
-**MAIN AGENT**: Task protocol uses just-in-time guidance via hooks. You do NOT need to read protocol
-files upfront. Phase-specific instructions provided automatically as you transition states. Reference docs
-available for troubleshooting: main-agent-coordination.md, task-protocol-core.md
+**MAIN AGENT**: Hooks provide just-in-time guidance. No upfront protocol reading needed. Reference:
+main-agent-coordination.md, task-protocol-core.md
+
+**SUB-AGENTS**: Read `/workspace/main/docs/project/task-protocol-agents.md`
+- **Formatter agents**: Also read `/workspace/main/docs/project/style-guide.md`
+- **Engineer agents**: Also read `/workspace/main/docs/project/quality-guide.md`
 
 ### Task Protocol
 
-**For todo.md tasks**, follow the task protocol documented in:
-- [task-protocol-core.md](docs/project/task-protocol-core.md) - State machine, definitions
-- [task-protocol-transitions.md](docs/project/task-protocol-transitions.md) - State transitions
-- [task-protocol-operations.md](docs/project/task-protocol-operations.md) - Operations, archival workflow
+**Protocol docs**:
+- [task-protocol-core.md](docs/project/task-protocol-core.md) - State machine
+- [task-protocol-transitions.md](docs/project/task-protocol-transitions.md) - Transitions
+- [task-protocol-operations.md](docs/project/task-protocol-operations.md) - Operations, archival
 
-**Key points** (details in protocol docs):
-- Two user approval checkpoints: SYNTHESIS → IMPLEMENTATION, AWAITING_USER_APPROVAL → COMPLETE
-- Archival (todo.md + changelog.md) must be in task branch commit BEFORE merge
-- Use `--ff-only` for all merges to main (linear history)
-- Hooks enforce protocol compliance
+**Key points**:
+- Two approval checkpoints: SYNTHESIS → IMPLEMENTATION, AWAITING_USER_APPROVAL → COMPLETE
+- Archival (todo.md + changelog.md) in task branch BEFORE merge
+- Use `--ff-only` for merges to main
+- Hooks enforce compliance
 
-> **MANDATORY PRE-APPROVAL CLEANUP** {#mandatory-pre-approval-cleanup}
->
-> **BEFORE presenting changes for user approval**, you MUST complete cleanup IN THIS ORDER:
-> 1. Remove all agent worktrees (FIRST - before branch deletion)
-> 2. Delete all agent branches (`{task}-architect`, `{task}-tester`, `{task}-formatter`)
-> 3. Squash commits into **TWO commits** (config first, implementation second):
->    - **Commit 1**: `.claude/`, `docs/project/`, `CLAUDE.md` changes (if any)
->    - **Commit 2**: Source code, tests, `changelog.md`, `todo.md` changes
-> 4. Verify: `git branch | grep {task}` shows ONLY task branch (no agent suffixes)
-> 5. Verify: `git rev-list --count main..{task}` returns `1` or `2` (depending on config changes)
->
-> **Invoke `pre-presentation-cleanup` skill** to execute these steps.
->
-> ❌ VIOLATION: Mixing config and implementation in same commit
-> ✅ CORRECT: Config commit (if any) before implementation commit
+**Pre-Approval Cleanup**: Use `pre-presentation-cleanup` skill. See
+[main-agent-coordination.md](docs/project/main-agent-coordination.md) for details.
 
-**Task Prioritization**: Bug fixes MUST be prioritized before new features, unless the new feature will
-replace the feature containing the bugs.
-
-**SUB-AGENTS**: If you are a stakeholder agent (architect, engineer, formatter), this file contains
-universal guidance only. You MUST also read `/workspace/main/docs/project/task-protocol-agents.md`
-
-**Domain-Specific Agents**:
-- **Formatter agents**: Read `/workspace/main/docs/project/style-guide.md`
-- **Engineer agents**: Read `/workspace/main/docs/project/quality-guide.md`
+**Task Prioritization**: Bug fixes before features, unless feature replaces buggy feature.
 
 ## Universal Guidance
 
 ### Professional Objectivity
-
-Prioritize technical accuracy over validating user beliefs. Provide direct, objective information without
-superlatives, praise, or emotional validation. Apply rigorous standards to all ideas and disagree when
-necessary. When uncertain, investigate first rather than confirming user beliefs.
+Prioritize technical accuracy over validation. Direct information without praise. Disagree when necessary.
+Investigate uncertainty rather than confirm beliefs.
 
 ### Tone and Style
+- CLI output: short, concise, Github-flavored markdown
+- Never use Bash/code comments to communicate
+- NEVER create files unless necessary. ALWAYS prefer editing existing files.
 
-- Output displays on CLI. Keep responses short and concise. Use Github-flavored markdown.
-- Output text to communicate with user; all text outside tool use is displayed. Never use Bash or code
-  comments to communicate.
-- NEVER create files unless absolutely necessary. ALWAYS prefer editing existing files.
+### Self-Validation Before Decisions {#self-validation-before-decisions}
+**MANDATORY**: Verify logical consistency before decisions.
 
-### Self-Validation Before Decisions
+**Pattern**: (1) State value (2) Identify threshold range (3) Apply logic (4) Verify consistency
 
-**MANDATORY**: Verify logical consistency before presenting decisions, especially when applying thresholds or
-conditional logic.
+**Anti-Patterns**: X < Y then X > Y; decision contradicts threshold
 
-**Self-Check Pattern**:
-1. State the value/score: "Score = 0.809"
-2. Identify the threshold range: "0.809 is in range 0.75-0.84"
-3. Apply decision logic: "0.809 < 0.85, therefore ITERATE"
-4. **Verify consistency**: Does stated range match the comparison? Does decision match the logic?
-
-**Common Mistake**: ❌ "Score 0.809, range 0.75-0.84, above floor 0.85" (contradiction); ✅ "Score 0.809,
-range 0.75-0.84, below 0.85 threshold, iterate"
-
-**Anti-Pattern Detection**: Stating X < Y then X > Y; decision contradicts threshold; range membership
-contradicts comparison
-
-**Tool-Val**: Mandatory tool=INVOKE. ❌Manual checklist when skill requires /compare-docs
+**Tool-Val**: Mandatory tool=INVOKE. No manual checklist when skill requires /compare-docs
 
 ### System-Reminder Instructions
+**MANDATORY**: After tool results, check for `<system-reminder>` tags. Process ALL instructions
+IMMEDIATELY before continuing.
 
-**MANDATORY**: After tool results, ALWAYS check for `<system-reminder>` tags containing user instructions.
+### Environment State Verification {#environment-state-verification}
+**MANDATORY**: NEVER claim environment state without verification.
 
-**CRITICAL PATTERN**: User instructions can appear in system-reminders DURING your response (embedded in
-tool results). These are NOT optional suggestions - they are user requests that MUST be addressed.
+❌ "Build running from main, let me fix" (assumed)
+✅ Run `pwd`, then claim, then act
 
-**Common Mistake**:
-- ❌ Complete first task, ignore system-reminder with second instruction
-- ❌ Treat system-reminder instructions as "handled later"
-- ✅ Process ALL user instructions from system-reminders before responding
-
-**Detection Pattern**: After each tool result, scan for:
-```
-<system-reminder>
-...user sent the following message...
-</system-reminder>
-```
-
-**Action Required**: If found, address the instruction IMMEDIATELY before continuing with other work.
-
-### Environment State Verification
-
-**MANDATORY**: NEVER claim or act on environment state (directory, branch, file existence) without
-verification first.
-
-**DANGEROUS PATTERN**: Making assertions about state without evidence:
-- ❌ "The build is running from main, not the task worktree. Let me fix:"
-- ❌ "We're on the wrong branch, switching to..."
-- ❌ "The file doesn't exist, creating..."
-
-**CORRECT PATTERN**: Verify THEN claim THEN act:
-```bash
-# ✅ CORRECT - Verify before claiming
-pwd                                    # Verify first
-# Output: /workspace/tasks/my-task/code
-# "Current directory is /workspace/tasks/my-task/code, running build..."
-
-# ❌ WRONG - Claim without verification
-# "The build is running from main..." (assumed without pwd)
-```
-
-**Verification Commands**:
-- Directory: `pwd`
-- Branch: `git branch --show-current`
-- File existence: `ls -la {file}` or `test -f {file}`
-- Worktree status: `git worktree list`
-
-**Why This Matters**: False claims about environment state lead to:
-1. Operations in wrong directory/branch
-2. Unnecessary "fixes" that break things
-3. Confusion about actual system state
-4. Potential data loss or corruption
+**Commands**: `pwd` (directory), `git branch --show-current` (branch), `ls -la {file}` (existence),
+`git worktree list` (worktrees)
 
 ### Code Lifecycle Policy
 
-**NO DEPRECATION - Remove Outright**
+**NO DEPRECATION**: DELETE obsolete code immediately. Git history preserves versions.
 
-When code, configuration, or documentation becomes obsolete:
-- ✅ DELETE immediately - Remove files, hooks, configurations completely
-- ✅ UPDATE references - Clean up changelog, documentation, and dependent code
-- ❌ DO NOT deprecate - No "deprecated" markers, backup files, or dormant code
-- ❌ DO NOT keep "for reference" - Git history preserves old versions
-
-**When removing**: (1) Delete all obsolete files/code (2) Update changelog with "Removed" section (3)
-Update documentation (4) Verify no broken references
-
-**NO STUBBING - Complete or Simplify**
-
-When implementing features, complete them fully or simplify the API to match what you can deliver:
-- ✅ Complete implementation matches API surface (all fields/methods work)
-- ✅ Simplify API if feature is too complex (remove unused fields, use simpler design)
-- ❌ DO NOT create "for future use" fields/parameters that aren't implemented
-- ❌ DO NOT add comments like "for now", "a full implementation would", "TODO"
-
-**Detection patterns** (indicate stubbing violations):
-- Record/class fields that are never read
-- Configuration parameters that have no effect
-- Comments suggesting incomplete implementation
-- API promising more than implementation delivers
-
-**Example violation**:
+**NO STUBBING**: Complete features fully or simplify API. No "for future use" fields, no TODO comments.
 ```java
-// ❌ WRONG - 4 fields but only one used
+// ❌ 4 fields, only one used
 record Config(Style classStyle, Style methodStyle, Style controlStyle, Style lambdaStyle) {}
-// Code only calls config.controlStyle() - other 3 fields are dead code
-
-// ✅ CORRECT - API matches implementation
-record Config(Style braceStyle) {}  // Single field, actually used
+// ✅ API matches implementation
+record Config(Style braceStyle) {}
 ```
-
-**Principle**: A working simple feature beats a broken complex one. If per-X configuration requires AST
-integration you don't have, use a single style instead of stubbing per-X fields.
 
 ### Fail-Fast Error Handling
+**NEVER fail silently.** Throw `IllegalArgumentException`/`IllegalStateException` with descriptive messages.
 
-**NEVER fail silently.** Code must fail-fast with clear error messages when encountering invalid input or
-unexpected conditions.
-
-**Prohibited patterns**:
-- ❌ Return empty collections on invalid input (hides bugs)
-- ❌ Return null or default values when preconditions fail
-- ❌ Silently ignore invalid configuration
-- ❌ Catch and swallow exceptions without logging or rethrowing
-
-**Required patterns**:
-- ✅ Throw `IllegalArgumentException` for invalid parameters
-- ✅ Throw `IllegalStateException` for invalid object state
-- ✅ Include descriptive error messages with actual values
-- ✅ Validate preconditions at method entry (fail early)
-
-**Example**:
-```java
-// ❌ WRONG - Silent failure
-if (!(config instanceof ExpectedType)) {
-    return new ArrayList<>();  // Hides programming error
-}
-
-// ✅ CORRECT - Fail-fast
-if (!(config instanceof ExpectedType expected)) {
-    throw new IllegalArgumentException("config must be ExpectedType, got: " +
-        config.getClass().getName());
-}
-```
+❌ Return empty collections/null on invalid input
+✅ Validate preconditions at entry, fail early with actual values
 
 ### Test-Driven Development
-
-**MANDATORY**: Use the `tdd-implementation` skill for ALL Java development.
-
-Hooks physically BLOCK production code edits without active TDD mode. No exceptions - the skill provides
-the workflow and the hooks enforce it.
+**MANDATORY**: Use `tdd-implementation` skill for ALL Java development. Hooks BLOCK production edits
+without active TDD mode.
 
 ### Defensive Security Policy
-
-Assist with defensive security tasks only. Refuse to create, modify, or improve code that may be used
-maliciously. Do not assist with credential discovery or harvesting. NEVER generate or guess URLs unless
-confident they help with programming.
-
-## LONG-TERM SOLUTION PERSISTENCE
-
-**MANDATORY PRINCIPLE**: Prioritize optimal long-term solutions over expedient alternatives. Persistence and
-thorough problem-solving are REQUIRED.
-
-### Solution Quality Hierarchy
-
-1. **OPTIMAL**: Complete, maintainable, follows best practices, addresses root cause
-2. **ACCEPTABLE**: Functional, meets core requirements, minor technical debt acceptable
-3. **EXPEDIENT WORKAROUND**: Quick fix, creates technical debt, only acceptable with explicit justification
-   and follow-up task
-
-### Mandatory Decision Protocol
-
-- Always pursue OPTIMAL first
-- If blocked, analyze blocking issue and determine resolution strategy
-- Exhaust reasonable effort before downgrading
-- Never abandon complex problems for shortcuts
-
-### Prohibited Downgrade Patterns
-
-❌ "This is too complex, let me try a simpler approach" (without justification)
-❌ "The optimal solution would take too long" (without effort estimation)
-❌ "Let's use a quick workaround for now" (without technical debt assessment)
-❌ "Due to complexity and token usage, I'll create a solid MVP implementation" (complexity/tokens never
-justify incomplete implementation)
-❌ "This edge case is too hard to handle properly" (without stakeholder consultation)
-❌ **"Asking user to choose between options when optimal solution is clear"** (pursue optimal directly)
-
-### Correct Pattern: Pursue Optimal Solution Proactively
-
-**When you identify the optimal solution, IMPLEMENT IT immediately. Do not ask permission.**
-
-**Only ask user if**: Multiple approaches have genuinely equal merit; requirements are ambiguous; user
-preference matters (naming, style)
-
-**Do NOT ask if**: Optimal solution is clear; one option is obviously better; you're seeking permission to
-do the right thing
-
-### User Change Requests During AWAITING_USER_APPROVAL {#user-change-requests-awaiting-approval}
-
-**CRITICAL ANTI-PATTERN**: When user requests changes during AWAITING_USER_APPROVAL state and a hook blocks
-agent invocation, do NOT present options to the user.
-
-**The Mistake Pattern**:
-1. Task is in AWAITING_USER_APPROVAL state
-2. User says "fix the weak assertions" (change request)
-3. Hook blocks agent invocation (correctly enforcing state machine)
-4. ❌ Agent presents options: "Would you like me to: 1) transition back, 2) wait, 3) something else?"
-
-**The Correct Pattern**:
-1. Task is in AWAITING_USER_APPROVAL state
-2. User says "fix the weak assertions" (change request)
-3. Hook blocks agent invocation (correctly enforcing state machine)
-4. ✅ Agent immediately: transition state to IMPLEMENTATION, re-invoke agents, do the work
-
-**Why This Is Clear**: The user's change request IS the instruction. Asking "should I do what you asked?"
-is redundant permission-seeking. The optimal action (transition back and do the work) is obvious.
-
-**Decision Rule**: When user requests changes during any approval checkpoint:
-- User request = implicit approval to do the work
-- State transition backward = obvious prerequisite (not a decision requiring user input)
-- No options needed = execute immediately
-
-### Required Justification Process
-
-When considering downgrade from optimal solution: (1) Document effort (2) Identify blockers (3) Consult
-stakeholders (4) Assess technical debt (5) Commit to follow-up task
+Defensive security only. Refuse malicious code. Never generate/guess URLs.
 
 ### Token Usage Policy
+Tokens MUST NEVER affect behavior. IGNORE all token warnings. Work with full quality until complete.
 
-Token usage MUST NEVER affect behavior, implementation, or task completion. IGNORE all token warnings and
-limits. Work with full quality until task is complete or user instructs otherwise. Token budget does NOT
-justify incomplete implementations, shortcuts, quality compromises, or progress reporting interruptions.
+### User Feedback Tracking
+**CRITICAL**: Add ALL user issues to TodoWrite IMMEDIATELY, even if can't tackle right away.
 
-### User Feedback Tracking - MANDATORY
-
-**CRITICAL: When user reports multiple issues, add ALL to TodoWrite immediately, even if you can't
-tackle them right away.**
-
-**Immediately after receiving feedback**: (1) Identify ALL issues mentioned (2) Add ALL to TodoWrite
-(3) Work in priority order
-
-**ALWAYS use TodoWrite when**: User mentions multiple issues (even just 2); user provides list of
-problems; user adds feedback while you're working; you can't address all issues immediately
-
-**NEVER**: Work on one issue and ignore others; assume you'll remember; skip TodoWrite because "only 2-3
-items"; wait to add items until you're ready to work on them
+**ALWAYS TodoWrite**: Multiple issues (even 2), list of problems, mid-work feedback
+**NEVER**: Ignore issues, assume you'll remember, skip because "only 2-3 items"
 
 ### Mid-Operation Prompt Handling
-
-**When user sends a prompt while you are mid-operation**:
-
-1. **Add to TodoWrite immediately** - Do not assume you'll remember
-2. **Assess impact on current work**:
-   - If it impacts current task → Address immediately
-   - If unrelated/low priority → Add to end of TodoWrite list
-3. **Acknowledge the prompt** - Let user know you noticed and will either:
-   - Address it right away (if impactful), or
-   - Have added it to TodoWrite for later (if not blocking)
-
-**Example acknowledgment**: "I noticed your request to [X]. Adding to TodoWrite and will address after
-completing [current task]." OR "Your feedback about [X] impacts this work - addressing now."
-
-### Auto-Detected Mistake Handling {#auto-detected-mistake-handling}
-
-**When `auto-learn-from-mistakes.sh` hook outputs a MANDATORY TodoWrite directive**:
-
-1. **Check existing TodoWrite entries** for matching "LFM:" prefix with same mistake type
-2. **If entry exists**: Do nothing (deduplication - violation already tracked)
-3. **If entry NOT exists**: Add the entry immediately using TodoWrite tool
-4. **Work the entry**: Eventually invoke learn-from-mistakes skill to investigate
-
-**Deduplication Key**: Entries with prefix "LFM: Investigate {mistake_type}" are deduplicated by mistake type.
-Same mistake type from different tools = same entry (don't duplicate).
-
-**Why TodoWrite instead of rate limiting**: Rate limiting (5-minute window) caused missed violations and
-produced a log file nobody processed. TodoWrite provides natural deduplication and ensures violations are
-visible and eventually addressed.
-
-**Example directive from hook**:
-```
-MISTAKE DETECTED: build_failure
-
-**MANDATORY**: Check TodoWrite for existing entry, add if not present:
-{"content": "LFM: Investigate build_failure from Bash", "status": "pending", ...}
-```
-
-**Agent action**: Check if "LFM: Investigate build_failure" already in TodoWrite. If not, add it.
+1. Add to TodoWrite immediately
+2. If impacts current task → address now; else → add to end
+3. Acknowledge: "Adding to TodoWrite for later" or "Addressing now"
 
 ## TOOL USAGE BEST PRACTICES
 
-**For complete tool usage guide, see**:
-[docs/optional-modules/tool-usage.md](docs/optional-modules/tool-usage.md)
+**Full guide**: [docs/optional-modules/tool-usage.md](docs/optional-modules/tool-usage.md)
 
 ### Critical Tool Patterns
 
-**Edit Tool - Whitespace Handling**:
+**Edit Tool**: Whitespace mismatches cause failures. Match EXACT whitespace. Never include line number
+prefix. Verify: `cat -A file | grep "method()"`
 
-**Common Scenario**: Edit tool fails with 'old_string not found' despite text appearing correct.
+**Safe Code Removal**: Use `safe-remove-code` skill.
 
-**Root Cause**: Whitespace mismatches (tabs vs spaces, trailing spaces, line endings)
-
-**Recovery Procedure**: (1) Diagnose: Read file section to see actual whitespace (2) Identify Mismatch
-(3) Adapt: Adjust old_string to match EXACT whitespace in file (4) Common Issues: tabs vs spaces,
-trailing spaces, line number prefix (never include line number prefix in old_string)
-
-**Verification Command**: `cat -A /path/to/file.java | grep -A2 "method()"` (Shows ^I for tabs, $ for line
-endings)
-
-**Pattern Matching**: Preview before dangerous operations, use specific patterns, test regex with grep before
-sed
-
-**Safe Code Removal**: When removing code patterns from multiple files, use the `safe-remove-code` skill (via
-Skill tool) to prevent accidentally gutting files.
-
-**Safe JSON File Editing (jq)**:
-
-**CRITICAL**: Never redirect jq output directly to the input file. This truncates the file BEFORE jq reads
-it, resulting in data loss.
-
+**jq Safety**:
 ```bash
-# ❌ WRONG - Truncates file before jq reads it
-jq '.state = "IMPLEMENTATION"' task.json > task.json  # Data loss!
-
-# ✅ CORRECT - Use temp file + mv (atomic operation)
-jq '.state = "IMPLEMENTATION"' task.json > task.json.tmp && mv task.json.tmp task.json
-
-# ✅ ALSO CORRECT - Use sponge if available
-jq '.state = "IMPLEMENTATION"' task.json | sponge task.json
+# ❌ Data loss
+jq '.state = "X"' f.json > f.json
+# ✅ Safe
+jq '.state = "X"' f.json > f.json.tmp && mv f.json.tmp f.json
 ```
 
-**Why This Happens**: Shell redirection (`>`) opens and truncates the output file BEFORE the command runs.
-The jq process then reads an empty file, producing empty output.
+**Bash Multi-Line**: Avoid `$(...)` in multi-line commands (parse errors). Use separate calls, temp
+files, or `&&` chains.
 
-**Bash Tool - Multi-Line Commands**:
+**Skill/SlashCommand**: Run SYNCHRONOUSLY (not async like Task). Immediately follow expanded prompt.
+Don't wait for "result".
 
-**CRITICAL**: Avoid multi-line bash commands with command substitution `$(...)` - causes parse errors
-`(eval):1: parse error near '('`.
+### Line Wrapping
+110 chars max. Use `format-documentation` skill for Claude-facing docs.
 
-**Safe patterns**: Break into separate calls, use temp files, chain with `&&`, or write script file first.
-See [tool-usage.md § Bash Multi-Line Commands](docs/optional-modules/tool-usage.md#bash-multi-line-commands)
-for detailed alternatives and decision tree.
-
-**Synchronous Tool Execution (Skill and SlashCommand)**:
-
-**CRITICAL**: Skill and SlashCommand tools run SYNCHRONOUSLY, NOT like Task tool's async model.
-
-**Common Mistake**: Treating Skill/SlashCommand like Task tool - waiting for a result after invocation.
-
-**Correct Execution Pattern**:
-1. Invoke tool: `Skill(skill="get-history")` or `SlashCommand(command="/compare-docs")`
-2. See command message: "The 'get-history' skill is running" or "compare-docs is running..."
-3. ✅ IMMEDIATELY read and follow the expanded prompt in the next message
-4. ❌ DO NOT wait for a "result" - these don't return results, they expand prompts
-
-**Key Differences**:
-| Tool | Execution | Returns | Action After Invocation |
-|------|-----------|---------|------------------------|
-| **Task** | Async | Result later | Wait for agent completion, then read result |
-| **Skill/SlashCommand** | Sync | Prompt expansion | Immediately follow expanded instructions |
-
-**Mental Model**: Skill/SlashCommand = Inline prompt injection, NOT subprocess execution.
-
-### Line Wrapping for Documentation
-
-**Maximum line length**: 110 characters (for Claude-facing documentation files)
-
-**Use `format-documentation` skill** (via Skill tool) when editing Claude-facing docs. Provides
-format-safe wrapping rules (YAML, Markdown, code blocks), YAML multi-line syntax (`>` folded, `|` literal),
-examples and validation steps.
-
-**Quick reference**: Wrap prose at word boundaries, use YAML `>` operator for long descriptions, never
-wrap code/URLs/tables.
-
-**Applies to**: CLAUDE.md, .claude/ files, docs/project/, docs/code-style/*-claude.md. NOT human-facing
-docs.
-
-### Documentation Reference System
-
-**MANDATORY**: Use anchor-based references for documentation links to prevent broken references when files
-are edited.
-
-**Use `add-doc-reference` skill** (via Skill tool) when adding cross-references. Provides anchor-based
-reference syntax, anchor naming conventions (lowercase kebab-case), doc-reference-resolver.sh usage,
-reference specificity guidelines.
-
-**Quick reference**: Use `{#anchor-id}` in headings, reference with § separator: `[file.md §
-Section](path#anchor)`. Never hard-code line numbers.
-
-**Complete Guide**: See [documentation-references.md](docs/project/documentation-references.md)
+### Documentation References
+**MANDATORY**: Use anchor-based refs (`{#anchor-id}`, `[file.md § Section](path#anchor)`).
+Use `add-doc-reference` skill. Never hard-code line numbers.
 
 ## Hook Script Standards
 
-**MANDATORY REQUIREMENTS for all hook scripts** (`.claude/hooks/*.sh`):
-
-All hook scripts MUST include error handling pattern:
-
+**All hooks MUST include**:
 ```bash
 #!/bin/bash
 set -euo pipefail
-trap 'echo "ERROR in <script-name>.sh at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+trap 'echo "ERROR in <script>.sh line $LINENO: $BASH_COMMAND" >&2; exit 1' ERR
 ```
 
-**Error Handling Components**: (1) `set -euo pipefail`: Exit on errors, undefined variables, pipe
-failures (2) `trap` with ERR: Catch errors and output helpful diagnostic information (3) Stderr output:
-Error messages MUST go to stderr (`>&2`) (4) Helpful context: Include script name, line number, failed
-command
+**Registration**: Use `register-hook` skill. **RESTART REQUIRED** after settings.json changes.
 
-**Exception**: Library files meant to be sourced may omit these requirements.
+## GIT OPERATIONS
 
-### Hook Registration
+**Use skills**: `git-squash`, `git-rebase`, `git-amend`
 
-**MANDATORY**: After creating a new hook script, you MUST register it in `.claude/settings.json`.
+All enforce **Backup-Verify-Cleanup**: Create backup → Execute → **Verify immediately** → Cleanup
 
-**Use `register-hook` skill** (via Skill tool) when creating hooks. Provides complete workflow including
-hook script creation, making executable, registration in settings.json, restart reminder, testing and commit
-checklist.
-
-**CRITICAL Reminders**:
-- Hooks NOT registered in settings.json will NEVER execute
-- **RESTART REQUIRED**: Changes to settings.json do NOT take effect until Claude Code is restarted.
-  After modifying settings.json, ALWAYS notify user: "Please restart Claude Code for hook changes to
-  take effect"
-- **PreToolUse hooks CAN block commands**: Return exit code 2 with JSON `permissionDecision: "deny"`
-
-## GIT OPERATION WORKFLOWS
-
-**MANDATORY**: When performing git operations with backups, follow COMPLETE workflow including cleanup.
-
-**Use git operation skills** (via Skill tool) for safe execution:
-- `git-squash` - Squash multiple commits with automatic backup and verification
-- `git-rebase` - Rebase, reorder, or squash commits with safety checks
-- `git-amend` - Safely amend commits (HEAD or non-HEAD) with selective staging
-
-All skills enforce **Backup-Verify-Cleanup Pattern**: (1) Create timestamped backup branch (2) Execute
-operation (3) **Verify immediately** (atomic with execution, not separate phase) (4) Cleanup backup after
-verification
-
-**CRITICAL: Verify IMMEDIATELY after operation, not as separate phase** - Separating "execute" and
-"verify" into different todos causes data loss. ONLY mark complete after verification passes.
-
-**CRITICAL: Always Use git-squash Skill for Squashing** {#always-use-git-squash-skill}
-
-Ad-hoc `git rebase -i` with squash produces **concatenated commit messages** (all original messages joined
-together). This is NOT acceptable - squashed commits need **unified messages** describing the final result.
-
-**The Problem**:
-```bash
-# ❌ Ad-hoc squash produces concatenated garbage:
-# "Add feature X
-#
-# Fix bug in X
-#
-# More fixes for X
-#
-# Final polish"
-
-# ✅ Proper unified message describes the final state:
-# "Add feature X with complete implementation
-#
-# Implements X functionality including edge case handling,
-# validation, and documentation."
-```
-
-**Prevention**: ALWAYS use `git-squash` skill which enforces writing a new unified commit message. The skill
-prompts you to craft a message describing what the final code DOES, not just concatenating individual commit
-messages.
-
-## Repository Structure
-
-**NEVER** initialize new repositories
-
-**Main Repository**: `/workspace/main/` (git repository and main development branch)
-
-**Configuration Symlinks**:
-- `/workspace/.claude/` → `/workspace/main/.claude/`
-- `/workspace/CLAUDE.md` → `/workspace/main/CLAUDE.md`
-
-**Session Management**: Session ID is managed via JSON stdin/stdout by `ensure-session-id.py` hook.
-**NEVER** create `.claude/session_id.txt` or any session ID files. No file persistence required.
-
-**Task Worktrees**: `/workspace/tasks/{task-name}/code/` (isolated per task protocol, common merge target
-for all agents)
-
-**Agent Worktrees**: `/workspace/tasks/{task-name}/agents/{agent-name}/code/` (per-agent development
-isolation)
-
-**Locks**: Multi-instance coordination via lock files at `/workspace/tasks/{task-name}/task.json`
-
-> **CRITICAL: task.json Location** {#task-json-location}
->
-> **task.json is at TASK ROOT, NOT in code/ subdirectory**:
-> - ✅ CORRECT: `/workspace/tasks/{task-name}/task.json`
-> - ❌ WRONG: `/workspace/tasks/{task-name}/code/task.json`
->
-> **Common Mistake**: When working in the task worktree (`/workspace/tasks/{task}/code/`), accidentally
-> trying to update task.json with a relative path. Always use ABSOLUTE PATH or navigate to task root.
->
-> ```bash
-> # When in /workspace/tasks/my-task/code/ (task worktree):
->
-> # ❌ WRONG - File doesn't exist here
-> jq '.state = "VALIDATION"' task.json > task.json.tmp && mv task.json.tmp task.json
-> # Result: jq: error: Could not open file task.json: No such file or directory
->
-> # ✅ CORRECT - Use absolute path
-> jq '.state = "VALIDATION"' /workspace/tasks/my-task/task.json > /workspace/tasks/my-task/task.json.tmp && mv /workspace/tasks/my-task/task.json.tmp /workspace/tasks/my-task/task.json
->
-> # ✅ ALSO CORRECT - Navigate to task root first
-> cd /workspace/tasks/my-task && jq '.state = "VALIDATION"' task.json > task.json.tmp && mv task.json.tmp task.json
-> ```
-
-> **CRITICAL: Task Initialization** {#task-initialization-critical}
->
-> **NEVER manually create task.json**. Always use the `task-init` skill which:
-> - Creates task.json with `state: "INIT"` (not IMPLEMENTATION)
-> - Initializes `transition_log` array for state sequence validation
-> - Creates all worktrees atomically
->
-> **Manual task.json creation blocks agents**: The `require-task-protocol.sh` hook validates
-> that transition_log contains all required states (INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS)
-> before allowing IMPLEMENTATION state operations.
->
-> **State Sequence Dependency**: IMPLEMENTATION state operations require PRIOR completion of:
-> INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS (in order, recorded in transition_log)
-
-**CRITICAL: Multi-Instance Coordination**: Before working on or cleaning up tasks owned by different
-sessions, use `verify-task-ownership` skill. NEVER modify `session_id` directly or cleanup foreign tasks
-without verification. See [task-protocol-operations.md §
-Multi-Instance Coordination](docs/project/task-protocol-operations.md#multi-instance-coordination) for
-prohibited patterns and correct approach.
-
-**Branch Management**:
-
-> **CRITICAL: Version Branch Preservation**
-> NEVER delete version-numbered branches (v1, v13, v14, v15, v18, v19, v20, v21, etc.)
-> **Recognition Pattern**: Branches matching `v[0-9]+` are version markers, NOT temporary branches
-
-**Version Branches**:
-- Pattern: `v{number}` (e.g., v1, v13, v21)
-- Purpose: Mark significant project milestones or release points
-- Lifecycle: Permanent - never delete during cleanup
-- Update strategy: Move pointer forward with `git branch -f v21 <new-commit>`, never delete
-
-**Temporary Branches**:
-- Pattern: Task-specific or date-stamped (e.g., `implement-api`, `backup-before-reorder-20251102`)
-- Lifecycle: Delete after merge to main
-- Cleanup: Safe to delete with `git branch -D <branch>`
-
-**CRITICAL: Git History Rewriting Safety**
-
-**NEVER use `--all` or `--branches` with git history-rewriting commands.**
-
-Before any `git filter-branch`, `git rebase`, or history-rewriting operation:
-1. Check what branches exist: `git branch -a`
-2. Identify protected version branches: `git branch | grep -E "^  v[0-9]+"`
-3. Target SPECIFIC branch: `git filter-branch ... main` (NOT `--all`)
-
-**See**: [git-workflow.md § Git History Rewriting
-Safety](docs/project/git-workflow.md#git-history-rewriting-safety) for complete safety procedures and
-examples.
-
-**NEVER Rebase Main Branch**
-
-`git rebase` on main is PROHIBITED. After merging task branches:
-- Rebasing main rewrites merged commits to appear as direct commits on main
-- This breaks the audit trail (can't distinguish task work from ad-hoc commits)
-- Enforcement: `block-main-rebase.sh` blocks `git rebase` when on main branch
-- If commit message needs fixing: Amend on task branch BEFORE merging to main
-
-**Pre-Deletion Validation** (MANDATORY before `git branch -D`):
-1. List all branches: `git branch -v`
-2. Check if branch matches version pattern: `^v[0-9]+$`
-3. For version branches: ERROR (cannot delete, use `git branch -f` to update)
-4. For non-version branches: verify purpose before deletion (backup-* safe after verification,
-   task-* delete after merge, feature-* check with user)
-
-**Multi-Agent Architecture**:
-
-> **ZERO TOLERANCE RULE - IMMEDIATE VIOLATION**
->
-> Main agent creating ANY .java/.ts/.py file with Write/Edit = PROTOCOL VIOLATION
->
-> **IMPLEMENTATION STATE**: ALL source code creation delegated to stakeholder agents
-> **VALIDATION STATE**: Main agent may edit ONLY to fix violations found during validation (see decision
-> tree below)
-> **INFRASTRUCTURE FIXES**: Main agent may create infrastructure files (module-info.java, package-info.java)
-> in VALIDATION state to fix build failures
-> **BEFORE creating ANY .java file**: Ask "Is this IMPLEMENTATION or VALIDATION state?"
-
-> **VALIDATION STATE FIX BOUNDARIES** {#validation-state-fix-boundaries}
->
-> Main agent MAY fix directly during VALIDATION:
-> - ✅ Compilation errors, infrastructure configuration, trivial syntax errors, build system issues
->
-> Main agent MUST RE-INVOKE agents for:
-> - ❌ Style violations (Checkstyle, PMD) → Re-invoke formatter agent
-> - ❌ Test failures → Re-invoke engineer agent
-> - ❌ Logic errors or design flaws → Re-invoke architect agent
-> - ❌ Complex refactoring needs → Re-invoke appropriate stakeholder agent
->
-> **Decision Criterion**: Can the fix be applied mechanically without changing logic? YES → Main agent may fix
-> directly; NO → Re-invoke agent
-
-## Infrastructure File Exceptions {#infrastructure-file-exceptions}
-
-Main agent MAY create/edit the following files in **ANY state** (including INIT and VALIDATION):
-
-### Build System Files
-- `module-info.java` - Java module declarations (JPMS)
-- `package-info.java` - Package-level annotations and documentation
-- `pom.xml` - Maven configuration
-- `build.gradle` - Gradle configuration
-- `.mvn/` - Maven wrapper and configuration
-
-### Coordination Files
-- `task.json` - Task state tracking (lock file)
-- `task.md` - Task requirements and plans
-- `todo.md` - Task registry
-- `.claude/` - Hook configurations and agent definitions
-
-**Rule**: Infrastructure files support the build system. Feature files implement functionality. Only
-stakeholder agents implement features.
-
-**Correct Multi-Agent Workflow**:
-- Stakeholder agents (NOT main agent) write all source code
-- Each agent has own worktree: `/workspace/tasks/{task-name}/agents/{agent-name}/code/`
-- Main agent coordinates via Task tool, monitors status.json, manages state transitions
-- Flow: Main agent delegates → Agents implement in parallel → Merge to task branch → Iterate until
-  complete
-- Models: REQUIREMENTS phase uses Opus (analysis/decisions), IMPLEMENTATION phase uses Haiku (code
-  generation). **Escalate to Opus** for complex implementations involving: AST analysis, multi-character
-  token handling, context-sensitive parsing, or when haiku agents fail.
-
-  **Haiku-to-Opus Escalation Triggers** (escalate IMMEDIATELY, not to Sonnet):
-  - Test creation with utility classes (ClasspathTestUtils, test helpers)
-  - Complex test scenarios (multiple test classes, mocking, integration tests)
-  - Agent claims completion but files not created (hallucination)
-  - >20 test failures after implementation
-  - Agent makes same mistake twice in same session
-- **Agent Spawning**: Agents spawn FRESH for each phase (do NOT use Task tool `resume` parameter across
-  phases). Different phases use different models and have different objectives (clean separation).
-
-**CRITICAL PROTOCOL VIOLATIONS**:
-
-**VIOLATION #1: Main Agent Source File Creation**
-
-❌ **VIOLATION Pattern** (causes audit failures):
-```bash
-# Main agent directly creating source files in task worktree
-cd /workspace/tasks/implement-formatter-api/code
-Write tool: src/main/java/io/github/cowwoc/styler/formatter/FormattingRule.java
-# Result: CRITICAL PROTOCOL VIOLATION
-```
-
-✅ **CORRECT Pattern** (passes audits):
-```bash
-# 1. Create task.json for state tracking (via task-init skill)
-# 2. Create agent worktree BEFORE invoking agent
-git worktree add /workspace/tasks/implement-formatter-api/agents/architect/code \
-  -b implement-formatter-api-architect
-
-# 3. Invoke agent via Task tool (agent creates files in THEIR worktree)
-Task tool: architect
-  requirements: "Create FormattingRule interface..."
-  worktree: /workspace/tasks/implement-formatter-api/agents/architect/code
-
-# 4. Main agent merges AFTER agent completion
-cd /workspace/tasks/implement-formatter-api/code
-git merge implement-formatter-api-architect
-```
-
-**Key Distinction**: Main agent COORDINATES (via Task tool), agents IMPLEMENT (via Write/Edit in agent
-worktrees)
-
-**VIOLATION #2: Missing Agent Worktrees** - BEFORE invoking agents, create worktrees: `git worktree add
-/workspace/tasks/{task-name}/agents/{agent-name}/code -b {task-name}-{agent-name}`
-
-## File Organization
-
-### Report Types and Lifecycle
-
-**Task Requirements & Plans** (`task.md` at task root):
-- Location: `/workspace/tasks/{task-name}/task.md`
-- Contains agent requirements and implementation plans
-- Created: CLASSIFIED state (by main agent, BEFORE stakeholder invocation)
-- Updated: REQUIREMENTS (agent reports), SYNTHESIS (implementation plans)
-- Lifecycle: Persists through task execution, removed during CLEANUP
-
-**Stakeholder Reports** (at task root):
-- Examples: `{task-name}-architect-requirements.md`, `status.json`, `*-IMPLEMENTATION-PLAN.md`
-- Location: `/workspace/tasks/{task-name}/` (accessible to all agents)
-- Lifecycle: Cleaned up in CLEANUP state
-- **CRITICAL**: NEVER commit to main (`.gitignore` + pre-commit hook enforce)
-
-**Empirical Studies** (`docs/studies/{topic}.md`): Temporary research cache, persist until consumed by
-todo.md tasks
-
-**Project Code**: Task code directory (`src/`, `pom.xml`, etc.)
-
-### Report File Naming Convention
-
-See **"MANDATORY OUTPUT REQUIREMENT"** patterns in [task-protocol-core.md](docs/project/task-protocol-core.md)
-and [task-protocol-operations.md](docs/project/task-protocol-operations.md) for exact agent report naming
-conventions by phase.
-
-**Note**: Reports are written to `/workspace/tasks/{task-name}/` (task root), not inside the code
-directory.
+**CRITICAL**: Always use `git-squash` skill for squashing (produces unified messages, not concatenated).
 
 ## RETROSPECTIVE DOCUMENTATION POLICY
 
-**CRITICAL:** Do NOT create analysis, learning, or retrospective documents unless explicitly instructed by
-the user.
+**PROHIBITED**: Analysis docs, lessons learned, debugging chronicles, comparison studies, "why we chose X".
 
-**PROHIBITED PATTERNS**: Post-implementation analysis, "lessons learned" documents, debugging chronicles,
-development process retrospectives, fix documentation duplicating information in code/commits, decision
-chronicles, evidence-based decision process sections, multi-phase retrospectives, safety analysis documents,
-comparison studies (before/after), refactoring analysis, "why we chose X" documents (put in commit message),
-inline comments chronicling WHEN added or WHAT PROBLEM prompted (chronology belongs in commits)
+**PRE-CREATION CHECKLIST**: User requested? Not retrospective? Not analysis? Safe filename? Could go in
+commit? Useful in 6 months?
 
-**COMMON MISTAKE**: When analyzing complex issues, defaulting to "create structured document" to organize
-thinking. **DO NOT** create documents for your own analysis unless user explicitly requests them.
+**Analysis approach**: Working memory (not files), commit messages (not docs), code comments (not files)
 
-**MANDATORY PRE-CREATION CHECKLIST** before using Write tool to create any .md file: User explicitly
-requested it; not retrospective (documents HOW TO USE, not WHAT WAS DONE); not analysis (documents WHAT
-EXISTS, not WHY WE DID IT); filename check (avoid "summary", "lessons-learned", "retrospective",
-"postmortem", "analysis", "comparison", "study"); content check (no "What Was Implemented", "Files Created",
-"Success Criteria Achieved", "Before/After", "Key Improvements"); alternative check (could this go in commit
-message?); utility check (will this be useful 6 months from now?); duplication check (does forward-looking
-content already exist?)
-
-**CORRECT APPROACH FOR ANALYSIS**: (1) Working through complexity: Use working memory, not files (2)
-Documenting decisions: Commit messages, not separate docs (3) Recording rationale: Code comments, not
-analysis files (4) Explaining architecture: Update existing docs, not new retrospectives
-
-**Inline Comment Policy**:
-- ✅ CORRECT: Explain WHAT code does, WHY pattern exists (forward-looking)
-- ❌ WRONG: Chronicle WHEN added, WHAT PROBLEM prompted it (retrospective - put chronology in commit
-  message)
-- ❌ WRONG: Reference "original behavior" or previous implementations
-  - Bad: `-1 to match original behavior (endPosition is inclusive)`
-  - Good: `-1 because endPosition is inclusive, pointing to semicolon`
-  - Bad: `// Preserved from legacy implementation`
-  - Good: `// Required for backward compatibility with API v1 clients`
-
-**PERMITTED (only with explicit user instruction)**: User explicitly says "Create a document analyzing...",
-"Write up the comparison...", task in todo.md specifically requires documentation, forward-looking
-architecture/API/design docs (how system works, not how it was built)
-
-**TEMPORARY ANALYSIS EXCEPTION**: During complex debugging or analysis, you MAY create temporary
-retrospective documents in `/workspace/tasks/{task}/temp/` for working notes.
-- **Location**: ONLY `/workspace/tasks/{task-name}/temp/` directory
-- **Cleanup**: MUST delete BEFORE AWAITING_USER_APPROVAL → COMPLETE transition
-- **Enforcement**: `check-retrospective-due.sh` validates cleanup before task completion
-- **Warning**: Hook outputs cleanup reminder when creating temp files
-
-**Enforcement**: Hooks block retrospective patterns; `block-retrospective-docs.sh` enforces policy
+**TEMP EXCEPTION**: `/workspace/tasks/{task}/temp/` for working notes. MUST delete before COMPLETE.
 
 ## MANDATORY MISTAKE HANDLING
 
-**CRITICAL**: When ANY agent makes a mistake or protocol deviation, invoke the learn-from-mistakes skill for
-systematic prevention.
+**CRITICAL**: Invoke learn-from-mistakes skill for ANY mistake.
 
-**What Constitutes a Mistake**: Protocol violations (any severity), process deviations, rework required,
-build/test/quality failures, incorrect assumptions, tool misuse, working directory errors, state machine
-violations, logical/mathematical errors (contradictory statements, threshold miscomparison, wrong decision
-path)
+**Mistakes**: Protocol violations, rework, build failures, tool misuse, logical errors
 
-**When to Invoke**: IMMEDIATELY after identifying the mistake, invoke via **general-purpose subagent**:
-
+**Invoke via**:
 ```
-Task(
-  subagent_type: "general-purpose",
-  description: "Investigate mistake and implement prevention",
-  prompt: "Invoke the learn-from-mistakes skill to investigate [describe mistake]...",
-  model: "opus"
-)
+Task(subagent_type: "general-purpose", prompt: "Invoke learn-from-mistakes skill...", model: "opus")
 ```
-
-**Enforcement**: Audits invoke for ANY violation; normal work invoke for own/other/user-reported mistakes; no
-"small mistake" or "already know" excuses. Always use general-purpose subagent for isolation.
 
 ## Essential References
 
 **Task Protocol** (use skills for common operations):
-- [task-protocol-core.md](docs/project/task-protocol-core.md) - State machine architecture, definitions (~15K tokens)
-- [task-protocol-transitions.md](docs/project/task-protocol-transitions.md) - Detailed state transitions (~17K tokens)
-- [task-protocol-multi-agent.md](docs/project/task-protocol-multi-agent.md) - Multi-agent workflow (~11K tokens)
-- [task-protocol-operations.md](docs/project/task-protocol-operations.md) - Operations, best practices (~20K tokens)
-- [task-protocol-recovery.md](docs/project/task-protocol-recovery.md) - Error recovery procedures (~8K tokens)
-- [task-protocol-risk-agents.md](docs/project/task-protocol-risk-agents.md) - Risk assessment, agent selection (~4K
-  tokens)
-- Skills: `select-agents`, `recover-from-error`, `state-transition`
+- [task-protocol-core.md](docs/project/task-protocol-core.md) - State machine (~15K tokens)
+- [task-protocol-transitions.md](docs/project/task-protocol-transitions.md) - Transitions (~17K tokens)
+- [task-protocol-operations.md](docs/project/task-protocol-operations.md) - Operations (~20K tokens)
+Skills: `select-agents`, `recover-from-error`, `state-transition`, `task-init`, `pre-presentation-cleanup`
 
-**Agent Coordination**:
-- [docs/project/main-agent-coordination.md](docs/project/main-agent-coordination.md) - Main agent coordination
-- [docs/project/task-protocol-agents.md](docs/project/task-protocol-agents.md) - Sub-agent protocol
+**Main Agent Coordination**:
+- [main-agent-coordination.md](docs/project/main-agent-coordination.md) - Multi-agent workflow, repository
+  structure, branch management, validation boundaries, protocol violations
 
-**Project Configuration**:
-- [docs/project/architecture.md](docs/project/architecture.md) - Project architecture and features
-- [docs/project/scope.md](docs/project/scope.md) - Family configuration and development philosophy
-- [docs/project/build-system.md](docs/project/build-system.md) - Build configuration and commands
-- [docs/project/git-workflow.md](docs/project/git-workflow.md) - Git workflows and commit squashing
+**Agent Protocol**:
+- [task-protocol-agents.md](docs/project/task-protocol-agents.md) - Sub-agent protocol
 
 **Code Quality**:
-- [docs/project/style-guide.md](docs/project/style-guide.md) - Style validation and JavaDoc requirements
-- [docs/project/quality-guide.md](docs/project/quality-guide.md) - Code quality and testing standards
-- [docs/code-style-human.md](docs/code-style-human.md) - Code style master guide
-- [docs/code-style/](docs/code-style/) - Code style files (\*-claude.md detection patterns, \*-human.md
-  explanations)
+- [style-guide.md](docs/project/style-guide.md) - Style validation, JavaDoc
+- [quality-guide.md](docs/project/quality-guide.md) - Testing standards
+- [docs/code-style/](docs/code-style/) - Code style files
