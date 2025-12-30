@@ -7,6 +7,7 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
 
@@ -269,6 +270,7 @@ public final class ParameterDeclarationParserTest
 			semanticNode(NodeType.COMPILATION_UNIT, 0, 67),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 66, "Test"),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 64),
+			semanticNode(ANNOTATION, 37, 45),
 			semanticNode(NodeType.QUALIFIED_NAME, 38, 45),
 			semanticNode(NodeType.QUALIFIED_NAME, 46, 52),
 			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 57, "name"),
@@ -295,7 +297,9 @@ public final class ParameterDeclarationParserTest
 			semanticNode(NodeType.COMPILATION_UNIT, 0, 77),
 			semanticNode(NodeType.CLASS_DECLARATION, 7, 76, "Test"),
 			semanticNode(NodeType.METHOD_DECLARATION, 21, 74),
+			semanticNode(ANNOTATION, 37, 45),
 			semanticNode(NodeType.QUALIFIED_NAME, 38, 45),
+			semanticNode(ANNOTATION, 46, 55),
 			semanticNode(NodeType.QUALIFIED_NAME, 47, 55),
 			semanticNode(NodeType.QUALIFIED_NAME, 56, 62),
 			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 67, "name"),
