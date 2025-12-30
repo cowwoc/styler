@@ -306,11 +306,11 @@
 
 ---
 
-## 2025-12-28
+## 2025-12-30
 
 ### Try-with-Resources Variable Reference Support ✅
 
-**Completion Date**: 2025-12-28
+**Completion Date**: 2025-12-30
 
 **Task**: `add-try-resource-variable`
 
@@ -319,24 +319,28 @@
 - JDK 9+ syntax allowing effectively-final variable references (`try (existingVar)`) failed to parse
 
 **Solution Implemented**:
-- Modified `parseResource()` to detect simple identifier vs full declaration
-- When identifier followed by `;` or `)`, treat as variable reference (done)
-- Otherwise, proceed with full declaration parsing (existing behavior)
+- Added `peekToken()` for single-token lookahead without consuming
+- Added `isResourceVariableReference()` to detect variable reference vs declaration
+- Added `parseResourceVariableReference()` and `parseResourceDeclaration()` methods
+- Modified `parseResource()` to branch based on detection
 
 **Files Modified**:
-- `parser/src/main/java/.../parser/Parser.java` - Enhanced parseResource() with lookahead
+- `parser/src/main/java/.../parser/Parser.java` - Added 4 methods, modified parseResource()
 
 **Files Created**:
-- `parser/src/test/java/.../parser/test/TryResourceVariableTest.java` - 6 tests
+- `parser/src/test/java/.../parser/test/TryResourceVariableTest.java` - 9 tests
 
 **Test Coverage**:
-- Single variable reference: `try (reader)`
-- Multiple variable references: `try (reader; writer)`
-- Mixed declaration and reference: `try (var x = new...; existingVar)`
-- Qualified variable reference (field access): `try (this.resource)`
+- Single variable reference: `try (resource)`
+- Multiple variable references: `try (stream1; stream2)`
+- Mixed declaration and reference: `try (BufferedReader br = new...; existing)`
+- Reference followed by declaration, declaration followed by reference
+- With catch clause, with finally clause
+- Trailing semicolon handling, three variable references
+- Complex mixed scenario with interleaved declarations and references
 
 **Quality**:
-- All 6 tests passing
+- All 9 tests passing
 - Zero Checkstyle/PMD violations
 - Build successful
 
