@@ -87,7 +87,7 @@ public record Token(TokenType type, int start, int end, String text)
 	public boolean isOperator()
 	{
 		return type.ordinal() >= TokenType.ASSIGN.ordinal() &&
-			type.ordinal() <= TokenType.URSHIFTASSIGN.ordinal();
+			type.ordinal() <= TokenType.UNSIGNED_RIGHT_SHIFT_ASSIGN.ordinal();
 	}
 
 	/**

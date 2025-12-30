@@ -25,11 +25,11 @@ public final class LexerHexLiteralTest
 		Lexer lexer = new Lexer("0xdead");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0xdead");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -43,11 +43,11 @@ public final class LexerHexLiteralTest
 		Lexer lexer = new Lexer("0XBEEF");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0XBEEF");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -62,11 +62,11 @@ public final class LexerHexLiteralTest
 		Lexer lexer = new Lexer("0xDEAD_BEEF");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0xDEAD_BEEF");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -80,11 +80,11 @@ public final class LexerHexLiteralTest
 		Lexer lexer = new Lexer("0xFFL");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.LONG_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0xFFL");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -98,11 +98,11 @@ public final class LexerHexLiteralTest
 		Lexer lexer = new Lexer("0xAbCdEf");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0xAbCdEf");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -116,11 +116,11 @@ public final class LexerHexLiteralTest
 		Lexer lexer = new Lexer("0xFF_FF_FF_FF");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0xFF_FF_FF_FF");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -133,11 +133,11 @@ public final class LexerHexLiteralTest
 		Lexer lexer = new Lexer("0xDEAD_BEEFL");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.LONG_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0xDEAD_BEEFL");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -150,11 +150,11 @@ public final class LexerHexLiteralTest
 		Lexer lexer = new Lexer("0x0");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0x0");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -167,11 +167,11 @@ public final class LexerHexLiteralTest
 		Lexer lexer = new Lexer("0xFFFFFFFF");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0xFFFFFFFF");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -184,10 +184,10 @@ public final class LexerHexLiteralTest
 		Lexer lexer = new Lexer("0x123");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // hex literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0x123");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 }

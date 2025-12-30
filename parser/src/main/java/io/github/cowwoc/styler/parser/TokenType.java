@@ -75,58 +75,58 @@ public enum TokenType
 	NULL_LITERAL,
 
 	// Separators
-	LPAREN,          // (
-	RPAREN,          // )
-	LBRACE,          // {
-	RBRACE,          // }
-	LBRACKET,        // [
-	RBRACKET,        // ]
-	SEMICOLON,       // ;
-	COMMA,           // ,
-	DOT,             // .
-	ELLIPSIS,        // ...
-	AT,              // @
-	DOUBLE_COLON,    // :: (method reference)
+	LEFT_PARENTHESIS,   // (
+	RIGHT_PARENTHESIS,  // )
+	LEFT_BRACE,         // {
+	RIGHT_BRACE,        // }
+	LEFT_BRACKET,       // [
+	RIGHT_BRACKET,      // ]
+	SEMICOLON,          // ;
+	COMMA,              // ,
+	DOT,                // .
+	ELLIPSIS,           // ...
+	AT_SIGN,            // @
+	DOUBLE_COLON,       // :: (method reference)
 
 	// Operators
-	ASSIGN,          // =
-	GT,              // >
-	LT,              // <
-	NOT,             // !
-	TILDE,           // ~
-	QUESTION,        // ?
-	COLON,           // :
-	ARROW,           // -> (lambda)
-	EQ,              // ==
-	LE,              // <=
-	GE,              // >=
-	NE,              // !=
-	AND,             // &&
-	OR,              // ||
-	INC,             // ++
-	DEC,             // --
-	PLUS,            // +
-	MINUS,           // -
-	STAR,            // *
-	DIV,             // /
-	BITAND,          // &
-	BITOR,           // |
-	CARET,           // ^
-	MOD,             // %
-	LSHIFT,          // <<
-	RSHIFT,          // >>
-	URSHIFT,         // >>>
-	PLUSASSIGN,      // +=
-	MINUSASSIGN,     // -=
-	STARASSIGN,      // *=
-	DIVASSIGN,       // /=
-	BITANDASSIGN,    // &=
-	BITORASSIGN,     // |=
-	CARETASSIGN,     // ^=
-	MODASSIGN,       // %=
-	LSHIFTASSIGN,    // <<=
-	RSHIFTASSIGN,    // >>=
-	URSHIFTASSIGN,   // >>>=
+	ASSIGN,                       // =
+	GREATER_THAN,                 // >
+	LESS_THAN,                    // <
+	NOT,                          // !
+	TILDE,                        // ~
+	QUESTION_MARK,                // ?
+	COLON,                        // :
+	ARROW,                        // -> (lambda)
+	EQUAL,                        // ==
+	LESS_THAN_OR_EQUAL,           // <=
+	GREATER_THAN_OR_EQUAL,        // >=
+	NOT_EQUAL,                    // !=
+	LOGICAL_AND,                  // &&
+	LOGICAL_OR,                   // ||
+	INCREMENT,                    // ++
+	DECREMENT,                    // --
+	PLUS,                         // +
+	MINUS,                        // -
+	STAR,                         // *
+	DIVIDE,                       // /
+	BITWISE_AND,                  // &
+	BITWISE_OR,                   // |
+	CARET,                        // ^
+	MODULO,                       // %
+	LEFT_SHIFT,                   // <<
+	RIGHT_SHIFT,                  // >>
+	UNSIGNED_RIGHT_SHIFT,         // >>>
+	PLUS_ASSIGN,                  // +=
+	MINUS_ASSIGN,                 // -=
+	STAR_ASSIGN,                  // *=
+	DIVIDE_ASSIGN,                // /=
+	BITWISE_AND_ASSIGN,           // &=
+	BITWISE_OR_ASSIGN,            // |=
+	CARET_ASSIGN,                 // ^=
+	MODULO_ASSIGN,                // %=
+	LEFT_SHIFT_ASSIGN,            // <<=
+	RIGHT_SHIFT_ASSIGN,           // >>=
+	UNSIGNED_RIGHT_SHIFT_ASSIGN,  // >>>=
 
 	// Identifiers and comments
 	IDENTIFIER,
@@ -137,6 +137,6 @@ public enum TokenType
 
 	// Special tokens
 	WHITESPACE,
-	EOF,
+	END_OF_FILE,
 	ERROR            // For error recovery
 }

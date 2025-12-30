@@ -77,12 +77,12 @@ public class TokenTest
 
 	/**
 	 * Validates that zero-length tokens are supported (start equals end).
-	 * This is necessary for EOF tokens which represent a position but contain no characters.
+	 * This is necessary for END_OF_FILE tokens which represent a position but contain no characters.
 	 */
 	@Test
 	public void testZeroLengthToken()
 	{
-		Token token = new Token(TokenType.EOF, 10, 10, null);
+		Token token = new Token(TokenType.END_OF_FILE, 10, 10, null);
 
 		requireThat(token.length(), "length").isEqualTo(0);
 	}
@@ -146,7 +146,7 @@ public class TokenTest
 	{
 		Token plusToken = new Token(TokenType.PLUS, 0, 1, "+");
 		Token assignToken = new Token(TokenType.ASSIGN, 0, 1, "=");
-		Token andToken = new Token(TokenType.AND, 0, 2, "&&");
+		Token andToken = new Token(TokenType.LOGICAL_AND, 0, 2, "&&");
 		Token identifierToken = new Token(TokenType.IDENTIFIER, 0, 5, "myVar");
 
 		requireThat(plusToken.isOperator(), "plusToken.isOperator()").isTrue();

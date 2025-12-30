@@ -26,11 +26,11 @@ public final class LexerOctalLiteralTest
 		Lexer lexer = new Lexer("0755");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0755");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -45,11 +45,11 @@ public final class LexerOctalLiteralTest
 		Lexer lexer = new Lexer("0_77");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0_77");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -63,11 +63,11 @@ public final class LexerOctalLiteralTest
 		Lexer lexer = new Lexer("0777L");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal long literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal long literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.LONG_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0777L");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -81,11 +81,11 @@ public final class LexerOctalLiteralTest
 		Lexer lexer = new Lexer("0_777_777_777");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0_777_777_777");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -98,11 +98,11 @@ public final class LexerOctalLiteralTest
 		Lexer lexer = new Lexer("0_777_777L");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal long literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal long literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.LONG_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0_777_777L");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -115,11 +115,11 @@ public final class LexerOctalLiteralTest
 		Lexer lexer = new Lexer("0");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -132,11 +132,11 @@ public final class LexerOctalLiteralTest
 		Lexer lexer = new Lexer("07777777");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("07777777");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -149,11 +149,11 @@ public final class LexerOctalLiteralTest
 		Lexer lexer = new Lexer("0_1");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("0_1");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -166,10 +166,10 @@ public final class LexerOctalLiteralTest
 		Lexer lexer = new Lexer("01234567");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // octal literal + END_OF_FILE
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INTEGER_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("01234567");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 }

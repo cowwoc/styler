@@ -32,7 +32,7 @@ public class LexerUnicodeEscapeTest
 		requireThat(token.text(), "token.text()").isEqualTo("'\\u0041'");
 		requireThat(token.start(), "token.start()").isEqualTo(0);
 		requireThat(token.end(), "token.end()").isEqualTo(8);
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -50,7 +50,7 @@ public class LexerUnicodeEscapeTest
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.CHAR_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("'\\uFFFD'");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -68,7 +68,7 @@ public class LexerUnicodeEscapeTest
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.STRING_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("\"\\u0048ello\"");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -86,7 +86,7 @@ public class LexerUnicodeEscapeTest
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.STRING_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("\"\\u0048\\u0065\\u006C\\u006C\\u006F\"");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -104,7 +104,7 @@ public class LexerUnicodeEscapeTest
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.STRING_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("\"Hello\\u0021\"");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class LexerUnicodeEscapeTest
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.STRING_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("\"\\n\\u0041\\t\"");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -140,7 +140,7 @@ public class LexerUnicodeEscapeTest
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.STRING_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("\"\"\"\n\\u0041\\u0042\\u0043\n\"\"\"");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -159,7 +159,7 @@ public class LexerUnicodeEscapeTest
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.STRING_LITERAL);
 		requireThat(token.text(), "token.text()").contains("\\u0020");
 		requireThat(token.text(), "token.text()").contains("\\n");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -177,7 +177,7 @@ public class LexerUnicodeEscapeTest
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.CHAR_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("'\\n'");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -195,7 +195,7 @@ public class LexerUnicodeEscapeTest
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.STRING_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("\"\\t\\r\\n\"");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -213,7 +213,7 @@ public class LexerUnicodeEscapeTest
 		Token token = tokens.get(0);
 		requireThat(token.type(), "token.type()").isEqualTo(TokenType.CHAR_LITERAL);
 		requireThat(token.text(), "token.text()").isEqualTo("'\\u004a'");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -233,6 +233,6 @@ public class LexerUnicodeEscapeTest
 		requireThat(token.text(), "token.text()").isEqualTo("\"\\u0041\\u0042\"");
 		// Token is: quote + 6 chars (\\u0041) + 6 chars (\\u0042) + quote = 14 chars total
 		requireThat(token.end() - token.start(), "token.length()").isEqualTo(14);
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 }
