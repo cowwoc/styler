@@ -1,12 +1,8 @@
 # Task Protocol - Risk Assessment & Agent Selection
 
-> **Version:** 1.0 | **Last Updated:** 2025-12-10
-> **Parent Document:** [task-protocol-core.md](task-protocol-core.md)
-> **Related Documents:** [task-protocol-operations.md](task-protocol-operations.md) •
-[task-protocol-multi-agent.md](task-protocol-multi-agent.md)
+> **Parent:** [task-protocol-core.md](task-protocol-core.md)
 
-**PURPOSE**: Risk classification, agent selection, and workflow variant determination.
-
+**PURPOSE**: Risk classification, agent selection, workflow variant determination.
 **WHEN TO READ**: During CLASSIFIED state when determining task risk level and selecting agents.
 
 ---
@@ -15,34 +11,23 @@
 
 ### Agent Classification {#agent-classification}
 
-**STAKEHOLDER AGENTS** (for task implementation):
-- `architect`, `architect`
-- `style`, `style`
-- `quality`, `quality`
-- `test`, `test`
-- `build`, `build`
-- `security`, `security`
-- `performance`, `performance`
-- `usability`, `usability`
+**STAKEHOLDER AGENTS** (task implementation): architect, style, quality, test, build, security, performance, usability
 
 **NON-STAKEHOLDER AGENTS** (excluded from task classification):
-- `config`, `config` - Claude Code configuration management only
-- `parse-conversation-timeline skill`, `audit-protocol-compliance skill`, `audit-protocol-efficiency skill` -
-  Audit pipeline only
+- `config` - Claude Code configuration management only
+- Audit pipeline skills: `parse-conversation-timeline`, `audit-protocol-compliance`, `audit-protocol-efficiency`
 
-**CRITICAL RULE**: When performing CLASSIFIED state agent selection, ONLY select from stakeholder agents.
-NEVER include config-* or process-* agents in task worktree agent selection. These agents serve
-meta-purposes (configuration management, process auditing) and are NOT involved in task implementation.
+**CRITICAL RULE**: CLASSIFIED state agent selection uses ONLY stakeholder agents. NEVER include config or audit agents in task worktree selection. **Violation consequence**: Task protocol failure, invalid agent invocation.
 
 ### Automatic Risk Classification {#automatic-risk-classification}
 
 **Input**: File paths from modification request
 **Process**: Pattern matching → Escalation trigger analysis → Agent set determination
-**Output**: Risk level (HIGH/MEDIUM/LOW) + Required agent set from STAKEHOLDER AGENTS only
+**Output**: Risk level (HIGH/MEDIUM/LOW) + Required agent set (stakeholder agents only)
 
 ### HIGH-RISK FILES (Complete Validation Required) {#high-risk-files-complete-validation-required}
 
-**Patterns:**
+**Patterns**:
 - `src/**/*.java` (core implementation)
 - `pom.xml`, `**/pom.xml` (build configuration)
 - `.github/**` (CI/CD workflows)
@@ -53,24 +38,22 @@ meta-purposes (configuration management, process auditing) and are NOT involved 
 - `docs/project/critical-rules.md` (safety rules)
 
 **Required Agents**: architect, style, quality, build
-**Additional Agents**: security (if security-related), performance (if performance-critical),
-test (if new functionality), usability (if user-facing)
+**Additional Agents**: security (security-related), performance (performance-critical), test (new functionality), usability (user-facing)
 
 ### MEDIUM-RISK FILES (Domain Validation Required) {#medium-risk-files-domain-validation-required}
 
-**Patterns:**
+**Patterns**:
 - `src/test/**/*.java` (test files)
 - `docs/code-style/**` (style documentation)
 - `**/resources/**/*.properties` (configuration)
 - `**/*Test.java`, `**/*Tests.java` (test classes)
 
 **Required Agents**: architect, quality
-**Additional Agents**: style (if style files), security (if config files),
-performance (if benchmarks)
+**Additional Agents**: style (style files), security (config files), performance (benchmarks)
 
 ### LOW-RISK FILES (Minimal Validation Required) {#low-risk-files-minimal-validation-required}
 
-**Patterns:**
+**Patterns**:
 - `*.md` (except CLAUDE.md, task-protocol.md, critical-rules.md)
 - `docs/**/*.md` (general documentation)
 - `todo.md` (task tracking)
@@ -81,20 +64,30 @@ performance (if benchmarks)
 
 ### Escalation Triggers {#escalation-triggers}
 
-**Keywords**: "security", "architecture", "breaking", "performance", "concurrent", "database", "api",
-"state", "dependency"
-**Content Analysis**: Cross-module dependencies, security implications, architectural changes
-**Action**: Force escalation to next higher risk level
+**Keywords that trigger escalation**:
+- "security" → escalate LOW→MEDIUM or MEDIUM→HIGH
+- "architecture" → escalate LOW→MEDIUM or MEDIUM→HIGH
+- "breaking" → escalate LOW→MEDIUM or MEDIUM→HIGH
+- "performance" → escalate LOW→MEDIUM or MEDIUM→HIGH
+- "concurrent" → escalate LOW→MEDIUM or MEDIUM→HIGH
+- "database" → escalate LOW→MEDIUM or MEDIUM→HIGH
+- "api" → escalate LOW→MEDIUM or MEDIUM→HIGH
+- "state" → escalate LOW→MEDIUM or MEDIUM→HIGH
+- "dependency" → escalate LOW→MEDIUM or MEDIUM→HIGH
+
+**Content Analysis triggers**: Cross-module dependencies, security implications, architectural changes
+
+**Escalation Action**: Force escalation to NEXT HIGHER risk level (LOW→MEDIUM, MEDIUM→HIGH). HIGH cannot escalate further.
 
 ### Manual Overrides {#manual-overrides}
 
-**Force Full Protocol**: `--force-full-protocol` flag for critical changes
-**Explicit Risk Level**: `--risk-level=HIGH|MEDIUM|LOW` to override classification
-**Escalation Keywords**: "security", "architecture", "breaking" in task description
+- `--force-full-protocol`: Force HIGH risk for critical changes
+- `--risk-level=HIGH|MEDIUM|LOW`: Override automatic classification
+- Escalation keywords in task description: "security", "architecture", "breaking" → force escalation
 
 ### Risk Assessment Audit Trail {#risk-assessment-audit-trail}
 
-**Required Logging:**
+**Required Logging** (in state.json and commit messages):
 - Risk level selected (HIGH/MEDIUM/LOW)
 - Classification method (pattern match, keyword trigger, manual override)
 - Escalation triggers activated (if any)
@@ -102,78 +95,72 @@ performance (if benchmarks)
 - Agent set selected for review
 - Final outcome (approved/rejected/deferred)
 
-**Implementation**: Log in state.json file and commit messages for audit purposes
-
 ---
 
 ## WORKFLOW VARIANTS BY RISK LEVEL {#workflow-variants-by-risk-level}
 
 ### HIGH_RISK_WORKFLOW (Complete Validation) {#high_risk_workflow-complete-validation}
 
-**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW →
-COMPLETE → CLEANUP
-**Stakeholder Agents**: All agents based on task requirements
-**Isolation**: Mandatory worktree isolation
+**States**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
+**Agents**: All agents based on task requirements
+**Isolation**: Mandatory worktree
 **Review**: Complete stakeholder validation
 **Use Case**: Core implementation, build configuration, security, CI/CD
 **Conditional Skips**: None - all validation required
 
 ### MEDIUM_RISK_WORKFLOW (Domain Validation) {#medium_risk_workflow-domain-validation}
 
-**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW →
-COMPLETE → CLEANUP
-**Stakeholder Agents**: Based on change characteristics
+**States**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → IMPLEMENTATION → VALIDATION → REVIEW → COMPLETE → CLEANUP
+**Agents**:
 - Base: architect (always required)
 - +formatter: If style/formatting files modified
-- +security: If any configuration or resource files modified
+- +security: If configuration or resource files modified
 - +performance: If test performance or benchmarks affected
 - +engineer: Always included for code quality validation
-**Isolation**: Worktree isolation for multi-file changes
+
+**Isolation**: Worktree for multi-file changes
 **Review**: Domain-appropriate stakeholder validation
 **Use Case**: Test files, style documentation, configuration files
-**Conditional Skips**: May skip IMPLEMENTATION/VALIDATION states if only documentation changes
+**Conditional Skips**: May skip IMPLEMENTATION/VALIDATION if change_type is "documentation_only" OR "config_only"
 
 ### LOW_RISK_WORKFLOW (Streamlined Validation) {#low_risk_workflow-streamlined-validation}
 
-**States Executed**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → COMPLETE → CLEANUP
-**Stakeholder Agents**: None (unless escalation triggered)
+**States**: INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → COMPLETE → CLEANUP
+**Agents**: None (unless escalation triggered - then escalate to MEDIUM and re-evaluate agents)
 **Isolation**: Required for multi-file changes, optional for single documentation file
 **Review**: Evidence-based validation and automated checks
 **Safety Gates**:
 - Verify no cross-references to modified files in src/
 - Confirm no build configuration impact
 - Validate no security-sensitive content changes
-**Use Case**: Documentation updates, todo.md, README files
-**Conditional Skips**: Skip IMPLEMENTATION, VALIDATION, REVIEW states entirely
 
-### Conditional State Transition Logic {#conditional-state-transition-logic}
+**Use Case**: Documentation updates, todo.md, README files
+**Conditional Skips**: Skip IMPLEMENTATION, VALIDATION, REVIEW entirely
+
+### State Path Logic {#conditional-state-transition-logic}
 
 ```python
 def determine_state_path(risk_level, change_type):
-    """Determine which states to execute based on risk and change type"""
-
-    base_states = ["INIT", "CLASSIFIED", "REQUIREMENTS", "SYNTHESIS"]
+    base = ["INIT", "CLASSIFIED", "REQUIREMENTS", "SYNTHESIS"]
+    full = base + ["IMPLEMENTATION", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
+    minimal = base + ["COMPLETE", "CLEANUP"]
 
     if risk_level == "HIGH":
-        return base_states + ["IMPLEMENTATION", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
-
+        return full  # Always full validation, no skips
     elif risk_level == "MEDIUM":
         if change_type in ["documentation_only", "config_only"]:
-            return base_states + ["COMPLETE", "CLEANUP"]
+            return minimal  # Skip IMPLEMENTATION/VALIDATION/REVIEW
         else:
-            return base_states + ["IMPLEMENTATION", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
-
+            return full  # Full validation for code changes
     elif risk_level == "LOW":
-        return base_states + ["COMPLETE", "CLEANUP"]
-
+        return minimal  # Always minimal path
     else:
-        # Default to HIGH risk if uncertain
-        return base_states + ["IMPLEMENTATION", "VALIDATION", "REVIEW", "COMPLETE", "CLEANUP"]
+        return full  # Default to HIGH risk (full validation) if uncertain
 ```
 
-### Skip Condition Examples {#skip-condition-examples}
+### Skip Conditions {#skip-condition-examples}
 
-**IMPLEMENTATION/VALIDATION State Skip Conditions:**
+**IMPLEMENTATION/VALIDATION State Skip Conditions** (allows minimal path):
 - Maven dependency additions (configuration only)
 - Build plugin configuration changes
 - Documentation updates without code references
@@ -182,7 +169,7 @@ def determine_state_path(risk_level, change_type):
 - README and markdown file updates
 - Todo.md task tracking updates
 
-**Full Validation Required Conditions:**
+**Full Validation Required Conditions** (forces full path):
 - Any source code modifications (*.java, *.js, *.py, etc.)
 - Runtime behavior changes expected
 - Security-sensitive configuration changes
@@ -193,53 +180,49 @@ def determine_state_path(risk_level, change_type):
 
 ## AGENT SELECTION DECISION TREE {#agent-selection-decision-tree}
 
-### Comprehensive Agent Selection Framework {#comprehensive-agent-selection-framework}
+### Selection Framework {#comprehensive-agent-selection-framework}
 
 **Input**: Task description and file modification patterns
-**Available Agents**: architect, usability, performance, security,
-formatter, engineer, tester, builder
 
-**Processing Logic:**
+**CORE AGENTS (Always Required)**:
+- **architect**: MANDATORY for ALL file modification tasks
 
-**🚨 CORE AGENTS (Always Required):**
-- **architect**: MANDATORY for ALL file modification tasks (provides implementation requirements)
-
-**🔍 FUNCTIONAL AGENTS (Code Implementation):**
+**FUNCTIONAL AGENTS (Code Implementation)**:
 - IF NEW CODE created: add formatter, engineer, builder
 - IF IMPLEMENTATION (not just config): add tester
 - IF MAJOR FEATURES completed: add usability (MANDATORY after completion)
 
-**🛡️ SECURITY AGENTS (Actual Security Concerns):**
+**SECURITY AGENTS (Actual Security Concerns)**:
 - IF AUTHENTICATION/AUTHORIZATION changes: add security
 - IF EXTERNAL API/DATA integration: add security
 - IF ENCRYPTION/CRYPTOGRAPHIC operations: add security
 - IF INPUT VALIDATION/SANITIZATION: add security
 
-**⚡ PERFORMANCE AGENTS (Performance Critical):**
+**PERFORMANCE AGENTS**:
 - IF ALGORITHM optimization tasks: add performance
 - IF DATABASE/QUERY optimization: add performance
 - IF MEMORY/CPU intensive operations: add performance
 
-**🔧 FORMATTING AGENTS (Code Quality):**
+**FORMATTING AGENTS**:
 - IF PARSER LOGIC modified: add performance, security
 - IF AST TRANSFORMATION changed: add engineer, tester
 - IF FORMATTING RULES affected: add formatter
 
-**❌ AGENTS NOT NEEDED FOR SIMPLE OPERATIONS:**
+**AGENTS NOT NEEDED FOR SIMPLE OPERATIONS**:
 - Maven module renames: NO performance
 - Configuration file updates: NO security unless changing auth
 - Directory/file renames: NO performance
 - Documentation updates: Usually only architect
 
-**📊 ANALYSIS AGENTS (Research/Study Tasks):**
-- IF ARCHITECTURAL ANALYSIS: add architect
-- IF PERFORMANCE ANALYSIS: add performance
-- IF UX/INTERFACE ANALYSIS: add usability
-- IF SECURITY ANALYSIS: add security
-- IF CODE QUALITY REVIEW: add engineer
-- IF PARSER/FORMATTER PERFORMANCE ANALYSIS: add performance
+**ANALYSIS AGENTS (Research/Study Tasks)**:
+- ARCHITECTURAL ANALYSIS: add architect
+- PERFORMANCE ANALYSIS: add performance
+- UX/INTERFACE ANALYSIS: add usability
+- SECURITY ANALYSIS: add security
+- CODE QUALITY REVIEW: add engineer
+- PARSER/FORMATTER PERFORMANCE ANALYSIS: add performance
 
-**Agent Selection Verification Checklist:**
+**Agent Selection Verification Checklist**:
 - [ ] NEW CODE task → formatter included?
 - [ ] Source files created/modified → builder included?
 - [ ] Performance-critical code → performance included?
@@ -248,19 +231,15 @@ formatter, engineer, tester, builder
 - [ ] Post-implementation refactoring → engineer included?
 - [ ] AST parsing/code formatting → performance included?
 
-**Special Agent Usage Patterns:**
-- **formatter**: Apply ALL manual style guide rules from docs/code-style/ (Java, common, and
-  language-specific patterns)
-- **builder**: For style/formatting tasks, triggers linters (checkstyle, PMD, ESLint) through builder
-  system
-- **builder**: Use alongside formatter to ensure comprehensive validation (automated + manual
-  rules)
-- **engineer**: Post-implementation refactoring and best practices enforcement
-- **tester**: Business logic validation and comprehensive test creation
-- **security**: Data handling and storage compliance review
-- **performance**: Algorithmic efficiency and resource optimization
-- **usability**: User experience design and interface evaluation
-- **architect**: System architecture and implementation guidance
+**Agent Roles**:
+- **formatter**: Apply ALL manual style guide rules from docs/code-style/
+- **builder**: Triggers linters (checkstyle, PMD, ESLint) through build system
+- **engineer**: Post-implementation refactoring, best practices enforcement
+- **tester**: Business logic validation, comprehensive test creation
+- **security**: Data handling, storage compliance review
+- **performance**: Algorithmic efficiency, resource optimization
+- **usability**: UX design, interface evaluation
+- **architect**: System architecture, implementation guidance
 
 ---
 
@@ -268,7 +247,7 @@ formatter, engineer, tester, builder
 
 ### Three-Component Style Validation {#three-component-style-validation}
 
-**MANDATORY PROCESS**: When style validation is required, ALL THREE components must pass:
+**MANDATORY**: When style validation required, ALL THREE components must pass. **Violation consequence**: Incomplete validation, style issues in merged code.
 
 1. **Automated Linters** (via build):
    - `checkstyle`: Java coding conventions and formatting
@@ -279,42 +258,31 @@ formatter, engineer, tester, builder
    - Apply ALL detection patterns from `docs/code-style/*-claude.md`
    - Java-specific patterns (naming, structure, comments)
    - Common patterns (cross-language consistency)
-   - Language-specific patterns as applicable
 
 3. **Build Integration** (via builder):
    - Automated fixing when conflicts detected (LineLength vs UnderutilizedLines)
    - Use `checkstyle/fixers` module for AST-based consolidate-then-split strategy
    - Comprehensive testing validates fixing logic before application
 
+**CRITICAL ERROR PATTERN**: Checking ONLY checkstyle and declaring "no violations found" when PMD or manual violations exist. This is a validation failure.
+
 ### Complete Style Validation Gate Pattern {#complete-style-validation-gate-pattern}
 
 ```bash
-# MANDATORY: Never assume checkstyle-only validation
-# CRITICAL ERROR PATTERN: Checking only checkstyle and declaring "no violations found"
-# when PMD/manual violations exist
-
 validate_complete_style_compliance() {
-    echo "=== COMPLETE STYLE VALIDATION GATE ==="
-
     # Component 1: Automated linters via build system
-    echo "Validating automated linters..."
     ./mvnw checkstyle:check || return 1
     ./mvnw pmd:check || return 1
 
     # Component 2: Manual style rules via formatter agent
-    echo "Validating manual style rules..."
     invoke_style_auditor_with_manual_detection_patterns || return 1
 
     # Component 3: Automated fixing integration if conflicts
-    echo "Checking for LineLength vs UnderutilizedLines conflicts..."
     if detect_style_conflicts; then
-        echo "Applying automated AST-based fixes..."
         apply_automated_style_fixes || return 1
         # Re-validate after automated fixes
         validate_complete_style_compliance
     fi
-
-    echo "✅ Complete style validation passed: checkstyle + PMD + manual rules"
     return 0
 }
 ```
@@ -325,54 +293,43 @@ validate_complete_style_compliance() {
 
 ### Batch Processing Restrictions {#batch-processing-restrictions}
 
-**PROHIBITED PATTERNS:**
-- Processing multiple tasks sequentially without individual protocol execution
+**PROHIBITED PATTERNS** (violation consequence: protocol failure, corrupted task state):
+- Processing multiple tasks without individual protocol execution
 - "Work on all Phase 1 tasks until done" - Must select ONE specific task
-- "Complete these 5 tasks" - Each requires separate lock acquisition and worktree
-- Assuming research tasks can bypass protocol because they create "only" study files
+- "Complete these 5 tasks" - Each requires separate lock and worktree
+- Assuming research tasks can bypass protocol
 
-**MANDATORY SINGLE-TASK PROCESSING:**
+**MANDATORY SINGLE-TASK PROCESSING**:
 1. Select ONE specific task from todo.md
 2. Acquire atomic lock for THAT specific task only
 3. Create isolated worktree for THAT task only
 4. Execute full state machine protocol for THAT task only
 5. Complete CLEANUP state before starting any other task
 
+**Consequence of violation**: Lock contention, state corruption, incomplete task isolation, merge conflicts.
+
 ### Automatic Continuous Mode Translation {#automatic-continuous-mode-translation}
 
-**When users request batch operations:**
+**Batch requests auto-translate to continuous mode**:
+1. **ACKNOWLEDGE**: "I understand you want to work on multiple tasks..."
+2. **AUTO-TRANSLATE**: "I'll process each task with full protocol isolation..."
+3. **EXECUTE**: Trigger continuous workflow mode
 
-**AUTOMATIC TRANSLATION PROTOCOL:**
-1. **ACKNOWLEDGE**: "I understand you want to work on multiple tasks efficiently..."
-2. **AUTO-TRANSLATE**: "I'll interpret this as a request to work on the todo list in continuous mode,
-   processing each task with full protocol isolation..."
-3. **EXECUTE**: Automatically trigger continuous workflow mode without requiring user to rephrase
+**Patterns to Auto-Translate**: "Work on all [phase/type] tasks", "Complete these tasks until done", "Process the todo list", "Work on multiple tasks", any request mentioning multiple specific tasks
 
-**Batch Request Patterns to Auto-Translate:**
-- "Work on all [phase/type] tasks"
-- "Complete these tasks until done"
-- "Process the todo list"
-- "Work on multiple tasks"
-- Any request mentioning multiple specific tasks
-
-**Task Filtering for Continuous Mode:**
-When batch requests specify subsets:
-1. **Phase-based filtering**: Process only tasks in specified phases
-2. **Type-based filtering**: Process only tasks matching specified types
-3. **Name-based filtering**: Process only specifically mentioned task names
-4. **Default behavior**: Process all available tasks if no filter mentioned
+**Task Filtering**:
+1. Phase-based filtering: Process only tasks in specified phases
+2. Type-based filtering: Process only tasks matching specified types
+3. Name-based filtering: Process only specifically mentioned task names
+4. Default behavior: Process all available tasks if no filter specified
 
 ---
 
-## 🧠 PROTOCOL INTERPRETATION MODE {#protocol-interpretation-mode}
+## PROTOCOL INTERPRETATION MODE {#protocol-interpretation-mode}
 
-**ENHANCED ANALYTICAL RIGOR**: Parent agent must apply deeper analysis when interpreting and following the
-task protocol workflow. Rather than surface-level interpretations, carefully analyze what the protocol truly
-requires for the specific task context.
-
-**Critical Thinking Requirements:**
+**Apply deeper analysis when following task protocol**:
 - Question assumptions about task scope and complexity
 - Verify all transition conditions are genuinely met
-- Apply evidence-based validation rather than procedural compliance
+- Evidence-based validation over procedural compliance
 - Consider edge cases and alternative approaches
-- Maintain skeptical evaluation of "good enough" solutions
+- Skeptical evaluation of "good enough" solutions

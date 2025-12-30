@@ -7,7 +7,7 @@
 
 Styler Java Code Formatter project configuration and universal guidance for all agents.
 
-## 🚨 MANDATORY STARTUP PROTOCOL
+## MANDATORY STARTUP PROTOCOL
 
 **MAIN AGENT**: Task protocol uses just-in-time guidance via hooks. You do NOT need to read protocol
 files upfront. Phase-specific instructions provided automatically as you transition states. Reference docs
@@ -26,10 +26,10 @@ available for troubleshooting: main-agent-coordination.md, task-protocol-core.md
 - Use `--ff-only` for all merges to main (linear history)
 - Hooks enforce protocol compliance
 
-> 🚨 **MANDATORY PRE-APPROVAL CLEANUP** {#mandatory-pre-approval-cleanup}
+> **MANDATORY PRE-APPROVAL CLEANUP** {#mandatory-pre-approval-cleanup}
 >
-> **BEFORE presenting changes for user approval**, you MUST complete cleanup:
-> 1. Remove all agent worktrees
+> **BEFORE presenting changes for user approval**, you MUST complete cleanup IN THIS ORDER:
+> 1. Remove all agent worktrees (FIRST - before branch deletion)
 > 2. Delete all agent branches (`{task}-architect`, `{task}-tester`, `{task}-formatter`)
 > 3. Squash commits into **TWO commits** (config first, implementation second):
 >    - **Commit 1**: `.claude/`, `docs/project/`, `CLAUDE.md` changes (if any)
@@ -90,7 +90,7 @@ contradicts comparison
 
 **MANDATORY**: After tool results, ALWAYS check for `<system-reminder>` tags containing user instructions.
 
-**⚠️ CRITICAL PATTERN**: User instructions can appear in system-reminders DURING your response (embedded in
+**CRITICAL PATTERN**: User instructions can appear in system-reminders DURING your response (embedded in
 tool results). These are NOT optional suggestions - they are user requests that MUST be addressed.
 
 **Common Mistake**:
@@ -112,7 +112,7 @@ tool results). These are NOT optional suggestions - they are user requests that 
 **MANDATORY**: NEVER claim or act on environment state (directory, branch, file existence) without
 verification first.
 
-**⚠️ DANGEROUS PATTERN**: Making assertions about state without evidence:
+**DANGEROUS PATTERN**: Making assertions about state without evidence:
 - ❌ "The build is running from main, not the task worktree. Let me fix:"
 - ❌ "We're on the wrong branch, switching to..."
 - ❌ "The file doesn't exist, creating..."
@@ -224,7 +224,7 @@ Assist with defensive security tasks only. Refuse to create, modify, or improve 
 maliciously. Do not assist with credential discovery or harvesting. NEVER generate or guess URLs unless
 confident they help with programming.
 
-## 🎯 LONG-TERM SOLUTION PERSISTENCE
+## LONG-TERM SOLUTION PERSISTENCE
 
 **MANDATORY PRINCIPLE**: Prioritize optimal long-term solutions over expedient alternatives. Persistence and
 thorough problem-solving are REQUIRED.
@@ -301,7 +301,7 @@ justify incomplete implementations, shortcuts, quality compromises, or progress 
 
 ### User Feedback Tracking - MANDATORY
 
-**⚠️ CRITICAL: When user reports multiple issues, add ALL to TodoWrite immediately, even if you can't
+**CRITICAL: When user reports multiple issues, add ALL to TodoWrite immediately, even if you can't
 tackle them right away.**
 
 **Immediately after receiving feedback**: (1) Identify ALL issues mentioned (2) Add ALL to TodoWrite
@@ -346,7 +346,7 @@ visible and eventually addressed.
 
 **Example directive from hook**:
 ```
-📚 MISTAKE DETECTED: build_failure
+MISTAKE DETECTED: build_failure
 
 **MANDATORY**: Check TodoWrite for existing entry, add if not present:
 {"content": "LFM: Investigate build_failure from Bash", "status": "pending", ...}
@@ -354,7 +354,7 @@ visible and eventually addressed.
 
 **Agent action**: Check if "LFM: Investigate build_failure" already in TodoWrite. If not, add it.
 
-## 🛠️ TOOL USAGE BEST PRACTICES
+## TOOL USAGE BEST PRACTICES
 
 **For complete tool usage guide, see**:
 [docs/optional-modules/tool-usage.md](docs/optional-modules/tool-usage.md)
@@ -382,7 +382,7 @@ Skill tool) to prevent accidentally gutting files.
 
 **Safe JSON File Editing (jq)**:
 
-**⚠️ CRITICAL**: Never redirect jq output directly to the input file. This truncates the file BEFORE jq reads
+**CRITICAL**: Never redirect jq output directly to the input file. This truncates the file BEFORE jq reads
 it, resulting in data loss.
 
 ```bash
@@ -401,7 +401,7 @@ The jq process then reads an empty file, producing empty output.
 
 **Bash Tool - Multi-Line Commands**:
 
-**⚠️ CRITICAL**: Avoid multi-line bash commands with command substitution `$(...)` - causes parse errors
+**CRITICAL**: Avoid multi-line bash commands with command substitution `$(...)` - causes parse errors
 `(eval):1: parse error near '('`.
 
 **Safe patterns**: Break into separate calls, use temp files, chain with `&&`, or write script file first.
@@ -410,7 +410,7 @@ for detailed alternatives and decision tree.
 
 **Synchronous Tool Execution (Skill and SlashCommand)**:
 
-**⚠️ CRITICAL**: Skill and SlashCommand tools run SYNCHRONOUSLY, NOT like Task tool's async model.
+**CRITICAL**: Skill and SlashCommand tools run SYNCHRONOUSLY, NOT like Task tool's async model.
 
 **Common Mistake**: Treating Skill/SlashCommand like Task tool - waiting for a result after invocation.
 
@@ -456,7 +456,7 @@ Section](path#anchor)`. Never hard-code line numbers.
 
 **Complete Guide**: See [documentation-references.md](docs/project/documentation-references.md)
 
-## 🪝 Hook Script Standards
+## Hook Script Standards
 
 **MANDATORY REQUIREMENTS for all hook scripts** (`.claude/hooks/*.sh`):
 
@@ -485,12 +485,12 @@ checklist.
 
 **CRITICAL Reminders**:
 - Hooks NOT registered in settings.json will NEVER execute
-- **⚠️ RESTART REQUIRED**: Changes to settings.json do NOT take effect until Claude Code is restarted.
-  After modifying settings.json, ALWAYS notify user: "⚠️ Please restart Claude Code for hook changes to
+- **RESTART REQUIRED**: Changes to settings.json do NOT take effect until Claude Code is restarted.
+  After modifying settings.json, ALWAYS notify user: "Please restart Claude Code for hook changes to
   take effect"
 - **PreToolUse hooks CAN block commands**: Return exit code 2 with JSON `permissionDecision: "deny"`
 
-## 🔄 GIT OPERATION WORKFLOWS
+## GIT OPERATION WORKFLOWS
 
 **MANDATORY**: When performing git operations with backups, follow COMPLETE workflow including cleanup.
 
@@ -503,10 +503,10 @@ All skills enforce **Backup-Verify-Cleanup Pattern**: (1) Create timestamped bac
 operation (3) **Verify immediately** (atomic with execution, not separate phase) (4) Cleanup backup after
 verification
 
-**⚠️ CRITICAL: Verify IMMEDIATELY after operation, not as separate phase** - Separating "execute" and
+**CRITICAL: Verify IMMEDIATELY after operation, not as separate phase** - Separating "execute" and
 "verify" into different todos causes data loss. ONLY mark complete after verification passes.
 
-**⚠️ CRITICAL: Always Use git-squash Skill for Squashing** {#always-use-git-squash-skill}
+**CRITICAL: Always Use git-squash Skill for Squashing** {#always-use-git-squash-skill}
 
 Ad-hoc `git rebase -i` with squash produces **concatenated commit messages** (all original messages joined
 together). This is NOT acceptable - squashed commits need **unified messages** describing the final result.
@@ -535,7 +535,7 @@ messages.
 
 ## Repository Structure
 
-**⚠️ NEVER** initialize new repositories
+**NEVER** initialize new repositories
 
 **Main Repository**: `/workspace/main/` (git repository and main development branch)
 
@@ -543,8 +543,8 @@ messages.
 - `/workspace/.claude/` → `/workspace/main/.claude/`
 - `/workspace/CLAUDE.md` → `/workspace/main/CLAUDE.md`
 
-**Session Management**: Session ID is managed via JSON stdin/stdout by `ensure-session-id.py` hook. **⚠️
-NEVER** create `.claude/session_id.txt` or any session ID files. No file persistence required.
+**Session Management**: Session ID is managed via JSON stdin/stdout by `ensure-session-id.py` hook.
+**NEVER** create `.claude/session_id.txt` or any session ID files. No file persistence required.
 
 **Task Worktrees**: `/workspace/tasks/{task-name}/code/` (isolated per task protocol, common merge target
 for all agents)
@@ -554,7 +554,30 @@ isolation)
 
 **Locks**: Multi-instance coordination via lock files at `/workspace/tasks/{task-name}/task.json`
 
-> ⚠️ **CRITICAL: Task Initialization** {#task-initialization-critical}
+> **CRITICAL: task.json Location** {#task-json-location}
+>
+> **task.json is at TASK ROOT, NOT in code/ subdirectory**:
+> - ✅ CORRECT: `/workspace/tasks/{task-name}/task.json`
+> - ❌ WRONG: `/workspace/tasks/{task-name}/code/task.json`
+>
+> **Common Mistake**: When working in the task worktree (`/workspace/tasks/{task}/code/`), accidentally
+> trying to update task.json with a relative path. Always use ABSOLUTE PATH or navigate to task root.
+>
+> ```bash
+> # When in /workspace/tasks/my-task/code/ (task worktree):
+>
+> # ❌ WRONG - File doesn't exist here
+> jq '.state = "VALIDATION"' task.json > task.json.tmp && mv task.json.tmp task.json
+> # Result: jq: error: Could not open file task.json: No such file or directory
+>
+> # ✅ CORRECT - Use absolute path
+> jq '.state = "VALIDATION"' /workspace/tasks/my-task/task.json > /workspace/tasks/my-task/task.json.tmp && mv /workspace/tasks/my-task/task.json.tmp /workspace/tasks/my-task/task.json
+>
+> # ✅ ALSO CORRECT - Navigate to task root first
+> cd /workspace/tasks/my-task && jq '.state = "VALIDATION"' task.json > task.json.tmp && mv task.json.tmp task.json
+> ```
+
+> **CRITICAL: Task Initialization** {#task-initialization-critical}
 >
 > **NEVER manually create task.json**. Always use the `task-init` skill which:
 > - Creates task.json with `state: "INIT"` (not IMPLEMENTATION)
@@ -564,8 +587,11 @@ isolation)
 > **Manual task.json creation blocks agents**: The `require-task-protocol.sh` hook validates
 > that transition_log contains all required states (INIT, CLASSIFIED, REQUIREMENTS, SYNTHESIS)
 > before allowing IMPLEMENTATION state operations.
+>
+> **State Sequence Dependency**: IMPLEMENTATION state operations require PRIOR completion of:
+> INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS (in order, recorded in transition_log)
 
-**⚠️ CRITICAL: Multi-Instance Coordination**: Before working on or cleaning up tasks owned by different
+**CRITICAL: Multi-Instance Coordination**: Before working on or cleaning up tasks owned by different
 sessions, use `verify-task-ownership` skill. NEVER modify `session_id` directly or cleanup foreign tasks
 without verification. See [task-protocol-operations.md §
 Multi-Instance Coordination](docs/project/task-protocol-operations.md#multi-instance-coordination) for
@@ -573,7 +599,7 @@ prohibited patterns and correct approach.
 
 **Branch Management**:
 
-> ⚠️ **CRITICAL: Version Branch Preservation**
+> **CRITICAL: Version Branch Preservation**
 > NEVER delete version-numbered branches (v1, v13, v14, v15, v18, v19, v20, v21, etc.)
 > **Recognition Pattern**: Branches matching `v[0-9]+` are version markers, NOT temporary branches
 
@@ -588,19 +614,20 @@ prohibited patterns and correct approach.
 - Lifecycle: Delete after merge to main
 - Cleanup: Safe to delete with `git branch -D <branch>`
 
-**🚨 CRITICAL: Git History Rewriting Safety**
+**CRITICAL: Git History Rewriting Safety**
 
 **NEVER use `--all` or `--branches` with git history-rewriting commands.**
 
-Before any `git filter-branch`, `git rebase`, or history-rewriting operation: (1) Check what branches
-exist: `git branch -a` (2) Identify protected version branches: `git branch | grep -E "^  v[0-9]+"`
-(3) Target SPECIFIC branch: `git filter-branch ... main` (NOT `--all`)
+Before any `git filter-branch`, `git rebase`, or history-rewriting operation:
+1. Check what branches exist: `git branch -a`
+2. Identify protected version branches: `git branch | grep -E "^  v[0-9]+"`
+3. Target SPECIFIC branch: `git filter-branch ... main` (NOT `--all`)
 
 **See**: [git-workflow.md § Git History Rewriting
 Safety](docs/project/git-workflow.md#git-history-rewriting-safety) for complete safety procedures and
 examples.
 
-**🚨 NEVER Rebase Main Branch**
+**NEVER Rebase Main Branch**
 
 `git rebase` on main is PROHIBITED. After merging task branches:
 - Rebasing main rewrites merged commits to appear as direct commits on main
@@ -608,14 +635,16 @@ examples.
 - Enforcement: `block-main-rebase.sh` blocks `git rebase` when on main branch
 - If commit message needs fixing: Amend on task branch BEFORE merging to main
 
-**Pre-Deletion Validation** (MANDATORY before `git branch -D`): List all branches (`git branch -v`), check
-if branch matches version pattern (`^v[0-9]+$`), for version branches ERROR (cannot delete, use `git branch
--f` to update), for non-version branches verify purpose before deletion (backup-* safe after verification,
-task-* delete after merge, feature-* check with user)
+**Pre-Deletion Validation** (MANDATORY before `git branch -D`):
+1. List all branches: `git branch -v`
+2. Check if branch matches version pattern: `^v[0-9]+$`
+3. For version branches: ERROR (cannot delete, use `git branch -f` to update)
+4. For non-version branches: verify purpose before deletion (backup-* safe after verification,
+   task-* delete after merge, feature-* check with user)
 
 **Multi-Agent Architecture**:
 
-> 🚨 **ZERO TOLERANCE RULE - IMMEDIATE VIOLATION**
+> **ZERO TOLERANCE RULE - IMMEDIATE VIOLATION**
 >
 > Main agent creating ANY .java/.ts/.py file with Write/Edit = PROTOCOL VIOLATION
 >
@@ -626,7 +655,7 @@ task-* delete after merge, feature-* check with user)
 > in VALIDATION state to fix build failures
 > **BEFORE creating ANY .java file**: Ask "Is this IMPLEMENTATION or VALIDATION state?"
 
-> ⚠️ **VALIDATION STATE FIX BOUNDARIES** {#validation-state-fix-boundaries}
+> **VALIDATION STATE FIX BOUNDARIES** {#validation-state-fix-boundaries}
 >
 > Main agent MAY fix directly during VALIDATION:
 > - ✅ Compilation errors, infrastructure configuration, trivial syntax errors, build system issues
@@ -679,7 +708,7 @@ stakeholder agents implement features.
 - **Agent Spawning**: Agents spawn FRESH for each phase (do NOT use Task tool `resume` parameter across
   phases). Different phases use different models and have different objectives (clean separation).
 
-**⚠️ CRITICAL PROTOCOL VIOLATIONS**:
+**CRITICAL PROTOCOL VIOLATIONS**:
 
 **VIOLATION #1: Main Agent Source File Creation**
 
@@ -693,8 +722,8 @@ Write tool: src/main/java/io/github/cowwoc/styler/formatter/FormattingRule.java
 
 ✅ **CORRECT Pattern** (passes audits):
 ```bash
-# 1. Create task.json for state tracking
-# 2. Create agent worktree
+# 1. Create task.json for state tracking (via task-init skill)
+# 2. Create agent worktree BEFORE invoking agent
 git worktree add /workspace/tasks/implement-formatter-api/agents/architect/code \
   -b implement-formatter-api-architect
 
@@ -703,7 +732,7 @@ Task tool: architect
   requirements: "Create FormattingRule interface..."
   worktree: /workspace/tasks/implement-formatter-api/agents/architect/code
 
-# 4. Main agent merges after agent completion
+# 4. Main agent merges AFTER agent completion
 cd /workspace/tasks/implement-formatter-api/code
 git merge implement-formatter-api-architect
 ```
@@ -721,15 +750,15 @@ worktrees)
 **Task Requirements & Plans** (`task.md` at task root):
 - Location: `/workspace/tasks/{task-name}/task.md`
 - Contains agent requirements and implementation plans
-- Created: CLASSIFIED state (by main agent, before stakeholder invocation)
+- Created: CLASSIFIED state (by main agent, BEFORE stakeholder invocation)
 - Updated: REQUIREMENTS (agent reports), SYNTHESIS (implementation plans)
 - Lifecycle: Persists through task execution, removed during CLEANUP
 
 **Stakeholder Reports** (at task root):
 - Examples: `{task-name}-architect-requirements.md`, `status.json`, `*-IMPLEMENTATION-PLAN.md`
 - Location: `/workspace/tasks/{task-name}/` (accessible to all agents)
-- Lifecycle: Cleaned up in CLEANUP
-- ⚠️ **CRITICAL**: NEVER commit to main (`.gitignore` + pre-commit hook enforce)
+- Lifecycle: Cleaned up in CLEANUP state
+- **CRITICAL**: NEVER commit to main (`.gitignore` + pre-commit hook enforce)
 
 **Empirical Studies** (`docs/studies/{topic}.md`): Temporary research cache, persist until consumed by
 todo.md tasks
@@ -745,7 +774,7 @@ conventions by phase.
 **Note**: Reports are written to `/workspace/tasks/{task-name}/` (task root), not inside the code
 directory.
 
-## 📝 RETROSPECTIVE DOCUMENTATION POLICY
+## RETROSPECTIVE DOCUMENTATION POLICY
 
 **CRITICAL:** Do NOT create analysis, learning, or retrospective documents unless explicitly instructed by
 the user.
@@ -788,13 +817,13 @@ architecture/API/design docs (how system works, not how it was built)
 **TEMPORARY ANALYSIS EXCEPTION**: During complex debugging or analysis, you MAY create temporary
 retrospective documents in `/workspace/tasks/{task}/temp/` for working notes.
 - **Location**: ONLY `/workspace/tasks/{task-name}/temp/` directory
-- **Cleanup**: MUST delete before AWAITING_USER_APPROVAL → COMPLETE transition
+- **Cleanup**: MUST delete BEFORE AWAITING_USER_APPROVAL → COMPLETE transition
 - **Enforcement**: `check-retrospective-due.sh` validates cleanup before task completion
 - **Warning**: Hook outputs cleanup reminder when creating temp files
 
 **Enforcement**: Hooks block retrospective patterns; `block-retrospective-docs.sh` enforces policy
 
-## 🔧 MANDATORY MISTAKE HANDLING
+## MANDATORY MISTAKE HANDLING
 
 **CRITICAL**: When ANY agent makes a mistake or protocol deviation, invoke the learn-from-mistakes skill for
 systematic prevention.

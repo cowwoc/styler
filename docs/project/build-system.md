@@ -137,6 +137,44 @@ across environments.
 
 **For JPMS projects**: Always use `./mvnw clean verify` for final validation. The `compile` phase alone does NOT include test module descriptors, which can cause stale module-info.class in build cache.
 
+### Multi-Module Test Execution {#multi-module-test-execution}
+
+**CRITICAL**: When running tests in a module that depends on other project modules, those modules must first
+be installed to the local Maven repository.
+
+**Symptom**: Test compilation fails with "module not found" even though the module source code exists and
+compiles successfully.
+
+**Root Cause**: Maven resolves inter-module dependencies via the local repository (`~/.m2/repository/`), not
+the source tree. If module A depends on module B, module B must be installed before A's tests can run.
+
+**Solution - Install Dependencies First**:
+```bash
+# Option 1: Install all modules without running tests (fast)
+./mvnw install -DskipTests
+
+# Option 2: Install only the required dependency module
+./mvnw install -DskipTests -pl :styler-ast-core,:styler-parser
+
+# Then run tests in the dependent module
+./mvnw test -pl :styler-parser
+```
+
+**When This Happens**:
+- First checkout or clone of repository
+- After `rm -rf ~/.m2/repository/io/github/cowwoc/styler/` (clearing local artifacts)
+- After switching branches with significant module changes
+- Running tests on a single module without prior full build
+
+**Prevention**: Before running module-specific tests, always ensure dependencies are installed:
+```bash
+# Preferred: Full build (installs all + runs tests)
+./mvnw clean verify
+
+# Alternative: Quick install, then targeted tests
+./mvnw install -DskipTests && ./mvnw test -pl :styler-parser
+```
+
 ### Build Output Efficiency {#build-output-efficiency}
 
 **Purpose**: Reduce token usage during validation builds by filtering output to errors/warnings only.

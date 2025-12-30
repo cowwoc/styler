@@ -140,6 +140,13 @@ Tasks without session_id cannot be properly coordinated across multiple Claude i
 Main agent operations during task protocol should run from `/workspace/tasks/{task-name}/code/`,
 NOT from `/workspace/main/`.
 
+**NEVER checkout task branch in /workspace/main**:
+- ❌ WRONG: `git checkout {task-name}` (in /workspace/main)
+- ✅ CORRECT: `cd /workspace/tasks/{task-name}/code` (already on task branch)
+
+The task worktree is ALREADY on the task branch. Do NOT checkout the branch in main - this
+violates isolation and is blocked by the `block-main-task-branch-checkout.sh` hook.
+
 ## Output Format
 
 Script returns JSON:
