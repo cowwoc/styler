@@ -1,4 +1,8 @@
 {
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  },
   "env": {
     "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL": "true",
     "DISABLE_AUTOUPDATER": "true"
