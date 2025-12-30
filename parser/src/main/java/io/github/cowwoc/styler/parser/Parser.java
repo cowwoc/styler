@@ -2136,6 +2136,19 @@ public final class Parser implements AutoCloseable
 		return arena.allocateNode(NodeType.FINALLY_CLAUSE, start, end);
 	}
 
+	/**
+	 * Parses a resource in a try-with-resources statement.
+	 * <p>
+	 * Supports two forms per JLS 14.20.3:
+	 * <ul>
+	 *   <li><b>Resource declaration (JDK 7+)</b>: {@code [final] Type name = expression}
+	 *       <br>Example: {@code final var reader = new FileReader(file)}</li>
+	 *   <li><b>Variable reference (JDK 9+)</b>: An effectively-final variable or field access
+	 *       <br>Examples: {@code reader}, {@code this.resource}, {@code Outer.this.resource}</li>
+	 * </ul>
+	 * <p>
+	 * Annotations may precede either form.
+	 */
 	private void parseResource()
 	{
 		// Consume declaration annotations (e.g., @Cleanup)
@@ -2143,6 +2156,72 @@ public final class Parser implements AutoCloseable
 		{
 			parseAnnotation();
 		}
+
+		if (isResourceVariableReference())
+		{
+			parseResourceVariableReference();
+		}
+		else
+		{
+			parseResourceDeclaration();
+		}
+	}
+
+	/**
+	 * Determines if the current position represents a variable reference in try-with-resources
+	 * rather than a full declaration.
+	 * <p>
+	 * Variable references are effectively-final variables or field accesses used directly
+	 * as resources (JDK 9+ feature). They are distinguished from declarations by:
+	 * <ul>
+	 *   <li>Simple identifier followed by {@code ;} or {@code )}</li>
+	 *   <li>Field access starting with {@code this}</li>
+	 * </ul>
+	 *
+	 * @return {@code true} if current position is a variable reference
+	 */
+	private boolean isResourceVariableReference()
+	{
+		// Field access: this.resource or Outer.this.resource
+		if (currentToken().type() == TokenType.THIS)
+		{
+			return true;
+		}
+
+		// Simple identifier followed by ; or ) indicates variable reference
+		// Note: qualified names like java.io.Reader would be followed by IDENTIFIER (variable name)
+		if (currentToken().type() == TokenType.IDENTIFIER)
+		{
+			int checkpoint = position;
+			consume();
+			TokenType nextType = currentToken().type();
+			position = checkpoint;
+			return nextType == TokenType.SEMICOLON || nextType == TokenType.RPAREN;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Parses a variable reference in try-with-resources (JDK 9+).
+	 * <p>
+	 * Handles simple identifiers ({@code reader}) and field access expressions
+	 * ({@code this.resource}, {@code Outer.this.resource}).
+	 */
+	private void parseResourceVariableReference()
+	{
+		// Parse as expression - will naturally produce IDENTIFIER or FIELD_ACCESS node
+		parseExpression();
+	}
+
+	/**
+	 * Parses a resource declaration in try-with-resources (JDK 7+ traditional syntax).
+	 * <p>
+	 * Syntax: {@code [final] Type variableName = expression}
+	 */
+	private void parseResourceDeclaration()
+	{
+		// Optional FINAL modifier
 		if (currentToken().type() == TokenType.FINAL)
 		{
 			consume();
