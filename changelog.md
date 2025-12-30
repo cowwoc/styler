@@ -2,6 +2,40 @@
 
 ## 2025-12-30
 
+### Expand TokenType Acronyms to Full Names ✅
+
+**Task**: `expand-tokentype-acronyms`
+
+**Problem Solved**:
+- TokenType enum used abbreviated names (LPAREN, LT, EOF) reducing code readability
+- Developers needed to mentally expand acronyms to understand token meanings
+
+**Solution Implemented**:
+- Renamed 37 TokenType enum constants to descriptive names:
+  - Separators: LPAREN→LEFT_PARENTHESIS, RPAREN→RIGHT_PARENTHESIS, LBRACE→LEFT_BRACE, etc.
+  - Comparison: EQ→EQUAL, NE→NOT_EQUAL, LT→LESS_THAN, GT→GREATER_THAN, LE→LESS_THAN_OR_EQUAL, etc.
+  - Logical: AND→LOGICAL_AND, OR→LOGICAL_OR
+  - Bitwise: BITAND→BITWISE_AND, BITOR→BITWISE_OR
+  - Shift: LSHIFT→LEFT_SHIFT, RSHIFT→RIGHT_SHIFT, URSHIFT→UNSIGNED_RIGHT_SHIFT
+  - Compound assignment: PLUSASSIGN→PLUS_ASSIGN, MINUSASSIGN→MINUS_ASSIGN, etc.
+  - Arithmetic: DIV→DIVIDE, MOD→MODULO, INC→INCREMENT, DEC→DECREMENT
+  - Special: EOF→END_OF_FILE, AT→AT_SIGN, QUESTION→QUESTION_MARK
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/TokenType.java` - Renamed all 37 enum constants
+- `parser/src/main/java/.../parser/Parser.java` - Updated all token references
+- `parser/src/main/java/.../parser/Lexer.java` - Updated token references
+- `parser/src/main/java/.../parser/Token.java` - Updated token references
+- `parser/src/test/java/.../parser/test/*.java` - Updated test assertions (8 test files)
+- `docs/code-style/java-claude.md` - Updated example code
+
+**Quality**:
+- All 525 tests passing
+- Zero compilation errors
+- No behavior changes
+
+---
+
 ### Refactor If-Else-If Chains to Switch Statements ✅
 
 **Task**: `refactor-if-else-to-switch`

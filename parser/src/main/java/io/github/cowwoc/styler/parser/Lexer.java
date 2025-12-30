@@ -91,7 +91,7 @@ public final class Lexer
 	/**
 	 * Tokenizes the entire source code.
 	 *
-	 * @return list of tokens including EOF token
+	 * @return list of tokens including END_OF_FILE token
 	 */
 	public List<Token> tokenize()
 	{
@@ -102,7 +102,7 @@ public final class Lexer
 			token = nextToken();
 			tokens.add(token);
 		}
-		while (token.type() != TokenType.EOF);
+		while (token.type() != TokenType.END_OF_FILE);
 		return tokens;
 	}
 
@@ -117,7 +117,7 @@ public final class Lexer
 
 		if (position >= source.length())
 		{
-			return new Token(TokenType.EOF, position, position, null);
+			return new Token(TokenType.END_OF_FILE, position, position, null);
 		}
 
 		int start = position;
@@ -694,17 +694,17 @@ public final class Lexer
 
 		TokenType type = switch (ch)
 		{
-			case '(' -> TokenType.LPAREN;
-			case ')' -> TokenType.RPAREN;
-			case '{' -> TokenType.LBRACE;
-			case '}' -> TokenType.RBRACE;
-			case '[' -> TokenType.LBRACKET;
-			case ']' -> TokenType.RBRACKET;
+			case '(' -> TokenType.LEFT_PARENTHESIS;
+			case ')' -> TokenType.RIGHT_PARENTHESIS;
+			case '{' -> TokenType.LEFT_BRACE;
+			case '}' -> TokenType.RIGHT_BRACE;
+			case '[' -> TokenType.LEFT_BRACKET;
+			case ']' -> TokenType.RIGHT_BRACKET;
 			case ';' -> TokenType.SEMICOLON;
 			case ',' -> TokenType.COMMA;
-			case '@' -> TokenType.AT;
+			case '@' -> TokenType.AT_SIGN;
 			case '~' -> TokenType.TILDE;
-			case '?' -> TokenType.QUESTION;
+			case '?' -> TokenType.QUESTION_MARK;
 			case ':' ->
 			{
 				if (matchAndConsume(':'))
@@ -725,7 +725,7 @@ public final class Lexer
 			{
 				if (matchAndConsume('='))
 				{
-					yield TokenType.EQ;
+					yield TokenType.EQUAL;
 				}
 				yield TokenType.ASSIGN;
 			}
@@ -733,7 +733,7 @@ public final class Lexer
 			{
 				if (matchAndConsume('='))
 				{
-					yield TokenType.NE;
+					yield TokenType.NOT_EQUAL;
 				}
 				yield TokenType.NOT;
 			}
@@ -741,17 +741,17 @@ public final class Lexer
 			{
 				if (matchAndConsume('='))
 				{
-					yield TokenType.LE;
+					yield TokenType.LESS_THAN_OR_EQUAL;
 				}
 				if (matchAndConsume('<'))
 				{
 					if (matchAndConsume('='))
 					{
-						yield TokenType.LSHIFTASSIGN;
+						yield TokenType.LEFT_SHIFT_ASSIGN;
 					}
-					yield TokenType.LSHIFT;
+					yield TokenType.LEFT_SHIFT;
 				}
-				yield TokenType.LT;
+				yield TokenType.LESS_THAN;
 			}
 			case '>' ->
 			{
@@ -761,35 +761,35 @@ public final class Lexer
 			{
 				if (matchAndConsume('&'))
 				{
-					yield TokenType.AND;
+					yield TokenType.LOGICAL_AND;
 				}
 				if (matchAndConsume('='))
 				{
-					yield TokenType.BITANDASSIGN;
+					yield TokenType.BITWISE_AND_ASSIGN;
 				}
-				yield TokenType.BITAND;
+				yield TokenType.BITWISE_AND;
 			}
 			case '|' ->
 			{
 				if (matchAndConsume('|'))
 				{
-					yield TokenType.OR;
+					yield TokenType.LOGICAL_OR;
 				}
 				if (matchAndConsume('='))
 				{
-					yield TokenType.BITORASSIGN;
+					yield TokenType.BITWISE_OR_ASSIGN;
 				}
-				yield TokenType.BITOR;
+				yield TokenType.BITWISE_OR;
 			}
 			case '+' ->
 			{
 				if (matchAndConsume('+'))
 				{
-					yield TokenType.INC;
+					yield TokenType.INCREMENT;
 				}
 				if (matchAndConsume('='))
 				{
-					yield TokenType.PLUSASSIGN;
+					yield TokenType.PLUS_ASSIGN;
 				}
 				yield TokenType.PLUS;
 			}
@@ -797,11 +797,11 @@ public final class Lexer
 			{
 				if (matchAndConsume('-'))
 				{
-					yield TokenType.DEC;
+					yield TokenType.DECREMENT;
 				}
 				if (matchAndConsume('='))
 				{
-					yield TokenType.MINUSASSIGN;
+					yield TokenType.MINUS_ASSIGN;
 				}
 				if (matchAndConsume('>'))
 				{
@@ -813,7 +813,7 @@ public final class Lexer
 			{
 				if (matchAndConsume('='))
 				{
-					yield TokenType.STARASSIGN;
+					yield TokenType.STAR_ASSIGN;
 				}
 				yield TokenType.STAR;
 			}
@@ -821,15 +821,15 @@ public final class Lexer
 			{
 				if (matchAndConsume('='))
 				{
-					yield TokenType.DIVASSIGN;
+					yield TokenType.DIVIDE_ASSIGN;
 				}
-				yield TokenType.DIV;
+				yield TokenType.DIVIDE;
 			}
 			case '^' ->
 			{
 				if (matchAndConsume('='))
 				{
-					yield TokenType.CARETASSIGN;
+					yield TokenType.CARET_ASSIGN;
 				}
 				yield TokenType.CARET;
 			}
@@ -837,9 +837,9 @@ public final class Lexer
 			{
 				if (matchAndConsume('='))
 				{
-					yield TokenType.MODASSIGN;
+					yield TokenType.MODULO_ASSIGN;
 				}
-				yield TokenType.MOD;
+				yield TokenType.MODULO;
 			}
 			default -> TokenType.ERROR;
 		};
@@ -857,10 +857,10 @@ public final class Lexer
 	private TokenType scanGreaterThanOperator()
 	{
 		if (matchAndConsume('='))
-			return TokenType.GE;
+			return TokenType.GREATER_THAN_OR_EQUAL;
 		if (matchAndConsume('>'))
 			return scanRightShiftOperator();
-		return TokenType.GT;
+		return TokenType.GREATER_THAN;
 	}
 
 	/**
@@ -874,8 +874,8 @@ public final class Lexer
 		if (matchAndConsume('>'))
 			return scanUnsignedRightShiftOperator();
 		if (matchAndConsume('='))
-			return TokenType.RSHIFTASSIGN;
-		return TokenType.RSHIFT;
+			return TokenType.RIGHT_SHIFT_ASSIGN;
+		return TokenType.RIGHT_SHIFT;
 	}
 
 	/**
@@ -887,8 +887,8 @@ public final class Lexer
 	private TokenType scanUnsignedRightShiftOperator()
 	{
 		if (matchAndConsume('='))
-			return TokenType.URSHIFTASSIGN;
-		return TokenType.URSHIFT;
+			return TokenType.UNSIGNED_RIGHT_SHIFT_ASSIGN;
+		return TokenType.UNSIGNED_RIGHT_SHIFT;
 	}
 
 	private char peek()

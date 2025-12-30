@@ -741,8 +741,8 @@ and implementation.
 
 ### Control Flow - Multiple OR Comparisons Should Use Switch
 **Detection Pattern**: `return .+ == .+ \|\|` (3 or more equality comparisons chained with OR)
-**Violation**: `return type == TokenType.ASSIGN || type == TokenType.PLUSASSIGN || type == TokenType.MINUSASSIGN;`
-**Correct**: `return switch (type) { case ASSIGN, PLUSASSIGN, MINUSASSIGN -> true; default -> false; };`
+**Violation**: `return type == TokenType.ASSIGN || type == TokenType.PLUS_ASSIGN || type == TokenType.MINUS_ASSIGN;`
+**Correct**: `return switch (type) { case ASSIGN, PLUS_ASSIGN, MINUS_ASSIGN -> true; default -> false; };`
 **Detection Commands**:
 ```bash
 # Find methods with 3+ OR comparisons
@@ -756,24 +756,25 @@ grep -rn -E 'if \(.+ == .+ \|\|.+ == .+ \|\|' --include="*.java" .
 // VIOLATION - Multiple OR comparisons (12 comparisons)
 private boolean isAssignmentOperator(TokenType type) {
     return type == TokenType.ASSIGN ||
-        type == TokenType.PLUSASSIGN ||
-        type == TokenType.MINUSASSIGN ||
-        type == TokenType.STARASSIGN ||
-        type == TokenType.DIVASSIGN ||
-        type == TokenType.MODASSIGN ||
-        type == TokenType.BITANDASSIGN ||
-        type == TokenType.BITORASSIGN ||
-        type == TokenType.CARETASSIGN ||
-        type == TokenType.LSHIFTASSIGN ||
-        type == TokenType.RSHIFTASSIGN ||
-        type == TokenType.URSHIFTASSIGN;
+        type == TokenType.PLUS_ASSIGN ||
+        type == TokenType.MINUS_ASSIGN ||
+        type == TokenType.STAR_ASSIGN ||
+        type == TokenType.DIVIDE_ASSIGN ||
+        type == TokenType.MODULO_ASSIGN ||
+        type == TokenType.BITWISE_AND_ASSIGN ||
+        type == TokenType.BITWISE_OR_ASSIGN ||
+        type == TokenType.CARET_ASSIGN ||
+        type == TokenType.LEFT_SHIFT_ASSIGN ||
+        type == TokenType.RIGHT_SHIFT_ASSIGN ||
+        type == TokenType.UNSIGNED_RIGHT_SHIFT_ASSIGN;
 }
 
 // CORRECT - Switch statement
 private boolean isAssignmentOperator(TokenType type) {
     return switch (type) {
-        case ASSIGN, PLUSASSIGN, MINUSASSIGN, STARASSIGN, DIVASSIGN, MODASSIGN, BITANDASSIGN, BITORASSIGN,
-            CARETASSIGN, LSHIFTASSIGN, RSHIFTASSIGN, URSHIFTASSIGN -> true;
+        case ASSIGN, PLUS_ASSIGN, MINUS_ASSIGN, STAR_ASSIGN, DIVIDE_ASSIGN, MODULO_ASSIGN,
+            BITWISE_AND_ASSIGN, BITWISE_OR_ASSIGN, CARET_ASSIGN, LEFT_SHIFT_ASSIGN,
+            RIGHT_SHIFT_ASSIGN, UNSIGNED_RIGHT_SHIFT_ASSIGN -> true;
         default -> false;
     };
 }
@@ -783,15 +784,15 @@ if (currentToken().type() == TokenType.MINUS ||
     currentToken().type() == TokenType.PLUS ||
     currentToken().type() == TokenType.NOT ||
     currentToken().type() == TokenType.TILDE ||
-    currentToken().type() == TokenType.INC ||
-    currentToken().type() == TokenType.DEC) {
+    currentToken().type() == TokenType.INCREMENT ||
+    currentToken().type() == TokenType.DECREMENT) {
     // ...
 }
 
 // CORRECT - Switch-based check
 TokenType type = currentToken().type();
 boolean isUnaryOperator = switch (type) {
-    case MINUS, PLUS, NOT, TILDE, INC, DEC -> true;
+    case MINUS, PLUS, NOT, TILDE, INCREMENT, DECREMENT -> true;
     default -> false;
 };
 if (isUnaryOperator) {

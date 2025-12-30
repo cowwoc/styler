@@ -649,63 +649,6 @@ production release.
 JDK 25. Do NOT implement string template parsing. The architecture.md reference to "string templates" is
 outdated and should be corrected.
 
-### Code Readability: Expand TokenType Acronyms
-- [ ] **READY:** `expand-tokentype-acronyms` - Expand all acronyms in TokenType enum to full names
-  - **Dependencies**: None
-  - **Blocks**: None (readability improvement)
-  - **Parallelizable With**: Any Phase E task
-  - **Estimated Effort**: 0.5-1 day
-  - **Purpose**: Improve code readability by using descriptive names instead of acronyms
-  - **Current Names → Proposed Names**:
-    - Separators:
-      - `LPAREN` → `LEFT_PARENTHESIS`
-      - `RPAREN` → `RIGHT_PARENTHESIS`
-      - `LBRACE` → `LEFT_BRACE`
-      - `RBRACE` → `RIGHT_BRACE`
-      - `LBRACKET` → `LEFT_BRACKET`
-      - `RBRACKET` → `RIGHT_BRACKET`
-      - `AT` → `AT_SIGN`
-    - Comparison operators:
-      - `LT` → `LESS_THAN`
-      - `GT` → `GREATER_THAN`
-      - `LE` → `LESS_THAN_OR_EQUAL`
-      - `GE` → `GREATER_THAN_OR_EQUAL`
-      - `EQ` → `EQUAL`
-      - `NE` → `NOT_EQUAL`
-    - Logical/other operators:
-      - `AND` → `LOGICAL_AND`
-      - `OR` → `LOGICAL_OR`
-      - `QUESTION` → `QUESTION_MARK`
-      - `INC` → `INCREMENT`
-      - `DEC` → `DECREMENT`
-      - `DIV` → `DIVIDE`
-      - `BITAND` → `BITWISE_AND`
-      - `BITOR` → `BITWISE_OR`
-      - `MOD` → `MODULO`
-    - Shift operators:
-      - `LSHIFT` → `LEFT_SHIFT`
-      - `RSHIFT` → `RIGHT_SHIFT`
-      - `URSHIFT` → `UNSIGNED_RIGHT_SHIFT`
-    - Compound assignment operators:
-      - `PLUSASSIGN` → `PLUS_ASSIGN`
-      - `MINUSASSIGN` → `MINUS_ASSIGN`
-      - `STARASSIGN` → `STAR_ASSIGN`
-      - `DIVASSIGN` → `DIVIDE_ASSIGN`
-      - `BITANDASSIGN` → `BITWISE_AND_ASSIGN`
-      - `BITORASSIGN` → `BITWISE_OR_ASSIGN`
-      - `CARETASSIGN` → `CARET_ASSIGN`
-      - `MODASSIGN` → `MODULO_ASSIGN`
-      - `LSHIFTASSIGN` → `LEFT_SHIFT_ASSIGN`
-      - `RSHIFTASSIGN` → `RIGHT_SHIFT_ASSIGN`
-      - `URSHIFTASSIGN` → `UNSIGNED_RIGHT_SHIFT_ASSIGN`
-    - Special tokens:
-      - `EOF` → `END_OF_FILE`
-  - **Implementation**:
-    - Rename enum constants in TokenType.java
-    - Update all references across lexer, parser, and test files
-    - IDE refactoring should handle most changes automatically
-  - **Quality**: Ensure all tests pass after renaming, verify no string literals reference old names
-
 ### Semantic Validation
 
 **Priority**: Enhancement for better error detection. Parser currently handles syntax only; semantic

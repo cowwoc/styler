@@ -16,7 +16,7 @@ public class LexerTest
 {
 	/**
 	 * Tests lexer behavior on empty input.
-	 * Validates that empty source produces only EOF token without errors,
+	 * Validates that empty source produces only END_OF_FILE token without errors,
 	 * ensuring graceful handling of minimal input.
 	 */
 	@Test
@@ -26,7 +26,7 @@ public class LexerTest
 		List<Token> tokens = lexer.tokenize();
 
 		requireThat(tokens.size(), "tokens.size()").isEqualTo(1);
-		requireThat(tokens.getFirst().type(), "tokens.getFirst().type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.getFirst().type(), "tokens.getFirst().type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -40,10 +40,10 @@ public class LexerTest
 		Lexer lexer = new Lexer("class");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // class + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // class + END_OF_FILE
 		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.CLASS);
 		requireThat(tokens.get(0).text(), "tokens.get(0).text()").isEqualTo("class");
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -57,7 +57,7 @@ public class LexerTest
 		Lexer lexer = new Lexer("public static void");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(4); // 3 keywords + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(4); // 3 keywords + END_OF_FILE
 		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.PUBLIC);
 		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.STATIC);
 		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.VOID);
@@ -268,12 +268,12 @@ public class LexerTest
 		Lexer lexer = new Lexer("(){}[];,.");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.LPAREN);
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.RPAREN);
-		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.LBRACE);
-		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.RBRACE);
-		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.LBRACKET);
-		requireThat(tokens.get(5).type(), "tokens.get(5).type()").isEqualTo(TokenType.RBRACKET);
+		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.LEFT_PARENTHESIS);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.RIGHT_PARENTHESIS);
+		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.LEFT_BRACE);
+		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.RIGHT_BRACE);
+		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.LEFT_BRACKET);
+		requireThat(tokens.get(5).type(), "tokens.get(5).type()").isEqualTo(TokenType.RIGHT_BRACKET);
 		requireThat(tokens.get(6).type(), "tokens.get(6).type()").isEqualTo(TokenType.SEMICOLON);
 		requireThat(tokens.get(7).type(), "tokens.get(7).type()").isEqualTo(TokenType.COMMA);
 		requireThat(tokens.get(8).type(), "tokens.get(8).type()").isEqualTo(TokenType.DOT);
@@ -338,12 +338,12 @@ public class LexerTest
 		Lexer lexer = new Lexer("== != <= >= < >");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.EQ);
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.NE);
-		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.LE);
-		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.GE);
-		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.LT);
-		requireThat(tokens.get(5).type(), "tokens.get(5).type()").isEqualTo(TokenType.GT);
+		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.EQUAL);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.NOT_EQUAL);
+		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.LESS_THAN_OR_EQUAL);
+		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.GREATER_THAN_OR_EQUAL);
+		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.LESS_THAN);
+		requireThat(tokens.get(5).type(), "tokens.get(5).type()").isEqualTo(TokenType.GREATER_THAN);
 	}
 
 	/**
@@ -357,8 +357,8 @@ public class LexerTest
 		Lexer lexer = new Lexer("&& || !");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.AND);
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.OR);
+		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.LOGICAL_AND);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.LOGICAL_OR);
 		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.NOT);
 	}
 
@@ -376,8 +376,8 @@ public class LexerTest
 		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.PLUS);
 		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.MINUS);
 		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.STAR);
-		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.DIV);
-		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.MOD);
+		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.DIVIDE);
+		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.MODULO);
 	}
 
 	/**
@@ -391,13 +391,13 @@ public class LexerTest
 		Lexer lexer = new Lexer("& | ^ ~ << >> >>>");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.BITAND);
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.BITOR);
+		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.BITWISE_AND);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.BITWISE_OR);
 		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.CARET);
 		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.TILDE);
-		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.LSHIFT);
-		requireThat(tokens.get(5).type(), "tokens.get(5).type()").isEqualTo(TokenType.RSHIFT);
-		requireThat(tokens.get(6).type(), "tokens.get(6).type()").isEqualTo(TokenType.URSHIFT);
+		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.LEFT_SHIFT);
+		requireThat(tokens.get(5).type(), "tokens.get(5).type()").isEqualTo(TokenType.RIGHT_SHIFT);
+		requireThat(tokens.get(6).type(), "tokens.get(6).type()").isEqualTo(TokenType.UNSIGNED_RIGHT_SHIFT);
 	}
 
 	/**
@@ -412,17 +412,17 @@ public class LexerTest
 		List<Token> tokens = lexer.tokenize();
 
 		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.ASSIGN);
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.PLUSASSIGN);
-		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.MINUSASSIGN);
-		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.STARASSIGN);
-		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.DIVASSIGN);
-		requireThat(tokens.get(5).type(), "tokens.get(5).type()").isEqualTo(TokenType.MODASSIGN);
-		requireThat(tokens.get(6).type(), "tokens.get(6).type()").isEqualTo(TokenType.BITANDASSIGN);
-		requireThat(tokens.get(7).type(), "tokens.get(7).type()").isEqualTo(TokenType.BITORASSIGN);
-		requireThat(tokens.get(8).type(), "tokens.get(8).type()").isEqualTo(TokenType.CARETASSIGN);
-		requireThat(tokens.get(9).type(), "tokens.get(9).type()").isEqualTo(TokenType.LSHIFTASSIGN);
-		requireThat(tokens.get(10).type(), "tokens.get(10).type()").isEqualTo(TokenType.RSHIFTASSIGN);
-		requireThat(tokens.get(11).type(), "tokens.get(11).type()").isEqualTo(TokenType.URSHIFTASSIGN);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.PLUS_ASSIGN);
+		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.MINUS_ASSIGN);
+		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.STAR_ASSIGN);
+		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.DIVIDE_ASSIGN);
+		requireThat(tokens.get(5).type(), "tokens.get(5).type()").isEqualTo(TokenType.MODULO_ASSIGN);
+		requireThat(tokens.get(6).type(), "tokens.get(6).type()").isEqualTo(TokenType.BITWISE_AND_ASSIGN);
+		requireThat(tokens.get(7).type(), "tokens.get(7).type()").isEqualTo(TokenType.BITWISE_OR_ASSIGN);
+		requireThat(tokens.get(8).type(), "tokens.get(8).type()").isEqualTo(TokenType.CARET_ASSIGN);
+		requireThat(tokens.get(9).type(), "tokens.get(9).type()").isEqualTo(TokenType.LEFT_SHIFT_ASSIGN);
+		requireThat(tokens.get(10).type(), "tokens.get(10).type()").isEqualTo(TokenType.RIGHT_SHIFT_ASSIGN);
+		requireThat(tokens.get(11).type(), "tokens.get(11).type()").isEqualTo(TokenType.UNSIGNED_RIGHT_SHIFT_ASSIGN);
 	}
 
 	/**
@@ -436,8 +436,8 @@ public class LexerTest
 		Lexer lexer = new Lexer("++ --");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.INC);
-		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.DEC);
+		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.INCREMENT);
+		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.DECREMENT);
 	}
 
 	/**
@@ -456,9 +456,9 @@ public class LexerTest
 		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.CLASS);
 		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.IDENTIFIER);
 		requireThat(tokens.get(2).text(), "tokens.get(2).text()").isEqualTo("HelloWorld");
-		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.LBRACE);
-		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.RBRACE);
-		requireThat(tokens.get(5).type(), "tokens.get(5).type()").isEqualTo(TokenType.EOF);
+		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.LEFT_BRACE);
+		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.RIGHT_BRACE);
+		requireThat(tokens.get(5).type(), "tokens.get(5).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
 	/**
@@ -522,7 +522,7 @@ public class LexerTest
 	/**
 	 * Tests that lexer skips whitespace between tokens.
 	 * Validates that spaces, tabs, and newlines are ignored,
-	 * producing only significant tokens plus EOF.
+	 * producing only significant tokens plus END_OF_FILE.
 	 */
 	@Test
 	public void testWhitespaceSkipping()
@@ -530,7 +530,7 @@ public class LexerTest
 		Lexer lexer = new Lexer("  \t\n  public  \n  ");
 		List<Token> tokens = lexer.tokenize();
 
-		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // public + EOF
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // public + END_OF_FILE
 		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.PUBLIC);
 	}
 }
