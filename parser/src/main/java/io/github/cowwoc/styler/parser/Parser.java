@@ -627,6 +627,198 @@ public final class Parser implements AutoCloseable
 		};
 	}
 
+	/**
+	 * Checks whether the given token type can start a unary expression excluding plus and minus.
+	 * <p>
+	 * Used for cast disambiguation per JLS 15.16: when we see {@code (Identifier) + x}, we cannot tell if
+	 * this is a cast {@code (Type) (+x)} or a parenthesized expression {@code (var) + x}. Reference type
+	 * casts are only recognized when followed by something other than {@code +} or {@code -}. Primitive type
+	 * casts like {@code (int)} have no such ambiguity since primitive type names cannot be variable names.
+	 *
+	 * @param type the token type to check
+	 * @return {@code true} if the token can start a unary expression (excluding {@code +} and {@code -})
+	 */
+	private boolean canStartUnaryExpressionNotPlusMinus(TokenType type)
+	{
+		return switch (type)
+		{
+			case IDENTIFIER, INTEGER_LITERAL, LONG_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, BOOLEAN_LITERAL,
+				CHAR_LITERAL, STRING_LITERAL, NULL_LITERAL, THIS, SUPER, NEW, LPAREN, NOT, TILDE, INC, DEC,
+				SWITCH, BOOLEAN, BYTE, SHORT, INT, LONG, CHAR, FLOAT, DOUBLE, VOID -> true;
+			default -> false;
+		};
+	}
+
+	/**
+	 * Checks whether the given token type can start any unary expression.
+	 * <p>
+	 * Used for cast disambiguation: primitive type casts {@code (int) expr} can be followed by any unary
+	 * operand including {@code +} and {@code -}.
+	 *
+	 * @param type the token type to check
+	 * @return {@code true} if the token can start any unary expression
+	 */
+	private boolean canStartUnaryExpression(TokenType type)
+	{
+		return canStartUnaryExpressionNotPlusMinus(type) || type == TokenType.PLUS || type == TokenType.MINUS;
+	}
+
+	/**
+	 * Attempts to parse a cast expression after the opening parenthesis has been consumed.
+	 * <p>
+	 * Cast expressions have the form {@code (Type) operand}. This method handles:
+	 * <ul>
+	 *   <li>Primitive type casts: {@code (int) value}</li>
+	 *   <li>Reference type casts: {@code (String) value}</li>
+	 *   <li>Parameterized type casts: {@code (List<String>) value}</li>
+	 *   <li>Array type casts: {@code (int[]) value}</li>
+	 *   <li>Intersection type casts: {@code (Serializable & Comparable) value}</li>
+	 * </ul>
+	 * <p>
+	 * Disambiguation between cast and parenthesized expression follows Java Language Specification:
+	 * <ul>
+	 *   <li>Primitive type casts can be followed by any unary expression operand</li>
+	 *   <li>Reference type casts can only be followed by unary expressions that cannot be
+	 *       confused with binary operator continuations (i.e., not {@code +} or {@code -})</li>
+	 * </ul>
+	 *
+	 * @param start the start position of the opening parenthesis
+	 * @return the {@link NodeIndex} of the cast expression if successful, or {@code null} if this
+	 *         is not a cast expression (caller should continue with parenthesized/lambda parsing)
+	 */
+	private NodeIndex tryCastExpression(int start)
+	{
+		// Save checkpoint after '(' is consumed
+		int checkpoint = position;
+
+		// Determine if type starts with primitive
+		boolean isPrimitive = isPrimitiveType(currentToken().type());
+
+		// Track whether we've seen intersection types (&)
+		boolean isIntersectionType = false;
+
+		// Try to parse the type
+		try
+		{
+			// Parse annotations before type (e.g., (@NonNull String) value)
+			while (currentToken().type() == TokenType.AT)
+			{
+				parseAnnotation();
+			}
+
+			if (isPrimitive)
+			{
+				consume();
+			}
+			else if (currentToken().type() == TokenType.IDENTIFIER)
+			{
+				// Parse qualified name (e.g., java.lang.String)
+				consume();
+				while (match(TokenType.DOT))
+				{
+					if (currentToken().type() != TokenType.IDENTIFIER)
+					{
+						// Not a valid qualified name, restore and return null
+						position = checkpoint;
+						return null;
+					}
+					consume();
+				}
+
+				// Parse type arguments (e.g., List<String>)
+				if (match(TokenType.LT))
+				{
+					parseTypeArguments();
+				}
+
+				// Parse intersection types (e.g., Serializable & Comparable)
+				while (match(TokenType.BITAND))
+				{
+					isIntersectionType = true;
+					// Parse annotations before intersection type component
+					while (currentToken().type() == TokenType.AT)
+					{
+						parseAnnotation();
+					}
+					if (currentToken().type() != TokenType.IDENTIFIER)
+					{
+						// Not a valid intersection type, restore and return null
+						position = checkpoint;
+						return null;
+					}
+					consume();
+					while (match(TokenType.DOT))
+					{
+						if (currentToken().type() != TokenType.IDENTIFIER)
+						{
+							position = checkpoint;
+							return null;
+						}
+						consume();
+					}
+					if (match(TokenType.LT))
+					{
+						parseTypeArguments();
+					}
+				}
+			}
+			else
+			{
+				// Not a valid type start, restore and return null
+				position = checkpoint;
+				return null;
+			}
+
+			// Parse array dimensions (e.g., int[], String[][])
+			while (match(TokenType.LBRACKET))
+			{
+				expect(TokenType.RBRACKET);
+			}
+		}
+		catch (ParserException e)
+		{
+			// Type parsing failed, restore and return null
+			position = checkpoint;
+			return null;
+		}
+
+		// Check for closing parenthesis
+		if (currentToken().type() != TokenType.RPAREN)
+		{
+			// Not a cast (could be expression like (a + b))
+			position = checkpoint;
+			return null;
+		}
+		consume(); // Consume ')'
+
+		// Check disambiguation rules based on next token
+		TokenType nextTokenType = currentToken().type();
+		boolean validCast;
+		if (isPrimitive && !isIntersectionType)
+		{
+			// Primitive type cast: can be followed by any unary operand
+			validCast = canStartUnaryExpression(nextTokenType);
+		}
+		else
+		{
+			// Reference type cast (or intersection type): cannot be followed by + or -
+			// to avoid ambiguity with binary expressions like (a) + b
+			validCast = canStartUnaryExpressionNotPlusMinus(nextTokenType);
+		}
+
+		if (!validCast)
+		{
+			// This is not a cast expression, restore position
+			position = checkpoint;
+			return null;
+		}
+
+		// This is a valid cast - parse the operand
+		NodeIndex operand = parseUnary();
+		int end = arena.getEnd(operand);
+		return arena.allocateNode(NodeType.CAST_EXPRESSION, start, end);
+	}
+
 	private void parseTypeArguments()
 	{
 		// Handle diamond operator: <> with no type arguments
@@ -2113,8 +2305,15 @@ public final class Parser implements AutoCloseable
 	}
 
 	/**
-	 * Parses parenthesized expression or lambda expression.
-	 * Handles: () -> expr, (params) -> expr, or (expr)
+	 * Parses parenthesized expression, cast expression, or lambda expression.
+	 * <p>
+	 * Handles:
+	 * <ul>
+	 *   <li>Empty parens lambda: {@code () -> expr}</li>
+	 *   <li>Cast expression: {@code (Type) operand}</li>
+	 *   <li>Parenthesized lambda: {@code (params) -> expr}</li>
+	 *   <li>Parenthesized expression: {@code (expr)}</li>
+	 * </ul>
 	 *
 	 * @param start the start position of the opening paren
 	 * @return the parsed node
@@ -2126,6 +2325,13 @@ public final class Parser implements AutoCloseable
 		{
 			expect(TokenType.ARROW);
 			return parseLambdaBody(start);
+		}
+
+		// Try to parse as a cast expression
+		NodeIndex castExpr = tryCastExpression(start);
+		if (castExpr != null)
+		{
+			return castExpr;
 		}
 
 		// Parse the content inside parens
