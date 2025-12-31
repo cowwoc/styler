@@ -413,9 +413,37 @@ requireThat(success.rootNode().isValid(), "root.isValid()").
 ### PMD Suppression
 Only suppress with documented legitimate reason. "Too much work" is NOT valid.
 
-**NcssCount violations**: Prefer breaking down the method into smaller helper methods over suppressing.
-Suppression is acceptable only when decomposition would harm readability (e.g., tightly coupled state
-machine logic where extraction creates unclear control flow).
+**NcssCount violations**: MUST attempt decomposition before suppressing. Suppression is a LAST RESORT.
+
+**MANDATORY CHECKLIST** before adding `@SuppressWarnings("PMD.NcssCount")`:
+
+1. **Identify logical blocks**: Can any section become a helper method?
+   - Look for distinct operations (validation, transformation, output)
+   - Look for repeated patterns that could be extracted
+   - Look for conditionals with multi-line bodies
+
+2. **Check for existing patterns**: Does the class already have helper method patterns?
+   - If `parseArrayAccessOrClassLiteral()` exists, similar extractions are expected
+   - Follow established patterns in the codebase
+
+3. **Attempt extraction**: Actually try extracting at least ONE helper method
+   - Create the helper method
+   - Verify the code still works
+   - If extraction harms readability, document WHY in commit message
+
+4. **Document suppression justification**: If suppression is truly needed:
+   - Add comment above suppression explaining why decomposition failed
+   - Include in commit message: "NcssCount: decomposition attempted, suppressed because [reason]"
+
+**Acceptable suppression reasons**:
+- Tightly coupled state machine where extraction obscures control flow
+- Switch statement with many cases that must stay together for comprehension
+- Method is already decomposed but still over limit due to essential complexity
+
+**NOT acceptable reasons**:
+- "Method is complex" (that's why you decompose it)
+- "Would take too long" (decomposition is the job)
+- No attempt made at extraction
 
 ### @SuppressWarnings("unchecked") - Minimal Scope
 Never apply to entire method. Always apply to single expression:
