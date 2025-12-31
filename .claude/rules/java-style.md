@@ -77,7 +77,15 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
    */
   public class ClassParserTest { }
   ```
-- Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` - see [testing-claude.md](../../docs/code-style/testing-claude.md#parser-test-patterns)
+- Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` or counting - see [testing-claude.md](../../docs/code-style/testing-claude.md#parser-test-patterns)
+  ```java
+  // ❌ WRONG - Counting nodes is a weak assertion
+  long count = actual.stream().filter(n -> n.type() == X).count();
+  requireThat(count, "count").isEqualTo(2L);  // Could pass even if AST is completely wrong!
+
+  // ✅ CORRECT - Compare expected vs actual structure
+  requireThat(actual, "actual").isEqualTo(expected);
+  ```
 - No meaningless assertions - `assertTrue(true, ...)` always passes and tests nothing:
   ```java
   // ❌ WRONG - Useless assertion that always passes
@@ -244,7 +252,8 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
       default -> false;
   };
   ```
-- Prefer switch over if-else-if chains with 3+ branches (when the condition tests the same variable):
+- Prefer switch over if chains with 3+ branches testing the same variable (includes both if-else-if and
+  sequential if statements with early returns):
   ```java
   // ❌ WRONG - Long if-else-if chain
   if (type == TokenType.STRING)
@@ -256,7 +265,16 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   else
       handleOther();
 
-  // ✅ CORRECT - Switch statement
+  // ❌ WRONG - Sequential ifs with early returns (semantically equivalent to if-else-if)
+  if (type == TokenType.STRING)
+      return handleString();
+  if (type == TokenType.NUMBER)
+      return handleNumber();
+  if (type == TokenType.IDENTIFIER)
+      return handleIdentifier();
+  return handleOther();
+
+  // ✅ CORRECT - Switch statement/expression
   switch (type)
   {
       case STRING -> handleString();
@@ -264,6 +282,15 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
       case IDENTIFIER -> handleIdentifier();
       default -> handleOther();
   }
+
+  // ✅ CORRECT - Switch expression with return
+  return switch (type)
+  {
+      case STRING -> handleString();
+      case NUMBER -> handleNumber();
+      case IDENTIFIER -> handleIdentifier();
+      default -> handleOther();
+  };
   ```
   **When NOT to convert**: Complex conditions (e.g., `x > 5 && x < 10`), conditions on different variables,
   or when the switch would require pattern matching not available in Java 21.
