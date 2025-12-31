@@ -47,27 +47,49 @@ case "$TOOL_NAME" in
     TARGET_PATH=$(echo "$INPUT" | jq -r '.tool.input.file_path // empty')
     ;;
   Bash)
-    # For Bash, extract paths from command - look for /workspace/tasks patterns
+    # For Bash, check BOTH command text AND current working directory
+    # FIX 2025-12-31: Commands like ./mvnw don't contain /workspace/tasks/ but
+    # still operate in task directories. Must check pwd too.
     COMMAND=$(echo "$INPUT" | jq -r '.tool.input.command // empty')
-    # Extract task directory if command references /workspace/tasks/*/
-    if [[ "$COMMAND" =~ /workspace/tasks/([a-z0-9-]+) ]]; then
+
+    # Strategy 1: Check if command explicitly references /workspace/tasks/
+    if [[ "$COMMAND" =~ /workspace/tasks/([^/]+) ]]; then
       TASK_NAME="${BASH_REMATCH[1]}"
       TARGET_PATH="/workspace/tasks/$TASK_NAME"
     else
-      # No task path in command - allow
-      exit 0
+      # Strategy 2: Check current working directory
+      # Commands like ./mvnw run in pwd - if pwd is a task worktree, verify ownership
+      CURRENT_DIR=$(pwd 2>/dev/null || echo "")
+
+      if [[ "$CURRENT_DIR" =~ ^/workspace/tasks/([^/]+) ]]; then
+        # Strip /workspace/tasks/ prefix and extract task name
+        STRIPPED="${CURRENT_DIR#/workspace/tasks/}"
+        TASK_NAME="${STRIPPED%%/*}"
+        TARGET_PATH="/workspace/tasks/$TASK_NAME"
+      else
+        # Not in a task directory - allow
+        exit 0
+      fi
     fi
     ;;
 esac
 
 # Check if path is within /workspace/tasks/
-if [[ ! "$TARGET_PATH" =~ ^/workspace/tasks/([a-z0-9-]+) ]]; then
+if [[ ! "$TARGET_PATH" =~ ^/workspace/tasks/ ]]; then
   # Not accessing a task directory - allow
   exit 0
 fi
 
-# Extract task name from path
-TASK_NAME="${BASH_REMATCH[1]}"
+# Extract task name from path using parameter expansion (more reliable than regex groups)
+# Remove /workspace/tasks/ prefix, then take first path segment
+STRIPPED="${TARGET_PATH#/workspace/tasks/}"
+TASK_NAME="${STRIPPED%%/*}"
+
+# Validate task name is not empty
+if [ -z "$TASK_NAME" ]; then
+  exit 0
+fi
+
 TASK_JSON="/workspace/tasks/$TASK_NAME/task.json"
 
 # Check if task.json exists
