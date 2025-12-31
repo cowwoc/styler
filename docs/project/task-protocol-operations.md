@@ -15,6 +15,7 @@
 | Need | Section |
 |------|---------|
 | Optimization | [Predictive Prefetching](#predictive-prefetching-init---mandatory), [Fail-Fast Validation](#fail-fast-validation-implementation) |
+| Main Worktree Safety | [Main Worktree Safety Policy](#main-worktree-safety-policy) |
 | Troubleshooting | [Troubleshooting](#troubleshooting) |
 | Error Recovery | [Error Recovery Protocols](#error-handling-recovery) |
 | Multi-Instance | [Multi-Instance Coordination](#multi-instance-coordination) |
@@ -454,6 +455,91 @@ update_lock() {
 ```bash
 git show --stat | grep "todo.md" || { echo "VIOLATION: todo.md not in commit"; exit 1; }
 git show --name-only | grep "todo.md" || { echo "VIOLATION: todo.md not modified"; exit 1; }
+```
+
+---
+
+## Main Worktree Safety Policy {#main-worktree-safety-policy}
+
+**⚠️ CRITICAL: The `/workspace/main` worktree is shared infrastructure.**
+
+Multiple Claude instances may run concurrently, all sharing the main worktree. Direct operations on main
+that are not atomic can cause conflicts and data loss.
+
+### Allowed Operations in Main Worktree {#allowed-main-worktree-ops}
+
+**✅ ATOMIC ONLY** - These operations complete instantly and don't leave main in an inconsistent state:
+
+```bash
+cd /workspace/main
+
+# Fast-forward merge (atomic - single git operation)
+git merge --ff-only {task-branch}
+
+# Read-only operations
+git log, git status, git diff, git show
+
+# Worktree removal (after cd to main)
+git worktree remove /workspace/tasks/{task}/code
+```
+
+### Forbidden Operations in Main Worktree {#forbidden-main-worktree-ops}
+
+**❌ NEVER perform these in `/workspace/main`:**
+
+| Operation | Why Forbidden | Safe Alternative |
+|-----------|---------------|------------------|
+| `git cherry-pick` | Multi-step, can leave conflicts | Do in task worktree, then ff-merge |
+| `git rebase` | Multi-step, can leave conflicts | Do in task worktree, then ff-merge |
+| Conflict resolution | Non-atomic, blocks other instances | Always resolve in task worktree |
+| `git reset` (on main) | Can lose commits for all instances | Use in task worktree only |
+| `git commit` (new work) | Main should only receive merges | Commit in task worktree |
+
+### Correct Workflow Pattern {#correct-main-worktree-workflow}
+
+```bash
+# 1. STAY in task worktree for ALL git operations
+cd /workspace/tasks/{task-name}/code
+
+# 2. Fetch main and rebase/resolve conflicts HERE
+git fetch /workspace/main refs/heads/main:refs/remotes/origin/main
+git rebase origin/main
+# If conflicts: resolve them HERE in task worktree
+
+# 3. Verify build passes in task worktree
+./mvnw verify
+
+# 4. ONLY THEN touch main - for atomic fast-forward merge
+cd /workspace/main
+git merge --ff-only {task-branch}  # Atomic operation
+
+# 5. Immediately return to task worktree or complete cleanup
+```
+
+### Why This Matters {#why-main-worktree-safety-matters}
+
+1. **Concurrent Instances**: Multiple Claude sessions may work simultaneously
+2. **Shared State**: Main worktree is the only shared git state across all sessions
+3. **No Locking**: Git has no cross-worktree locking mechanism
+4. **Conflict Risk**: Non-atomic operations can leave main in conflict state, blocking ALL instances
+
+### Anti-Pattern Example {#main-worktree-antipattern}
+
+```bash
+# ❌ WRONG - Operating directly on main for non-atomic operations
+cd /workspace/main
+git cherry-pick abc123  # May create conflicts
+# ... resolve conflicts ...  # Blocks all other instances
+git cherry-pick def456  # More potential conflicts
+
+# ✅ CORRECT - All work in task worktree
+cd /workspace/tasks/my-task/code
+git cherry-pick abc123  # Conflicts only affect this worktree
+# ... resolve conflicts safely ...
+git cherry-pick def456
+./mvnw verify
+cd /workspace/main
+git merge --ff-only my-task  # Single atomic operation
 ```
 
 ---
