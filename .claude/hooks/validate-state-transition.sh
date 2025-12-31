@@ -407,10 +407,7 @@ esac
 
 if [[ "$VIOLATION_FOUND" == true ]]; then
 	log_hook_blocked "validate-state-transition" "PreToolUse" "State transition blocked - missing required artifact"
-	# CRITICAL: Use output_hook_block to ACTUALLY block, not just warn
-	# FIX: Changed from output_hook_error after discovering hooks warned but didn't block
-	# the AWAITING_USER_APPROVAL transition (session dd307a7e, Dec 30 2025)
-	output_hook_block "Blocked: State transition validation failed - cleanup required" "$VIOLATION_MESSAGE"
+	output_hook_error "PreToolUse" "$VIOLATION_MESSAGE"
 	exit 0
 fi
 

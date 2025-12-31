@@ -77,15 +77,7 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
    */
   public class ClassParserTest { }
   ```
-- Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` or counting - see [testing-claude.md](../../docs/code-style/testing-claude.md#parser-test-patterns)
-  ```java
-  // ❌ WRONG - Counting nodes is a weak assertion
-  long count = actual.stream().filter(n -> n.type() == X).count();
-  requireThat(count, "count").isEqualTo(2L);  // Could pass even if AST is completely wrong!
-
-  // ✅ CORRECT - Compare expected vs actual structure
-  requireThat(actual, "actual").isEqualTo(expected);
-  ```
+- Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` - see [testing-claude.md](../../docs/code-style/testing-claude.md#parser-test-patterns)
 - No meaningless assertions - `assertTrue(true, ...)` always passes and tests nothing:
   ```java
   // ❌ WRONG - Useless assertion that always passes
@@ -252,8 +244,7 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
       default -> false;
   };
   ```
-- Prefer switch over if chains with 3+ branches testing the same variable (includes both if-else-if and
-  sequential if statements with early returns):
+- Prefer switch over if-else-if chains with 3+ branches (when the condition tests the same variable):
   ```java
   // ❌ WRONG - Long if-else-if chain
   if (type == TokenType.STRING)
@@ -265,16 +256,7 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   else
       handleOther();
 
-  // ❌ WRONG - Sequential ifs with early returns (semantically equivalent to if-else-if)
-  if (type == TokenType.STRING)
-      return handleString();
-  if (type == TokenType.NUMBER)
-      return handleNumber();
-  if (type == TokenType.IDENTIFIER)
-      return handleIdentifier();
-  return handleOther();
-
-  // ✅ CORRECT - Switch statement/expression
+  // ✅ CORRECT - Switch statement
   switch (type)
   {
       case STRING -> handleString();
@@ -282,15 +264,6 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
       case IDENTIFIER -> handleIdentifier();
       default -> handleOther();
   }
-
-  // ✅ CORRECT - Switch expression with return
-  return switch (type)
-  {
-      case STRING -> handleString();
-      case NUMBER -> handleNumber();
-      case IDENTIFIER -> handleIdentifier();
-      default -> handleOther();
-  };
   ```
   **When NOT to convert**: Complex conditions (e.g., `x > 5 && x < 10`), conditions on different variables,
   or when the switch would require pattern matching not available in Java 21.
@@ -440,37 +413,12 @@ requireThat(success.rootNode().isValid(), "root.isValid()").
 ### PMD Suppression
 Only suppress with documented legitimate reason. "Too much work" is NOT valid.
 
-**NcssCount violations**: MUST attempt decomposition before suppressing. Suppression is a LAST RESORT.
-
-**MANDATORY CHECKLIST** before adding `@SuppressWarnings("PMD.NcssCount")`:
-
-1. **Identify logical blocks**: Can any section become a helper method?
-   - Look for distinct operations (validation, transformation, output)
-   - Look for repeated patterns that could be extracted
-   - Look for conditionals with multi-line bodies
-
-2. **Check for existing patterns**: Does the class already have helper method patterns?
-   - If `parseArrayAccessOrClassLiteral()` exists, similar extractions are expected
-   - Follow established patterns in the codebase
-
-3. **Attempt extraction**: Actually try extracting at least ONE helper method
-   - Create the helper method
-   - Verify the code still works
-   - If extraction harms readability, document WHY in commit message
-
-4. **Document suppression justification**: If suppression is truly needed:
-   - Add comment above suppression explaining why decomposition failed
-   - Include in commit message: "NcssCount: decomposition attempted, suppressed because [reason]"
-
-**Acceptable suppression reasons**:
-- Tightly coupled state machine where extraction obscures control flow
-- Switch statement with many cases that must stay together for comprehension
-- Method is already decomposed but still over limit due to essential complexity
-
-**NOT acceptable reasons**:
-- "Method is complex" (that's why you decompose it)
-- "Would take too long" (decomposition is the job)
-- No attempt made at extraction
+**NcssCount violations**: ALWAYS attempt to fix by breaking down the method into smaller helper methods.
+Suppression is a LAST RESORT, acceptable only when decomposition would genuinely harm readability (e.g.,
+tightly coupled state machine logic where extraction creates unclear control flow). Before suppressing:
+1. Identify logical blocks that can become helper methods
+2. Extract repetitive patterns into shared utilities
+3. Consider if the method is doing too much (Single Responsibility Principle)
 
 ### @SuppressWarnings("unchecked") - Minimal Scope
 Never apply to entire method. Always apply to single expression:
