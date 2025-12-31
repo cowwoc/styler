@@ -399,34 +399,25 @@ benchmarking, and validate with Maven plugin integration.
     - Parse module name, then directives until closing brace
   - **Quality**: Parser tests for all directive types, qualified names, modifiers
 
-- [ ] **READY:** `add-explicit-type-arguments` - Parse explicit type arguments on method/constructor/reference calls
+- [ ] **READY:** `add-array-dimension-annotations` - Parse type annotations on array dimensions (JDK 8+)
   - **Dependencies**: None
-  - **Blocks**: None (required for generic method invocation)
+  - **Blocks**: None (obscure JSR 308 feature)
   - **Parallelizable With**: Any Phase E parser task
-  - **Estimated Effort**: 0.5-1 day
-  - **Purpose**: Parse explicit type arguments like `obj.<String>method()`, `new <T>Foo()`, and `List::<String>of`
-  - **Current Gap**:
-    - `parsePostfix()` after DOT expects IDENTIFIER, not LT for type arguments
-    - `parsePostfix()` after DOUBLE_COLON expects IDENTIFIER or NEW, not LT for type arguments
-  - **Syntax**:
-    - Method invocation: `receiver.<TypeArgs>methodName(args)`
-    - Constructor: `new <TypeArgs>ClassName(args)`
-    - Method reference: `Type::<TypeArgs>methodName` or `Type::<TypeArgs>new`
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse annotations between type name and array brackets (JSR 308, JDK 8+)
+  - **Current Gap**: `parseType()` parses `[]` but doesn't check for `@` before each `[`
+  - **Syntax**: `Type @Annotation []` or `@A Type @B [] @C []`
   - **Example**:
     ```java
-    Collections.<String>emptyList();
-    this.<T>genericMethod();
-    obj.<String, Integer>method();
-    new <String>GenericConstructor();
-    List::<String>of;                    // method reference with type args
-    ArrayList::<String>new;              // constructor reference with type args
+    String @NonNull [] names;                    // annotation on array type
+    @NonNull String @Nullable [] @ReadOnly [] matrix;  // per-dimension annotations
     ```
   - **Implementation**:
-    - In `parsePostfix()`, after DOT, check for LT before IDENTIFIER
-    - In `parsePostfix()`, after DOUBLE_COLON, check for LT before IDENTIFIER or NEW
-    - If LT found, parse type arguments, then expect IDENTIFIER or NEW
-    - In `parseNewExpression()`, check for LT before type name
-  - **Quality**: Parser tests for method invocations, constructors, method references with type args
+    - In `parseType()`, before each `match(LBRACKET)`, check for and consume annotations
+    - Annotations apply to that specific array dimension
+    - Handle multiple dimensions with different annotations
+  - **Priority**: Lower - obscure feature, rarely used in practice
+  - **Quality**: Parser tests for single/multiple dimensions with annotations
 
 - [x] **DONE:** `add-nested-annotation-values` - Parse nested annotations in annotation element values
   - **Dependencies**: None

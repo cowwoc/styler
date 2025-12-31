@@ -2694,6 +2694,11 @@ public final class Parser implements AutoCloseable
 			else if (match(TokenType.DOUBLE_COLON))
 			{
 				parseComments();
+				// Explicit type arguments: Type::<String>method
+				if (match(TokenType.LESS_THAN))
+				{
+					parseTypeArguments();
+				}
 				// Method reference: Type::method or Type::new
 				int end;
 				if (match(TokenType.NEW))
@@ -2740,6 +2745,11 @@ public final class Parser implements AutoCloseable
 	private NodeIndex parseDotExpression(int start)
 	{
 		parseComments();
+		// Explicit type arguments: obj.<String>method()
+		if (match(TokenType.LESS_THAN))
+		{
+			parseTypeArguments();
+		}
 		if (currentToken().type() == TokenType.IDENTIFIER)
 		{
 			// Field access: obj.field
@@ -2972,6 +2982,11 @@ public final class Parser implements AutoCloseable
 
 	private NodeIndex parseNewExpression(int start)
 	{
+		// Explicit type arguments: new <String>Constructor()
+		if (match(TokenType.LESS_THAN))
+		{
+			parseTypeArguments();
+		}
 		// Object creation: new Type() or new Type[]
 		parseType();
 
