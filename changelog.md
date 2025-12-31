@@ -109,6 +109,45 @@
 
 ---
 
+### Explicit Type Arguments Parsing Support ✅
+
+**Task**: `add-explicit-type-arguments`
+
+**Problem Solved**:
+- Parser did not support explicit type arguments on method/constructor calls
+- `Collections.<String>emptyList()`, `List::<String>of`, `new <T>Constructor()` failed to parse
+- `parsePostfix()` did not check for `<` after DOT or DOUBLE_COLON
+- `parseNewExpression()` did not check for `<` before type name
+
+**Solution Implemented**:
+- Added type argument parsing in `parsePostfix()` after DOT (handles `obj.<T>method()`)
+- Added type argument parsing in `parsePostfix()` after DOUBLE_COLON (handles `Type::<T>method`)
+- Added type argument parsing in `parseNewExpression()` (handles `new <T>Constructor()`)
+- Reused existing `parseTypeArguments()` infrastructure (handles nested generics, wildcards, diamond)
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added 3 type argument checks
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/ExplicitTypeArgumentParserTest.java` - 25 tests
+
+**Test Coverage**:
+- Method invocation with type args: `Collections.<String>emptyList()`, `this.<T>method()`
+- Multiple type arguments: `obj.<String, Integer>method()`
+- Nested generics: `obj.<List<String>>method()`
+- Constructor with type args: `new <String>Container()`
+- Method reference with type args: `List::<String>of`, `Arrays::<String>sort`
+- Constructor reference with type args: `ArrayList::<String>new`
+- Chained calls, wildcard types, edge cases
+- Error cases: malformed syntax rejection
+
+**Quality**:
+- All 25 tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ### Parse Package Annotations in package-info.java ✅
 
 **Task**: `add-package-annotations`
