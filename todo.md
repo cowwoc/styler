@@ -448,26 +448,6 @@ benchmarking, and validate with Maven plugin integration.
   - **Priority**: Lower - obscure feature, rarely used in practice
   - **Quality**: Parser tests for single/multiple dimensions with annotations
 
-- [ ] **READY:** `add-qualified-class-instantiation` - Parse `outer.new Inner()` syntax
-  - **Dependencies**: None
-  - **Blocks**: None (required for inner class instantiation)
-  - **Parallelizable With**: Any Phase E parser task
-  - **Estimated Effort**: 0.5 days
-  - **Purpose**: Parse qualified class instance creation for inner classes
-  - **Current Gap**: `parsePostfix()` after DOT only handles IDENTIFIER/CLASS, not NEW
-  - **Syntax**: `expression.new InnerClass(args)` or `expression.new <T>InnerClass(args)`
-  - **Example**:
-    ```java
-    Outer outer = new Outer();
-    Outer.Inner inner = outer.new Inner();           // qualified instantiation
-    outer.new Inner().method();                       // chained
-    getOuter().new Inner();                           // expression qualifier
-    ```
-  - **Implementation**:
-    - In `parsePostfix()`, after DOT, check for NEW token
-    - If found, parse inner class instantiation (type, optional type args, arguments)
-    - Create appropriate OBJECT_CREATION node with qualifier info
-  - **Quality**: Parser tests for simple/chained/expression qualifiers
 
 - [x] **DONE:** `add-nested-annotation-values` - Parse nested annotations in annotation element values
   - **Dependencies**: None

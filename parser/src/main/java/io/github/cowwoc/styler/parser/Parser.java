@@ -1056,31 +1056,34 @@ public final class Parser implements AutoCloseable
 
 	private boolean parseNestedTypeDeclaration()
 	{
-		if (currentToken().type() == TokenType.CLASS)
+		return switch (currentToken().type())
 		{
-			consume();
-			parseClassDeclaration();
-			return true;
-		}
-		if (currentToken().type() == TokenType.INTERFACE)
-		{
-			consume();
-			parseInterfaceDeclaration();
-			return true;
-		}
-		if (currentToken().type() == TokenType.ENUM)
-		{
-			consume();
-			parseEnumDeclaration();
-			return true;
-		}
-		if (currentToken().type() == TokenType.RECORD)
-		{
-			consume();
-			parseRecordDeclaration();
-			return true;
-		}
-		return false;
+			case CLASS ->
+			{
+				consume();
+				parseClassDeclaration();
+				yield true;
+			}
+			case INTERFACE ->
+			{
+				consume();
+				parseInterfaceDeclaration();
+				yield true;
+			}
+			case ENUM ->
+			{
+				consume();
+				parseEnumDeclaration();
+				yield true;
+			}
+			case RECORD ->
+			{
+				consume();
+				parseRecordDeclaration();
+				yield true;
+			}
+			default -> false;
+		};
 	}
 
 	private void parseMemberBody(int start)
@@ -2683,38 +2686,7 @@ public final class Parser implements AutoCloseable
 			}
 			else if (match(TokenType.DOT))
 			{
-				parseComments();
-				// Field access, class literal, or method reference
-				if (currentToken().type() == TokenType.IDENTIFIER)
-				{
-					int end = currentToken().end();
-					consume();
-					left = arena.allocateNode(NodeType.FIELD_ACCESS, start, end);
-				}
-				else if (match(TokenType.CLASS))
-				{
-					// Class literal: Type.class, Type[].class
-					int end = previousToken().end();
-					left = arena.allocateNode(NodeType.CLASS_LITERAL, start, end);
-				}
-				else if (match(TokenType.THIS))
-				{
-					// Qualified this: Outer.this
-					int end = previousToken().end();
-					left = arena.allocateNode(NodeType.THIS_EXPRESSION, start, end);
-				}
-				else if (match(TokenType.SUPER))
-				{
-					// Qualified super: Outer.super
-					int end = previousToken().end();
-					left = arena.allocateNode(NodeType.SUPER_EXPRESSION, start, end);
-				}
-				else
-				{
-					throw new ParserException(
-						"Expected identifier, 'class', 'this', or 'super' after '.' but found " + currentToken().type(),
-						currentToken().start());
-				}
+				left = parseDotExpression(start);
 			}
 			else if (match(TokenType.LEFT_BRACKET))
 			{
@@ -2758,6 +2730,51 @@ public final class Parser implements AutoCloseable
 		}
 
 		return left;
+	}
+
+	/**
+	 * Parses expression after DOT token (field access, class literal, qualified this/super, qualified new).
+	 *
+	 * @param start the start position of the expression
+	 * @return the parsed node
+	 */
+	private NodeIndex parseDotExpression(int start)
+	{
+		parseComments();
+		if (currentToken().type() == TokenType.IDENTIFIER)
+		{
+			// Field access: obj.field
+			int end = currentToken().end();
+			consume();
+			return arena.allocateNode(NodeType.FIELD_ACCESS, start, end);
+		}
+		if (match(TokenType.CLASS))
+		{
+			// Class literal: Type.class, Type[].class
+			int end = previousToken().end();
+			return arena.allocateNode(NodeType.CLASS_LITERAL, start, end);
+		}
+		if (match(TokenType.THIS))
+		{
+			// Qualified this: Outer.this
+			int end = previousToken().end();
+			return arena.allocateNode(NodeType.THIS_EXPRESSION, start, end);
+		}
+		if (match(TokenType.SUPER))
+		{
+			// Qualified super: Outer.super
+			int end = previousToken().end();
+			return arena.allocateNode(NodeType.SUPER_EXPRESSION, start, end);
+		}
+		if (match(TokenType.NEW))
+		{
+			// Qualified class instantiation: outer.new Inner()
+			return parseNewExpression(start);
+		}
+		throw new ParserException(
+			"Expected identifier, 'class', 'this', 'super', or 'new' after '.' but found " +
+				currentToken().type(),
+			currentToken().start());
 	}
 
 	/**
