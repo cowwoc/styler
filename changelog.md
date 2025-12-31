@@ -1,5 +1,44 @@
 # Changelog
 
+## 2025-12-31
+
+### Parse Array Type Constructor References ✅
+
+**Task**: `add-array-type-method-references`
+
+**Problem Solved**:
+- Parser failed on array type constructor references like `int[]::new` and `String[][]::new`
+- `parsePrimitiveClassLiteral()` and `parseArrayAccessOrClassLiteral()` always expected `.class` after
+  consuming empty brackets `[]`, not `::new` for array constructor references
+
+**Solution Implemented**:
+- Modified `parsePrimitiveClassLiteral()` to check for `DOUBLE_COLON` after consuming brackets
+  - If `::` found with array dimensions, returns `ARRAY_TYPE` node for `parsePostfix()` to handle
+  - If `::` found without brackets, throws error (primitives can't be instantiated directly)
+- Modified `parseArrayAccessOrClassLiteral()` similarly for reference types
+- Reuses existing `ARRAY_TYPE` and `METHOD_REFERENCE` node types (no new enum values)
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Modified 2 methods (+30 lines)
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/ArrayTypeMethodReferenceParserTest.java` - 17 tests (+400 lines)
+
+**Test Coverage**:
+- Primitive array constructor references (int[], double[], boolean[], long[])
+- Multi-dimensional primitive arrays (int[][], int[][][])
+- Reference array constructor references (String[], Object[])
+- Multi-dimensional reference arrays (String[][])
+- Qualified type arrays (java.util.List[])
+- Expression contexts (method argument, return, ternary, field initializer, lambda body)
+- Error cases (primitive without array, malformed syntax)
+
+**Quality**:
+- All 549 parser tests passing
+- Zero Checkstyle/PMD violations
+
+---
+
 ## 2025-12-30
 
 ### Parse Package Annotations in package-info.java ✅

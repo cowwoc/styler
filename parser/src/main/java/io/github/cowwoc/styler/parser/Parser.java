@@ -2761,22 +2761,33 @@ public final class Parser implements AutoCloseable
 	}
 
 	/**
-	 * Parses array access or array type class literal after LEFT_BRACKET consumed.
-	 * Handles {@code array[index]} for array access and {@code Type[].class} for class literals.
+	 * Parses array access, array type class literal, or array constructor reference after LEFT_BRACKET consumed.
+	 * Handles {@code array[index]} for array access, {@code Type[].class} for class literals,
+	 * and {@code Type[]::new} for array constructor references.
 	 *
 	 * @param start the start position of the expression
-	 * @return the parsed node (ARRAY_ACCESS or CLASS_LITERAL)
+	 * @return the parsed node (ARRAY_ACCESS, CLASS_LITERAL, or ARRAY_TYPE for method reference)
 	 */
 	private NodeIndex parseArrayAccessOrClassLiteral(int start)
 	{
-		// Check for array type class literal: Type[].class or Type[][].class
+		// Check for array type: Type[].class or Type[]::new or Type[][].class
 		if (match(TokenType.RIGHT_BRACKET))
 		{
-			// Empty brackets - array type for class literal
+			// Empty brackets - array type for class literal or constructor reference
 			while (match(TokenType.LEFT_BRACKET))
 			{
 				expect(TokenType.RIGHT_BRACKET);
 			}
+
+			// Check for array constructor reference: Type[]::new
+			if (currentToken().type() == TokenType.DOUBLE_COLON)
+			{
+				// Return ARRAY_TYPE node; parsePostfix will handle ::new
+				int end = previousToken().end();
+				return arena.allocateNode(NodeType.ARRAY_TYPE, start, end);
+			}
+
+			// Class literal: Type[].class
 			expect(TokenType.DOT);
 			expect(TokenType.CLASS);
 			int end = previousToken().end();
@@ -2915,17 +2926,36 @@ public final class Parser implements AutoCloseable
 	}
 
 	/**
-	 * Parses a primitive type class literal (e.g., {@code int.class}, {@code void.class}, {@code int[].class}).
+	 * Parses a primitive type class literal or array constructor reference.
+	 * Handles {@code int.class}, {@code void.class}, {@code int[].class}, and {@code int[]::new}.
 	 *
 	 * @param start the start position
-	 * @return the node index for the class literal
+	 * @return the node index for the class literal or array type (for method reference)
 	 */
 	private NodeIndex parsePrimitiveClassLiteral(int start)
 	{
+		boolean hasArrayDimensions = false;
 		while (match(TokenType.LEFT_BRACKET))
 		{
 			expect(TokenType.RIGHT_BRACKET);
+			hasArrayDimensions = true;
 		}
+
+		// Check for array constructor reference: int[]::new
+		if (currentToken().type() == TokenType.DOUBLE_COLON)
+		{
+			if (!hasArrayDimensions)
+			{
+				throw new ParserException(
+					"Primitive type constructor reference requires array dimensions (e.g., int[]::new)",
+					currentToken().start());
+			}
+			// Return ARRAY_TYPE node; parsePostfix will handle ::new
+			int end = previousToken().end();
+			return arena.allocateNode(NodeType.ARRAY_TYPE, start, end);
+		}
+
+		// Class literal: int.class, int[].class
 		expect(TokenType.DOT);
 		expect(TokenType.CLASS);
 		int classEnd = previousToken().end();
