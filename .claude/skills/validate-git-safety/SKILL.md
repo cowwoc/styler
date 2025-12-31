@@ -18,12 +18,14 @@ allowed-tools: Bash, Read
 - Before `git rebase` with `--all` or `--branches`
 - Before any history-rewriting operation
 - Considering operation that might affect multiple branches
+- **Before any non-atomic git operation in `/workspace/main`**
 
 ### ❌ Do NOT Use When:
 
 - Simple branch operations (checkout, create)
 - Operations explicitly targeting single branch
 - Read-only git operations (log, diff, status)
+- Fast-forward merge in main worktree (atomic, safe)
 
 ## What This Skill Does
 
@@ -161,6 +163,37 @@ BRANCHES="v21 backup-123 my-feature"
 ```
 
 ## Safety Rules
+
+### Main Worktree Protection {#main-worktree-protection}
+
+**⚠️ CRITICAL**: `/workspace/main` is shared infrastructure across concurrent Claude instances.
+
+**Allowed in Main Worktree (Atomic Only)**:
+- ✅ `git merge --ff-only {branch}` (fast-forward merge)
+- ✅ Read-only: `git log`, `git status`, `git diff`, `git show`
+- ✅ `git worktree remove` (after cd to main)
+
+**❌ FORBIDDEN in Main Worktree**:
+- ❌ `git cherry-pick` (multi-step, can leave conflicts)
+- ❌ `git rebase` (multi-step, can leave conflicts)
+- ❌ Conflict resolution (non-atomic, blocks all instances)
+- ❌ `git reset` on main (can lose commits for all instances)
+- ❌ `git commit` for new work (main should only receive merges)
+
+**Correct Pattern**:
+```bash
+# 1. Stay in task worktree for all git operations
+cd /workspace/tasks/{task}/code
+git fetch /workspace/main refs/heads/main:refs/remotes/origin/main
+git rebase origin/main  # Conflicts resolved HERE
+./mvnw verify
+
+# 2. Only touch main for atomic fast-forward merge
+cd /workspace/main
+git merge --ff-only {task-branch}
+```
+
+**Reference**: [task-protocol-operations.md § Main Worktree Safety Policy](../../docs/project/task-protocol-operations.md#main-worktree-safety-policy)
 
 ### Version Branch Protection
 
