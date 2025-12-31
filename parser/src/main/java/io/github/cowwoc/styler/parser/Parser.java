@@ -696,10 +696,7 @@ public final class Parser implements AutoCloseable
 			}
 		}
 
-		while (match(TokenType.LEFT_BRACKET))
-		{
-			expect(TokenType.RIGHT_BRACKET);
-		}
+		parseArrayDimensionsWithAnnotations();
 	}
 
 	private boolean isPrimitiveType(TokenType type)
@@ -709,6 +706,33 @@ public final class Parser implements AutoCloseable
 			case BOOLEAN, BYTE, SHORT, INT, LONG, CHAR, FLOAT, DOUBLE, VOID -> true;
 			default -> false;
 		};
+	}
+
+	/**
+	 * Parses optional array dimensions with JSR 308 type annotations.
+	 * <p>
+	 * Handles syntax like {@code @NonNull []} or {@code @A [] @B []}.
+	 * Consumes zero or more annotated array dimension sequences.
+	 *
+	 * @return {@code true} if at least one array dimension was parsed
+	 */
+	private boolean parseArrayDimensionsWithAnnotations()
+	{
+		boolean hasArrayDimensions = false;
+		while (true)
+		{
+			while (currentToken().type() == TokenType.AT_SIGN)
+			{
+				parseAnnotation();
+			}
+			if (!match(TokenType.LEFT_BRACKET))
+			{
+				break;
+			}
+			expect(TokenType.RIGHT_BRACKET);
+			hasArrayDimensions = true;
+		}
+		return hasArrayDimensions;
 	}
 
 	/**
@@ -853,11 +877,7 @@ public final class Parser implements AutoCloseable
 				return null;
 			}
 
-			// Parse array dimensions (e.g., int[], String[][])
-			while (match(TokenType.LEFT_BRACKET))
-			{
-				expect(TokenType.RIGHT_BRACKET);
-			}
+			parseArrayDimensionsWithAnnotations();
 		}
 		catch (ParserException e)
 		{
@@ -1145,11 +1165,7 @@ public final class Parser implements AutoCloseable
 			parseTypeArguments();
 		}
 
-		// Handle array type: Type[]
-		while (match(TokenType.LEFT_BRACKET))
-		{
-			expect(TokenType.RIGHT_BRACKET);
-		}
+		parseArrayDimensionsWithAnnotations();
 
 		if (currentToken().type() == TokenType.IDENTIFIER)
 		{
@@ -1176,10 +1192,7 @@ public final class Parser implements AutoCloseable
 	private void parsePrimitiveTypedMember(int memberStart)
 	{
 		consume();
-		if (match(TokenType.LEFT_BRACKET))
-		{
-			expect(TokenType.RIGHT_BRACKET);
-		}
+		parseArrayDimensionsWithAnnotations();
 		expect(TokenType.IDENTIFIER);
 		if (match(TokenType.LEFT_PARENTHESIS))
 		{
@@ -1295,10 +1308,7 @@ public final class Parser implements AutoCloseable
 		}
 
 		// Handle C-style array syntax: String args[]
-		while (match(TokenType.LEFT_BRACKET))
-		{
-			expect(TokenType.RIGHT_BRACKET);
-		}
+		parseArrayDimensionsWithAnnotations();
 
 		int end = previousToken().end();
 		ParameterAttribute attribute = new ParameterAttribute(parameterName, isVarargs, isFinal, isReceiver);
@@ -1361,10 +1371,7 @@ public final class Parser implements AutoCloseable
 	private NodeIndex parseFieldRest(int start)
 	{
 		// Array dimensions or initializer
-		while (match(TokenType.LEFT_BRACKET))
-		{
-			expect(TokenType.RIGHT_BRACKET);
-		}
+		parseArrayDimensionsWithAnnotations();
 
 		if (match(TokenType.ASSIGN))
 		{
@@ -1374,10 +1381,7 @@ public final class Parser implements AutoCloseable
 		while (match(TokenType.COMMA))
 		{
 			expect(TokenType.IDENTIFIER);
-			while (match(TokenType.LEFT_BRACKET))
-			{
-				expect(TokenType.RIGHT_BRACKET);
-			}
+			parseArrayDimensionsWithAnnotations();
 			if (match(TokenType.ASSIGN))
 			{
 				parseExpression();
@@ -2022,11 +2026,7 @@ public final class Parser implements AutoCloseable
 				"Expected type in component pattern", currentToken().start());
 		}
 
-		// Handle array dimensions (e.g., String[], int[][])
-		while (match(TokenType.LEFT_BRACKET))
-		{
-			expect(TokenType.RIGHT_BRACKET);
-		}
+		parseArrayDimensionsWithAnnotations();
 
 		// Determine what follows the type:
 		// - LEFT_PARENTHESIS -> nested record pattern
@@ -2342,8 +2342,7 @@ public final class Parser implements AutoCloseable
 	 */
 	private void parseOptionalArrayBrackets()
 	{
-		while (match(TokenType.LEFT_BRACKET))
-			expect(TokenType.RIGHT_BRACKET);
+		parseArrayDimensionsWithAnnotations();
 	}
 
 	/**
@@ -2790,11 +2789,8 @@ public final class Parser implements AutoCloseable
 		// Check for array type: Type[].class or Type[]::new or Type[][].class
 		if (match(TokenType.RIGHT_BRACKET))
 		{
-			// Empty brackets - array type for class literal or constructor reference
-			while (match(TokenType.LEFT_BRACKET))
-			{
-				expect(TokenType.RIGHT_BRACKET);
-			}
+			// Parse additional dimensions with JSR 308 annotations
+			parseArrayDimensionsWithAnnotations();
 
 			// Check for array constructor reference: Type[]::new
 			if (currentToken().type() == TokenType.DOUBLE_COLON)
@@ -2951,12 +2947,7 @@ public final class Parser implements AutoCloseable
 	 */
 	private NodeIndex parsePrimitiveClassLiteral(int start)
 	{
-		boolean hasArrayDimensions = false;
-		while (match(TokenType.LEFT_BRACKET))
-		{
-			expect(TokenType.RIGHT_BRACKET);
-			hasArrayDimensions = true;
-		}
+		boolean hasArrayDimensions = parseArrayDimensionsWithAnnotations();
 
 		// Check for array constructor reference: int[]::new
 		if (currentToken().type() == TokenType.DOUBLE_COLON)
