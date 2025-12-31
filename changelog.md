@@ -41,6 +41,40 @@
 
 ## 2025-12-30
 
+### Parse Qualified Class Instantiation (outer.new Inner()) ✅
+
+**Task**: `add-qualified-class-instantiation`
+
+**Problem Solved**:
+- Parser did not support qualified class instantiation syntax for inner classes
+- `parsePostfix()` after DOT only handled IDENTIFIER, CLASS, THIS, SUPER - not NEW
+
+**Solution Implemented**:
+- Added NEW token handling in `parseDotExpression()` for qualified instantiation
+- Extracted `parseDotExpression()` helper method to reduce NCSS complexity
+- Converted `parseNestedTypeDeclaration()` to switch expression per updated style rule
+
+**Supported Syntax**:
+- `outer.new Inner()` - simple qualified instantiation
+- `outer.new Inner().method()` - chained method call
+- `getOuter().new Inner()` - expression qualifier
+- `outer.new Inner(1, 2)` - with constructor arguments
+- `Outer.this.new Inner()` - qualified this
+- `outer.new Inner() { }` - with anonymous class body
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added qualified instantiation parsing
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/QualifiedInstantiationParserTest.java` - 6 tests
+
+**Quality**:
+- All tests passing
+- Zero Checkstyle/PMD violations
+- Tests use proper `isEqualTo(expected)` AST comparison pattern
+
+---
+
 ### Parse Package Annotations in package-info.java ✅
 
 **Task**: `add-package-annotations`
