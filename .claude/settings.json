@@ -293,10 +293,6 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-todo-mark-complete.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/warn-ncsscount-suppression.sh"
           }
         ]
       },

@@ -45,6 +45,11 @@ WEAK_PATTERNS=(
     'isInstanceOf.*ParseResult\.Success'
     'assertParseSucceeds'
     '\.parse\(\).*instanceof.*Success'
+    # ADDED: 2025-12-31 after ExplicitTypeArgumentParserTest used isNotEmpty() + anyMatch()
+    # instead of comparing expected vs actual AST. This pattern tests NOTHING about the
+    # new feature's AST structure - it only verifies some nodes exist.
+    'requireThat.*isNotEmpty\(\)'
+    '\.anyMatch\(.*\.type\(\).*=='
 )
 
 ISSUES_FOUND=false
@@ -62,9 +67,10 @@ done
 # Pattern 2: parseSemanticAst with count-based assertions instead of AST comparison
 # ADDED: 2025-12-24 after EnumCommentParserTest used parseSemanticAst but only counted
 # node types instead of comparing against expected AST structure.
-USES_PARSE_SEMANTIC=$(grep -c 'parseSemanticAst' "$FILE_PATH" 2>/dev/null || echo "0")
-HAS_AST_COMPARISON=$(grep -c 'isEqualTo(expected)' "$FILE_PATH" 2>/dev/null || echo "0")
-HAS_COUNT_ASSERTIONS=$(grep -cE '\.stream\(\).*\.filter\(.*\.count\(\)' "$FILE_PATH" 2>/dev/null || echo "0")
+# Note: grep -c returns count but exits with 1 if no matches, so we need to handle that
+USES_PARSE_SEMANTIC=$(grep -c 'parseSemanticAst' "$FILE_PATH" 2>/dev/null) || USES_PARSE_SEMANTIC=0
+HAS_AST_COMPARISON=$(grep -c 'isEqualTo(expected)' "$FILE_PATH" 2>/dev/null) || HAS_AST_COMPARISON=0
+HAS_COUNT_ASSERTIONS=$(grep -cE '\.stream\(\).*\.filter\(.*\.count\(\)' "$FILE_PATH" 2>/dev/null) || HAS_COUNT_ASSERTIONS=0
 
 if [[ "$USES_PARSE_SEMANTIC" -gt 0 && "$HAS_AST_COMPARISON" -eq 0 && "$HAS_COUNT_ASSERTIONS" -gt 0 ]]; then
     ISSUES_FOUND=true
@@ -90,7 +96,13 @@ EOF
     ParseResult result = parser.parse();
     requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
 
-✅ CORRECT - Validates AST nodes are created:
+❌ WRONG - isNotEmpty() is a WEAK assertion (equally bad):
+    Set<SemanticNode> actual = parseSemanticAst(source);
+    requireThat(actual, "actual").isNotEmpty();  // Tests NOTHING about specific nodes!
+    boolean hasMethodInvocation = actual.stream().anyMatch(n -> n.type() == METHOD_INVOCATION);
+    requireThat(hasMethodInvocation, "hasMethodInvocation").isTrue();
+
+✅ CORRECT - Validates EXACT AST nodes are created:
     Set<SemanticNode> actual = ParserTestUtils.parseSemanticAst(source);
     Set<SemanticNode> expected = Set.of(
         semanticNode("EXPRESSION", ..., List.of(

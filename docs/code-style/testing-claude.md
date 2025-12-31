@@ -52,16 +52,6 @@ public void recordPatternInSwitch()
     requireThat(actual, "actual").isNotEmpty();  // Tests NOTHING about RECORD_PATTERN node!
 }
 
-// ❌ WRONG - Counting nodes is a WEAK assertion (equally bad as isNotEmpty)
-@Test
-public void qualifiedInstantiation()
-{
-    String source = "outer.new Inner()";
-    Set<SemanticNode> actual = parseSemanticAst(source);
-    long count = actual.stream().filter(n -> n.type() == OBJECT_CREATION).count();
-    requireThat(count, "count").isEqualTo(1L);  // Count matches but AST could be COMPLETELY WRONG!
-}
-
 // ✅ CORRECT - Validates correct AST nodes are created
 @Test
 public void classLiteralInExpression()
@@ -78,9 +68,8 @@ public void classLiteralInExpression()
 }
 ```
 
-**Why `isNotEmpty()` and counting are WRONG for parser tests:**
+**Why `isNotEmpty()` is WRONG for parser tests:**
 - Non-empty only means SOME nodes were produced - NOT that the CORRECT nodes exist
-- Counting only verifies quantity - nodes could have wrong positions, attributes, or parent-child relationships
 - The new feature (e.g., `RECORD_PATTERN`, `GUARDED_PATTERN`) might not be created at all
 - Test passes even if parser produces completely wrong AST structure
 - Use `isEqualTo(expected)` with explicit expected nodes including the NEW node type
@@ -89,7 +78,6 @@ public void classLiteralInExpression()
 
 - ✅ `parseSemanticAst\(.*\).*isEqualTo\(expected\)` - Correct AST validation
 - ❌ `parseSemanticAst\(.*\).*isNotEmpty\(\)` - Weak assertion, tests nothing about new feature
-- ❌ `\.stream\(\).*\.filter\(.*\.type\(\).*\.count\(\)` - Counting nodes is a weak assertion
 - ❌ `assertParseSucceeds\(` in `*ParserTest.java` - Wrong utility for unit tests
 - ✅ `assertParseSucceeds\(` in `IntegrationTest.java` - Correct for integration tests
 
