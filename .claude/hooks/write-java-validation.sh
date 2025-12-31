@@ -66,4 +66,40 @@ if grep -E '\.trim\s*\(\s*\)' "$FILE_PATH" 2>/dev/null | head -1 > /dev/null; th
   # Don't fail - just warn
 fi
 
+# Pattern 4: Single-line Java source strings in test files (should use text blocks)
+# Added: 2025-12-31 - tester agent created ExplicitTypeArgumentParserTest.java with 25 tests
+# using single-line strings instead of text blocks, violating style guide rule
+# PREVENTS: Using single-line strings instead of text blocks for test source code
+#
+# Detection: Look for String source = "..." patterns containing Java code indicators
+# (class, void, interface, enum, {, }) but NOT using text block syntax
+if [[ "$FILE_PATH" =~ Test\.java$ ]] || [[ "$FILE_PATH" =~ /test/ ]]; then
+  # Only check test files - look for String assignments with Java code on single line
+  # Pattern: String <name> = "<java-code>"; where <java-code> contains class/void/interface/{}
+  if grep -E 'String\s+\w+\s*=\s*"[^"]*\b(class|void|interface|enum|public|private|protected)\b[^"]*(\{|\})[^"]*";' "$FILE_PATH" 2>/dev/null | head -1 > /dev/null; then
+    echo "⚠️  WARNING: Single-line Java source string detected in test file: $FILE_PATH" >&2
+    echo "" >&2
+    echo "Style guide REQUIRES text blocks for test source strings:" >&2
+    echo "" >&2
+    echo "  ❌ WRONG - Single-line string:" >&2
+    echo '     String source = "class T { void m() { } }";' >&2
+    echo "" >&2
+    echo "  ✅ CORRECT - Text block with natural formatting:" >&2
+    echo '     String source = """' >&2
+    echo '         class T' >&2
+    echo '         {' >&2
+    echo '             void m()' >&2
+    echo '             {' >&2
+    echo '             }' >&2
+    echo '         }' >&2
+    echo '         """;' >&2
+    echo "" >&2
+    echo "See: .claude/rules/java-style.md § TestNG - Test source strings" >&2
+    echo "" >&2
+    echo "Occurrences found:" >&2
+    grep -n -E 'String\s+\w+\s*=\s*"[^"]*\b(class|void|interface|enum|public|private|protected)\b[^"]*(\{|\})[^"]*";' "$FILE_PATH" | head -5 >&2
+    # Don't fail - just warn
+  fi
+fi
+
 exit 0

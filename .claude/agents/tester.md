@@ -462,8 +462,35 @@ for complete guidance on parser test patterns and detection rules.
 3. `/workspace/main/docs/project/style-guide.md` (especially "Extract Repeated Element Access" section)
 4. `/workspace/main/docs/code-style/testing-claude.md` (for parser tests)
 
-**Test Source String Requirements** (from java-style.md):
-- ALWAYS use text blocks (`"""`) for multi-line source strings in tests
-- NEVER use escape sequences (`\n`, `\t`) for source code - use text blocks instead
-- NEVER add comments that duplicate source content (text blocks are self-documenting)
-- Format test source code naturally with one statement per line
+---
+
+## 🚨 CRITICAL: Test Source String Format {#test-source-string-format}
+
+**ALL test source strings MUST use text blocks with natural formatting.**
+
+This is a MANDATORY style requirement. Hooks will detect and warn on violations.
+
+```java
+// ❌ WRONG - Single-line string (STYLE VIOLATION)
+String source = "class T { void m() { Collections.<String>emptyList(); } }";
+
+// ✅ CORRECT - Text block with natural formatting
+String source = """
+    class T
+    {
+        void m()
+        {
+            Collections.<String>emptyList();
+        }
+    }
+    """;
+```
+
+**Requirements:**
+- ALWAYS use text blocks (`"""`) for Java source code in tests
+- Format code naturally with one statement per line
+- Use proper indentation (one tab per nesting level)
+- NEVER use escape sequences (`\n`, `\t`) for source code
+- NEVER add comments that duplicate source content
+
+**See**: `.claude/rules/java-style.md` § TestNG - Test source strings
