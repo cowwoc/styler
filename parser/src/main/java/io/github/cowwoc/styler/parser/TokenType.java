@@ -36,6 +36,7 @@ public enum TokenType
 	INT,
 	INTERFACE,
 	LONG,
+	MODULE,     // JDK 25+ (JEP 511 module imports)
 	NATIVE,
 	NEW,
 	NON_SEALED, // JDK 17+

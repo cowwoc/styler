@@ -124,6 +124,26 @@ public final class NodeArena implements AutoCloseable
 	}
 
 	/**
+	 * Allocates a module import declaration node with its associated attribute.
+	 * <p>
+	 * Module imports (JEP 511) import all public types exported by a module.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the module import attribute containing the module name
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateModuleImportDeclaration(int start, int end, ModuleImportAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.MODULE_IMPORT_DECLARATION, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
 	 * Allocates a package declaration node with its associated attribute.
 	 *
 	 * @param start     the start position in the source code
@@ -273,6 +293,30 @@ public final class NodeArena implements AutoCloseable
 		}
 		throw new AssertionError("Import node at position " + getStart(index) +
 			" is missing ImportAttribute");
+	}
+
+	/**
+	 * Returns the module import attribute associated with a node.
+	 *
+	 * @param index the node index
+	 * @return the module import attribute
+	 * @throws NullPointerException     if {@code index} is null
+	 * @throws IllegalArgumentException if {@code index} is invalid or the node is not a module import declaration
+	 */
+	public ModuleImportAttribute getModuleImportAttribute(NodeIndex index)
+	{
+		validateIndex(index);
+		if (getType(index) != NodeType.MODULE_IMPORT_DECLARATION)
+		{
+			throw new IllegalArgumentException("Expected MODULE_IMPORT_DECLARATION but was " + getType(index));
+		}
+		NodeAttribute attribute = attributes.get(index);
+		if (attribute instanceof ModuleImportAttribute moduleImportAttribute)
+		{
+			return moduleImportAttribute;
+		}
+		throw new AssertionError("Module import node at position " + getStart(index) +
+			" is missing ModuleImportAttribute");
 	}
 
 	/**

@@ -68,7 +68,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.List", false, 0, 21, 1));
+			new ImportDeclaration("java.util.List", false, false, 0, 21, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -98,7 +98,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.List", false, 0, 21, 1));
+			new ImportDeclaration("java.util.List", false, false, 0, 21, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -128,7 +128,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.Optional", false, 0, 26, 1));
+			new ImportDeclaration("java.util.Optional", false, false, 0, 26, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -157,7 +157,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.Map", false, 0, 20, 1));
+			new ImportDeclaration("java.util.Map", false, false, 0, 20, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -187,7 +187,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.ArrayList", false, 0, 27, 1));
+			new ImportDeclaration("java.util.ArrayList", false, false, 0, 27, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -222,7 +222,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.io.IOException", false, 0, 26, 1));
+			new ImportDeclaration("java.io.IOException", false, false, 0, 26, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -254,7 +254,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.List", false, 0, 21, 1));
+			new ImportDeclaration("java.util.List", false, false, 0, 21, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -284,7 +284,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.lang.Override", false, 0, 25, 1));
+			new ImportDeclaration("java.lang.Override", false, false, 0, 25, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -312,8 +312,8 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.Map", false, 0, 20, 1),
-			new ImportDeclaration("java.util.List", false, 21, 44, 2));
+			new ImportDeclaration("java.util.Map", false, false, 0, 20, 1),
+			new ImportDeclaration("java.util.List", false, false, 21, 44, 2));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -340,7 +340,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.*", false, 0, 18, 1));
+			new ImportDeclaration("java.util.*", false, false, 0, 18, 1));
 
 		// Use an empty scanner (no classpath entries) - this will cause List to be unresolved
 		Path emptyJar = ClasspathTestUtils.createTestJar();
@@ -384,7 +384,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.*", false, 0, 18, 1));
+			new ImportDeclaration("java.util.*", false, false, 0, 18, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -414,7 +414,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.lang.Math.max", true, 0, 32, 1));
+			new ImportDeclaration("java.lang.Math.max", true, false, 0, 32, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -444,7 +444,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.lang.Math.max", true, 0, 32, 1));
+			new ImportDeclaration("java.lang.Math.max", true, false, 0, 32, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -477,7 +477,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.*", false, 0, 18, 1));
+			new ImportDeclaration("java.util.*", false, false, 0, 18, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -512,7 +512,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.*", false, 0, 18, 1));
+			new ImportDeclaration("java.util.*", false, false, 0, 18, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -543,7 +543,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.*", false, 0, 18, 1));
+			new ImportDeclaration("java.util.*", false, false, 0, 18, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -579,7 +579,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.*", false, 0, 18, 1));
+			new ImportDeclaration("java.util.*", false, false, 0, 18, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{
@@ -613,7 +613,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.*", false, 20, 39, 2));
+			new ImportDeclaration("java.util.*", false, false, 20, 39, 2));
 
 		// Create a jar with a class com.example.Helper (same package as the source file)
 		Path jarPath = ClasspathTestUtils.createTestJar("com.example.Helper");
@@ -653,7 +653,7 @@ public class ImportAnalyzerTest
 			}""";
 		TestTransformationContext context = new TestTransformationContext(source);
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.*", false, 0, 18, 1));
+			new ImportDeclaration("java.util.*", false, false, 0, 18, 1));
 
 		try (ClasspathScanner scanner = createEmptyScanner())
 		{

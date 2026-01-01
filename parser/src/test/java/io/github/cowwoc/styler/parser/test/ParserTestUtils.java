@@ -143,6 +143,8 @@ public final class ParserTestUtils
 		{
 			case IMPORT_DECLARATION, STATIC_IMPORT_DECLARATION ->
 				arena.getImportAttribute(index).qualifiedName();
+			case MODULE_IMPORT_DECLARATION ->
+				arena.getModuleImportAttribute(index).moduleName();
 			case PACKAGE_DECLARATION ->
 				arena.getPackageAttribute(index).packageName();
 			case CLASS_DECLARATION, INTERFACE_DECLARATION, ENUM_DECLARATION,

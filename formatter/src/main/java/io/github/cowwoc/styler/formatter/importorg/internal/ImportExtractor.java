@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.formatter.importorg.internal;
 
+import io.github.cowwoc.styler.ast.core.ModuleImportAttribute;
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.ast.core.NodeType;
@@ -35,6 +36,7 @@ public final class ImportExtractor
 	 *   <li>Regular imports: {@code import java.util.List;}</li>
 	 *   <li>Static imports: {@code import static java.lang.Math.PI;}</li>
 	 *   <li>Wildcard imports: {@code import java.util.*;}</li>
+	 *   <li>Module imports (JEP 511): {@code import module java.base;}</li>
 	 * </ul>
 	 *
 	 * @param context transformation context with source code and AST
@@ -49,9 +51,10 @@ public final class ImportExtractor
 		AstPositionIndex positionIndex = context.positionIndex();
 		NodeArena arena = context.arena();
 
-		// Process both regular and static import nodes
-		processImportNodes(context, positionIndex, arena, NodeType.IMPORT_DECLARATION, false, imports);
-		processImportNodes(context, positionIndex, arena, NodeType.STATIC_IMPORT_DECLARATION, true, imports);
+		// Process regular, static, and module import nodes
+		processImportNodes(context, positionIndex, arena, NodeType.IMPORT_DECLARATION, false, false, imports);
+		processImportNodes(context, positionIndex, arena, NodeType.STATIC_IMPORT_DECLARATION, true, false, imports);
+		processModuleImportNodes(context, positionIndex, arena, imports);
 
 		// Sort by source position so first/last elements give import section bounds
 		imports.sort(Comparator.comparingInt(ImportDeclaration::startPosition));
@@ -66,10 +69,11 @@ public final class ImportExtractor
 	 * @param arena         the node arena
 	 * @param nodeType      the node type to process
 	 * @param isStatic      whether these are static imports
+	 * @param isModule      whether these are module imports
 	 * @param imports       the list to add declarations to
 	 */
 	private static void processImportNodes(TransformationContext context, AstPositionIndex positionIndex,
-		NodeArena arena, NodeType nodeType, boolean isStatic, List<ImportDeclaration> imports)
+		NodeArena arena, NodeType nodeType, boolean isStatic, boolean isModule, List<ImportDeclaration> imports)
 	{
 		List<NodeIndex> importNodes = positionIndex.findNodesByType(nodeType);
 
@@ -89,6 +93,46 @@ public final class ImportExtractor
 			ImportDeclaration importDecl = new ImportDeclaration(
 				qualifiedName,
 				isStatic,
+				isModule,
+				startPosition,
+				endPosition,
+				lineNumber);
+
+			imports.add(importDecl);
+		}
+	}
+
+	/**
+	 * Processes module import nodes and adds them to the imports list.
+	 *
+	 * @param context       the transformation context
+	 * @param positionIndex the position index for AST queries
+	 * @param arena         the node arena
+	 * @param imports       the list to add declarations to
+	 */
+	private static void processModuleImportNodes(TransformationContext context, AstPositionIndex positionIndex,
+		NodeArena arena, List<ImportDeclaration> imports)
+	{
+		List<NodeIndex> importNodes = positionIndex.findNodesByType(NodeType.MODULE_IMPORT_DECLARATION);
+
+		for (NodeIndex node : importNodes)
+		{
+			context.checkDeadline();
+
+			int startPosition = arena.getStart(node);
+			// -1 because endPosition is inclusive, pointing to the semicolon
+			int endPosition = arena.getEnd(node) - 1;
+
+			// Get module name from the ModuleImportAttribute stored in the AST node
+			ModuleImportAttribute attribute = arena.getModuleImportAttribute(node);
+			String moduleName = attribute.moduleName();
+
+			int lineNumber = context.getLineNumber(startPosition);
+
+			ImportDeclaration importDecl = new ImportDeclaration(
+				moduleName,
+				false,
+				true,
 				startPosition,
 				endPosition,
 				lineNumber);
@@ -115,6 +159,7 @@ public final class ImportExtractor
 		int endPosition = 0;
 		endPosition = updateEndPosition(positionIndex, arena, NodeType.IMPORT_DECLARATION, endPosition);
 		endPosition = updateEndPosition(positionIndex, arena, NodeType.STATIC_IMPORT_DECLARATION, endPosition);
+		endPosition = updateEndPosition(positionIndex, arena, NodeType.MODULE_IMPORT_DECLARATION, endPosition);
 
 		return endPosition;
 	}

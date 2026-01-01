@@ -19,9 +19,9 @@ public class ImportGrouperTest
 	void shouldGroupJavaImportsFirst()
 	{
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("org.apache.commons.io.IOUtils", false, 0, 40, 1),
-			new ImportDeclaration("java.util.List", false, 41, 60, 2),
-			new ImportDeclaration("java.io.File", false, 61, 80, 3));
+			new ImportDeclaration("org.apache.commons.io.IOUtils", false, false, 0, 40, 1),
+			new ImportDeclaration("java.util.List", false, false, 41, 60, 2),
+			new ImportDeclaration("java.io.File", false, false, 61, 80, 3));
 		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.defaultConfig();
 
 		String result = ImportGrouper.organizeImports(imports, config);
@@ -37,8 +37,8 @@ public class ImportGrouperTest
 	void shouldGroupJavaxWithJava()
 	{
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("javax.swing.JFrame", false, 0, 25, 1),
-			new ImportDeclaration("java.util.List", false, 26, 45, 2));
+			new ImportDeclaration("javax.swing.JFrame", false, false, 0, 25, 1),
+			new ImportDeclaration("java.util.List", false, false, 26, 45, 2));
 		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.defaultConfig();
 
 		String result = ImportGrouper.organizeImports(imports, config);
@@ -52,9 +52,9 @@ public class ImportGrouperTest
 	void shouldSortAlphabeticallyWithinGroup()
 	{
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.Map", false, 0, 20, 1),
-			new ImportDeclaration("java.util.ArrayList", false, 21, 45, 2),
-			new ImportDeclaration("java.util.List", false, 46, 65, 3));
+			new ImportDeclaration("java.util.Map", false, false, 0, 20, 1),
+			new ImportDeclaration("java.util.ArrayList", false, false, 21, 45, 2),
+			new ImportDeclaration("java.util.List", false, false, 46, 65, 3));
 		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.defaultConfig();
 
 		String result = ImportGrouper.organizeImports(imports, config);
@@ -71,8 +71,8 @@ public class ImportGrouperTest
 	void shouldPlaceStaticImportsLast()
 	{
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("org.testng.Assert.assertEquals", true, 0, 45, 1),
-			new ImportDeclaration("java.util.List", false, 46, 65, 2));
+			new ImportDeclaration("org.testng.Assert.assertEquals", true, false, 0, 45, 1),
+			new ImportDeclaration("java.util.List", false, false, 46, 65, 2));
 		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.defaultConfig();
 
 		String result = ImportGrouper.organizeImports(imports, config);
@@ -87,8 +87,8 @@ public class ImportGrouperTest
 	void shouldIdentifyProjectPackage()
 	{
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("io.github.cowwoc.styler.Foo", false, 0, 35, 1),
-			new ImportDeclaration("org.apache.Bar", false, 36, 55, 2));
+			new ImportDeclaration("io.github.cowwoc.styler.Foo", false, false, 0, 35, 1),
+			new ImportDeclaration("org.apache.Bar", false, false, 36, 55, 2));
 		CustomImportPattern customPattern = CustomImportPattern.of("PROJECT", "io\\.github\\.cowwoc\\..*");
 		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.builder().
 			customPatterns(List.of(customPattern)).
@@ -104,8 +104,8 @@ public class ImportGrouperTest
 	void shouldInsertBlankLineBetweenGroups()
 	{
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.List", false, 0, 20, 1),
-			new ImportDeclaration("org.apache.Foo", false, 21, 40, 2));
+			new ImportDeclaration("java.util.List", false, false, 0, 20, 1),
+			new ImportDeclaration("org.apache.Foo", false, false, 21, 40, 2));
 		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.defaultConfig();
 
 		String result = ImportGrouper.organizeImports(imports, config);
@@ -128,7 +128,7 @@ public class ImportGrouperTest
 	void shouldHandleSingleImport()
 	{
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.List", false, 0, 20, 1));
+			new ImportDeclaration("java.util.List", false, false, 0, 20, 1));
 		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.defaultConfig();
 
 		String result = ImportGrouper.organizeImports(imports, config);
@@ -140,9 +140,9 @@ public class ImportGrouperTest
 	void shouldRespectStaticImportsFirst()
 	{
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.List", false, 0, 20, 1),
-			new ImportDeclaration("org.testng.Assert.assertEquals", true, 21, 55, 2),
-			new ImportDeclaration("org.apache.Foo", false, 56, 75, 3));
+			new ImportDeclaration("java.util.List", false, false, 0, 20, 1),
+			new ImportDeclaration("org.testng.Assert.assertEquals", true, false, 21, 55, 2),
+			new ImportDeclaration("org.apache.Foo", false, false, 56, 75, 3));
 		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.builder().
 			staticImportsFirst(true).
 			build();
@@ -159,7 +159,7 @@ public class ImportGrouperTest
 	void shouldPreserveWildcardImports()
 	{
 		List<ImportDeclaration> imports = List.of(
-			new ImportDeclaration("java.util.*", false, 0, 18, 1));
+			new ImportDeclaration("java.util.*", false, false, 0, 18, 1));
 		ImportOrganizerConfiguration config = ImportOrganizerConfiguration.defaultConfig();
 
 		String result = ImportGrouper.organizeImports(imports, config);
