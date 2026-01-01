@@ -474,27 +474,6 @@ benchmarking, and validate with Maven plugin integration.
 **Priority**: These are REQUIRED for "100% JDK 25 support" claim in scope.md. Should be completed before
 production release.
 
-- [ ] **READY:** `add-flexible-constructor-bodies` - Support JEP 513 statements before super()/this()
-  - **Dependencies**: None
-  - **Blocks**: None (enhancement for full JDK 25 support)
-  - **Parallelizable With**: Any Phase E parser task
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Allow statements before `super()` or `this()` calls (JEP 513 - finalized in JDK 25)
-  - **Current Limitation**: Parser requires `super()` or `this()` as first statement in constructor
-  - **JDK 25 Change**: Constructors may now contain statements before explicit constructor invocation
-  - **Example**:
-    ```java
-    public Child(int value) {
-        if (value < 0) throw new IllegalArgumentException("value must be non-negative");
-        super(validate(value));  // Statements allowed before this!
-    }
-    ```
-  - **Implementation**:
-    - Modify `parseConstructorBody()` to allow arbitrary statements before super()/this()
-    - Remove early validation that enforces super()/this() as first statement
-    - Track whether explicit constructor invocation has been encountered
-  - **Quality**: Parser tests for statements before super(), before this(), and error cases
-
 - [ ] **READY:** `add-compact-source-files` - Support JEP 512 implicit classes and instance main
   - **Dependencies**: None
   - **Blocks**: None (enhancement for full JDK 25 support)

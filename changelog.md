@@ -2,6 +2,36 @@
 
 ## 2026-01-01
 
+### Verify JEP 513 Flexible Constructor Bodies Support ✅
+
+**Task**: `add-flexible-constructor-bodies`
+
+**Problem Solved**:
+- No verification tests existed for JEP 513 (Flexible Constructor Bodies - JDK 25)
+- Needed to confirm parser correctly handles statements before `super()`/`this()` calls
+
+**Key Finding**:
+- The parser ALREADY supports JEP 513 syntax without modifications
+- Task reduced to adding verification tests to confirm the implementation
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/FlexibleConstructorBodyParserTest.java` - 16 tests
+
+**Test Coverage**:
+- Statements before super(): validation, logging, method calls, multiple statements
+- Control flow before super(): if-else, try-catch
+- Statements before this(): validation, assignment, computation
+- Implicit super(): no explicit constructor invocation
+- Complex scenarios: nested classes, inheritance chains, generic type parameters
+- Edge cases: empty constructor, explicit constructor only
+
+**Quality**:
+- All 16 tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ### Parse Module Import Declarations (JEP 511) ✅
 
 **Task**: `add-module-import-declarations`
