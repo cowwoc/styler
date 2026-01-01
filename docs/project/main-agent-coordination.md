@@ -106,6 +106,11 @@ After context compaction, `check-lock-ownership.sh` SessionStart hook checks for
 
 **Lock Ownership Rule**: ONLY work on tasks whose lock file contains YOUR session_id.
 
+**🚨 Ownership Check is a GATE** {#ownership-gate}: When session_id mismatch is detected, STOP
+IMMEDIATELY. Do NOT investigate the task further (no git log, git diff, file reads). Ask user
+immediately: "Task X is owned by another session. Take it over, or work on something else?"
+See [verify-task-ownership skill § Ownership Gate](../../.claude/skills/verify-task-ownership/SKILL.md#ownership-gate).
+
 **🚨 LOCK FILE VERIFICATION REQUIREMENTS**:
 
 1. **NEVER manually search for lock files** - The SessionStart hook performs this check automatically
