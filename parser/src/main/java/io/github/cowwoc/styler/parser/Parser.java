@@ -1,6 +1,7 @@
 package io.github.cowwoc.styler.parser;
 
 import io.github.cowwoc.styler.ast.core.ImportAttribute;
+import io.github.cowwoc.styler.ast.core.ModuleImportAttribute;
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.ast.core.NodeType;
@@ -331,6 +332,13 @@ public final class Parser implements AutoCloseable
 	{
 		int start = currentToken().start();
 		expect(TokenType.IMPORT);
+
+		// JEP 511: Module import syntax: import module java.base;
+		if (match(TokenType.MODULE))
+		{
+			return parseModuleImport(start);
+		}
+
 		boolean isStatic = match(TokenType.STATIC);
 
 		// Build the qualified name from tokens
@@ -366,6 +374,35 @@ public final class Parser implements AutoCloseable
 			return arena.allocateStaticImportDeclaration(start, end, attribute);
 		}
 		return arena.allocateImportDeclaration(start, end, attribute);
+	}
+
+	/**
+	 * Parses a module import declaration (JEP 511).
+	 * <p>
+	 * Syntax: {@code import module <module-name>;}
+	 *
+	 * @param start the start position of the import keyword
+	 * @return the node index of the created module import declaration
+	 */
+	private NodeIndex parseModuleImport(int start)
+	{
+		// Build the module name from tokens
+		StringBuilder moduleName = new StringBuilder();
+		expect(TokenType.IDENTIFIER);
+		moduleName.append(previousToken().getText(sourceCode));
+
+		while (currentToken().type() == TokenType.DOT)
+		{
+			consume(); // DOT
+			moduleName.append('.');
+			expect(TokenType.IDENTIFIER);
+			moduleName.append(previousToken().getText(sourceCode));
+		}
+
+		expect(TokenType.SEMICOLON);
+		int end = previousToken().end();
+		ModuleImportAttribute attribute = new ModuleImportAttribute(moduleName.toString());
+		return arena.allocateModuleImportDeclaration(start, end, attribute);
 	}
 
 	private NodeIndex parseQualifiedName()

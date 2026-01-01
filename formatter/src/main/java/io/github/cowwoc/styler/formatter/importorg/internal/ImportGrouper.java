@@ -30,9 +30,12 @@ public final class ImportGrouper
 	/**
 	 * Organizes and formats imports according to configuration.
 	 * <p>
-	 * Separates static vs regular imports, groups by pattern matching,
+	 * Separates static, module, and regular imports, groups by pattern matching,
 	 * sorts alphabetically within groups, and formats output with blank
 	 * lines between groups.
+	 * <p>
+	 * Module imports (JEP 511) are placed in their own section, typically after
+	 * regular imports but before static imports.
 	 *
 	 * @param imports list of import declarations
 	 * @param config organization configuration
@@ -47,6 +50,7 @@ public final class ImportGrouper
 		requireThat(config, "config").isNotNull();
 
 		List<ImportDeclaration> staticImports = new ArrayList<>();
+		List<ImportDeclaration> moduleImports = new ArrayList<>();
 		List<ImportDeclaration> regularImports = new ArrayList<>();
 
 		for (ImportDeclaration imp : imports)
@@ -54,6 +58,10 @@ public final class ImportGrouper
 			if (imp.isStatic())
 			{
 				staticImports.add(imp);
+			}
+			else if (imp.isModule())
+			{
+				moduleImports.add(imp);
 			}
 			else
 			{
@@ -70,30 +78,63 @@ public final class ImportGrouper
 		{
 			regularGroups.values().forEach(ImportGrouper::sortAlphabetically);
 			staticGroups.values().forEach(ImportGrouper::sortAlphabetically);
+			sortAlphabetically(moduleImports);
 		}
 
 		StringBuilder result = new StringBuilder();
 
 		if (config.staticImportsFirst())
 		{
-			appendGroups(result, staticGroups, config.groupOrder(), true);
-			if (!staticImports.isEmpty() && !regularImports.isEmpty())
+			appendGroups(result, staticGroups, config.groupOrder(), true, false);
+			appendModuleImportsSection(result, moduleImports, !staticImports.isEmpty());
+			if ((!staticImports.isEmpty() || !moduleImports.isEmpty()) && !regularImports.isEmpty())
 			{
 				result.append('\n');
 			}
-			appendGroups(result, regularGroups, config.groupOrder(), false);
+			appendGroups(result, regularGroups, config.groupOrder(), false, false);
 		}
 		else
 		{
-			appendGroups(result, regularGroups, config.groupOrder(), false);
-			if (!staticImports.isEmpty() && !regularImports.isEmpty())
+			appendGroups(result, regularGroups, config.groupOrder(), false, false);
+			appendModuleImportsSection(result, moduleImports, !regularImports.isEmpty());
+			if ((!regularImports.isEmpty() || !moduleImports.isEmpty()) && !staticImports.isEmpty())
 			{
 				result.append('\n');
 			}
-			appendGroups(result, staticGroups, config.groupOrder(), true);
+			appendGroups(result, staticGroups, config.groupOrder(), true, false);
 		}
 
 		return result.toString();
+	}
+
+	/**
+	 * Appends the module imports section to the result.
+	 * <p>
+	 * Module imports are formatted as {@code import module <module-name>;}.
+	 *
+	 * @param result        StringBuilder to append to
+	 * @param moduleImports list of module import declarations
+	 * @param hasPrevious   whether there are imports before this section
+	 */
+	private static void appendModuleImportsSection(
+		StringBuilder result,
+		List<ImportDeclaration> moduleImports,
+		boolean hasPrevious)
+	{
+		if (moduleImports.isEmpty())
+		{
+			return;
+		}
+
+		if (hasPrevious)
+		{
+			result.append('\n');
+		}
+
+		for (ImportDeclaration imp : moduleImports)
+		{
+			result.append("import module ").append(imp.qualifiedName()).append(";\n");
+		}
 	}
 
 	/**
@@ -185,16 +226,18 @@ public final class ImportGrouper
 	 * Outputs imports in the specified group order, with blank lines between
 	 * non-empty groups.
 	 *
-	 * @param result StringBuilder to append to
-	 * @param groups map from ImportGroup to list of imports
-	 * @param order desired group order
+	 * @param result   StringBuilder to append to
+	 * @param groups   map from ImportGroup to list of imports
+	 * @param order    desired group order
 	 * @param isStatic whether these are static imports
+	 * @param isModule whether these are module imports
 	 */
 	private static void appendGroups(
 		StringBuilder result,
 		Map<ImportGroup, List<ImportDeclaration>> groups,
 		List<ImportGroup> order,
-		boolean isStatic)
+		boolean isStatic,
+		boolean isModule)
 	{
 		boolean needsBlankLine = false;
 
@@ -217,6 +260,10 @@ public final class ImportGrouper
 				if (isStatic)
 				{
 					result.append("static ");
+				}
+				else if (isModule)
+				{
+					result.append("module ");
 				}
 				result.append(imp.qualifiedName()).append(";\n");
 			}

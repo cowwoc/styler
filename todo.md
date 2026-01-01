@@ -474,22 +474,6 @@ benchmarking, and validate with Maven plugin integration.
 **Priority**: These are REQUIRED for "100% JDK 25 support" claim in scope.md. Should be completed before
 production release.
 
-- [ ] **READY:** `add-module-import-declarations` - Support JEP 511 module import syntax
-  - **Dependencies**: None
-  - **Blocks**: None (enhancement for full JDK 25 support)
-  - **Parallelizable With**: Any Phase E parser task
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Parse `import module java.base;` declarations (JEP 511 - finalized in JDK 25)
-  - **Syntax**:
-    - `import module java.base;` - imports all public types exported by the module
-    - Can appear alongside regular and static imports
-  - **Implementation**:
-    - Add `MODULE_IMPORT_DECLARATION` to `NodeType` enum
-    - Extend `parseImportDeclaration()` to check for `module` keyword after `import`
-    - Add `ModuleImportAttribute` with module name
-    - Update `ImportExtractor` to handle module imports
-  - **Quality**: Parser tests for module import declarations, integration with import organizer
-
 - [ ] **READY:** `add-flexible-constructor-bodies` - Support JEP 513 statements before super()/this()
   - **Dependencies**: None
   - **Blocks**: None (enhancement for full JDK 25 support)

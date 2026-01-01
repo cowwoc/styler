@@ -7,23 +7,34 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * <p>
  * <b>Thread-safety</b>: This record is immutable and thread-safe.
  *
- * @param qualifiedName fully qualified name (e.g., "java.util.List" or "java.util.*")
+ * @param qualifiedName fully qualified name (e.g., {@code "java.util.List"}, {@code "java.util.*"} for
+ *                      wildcards, or module name like {@code "java.base"} for module imports)
  * @param isStatic      whether this is a static import
+ * @param isModule      whether this is a module import (JEP 511)
  * @param startPosition 0-based character offset from start of source file to "import" keyword
  * @param endPosition   0-based character offset from start of source file to semicolon (inclusive)
  * @param lineNumber    1-based line number where import appears
  * @throws NullPointerException     if {@code qualifiedName} is {@code null}
- * @throws IllegalArgumentException if {@code qualifiedName} is empty or positions are invalid
+ * @throws IllegalArgumentException if {@code qualifiedName} is empty, positions are invalid,
+ *                                  or both {@code isStatic} and {@code isModule} are true
  */
 public record ImportDeclaration(
 	String qualifiedName,
 	boolean isStatic,
+	boolean isModule,
 	int startPosition,
 	int endPosition,
 	int lineNumber)
 {
 	/**
 	 * Compact constructor for validation.
+	 *
+	 * @param qualifiedName the fully qualified name or module name
+	 * @param isStatic      whether this is a static import
+	 * @param isModule      whether this is a module import (JEP 511)
+	 * @param startPosition the start position in source
+	 * @param endPosition   the end position in source
+	 * @param lineNumber    the 1-based line number
 	 */
 	public ImportDeclaration
 	{
@@ -31,6 +42,11 @@ public record ImportDeclaration(
 		requireThat(startPosition, "startPosition").isNotNegative();
 		requireThat(endPosition, "endPosition").isGreaterThanOrEqualTo(startPosition);
 		requireThat(lineNumber, "lineNumber").isPositive();
+		// Module imports cannot be static
+		if (isStatic && isModule)
+		{
+			throw new IllegalArgumentException("Import cannot be both static and module");
+		}
 	}
 
 	/**

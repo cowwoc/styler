@@ -11,6 +11,6 @@ package io.github.cowwoc.styler.ast.core;
  * <b>Thread-safety</b>: All implementations are immutable and thread-safe.
  */
 public sealed interface NodeAttribute
-	permits ImportAttribute, PackageAttribute, ParameterAttribute, TypeDeclarationAttribute
+	permits ImportAttribute, ModuleImportAttribute, PackageAttribute, ParameterAttribute, TypeDeclarationAttribute
 {
 }

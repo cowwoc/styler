@@ -43,6 +43,7 @@ public final class Lexer
 		Map.entry("int", TokenType.INT),
 		Map.entry("interface", TokenType.INTERFACE),
 		Map.entry("long", TokenType.LONG),
+		Map.entry("module", TokenType.MODULE),
 		Map.entry("native", TokenType.NATIVE),
 		Map.entry("new", TokenType.NEW),
 		Map.entry("non-sealed", TokenType.NON_SEALED),
