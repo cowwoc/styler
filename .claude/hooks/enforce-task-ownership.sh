@@ -53,8 +53,14 @@ case "$TOOL_NAME" in
     COMMAND=$(echo "$INPUT" | jq -r '.tool.input.command // empty')
 
     # Strategy 1: Check if command explicitly references /workspace/tasks/
-    if [[ "$COMMAND" =~ /workspace/tasks/([^/]+) ]]; then
-      TASK_NAME="${BASH_REMATCH[1]}"
+    # FIX 2026-01-01: BASH_REMATCH capture group was returning empty string
+    # due to bash regex quirk. Use parameter expansion instead.
+    if [[ "$COMMAND" =~ /workspace/tasks/ ]]; then
+      # Extract task name using parameter expansion (more reliable)
+      # Remove everything up to and including /workspace/tasks/
+      STRIPPED="${COMMAND#*/workspace/tasks/}"
+      # Extract first path component (the task name)
+      TASK_NAME="${STRIPPED%%/*}"
       TARGET_PATH="/workspace/tasks/$TASK_NAME"
     else
       # Strategy 2: Check current working directory
