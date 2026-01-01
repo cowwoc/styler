@@ -144,7 +144,53 @@ else
 fi
 ```
 
+## Ownership Verification is a GATE {#ownership-gate}
+
+**CRITICAL**: Ownership verification is a **gate** that controls whether ANY further work on that task
+should occur. Once mismatch is detected, STOP IMMEDIATELY.
+
+### ⚠️ Mismatch Detected = STOP INVESTIGATING
+
+When session ownership mismatch is detected:
+
+1. **DO NOT** run `git log` to check pending commits
+2. **DO NOT** run `git diff` to see what changes exist
+3. **DO NOT** read task files to understand the task state
+4. **DO NOT** investigate the task in any way
+
+**IMMEDIATELY** do one of:
+- Ask user: "Task X is owned by a different session. Do you want me to take it over?"
+- Present alternatives: "Task X is owned by another session. Here are available tasks: ..."
+
+**Why This Matters**: Any investigation after mismatch detection is wasted if:
+- User wants you to work on a different task
+- User wants to continue with the other session
+- The other session is still active
+
+**Rationale**: Ownership verification is resource-efficient only if treated as a gate. Investigating
+a task you may not work on wastes tokens and time.
+
 ## Common Mistakes
+
+### Mistake: Continuing Investigation After Mismatch
+
+```
+❌ WRONG:
+"Session mismatch detected. Let me check git log to see what commits are pending..."
+[Runs git log, git diff, reads files]
+"Now I understand the task state. Should I take it over?"
+[User says "No, work on something else" - all investigation was wasted!]
+```
+
+```
+✅ CORRECT:
+"Session mismatch detected. This task is owned by a different session.
+
+Would you like me to:
+1. Take over this task anyway, OR
+2. Work on a different task?"
+[Waits for user response before any further investigation]
+```
 
 ### Mistake: Taking Over Another Instance's Task
 
