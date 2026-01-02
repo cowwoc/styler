@@ -468,8 +468,8 @@ The archive-task script performs:
 3. **Todo Update Phase**
    - Read todo.md
    - Locate task entry
-   - Mark checkbox complete
-   - Preserve formatting/indentation
+   - DELETE entire task entry (NOT mark with [x])
+   - Remove task line and all sub-items
 
 4. **Changelog Update Phase**
    - Read changelog.md
