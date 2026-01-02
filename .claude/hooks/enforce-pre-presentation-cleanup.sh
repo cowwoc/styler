@@ -4,6 +4,17 @@
 # ADDED: 2026-01-01 after repeated mistakes where main agent skipped squashing
 #        commits and deleting agent branches before presenting for user approval.
 #
+# IMPROVED: 2026-01-02 with enhanced messaging after refactor-parser-depth-limiting
+#           showed that agent bypassed state-transition PreToolUse hook by using
+#           state-transition skill instead of Edit tool. This hook now catches
+#           Bash-based state transitions that bypass the Edit-tool validation hook.
+#
+# ROOT CAUSE OF ORIGINAL MISTAKE:
+# - Agent used state-transition skill to transition to AWAITING_USER_APPROVAL
+# - This bypassed validate-state-transition.sh hook (which only checks Edit tool)
+# - This hook (enforce-pre-presentation-cleanup) should have caught it via Bash
+# - But may not have been fully integrated at the time of mistake
+#
 # TRIGGER: PreToolUse on Bash commands
 # CHECKS: When transitioning to AWAITING_USER_APPROVAL, BLOCKS unless:
 #   1. Task branch has 1-2 commits relative to main (squashed)
@@ -14,9 +25,10 @@
 # PREVENTS: Presenting messy commit history or lingering agent branches for review
 #
 # Related:
-# - main-agent-coordination.md § Lines 595-599: MANDATORY pre-presentation-cleanup
+# - main-agent-coordination.md § Lines 602-623: MANDATORY pre-presentation-cleanup (enhanced 2026-01-02)
 # - pre-presentation-cleanup skill: Complete cleanup procedure
-# - validate-pre-review-cleanup.sh: Reactive check (PostToolUse) - this hook BLOCKS (PreToolUse)
+# - validate-state-transition.sh: PreToolUse hook for Edit tool state transitions
+# - task-protocol-core.md § VALIDATION→AWAITING_USER_APPROVAL: State machine definition
 
 set -euo pipefail
 
