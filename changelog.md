@@ -2,6 +2,37 @@
 
 ## 2026-01-02
 
+### Refactor Parser Limits to be AST-Focused ✅
+
+**Task**: `refactor-parser-depth-limiting`
+
+**Problem Solved**:
+- `MAX_PARSE_DEPTH` (30) was framed as parser recursion depth - an implementation detail
+- `MAX_ARENA_CAPACITY` (10M nodes) was too generous for single-file parsing
+- Limits should describe AST properties, not parser internals
+
+**Solution Implemented**:
+- Renamed `MAX_PARSE_DEPTH` → `MAX_NODE_DEPTH` (30 → 100)
+  - Describes maximum nesting depth of nodes in the AST
+  - Protects against stack overflow from deeply nested expressions
+  - 100 provides margin for legitimate nesting while preventing stack overflow
+- Lowered `MAX_ARENA_CAPACITY` from 10M → 100K nodes
+  - More appropriate limit for single-file parsing (~1.6MB)
+  - Typical ASTs have 1K-10K nodes; 100K provides 10x safety margin
+
+**Files Modified**:
+- `ast/core/src/main/java/.../ast/core/SecurityConfig.java` - Updated constants and JavaDoc
+- `parser/src/main/java/.../parser/Parser.java` - Updated constant reference
+- `parser/src/test/java/.../parser/test/ParserTest.java` - Updated constant reference
+- `parser/src/test/java/.../parser/test/SecurityTest.java` - Updated constant reference
+
+**Quality**:
+- All tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ### Collapse Import Node Types (AST Simplification) ✅
 
 **Task**: `collapse-import-node-types`

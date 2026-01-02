@@ -48,30 +48,30 @@ public final class SecurityConfig
 	public static final int MAX_TOKEN_COUNT = 1_000_000; // 1M tokens
 
 	/**
-	 * Maximum arena node capacity (10 million nodes, ~160MB).
+	 * Maximum arena node capacity (100K nodes, ~1.6MB).
 	 * <p>
 	 * <strong>SEC-011: Arena Capacity Limit</strong>
 	 * <p>
 	 * <strong>Rationale:</strong> Prevents unbounded AST growth during parsing. Each node
-	 * occupies exactly 16 bytes (index-overlay pattern), so 10M nodes = 160MB fixed cost.
-	 * Typical ASTs have 10K-100K nodes; this provides 100x-1000x safety margin.
+	 * occupies exactly 16 bytes (index-overlay pattern), so 100K nodes = 1.6MB fixed cost.
+	 * Typical ASTs have 1K-10K nodes; 100K provides 10x safety margin for large files.
 	 * <p>
-	 * <strong>Threat Prevention:</strong> Blocks deeply nested or breadth-heavy AST attacks
-	 * (e.g., 1M nested parentheses or 1M array dimensions).
+	 * <strong>Threat Prevention:</strong> Blocks breadth-heavy AST attacks
+	 * (e.g., files with excessive method counts or deeply nested blocks).
 	 * <p>
 	 * <strong>Performance:</strong> Checked only during arena growth (exponential backoff),
 	 * amortized O(1) overhead.
 	 */
-	public static final int MAX_ARENA_CAPACITY = 10_000_000; // 10M nodes (~160MB)
+	public static final int MAX_ARENA_CAPACITY = 100_000; // 100K nodes (~1.6MB)
 
 	/**
-	 * Maximum parsing recursion depth (200 levels).
+	 * Maximum AST node nesting depth (100 levels).
 	 * <p>
-	 * <strong>Existing Control: Parse Depth Limit</strong>
+	 * <strong>SEC-012: Node Depth Limit</strong>
 	 * <p>
 	 * <strong>Rationale:</strong> Prevents stack overflow from pathologically nested
-	 * expressions. Java's practical nesting limit is ~50-100 levels; 200 provides safety
-	 * margin while preventing attacks with 10K+ nesting levels.
+	 * expressions. Java's practical nesting limit is ~50-100 levels; this value must trigger
+	 * before JVM stack overflow occurs (~200-500 depending on stack size).
 	 * <p>
 	 * <strong>Threat Prevention:</strong> Blocks stack exhaustion via deeply nested
 	 * expressions (e.g., {@code (((((...)))))} with 10,000 parentheses).
@@ -79,7 +79,7 @@ public final class SecurityConfig
 	 * <strong>Performance:</strong> Checked on every recursive call to parseUnary() and
 	 * parsePrimary(), minimal overhead (integer increment + comparison).
 	 */
-	public static final int MAX_PARSE_DEPTH = 30;
+	public static final int MAX_NODE_DEPTH = 100;
 
 	/**
 	 * Parsing timeout in milliseconds (30 seconds).

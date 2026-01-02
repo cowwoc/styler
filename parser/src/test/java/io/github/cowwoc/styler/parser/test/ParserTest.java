@@ -515,13 +515,13 @@ public class ParserTest
 
 	/**
 	 * Tests maximum allowed nesting depth boundary.
-	 * Validates that parser accepts valid deeply nested expressions up to {@link SecurityConfig#MAX_PARSE_DEPTH},
+	 * Validates that parser accepts valid deeply nested expressions up to {@link SecurityConfig#MAX_NODE_DEPTH},
 	 * ensuring security constraints don't reject legitimate code.
 	 */
 	@Test
 	public void testMaxDepthBoundary()
 	{
-		int nestedParentheses = SecurityConfig.MAX_PARSE_DEPTH - 1;
+		int nestedParentheses = SecurityConfig.MAX_NODE_DEPTH - 1;
 		StringBuilder source = new StringBuilder("""
 			class Test
 			{
@@ -557,7 +557,7 @@ public class ParserTest
 	@Test
 	public void testMaxDepthExceeded()
 	{
-		int nestedParentheses = SecurityConfig.MAX_PARSE_DEPTH + 1;
+		int nestedParentheses = SecurityConfig.MAX_NODE_DEPTH + 1;
 		StringBuilder source = new StringBuilder();
 		for (int i = 0; i < nestedParentheses; ++i)
 			source.append('(');

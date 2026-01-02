@@ -3315,10 +3315,10 @@ public final class Parser implements AutoCloseable
 		}
 
 		++depth;
-		if (depth > SecurityConfig.MAX_PARSE_DEPTH)
+		if (depth > SecurityConfig.MAX_NODE_DEPTH)
 		{
 			throw new ParserException(
-				"Maximum parsing depth exceeded (" + SecurityConfig.MAX_PARSE_DEPTH + ") at position " +
+				"Maximum node depth exceeded (" + SecurityConfig.MAX_NODE_DEPTH + ") at position " +
 				currentToken().start(),
 				currentToken().start());
 		}
