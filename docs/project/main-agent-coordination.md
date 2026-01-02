@@ -598,11 +598,29 @@ CORRECT SEQUENCE:
 12. If build passes → proceed to REVIEW state
 13. If build fails → main agent MAY fix OR re-delegate to agents
 14. After REVIEW state with unanimous approval → transition to AWAITING_USER_APPROVAL state
-15. **MANDATORY: Invoke `pre-presentation-cleanup` skill** before presenting to user:
-    - Remove all agent worktrees
-    - Delete agent branches (keep task branch)
+
+15. **🚨 MANDATORY CLEANUP BEFORE AWAITING_USER_APPROVAL 🚨**
+
+    **CRITICAL**: Step 15 MUST be completed BEFORE transitioning to AWAITING_USER_APPROVAL state.
+    Skipping this step results in messy git history and protocol violations.
+
+    **Invoke `pre-presentation-cleanup` skill** to automatically handle all cleanup:
+
+    - Remove all agent worktrees (`git worktree remove`)
+    - Delete all agent branches (keep ONLY task branch)
     - Squash all task branch commits into ONE commit using `git-squash` skill
-    - Verify cleanup: only task branch remains, exactly 1 commit
+    - Verify cleanup: `git branch --list | grep {task-name}` shows only task branch
+    - Verify cleanup: `git rev-list --count main..{task-branch}` outputs exactly `1`
+
+    **Why This Matters**:
+    - User review should see a SINGLE, clean commit - not 12+ implementation artifacts
+    - Agent branches are implementation artifacts, not for user review
+    - Multiple commits create messy main branch history requiring rework
+    - Protocol violation: AWAITING_USER_APPROVAL state requires cleanup (see task-protocol-core.md)
+
+    **If You Skip This Step**: The validate-state-transition hook will BLOCK the AWAITING_USER_APPROVAL
+    transition with detailed cleanup instructions.
+
 16. **Present implementation summary and request explicit user approval** (via message output):
     ```
     Implementation complete and validated.

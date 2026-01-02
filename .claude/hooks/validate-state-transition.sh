@@ -266,10 +266,24 @@ See: /workspace/main/CLAUDE.md § MANDATORY USER APPROVAL CHECKPOINTS
 		;;
 
 	AWAITING_USER_APPROVAL)
-		# AWAITING_USER_APPROVAL requires:
-		# 1. Task branch squashed to single commit
+		# AWAITING_USER_APPROVAL requires pre-presentation cleanup:
+		# 1. Task branch squashed to single commit (not 2+)
 		# 2. All agent branches deleted
 		# 3. All agent worktrees removed
+		#
+		# ROOT CAUSE ANALYSIS (from refactor-parser-depth-limiting mistake on 2026-01-01):
+		# - Mistake: Agent transitioned to AWAITING_USER_APPROVAL with 2 commits + 3 agent branches
+		# - Root cause: Agent skipped pre-presentation-cleanup step 15 (mandatory per protocol)
+		# - Why hook didn't catch it: Agent used state-transition skill (Bash) not Edit tool
+		# - This Edit hook only catches Edit tool usage; enforce-pre-presentation-cleanup catches Bash
+		# - PREVENTION: Both hooks now in place for defense-in-depth
+		#
+		# WHY CLEANUP MATTERS:
+		# - User should review a SINGLE clean commit, not 12+ implementation artifacts
+		# - Agent branches are implementation scaffolding, not for user review
+		# - Multiple commits create messy main branch history requiring rework after merge
+		# - Protocol violation: AWAITING_USER_APPROVAL state machine requires cleanup
+		#
 		TASK_WORKTREE="${TASK_DIR}/code"
 
 		if [[ -d "$TASK_WORKTREE" ]]; then
