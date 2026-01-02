@@ -57,7 +57,7 @@ CURRENT_SESSION_ID="${CLAUDE_SESSION_ID:-unknown}"
 ```bash
 if [ "$LOCK_SESSION" = "missing" ] || [ -z "$LOCK_SESSION" ]; then
   echo "WARNING: Task exists but has no session_id"
-  echo "Another instance may be working on this - ASK USER before proceeding"
+  echo "SELECT A DIFFERENT TASK - cannot determine owner, treat as owned"
   # DO NOT PROCEED - another instance may own this task
 
 elif [ "$LOCK_SESSION" != "$CURRENT_SESSION_ID" ]; then
@@ -76,9 +76,12 @@ fi
 | task.json exists? | Has session_id? | Matches current? | Action |
 |-------------------|-----------------|------------------|--------|
 | NO | N/A | N/A | **PROCEED** - Create new task.json with YOUR session_id |
-| YES | NO | N/A | **ASK USER** - Another instance may be working on this |
+| YES | NO | N/A | **SELECT DIFFERENT TASK** - Cannot determine owner, treat as owned |
 | YES | YES | NO | **SELECT DIFFERENT TASK** - Another instance owns this |
 | YES | YES | YES | **RESUME** - Continue your previous work |
+
+**CRITICAL**: Never offer to take over a task from a different session. Just select a different task.
+Only take over if the user explicitly requests it.
 
 ## Complete Verification Script
 
@@ -105,7 +108,7 @@ fi
 # Step 2: Check task.json
 if [ ! -f "$TASK_DIR/task.json" ]; then
   echo ""
-  echo "Result: ASK_USER"
+  echo "Result: SELECT_DIFFERENT_TASK"
   echo "Task directory exists but no task.json found."
   echo "Another instance may have partially created this task."
   exit 1
@@ -121,9 +124,9 @@ echo "Task Owner: $LOCK_SESSION"
 # Step 4: Apply decision matrix
 if [ "$LOCK_SESSION" = "missing" ] || [ -z "$LOCK_SESSION" ]; then
   echo ""
-  echo "Result: ASK_USER"
+  echo "Result: SELECT_DIFFERENT_TASK"
   echo "Task exists but has no session_id - cannot determine owner."
-  echo "Ask user: 'Task $TASK_NAME exists but has no owner recorded. Should I take it over?'"
+  echo "Treat as owned by another instance. Select a different task."
   exit 1
 
 elif [ "$LOCK_SESSION" != "$CURRENT_SESSION_ID" ]; then
@@ -158,19 +161,36 @@ When session ownership mismatch is detected:
 3. **DO NOT** read task files to understand the task state
 4. **DO NOT** investigate the task in any way
 
-**IMMEDIATELY** do one of:
-- Ask user: "Task X is owned by a different session. Do you want me to take it over?"
-- Present alternatives: "Task X is owned by another session. Here are available tasks: ..."
+**IMMEDIATELY** select a different task. Never offer to take over - just move on.
 
-**Why This Matters**: Any investigation after mismatch detection is wasted if:
-- User wants you to work on a different task
-- User wants to continue with the other session
-- The other session is still active
+**CRITICAL**: Never suggest taking over a task from a different session. Users must explicitly
+request takeover if they want it. Claude should never offer this as an option.
 
-**Rationale**: Ownership verification is resource-efficient only if treated as a gate. Investigating
-a task you may not work on wastes tokens and time.
+**Why This Matters**: Offering takeover options wastes user time with unnecessary decisions and
+may cause confusion about which session should own which task.
+
+**Rationale**: Ownership verification is resource-efficient only if treated as a gate. The correct
+response to a mismatch is always to select a different task, not to ask the user.
 
 ## Common Mistakes
+
+### Mistake: Offering to Take Over
+
+```
+❌ WRONG:
+"Session mismatch detected. This task is owned by a different session.
+
+Would you like me to:
+1. Take over this task anyway, OR
+2. Work on a different task?"
+[Wastes user time with unnecessary decision - just select a different task!]
+```
+
+```
+✅ CORRECT:
+"Task 'implement-feature' is owned by a different session. Selecting a different task..."
+[Immediately moves to next available task without asking]
+```
 
 ### Mistake: Continuing Investigation After Mismatch
 
@@ -179,17 +199,13 @@ a task you may not work on wastes tokens and time.
 "Session mismatch detected. Let me check git log to see what commits are pending..."
 [Runs git log, git diff, reads files]
 "Now I understand the task state. Should I take it over?"
-[User says "No, work on something else" - all investigation was wasted!]
+[Wasted investigation on a task you shouldn't work on]
 ```
 
 ```
 ✅ CORRECT:
-"Session mismatch detected. This task is owned by a different session.
-
-Would you like me to:
-1. Take over this task anyway, OR
-2. Work on a different task?"
-[Waits for user response before any further investigation]
+"Task 'implement-feature' is owned by a different session. Moving on..."
+[No investigation, immediately selects different task]
 ```
 
 ### Mistake: Taking Over Another Instance's Task
@@ -268,10 +284,8 @@ This ensures new tasks are properly tagged with ownership information.
 
 ### "No session_id in task.json"
 
-Task was created before ownership tracking was added. Options:
-1. Ask user if you should take ownership
-2. If user confirms, update task.json with your session_id
-3. If unsure, select a different task
+Task was created before ownership tracking was added. Treat as owned by another instance
+and select a different task. Only take over if user explicitly requests it.
 
 ### "Session ID is 'unknown'"
 
