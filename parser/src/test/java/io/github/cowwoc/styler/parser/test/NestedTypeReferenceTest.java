@@ -6,16 +6,10 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.NULL_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
 
 /**
  * Tests for parsing nested type references like {@code Outer.Inner} in field and method declarations.
@@ -39,9 +33,9 @@ public class NestedTypeReferenceTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 38),
-			semanticNode(CLASS_DECLARATION, 0, 37, "Test"),
-			semanticNode(FIELD_DECLARATION, 17, 35));
+			compilationUnit( 0, 38),
+			typeDeclaration(CLASS_DECLARATION, 0, 37, "Test"),
+			fieldDeclaration( 17, 35));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -64,9 +58,9 @@ public class NestedTypeReferenceTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 45),
-			semanticNode(CLASS_DECLARATION, 0, 44, "Test"),
-			semanticNode(FIELD_DECLARATION, 17, 42));
+			compilationUnit( 0, 45),
+			typeDeclaration(CLASS_DECLARATION, 0, 44, "Test"),
+			fieldDeclaration( 17, 42));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -91,12 +85,12 @@ public class NestedTypeReferenceTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 73),
-			semanticNode(CLASS_DECLARATION, 0, 72, "Test"),
-			semanticNode(METHOD_DECLARATION, 17, 70),
-			semanticNode(BLOCK, 42, 70),
-			semanticNode(RETURN_STATEMENT, 52, 64),
-			semanticNode(NULL_LITERAL, 59, 63));
+			compilationUnit( 0, 73),
+			typeDeclaration(CLASS_DECLARATION, 0, 72, "Test"),
+			methodDeclaration( 17, 70),
+			block( 42, 70),
+			returnStatement( 52, 64),
+			nullLiteral( 59, 63));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -118,10 +112,10 @@ public class NestedTypeReferenceTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 46),
-			semanticNode(CLASS_DECLARATION, 0, 45, "Test"),
-			semanticNode(FIELD_DECLARATION, 17, 43),
-			semanticNode(QUALIFIED_NAME, 29, 35));
+			compilationUnit( 0, 46),
+			typeDeclaration(CLASS_DECLARATION, 0, 45, "Test"),
+			fieldDeclaration( 17, 43),
+			qualifiedName( 29, 35));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -143,9 +137,9 @@ public class NestedTypeReferenceTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 40),
-			semanticNode(CLASS_DECLARATION, 0, 39, "Test"),
-			semanticNode(FIELD_DECLARATION, 17, 37));
+			compilationUnit( 0, 40),
+			typeDeclaration(CLASS_DECLARATION, 0, 39, "Test"),
+			fieldDeclaration( 17, 37));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -167,10 +161,10 @@ public class NestedTypeReferenceTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 77),
-			semanticNode(CLASS_DECLARATION, 0, 76, "Test"),
-			semanticNode(FIELD_DECLARATION, 17, 74),
-			semanticNode(NULL_LITERAL, 69, 73));
+			compilationUnit( 0, 77),
+			typeDeclaration(CLASS_DECLARATION, 0, 76, "Test"),
+			fieldDeclaration( 17, 74),
+			nullLiteral( 69, 73));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}

@@ -356,11 +356,7 @@ public final class Parser implements AutoCloseable
 				qualifiedName.append('*');
 				expect(TokenType.SEMICOLON);
 				int end = previousToken().end();
-				ImportAttribute attribute = new ImportAttribute(qualifiedName.toString());
-				if (isStatic)
-				{
-					return arena.allocateStaticImportDeclaration(start, end, attribute);
-				}
+				ImportAttribute attribute = new ImportAttribute(qualifiedName.toString(), isStatic);
 				return arena.allocateImportDeclaration(start, end, attribute);
 			}
 			expect(TokenType.IDENTIFIER);
@@ -368,11 +364,7 @@ public final class Parser implements AutoCloseable
 		}
 		expect(TokenType.SEMICOLON);
 		int end = previousToken().end();
-		ImportAttribute attribute = new ImportAttribute(qualifiedName.toString());
-		if (isStatic)
-		{
-			return arena.allocateStaticImportDeclaration(start, end, attribute);
-		}
+		ImportAttribute attribute = new ImportAttribute(qualifiedName.toString(), isStatic);
 		return arena.allocateImportDeclaration(start, end, attribute);
 	}
 

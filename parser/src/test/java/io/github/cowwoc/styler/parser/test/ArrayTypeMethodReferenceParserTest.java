@@ -6,24 +6,12 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.ARRAY_TYPE;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.CONDITIONAL_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.LAMBDA_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_REFERENCE;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseFails;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
 
 /**
  * Tests for parsing array type constructor references ({@code int[]::new}, {@code String[][]::new}).
@@ -52,11 +40,11 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 39),
-			semanticNode(CLASS_DECLARATION, 0, 38, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 36),
-			semanticNode(METHOD_REFERENCE, 25, 35),
-			semanticNode(ARRAY_TYPE, 25, 30));
+			compilationUnit( 0, 39),
+			typeDeclaration(CLASS_DECLARATION, 0, 38, "Test"),
+			fieldDeclaration( 14, 36),
+			methodReference( 25, 35),
+			arrayType( 25, 30));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -77,11 +65,11 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 42),
-			semanticNode(CLASS_DECLARATION, 0, 41, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 39),
-			semanticNode(METHOD_REFERENCE, 25, 38),
-			semanticNode(ARRAY_TYPE, 25, 33));
+			compilationUnit( 0, 42),
+			typeDeclaration(CLASS_DECLARATION, 0, 41, "Test"),
+			fieldDeclaration( 14, 39),
+			methodReference( 25, 38),
+			arrayType( 25, 33));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -102,11 +90,11 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 43),
-			semanticNode(CLASS_DECLARATION, 0, 42, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 40),
-			semanticNode(METHOD_REFERENCE, 25, 39),
-			semanticNode(ARRAY_TYPE, 25, 34));
+			compilationUnit( 0, 43),
+			typeDeclaration(CLASS_DECLARATION, 0, 42, "Test"),
+			fieldDeclaration( 14, 40),
+			methodReference( 25, 39),
+			arrayType( 25, 34));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -127,11 +115,11 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 41),
-			semanticNode(CLASS_DECLARATION, 0, 40, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 38),
-			semanticNode(METHOD_REFERENCE, 25, 37),
-			semanticNode(ARRAY_TYPE, 25, 32));
+			compilationUnit( 0, 41),
+			typeDeclaration(CLASS_DECLARATION, 0, 40, "Test"),
+			fieldDeclaration( 14, 38),
+			methodReference( 25, 37),
+			arrayType( 25, 32));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -152,11 +140,11 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 43),
-			semanticNode(CLASS_DECLARATION, 0, 42, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 40),
-			semanticNode(METHOD_REFERENCE, 25, 39),
-			semanticNode(ARRAY_TYPE, 25, 34));
+			compilationUnit( 0, 43),
+			typeDeclaration(CLASS_DECLARATION, 0, 42, "Test"),
+			fieldDeclaration( 14, 40),
+			methodReference( 25, 39),
+			arrayType( 25, 34));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -181,12 +169,12 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 42),
-			semanticNode(CLASS_DECLARATION, 0, 41, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 39),
-			semanticNode(METHOD_REFERENCE, 25, 38),
-			semanticNode(ARRAY_TYPE, 25, 33),
-			semanticNode(IDENTIFIER, 25, 31));
+			compilationUnit( 0, 42),
+			typeDeclaration(CLASS_DECLARATION, 0, 41, "Test"),
+			fieldDeclaration( 14, 39),
+			methodReference( 25, 38),
+			arrayType( 25, 33),
+			identifier( 25, 31));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -207,12 +195,12 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 42),
-			semanticNode(CLASS_DECLARATION, 0, 41, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 39),
-			semanticNode(METHOD_REFERENCE, 25, 38),
-			semanticNode(ARRAY_TYPE, 25, 33),
-			semanticNode(IDENTIFIER, 25, 31));
+			compilationUnit( 0, 42),
+			typeDeclaration(CLASS_DECLARATION, 0, 41, "Test"),
+			fieldDeclaration( 14, 39),
+			methodReference( 25, 38),
+			arrayType( 25, 33),
+			identifier( 25, 31));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -233,12 +221,12 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 44),
-			semanticNode(CLASS_DECLARATION, 0, 43, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 41),
-			semanticNode(METHOD_REFERENCE, 25, 40),
-			semanticNode(ARRAY_TYPE, 25, 35),
-			semanticNode(IDENTIFIER, 25, 31));
+			compilationUnit( 0, 44),
+			typeDeclaration(CLASS_DECLARATION, 0, 43, "Test"),
+			fieldDeclaration( 14, 41),
+			methodReference( 25, 40),
+			arrayType( 25, 35),
+			identifier( 25, 31));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -259,14 +247,14 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 50),
-			semanticNode(CLASS_DECLARATION, 0, 49, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 47),
-			semanticNode(METHOD_REFERENCE, 25, 46),
-			semanticNode(ARRAY_TYPE, 25, 41),
-			semanticNode(FIELD_ACCESS, 25, 34),
-			semanticNode(FIELD_ACCESS, 25, 39),
-			semanticNode(IDENTIFIER, 25, 29));
+			compilationUnit( 0, 50),
+			typeDeclaration(CLASS_DECLARATION, 0, 49, "Test"),
+			fieldDeclaration( 14, 47),
+			methodReference( 25, 46),
+			arrayType( 25, 41),
+			fieldAccess( 25, 34),
+			fieldAccess( 25, 39),
+			identifier( 25, 29));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -294,16 +282,16 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 61),
-			semanticNode(CLASS_DECLARATION, 0, 60, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 58),
-			semanticNode(BLOCK, 29, 58),
-			semanticNode(METHOD_INVOCATION, 33, 54),
-			semanticNode(QUALIFIED_NAME, 33, 39),
-			semanticNode(IDENTIFIER, 33, 39),
-			semanticNode(METHOD_REFERENCE, 40, 53),
-			semanticNode(ARRAY_TYPE, 40, 48),
-			semanticNode(IDENTIFIER, 40, 46));
+			compilationUnit( 0, 61),
+			typeDeclaration(CLASS_DECLARATION, 0, 60, "Test"),
+			methodDeclaration( 14, 58),
+			block( 29, 58),
+			methodInvocation( 33, 54),
+			qualifiedName( 33, 39),
+			identifier( 33, 39),
+			methodReference( 40, 53),
+			arrayType( 40, 48),
+			identifier( 40, 46));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -327,13 +315,13 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 59),
-			semanticNode(CLASS_DECLARATION, 0, 58, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 56),
-			semanticNode(BLOCK, 31, 56),
-			semanticNode(RETURN_STATEMENT, 35, 53),
-			semanticNode(METHOD_REFERENCE, 42, 52),
-			semanticNode(ARRAY_TYPE, 42, 47));
+			compilationUnit( 0, 59),
+			typeDeclaration(CLASS_DECLARATION, 0, 58, "Test"),
+			methodDeclaration( 14, 56),
+			block( 31, 56),
+			returnStatement( 35, 53),
+			methodReference( 42, 52),
+			arrayType( 42, 47));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -357,18 +345,18 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 94),
-			semanticNode(CLASS_DECLARATION, 0, 93, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 91),
-			semanticNode(PARAMETER_DECLARATION, 26, 38, "flag"),
-			semanticNode(BLOCK, 41, 91),
-			semanticNode(QUALIFIED_NAME, 45, 51),
-			semanticNode(CONDITIONAL_EXPRESSION, 56, 87),
-			semanticNode(IDENTIFIER, 56, 60),
-			semanticNode(METHOD_REFERENCE, 63, 73),
-			semanticNode(ARRAY_TYPE, 63, 68),
-			semanticNode(METHOD_REFERENCE, 76, 87),
-			semanticNode(ARRAY_TYPE, 76, 82));
+			compilationUnit( 0, 94),
+			typeDeclaration(CLASS_DECLARATION, 0, 93, "Test"),
+			methodDeclaration( 14, 91),
+			parameterNode( 26, 38, "flag"),
+			block( 41, 91),
+			qualifiedName( 45, 51),
+			conditionalExpression( 56, 87),
+			identifier( 56, 60),
+			methodReference( 63, 73),
+			arrayType( 63, 68),
+			methodReference( 76, 87),
+			arrayType( 76, 82));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -390,15 +378,15 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 97),
-			semanticNode(CLASS_DECLARATION, 0, 96, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 50),
-			semanticNode(METHOD_REFERENCE, 39, 49),
-			semanticNode(ARRAY_TYPE, 39, 44),
-			semanticNode(FIELD_DECLARATION, 52, 94),
-			semanticNode(METHOD_REFERENCE, 80, 93),
-			semanticNode(ARRAY_TYPE, 80, 88),
-			semanticNode(IDENTIFIER, 80, 86));
+			compilationUnit( 0, 97),
+			typeDeclaration(CLASS_DECLARATION, 0, 96, "Test"),
+			fieldDeclaration( 14, 50),
+			methodReference( 39, 49),
+			arrayType( 39, 44),
+			fieldDeclaration( 52, 94),
+			methodReference( 80, 93),
+			arrayType( 80, 88),
+			identifier( 80, 86));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -419,12 +407,12 @@ public class ArrayTypeMethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 45),
-			semanticNode(CLASS_DECLARATION, 0, 44, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 42),
-			semanticNode(LAMBDA_EXPRESSION, 25, 41),
-			semanticNode(METHOD_REFERENCE, 31, 41),
-			semanticNode(ARRAY_TYPE, 31, 36));
+			compilationUnit( 0, 45),
+			typeDeclaration(CLASS_DECLARATION, 0, 44, "Test"),
+			fieldDeclaration( 14, 42),
+			lambdaExpression( 25, 41),
+			methodReference( 31, 41),
+			arrayType( 31, 36));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}

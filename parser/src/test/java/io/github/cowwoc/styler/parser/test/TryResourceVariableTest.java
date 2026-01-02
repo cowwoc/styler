@@ -6,22 +6,11 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CATCH_CLAUSE;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.FINALLY_CLAUSE;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.NULL_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.TRY_STATEMENT;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
 
 /**
  * Tests for parsing try-with-resources variable references (JDK 9+).
@@ -51,18 +40,18 @@ public class TryResourceVariableTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 107),
-			semanticNode(CLASS_DECLARATION, 7, 106, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 104),
-			semanticNode(PARAMETER_DECLARATION, 37, 59, "resource"),
-			semanticNode(QUALIFIED_NAME, 37, 50),
-			semanticNode(BLOCK, 62, 104),
-			semanticNode(TRY_STATEMENT, 66, 101),
-			semanticNode(IDENTIFIER, 71, 79),
-			semanticNode(BLOCK, 83, 101),
-			semanticNode(METHOD_INVOCATION, 88, 96),
-			semanticNode(QUALIFIED_NAME, 88, 94),
-			semanticNode(IDENTIFIER, 88, 94));
+			compilationUnit( 0, 107),
+			typeDeclaration(CLASS_DECLARATION, 7, 106, "Test"),
+			methodDeclaration( 21, 104),
+			parameterNode( 37, 59, "resource"),
+			qualifiedName( 37, 50),
+			block( 62, 104),
+			tryStatement( 66, 101),
+			identifier( 71, 79),
+			block( 83, 101),
+			methodInvocation( 88, 96),
+			qualifiedName( 88, 94),
+			identifier( 88, 94));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -89,21 +78,21 @@ public class TryResourceVariableTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 137),
-			semanticNode(CLASS_DECLARATION, 7, 136, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 134),
-			semanticNode(PARAMETER_DECLARATION, 37, 58, "stream1"),
-			semanticNode(QUALIFIED_NAME, 37, 50),
-			semanticNode(PARAMETER_DECLARATION, 60, 81, "stream2"),
-			semanticNode(QUALIFIED_NAME, 60, 73),
-			semanticNode(BLOCK, 84, 134),
-			semanticNode(TRY_STATEMENT, 88, 131),
-			semanticNode(IDENTIFIER, 93, 100),
-			semanticNode(IDENTIFIER, 102, 109),
-			semanticNode(BLOCK, 113, 131),
-			semanticNode(METHOD_INVOCATION, 118, 126),
-			semanticNode(QUALIFIED_NAME, 118, 124),
-			semanticNode(IDENTIFIER, 118, 124));
+			compilationUnit( 0, 137),
+			typeDeclaration(CLASS_DECLARATION, 7, 136, "Test"),
+			methodDeclaration( 21, 134),
+			parameterNode( 37, 58, "stream1"),
+			qualifiedName( 37, 50),
+			parameterNode( 60, 81, "stream2"),
+			qualifiedName( 60, 73),
+			block( 84, 134),
+			tryStatement( 88, 131),
+			identifier( 93, 100),
+			identifier( 102, 109),
+			block( 113, 131),
+			methodInvocation( 118, 126),
+			qualifiedName( 118, 124),
+			identifier( 118, 124));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -130,23 +119,23 @@ public class TryResourceVariableTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 180),
-			semanticNode(CLASS_DECLARATION, 7, 179, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 177),
-			semanticNode(PARAMETER_DECLARATION, 37, 65, "existing"),
-			semanticNode(QUALIFIED_NAME, 37, 56),
-			semanticNode(BLOCK, 68, 177),
-			semanticNode(TRY_STATEMENT, 72, 174),
-			semanticNode(QUALIFIED_NAME, 77, 99),
-			semanticNode(OBJECT_CREATION, 105, 137),
-			semanticNode(QUALIFIED_NAME, 109, 131),
-			semanticNode(NULL_LITERAL, 132, 136),
-			semanticNode(IDENTIFIER, 139, 147),
-			semanticNode(BLOCK, 151, 174),
-			semanticNode(METHOD_INVOCATION, 156, 169),
-			semanticNode(FIELD_ACCESS, 156, 167),
-			semanticNode(QUALIFIED_NAME, 156, 167),
-			semanticNode(IDENTIFIER, 156, 158));
+			compilationUnit( 0, 180),
+			typeDeclaration(CLASS_DECLARATION, 7, 179, "Test"),
+			methodDeclaration( 21, 177),
+			parameterNode( 37, 65, "existing"),
+			qualifiedName( 37, 56),
+			block( 68, 177),
+			tryStatement( 72, 174),
+			qualifiedName( 77, 99),
+			objectCreation( 105, 137),
+			qualifiedName( 109, 131),
+			nullLiteral( 132, 136),
+			identifier( 139, 147),
+			block( 151, 174),
+			methodInvocation( 156, 169),
+			fieldAccess( 156, 167),
+			qualifiedName( 156, 167),
+			identifier( 156, 158));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -173,23 +162,23 @@ public class TryResourceVariableTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 180),
-			semanticNode(CLASS_DECLARATION, 7, 179, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 177),
-			semanticNode(PARAMETER_DECLARATION, 37, 65, "existing"),
-			semanticNode(QUALIFIED_NAME, 37, 56),
-			semanticNode(BLOCK, 68, 177),
-			semanticNode(TRY_STATEMENT, 72, 174),
-			semanticNode(IDENTIFIER, 77, 85),
-			semanticNode(QUALIFIED_NAME, 87, 109),
-			semanticNode(OBJECT_CREATION, 115, 147),
-			semanticNode(QUALIFIED_NAME, 119, 141),
-			semanticNode(NULL_LITERAL, 142, 146),
-			semanticNode(BLOCK, 151, 174),
-			semanticNode(METHOD_INVOCATION, 156, 169),
-			semanticNode(FIELD_ACCESS, 156, 167),
-			semanticNode(QUALIFIED_NAME, 156, 167),
-			semanticNode(IDENTIFIER, 156, 158));
+			compilationUnit( 0, 180),
+			typeDeclaration(CLASS_DECLARATION, 7, 179, "Test"),
+			methodDeclaration( 21, 177),
+			parameterNode( 37, 65, "existing"),
+			qualifiedName( 37, 56),
+			block( 68, 177),
+			tryStatement( 72, 174),
+			identifier( 77, 85),
+			qualifiedName( 87, 109),
+			objectCreation( 115, 147),
+			qualifiedName( 119, 141),
+			nullLiteral( 142, 146),
+			block( 151, 174),
+			methodInvocation( 156, 169),
+			fieldAccess( 156, 167),
+			qualifiedName( 156, 167),
+			identifier( 156, 158));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -220,25 +209,25 @@ public class TryResourceVariableTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 155),
-			semanticNode(CLASS_DECLARATION, 7, 154, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 152),
-			semanticNode(PARAMETER_DECLARATION, 37, 59, "resource"),
-			semanticNode(QUALIFIED_NAME, 37, 50),
-			semanticNode(BLOCK, 62, 152),
-			semanticNode(TRY_STATEMENT, 66, 149),
-			semanticNode(IDENTIFIER, 71, 79),
-			semanticNode(BLOCK, 83, 101),
-			semanticNode(METHOD_INVOCATION, 88, 96),
-			semanticNode(QUALIFIED_NAME, 88, 94),
-			semanticNode(IDENTIFIER, 88, 94),
-			semanticNode(CATCH_CLAUSE, 104, 149),
-			semanticNode(PARAMETER_DECLARATION, 111, 122, "e"),
-			semanticNode(QUALIFIED_NAME, 111, 120),
-			semanticNode(BLOCK, 126, 149),
-			semanticNode(METHOD_INVOCATION, 131, 144),
-			semanticNode(QUALIFIED_NAME, 131, 142),
-			semanticNode(IDENTIFIER, 131, 142));
+			compilationUnit( 0, 155),
+			typeDeclaration(CLASS_DECLARATION, 7, 154, "Test"),
+			methodDeclaration( 21, 152),
+			parameterNode( 37, 59, "resource"),
+			qualifiedName( 37, 50),
+			block( 62, 152),
+			tryStatement( 66, 149),
+			identifier( 71, 79),
+			block( 83, 101),
+			methodInvocation( 88, 96),
+			qualifiedName( 88, 94),
+			identifier( 88, 94),
+			catchClause( 104, 149),
+			parameterNode( 111, 122, "e"),
+			qualifiedName( 111, 120),
+			block( 126, 149),
+			methodInvocation( 131, 144),
+			qualifiedName( 131, 142),
+			identifier( 131, 142));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -269,23 +258,23 @@ public class TryResourceVariableTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 139),
-			semanticNode(CLASS_DECLARATION, 7, 138, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 136),
-			semanticNode(PARAMETER_DECLARATION, 37, 59, "resource"),
-			semanticNode(QUALIFIED_NAME, 37, 50),
-			semanticNode(BLOCK, 62, 136),
-			semanticNode(TRY_STATEMENT, 66, 133),
-			semanticNode(IDENTIFIER, 71, 79),
-			semanticNode(BLOCK, 83, 101),
-			semanticNode(METHOD_INVOCATION, 88, 96),
-			semanticNode(QUALIFIED_NAME, 88, 94),
-			semanticNode(IDENTIFIER, 88, 94),
-			semanticNode(FINALLY_CLAUSE, 104, 133),
-			semanticNode(BLOCK, 114, 133),
-			semanticNode(METHOD_INVOCATION, 119, 128),
-			semanticNode(QUALIFIED_NAME, 119, 126),
-			semanticNode(IDENTIFIER, 119, 126));
+			compilationUnit( 0, 139),
+			typeDeclaration(CLASS_DECLARATION, 7, 138, "Test"),
+			methodDeclaration( 21, 136),
+			parameterNode( 37, 59, "resource"),
+			qualifiedName( 37, 50),
+			block( 62, 136),
+			tryStatement( 66, 133),
+			identifier( 71, 79),
+			block( 83, 101),
+			methodInvocation( 88, 96),
+			qualifiedName( 88, 94),
+			identifier( 88, 94),
+			finallyClause( 104, 133),
+			block( 114, 133),
+			methodInvocation( 119, 128),
+			qualifiedName( 119, 126),
+			identifier( 119, 126));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -312,21 +301,21 @@ public class TryResourceVariableTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 118),
-			semanticNode(CLASS_DECLARATION, 7, 117, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 115),
-			semanticNode(PARAMETER_DECLARATION, 37, 53, "r1"),
-			semanticNode(QUALIFIED_NAME, 37, 50),
-			semanticNode(PARAMETER_DECLARATION, 55, 71, "r2"),
-			semanticNode(QUALIFIED_NAME, 55, 68),
-			semanticNode(BLOCK, 74, 115),
-			semanticNode(TRY_STATEMENT, 78, 112),
-			semanticNode(IDENTIFIER, 83, 85),
-			semanticNode(IDENTIFIER, 87, 89),
-			semanticNode(BLOCK, 94, 112),
-			semanticNode(METHOD_INVOCATION, 99, 107),
-			semanticNode(QUALIFIED_NAME, 99, 105),
-			semanticNode(IDENTIFIER, 99, 105));
+			compilationUnit( 0, 118),
+			typeDeclaration(CLASS_DECLARATION, 7, 117, "Test"),
+			methodDeclaration( 21, 115),
+			parameterNode( 37, 53, "r1"),
+			qualifiedName( 37, 50),
+			parameterNode( 55, 71, "r2"),
+			qualifiedName( 55, 68),
+			block( 74, 115),
+			tryStatement( 78, 112),
+			identifier( 83, 85),
+			identifier( 87, 89),
+			block( 94, 112),
+			methodInvocation( 99, 107),
+			qualifiedName( 99, 105),
+			identifier( 99, 105));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -353,24 +342,24 @@ public class TryResourceVariableTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 133),
-			semanticNode(CLASS_DECLARATION, 7, 132, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 130),
-			semanticNode(PARAMETER_DECLARATION, 37, 52, "a"),
-			semanticNode(QUALIFIED_NAME, 37, 50),
-			semanticNode(PARAMETER_DECLARATION, 54, 69, "b"),
-			semanticNode(QUALIFIED_NAME, 54, 67),
-			semanticNode(PARAMETER_DECLARATION, 71, 86, "c"),
-			semanticNode(QUALIFIED_NAME, 71, 84),
-			semanticNode(BLOCK, 89, 130),
-			semanticNode(TRY_STATEMENT, 93, 127),
-			semanticNode(IDENTIFIER, 98, 99),
-			semanticNode(IDENTIFIER, 101, 102),
-			semanticNode(IDENTIFIER, 104, 105),
-			semanticNode(BLOCK, 109, 127),
-			semanticNode(METHOD_INVOCATION, 114, 122),
-			semanticNode(QUALIFIED_NAME, 114, 120),
-			semanticNode(IDENTIFIER, 114, 120));
+			compilationUnit( 0, 133),
+			typeDeclaration(CLASS_DECLARATION, 7, 132, "Test"),
+			methodDeclaration( 21, 130),
+			parameterNode( 37, 52, "a"),
+			qualifiedName( 37, 50),
+			parameterNode( 54, 69, "b"),
+			qualifiedName( 54, 67),
+			parameterNode( 71, 86, "c"),
+			qualifiedName( 71, 84),
+			block( 89, 130),
+			tryStatement( 93, 127),
+			identifier( 98, 99),
+			identifier( 101, 102),
+			identifier( 104, 105),
+			block( 109, 127),
+			methodInvocation( 114, 122),
+			qualifiedName( 114, 120),
+			identifier( 114, 120));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -397,22 +386,22 @@ public class TryResourceVariableTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 159),
-			semanticNode(CLASS_DECLARATION, 7, 158, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 156),
-			semanticNode(PARAMETER_DECLARATION, 37, 59, "existing"),
-			semanticNode(QUALIFIED_NAME, 37, 50),
-			semanticNode(BLOCK, 62, 156),
-			semanticNode(TRY_STATEMENT, 66, 153),
-			semanticNode(QUALIFIED_NAME, 71, 85),
-			semanticNode(NULL_LITERAL, 91, 95),
-			semanticNode(IDENTIFIER, 97, 105),
-			semanticNode(QUALIFIED_NAME, 107, 121),
-			semanticNode(NULL_LITERAL, 127, 131),
-			semanticNode(BLOCK, 135, 153),
-			semanticNode(METHOD_INVOCATION, 140, 148),
-			semanticNode(QUALIFIED_NAME, 140, 146),
-			semanticNode(IDENTIFIER, 140, 146));
+			compilationUnit( 0, 159),
+			typeDeclaration(CLASS_DECLARATION, 7, 158, "Test"),
+			methodDeclaration( 21, 156),
+			parameterNode( 37, 59, "existing"),
+			qualifiedName( 37, 50),
+			block( 62, 156),
+			tryStatement( 66, 153),
+			qualifiedName( 71, 85),
+			nullLiteral( 91, 95),
+			identifier( 97, 105),
+			qualifiedName( 107, 121),
+			nullLiteral( 127, 131),
+			block( 135, 153),
+			methodInvocation( 140, 148),
+			qualifiedName( 140, 146),
+			identifier( 140, 146));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

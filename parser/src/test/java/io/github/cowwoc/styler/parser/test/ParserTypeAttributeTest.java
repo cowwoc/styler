@@ -1,25 +1,23 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.ast.core.NodeArena;
-import io.github.cowwoc.styler.ast.core.NodeIndex;
-import io.github.cowwoc.styler.ast.core.NodeType;
-import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
-import io.github.cowwoc.styler.parser.ParseResult;
-import io.github.cowwoc.styler.parser.Parser;
+import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.RECORD_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.compilationUnit;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.enumConstant;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
 
 /**
  * Tests for type declaration attribute population during parsing.
- * <p>
- * Verifies that the parser correctly populates the {@code typeName} attribute for class,
- * interface, enum, and record declarations.
- * <p>
- * <b>Thread-safety</b>: Thread-safe - all instances are created inside {@code @Test} methods.
  */
 public class ParserTypeAttributeTest
 {
@@ -32,18 +30,13 @@ public class ParserTypeAttributeTest
 		String source = """
 			class MyClass {}
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> classes = findNodesOfType(arena, NodeType.CLASS_DECLARATION);
-			requireThat(classes.size(), "classes.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 17),
+			typeDeclaration(CLASS_DECLARATION, 0, 16, "MyClass"));
 
-			TypeDeclarationAttribute attribute = arena.getTypeDeclarationAttribute(classes.get(0));
-			requireThat(attribute.typeName(), "typeName").isEqualTo("MyClass");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -55,18 +48,13 @@ public class ParserTypeAttributeTest
 		String source = """
 			class MyClass {}
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> classes = findNodesOfType(arena, NodeType.CLASS_DECLARATION);
-			requireThat(classes.size(), "classes.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 17),
+			typeDeclaration(CLASS_DECLARATION, 0, 16, "MyClass"));
 
-			TypeDeclarationAttribute attribute = arena.getTypeDeclarationAttribute(classes.get(0));
-			requireThat(attribute, "attribute").isNotNull();
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -78,18 +66,13 @@ public class ParserTypeAttributeTest
 		String source = """
 			interface MyInterface {}
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> interfaces = findNodesOfType(arena, NodeType.INTERFACE_DECLARATION);
-			requireThat(interfaces.size(), "interfaces.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 25),
+			typeDeclaration(INTERFACE_DECLARATION, 0, 24, "MyInterface"));
 
-			TypeDeclarationAttribute attribute = arena.getTypeDeclarationAttribute(interfaces.get(0));
-			requireThat(attribute.typeName(), "typeName").isEqualTo("MyInterface");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -101,18 +84,15 @@ public class ParserTypeAttributeTest
 		String source = """
 			enum MyEnum { A, B }
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> enums = findNodesOfType(arena, NodeType.ENUM_DECLARATION);
-			requireThat(enums.size(), "enums.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 21),
+			typeDeclaration(ENUM_DECLARATION, 0, 20, "MyEnum"),
+			enumConstant(14, 15),
+			enumConstant(17, 18));
 
-			TypeDeclarationAttribute attribute = arena.getTypeDeclarationAttribute(enums.get(0));
-			requireThat(attribute.typeName(), "typeName").isEqualTo("MyEnum");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -124,18 +104,14 @@ public class ParserTypeAttributeTest
 		String source = """
 			record MyRecord(int x) {}
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> records = findNodesOfType(arena, NodeType.RECORD_DECLARATION);
-			requireThat(records.size(), "records.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 26),
+			typeDeclaration(RECORD_DECLARATION, 0, 25, "MyRecord"),
+			parameterNode(16, 21, "x"));
 
-			TypeDeclarationAttribute attribute = arena.getTypeDeclarationAttribute(records.get(0));
-			requireThat(attribute.typeName(), "typeName").isEqualTo("MyRecord");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -147,33 +123,14 @@ public class ParserTypeAttributeTest
 		String source = """
 			class Outer { class Inner {} }
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> classes = findNodesOfType(arena, NodeType.CLASS_DECLARATION);
-			requireThat(classes.size(), "classes.size()").isEqualTo(2);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 31),
+			typeDeclaration(CLASS_DECLARATION, 0, 30, "Outer"),
+			typeDeclaration(CLASS_DECLARATION, 14, 28, "Inner"));
 
-			// Both should exist and have distinct names
-			boolean foundOuter = false;
-			boolean foundInner = false;
-			for (NodeIndex index : classes)
-			{
-				TypeDeclarationAttribute attr = arena.getTypeDeclarationAttribute(index);
-				if ("Outer".equals(attr.typeName()))
-				{
-					foundOuter = true;
-				}
-				else if ("Inner".equals(attr.typeName()))
-				{
-					foundInner = true;
-				}
-			}
-			requireThat(foundOuter, "foundOuter").isTrue();
-			requireThat(foundInner, "foundInner").isTrue();
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -185,19 +142,13 @@ public class ParserTypeAttributeTest
 		String source = """
 			class Box<T> {}
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> classes = findNodesOfType(arena, NodeType.CLASS_DECLARATION);
-			requireThat(classes.size(), "classes.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 16),
+			typeDeclaration(CLASS_DECLARATION, 0, 15, "Box"));
 
-			TypeDeclarationAttribute attribute = arena.getTypeDeclarationAttribute(classes.get(0));
-			// Type name should be "Box", not "Box<T>"
-			requireThat(attribute.typeName(), "typeName").isEqualTo("Box");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -209,38 +160,12 @@ public class ParserTypeAttributeTest
 		String source = """
 			public abstract class MyClass {}
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> classes = findNodesOfType(arena, NodeType.CLASS_DECLARATION);
-			requireThat(classes.size(), "classes.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 33),
+			typeDeclaration(CLASS_DECLARATION, 16, 32, "MyClass"));
 
-			TypeDeclarationAttribute attribute = arena.getTypeDeclarationAttribute(classes.get(0));
-			requireThat(attribute.typeName(), "typeName").isEqualTo("MyClass");
-		}
-	}
-
-	/**
-	 * Finds all nodes of the specified type in the arena.
-	 *
-	 * @param arena the arena to search
-	 * @param type  the node type to find
-	 * @return list of node indices matching the type
-	 */
-	private List<NodeIndex> findNodesOfType(NodeArena arena, NodeType type)
-	{
-		List<NodeIndex> result = new ArrayList<>();
-		for (int i = 0; i < arena.getNodeCount(); ++i)
-		{
-			NodeIndex index = new NodeIndex(i);
-			if (arena.getType(index) == type)
-			{
-				result.add(index);
-			}
-		}
-		return result;
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

@@ -324,24 +324,6 @@ benchmarking, and validate with Maven plugin integration.
   - **Priority**: Lower than self-hosting blockers - these are edge cases
   - **Quality**: Parser tests for comment placement in each identified location
 
-### AST Simplification: Collapse Import Node Types
-- [ ] **READY:** `collapse-import-node-types` - Merge STATIC_IMPORT_DECLARATION into IMPORT_DECLARATION
-  - **Dependencies**: None
-  - **Blocks**: None (simplification for cleaner model)
-  - **Parallelizable With**: Any Phase E task
-  - **Estimated Effort**: 1 day
-  - **Purpose**: Simplify AST model - "static" is a modifier, not a different construct
-  - **Proposed Change**:
-    - Add `isStatic()` to `ImportAttribute`
-    - Parser creates `IMPORT_DECLARATION` for both, setting attribute
-    - Remove `STATIC_IMPORT_DECLARATION` from `NodeType` enum
-    - Update `ImportExtractor` to use single `findNodesByType()` call
-  - **Benefits**:
-    - Single query returns all imports in position order (no sorting needed)
-    - Cleaner semantic model (static is a modifier, like public/private)
-    - Simpler consumer code
-  - **Quality**: Update all usages, verify import organization still works
-
 ### Parser Enhancement: Node-Based Complexity Limiting
 - [ ] **READY:** `refactor-parser-depth-limiting` - Replace recursion depth limit with node count limit
   - **Dependencies**: None
@@ -398,6 +380,26 @@ benchmarking, and validate with Maven plugin integration.
     - Detect module-info.java files or `module` keyword at compilation unit level
     - Parse module name, then directives until closing brace
   - **Quality**: Parser tests for all directive types, qualified names, modifiers
+
+- [ ] **READY:** `add-array-dimension-annotations` - Parse type annotations on array dimensions (JDK 8+)
+  - **Dependencies**: None
+  - **Blocks**: None (obscure JSR 308 feature)
+  - **Parallelizable With**: Any Phase E parser task
+  - **Estimated Effort**: 0.5 days
+  - **Purpose**: Parse annotations between type name and array brackets (JSR 308, JDK 8+)
+  - **Current Gap**: `parseType()` parses `[]` but doesn't check for `@` before each `[`
+  - **Syntax**: `Type @Annotation []` or `@A Type @B [] @C []`
+  - **Example**:
+    ```java
+    String @NonNull [] names;                    // annotation on array type
+    @NonNull String @Nullable [] @ReadOnly [] matrix;  // per-dimension annotations
+    ```
+  - **Implementation**:
+    - In `parseType()`, before each `match(LBRACKET)`, check for and consume annotations
+    - Annotations apply to that specific array dimension
+    - Handle multiple dimensions with different annotations
+  - **Priority**: Lower - obscure feature, rarely used in practice
+  - **Quality**: Parser tests for single/multiple dimensions with annotations
 
 - [x] **DONE:** `add-nested-annotation-values` - Parse nested annotations in annotation element values
   - **Dependencies**: None

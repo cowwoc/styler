@@ -6,27 +6,12 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.CONDITIONAL_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_REFERENCE;
-import static io.github.cowwoc.styler.ast.core.NodeType.NULL_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.STRING_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.SUPER_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.THIS_EXPRESSION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseFails;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
 
 /**
  * Tests for method reference parsing support.
@@ -56,11 +41,11 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 44),
-			semanticNode(CLASS_DECLARATION, 0, 43, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 41),
-			semanticNode(METHOD_REFERENCE, 25, 40),
-			semanticNode(IDENTIFIER, 25, 31));
+			compilationUnit( 0, 44),
+			typeDeclaration(CLASS_DECLARATION, 0, 43, "Test"),
+			fieldDeclaration( 14, 41),
+			methodReference( 25, 40),
+			identifier( 25, 31));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -86,15 +71,15 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 85),
-			semanticNode(CLASS_DECLARATION, 0, 84, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 82),
-			semanticNode(BLOCK, 29, 82),
-			semanticNode(QUALIFIED_NAME, 33, 39),
-			semanticNode(STRING_LITERAL, 46, 52),
-			semanticNode(QUALIFIED_NAME, 56, 62),
-			semanticNode(METHOD_REFERENCE, 67, 78),
-			semanticNode(IDENTIFIER, 67, 70));
+			compilationUnit( 0, 85),
+			typeDeclaration(CLASS_DECLARATION, 0, 84, "Test"),
+			methodDeclaration( 14, 82),
+			block( 29, 82),
+			qualifiedName( 33, 39),
+			stringLiteral( 46, 52),
+			qualifiedName( 56, 62),
+			methodReference( 67, 78),
+			identifier( 67, 70));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -122,15 +107,15 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 87),
-			semanticNode(CLASS_DECLARATION, 0, 86, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 33),
-			semanticNode(BLOCK, 29, 33),
-			semanticNode(METHOD_DECLARATION, 36, 84),
-			semanticNode(BLOCK, 51, 84),
-			semanticNode(QUALIFIED_NAME, 55, 63),
-			semanticNode(METHOD_REFERENCE, 68, 80),
-			semanticNode(THIS_EXPRESSION, 68, 72));
+			compilationUnit( 0, 87),
+			typeDeclaration(CLASS_DECLARATION, 0, 86, "Test"),
+			methodDeclaration( 14, 33),
+			block( 29, 33),
+			methodDeclaration( 36, 84),
+			block( 51, 84),
+			qualifiedName( 55, 63),
+			methodReference( 68, 80),
+			thisExpression( 68, 72));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -161,17 +146,17 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 120),
-			semanticNode(CLASS_DECLARATION, 0, 37, "Parent"),
-			semanticNode(METHOD_DECLARATION, 16, 35),
-			semanticNode(BLOCK, 31, 35),
-			semanticNode(CLASS_DECLARATION, 39, 119, "Test"),
-			semanticNode(QUALIFIED_NAME, 58, 64),
-			semanticNode(METHOD_DECLARATION, 68, 117),
-			semanticNode(BLOCK, 83, 117),
-			semanticNode(QUALIFIED_NAME, 87, 95),
-			semanticNode(METHOD_REFERENCE, 100, 113),
-			semanticNode(SUPER_EXPRESSION, 100, 105));
+			compilationUnit( 0, 120),
+			typeDeclaration(CLASS_DECLARATION, 0, 37, "Parent"),
+			methodDeclaration( 16, 35),
+			block( 31, 35),
+			typeDeclaration(CLASS_DECLARATION, 39, 119, "Test"),
+			qualifiedName( 58, 64),
+			methodDeclaration( 68, 117),
+			block( 83, 117),
+			qualifiedName( 87, 95),
+			methodReference( 100, 113),
+			superExpression( 100, 105));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -193,11 +178,11 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 48),
-			semanticNode(CLASS_DECLARATION, 0, 47, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 45),
-			semanticNode(METHOD_REFERENCE, 25, 44),
-			semanticNode(IDENTIFIER, 25, 31));
+			compilationUnit( 0, 48),
+			typeDeclaration(CLASS_DECLARATION, 0, 47, "Test"),
+			fieldDeclaration( 14, 45),
+			methodReference( 25, 44),
+			identifier( 25, 31));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -218,11 +203,11 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 40),
-			semanticNode(CLASS_DECLARATION, 0, 39, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 37),
-			semanticNode(METHOD_REFERENCE, 25, 36),
-			semanticNode(IDENTIFIER, 25, 31));
+			compilationUnit( 0, 40),
+			typeDeclaration(CLASS_DECLARATION, 0, 39, "Test"),
+			fieldDeclaration( 14, 37),
+			methodReference( 25, 36),
+			identifier( 25, 31));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -247,12 +232,12 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 67),
-			semanticNode(CLASS_DECLARATION, 0, 22, "Container"),
-			semanticNode(CLASS_DECLARATION, 24, 66, "Test"),
-			semanticNode(FIELD_DECLARATION, 38, 64),
-			semanticNode(METHOD_REFERENCE, 49, 63),
-			semanticNode(IDENTIFIER, 49, 58));
+			compilationUnit( 0, 67),
+			typeDeclaration(CLASS_DECLARATION, 0, 22, "Container"),
+			typeDeclaration(CLASS_DECLARATION, 24, 66, "Test"),
+			fieldDeclaration( 38, 64),
+			methodReference( 49, 63),
+			identifier( 49, 58));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -277,12 +262,12 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 60),
-			semanticNode(CLASS_DECLARATION, 0, 59, "Outer"),
-			semanticNode(CLASS_DECLARATION, 15, 32, "Inner"),
-			semanticNode(FIELD_DECLARATION, 35, 57),
-			semanticNode(METHOD_REFERENCE, 46, 56),
-			semanticNode(IDENTIFIER, 46, 51));
+			compilationUnit( 0, 60),
+			typeDeclaration(CLASS_DECLARATION, 0, 59, "Outer"),
+			typeDeclaration(CLASS_DECLARATION, 15, 32, "Inner"),
+			fieldDeclaration( 35, 57),
+			methodReference( 46, 56),
+			identifier( 46, 51));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -314,22 +299,22 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 146),
-			semanticNode(CLASS_DECLARATION, 0, 52, "Container"),
-			semanticNode(METHOD_DECLARATION, 22, 50),
-			semanticNode(BLOCK, 31, 50),
-			semanticNode(RETURN_STATEMENT, 35, 47),
-			semanticNode(NULL_LITERAL, 42, 46),
-			semanticNode(CLASS_DECLARATION, 54, 145, "Test"),
-			semanticNode(METHOD_DECLARATION, 68, 143),
-			semanticNode(PARAMETERIZED_TYPE, 80, 97),
-			semanticNode(QUALIFIED_NAME, 80, 89),
-			semanticNode(QUALIFIED_NAME, 90, 96),
-			semanticNode(PARAMETER_DECLARATION, 80, 107, "container"),
-			semanticNode(BLOCK, 110, 143),
-			semanticNode(QUALIFIED_NAME, 114, 120),
-			semanticNode(METHOD_REFERENCE, 125, 139),
-			semanticNode(IDENTIFIER, 125, 134));
+			compilationUnit( 0, 146),
+			typeDeclaration(CLASS_DECLARATION, 0, 52, "Container"),
+			methodDeclaration( 22, 50),
+			block( 31, 50),
+			returnStatement( 35, 47),
+			nullLiteral( 42, 46),
+			typeDeclaration(CLASS_DECLARATION, 54, 145, "Test"),
+			methodDeclaration( 68, 143),
+			parameterizedType( 80, 97),
+			qualifiedName( 80, 89),
+			qualifiedName( 90, 96),
+			parameterNode( 80, 107, "container"),
+			block( 110, 143),
+			qualifiedName( 114, 120),
+			methodReference( 125, 139),
+			identifier( 125, 134));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -361,21 +346,21 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 123),
-			semanticNode(CLASS_DECLARATION, 0, 122, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 41),
-			semanticNode(QUALIFIED_NAME, 26, 32),
-			semanticNode(PARAMETER_DECLARATION, 26, 34, "o"),
-			semanticNode(BLOCK, 37, 41),
-			semanticNode(METHOD_DECLARATION, 44, 71),
-			semanticNode(QUALIFIED_NAME, 56, 62),
-			semanticNode(PARAMETER_DECLARATION, 56, 64, "s"),
-			semanticNode(BLOCK, 67, 71),
-			semanticNode(METHOD_DECLARATION, 74, 120),
-			semanticNode(BLOCK, 89, 120),
-			semanticNode(QUALIFIED_NAME, 93, 99),
-			semanticNode(METHOD_REFERENCE, 104, 116),
-			semanticNode(THIS_EXPRESSION, 104, 108));
+			compilationUnit( 0, 123),
+			typeDeclaration(CLASS_DECLARATION, 0, 122, "Test"),
+			methodDeclaration( 14, 41),
+			qualifiedName( 26, 32),
+			parameterNode( 26, 34, "o"),
+			block( 37, 41),
+			methodDeclaration( 44, 71),
+			qualifiedName( 56, 62),
+			parameterNode( 56, 64, "s"),
+			block( 67, 71),
+			methodDeclaration( 74, 120),
+			block( 89, 120),
+			qualifiedName( 93, 99),
+			methodReference( 104, 116),
+			thisExpression( 104, 108));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -412,32 +397,32 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 196),
-			semanticNode(CLASS_DECLARATION, 0, 102, "Builder"),
-			semanticNode(METHOD_DECLARATION, 17, 62),
-			semanticNode(QUALIFIED_NAME, 32, 38),
-			semanticNode(PARAMETER_DECLARATION, 32, 40, "s"),
-			semanticNode(BLOCK, 43, 62),
-			semanticNode(RETURN_STATEMENT, 47, 59),
-			semanticNode(THIS_EXPRESSION, 54, 58),
-			semanticNode(METHOD_DECLARATION, 65, 100),
-			semanticNode(BLOCK, 81, 100),
-			semanticNode(RETURN_STATEMENT, 85, 97),
-			semanticNode(NULL_LITERAL, 92, 96),
-			semanticNode(CLASS_DECLARATION, 104, 195, "Test"),
-			semanticNode(METHOD_DECLARATION, 118, 193),
-			semanticNode(QUALIFIED_NAME, 130, 137),
-			semanticNode(PARAMETER_DECLARATION, 130, 139, "b"),
-			semanticNode(BLOCK, 142, 193),
-			semanticNode(QUALIFIED_NAME, 146, 152),
-			semanticNode(METHOD_REFERENCE, 157, 189),
-			semanticNode(METHOD_INVOCATION, 157, 182),
-			semanticNode(FIELD_ACCESS, 157, 177),
-			semanticNode(METHOD_INVOCATION, 157, 170),
-			semanticNode(FIELD_ACCESS, 157, 165),
-			semanticNode(IDENTIFIER, 157, 158),
-			semanticNode(STRING_LITERAL, 166, 169),
-			semanticNode(STRING_LITERAL, 178, 181));
+			compilationUnit( 0, 196),
+			typeDeclaration(CLASS_DECLARATION, 0, 102, "Builder"),
+			methodDeclaration( 17, 62),
+			qualifiedName( 32, 38),
+			parameterNode( 32, 40, "s"),
+			block( 43, 62),
+			returnStatement( 47, 59),
+			thisExpression( 54, 58),
+			methodDeclaration( 65, 100),
+			block( 81, 100),
+			returnStatement( 85, 97),
+			nullLiteral( 92, 96),
+			typeDeclaration(CLASS_DECLARATION, 104, 195, "Test"),
+			methodDeclaration( 118, 193),
+			qualifiedName( 130, 137),
+			parameterNode( 130, 139, "b"),
+			block( 142, 193),
+			qualifiedName( 146, 152),
+			methodReference( 157, 189),
+			methodInvocation( 157, 182),
+			fieldAccess( 157, 177),
+			methodInvocation( 157, 170),
+			fieldAccess( 157, 165),
+			identifier( 157, 158),
+			stringLiteral( 166, 169),
+			stringLiteral( 178, 181));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -469,19 +454,19 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 93),
-			semanticNode(CLASS_DECLARATION, 0, 92, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 41),
-			semanticNode(QUALIFIED_NAME, 26, 32),
-			semanticNode(PARAMETER_DECLARATION, 26, 34, "o"),
-			semanticNode(BLOCK, 37, 41),
-			semanticNode(METHOD_DECLARATION, 44, 90),
-			semanticNode(BLOCK, 59, 90),
-			semanticNode(METHOD_INVOCATION, 63, 86),
-			semanticNode(QUALIFIED_NAME, 63, 69),
-			semanticNode(IDENTIFIER, 63, 69),
-			semanticNode(METHOD_REFERENCE, 70, 85),
-			semanticNode(IDENTIFIER, 70, 76));
+			compilationUnit( 0, 93),
+			typeDeclaration(CLASS_DECLARATION, 0, 92, "Test"),
+			methodDeclaration( 14, 41),
+			qualifiedName( 26, 32),
+			parameterNode( 26, 34, "o"),
+			block( 37, 41),
+			methodDeclaration( 44, 90),
+			block( 59, 90),
+			methodInvocation( 63, 86),
+			qualifiedName( 63, 69),
+			identifier( 63, 69),
+			methodReference( 70, 85),
+			identifier( 70, 76));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -513,25 +498,25 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 150),
-			semanticNode(CLASS_DECLARATION, 0, 64, "Stream"),
-			semanticNode(METHOD_DECLARATION, 16, 62),
-			semanticNode(QUALIFIED_NAME, 27, 33),
-			semanticNode(PARAMETER_DECLARATION, 27, 40, "mapper"),
-			semanticNode(BLOCK, 43, 62),
-			semanticNode(RETURN_STATEMENT, 47, 59),
-			semanticNode(THIS_EXPRESSION, 54, 58),
-			semanticNode(CLASS_DECLARATION, 66, 149, "Test"),
-			semanticNode(METHOD_DECLARATION, 80, 147),
-			semanticNode(QUALIFIED_NAME, 92, 98),
-			semanticNode(PARAMETER_DECLARATION, 92, 105, "stream"),
-			semanticNode(BLOCK, 108, 147),
-			semanticNode(METHOD_INVOCATION, 112, 143),
-			semanticNode(FIELD_ACCESS, 112, 122),
-			semanticNode(QUALIFIED_NAME, 112, 122),
-			semanticNode(IDENTIFIER, 112, 118),
-			semanticNode(METHOD_REFERENCE, 123, 142),
-			semanticNode(IDENTIFIER, 123, 129));
+			compilationUnit( 0, 150),
+			typeDeclaration(CLASS_DECLARATION, 0, 64, "Stream"),
+			methodDeclaration( 16, 62),
+			qualifiedName( 27, 33),
+			parameterNode( 27, 40, "mapper"),
+			block( 43, 62),
+			returnStatement( 47, 59),
+			thisExpression( 54, 58),
+			typeDeclaration(CLASS_DECLARATION, 66, 149, "Test"),
+			methodDeclaration( 80, 147),
+			qualifiedName( 92, 98),
+			parameterNode( 92, 105, "stream"),
+			block( 108, 147),
+			methodInvocation( 112, 143),
+			fieldAccess( 112, 122),
+			qualifiedName( 112, 122),
+			identifier( 112, 118),
+			methodReference( 123, 142),
+			identifier( 123, 129));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -563,25 +548,25 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 155),
-			semanticNode(CLASS_DECLARATION, 0, 70, "Stream"),
-			semanticNode(METHOD_DECLARATION, 16, 68),
-			semanticNode(QUALIFIED_NAME, 30, 36),
-			semanticNode(PARAMETER_DECLARATION, 30, 46, "predicate"),
-			semanticNode(BLOCK, 49, 68),
-			semanticNode(RETURN_STATEMENT, 53, 65),
-			semanticNode(THIS_EXPRESSION, 60, 64),
-			semanticNode(CLASS_DECLARATION, 72, 154, "Test"),
-			semanticNode(METHOD_DECLARATION, 86, 152),
-			semanticNode(QUALIFIED_NAME, 98, 104),
-			semanticNode(PARAMETER_DECLARATION, 98, 111, "stream"),
-			semanticNode(BLOCK, 114, 152),
-			semanticNode(METHOD_INVOCATION, 118, 148),
-			semanticNode(FIELD_ACCESS, 118, 131),
-			semanticNode(QUALIFIED_NAME, 118, 131),
-			semanticNode(IDENTIFIER, 118, 124),
-			semanticNode(METHOD_REFERENCE, 132, 147),
-			semanticNode(IDENTIFIER, 132, 138));
+			compilationUnit( 0, 155),
+			typeDeclaration(CLASS_DECLARATION, 0, 70, "Stream"),
+			methodDeclaration( 16, 68),
+			qualifiedName( 30, 36),
+			parameterNode( 30, 46, "predicate"),
+			block( 49, 68),
+			returnStatement( 53, 65),
+			thisExpression( 60, 64),
+			typeDeclaration(CLASS_DECLARATION, 72, 154, "Test"),
+			methodDeclaration( 86, 152),
+			qualifiedName( 98, 104),
+			parameterNode( 98, 111, "stream"),
+			block( 114, 152),
+			methodInvocation( 118, 148),
+			fieldAccess( 118, 131),
+			qualifiedName( 118, 131),
+			identifier( 118, 124),
+			methodReference( 132, 147),
+			identifier( 132, 138));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -613,22 +598,22 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 147),
-			semanticNode(CLASS_DECLARATION, 0, 59, "Container"),
-			semanticNode(METHOD_DECLARATION, 19, 57),
-			semanticNode(BLOCK, 38, 57),
-			semanticNode(RETURN_STATEMENT, 42, 54),
-			semanticNode(NULL_LITERAL, 49, 53),
-			semanticNode(CLASS_DECLARATION, 61, 146, "Test"),
-			semanticNode(METHOD_DECLARATION, 75, 144),
-			semanticNode(QUALIFIED_NAME, 87, 96),
-			semanticNode(PARAMETER_DECLARATION, 87, 100, "obj"),
-			semanticNode(BLOCK, 103, 144),
-			semanticNode(QUALIFIED_NAME, 107, 113),
-			semanticNode(METHOD_REFERENCE, 118, 140),
-			semanticNode(METHOD_INVOCATION, 118, 132),
-			semanticNode(FIELD_ACCESS, 118, 130),
-			semanticNode(IDENTIFIER, 118, 121));
+			compilationUnit( 0, 147),
+			typeDeclaration(CLASS_DECLARATION, 0, 59, "Container"),
+			methodDeclaration( 19, 57),
+			block( 38, 57),
+			returnStatement( 42, 54),
+			nullLiteral( 49, 53),
+			typeDeclaration(CLASS_DECLARATION, 61, 146, "Test"),
+			methodDeclaration( 75, 144),
+			qualifiedName( 87, 96),
+			parameterNode( 87, 100, "obj"),
+			block( 103, 144),
+			qualifiedName( 107, 113),
+			methodReference( 118, 140),
+			methodInvocation( 118, 132),
+			fieldAccess( 118, 130),
+			identifier( 118, 121));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -652,18 +637,18 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 103),
-			semanticNode(CLASS_DECLARATION, 0, 102, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 100),
-			semanticNode(PARAMETER_DECLARATION, 26, 38, "flag"),
-			semanticNode(BLOCK, 41, 100),
-			semanticNode(QUALIFIED_NAME, 45, 51),
-			semanticNode(CONDITIONAL_EXPRESSION, 56, 96),
-			semanticNode(IDENTIFIER, 56, 60),
-			semanticNode(METHOD_REFERENCE, 63, 77),
-			semanticNode(IDENTIFIER, 63, 69),
-			semanticNode(METHOD_REFERENCE, 80, 96),
-			semanticNode(IDENTIFIER, 80, 86));
+			compilationUnit( 0, 103),
+			typeDeclaration(CLASS_DECLARATION, 0, 102, "Test"),
+			methodDeclaration( 14, 100),
+			parameterNode( 26, 38, "flag"),
+			block( 41, 100),
+			qualifiedName( 45, 51),
+			conditionalExpression( 56, 96),
+			identifier( 56, 60),
+			methodReference( 63, 77),
+			identifier( 63, 69),
+			methodReference( 80, 96),
+			identifier( 80, 86));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -687,13 +672,13 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 66),
-			semanticNode(CLASS_DECLARATION, 0, 65, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 63),
-			semanticNode(BLOCK, 31, 63),
-			semanticNode(RETURN_STATEMENT, 35, 60),
-			semanticNode(METHOD_REFERENCE, 42, 59),
-			semanticNode(IDENTIFIER, 42, 49));
+			compilationUnit( 0, 66),
+			typeDeclaration(CLASS_DECLARATION, 0, 65, "Test"),
+			methodDeclaration( 14, 63),
+			block( 31, 63),
+			returnStatement( 35, 60),
+			methodReference( 42, 59),
+			identifier( 42, 49));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -775,43 +760,43 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 283),
-			semanticNode(CLASS_DECLARATION, 0, 137, "Stream"),
-			semanticNode(METHOD_DECLARATION, 16, 60),
-			semanticNode(QUALIFIED_NAME, 30, 36),
-			semanticNode(PARAMETER_DECLARATION, 30, 38, "p"),
-			semanticNode(BLOCK, 41, 60),
-			semanticNode(RETURN_STATEMENT, 45, 57),
-			semanticNode(THIS_EXPRESSION, 52, 56),
-			semanticNode(METHOD_DECLARATION, 63, 104),
-			semanticNode(QUALIFIED_NAME, 74, 80),
-			semanticNode(PARAMETER_DECLARATION, 74, 82, "m"),
-			semanticNode(BLOCK, 85, 104),
-			semanticNode(RETURN_STATEMENT, 89, 101),
-			semanticNode(THIS_EXPRESSION, 96, 100),
-			semanticNode(METHOD_DECLARATION, 107, 135),
-			semanticNode(QUALIFIED_NAME, 120, 126),
-			semanticNode(PARAMETER_DECLARATION, 120, 128, "c"),
-			semanticNode(BLOCK, 131, 135),
-			semanticNode(CLASS_DECLARATION, 139, 282, "Test"),
-			semanticNode(METHOD_DECLARATION, 153, 280),
-			semanticNode(QUALIFIED_NAME, 165, 171),
-			semanticNode(PARAMETER_DECLARATION, 165, 177, "names"),
-			semanticNode(BLOCK, 180, 280),
-			semanticNode(METHOD_INVOCATION, 184, 276),
-			semanticNode(FIELD_ACCESS, 184, 258),
-			semanticNode(METHOD_INVOCATION, 184, 246),
-			semanticNode(FIELD_ACCESS, 184, 225),
-			semanticNode(METHOD_INVOCATION, 184, 217),
-			semanticNode(FIELD_ACCESS, 184, 200),
-			semanticNode(QUALIFIED_NAME, 184, 200),
-			semanticNode(IDENTIFIER, 184, 189),
-			semanticNode(METHOD_REFERENCE, 201, 216),
-			semanticNode(IDENTIFIER, 201, 207),
-			semanticNode(METHOD_REFERENCE, 226, 245),
-			semanticNode(IDENTIFIER, 226, 232),
-			semanticNode(METHOD_REFERENCE, 259, 275),
-			semanticNode(IDENTIFIER, 259, 265));
+			compilationUnit( 0, 283),
+			typeDeclaration(CLASS_DECLARATION, 0, 137, "Stream"),
+			methodDeclaration( 16, 60),
+			qualifiedName( 30, 36),
+			parameterNode( 30, 38, "p"),
+			block( 41, 60),
+			returnStatement( 45, 57),
+			thisExpression( 52, 56),
+			methodDeclaration( 63, 104),
+			qualifiedName( 74, 80),
+			parameterNode( 74, 82, "m"),
+			block( 85, 104),
+			returnStatement( 89, 101),
+			thisExpression( 96, 100),
+			methodDeclaration( 107, 135),
+			qualifiedName( 120, 126),
+			parameterNode( 120, 128, "c"),
+			block( 131, 135),
+			typeDeclaration(CLASS_DECLARATION, 139, 282, "Test"),
+			methodDeclaration( 153, 280),
+			qualifiedName( 165, 171),
+			parameterNode( 165, 177, "names"),
+			block( 180, 280),
+			methodInvocation( 184, 276),
+			fieldAccess( 184, 258),
+			methodInvocation( 184, 246),
+			fieldAccess( 184, 225),
+			methodInvocation( 184, 217),
+			fieldAccess( 184, 200),
+			qualifiedName( 184, 200),
+			identifier( 184, 189),
+			methodReference( 201, 216),
+			identifier( 201, 207),
+			methodReference( 226, 245),
+			identifier( 226, 232),
+			methodReference( 259, 275),
+			identifier( 259, 265));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -851,28 +836,28 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 234),
-			semanticNode(CLASS_DECLARATION, 0, 55, "Person"),
-			semanticNode(METHOD_DECLARATION, 16, 53),
-			semanticNode(BLOCK, 34, 53),
-			semanticNode(RETURN_STATEMENT, 38, 50),
-			semanticNode(NULL_LITERAL, 45, 49),
-			semanticNode(CLASS_DECLARATION, 57, 144, "Comparator"),
-			semanticNode(METHOD_DECLARATION, 77, 142),
-			semanticNode(QUALIFIED_NAME, 101, 107),
-			semanticNode(PARAMETER_DECLARATION, 101, 120, "keyExtractor"),
-			semanticNode(BLOCK, 123, 142),
-			semanticNode(RETURN_STATEMENT, 127, 139),
-			semanticNode(NULL_LITERAL, 134, 138),
-			semanticNode(CLASS_DECLARATION, 146, 233, "Test"),
-			semanticNode(METHOD_DECLARATION, 160, 231),
-			semanticNode(BLOCK, 175, 231),
-			semanticNode(QUALIFIED_NAME, 179, 185),
-			semanticNode(METHOD_INVOCATION, 190, 227),
-			semanticNode(FIELD_ACCESS, 190, 210),
-			semanticNode(IDENTIFIER, 190, 200),
-			semanticNode(METHOD_REFERENCE, 211, 226),
-			semanticNode(IDENTIFIER, 211, 217));
+			compilationUnit( 0, 234),
+			typeDeclaration(CLASS_DECLARATION, 0, 55, "Person"),
+			methodDeclaration( 16, 53),
+			block( 34, 53),
+			returnStatement( 38, 50),
+			nullLiteral( 45, 49),
+			typeDeclaration(CLASS_DECLARATION, 57, 144, "Comparator"),
+			methodDeclaration( 77, 142),
+			qualifiedName( 101, 107),
+			parameterNode( 101, 120, "keyExtractor"),
+			block( 123, 142),
+			returnStatement( 127, 139),
+			nullLiteral( 134, 138),
+			typeDeclaration(CLASS_DECLARATION, 146, 233, "Test"),
+			methodDeclaration( 160, 231),
+			block( 175, 231),
+			qualifiedName( 179, 185),
+			methodInvocation( 190, 227),
+			fieldAccess( 190, 210),
+			identifier( 190, 200),
+			methodReference( 211, 226),
+			identifier( 211, 217));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -920,40 +905,40 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 342),
-			semanticNode(CLASS_DECLARATION, 0, 55, "Person"),
-			semanticNode(METHOD_DECLARATION, 16, 53),
-			semanticNode(BLOCK, 34, 53),
-			semanticNode(RETURN_STATEMENT, 38, 50),
-			semanticNode(NULL_LITERAL, 45, 49),
-			semanticNode(CLASS_DECLARATION, 57, 128, "Stream"),
-			semanticNode(METHOD_DECLARATION, 73, 126),
-			semanticNode(QUALIFIED_NAME, 88, 94),
-			semanticNode(PARAMETER_DECLARATION, 88, 104, "collector"),
-			semanticNode(BLOCK, 107, 126),
-			semanticNode(RETURN_STATEMENT, 111, 123),
-			semanticNode(NULL_LITERAL, 118, 122),
-			semanticNode(CLASS_DECLARATION, 130, 216, "Collectors"),
-			semanticNode(METHOD_DECLARATION, 150, 214),
-			semanticNode(QUALIFIED_NAME, 175, 181),
-			semanticNode(PARAMETER_DECLARATION, 175, 192, "classifier"),
-			semanticNode(BLOCK, 195, 214),
-			semanticNode(RETURN_STATEMENT, 199, 211),
-			semanticNode(NULL_LITERAL, 206, 210),
-			semanticNode(CLASS_DECLARATION, 218, 341, "Test"),
-			semanticNode(METHOD_DECLARATION, 232, 339),
-			semanticNode(QUALIFIED_NAME, 244, 250),
-			semanticNode(PARAMETER_DECLARATION, 244, 257, "people"),
-			semanticNode(BLOCK, 260, 339),
-			semanticNode(QUALIFIED_NAME, 264, 270),
-			semanticNode(METHOD_INVOCATION, 281, 335),
-			semanticNode(FIELD_ACCESS, 281, 295),
-			semanticNode(IDENTIFIER, 281, 287),
-			semanticNode(METHOD_INVOCATION, 296, 334),
-			semanticNode(FIELD_ACCESS, 296, 317),
-			semanticNode(IDENTIFIER, 296, 306),
-			semanticNode(METHOD_REFERENCE, 318, 333),
-			semanticNode(IDENTIFIER, 318, 324));
+			compilationUnit( 0, 342),
+			typeDeclaration(CLASS_DECLARATION, 0, 55, "Person"),
+			methodDeclaration( 16, 53),
+			block( 34, 53),
+			returnStatement( 38, 50),
+			nullLiteral( 45, 49),
+			typeDeclaration(CLASS_DECLARATION, 57, 128, "Stream"),
+			methodDeclaration( 73, 126),
+			qualifiedName( 88, 94),
+			parameterNode( 88, 104, "collector"),
+			block( 107, 126),
+			returnStatement( 111, 123),
+			nullLiteral( 118, 122),
+			typeDeclaration(CLASS_DECLARATION, 130, 216, "Collectors"),
+			methodDeclaration( 150, 214),
+			qualifiedName( 175, 181),
+			parameterNode( 175, 192, "classifier"),
+			block( 195, 214),
+			returnStatement( 199, 211),
+			nullLiteral( 206, 210),
+			typeDeclaration(CLASS_DECLARATION, 218, 341, "Test"),
+			methodDeclaration( 232, 339),
+			qualifiedName( 244, 250),
+			parameterNode( 244, 257, "people"),
+			block( 260, 339),
+			qualifiedName( 264, 270),
+			methodInvocation( 281, 335),
+			fieldAccess( 281, 295),
+			identifier( 281, 287),
+			methodInvocation( 296, 334),
+			fieldAccess( 296, 317),
+			identifier( 296, 306),
+			methodReference( 318, 333),
+			identifier( 318, 324));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -1002,52 +987,52 @@ public class MethodReferenceParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 389),
-			semanticNode(CLASS_DECLARATION, 0, 221, "Optional"),
-			semanticNode(METHOD_DECLARATION, 18, 66),
-			semanticNode(QUALIFIED_NAME, 31, 37),
-			semanticNode(PARAMETER_DECLARATION, 31, 44, "mapper"),
-			semanticNode(BLOCK, 47, 66),
-			semanticNode(RETURN_STATEMENT, 51, 63),
-			semanticNode(THIS_EXPRESSION, 58, 62),
-			semanticNode(METHOD_DECLARATION, 69, 123),
-			semanticNode(QUALIFIED_NAME, 85, 91),
-			semanticNode(PARAMETER_DECLARATION, 85, 101, "predicate"),
-			semanticNode(BLOCK, 104, 123),
-			semanticNode(RETURN_STATEMENT, 108, 120),
-			semanticNode(THIS_EXPRESSION, 115, 119),
-			semanticNode(METHOD_DECLARATION, 126, 163),
-			semanticNode(QUALIFIED_NAME, 141, 147),
-			semanticNode(PARAMETER_DECLARATION, 141, 156, "consumer"),
-			semanticNode(BLOCK, 159, 163),
-			semanticNode(METHOD_DECLARATION, 166, 219),
-			semanticNode(QUALIFIED_NAME, 185, 191),
-			semanticNode(PARAMETER_DECLARATION, 185, 197, "value"),
-			semanticNode(BLOCK, 200, 219),
-			semanticNode(RETURN_STATEMENT, 204, 216),
-			semanticNode(NULL_LITERAL, 211, 215),
-			semanticNode(CLASS_DECLARATION, 223, 388, "Test"),
-			semanticNode(METHOD_DECLARATION, 237, 386),
-			semanticNode(BLOCK, 252, 386),
-			semanticNode(QUALIFIED_NAME, 256, 264),
-			semanticNode(METHOD_INVOCATION, 271, 290),
-			semanticNode(FIELD_ACCESS, 271, 282),
-			semanticNode(IDENTIFIER, 271, 279),
-			semanticNode(STRING_LITERAL, 283, 289),
-			semanticNode(METHOD_INVOCATION, 294, 382),
-			semanticNode(FIELD_ACCESS, 294, 364),
-			semanticNode(METHOD_INVOCATION, 294, 350),
-			semanticNode(FIELD_ACCESS, 294, 333),
-			semanticNode(METHOD_INVOCATION, 294, 322),
-			semanticNode(QUALIFIED_NAME, 294, 301),
-			semanticNode(FIELD_ACCESS, 294, 301),
-			semanticNode(IDENTIFIER, 294, 297),
-			semanticNode(METHOD_REFERENCE, 302, 321),
-			semanticNode(IDENTIFIER, 302, 308),
-			semanticNode(METHOD_REFERENCE, 334, 349),
-			semanticNode(IDENTIFIER, 334, 340),
-			semanticNode(METHOD_REFERENCE, 365, 381),
-			semanticNode(IDENTIFIER, 365, 371));
+			compilationUnit( 0, 389),
+			typeDeclaration(CLASS_DECLARATION, 0, 221, "Optional"),
+			methodDeclaration( 18, 66),
+			qualifiedName( 31, 37),
+			parameterNode( 31, 44, "mapper"),
+			block( 47, 66),
+			returnStatement( 51, 63),
+			thisExpression( 58, 62),
+			methodDeclaration( 69, 123),
+			qualifiedName( 85, 91),
+			parameterNode( 85, 101, "predicate"),
+			block( 104, 123),
+			returnStatement( 108, 120),
+			thisExpression( 115, 119),
+			methodDeclaration( 126, 163),
+			qualifiedName( 141, 147),
+			parameterNode( 141, 156, "consumer"),
+			block( 159, 163),
+			methodDeclaration( 166, 219),
+			qualifiedName( 185, 191),
+			parameterNode( 185, 197, "value"),
+			block( 200, 219),
+			returnStatement( 204, 216),
+			nullLiteral( 211, 215),
+			typeDeclaration(CLASS_DECLARATION, 223, 388, "Test"),
+			methodDeclaration( 237, 386),
+			block( 252, 386),
+			qualifiedName( 256, 264),
+			methodInvocation( 271, 290),
+			fieldAccess( 271, 282),
+			identifier( 271, 279),
+			stringLiteral( 283, 289),
+			methodInvocation( 294, 382),
+			fieldAccess( 294, 364),
+			methodInvocation( 294, 350),
+			fieldAccess( 294, 333),
+			methodInvocation( 294, 322),
+			qualifiedName( 294, 301),
+			fieldAccess( 294, 301),
+			identifier( 294, 297),
+			methodReference( 302, 321),
+			identifier( 302, 308),
+			methodReference( 334, 349),
+			identifier( 334, 340),
+			methodReference( 365, 381),
+			identifier( 365, 371));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}

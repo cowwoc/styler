@@ -6,20 +6,11 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.BOOLEAN_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.CHAR_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.STRING_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.SWITCH_EXPRESSION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
 
 /**
  * Tests for parsing switch expressions with arrow syntax.
@@ -48,19 +39,19 @@ public class SwitchExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 139),
-			semanticNode(CLASS_DECLARATION, 7, 138, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 136),
-			semanticNode(PARAMETER_DECLARATION, 40, 47, "ch"),
-			semanticNode(BLOCK, 50, 136),
-			semanticNode(RETURN_STATEMENT, 54, 133),
-			semanticNode(SWITCH_EXPRESSION, 61, 132),
-			semanticNode(IDENTIFIER, 69, 71),
-			semanticNode(CHAR_LITERAL, 85, 88),
-			semanticNode(CHAR_LITERAL, 90, 93),
-			semanticNode(CHAR_LITERAL, 95, 98),
-			semanticNode(BOOLEAN_LITERAL, 102, 106),
-			semanticNode(BOOLEAN_LITERAL, 122, 127));
+			compilationUnit( 0, 139),
+			typeDeclaration(CLASS_DECLARATION, 7, 138, "Test"),
+			methodDeclaration( 21, 136),
+			parameterNode( 40, 47, "ch"),
+			block( 50, 136),
+			returnStatement( 54, 133),
+			switchExpression( 61, 132),
+			identifier( 69, 71),
+			charLiteral( 85, 88),
+			charLiteral( 90, 93),
+			charLiteral( 95, 98),
+			booleanLiteral( 102, 106),
+			booleanLiteral( 122, 127));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -87,19 +78,19 @@ public class SwitchExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 131),
-			semanticNode(CLASS_DECLARATION, 7, 130, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 128),
-			semanticNode(PARAMETER_DECLARATION, 36, 41, "x"),
-			semanticNode(BLOCK, 44, 128),
-			semanticNode(RETURN_STATEMENT, 48, 125),
-			semanticNode(SWITCH_EXPRESSION, 55, 124),
-			semanticNode(IDENTIFIER, 63, 64),
-			semanticNode(INTEGER_LITERAL, 78, 79),
-			semanticNode(INTEGER_LITERAL, 83, 85),
-			semanticNode(INTEGER_LITERAL, 95, 96),
-			semanticNode(INTEGER_LITERAL, 100, 102),
-			semanticNode(INTEGER_LITERAL, 118, 119));
+			compilationUnit( 0, 131),
+			typeDeclaration(CLASS_DECLARATION, 7, 130, "Test"),
+			methodDeclaration( 21, 128),
+			parameterNode( 36, 41, "x"),
+			block( 44, 128),
+			returnStatement( 48, 125),
+			switchExpression( 55, 124),
+			identifier( 63, 64),
+			integerLiteral( 78, 79),
+			integerLiteral( 83, 85),
+			integerLiteral( 95, 96),
+			integerLiteral( 100, 102),
+			integerLiteral( 118, 119));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -126,19 +117,19 @@ public class SwitchExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 146),
-			semanticNode(CLASS_DECLARATION, 7, 145, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 143),
-			semanticNode(PARAMETER_DECLARATION, 39, 44, "x"),
-			semanticNode(BLOCK, 47, 143),
-			semanticNode(RETURN_STATEMENT, 51, 140),
-			semanticNode(SWITCH_EXPRESSION, 58, 139),
-			semanticNode(IDENTIFIER, 66, 67),
-			semanticNode(INTEGER_LITERAL, 81, 82),
-			semanticNode(STRING_LITERAL, 86, 91),
-			semanticNode(INTEGER_LITERAL, 101, 102),
-			semanticNode(STRING_LITERAL, 106, 111),
-			semanticNode(STRING_LITERAL, 127, 134));
+			compilationUnit( 0, 146),
+			typeDeclaration(CLASS_DECLARATION, 7, 145, "Test"),
+			methodDeclaration( 21, 143),
+			parameterNode( 39, 44, "x"),
+			block( 47, 143),
+			returnStatement( 51, 140),
+			switchExpression( 58, 139),
+			identifier( 66, 67),
+			integerLiteral( 81, 82),
+			stringLiteral( 86, 91),
+			integerLiteral( 101, 102),
+			stringLiteral( 106, 111),
+			stringLiteral( 127, 134));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -163,15 +154,15 @@ public class SwitchExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 97),
-			semanticNode(CLASS_DECLARATION, 7, 96, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 94),
-			semanticNode(PARAMETER_DECLARATION, 36, 41, "x"),
-			semanticNode(BLOCK, 44, 94),
-			semanticNode(RETURN_STATEMENT, 48, 91),
-			semanticNode(SWITCH_EXPRESSION, 55, 90),
-			semanticNode(IDENTIFIER, 63, 64),
-			semanticNode(INTEGER_LITERAL, 84, 85));
+			compilationUnit( 0, 97),
+			typeDeclaration(CLASS_DECLARATION, 7, 96, "Test"),
+			methodDeclaration( 21, 94),
+			parameterNode( 36, 41, "x"),
+			block( 44, 94),
+			returnStatement( 48, 91),
+			switchExpression( 55, 90),
+			identifier( 63, 64),
+			integerLiteral( 84, 85));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -197,18 +188,18 @@ public class SwitchExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 133),
-			semanticNode(CLASS_DECLARATION, 7, 132, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 130),
-			semanticNode(PARAMETER_DECLARATION, 39, 48, "b"),
-			semanticNode(BLOCK, 51, 130),
-			semanticNode(RETURN_STATEMENT, 55, 127),
-			semanticNode(SWITCH_EXPRESSION, 62, 126),
-			semanticNode(IDENTIFIER, 70, 71),
-			semanticNode(BOOLEAN_LITERAL, 85, 89),
-			semanticNode(STRING_LITERAL, 93, 98),
-			semanticNode(BOOLEAN_LITERAL, 108, 113),
-			semanticNode(STRING_LITERAL, 117, 121));
+			compilationUnit( 0, 133),
+			typeDeclaration(CLASS_DECLARATION, 7, 132, "Test"),
+			methodDeclaration( 21, 130),
+			parameterNode( 39, 48, "b"),
+			block( 51, 130),
+			returnStatement( 55, 127),
+			switchExpression( 62, 126),
+			identifier( 70, 71),
+			booleanLiteral( 85, 89),
+			stringLiteral( 93, 98),
+			booleanLiteral( 108, 113),
+			stringLiteral( 117, 121));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -238,22 +229,22 @@ public class SwitchExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 176),
-			semanticNode(CLASS_DECLARATION, 7, 175, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 173),
-			semanticNode(PARAMETER_DECLARATION, 36, 41, "x"),
-			semanticNode(PARAMETER_DECLARATION, 43, 48, "y"),
-			semanticNode(BLOCK, 51, 173),
-			semanticNode(RETURN_STATEMENT, 55, 170),
-			semanticNode(SWITCH_EXPRESSION, 62, 169),
-			semanticNode(IDENTIFIER, 70, 71),
-			semanticNode(INTEGER_LITERAL, 85, 86),
-			semanticNode(SWITCH_EXPRESSION, 90, 147),
-			semanticNode(IDENTIFIER, 98, 99),
-			semanticNode(INTEGER_LITERAL, 115, 116),
-			semanticNode(INTEGER_LITERAL, 120, 122),
-			semanticNode(INTEGER_LITERAL, 139, 141),
-			semanticNode(INTEGER_LITERAL, 163, 164));
+			compilationUnit( 0, 176),
+			typeDeclaration(CLASS_DECLARATION, 7, 175, "Test"),
+			methodDeclaration( 21, 173),
+			parameterNode( 36, 41, "x"),
+			parameterNode( 43, 48, "y"),
+			block( 51, 173),
+			returnStatement( 55, 170),
+			switchExpression( 62, 169),
+			identifier( 70, 71),
+			integerLiteral( 85, 86),
+			switchExpression( 90, 147),
+			identifier( 98, 99),
+			integerLiteral( 115, 116),
+			integerLiteral( 120, 122),
+			integerLiteral( 139, 141),
+			integerLiteral( 163, 164));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -279,16 +270,16 @@ public class SwitchExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 122),
-			semanticNode(CLASS_DECLARATION, 7, 121, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 119),
-			semanticNode(PARAMETER_DECLARATION, 37, 42, "x"),
-			semanticNode(BLOCK, 45, 119),
-			semanticNode(SWITCH_EXPRESSION, 62, 115),
-			semanticNode(IDENTIFIER, 70, 71),
-			semanticNode(INTEGER_LITERAL, 85, 86),
-			semanticNode(INTEGER_LITERAL, 90, 93),
-			semanticNode(INTEGER_LITERAL, 109, 110));
+			compilationUnit( 0, 122),
+			typeDeclaration(CLASS_DECLARATION, 7, 121, "Test"),
+			methodDeclaration( 21, 119),
+			parameterNode( 37, 42, "x"),
+			block( 45, 119),
+			switchExpression( 62, 115),
+			identifier( 70, 71),
+			integerLiteral( 85, 86),
+			integerLiteral( 90, 93),
+			integerLiteral( 109, 110));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

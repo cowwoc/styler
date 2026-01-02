@@ -6,31 +6,14 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.ASSIGNMENT_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.BINARY_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.CONSTRUCTOR_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_CONSTANT;
-import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.LAMBDA_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.RECORD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.STRING_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.THIS_EXPRESSION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.RECORD_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
 
 /**
  * Tests for parsing local type declarations (classes, interfaces, enums, records)
@@ -64,13 +47,13 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 79),
-			semanticNode(CLASS_DECLARATION, 0, 78, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 76),
-			semanticNode(BLOCK, 24, 76),
-			semanticNode(CLASS_DECLARATION, 28, 73, "Helper"),
-			semanticNode(METHOD_DECLARATION, 48, 69),
-			semanticNode(BLOCK, 63, 69));
+			compilationUnit( 0, 79),
+			typeDeclaration(CLASS_DECLARATION, 0, 78, "Test"),
+			methodDeclaration( 14, 76),
+			block( 24, 76),
+			typeDeclaration(CLASS_DECLARATION, 28, 73, "Helper"),
+			methodDeclaration( 48, 69),
+			block( 63, 69));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -97,12 +80,12 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 84),
-			semanticNode(CLASS_DECLARATION, 0, 83, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 81),
-			semanticNode(BLOCK, 24, 81),
-			semanticNode(INTERFACE_DECLARATION, 28, 78, "Validator"),
-			semanticNode(METHOD_DECLARATION, 55, 74));
+			compilationUnit( 0, 84),
+			typeDeclaration(CLASS_DECLARATION, 0, 83, "Test"),
+			methodDeclaration( 14, 81),
+			block( 24, 81),
+			typeDeclaration(INTERFACE_DECLARATION, 28, 78, "Validator"),
+			methodDeclaration( 55, 74));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -130,13 +113,13 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 69),
-			semanticNode(CLASS_DECLARATION, 0, 68, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 66),
-			semanticNode(BLOCK, 24, 66),
-			semanticNode(ENUM_DECLARATION, 28, 63, "Status"),
-			semanticNode(ENUM_CONSTANT, 47, 49),
-			semanticNode(ENUM_CONSTANT, 54, 59));
+			compilationUnit( 0, 69),
+			typeDeclaration(CLASS_DECLARATION, 0, 68, "Test"),
+			methodDeclaration( 14, 66),
+			block( 24, 66),
+			typeDeclaration(ENUM_DECLARATION, 28, 63, "Status"),
+			enumConstant( 47, 49),
+			enumConstant( 54, 59));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -162,13 +145,13 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 68),
-			semanticNode(CLASS_DECLARATION, 0, 67, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 65),
-			semanticNode(BLOCK, 24, 65),
-			semanticNode(RECORD_DECLARATION, 28, 62, "Point"),
-			semanticNode(PARAMETER_DECLARATION, 41, 46, "x"),
-			semanticNode(PARAMETER_DECLARATION, 48, 53, "y"));
+			compilationUnit( 0, 68),
+			typeDeclaration(CLASS_DECLARATION, 0, 67, "Test"),
+			methodDeclaration( 14, 65),
+			block( 24, 65),
+			typeDeclaration(RECORD_DECLARATION, 28, 62, "Point"),
+			parameterNode( 41, 46, "x"),
+			parameterNode( 48, 53, "y"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -196,11 +179,11 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 65),
-			semanticNode(CLASS_DECLARATION, 0, 64, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 62),
-			semanticNode(BLOCK, 24, 62),
-			semanticNode(CLASS_DECLARATION, 34, 59, "FinalHelper"));
+			compilationUnit( 0, 65),
+			typeDeclaration(CLASS_DECLARATION, 0, 64, "Test"),
+			methodDeclaration( 14, 62),
+			block( 24, 62),
+			typeDeclaration(CLASS_DECLARATION, 34, 59, "FinalHelper"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -227,12 +210,12 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 98),
-			semanticNode(CLASS_DECLARATION, 0, 97, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 95),
-			semanticNode(BLOCK, 24, 95),
-			semanticNode(CLASS_DECLARATION, 37, 92, "AbstractHelper"),
-			semanticNode(METHOD_DECLARATION, 65, 88));
+			compilationUnit( 0, 98),
+			typeDeclaration(CLASS_DECLARATION, 0, 97, "Test"),
+			methodDeclaration( 14, 95),
+			block( 24, 95),
+			typeDeclaration(CLASS_DECLARATION, 37, 92, "AbstractHelper"),
+			methodDeclaration( 65, 88));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -259,14 +242,14 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 96),
-			semanticNode(CLASS_DECLARATION, 0, 95, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 93),
-			semanticNode(BLOCK, 24, 93),
-			semanticNode(ANNOTATION, 28, 58),
-			semanticNode(QUALIFIED_NAME, 29, 45),
-			semanticNode(STRING_LITERAL, 46, 57),
-			semanticNode(CLASS_DECLARATION, 61, 90, "AnnotatedHelper"));
+			compilationUnit( 0, 96),
+			typeDeclaration(CLASS_DECLARATION, 0, 95, "Test"),
+			methodDeclaration( 14, 93),
+			block( 24, 93),
+			annotation( 28, 58),
+			qualifiedName( 29, 45),
+			stringLiteral( 46, 57),
+			typeDeclaration(CLASS_DECLARATION, 61, 90, "AnnotatedHelper"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -293,15 +276,15 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 92),
-			semanticNode(CLASS_DECLARATION, 0, 91, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 89),
-			semanticNode(BLOCK, 24, 89),
-			semanticNode(ANNOTATION, 28, 39),
-			semanticNode(QUALIFIED_NAME, 29, 39),
-			semanticNode(RECORD_DECLARATION, 42, 86, "DeprecatedPoint"),
-			semanticNode(PARAMETER_DECLARATION, 65, 70, "x"),
-			semanticNode(PARAMETER_DECLARATION, 72, 77, "y"));
+			compilationUnit( 0, 92),
+			typeDeclaration(CLASS_DECLARATION, 0, 91, "Test"),
+			methodDeclaration( 14, 89),
+			block( 24, 89),
+			annotation( 28, 39),
+			qualifiedName( 29, 39),
+			typeDeclaration(RECORD_DECLARATION, 42, 86, "DeprecatedPoint"),
+			parameterNode( 65, 70, "x"),
+			parameterNode( 72, 77, "y"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -329,14 +312,14 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 103),
-			semanticNode(CLASS_DECLARATION, 0, 102, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 100),
-			semanticNode(BLOCK, 24, 100),
-			semanticNode(ANNOTATION, 28, 48),
-			semanticNode(QUALIFIED_NAME, 29, 48),
-			semanticNode(INTERFACE_DECLARATION, 51, 97, "Processor"),
-			semanticNode(METHOD_DECLARATION, 78, 93));
+			compilationUnit( 0, 103),
+			typeDeclaration(CLASS_DECLARATION, 0, 102, "Test"),
+			methodDeclaration( 14, 100),
+			block( 24, 100),
+			annotation( 28, 48),
+			qualifiedName( 29, 48),
+			typeDeclaration(INTERFACE_DECLARATION, 51, 97, "Processor"),
+			methodDeclaration( 78, 93));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -364,11 +347,11 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 52),
-			semanticNode(CLASS_DECLARATION, 0, 51, "Test"),
-			semanticNode(CONSTRUCTOR_DECLARATION, 14, 49),
-			semanticNode(BLOCK, 22, 49),
-			semanticNode(CLASS_DECLARATION, 26, 46, "Helper"));
+			compilationUnit( 0, 52),
+			typeDeclaration(CLASS_DECLARATION, 0, 51, "Test"),
+			constructorDeclaration( 14, 49),
+			block( 22, 49),
+			typeDeclaration(CLASS_DECLARATION, 26, 46, "Helper"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -393,10 +376,10 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 44),
-			semanticNode(CLASS_DECLARATION, 0, 43, "Test"),
-			semanticNode(BLOCK, 14, 41),
-			semanticNode(CLASS_DECLARATION, 18, 38, "Helper"));
+			compilationUnit( 0, 44),
+			typeDeclaration(CLASS_DECLARATION, 0, 43, "Test"),
+			block( 14, 41),
+			typeDeclaration(CLASS_DECLARATION, 18, 38, "Helper"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -422,10 +405,10 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 52),
-			semanticNode(CLASS_DECLARATION, 0, 51, "Test"),
-			semanticNode(BLOCK, 22, 49),
-			semanticNode(CLASS_DECLARATION, 26, 46, "Helper"));
+			compilationUnit( 0, 52),
+			typeDeclaration(CLASS_DECLARATION, 0, 51, "Test"),
+			block( 22, 49),
+			typeDeclaration(CLASS_DECLARATION, 26, 46, "Helper"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -454,16 +437,16 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 101),
-			semanticNode(CLASS_DECLARATION, 0, 100, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 98),
-			semanticNode(BLOCK, 24, 98),
-			semanticNode(QUALIFIED_NAME, 28, 36),
-			semanticNode(LAMBDA_EXPRESSION, 41, 94),
-			semanticNode(BLOCK, 49, 94),
-			semanticNode(RECORD_DECLARATION, 54, 90, "Point"),
-			semanticNode(PARAMETER_DECLARATION, 67, 72, "x"),
-			semanticNode(PARAMETER_DECLARATION, 74, 79, "y"));
+			compilationUnit( 0, 101),
+			typeDeclaration(CLASS_DECLARATION, 0, 100, "Test"),
+			methodDeclaration( 14, 98),
+			block( 24, 98),
+			qualifiedName( 28, 36),
+			lambdaExpression( 41, 94),
+			block( 49, 94),
+			typeDeclaration(RECORD_DECLARATION, 54, 90, "Point"),
+			parameterNode( 67, 72, "x"),
+			parameterNode( 74, 79, "y"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -495,14 +478,14 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 112),
-			semanticNode(CLASS_DECLARATION, 0, 111, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 109),
-			semanticNode(BLOCK, 24, 109),
-			semanticNode(CLASS_DECLARATION, 28, 49, "Helper1"),
-			semanticNode(CLASS_DECLARATION, 52, 73, "Helper2"),
-			semanticNode(RECORD_DECLARATION, 76, 106, "Data"),
-			semanticNode(PARAMETER_DECLARATION, 88, 97, "value"));
+			compilationUnit( 0, 112),
+			typeDeclaration(CLASS_DECLARATION, 0, 111, "Test"),
+			methodDeclaration( 14, 109),
+			block( 24, 109),
+			typeDeclaration(CLASS_DECLARATION, 28, 49, "Helper1"),
+			typeDeclaration(CLASS_DECLARATION, 52, 73, "Helper2"),
+			typeDeclaration(RECORD_DECLARATION, 76, 106, "Data"),
+			parameterNode( 88, 97, "value"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -541,23 +524,23 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 179),
-			semanticNode(CLASS_DECLARATION, 0, 178, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 176),
-			semanticNode(BLOCK, 24, 176),
-			semanticNode(CLASS_DECLARATION, 28, 173, "Helper"),
-			semanticNode(FIELD_DECLARATION, 48, 66),
-			semanticNode(CONSTRUCTOR_DECLARATION, 71, 122),
-			semanticNode(PARAMETER_DECLARATION, 78, 87, "value"),
-			semanticNode(BLOCK, 92, 122),
-			semanticNode(THIS_EXPRESSION, 98, 102),
-			semanticNode(FIELD_ACCESS, 98, 108),
-			semanticNode(IDENTIFIER, 111, 116),
-			semanticNode(ASSIGNMENT_EXPRESSION, 98, 116),
-			semanticNode(METHOD_DECLARATION, 127, 169),
-			semanticNode(BLOCK, 145, 169),
-			semanticNode(RETURN_STATEMENT, 151, 164),
-			semanticNode(IDENTIFIER, 158, 163));
+			compilationUnit( 0, 179),
+			typeDeclaration(CLASS_DECLARATION, 0, 178, "Test"),
+			methodDeclaration( 14, 176),
+			block( 24, 176),
+			typeDeclaration(CLASS_DECLARATION, 28, 173, "Helper"),
+			fieldDeclaration( 48, 66),
+			constructorDeclaration( 71, 122),
+			parameterNode( 78, 87, "value"),
+			block( 92, 122),
+			thisExpression( 98, 102),
+			fieldAccess( 98, 108),
+			identifier( 111, 116),
+			assignmentExpression( 98, 116),
+			methodDeclaration( 127, 169),
+			block( 145, 169),
+			returnStatement( 151, 164),
+			identifier( 158, 163));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -588,14 +571,14 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 115),
-			semanticNode(CLASS_DECLARATION, 0, 114, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 112),
-			semanticNode(BLOCK, 24, 112),
-			semanticNode(INTERFACE_DECLARATION, 28, 109, "Processor"),
-			semanticNode(METHOD_DECLARATION, 55, 70),
-			semanticNode(METHOD_DECLARATION, 75, 105),
-			semanticNode(BLOCK, 99, 105));
+			compilationUnit( 0, 115),
+			typeDeclaration(CLASS_DECLARATION, 0, 114, "Test"),
+			methodDeclaration( 14, 112),
+			block( 24, 112),
+			typeDeclaration(INTERFACE_DECLARATION, 28, 109, "Processor"),
+			methodDeclaration( 55, 70),
+			methodDeclaration( 75, 105),
+			block( 99, 105));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -635,27 +618,27 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 202),
-			semanticNode(CLASS_DECLARATION, 0, 201, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 199),
-			semanticNode(BLOCK, 24, 199),
-			semanticNode(ENUM_DECLARATION, 28, 196, "Status"),
-			semanticNode(ENUM_CONSTANT, 47, 52),
-			semanticNode(INTEGER_LITERAL, 50, 51),
-			semanticNode(ENUM_CONSTANT, 57, 65),
-			semanticNode(INTEGER_LITERAL, 63, 64),
-			semanticNode(FIELD_DECLARATION, 71, 94),
-			semanticNode(CONSTRUCTOR_DECLARATION, 99, 147),
-			semanticNode(PARAMETER_DECLARATION, 106, 114, "code"),
-			semanticNode(BLOCK, 119, 147),
-			semanticNode(THIS_EXPRESSION, 125, 129),
-			semanticNode(FIELD_ACCESS, 125, 134),
-			semanticNode(IDENTIFIER, 137, 141),
-			semanticNode(ASSIGNMENT_EXPRESSION, 125, 141),
-			semanticNode(METHOD_DECLARATION, 152, 192),
-			semanticNode(BLOCK, 169, 192),
-			semanticNode(RETURN_STATEMENT, 175, 187),
-			semanticNode(IDENTIFIER, 182, 186));
+			compilationUnit( 0, 202),
+			typeDeclaration(CLASS_DECLARATION, 0, 201, "Test"),
+			methodDeclaration( 14, 199),
+			block( 24, 199),
+			typeDeclaration(ENUM_DECLARATION, 28, 196, "Status"),
+			enumConstant( 47, 52),
+			integerLiteral( 50, 51),
+			enumConstant( 57, 65),
+			integerLiteral( 63, 64),
+			fieldDeclaration( 71, 94),
+			constructorDeclaration( 99, 147),
+			parameterNode( 106, 114, "code"),
+			block( 119, 147),
+			thisExpression( 125, 129),
+			fieldAccess( 125, 134),
+			identifier( 137, 141),
+			assignmentExpression( 125, 141),
+			methodDeclaration( 152, 192),
+			block( 169, 192),
+			returnStatement( 175, 187),
+			identifier( 182, 186));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -685,26 +668,26 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 136),
-			semanticNode(CLASS_DECLARATION, 0, 135, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 133),
-			semanticNode(BLOCK, 24, 133),
-			semanticNode(RECORD_DECLARATION, 28, 130, "Point"),
-			semanticNode(PARAMETER_DECLARATION, 41, 46, "x"),
-			semanticNode(PARAMETER_DECLARATION, 48, 53, "y"),
-			semanticNode(METHOD_DECLARATION, 62, 126),
-			semanticNode(BLOCK, 83, 126),
-			semanticNode(RETURN_STATEMENT, 89, 121),
-			semanticNode(FIELD_ACCESS, 96, 105),
-			semanticNode(IDENTIFIER, 96, 100),
-			semanticNode(METHOD_INVOCATION, 96, 120),
-			semanticNode(BINARY_EXPRESSION, 106, 119),
-			semanticNode(BINARY_EXPRESSION, 106, 111),
-			semanticNode(IDENTIFIER, 106, 107),
-			semanticNode(IDENTIFIER, 110, 111),
-			semanticNode(BINARY_EXPRESSION, 114, 119),
-			semanticNode(IDENTIFIER, 114, 115),
-			semanticNode(IDENTIFIER, 118, 119));
+			compilationUnit( 0, 136),
+			typeDeclaration(CLASS_DECLARATION, 0, 135, "Test"),
+			methodDeclaration( 14, 133),
+			block( 24, 133),
+			typeDeclaration(RECORD_DECLARATION, 28, 130, "Point"),
+			parameterNode( 41, 46, "x"),
+			parameterNode( 48, 53, "y"),
+			methodDeclaration( 62, 126),
+			block( 83, 126),
+			returnStatement( 89, 121),
+			fieldAccess( 96, 105),
+			identifier( 96, 100),
+			methodInvocation( 96, 120),
+			binaryExpression( 106, 119),
+			binaryExpression( 106, 111),
+			identifier( 106, 107),
+			identifier( 110, 111),
+			binaryExpression( 114, 119),
+			identifier( 114, 115),
+			identifier( 118, 119));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -733,12 +716,12 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 78),
-			semanticNode(CLASS_DECLARATION, 0, 77, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 75),
-			semanticNode(BLOCK, 24, 75),
-			semanticNode(CLASS_DECLARATION, 28, 72, "Outer"),
-			semanticNode(CLASS_DECLARATION, 47, 68, "Inner"));
+			compilationUnit( 0, 78),
+			typeDeclaration(CLASS_DECLARATION, 0, 77, "Test"),
+			methodDeclaration( 14, 75),
+			block( 24, 75),
+			typeDeclaration(CLASS_DECLARATION, 28, 72, "Outer"),
+			typeDeclaration(CLASS_DECLARATION, 47, 68, "Inner"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -769,13 +752,13 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 89),
-			semanticNode(CLASS_DECLARATION, 0, 88, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 86),
-			semanticNode(BLOCK, 24, 86),
-			semanticNode(CLASS_DECLARATION, 28, 46, "Base"),
-			semanticNode(CLASS_DECLARATION, 49, 83, "Derived"),
-			semanticNode(QUALIFIED_NAME, 71, 75));
+			compilationUnit( 0, 89),
+			typeDeclaration(CLASS_DECLARATION, 0, 88, "Test"),
+			methodDeclaration( 14, 86),
+			block( 24, 86),
+			typeDeclaration(CLASS_DECLARATION, 28, 46, "Base"),
+			typeDeclaration(CLASS_DECLARATION, 49, 83, "Derived"),
+			qualifiedName( 71, 75));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -808,16 +791,16 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 149),
-			semanticNode(CLASS_DECLARATION, 0, 148, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 146),
-			semanticNode(BLOCK, 24, 146),
-			semanticNode(INTERFACE_DECLARATION, 28, 69, "Runnable"),
-			semanticNode(METHOD_DECLARATION, 54, 65),
-			semanticNode(CLASS_DECLARATION, 72, 143, "Worker"),
-			semanticNode(QUALIFIED_NAME, 96, 104),
-			semanticNode(METHOD_DECLARATION, 112, 139),
-			semanticNode(BLOCK, 133, 139));
+			compilationUnit( 0, 149),
+			typeDeclaration(CLASS_DECLARATION, 0, 148, "Test"),
+			methodDeclaration( 14, 146),
+			block( 24, 146),
+			typeDeclaration(INTERFACE_DECLARATION, 28, 69, "Runnable"),
+			methodDeclaration( 54, 65),
+			typeDeclaration(CLASS_DECLARATION, 72, 143, "Worker"),
+			qualifiedName( 96, 104),
+			methodDeclaration( 112, 139),
+			block( 133, 139));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -851,20 +834,20 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 191),
-			semanticNode(CLASS_DECLARATION, 0, 190, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 188),
-			semanticNode(BLOCK, 24, 188),
-			semanticNode(INTERFACE_DECLARATION, 28, 74, "Printable"),
-			semanticNode(METHOD_DECLARATION, 55, 70),
-			semanticNode(RECORD_DECLARATION, 77, 185, "Message"),
-			semanticNode(QUALIFIED_NAME, 92, 98),
-			semanticNode(PARAMETER_DECLARATION, 92, 103, "text"),
-			semanticNode(QUALIFIED_NAME, 116, 125),
-			semanticNode(METHOD_DECLARATION, 133, 181),
-			semanticNode(BLOCK, 158, 181),
-			semanticNode(RETURN_STATEMENT, 164, 176),
-			semanticNode(IDENTIFIER, 171, 175));
+			compilationUnit( 0, 191),
+			typeDeclaration(CLASS_DECLARATION, 0, 190, "Test"),
+			methodDeclaration( 14, 188),
+			block( 24, 188),
+			typeDeclaration(INTERFACE_DECLARATION, 28, 74, "Printable"),
+			methodDeclaration( 55, 70),
+			typeDeclaration(RECORD_DECLARATION, 77, 185, "Message"),
+			qualifiedName( 92, 98),
+			parameterNode( 92, 103, "text"),
+			qualifiedName( 116, 125),
+			methodDeclaration( 133, 181),
+			block( 158, 181),
+			returnStatement( 164, 176),
+			identifier( 171, 175));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -900,18 +883,18 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 192),
-			semanticNode(CLASS_DECLARATION, 0, 191, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 189),
-			semanticNode(BLOCK, 24, 189),
-			semanticNode(CLASS_DECLARATION, 37, 55, "Base"),
-			semanticNode(INTERFACE_DECLARATION, 58, 99, "Runnable"),
-			semanticNode(METHOD_DECLARATION, 84, 95),
-			semanticNode(CLASS_DECLARATION, 102, 186, "Worker"),
-			semanticNode(QUALIFIED_NAME, 123, 127),
-			semanticNode(QUALIFIED_NAME, 139, 147),
-			semanticNode(METHOD_DECLARATION, 155, 182),
-			semanticNode(BLOCK, 176, 182));
+			compilationUnit( 0, 192),
+			typeDeclaration(CLASS_DECLARATION, 0, 191, "Test"),
+			methodDeclaration( 14, 189),
+			block( 24, 189),
+			typeDeclaration(CLASS_DECLARATION, 37, 55, "Base"),
+			typeDeclaration(INTERFACE_DECLARATION, 58, 99, "Runnable"),
+			methodDeclaration( 84, 95),
+			typeDeclaration(CLASS_DECLARATION, 102, 186, "Worker"),
+			qualifiedName( 123, 127),
+			qualifiedName( 139, 147),
+			methodDeclaration( 155, 182),
+			block( 176, 182));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -940,13 +923,13 @@ public final class LocalTypeDeclarationParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 98),
-			semanticNode(CLASS_DECLARATION, 0, 97, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 95),
-			semanticNode(BLOCK, 24, 95),
-			semanticNode(INTERFACE_DECLARATION, 28, 50, "Base"),
-			semanticNode(INTERFACE_DECLARATION, 53, 92, "Extended"),
-			semanticNode(QUALIFIED_NAME, 80, 84));
+			compilationUnit( 0, 98),
+			typeDeclaration(CLASS_DECLARATION, 0, 97, "Test"),
+			methodDeclaration( 14, 95),
+			block( 24, 95),
+			typeDeclaration(INTERFACE_DECLARATION, 28, 50, "Base"),
+			typeDeclaration(INTERFACE_DECLARATION, 53, 92, "Extended"),
+			qualifiedName( 80, 84));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}

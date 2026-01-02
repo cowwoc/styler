@@ -1,5 +1,61 @@
 # Changelog
 
+## 2026-01-02
+
+### Collapse Import Node Types (AST Simplification) ✅
+
+**Task**: `collapse-import-node-types`
+
+**Problem Solved**:
+- AST treated static imports as distinct node type (`STATIC_IMPORT_DECLARATION`) separate from regular imports
+- Consumer code had to query two node types and merge results, adding complexity
+- Semantically incorrect - "static" is a modifier, not a different construct
+
+**Solution Implemented**:
+- Added `boolean isStatic` component to `ImportAttribute` record
+- Updated Parser to pass `isStatic` flag when creating import nodes
+- Simplified `ImportExtractor` to use single `findNodesByType()` call
+- Removed `STATIC_IMPORT_DECLARATION` from `NodeType` enum
+- Removed `allocateStaticImportDeclaration()` from `NodeArena`
+
+**Files Modified**:
+- `ast/core/src/main/java/.../ImportAttribute.java` - Added `isStatic` component
+- `ast/core/src/main/java/.../NodeType.java` - Removed `STATIC_IMPORT_DECLARATION`
+- `ast/core/src/main/java/.../NodeArena.java` - Removed static import allocation method
+- `parser/src/main/java/.../Parser.java` - Use single allocation for all imports
+- `formatter/src/main/java/.../ImportExtractor.java` - Single query approach
+- `formatter/src/main/java/.../ContextDetector.java` - Removed switch case
+
+**Test Updates**:
+- `ClassParserTest.java`, `ModuleImportParserTest.java` - Updated assertions
+- `ParserImportAttributeTest.java` - Converted to full AST comparison with `isStatic` verification
+- `ParserPackageAttributeTest.java` - Converted to full AST comparison
+- `ParserTypeAttributeTest.java` - Converted to full AST comparison
+- `PackageAnnotationParserTest.java` - Converted to full AST comparison
+- `NodeArenaAttributeTest.java` - Updated for new attribute structure
+
+**Test Infrastructure Improvements**:
+- `ParserTestUtils.SemanticNode` - Refactored with compile-time safety:
+  - Changed from public record to final class with private constructor
+  - Removed generic `node(NodeType, int, int)` method that allowed passing attribute-requiring types
+  - Added 72 type-specific factory methods for all non-attribute NodeTypes:
+    - `compilationUnit()`, `methodDeclaration()`, `block()`, `returnStatement()`, etc.
+    - `importNode()`, `moduleImportNode()`, `packageNode()`, `typeDeclaration()`, `parameterNode()`
+  - `importNode()` requires `isStatic` parameter (prevents missing static flag)
+  - Factory methods enforce compile-time correctness (cannot pass wrong NodeType)
+- Updated 35 test files to use type-safe factory methods instead of generic `node()` calls
+
+**Benefits**:
+- Single query returns all imports in position order
+- Cleaner semantic model (static is a modifier)
+- Simpler consumer code
+
+**Quality**:
+- All tests passing
+- Zero Checkstyle/PMD violations
+
+---
+
 ## 2026-01-01
 
 ### Verify JEP 513 Flexible Constructor Bodies Support ✅

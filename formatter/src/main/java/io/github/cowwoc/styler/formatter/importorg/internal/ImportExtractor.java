@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.formatter.importorg.internal;
 
+import io.github.cowwoc.styler.ast.core.ImportAttribute;
 import io.github.cowwoc.styler.ast.core.ModuleImportAttribute;
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
@@ -51,9 +52,8 @@ public final class ImportExtractor
 		AstPositionIndex positionIndex = context.positionIndex();
 		NodeArena arena = context.arena();
 
-		// Process regular, static, and module import nodes
-		processImportNodes(context, positionIndex, arena, NodeType.IMPORT_DECLARATION, false, false, imports);
-		processImportNodes(context, positionIndex, arena, NodeType.STATIC_IMPORT_DECLARATION, true, false, imports);
+		// Process regular and static import nodes (both use IMPORT_DECLARATION with isStatic attribute)
+		processImportNodes(context, positionIndex, arena, imports);
 		processModuleImportNodes(context, positionIndex, arena, imports);
 
 		// Sort by source position so first/last elements give import section bounds
@@ -62,20 +62,20 @@ public final class ImportExtractor
 	}
 
 	/**
-	 * Processes import nodes of a specific type and adds them to the imports list.
+	 * Processes import nodes and adds them to the imports list.
+	 * <p>
+	 * Both regular and static imports use the same {@code IMPORT_DECLARATION} node type,
+	 * with the static flag stored in the {@code ImportAttribute}.
 	 *
 	 * @param context       the transformation context
 	 * @param positionIndex the position index for AST queries
 	 * @param arena         the node arena
-	 * @param nodeType      the node type to process
-	 * @param isStatic      whether these are static imports
-	 * @param isModule      whether these are module imports
 	 * @param imports       the list to add declarations to
 	 */
 	private static void processImportNodes(TransformationContext context, AstPositionIndex positionIndex,
-		NodeArena arena, NodeType nodeType, boolean isStatic, boolean isModule, List<ImportDeclaration> imports)
+		NodeArena arena, List<ImportDeclaration> imports)
 	{
-		List<NodeIndex> importNodes = positionIndex.findNodesByType(nodeType);
+		List<NodeIndex> importNodes = positionIndex.findNodesByType(NodeType.IMPORT_DECLARATION);
 
 		for (NodeIndex node : importNodes)
 		{
@@ -85,15 +85,15 @@ public final class ImportExtractor
 			// -1 because endPosition is inclusive, pointing to the semicolon
 			int endPosition = arena.getEnd(node) - 1;
 
-			// Get qualified name from the ImportAttribute stored in the AST node
-			String qualifiedName = arena.getImportAttribute(node).qualifiedName();
+			// Get qualified name and static flag from the ImportAttribute stored in the AST node
+			ImportAttribute attribute = arena.getImportAttribute(node);
 
 			int lineNumber = context.getLineNumber(startPosition);
 
 			ImportDeclaration importDecl = new ImportDeclaration(
-				qualifiedName,
-				isStatic,
-				isModule,
+				attribute.qualifiedName(),
+				attribute.isStatic(),
+				false,
 				startPosition,
 				endPosition,
 				lineNumber);
@@ -158,7 +158,6 @@ public final class ImportExtractor
 
 		int endPosition = 0;
 		endPosition = updateEndPosition(positionIndex, arena, NodeType.IMPORT_DECLARATION, endPosition);
-		endPosition = updateEndPosition(positionIndex, arena, NodeType.STATIC_IMPORT_DECLARATION, endPosition);
 		endPosition = updateEndPosition(positionIndex, arena, NodeType.MODULE_IMPORT_DECLARATION, endPosition);
 
 		return endPosition;

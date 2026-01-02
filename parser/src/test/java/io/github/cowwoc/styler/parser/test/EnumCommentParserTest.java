@@ -6,21 +6,12 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK_COMMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.DOUBLE_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_CONSTANT;
-import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.JAVADOC_COMMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.LINE_COMMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
 
 /**
  * Tests for parsing enums with comments in constant lists.
@@ -43,10 +34,10 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 45),
-			semanticNode(ENUM_DECLARATION, 7, 44, "Color"),
-			semanticNode(LINE_COMMENT, 21, 37),
-			semanticNode(ENUM_CONSTANT, 39, 42));
+			compilationUnit( 0, 45),
+			typeDeclaration(ENUM_DECLARATION, 7, 44, "Color"),
+			lineComment( 21, 37),
+			enumConstant( 39, 42));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -67,10 +58,10 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 52),
-			semanticNode(ENUM_DECLARATION, 7, 51, "Status"),
-			semanticNode(BLOCK_COMMENT, 22, 41),
-			semanticNode(ENUM_CONSTANT, 43, 49));
+			compilationUnit( 0, 52),
+			typeDeclaration(ENUM_DECLARATION, 7, 51, "Status"),
+			blockComment( 22, 41),
+			enumConstant( 43, 49));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -93,10 +84,10 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 65),
-			semanticNode(ENUM_DECLARATION, 7, 64, "Priority"),
-			semanticNode(JAVADOC_COMMENT, 24, 56),
-			semanticNode(ENUM_CONSTANT, 58, 62));
+			compilationUnit( 0, 65),
+			typeDeclaration(ENUM_DECLARATION, 7, 64, "Priority"),
+			javadocComment( 24, 56),
+			enumConstant( 58, 62));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -119,12 +110,12 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 73),
-			semanticNode(ENUM_DECLARATION, 7, 72, "Direction"),
-			semanticNode(ENUM_CONSTANT, 25, 30),
-			semanticNode(LINE_COMMENT, 33, 57),
-			semanticNode(ENUM_CONSTANT, 59, 63),
-			semanticNode(ENUM_CONSTANT, 66, 70));
+			compilationUnit( 0, 73),
+			typeDeclaration(ENUM_DECLARATION, 7, 72, "Direction"),
+			enumConstant( 25, 30),
+			lineComment( 33, 57),
+			enumConstant( 59, 63),
+			enumConstant( 66, 70));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -147,12 +138,12 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 66),
-			semanticNode(ENUM_DECLARATION, 7, 65, "Season"),
-			semanticNode(ENUM_CONSTANT, 22, 28),
-			semanticNode(BLOCK_COMMENT, 31, 48),
-			semanticNode(ENUM_CONSTANT, 50, 56),
-			semanticNode(ENUM_CONSTANT, 59, 63));
+			compilationUnit( 0, 66),
+			typeDeclaration(ENUM_DECLARATION, 7, 65, "Season"),
+			enumConstant( 22, 28),
+			blockComment( 31, 48),
+			enumConstant( 50, 56),
+			enumConstant( 59, 63));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -175,12 +166,12 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 73),
-			semanticNode(ENUM_DECLARATION, 7, 72, "Level"),
-			semanticNode(LINE_COMMENT, 21, 37),
-			semanticNode(LINE_COMMENT, 39, 56),
-			semanticNode(ENUM_CONSTANT, 58, 61),
-			semanticNode(ENUM_CONSTANT, 64, 70));
+			compilationUnit( 0, 73),
+			typeDeclaration(ENUM_DECLARATION, 7, 72, "Level"),
+			lineComment( 21, 37),
+			lineComment( 39, 56),
+			enumConstant( 58, 61),
+			enumConstant( 64, 70));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -204,13 +195,13 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 91),
-			semanticNode(ENUM_DECLARATION, 7, 90, "Type"),
-			semanticNode(LINE_COMMENT, 20, 35),
-			semanticNode(JAVADOC_COMMENT, 37, 51),
-			semanticNode(ENUM_CONSTANT, 53, 58),
-			semanticNode(BLOCK_COMMENT, 61, 80),
-			semanticNode(ENUM_CONSTANT, 82, 88));
+			compilationUnit( 0, 91),
+			typeDeclaration(ENUM_DECLARATION, 7, 90, "Type"),
+			lineComment( 20, 35),
+			javadocComment( 37, 51),
+			enumConstant( 53, 58),
+			blockComment( 61, 80),
+			enumConstant( 82, 88));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -232,11 +223,11 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 49),
-			semanticNode(ENUM_DECLARATION, 7, 48, "Item"),
-			semanticNode(ENUM_CONSTANT, 20, 23),
-			semanticNode(ENUM_CONSTANT, 26, 29),
-			semanticNode(LINE_COMMENT, 31, 43));
+			compilationUnit( 0, 49),
+			typeDeclaration(ENUM_DECLARATION, 7, 48, "Item"),
+			enumConstant( 20, 23),
+			enumConstant( 26, 29),
+			lineComment( 31, 43));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -257,11 +248,11 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 47),
-			semanticNode(ENUM_DECLARATION, 7, 46, "Flag"),
-			semanticNode(ENUM_CONSTANT, 20, 23),
-			semanticNode(ENUM_CONSTANT, 26, 28),
-			semanticNode(LINE_COMMENT, 29, 44));
+			compilationUnit( 0, 47),
+			typeDeclaration(ENUM_DECLARATION, 7, 46, "Flag"),
+			enumConstant( 20, 23),
+			enumConstant( 26, 28),
+			lineComment( 29, 44));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -288,17 +279,17 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 120),
-			semanticNode(ENUM_DECLARATION, 7, 119, "Operation"),
-			semanticNode(LINE_COMMENT, 25, 49),
-			semanticNode(ENUM_CONSTANT, 51, 54),
-			semanticNode(ENUM_CONSTANT, 57, 65),
-			semanticNode(METHOD_DECLARATION, 69, 117),
-			semanticNode(PARAMETER_DECLARATION, 86, 91, "a"),
-			semanticNode(PARAMETER_DECLARATION, 93, 98, "b"),
-			semanticNode(BLOCK, 101, 117),
-			semanticNode(RETURN_STATEMENT, 105, 114),
-			semanticNode(INTEGER_LITERAL, 112, 113));
+			compilationUnit( 0, 120),
+			typeDeclaration(ENUM_DECLARATION, 7, 119, "Operation"),
+			lineComment( 25, 49),
+			enumConstant( 51, 54),
+			enumConstant( 57, 65),
+			methodDeclaration( 69, 117),
+			parameterNode( 86, 91, "a"),
+			parameterNode( 93, 98, "b"),
+			block( 101, 117),
+			returnStatement( 105, 114),
+			integerLiteral( 112, 113));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -318,9 +309,9 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 37),
-			semanticNode(ENUM_DECLARATION, 7, 36, "Empty"),
-			semanticNode(LINE_COMMENT, 21, 34));
+			compilationUnit( 0, 37),
+			typeDeclaration(ENUM_DECLARATION, 7, 36, "Empty"),
+			lineComment( 21, 34));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -345,14 +336,14 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 99),
-			semanticNode(ENUM_DECLARATION, 7, 98, "Color"),
-			semanticNode(JAVADOC_COMMENT, 21, 37),
-			semanticNode(ENUM_CONSTANT, 39, 42),
-			semanticNode(JAVADOC_COMMENT, 45, 63),
-			semanticNode(ENUM_CONSTANT, 65, 70),
-			semanticNode(JAVADOC_COMMENT, 73, 90),
-			semanticNode(ENUM_CONSTANT, 92, 96));
+			compilationUnit( 0, 99),
+			typeDeclaration(ENUM_DECLARATION, 7, 98, "Color"),
+			javadocComment( 21, 37),
+			enumConstant( 39, 42),
+			javadocComment( 45, 63),
+			enumConstant( 65, 70),
+			javadocComment( 73, 90),
+			enumConstant( 92, 96));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -376,11 +367,11 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 82),
-			semanticNode(CLASS_DECLARATION, 7, 81, "Outer"),
-			semanticNode(ENUM_DECLARATION, 29, 79, "Inner"),
-			semanticNode(LINE_COMMENT, 45, 68),
-			semanticNode(ENUM_CONSTANT, 71, 76));
+			compilationUnit( 0, 82),
+			typeDeclaration(CLASS_DECLARATION, 7, 81, "Outer"),
+			typeDeclaration(ENUM_DECLARATION, 29, 79, "Inner"),
+			lineComment( 45, 68),
+			enumConstant( 71, 76));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -403,12 +394,12 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 51),
-			semanticNode(ENUM_DECLARATION, 7, 50, "Sample"),
-			semanticNode(LINE_COMMENT, 22, 30),
-			semanticNode(ENUM_CONSTANT, 32, 33),
-			semanticNode(LINE_COMMENT, 36, 45),
-			semanticNode(ENUM_CONSTANT, 47, 48));
+			compilationUnit( 0, 51),
+			typeDeclaration(ENUM_DECLARATION, 7, 50, "Sample"),
+			lineComment( 22, 30),
+			enumConstant( 32, 33),
+			lineComment( 36, 45),
+			enumConstant( 47, 48));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -433,17 +424,17 @@ public class EnumCommentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 118),
-			semanticNode(ENUM_DECLARATION, 7, 117, "Planet"),
-			semanticNode(LINE_COMMENT, 22, 39),
-			semanticNode(ENUM_CONSTANT, 41, 53),
-			semanticNode(DOUBLE_LITERAL, 49, 52),
-			semanticNode(BLOCK_COMMENT, 56, 71),
-			semanticNode(ENUM_CONSTANT, 73, 84),
-			semanticNode(DOUBLE_LITERAL, 79, 83),
-			semanticNode(JAVADOC_COMMENT, 87, 104),
-			semanticNode(ENUM_CONSTANT, 106, 115),
-			semanticNode(DOUBLE_LITERAL, 111, 114));
+			compilationUnit( 0, 118),
+			typeDeclaration(ENUM_DECLARATION, 7, 117, "Planet"),
+			lineComment( 22, 39),
+			enumConstant( 41, 53),
+			doubleLiteral( 49, 52),
+			blockComment( 56, 71),
+			enumConstant( 73, 84),
+			doubleLiteral( 79, 83),
+			javadocComment( 87, 104),
+			enumConstant( 106, 115),
+			doubleLiteral( 111, 114));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}

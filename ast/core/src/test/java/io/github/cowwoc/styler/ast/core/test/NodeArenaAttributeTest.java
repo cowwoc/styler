@@ -27,11 +27,12 @@ public class NodeArenaAttributeTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			ImportAttribute attribute = new ImportAttribute("java.util.List");
+			ImportAttribute attribute = new ImportAttribute("java.util.List", false);
 			NodeIndex index = arena.allocateImportDeclaration(0, 25, attribute);
 
 			ImportAttribute retrieved = arena.getImportAttribute(index);
 			requireThat(retrieved.qualifiedName(), "qualifiedName").isEqualTo("java.util.List");
+			requireThat(retrieved.isStatic(), "isStatic").isFalse();
 		}
 	}
 
@@ -56,8 +57,8 @@ public class NodeArenaAttributeTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			ImportAttribute attr1 = new ImportAttribute("java.util.List");
-			ImportAttribute attr2 = new ImportAttribute("java.util.Map");
+			ImportAttribute attr1 = new ImportAttribute("java.util.List", false);
+			ImportAttribute attr2 = new ImportAttribute("java.util.Map", true);
 
 			NodeIndex index1 = arena.allocateImportDeclaration(0, 25, attr1);
 			NodeIndex index2 = arena.allocateImportDeclaration(26, 50, attr2);
@@ -78,7 +79,7 @@ public class NodeArenaAttributeTest
 	{
 		try (NodeArena arena = new NodeArena(2))
 		{
-			ImportAttribute attribute = new ImportAttribute("java.util.List");
+			ImportAttribute attribute = new ImportAttribute("java.util.List", false);
 			NodeIndex index = arena.allocateImportDeclaration(0, 25, attribute);
 
 			// Allocate enough nodes to trigger growth
@@ -102,7 +103,7 @@ public class NodeArenaAttributeTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			ImportAttribute attribute = new ImportAttribute("java.util.List");
+			ImportAttribute attribute = new ImportAttribute("java.util.List", false);
 			NodeIndex importNode = arena.allocateImportDeclaration(0, 25, attribute);
 
 			// Should successfully retrieve attribute from import node
@@ -119,7 +120,7 @@ public class NodeArenaAttributeTest
 	{
 		try (NodeArena arena = new NodeArena())
 		{
-			ImportAttribute attribute = new ImportAttribute("java.util.List");
+			ImportAttribute attribute = new ImportAttribute("java.util.List", false);
 			NodeIndex index = arena.allocateImportDeclaration(0, 25, attribute);
 
 			// Requesting PackageAttribute on an import node should throw

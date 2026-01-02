@@ -6,32 +6,12 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.ASSIGNMENT_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.BINARY_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CATCH_CLAUSE;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.CONSTRUCTOR_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.IF_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.LAMBDA_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.RECORD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.STRING_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.SUPER_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.SWITCH_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.THIS_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.THROW_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.TRY_STATEMENT;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.RECORD_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
 
 /**
  * Tests for parsing JEP 513 - Flexible Constructor Bodies.
@@ -68,22 +48,22 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 143),
-			semanticNode(CLASS_DECLARATION, 7, 142, "Child"),
-			semanticNode(QUALIFIED_NAME, 27, 33),
-			semanticNode(CONSTRUCTOR_DECLARATION, 37, 140),
-			semanticNode(PARAMETER_DECLARATION, 50, 59, "value"),
-			semanticNode(BLOCK, 62, 140),
-			semanticNode(IF_STATEMENT, 66, 121),
-			semanticNode(BINARY_EXPRESSION, 70, 79),
-			semanticNode(IDENTIFIER, 70, 75),
-			semanticNode(INTEGER_LITERAL, 78, 79),
-			semanticNode(THROW_STATEMENT, 84, 121),
-			semanticNode(OBJECT_CREATION, 90, 120),
-			semanticNode(QUALIFIED_NAME, 94, 118),
-			semanticNode(METHOD_INVOCATION, 124, 136),
-			semanticNode(SUPER_EXPRESSION, 124, 129),
-			semanticNode(IDENTIFIER, 130, 135));
+			compilationUnit( 0, 143),
+			typeDeclaration(CLASS_DECLARATION, 7, 142, "Child"),
+			qualifiedName( 27, 33),
+			constructorDeclaration( 37, 140),
+			parameterNode( 50, 59, "value"),
+			block( 62, 140),
+			ifStatement( 66, 121),
+			binaryExpression( 70, 79),
+			identifier( 70, 75),
+			integerLiteral( 78, 79),
+			throwStatement( 84, 121),
+			objectCreation( 90, 120),
+			qualifiedName( 94, 118),
+			methodInvocation( 124, 136),
+			superExpression( 124, 129),
+			identifier( 130, 135));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -110,23 +90,23 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 119),
-			semanticNode(CLASS_DECLARATION, 7, 118, "Point"),
-			semanticNode(QUALIFIED_NAME, 27, 31),
-			semanticNode(CONSTRUCTOR_DECLARATION, 35, 116),
-			semanticNode(PARAMETER_DECLARATION, 48, 53, "a"),
-			semanticNode(PARAMETER_DECLARATION, 55, 60, "b"),
-			semanticNode(BLOCK, 63, 116),
-			semanticNode(BINARY_EXPRESSION, 75, 80),
-			semanticNode(IDENTIFIER, 75, 76),
-			semanticNode(INTEGER_LITERAL, 79, 80),
-			semanticNode(BINARY_EXPRESSION, 92, 97),
-			semanticNode(IDENTIFIER, 92, 93),
-			semanticNode(INTEGER_LITERAL, 96, 97),
-			semanticNode(METHOD_INVOCATION, 101, 112),
-			semanticNode(SUPER_EXPRESSION, 101, 106),
-			semanticNode(IDENTIFIER, 107, 108),
-			semanticNode(IDENTIFIER, 110, 111));
+			compilationUnit( 0, 119),
+			typeDeclaration(CLASS_DECLARATION, 7, 118, "Point"),
+			qualifiedName( 27, 31),
+			constructorDeclaration( 35, 116),
+			parameterNode( 48, 53, "a"),
+			parameterNode( 55, 60, "b"),
+			block( 63, 116),
+			binaryExpression( 75, 80),
+			identifier( 75, 76),
+			integerLiteral( 79, 80),
+			binaryExpression( 92, 97),
+			identifier( 92, 93),
+			integerLiteral( 96, 97),
+			methodInvocation( 101, 112),
+			superExpression( 101, 106),
+			identifier( 107, 108),
+			identifier( 110, 111));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -152,20 +132,20 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 103),
-			semanticNode(CLASS_DECLARATION, 7, 102, "Data"),
-			semanticNode(QUALIFIED_NAME, 26, 30),
-			semanticNode(CONSTRUCTOR_DECLARATION, 34, 100),
-			semanticNode(PARAMETER_DECLARATION, 46, 58, "value"),
-			semanticNode(QUALIFIED_NAME, 46, 52),
-			semanticNode(BLOCK, 61, 100),
-			semanticNode(METHOD_INVOCATION, 65, 80),
-			semanticNode(QUALIFIED_NAME, 65, 73),
-			semanticNode(IDENTIFIER, 65, 73),
-			semanticNode(IDENTIFIER, 74, 79),
-			semanticNode(METHOD_INVOCATION, 84, 96),
-			semanticNode(SUPER_EXPRESSION, 84, 89),
-			semanticNode(IDENTIFIER, 90, 95));
+			compilationUnit( 0, 103),
+			typeDeclaration(CLASS_DECLARATION, 7, 102, "Data"),
+			qualifiedName( 26, 30),
+			constructorDeclaration( 34, 100),
+			parameterNode( 46, 58, "value"),
+			qualifiedName( 46, 52),
+			block( 61, 100),
+			methodInvocation( 65, 80),
+			qualifiedName( 65, 73),
+			identifier( 65, 73),
+			identifier( 74, 79),
+			methodInvocation( 84, 96),
+			superExpression( 84, 89),
+			identifier( 90, 95));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -199,27 +179,27 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 168),
-			semanticNode(CLASS_DECLARATION, 7, 167, "Wrapper"),
-			semanticNode(QUALIFIED_NAME, 29, 33),
-			semanticNode(CONSTRUCTOR_DECLARATION, 37, 165),
-			semanticNode(PARAMETER_DECLARATION, 52, 61, "value"),
-			semanticNode(BLOCK, 64, 165),
-			semanticNode(IF_STATEMENT, 84, 143),
-			semanticNode(BINARY_EXPRESSION, 88, 97),
-			semanticNode(IDENTIFIER, 88, 93),
-			semanticNode(INTEGER_LITERAL, 96, 97),
-			semanticNode(ASSIGNMENT_EXPRESSION, 102, 114),
-			semanticNode(QUALIFIED_NAME, 102, 110),
-			semanticNode(IDENTIFIER, 102, 110),
-			semanticNode(INTEGER_LITERAL, 113, 114),
-			semanticNode(ASSIGNMENT_EXPRESSION, 126, 142),
-			semanticNode(QUALIFIED_NAME, 126, 134),
-			semanticNode(IDENTIFIER, 126, 134),
-			semanticNode(IDENTIFIER, 137, 142),
-			semanticNode(METHOD_INVOCATION, 146, 161),
-			semanticNode(SUPER_EXPRESSION, 146, 151),
-			semanticNode(IDENTIFIER, 152, 160));
+			compilationUnit( 0, 168),
+			typeDeclaration(CLASS_DECLARATION, 7, 167, "Wrapper"),
+			qualifiedName( 29, 33),
+			constructorDeclaration( 37, 165),
+			parameterNode( 52, 61, "value"),
+			block( 64, 165),
+			ifStatement( 84, 143),
+			binaryExpression( 88, 97),
+			identifier( 88, 93),
+			integerLiteral( 96, 97),
+			assignmentExpression( 102, 114),
+			qualifiedName( 102, 110),
+			identifier( 102, 110),
+			integerLiteral( 113, 114),
+			assignmentExpression( 126, 142),
+			qualifiedName( 126, 134),
+			identifier( 126, 134),
+			identifier( 137, 142),
+			methodInvocation( 146, 161),
+			superExpression( 146, 151),
+			identifier( 152, 160));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -253,33 +233,33 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 205),
-			semanticNode(CLASS_DECLARATION, 7, 204, "Parser"),
-			semanticNode(QUALIFIED_NAME, 28, 32),
-			semanticNode(CONSTRUCTOR_DECLARATION, 36, 202),
-			semanticNode(PARAMETER_DECLARATION, 50, 61, "text"),
-			semanticNode(QUALIFIED_NAME, 50, 56),
-			semanticNode(BLOCK, 64, 202),
-			semanticNode(TRY_STATEMENT, 81, 183),
-			semanticNode(BLOCK, 87, 127),
-			semanticNode(ASSIGNMENT_EXPRESSION, 92, 122),
-			semanticNode(QUALIFIED_NAME, 92, 97),
-			semanticNode(IDENTIFIER, 92, 97),
-			semanticNode(METHOD_INVOCATION, 100, 122),
-			semanticNode(FIELD_ACCESS, 100, 116),
-			semanticNode(IDENTIFIER, 100, 107),
-			semanticNode(IDENTIFIER, 117, 121),
-			semanticNode(CATCH_CLAUSE, 130, 183),
-			semanticNode(PARAMETER_DECLARATION, 137, 160, "e"),
-			semanticNode(QUALIFIED_NAME, 137, 158),
-			semanticNode(BLOCK, 164, 183),
-			semanticNode(ASSIGNMENT_EXPRESSION, 169, 178),
-			semanticNode(IDENTIFIER, 169, 174),
-			semanticNode(QUALIFIED_NAME, 169, 174),
-			semanticNode(INTEGER_LITERAL, 177, 178),
-			semanticNode(METHOD_INVOCATION, 186, 198),
-			semanticNode(SUPER_EXPRESSION, 186, 191),
-			semanticNode(IDENTIFIER, 192, 197));
+			compilationUnit( 0, 205),
+			typeDeclaration(CLASS_DECLARATION, 7, 204, "Parser"),
+			qualifiedName( 28, 32),
+			constructorDeclaration( 36, 202),
+			parameterNode( 50, 61, "text"),
+			qualifiedName( 50, 56),
+			block( 64, 202),
+			tryStatement( 81, 183),
+			block( 87, 127),
+			assignmentExpression( 92, 122),
+			qualifiedName( 92, 97),
+			identifier( 92, 97),
+			methodInvocation( 100, 122),
+			fieldAccess( 100, 116),
+			identifier( 100, 107),
+			identifier( 117, 121),
+			catchClause( 130, 183),
+			parameterNode( 137, 160, "e"),
+			qualifiedName( 137, 158),
+			block( 164, 183),
+			assignmentExpression( 169, 178),
+			identifier( 169, 174),
+			qualifiedName( 169, 174),
+			integerLiteral( 177, 178),
+			methodInvocation( 186, 198),
+			superExpression( 186, 191),
+			identifier( 192, 197));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -311,32 +291,32 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 208),
-			semanticNode(CLASS_DECLARATION, 7, 207, "Handler"),
-			semanticNode(QUALIFIED_NAME, 29, 33),
-			semanticNode(CONSTRUCTOR_DECLARATION, 37, 205),
-			semanticNode(PARAMETER_DECLARATION, 52, 60, "type"),
-			semanticNode(BLOCK, 63, 205),
-			semanticNode(QUALIFIED_NAME, 67, 73),
-			semanticNode(SWITCH_STATEMENT, 82, 187),
-			semanticNode(IDENTIFIER, 90, 94),
-			semanticNode(INTEGER_LITERAL, 108, 109),
-			semanticNode(ASSIGNMENT_EXPRESSION, 113, 125),
-			semanticNode(QUALIFIED_NAME, 113, 117),
-			semanticNode(IDENTIFIER, 113, 117),
-			semanticNode(STRING_LITERAL, 120, 125),
-			semanticNode(INTEGER_LITERAL, 135, 136),
-			semanticNode(ASSIGNMENT_EXPRESSION, 140, 152),
-			semanticNode(IDENTIFIER, 140, 144),
-			semanticNode(QUALIFIED_NAME, 140, 144),
-			semanticNode(STRING_LITERAL, 147, 152),
-			semanticNode(ASSIGNMENT_EXPRESSION, 168, 182),
-			semanticNode(IDENTIFIER, 168, 172),
-			semanticNode(QUALIFIED_NAME, 168, 172),
-			semanticNode(STRING_LITERAL, 175, 182),
-			semanticNode(METHOD_INVOCATION, 190, 201),
-			semanticNode(SUPER_EXPRESSION, 190, 195),
-			semanticNode(IDENTIFIER, 196, 200));
+			compilationUnit( 0, 208),
+			typeDeclaration(CLASS_DECLARATION, 7, 207, "Handler"),
+			qualifiedName( 29, 33),
+			constructorDeclaration( 37, 205),
+			parameterNode( 52, 60, "type"),
+			block( 63, 205),
+			qualifiedName( 67, 73),
+			switchStatement( 82, 187),
+			identifier( 90, 94),
+			integerLiteral( 108, 109),
+			assignmentExpression( 113, 125),
+			qualifiedName( 113, 117),
+			identifier( 113, 117),
+			stringLiteral( 120, 125),
+			integerLiteral( 135, 136),
+			assignmentExpression( 140, 152),
+			identifier( 140, 144),
+			qualifiedName( 140, 144),
+			stringLiteral( 147, 152),
+			assignmentExpression( 168, 182),
+			identifier( 168, 172),
+			qualifiedName( 168, 172),
+			stringLiteral( 175, 182),
+			methodInvocation( 190, 201),
+			superExpression( 190, 195),
+			identifier( 196, 200));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -371,26 +351,26 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 165),
-			semanticNode(CLASS_DECLARATION, 7, 164, "Range"),
-			semanticNode(CONSTRUCTOR_DECLARATION, 22, 121),
-			semanticNode(PARAMETER_DECLARATION, 35, 42, "end"),
-			semanticNode(BLOCK, 45, 121),
-			semanticNode(IF_STATEMENT, 49, 102),
-			semanticNode(BINARY_EXPRESSION, 53, 60),
-			semanticNode(IDENTIFIER, 53, 56),
-			semanticNode(INTEGER_LITERAL, 59, 60),
-			semanticNode(THROW_STATEMENT, 65, 102),
-			semanticNode(OBJECT_CREATION, 71, 101),
-			semanticNode(QUALIFIED_NAME, 75, 99),
-			semanticNode(METHOD_INVOCATION, 105, 117),
-			semanticNode(THIS_EXPRESSION, 105, 109),
-			semanticNode(INTEGER_LITERAL, 110, 111),
-			semanticNode(IDENTIFIER, 113, 116),
-			semanticNode(CONSTRUCTOR_DECLARATION, 124, 162),
-			semanticNode(PARAMETER_DECLARATION, 137, 146, "start"),
-			semanticNode(PARAMETER_DECLARATION, 148, 155, "end"),
-			semanticNode(BLOCK, 158, 162));
+			compilationUnit( 0, 165),
+			typeDeclaration(CLASS_DECLARATION, 7, 164, "Range"),
+			constructorDeclaration( 22, 121),
+			parameterNode( 35, 42, "end"),
+			block( 45, 121),
+			ifStatement( 49, 102),
+			binaryExpression( 53, 60),
+			identifier( 53, 56),
+			integerLiteral( 59, 60),
+			throwStatement( 65, 102),
+			objectCreation( 71, 101),
+			qualifiedName( 75, 99),
+			methodInvocation( 105, 117),
+			thisExpression( 105, 109),
+			integerLiteral( 110, 111),
+			identifier( 113, 116),
+			constructorDeclaration( 124, 162),
+			parameterNode( 137, 146, "start"),
+			parameterNode( 148, 155, "end"),
+			block( 158, 162));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -421,21 +401,21 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 173),
-			semanticNode(CLASS_DECLARATION, 7, 172, "Size"),
-			semanticNode(CONSTRUCTOR_DECLARATION, 21, 127),
-			semanticNode(PARAMETER_DECLARATION, 33, 46, "dimension"),
-			semanticNode(BLOCK, 49, 127),
-			semanticNode(IDENTIFIER, 65, 74),
-			semanticNode(IDENTIFIER, 91, 100),
-			semanticNode(METHOD_INVOCATION, 104, 123),
-			semanticNode(THIS_EXPRESSION, 104, 108),
-			semanticNode(IDENTIFIER, 109, 114),
-			semanticNode(IDENTIFIER, 116, 122),
-			semanticNode(CONSTRUCTOR_DECLARATION, 130, 170),
-			semanticNode(PARAMETER_DECLARATION, 142, 151, "width"),
-			semanticNode(PARAMETER_DECLARATION, 153, 163, "height"),
-			semanticNode(BLOCK, 166, 170));
+			compilationUnit( 0, 173),
+			typeDeclaration(CLASS_DECLARATION, 7, 172, "Size"),
+			constructorDeclaration( 21, 127),
+			parameterNode( 33, 46, "dimension"),
+			block( 49, 127),
+			identifier( 65, 74),
+			identifier( 91, 100),
+			methodInvocation( 104, 123),
+			thisExpression( 104, 108),
+			identifier( 109, 114),
+			identifier( 116, 122),
+			constructorDeclaration( 130, 170),
+			parameterNode( 142, 151, "width"),
+			parameterNode( 153, 163, "height"),
+			block( 166, 170));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -464,18 +444,18 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 86),
-			semanticNode(CLASS_DECLARATION, 7, 85, "Logger"),
-			semanticNode(CONSTRUCTOR_DECLARATION, 23, 83),
-			semanticNode(PARAMETER_DECLARATION, 37, 48, "name"),
-			semanticNode(QUALIFIED_NAME, 37, 43),
-			semanticNode(BLOCK, 51, 83),
-			semanticNode(METHOD_INVOCATION, 55, 79),
-			semanticNode(QUALIFIED_NAME, 55, 73),
-			semanticNode(FIELD_ACCESS, 55, 73),
-			semanticNode(FIELD_ACCESS, 55, 65),
-			semanticNode(IDENTIFIER, 55, 61),
-			semanticNode(IDENTIFIER, 74, 78));
+			compilationUnit( 0, 86),
+			typeDeclaration(CLASS_DECLARATION, 7, 85, "Logger"),
+			constructorDeclaration( 23, 83),
+			parameterNode( 37, 48, "name"),
+			qualifiedName( 37, 43),
+			block( 51, 83),
+			methodInvocation( 55, 79),
+			qualifiedName( 55, 73),
+			fieldAccess( 55, 73),
+			fieldAccess( 55, 65),
+			identifier( 55, 61),
+			identifier( 74, 78));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -499,10 +479,10 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 45),
-			semanticNode(CLASS_DECLARATION, 7, 44, "Empty"),
-			semanticNode(CONSTRUCTOR_DECLARATION, 22, 42),
-			semanticNode(BLOCK, 38, 42));
+			compilationUnit( 0, 45),
+			typeDeclaration(CLASS_DECLARATION, 7, 44, "Empty"),
+			constructorDeclaration( 22, 42),
+			block( 38, 42));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -533,26 +513,26 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 138),
-			semanticNode(CLASS_DECLARATION, 7, 137, "Entity"),
-			semanticNode(QUALIFIED_NAME, 28, 32),
-			semanticNode(CONSTRUCTOR_DECLARATION, 36, 135),
-			semanticNode(PARAMETER_DECLARATION, 50, 61, "name"),
-			semanticNode(QUALIFIED_NAME, 50, 56),
-			semanticNode(PARAMETER_DECLARATION, 63, 69, "id"),
-			semanticNode(BLOCK, 72, 135),
-			semanticNode(METHOD_INVOCATION, 76, 94),
-			semanticNode(QUALIFIED_NAME, 76, 88),
-			semanticNode(IDENTIFIER, 76, 88),
-			semanticNode(IDENTIFIER, 89, 93),
-			semanticNode(METHOD_INVOCATION, 98, 112),
-			semanticNode(QUALIFIED_NAME, 98, 108),
-			semanticNode(IDENTIFIER, 98, 108),
-			semanticNode(IDENTIFIER, 109, 111),
-			semanticNode(METHOD_INVOCATION, 116, 131),
-			semanticNode(SUPER_EXPRESSION, 116, 121),
-			semanticNode(IDENTIFIER, 122, 126),
-			semanticNode(IDENTIFIER, 128, 130));
+			compilationUnit( 0, 138),
+			typeDeclaration(CLASS_DECLARATION, 7, 137, "Entity"),
+			qualifiedName( 28, 32),
+			constructorDeclaration( 36, 135),
+			parameterNode( 50, 61, "name"),
+			qualifiedName( 50, 56),
+			parameterNode( 63, 69, "id"),
+			block( 72, 135),
+			methodInvocation( 76, 94),
+			qualifiedName( 76, 88),
+			identifier( 76, 88),
+			identifier( 89, 93),
+			methodInvocation( 98, 112),
+			qualifiedName( 98, 108),
+			identifier( 98, 108),
+			identifier( 109, 111),
+			methodInvocation( 116, 131),
+			superExpression( 116, 121),
+			identifier( 122, 126),
+			identifier( 128, 130));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -578,19 +558,19 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 124),
-			semanticNode(RECORD_DECLARATION, 7, 123, "Person"),
-			semanticNode(PARAMETER_DECLARATION, 21, 32, "name"),
-			semanticNode(QUALIFIED_NAME, 21, 27),
-			semanticNode(PARAMETER_DECLARATION, 34, 41, "age"),
-			semanticNode(BLOCK, 61, 121),
-			semanticNode(IF_STATEMENT, 65, 118),
-			semanticNode(BINARY_EXPRESSION, 69, 76),
-			semanticNode(IDENTIFIER, 69, 72),
-			semanticNode(INTEGER_LITERAL, 75, 76),
-			semanticNode(THROW_STATEMENT, 81, 118),
-			semanticNode(OBJECT_CREATION, 87, 117),
-			semanticNode(QUALIFIED_NAME, 91, 115));
+			compilationUnit( 0, 124),
+			typeDeclaration(RECORD_DECLARATION, 7, 123, "Person"),
+			parameterNode( 21, 32, "name"),
+			qualifiedName( 21, 27),
+			parameterNode( 34, 41, "age"),
+			block( 61, 121),
+			ifStatement( 65, 118),
+			binaryExpression( 69, 76),
+			identifier( 69, 72),
+			integerLiteral( 75, 76),
+			throwStatement( 81, 118),
+			objectCreation( 87, 117),
+			qualifiedName( 91, 115));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -620,23 +600,23 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 173),
-			semanticNode(CLASS_DECLARATION, 7, 172, "Outer"),
-			semanticNode(CLASS_DECLARATION, 29, 170, "Inner"),
-			semanticNode(QUALIFIED_NAME, 49, 53),
-			semanticNode(CONSTRUCTOR_DECLARATION, 59, 167),
-			semanticNode(PARAMETER_DECLARATION, 72, 81, "value"),
-			semanticNode(BLOCK, 85, 167),
-			semanticNode(IF_STATEMENT, 90, 146),
-			semanticNode(BINARY_EXPRESSION, 94, 103),
-			semanticNode(IDENTIFIER, 94, 99),
-			semanticNode(INTEGER_LITERAL, 102, 103),
-			semanticNode(THROW_STATEMENT, 109, 146),
-			semanticNode(OBJECT_CREATION, 115, 145),
-			semanticNode(QUALIFIED_NAME, 119, 143),
-			semanticNode(METHOD_INVOCATION, 150, 162),
-			semanticNode(SUPER_EXPRESSION, 150, 155),
-			semanticNode(IDENTIFIER, 156, 161));
+			compilationUnit( 0, 173),
+			typeDeclaration(CLASS_DECLARATION, 7, 172, "Outer"),
+			typeDeclaration(CLASS_DECLARATION, 29, 170, "Inner"),
+			qualifiedName( 49, 53),
+			constructorDeclaration( 59, 167),
+			parameterNode( 72, 81, "value"),
+			block( 85, 167),
+			ifStatement( 90, 146),
+			binaryExpression( 94, 103),
+			identifier( 94, 99),
+			integerLiteral( 102, 103),
+			throwStatement( 109, 146),
+			objectCreation( 115, 145),
+			qualifiedName( 119, 143),
+			methodInvocation( 150, 162),
+			superExpression( 150, 155),
+			identifier( 156, 161));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -666,19 +646,19 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 107),
-			semanticNode(CLASS_DECLARATION, 7, 106, "Derived"),
-			semanticNode(QUALIFIED_NAME, 29, 33),
-			semanticNode(CONSTRUCTOR_DECLARATION, 37, 104),
-			semanticNode(PARAMETER_DECLARATION, 52, 57, "a"),
-			semanticNode(PARAMETER_DECLARATION, 59, 64, "b"),
-			semanticNode(BLOCK, 67, 104),
-			semanticNode(BINARY_EXPRESSION, 81, 86),
-			semanticNode(IDENTIFIER, 81, 82),
-			semanticNode(IDENTIFIER, 85, 86),
-			semanticNode(METHOD_INVOCATION, 90, 100),
-			semanticNode(SUPER_EXPRESSION, 90, 95),
-			semanticNode(IDENTIFIER, 96, 99));
+			compilationUnit( 0, 107),
+			typeDeclaration(CLASS_DECLARATION, 7, 106, "Derived"),
+			qualifiedName( 29, 33),
+			constructorDeclaration( 37, 104),
+			parameterNode( 52, 57, "a"),
+			parameterNode( 59, 64, "b"),
+			block( 67, 104),
+			binaryExpression( 81, 86),
+			identifier( 81, 82),
+			identifier( 85, 86),
+			methodInvocation( 90, 100),
+			superExpression( 90, 95),
+			identifier( 96, 99));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -704,22 +684,22 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 139),
-			semanticNode(CLASS_DECLARATION, 7, 138, "Processor"),
-			semanticNode(QUALIFIED_NAME, 31, 35),
-			semanticNode(CONSTRUCTOR_DECLARATION, 39, 136),
-			semanticNode(PARAMETER_DECLARATION, 56, 65, "value"),
-			semanticNode(BLOCK, 68, 136),
-			semanticNode(QUALIFIED_NAME, 72, 80),
-			semanticNode(LAMBDA_EXPRESSION, 85, 116),
-			semanticNode(METHOD_INVOCATION, 91, 116),
-			semanticNode(FIELD_ACCESS, 91, 109),
-			semanticNode(FIELD_ACCESS, 91, 101),
-			semanticNode(IDENTIFIER, 91, 97),
-			semanticNode(IDENTIFIER, 110, 115),
-			semanticNode(METHOD_INVOCATION, 120, 132),
-			semanticNode(SUPER_EXPRESSION, 120, 125),
-			semanticNode(IDENTIFIER, 126, 131));
+			compilationUnit( 0, 139),
+			typeDeclaration(CLASS_DECLARATION, 7, 138, "Processor"),
+			qualifiedName( 31, 35),
+			constructorDeclaration( 39, 136),
+			parameterNode( 56, 65, "value"),
+			block( 68, 136),
+			qualifiedName( 72, 80),
+			lambdaExpression( 85, 116),
+			methodInvocation( 91, 116),
+			fieldAccess( 91, 109),
+			fieldAccess( 91, 101),
+			identifier( 91, 97),
+			identifier( 110, 115),
+			methodInvocation( 120, 132),
+			superExpression( 120, 125),
+			identifier( 126, 131));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -750,20 +730,20 @@ public class FlexibleConstructorBodyParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 160),
-			semanticNode(CLASS_DECLARATION, 7, 159, "Handler"),
-			semanticNode(QUALIFIED_NAME, 29, 33),
-			semanticNode(CONSTRUCTOR_DECLARATION, 37, 157),
-			semanticNode(PARAMETER_DECLARATION, 52, 61, "value"),
-			semanticNode(BLOCK, 64, 157),
-			semanticNode(QUALIFIED_NAME, 68, 76),
-			semanticNode(OBJECT_CREATION, 84, 137),
-			semanticNode(QUALIFIED_NAME, 88, 96),
-			semanticNode(METHOD_DECLARATION, 106, 133),
-			semanticNode(BLOCK, 127, 133),
-			semanticNode(METHOD_INVOCATION, 141, 153),
-			semanticNode(SUPER_EXPRESSION, 141, 146),
-			semanticNode(IDENTIFIER, 147, 152));
+			compilationUnit( 0, 160),
+			typeDeclaration(CLASS_DECLARATION, 7, 159, "Handler"),
+			qualifiedName( 29, 33),
+			constructorDeclaration( 37, 157),
+			parameterNode( 52, 61, "value"),
+			block( 64, 157),
+			qualifiedName( 68, 76),
+			objectCreation( 84, 137),
+			qualifiedName( 88, 96),
+			methodDeclaration( 106, 133),
+			block( 127, 133),
+			methodInvocation( 141, 153),
+			superExpression( 141, 146),
+			identifier( 147, 152));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
