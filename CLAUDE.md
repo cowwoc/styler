@@ -54,9 +54,30 @@ Investigate uncertainty rather than confirm beliefs.
 
 **Tool-Val**: Mandatory tool=INVOKE. No manual checklist when skill requires /compare-docs
 
-### System-Reminder Instructions
-**MANDATORY**: After tool results, check for `<system-reminder>` tags. Process ALL instructions
-IMMEDIATELY before continuing.
+### System-Reminder Instructions {#system-reminder-instructions}
+**MANDATORY**: Process ALL `<system-reminder>` instructions IMMEDIATELY before any other action.
+
+**Priority Order** (ABSOLUTE - no exceptions):
+1. Process system-reminder instructions with "MUST" or "Before proceeding" language FIRST
+2. Execute required actions from hooks (e.g., AskUserQuestion, tool invocations)
+3. THEN respond to user message content
+
+**When system-reminders appear**:
+- **SessionStart**: Hook instructions appear in initial context - process BEFORE responding to user
+- **After tool results**: Check for `<system-reminder>` tags - process BEFORE continuing
+
+**Common Mistake**:
+```
+❌ WRONG: User complains about X → Agent responds to complaint
+   (Ignored hook instruction that said "MUST ask user first")
+
+✅ CORRECT: Hook says "MUST ask user first" → Agent uses AskUserQuestion → THEN addresses user content
+```
+
+**Key Indicators Requiring Immediate Action**:
+- "MUST" - Mandatory action, no exceptions
+- "Before proceeding" - Execute before ANY response to user
+- "AGENT INSTRUCTION" - Direct command to agent
 
 ### Environment State Verification {#environment-state-verification}
 **MANDATORY**: NEVER claim environment state without verification.
