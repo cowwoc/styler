@@ -413,28 +413,6 @@ benchmarking, and validate with Maven plugin integration.
   - **Priority**: Lower than self-hosting blockers - these are edge cases
   - **Quality**: Parser tests for comment placement in each identified location
 
-### Parser Enhancement: Node-Based Complexity Limiting
-- [ ] **READY:** `refactor-parser-depth-limiting` - Replace recursion depth limit with node count limit
-  - **Dependencies**: None
-  - **Blocks**: None (enhancement for robustness)
-  - **Parallelizable With**: Any Phase E task
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Make parser complexity limiting implementation-independent
-  - **Current Problem**: `MAX_PARSE_DEPTH` limits recursion depth, which depends on JVM stack size and
-    parser bytecode layout - fragile and unpredictable
-  - **Proposed Solution**:
-    - Primary limit: Node count (checked in `NodeArena.allocateNode()`)
-    - Backup limit: Keep recursion depth as safety net with generous value (500+)
-  - **Benefits**:
-    - Node count is implementation-independent (works with recursive or iterative parser)
-    - Predictable behavior regardless of parser refactoring
-    - "Max 100,000 nodes" is easier to reason about than "max 200 recursions"
-  - **Implementation**:
-    - Add `maxNodes` parameter to `NodeArena` or `SecurityConfig`
-    - Check in `allocateNode()`: throw `ParseException` if exceeded
-    - Keep `MAX_PARSE_DEPTH` as backup with higher value
-  - **Quality**: Tests for both limits, verify no StackOverflowError possible
-
 ### Parser Enhancement: Missing Node Types
 
 *All previously listed tasks (add-wildcard-type-nodes, add-parameterized-type-nodes, add-parameter-declaration-nodes) have been completed.*
