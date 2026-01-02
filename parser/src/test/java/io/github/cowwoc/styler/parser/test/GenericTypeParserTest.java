@@ -6,18 +6,11 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.WILDCARD_TYPE;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
 
 /**
  * Tests for parsing generic types including diamond operator, wildcards, and nested generics.
@@ -43,16 +36,16 @@ public class GenericTypeParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 72),
-			semanticNode(CLASS_DECLARATION, 0, 71, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 69),
-			semanticNode(BLOCK, 24, 69),
-			semanticNode(PARAMETERIZED_TYPE, 28, 40),
-			semanticNode(QUALIFIED_NAME, 28, 32),
-			semanticNode(QUALIFIED_NAME, 33, 39),
-			semanticNode(OBJECT_CREATION, 48, 65),
-			semanticNode(PARAMETERIZED_TYPE, 52, 63),
-			semanticNode(QUALIFIED_NAME, 52, 61));
+			compilationUnit( 0, 72),
+			typeDeclaration(CLASS_DECLARATION, 0, 71, "Test"),
+			methodDeclaration( 14, 69),
+			block( 24, 69),
+			parameterizedType( 28, 40),
+			qualifiedName( 28, 32),
+			qualifiedName( 33, 39),
+			objectCreation( 48, 65),
+			parameterizedType( 52, 63),
+			qualifiedName( 52, 61));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -75,17 +68,17 @@ public class GenericTypeParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 77),
-			semanticNode(CLASS_DECLARATION, 0, 76, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 74),
-			semanticNode(BLOCK, 24, 74),
-			semanticNode(PARAMETERIZED_TYPE, 28, 48),
-			semanticNode(QUALIFIED_NAME, 28, 31),
-			semanticNode(QUALIFIED_NAME, 32, 38),
-			semanticNode(QUALIFIED_NAME, 40, 47),
-			semanticNode(OBJECT_CREATION, 55, 70),
-			semanticNode(PARAMETERIZED_TYPE, 59, 68),
-			semanticNode(QUALIFIED_NAME, 59, 66));
+			compilationUnit( 0, 77),
+			typeDeclaration(CLASS_DECLARATION, 0, 76, "Test"),
+			methodDeclaration( 14, 74),
+			block( 24, 74),
+			parameterizedType( 28, 48),
+			qualifiedName( 28, 31),
+			qualifiedName( 32, 38),
+			qualifiedName( 40, 47),
+			objectCreation( 55, 70),
+			parameterizedType( 59, 68),
+			qualifiedName( 59, 66));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -108,19 +101,19 @@ public class GenericTypeParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 87),
-			semanticNode(CLASS_DECLARATION, 0, 86, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 84),
-			semanticNode(BLOCK, 24, 84),
-			semanticNode(PARAMETERIZED_TYPE, 28, 40),
-			semanticNode(QUALIFIED_NAME, 28, 32),
-			semanticNode(QUALIFIED_NAME, 33, 39),
-			semanticNode(OBJECT_CREATION, 48, 80),
-			semanticNode(PARAMETERIZED_TYPE, 52, 63),
-			semanticNode(QUALIFIED_NAME, 52, 61),
-			semanticNode(OBJECT_CREATION, 64, 79),
-			semanticNode(PARAMETERIZED_TYPE, 68, 77),
-			semanticNode(QUALIFIED_NAME, 68, 75));
+			compilationUnit( 0, 87),
+			typeDeclaration(CLASS_DECLARATION, 0, 86, "Test"),
+			methodDeclaration( 14, 84),
+			block( 24, 84),
+			parameterizedType( 28, 40),
+			qualifiedName( 28, 32),
+			qualifiedName( 33, 39),
+			objectCreation( 48, 80),
+			parameterizedType( 52, 63),
+			qualifiedName( 52, 61),
+			objectCreation( 64, 79),
+			parameterizedType( 68, 77),
+			qualifiedName( 68, 75));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -142,14 +135,14 @@ public class GenericTypeParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 52),
-			semanticNode(CLASS_DECLARATION, 0, 51, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 49),
-			semanticNode(PARAMETERIZED_TYPE, 27, 38),
-			semanticNode(QUALIFIED_NAME, 27, 35),
-			semanticNode(WILDCARD_TYPE, 36, 37),
-			semanticNode(PARAMETER_DECLARATION, 27, 42, "opt"),
-			semanticNode(BLOCK, 45, 49));
+			compilationUnit( 0, 52),
+			typeDeclaration(CLASS_DECLARATION, 0, 51, "Test"),
+			methodDeclaration( 14, 49),
+			parameterizedType( 27, 38),
+			qualifiedName( 27, 35),
+			wildcardType( 36, 37),
+			parameterNode( 27, 42, "opt"),
+			block( 45, 49));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -171,15 +164,15 @@ public class GenericTypeParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 67),
-			semanticNode(CLASS_DECLARATION, 0, 66, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 64),
-			semanticNode(PARAMETERIZED_TYPE, 27, 49),
-			semanticNode(QUALIFIED_NAME, 27, 31),
-			semanticNode(WILDCARD_TYPE, 32, 48),
-			semanticNode(QUALIFIED_NAME, 42, 48),
-			semanticNode(PARAMETER_DECLARATION, 27, 57, "numbers"),
-			semanticNode(BLOCK, 60, 64));
+			compilationUnit( 0, 67),
+			typeDeclaration(CLASS_DECLARATION, 0, 66, "Test"),
+			methodDeclaration( 14, 64),
+			parameterizedType( 27, 49),
+			qualifiedName( 27, 31),
+			wildcardType( 32, 48),
+			qualifiedName( 42, 48),
+			parameterNode( 27, 57, "numbers"),
+			block( 60, 64));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -201,15 +194,15 @@ public class GenericTypeParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 70),
-			semanticNode(CLASS_DECLARATION, 0, 69, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 67),
-			semanticNode(PARAMETERIZED_TYPE, 26, 51),
-			semanticNode(QUALIFIED_NAME, 26, 34),
-			semanticNode(WILDCARD_TYPE, 35, 50),
-			semanticNode(QUALIFIED_NAME, 43, 50),
-			semanticNode(PARAMETER_DECLARATION, 26, 60, "consumer"),
-			semanticNode(BLOCK, 63, 67));
+			compilationUnit( 0, 70),
+			typeDeclaration(CLASS_DECLARATION, 0, 69, "Test"),
+			methodDeclaration( 14, 67),
+			parameterizedType( 26, 51),
+			qualifiedName( 26, 34),
+			wildcardType( 35, 50),
+			qualifiedName( 43, 50),
+			parameterNode( 26, 60, "consumer"),
+			block( 63, 67));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -229,14 +222,14 @@ public class GenericTypeParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 48),
-			semanticNode(CLASS_DECLARATION, 0, 47, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 45),
-			semanticNode(PARAMETERIZED_TYPE, 26, 40),
-			semanticNode(QUALIFIED_NAME, 18, 24),
-			semanticNode(QUALIFIED_NAME, 26, 30),
-			semanticNode(QUALIFIED_NAME, 26, 40),
-			semanticNode(QUALIFIED_NAME, 31, 38));
+			compilationUnit( 0, 48),
+			typeDeclaration(CLASS_DECLARATION, 0, 47, "Test"),
+			fieldDeclaration( 14, 45),
+			parameterizedType( 26, 40),
+			qualifiedName( 18, 24),
+			qualifiedName( 26, 30),
+			qualifiedName( 26, 40),
+			qualifiedName( 31, 38));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -256,15 +249,15 @@ public class GenericTypeParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 57),
-			semanticNode(CLASS_DECLARATION, 0, 56, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 54),
-			semanticNode(PARAMETERIZED_TYPE, 26, 49),
-			semanticNode(QUALIFIED_NAME, 18, 24),
-			semanticNode(QUALIFIED_NAME, 26, 30),
-			semanticNode(QUALIFIED_NAME, 26, 49),
-			semanticNode(WILDCARD_TYPE, 31, 47),
-			semanticNode(QUALIFIED_NAME, 41, 47));
+			compilationUnit( 0, 57),
+			typeDeclaration(CLASS_DECLARATION, 0, 56, "Test"),
+			fieldDeclaration( 14, 54),
+			parameterizedType( 26, 49),
+			qualifiedName( 18, 24),
+			qualifiedName( 26, 30),
+			qualifiedName( 26, 49),
+			wildcardType( 31, 47),
+			qualifiedName( 41, 47));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -284,17 +277,17 @@ public class GenericTypeParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 66),
-			semanticNode(CLASS_DECLARATION, 0, 65, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 63),
-			semanticNode(PARAMETERIZED_TYPE, 26, 40),
-			semanticNode(QUALIFIED_NAME, 18, 24),
-			semanticNode(QUALIFIED_NAME, 26, 30),
-			semanticNode(QUALIFIED_NAME, 26, 40),
-			semanticNode(QUALIFIED_NAME, 31, 38),
-			semanticNode(OBJECT_CREATION, 47, 62),
-			semanticNode(PARAMETERIZED_TYPE, 51, 60),
-			semanticNode(QUALIFIED_NAME, 51, 58));
+			compilationUnit( 0, 66),
+			typeDeclaration(CLASS_DECLARATION, 0, 65, "Test"),
+			fieldDeclaration( 14, 63),
+			parameterizedType( 26, 40),
+			qualifiedName( 18, 24),
+			qualifiedName( 26, 30),
+			qualifiedName( 26, 40),
+			qualifiedName( 31, 38),
+			objectCreation( 47, 62),
+			parameterizedType( 51, 60),
+			qualifiedName( 51, 58));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -314,12 +307,12 @@ public class GenericTypeParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 59),
-			semanticNode(CLASS_DECLARATION, 0, 58, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 56),
-			semanticNode(QUALIFIED_NAME, 25, 31),
-			semanticNode(QUALIFIED_NAME, 33, 40),
-			semanticNode(QUALIFIED_NAME, 42, 49));
+			compilationUnit( 0, 59),
+			typeDeclaration(CLASS_DECLARATION, 0, 58, "Test"),
+			fieldDeclaration( 14, 56),
+			qualifiedName( 25, 31),
+			qualifiedName( 33, 40),
+			qualifiedName( 42, 49));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -339,18 +332,18 @@ public class GenericTypeParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 62),
-			semanticNode(CLASS_DECLARATION, 0, 61, "Test"),
-			semanticNode(FIELD_DECLARATION, 14, 59),
-			semanticNode(PARAMETERIZED_TYPE, 26, 53),
-			semanticNode(PARAMETERIZED_TYPE, 39, 53),
-			semanticNode(QUALIFIED_NAME, 18, 24),
-			semanticNode(QUALIFIED_NAME, 26, 29),
-			semanticNode(QUALIFIED_NAME, 26, 53),
-			semanticNode(QUALIFIED_NAME, 30, 37),
-			semanticNode(QUALIFIED_NAME, 39, 43),
-			semanticNode(QUALIFIED_NAME, 39, 53),
-			semanticNode(QUALIFIED_NAME, 44, 50));
+			compilationUnit( 0, 62),
+			typeDeclaration(CLASS_DECLARATION, 0, 61, "Test"),
+			fieldDeclaration( 14, 59),
+			parameterizedType( 26, 53),
+			parameterizedType( 39, 53),
+			qualifiedName( 18, 24),
+			qualifiedName( 26, 29),
+			qualifiedName( 26, 53),
+			qualifiedName( 30, 37),
+			qualifiedName( 39, 43),
+			qualifiedName( 39, 53),
+			qualifiedName( 44, 50));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

@@ -6,22 +6,15 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.CONSTRUCTOR_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_CONSTANT;
-import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.IMPORT_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PACKAGE_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.STATIC_IMPORT_DECLARATION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_DECLARATION;
+import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.importNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.packageNode;
 
 /**
  * Tests for parsing class, interface, and enum declarations.
@@ -41,8 +34,8 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 28),
-			semanticNode(CLASS_DECLARATION, 7, 27, "HelloWorld"));
+			compilationUnit( 0, 28),
+			typeDeclaration(CLASS_DECLARATION, 7, 27, "HelloWorld"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -66,10 +59,10 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 47),
-			semanticNode(CLASS_DECLARATION, 7, 46, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 44),
-			semanticNode(BLOCK, 40, 44));
+			compilationUnit( 0, 47),
+			typeDeclaration(CLASS_DECLARATION, 7, 46, "Test"),
+			methodDeclaration( 21, 44),
+			block( 40, 44));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -91,9 +84,9 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 38),
-			semanticNode(CLASS_DECLARATION, 7, 37, "Test"),
-			semanticNode(FIELD_DECLARATION, 21, 35));
+			compilationUnit( 0, 38),
+			typeDeclaration(CLASS_DECLARATION, 7, 37, "Test"),
+			fieldDeclaration( 21, 35));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -117,10 +110,10 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 43),
-			semanticNode(CLASS_DECLARATION, 7, 42, "Test"),
-			semanticNode(CONSTRUCTOR_DECLARATION, 21, 40),
-			semanticNode(BLOCK, 36, 40));
+			compilationUnit( 0, 43),
+			typeDeclaration(CLASS_DECLARATION, 7, 42, "Test"),
+			constructorDeclaration( 21, 40),
+			block( 36, 40));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -139,9 +132,9 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 38),
-			semanticNode(CLASS_DECLARATION, 7, 37, "Child"),
-			semanticNode(QUALIFIED_NAME, 27, 33));
+			compilationUnit( 0, 38),
+			typeDeclaration(CLASS_DECLARATION, 7, 37, "Child"),
+			qualifiedName( 27, 33));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -160,9 +153,9 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 42),
-			semanticNode(CLASS_DECLARATION, 7, 41, "Test"),
-			semanticNode(QUALIFIED_NAME, 29, 37));
+			compilationUnit( 0, 42),
+			typeDeclaration(CLASS_DECLARATION, 7, 41, "Test"),
+			qualifiedName( 29, 37));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -181,8 +174,8 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 24),
-			semanticNode(CLASS_DECLARATION, 7, 23, "Box"));
+			compilationUnit( 0, 24),
+			typeDeclaration(CLASS_DECLARATION, 7, 23, "Box"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -201,8 +194,8 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 26),
-			semanticNode(INTERFACE_DECLARATION, 7, 25, "Test"));
+			compilationUnit( 0, 26),
+			typeDeclaration(INTERFACE_DECLARATION, 7, 25, "Test"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -221,11 +214,11 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 39),
-			semanticNode(ENUM_DECLARATION, 7, 38, "Color"),
-			semanticNode(ENUM_CONSTANT, 20, 23),
-			semanticNode(ENUM_CONSTANT, 25, 30),
-			semanticNode(ENUM_CONSTANT, 32, 36));
+			compilationUnit( 0, 39),
+			typeDeclaration(ENUM_DECLARATION, 7, 38, "Color"),
+			enumConstant( 20, 23),
+			enumConstant( 25, 30),
+			enumConstant( 32, 36));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -246,10 +239,10 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 44),
-			semanticNode(PACKAGE_DECLARATION, 0, 20, "com.example"),
-			semanticNode(CLASS_DECLARATION, 29, 43, "Test"),
-			semanticNode(QUALIFIED_NAME, 8, 19));
+			compilationUnit( 0, 44),
+			packageNode( 0, 20, "com.example"),
+			typeDeclaration(CLASS_DECLARATION, 29, 43, "Test"),
+			qualifiedName( 8, 19));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -270,9 +263,9 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 46),
-			semanticNode(IMPORT_DECLARATION, 0, 22, "java.util.List"),
-			semanticNode(CLASS_DECLARATION, 31, 45, "Test"));
+			compilationUnit( 0, 46),
+			importNode(0, 22, "java.util.List", false),
+			typeDeclaration(CLASS_DECLARATION, 31, 45, "Test"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -293,9 +286,9 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 56),
-			semanticNode(STATIC_IMPORT_DECLARATION, 0, 32, "java.lang.Math.PI"),
-			semanticNode(CLASS_DECLARATION, 41, 55, "Test"));
+			compilationUnit( 0, 56),
+			importNode(0, 32, "java.lang.Math.PI", true),
+			typeDeclaration(CLASS_DECLARATION, 41, 55, "Test"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -316,9 +309,9 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 43),
-			semanticNode(IMPORT_DECLARATION, 0, 19, "java.util.*"),
-			semanticNode(CLASS_DECLARATION, 28, 42, "Test"));
+			compilationUnit( 0, 43),
+			importNode(0, 19, "java.util.*", false),
+			typeDeclaration(CLASS_DECLARATION, 28, 42, "Test"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -342,13 +335,13 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 62),
-			semanticNode(CLASS_DECLARATION, 7, 61, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 59),
-			semanticNode(PARAMETER_DECLARATION, 37, 42, "x"),
-			semanticNode(PARAMETER_DECLARATION, 44, 52, "y"),
-			semanticNode(BLOCK, 55, 59),
-			semanticNode(QUALIFIED_NAME, 44, 50));
+			compilationUnit( 0, 62),
+			typeDeclaration(CLASS_DECLARATION, 7, 61, "Test"),
+			methodDeclaration( 21, 59),
+			parameterNode( 37, 42, "x"),
+			parameterNode( 44, 52, "y"),
+			block( 55, 59),
+			qualifiedName( 44, 50));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -372,12 +365,12 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 61),
-			semanticNode(CLASS_DECLARATION, 7, 60, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 58),
-			semanticNode(PARAMETER_DECLARATION, 37, 51, "args"),
-			semanticNode(BLOCK, 54, 58),
-			semanticNode(QUALIFIED_NAME, 37, 43));
+			compilationUnit( 0, 61),
+			typeDeclaration(CLASS_DECLARATION, 7, 60, "Test"),
+			methodDeclaration( 21, 58),
+			parameterNode( 37, 51, "args"),
+			block( 54, 58),
+			qualifiedName( 37, 43));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -401,11 +394,11 @@ public class ClassParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 64),
-			semanticNode(CLASS_DECLARATION, 7, 63, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 61),
-			semanticNode(BLOCK, 57, 61),
-			semanticNode(QUALIFIED_NAME, 46, 55));
+			compilationUnit( 0, 64),
+			typeDeclaration(CLASS_DECLARATION, 7, 63, "Test"),
+			methodDeclaration( 21, 61),
+			block( 57, 61),
+			qualifiedName( 46, 55));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}

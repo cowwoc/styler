@@ -6,22 +6,11 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.CONDITIONAL_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.WILDCARD_TYPE;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseFails;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
 
 /**
  * Tests for parsing class literal expressions ({@code Type.class}).
@@ -46,15 +35,15 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 60),
-			semanticNode(CLASS_DECLARATION, 0, 59, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 57),
-			semanticNode(BLOCK, 24, 57),
-			semanticNode(PARAMETERIZED_TYPE, 28, 36),
-			semanticNode(QUALIFIED_NAME, 28, 33),
-			semanticNode(WILDCARD_TYPE, 34, 35),
-			semanticNode(CLASS_LITERAL, 41, 53),
-			semanticNode(IDENTIFIER, 41, 47));
+			compilationUnit( 0, 60),
+			typeDeclaration(CLASS_DECLARATION, 0, 59, "Test"),
+			methodDeclaration( 14, 57),
+			block( 24, 57),
+			parameterizedType( 28, 36),
+			qualifiedName( 28, 33),
+			wildcardType( 34, 35),
+			classLiteral( 41, 53),
+			identifier( 41, 47));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -76,17 +65,17 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 70),
-			semanticNode(CLASS_DECLARATION, 0, 69, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 67),
-			semanticNode(BLOCK, 24, 67),
-			semanticNode(PARAMETERIZED_TYPE, 28, 36),
-			semanticNode(QUALIFIED_NAME, 28, 33),
-			semanticNode(WILDCARD_TYPE, 34, 35),
-			semanticNode(CLASS_LITERAL, 41, 63),
-			semanticNode(FIELD_ACCESS, 41, 50),
-			semanticNode(FIELD_ACCESS, 41, 57),
-			semanticNode(IDENTIFIER, 41, 45));
+			compilationUnit( 0, 70),
+			typeDeclaration(CLASS_DECLARATION, 0, 69, "Test"),
+			methodDeclaration( 14, 67),
+			block( 24, 67),
+			parameterizedType( 28, 36),
+			qualifiedName( 28, 33),
+			wildcardType( 34, 35),
+			classLiteral( 41, 63),
+			fieldAccess( 41, 50),
+			fieldAccess( 41, 57),
+			identifier( 41, 45));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -108,16 +97,16 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 65),
-			semanticNode(CLASS_DECLARATION, 0, 64, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 62),
-			semanticNode(BLOCK, 24, 62),
-			semanticNode(PARAMETERIZED_TYPE, 28, 36),
-			semanticNode(QUALIFIED_NAME, 28, 33),
-			semanticNode(WILDCARD_TYPE, 34, 35),
-			semanticNode(CLASS_LITERAL, 41, 58),
-			semanticNode(FIELD_ACCESS, 41, 52),
-			semanticNode(IDENTIFIER, 41, 46));
+			compilationUnit( 0, 65),
+			typeDeclaration(CLASS_DECLARATION, 0, 64, "Test"),
+			methodDeclaration( 14, 62),
+			block( 24, 62),
+			parameterizedType( 28, 36),
+			qualifiedName( 28, 33),
+			wildcardType( 34, 35),
+			classLiteral( 41, 58),
+			fieldAccess( 41, 52),
+			identifier( 41, 46));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -139,14 +128,14 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 57),
-			semanticNode(CLASS_DECLARATION, 0, 56, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 54),
-			semanticNode(BLOCK, 24, 54),
-			semanticNode(PARAMETERIZED_TYPE, 28, 36),
-			semanticNode(QUALIFIED_NAME, 28, 33),
-			semanticNode(WILDCARD_TYPE, 34, 35),
-			semanticNode(CLASS_LITERAL, 41, 50));
+			compilationUnit( 0, 57),
+			typeDeclaration(CLASS_DECLARATION, 0, 56, "Test"),
+			methodDeclaration( 14, 54),
+			block( 24, 54),
+			parameterizedType( 28, 36),
+			qualifiedName( 28, 33),
+			wildcardType( 34, 35),
+			classLiteral( 41, 50));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -168,14 +157,14 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 58),
-			semanticNode(CLASS_DECLARATION, 0, 57, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 55),
-			semanticNode(BLOCK, 24, 55),
-			semanticNode(PARAMETERIZED_TYPE, 28, 36),
-			semanticNode(QUALIFIED_NAME, 28, 33),
-			semanticNode(WILDCARD_TYPE, 34, 35),
-			semanticNode(CLASS_LITERAL, 41, 51));
+			compilationUnit( 0, 58),
+			typeDeclaration(CLASS_DECLARATION, 0, 57, "Test"),
+			methodDeclaration( 14, 55),
+			block( 24, 55),
+			parameterizedType( 28, 36),
+			qualifiedName( 28, 33),
+			wildcardType( 34, 35),
+			classLiteral( 41, 51));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -197,15 +186,15 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 62),
-			semanticNode(CLASS_DECLARATION, 0, 61, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 59),
-			semanticNode(BLOCK, 24, 59),
-			semanticNode(PARAMETERIZED_TYPE, 28, 36),
-			semanticNode(QUALIFIED_NAME, 28, 33),
-			semanticNode(WILDCARD_TYPE, 34, 35),
-			semanticNode(CLASS_LITERAL, 41, 55),
-			semanticNode(IDENTIFIER, 41, 47));
+			compilationUnit( 0, 62),
+			typeDeclaration(CLASS_DECLARATION, 0, 61, "Test"),
+			methodDeclaration( 14, 59),
+			block( 24, 59),
+			parameterizedType( 28, 36),
+			qualifiedName( 28, 33),
+			wildcardType( 34, 35),
+			classLiteral( 41, 55),
+			identifier( 41, 47));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -227,14 +216,14 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 59),
-			semanticNode(CLASS_DECLARATION, 0, 58, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 56),
-			semanticNode(BLOCK, 24, 56),
-			semanticNode(PARAMETERIZED_TYPE, 28, 36),
-			semanticNode(QUALIFIED_NAME, 28, 33),
-			semanticNode(WILDCARD_TYPE, 34, 35),
-			semanticNode(CLASS_LITERAL, 41, 52));
+			compilationUnit( 0, 59),
+			typeDeclaration(CLASS_DECLARATION, 0, 58, "Test"),
+			methodDeclaration( 14, 56),
+			block( 24, 56),
+			parameterizedType( 28, 36),
+			qualifiedName( 28, 33),
+			wildcardType( 34, 35),
+			classLiteral( 41, 52));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -256,14 +245,14 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 61),
-			semanticNode(CLASS_DECLARATION, 0, 60, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 58),
-			semanticNode(BLOCK, 24, 58),
-			semanticNode(PARAMETERIZED_TYPE, 28, 36),
-			semanticNode(QUALIFIED_NAME, 28, 33),
-			semanticNode(WILDCARD_TYPE, 34, 35),
-			semanticNode(CLASS_LITERAL, 41, 54));
+			compilationUnit( 0, 61),
+			typeDeclaration(CLASS_DECLARATION, 0, 60, "Test"),
+			methodDeclaration( 14, 58),
+			block( 24, 58),
+			parameterizedType( 28, 36),
+			qualifiedName( 28, 33),
+			wildcardType( 34, 35),
+			classLiteral( 41, 54));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -285,15 +274,15 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 55),
-			semanticNode(CLASS_DECLARATION, 0, 54, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 52),
-			semanticNode(BLOCK, 24, 52),
-			semanticNode(METHOD_INVOCATION, 28, 48),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(IDENTIFIER, 28, 34),
-			semanticNode(IDENTIFIER, 35, 41),
-			semanticNode(CLASS_LITERAL, 35, 47));
+			compilationUnit( 0, 55),
+			typeDeclaration(CLASS_DECLARATION, 0, 54, "Test"),
+			methodDeclaration( 14, 52),
+			block( 24, 52),
+			methodInvocation( 28, 48),
+			qualifiedName( 28, 34),
+			identifier( 28, 34),
+			identifier( 35, 41),
+			classLiteral( 35, 47));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -315,14 +304,14 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 59),
-			semanticNode(CLASS_DECLARATION, 0, 58, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 56),
-			semanticNode(WILDCARD_TYPE, 20, 21),
-			semanticNode(BLOCK, 28, 56),
-			semanticNode(RETURN_STATEMENT, 32, 53),
-			semanticNode(CLASS_LITERAL, 39, 52),
-			semanticNode(IDENTIFIER, 39, 46));
+			compilationUnit( 0, 59),
+			typeDeclaration(CLASS_DECLARATION, 0, 58, "Test"),
+			methodDeclaration( 14, 56),
+			wildcardType( 20, 21),
+			block( 28, 56),
+			returnStatement( 32, 53),
+			classLiteral( 39, 52),
+			identifier( 39, 46));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -344,19 +333,19 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 82),
-			semanticNode(CLASS_DECLARATION, 0, 81, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 79),
-			semanticNode(BLOCK, 24, 79),
-			semanticNode(PARAMETERIZED_TYPE, 28, 36),
-			semanticNode(QUALIFIED_NAME, 28, 33),
-			semanticNode(WILDCARD_TYPE, 34, 35),
-			semanticNode(CONDITIONAL_EXPRESSION, 41, 75),
-			semanticNode(IDENTIFIER, 41, 45),
-			semanticNode(CLASS_LITERAL, 48, 60),
-			semanticNode(IDENTIFIER, 48, 54),
-			semanticNode(CLASS_LITERAL, 63, 75),
-			semanticNode(IDENTIFIER, 63, 69));
+			compilationUnit( 0, 82),
+			typeDeclaration(CLASS_DECLARATION, 0, 81, "Test"),
+			methodDeclaration( 14, 79),
+			block( 24, 79),
+			parameterizedType( 28, 36),
+			qualifiedName( 28, 33),
+			wildcardType( 34, 35),
+			conditionalExpression( 41, 75),
+			identifier( 41, 45),
+			classLiteral( 48, 60),
+			identifier( 48, 54),
+			classLiteral( 63, 75),
+			identifier( 63, 69));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -392,8 +381,8 @@ public final class ClassLiteralParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 20),
-			semanticNode(CLASS_DECLARATION, 0, 19, "TestClass"));
+			compilationUnit( 0, 20),
+			typeDeclaration(CLASS_DECLARATION, 0, 19, "TestClass"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

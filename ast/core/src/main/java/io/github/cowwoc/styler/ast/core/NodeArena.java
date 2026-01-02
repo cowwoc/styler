@@ -106,24 +106,6 @@ public final class NodeArena implements AutoCloseable
 	}
 
 	/**
-	 * Allocates a static import declaration node with its associated attribute.
-	 *
-	 * @param start     the start position in the source code
-	 * @param end       the end position in the source code
-	 * @param attribute the import attribute containing the qualified name
-	 * @return the index of the newly created node
-	 * @throws NullPointerException     if {@code attribute} is null
-	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
-	 */
-	public NodeIndex allocateStaticImportDeclaration(int start, int end, ImportAttribute attribute)
-	{
-		requireThat(attribute, "attribute").isNotNull();
-		NodeIndex index = allocateNode(NodeType.STATIC_IMPORT_DECLARATION, start, end);
-		attributes.put(index, attribute);
-		return index;
-	}
-
-	/**
 	 * Allocates a module import declaration node with its associated attribute.
 	 * <p>
 	 * Module imports (JEP 511) import all public types exported by a module.
@@ -280,11 +262,9 @@ public final class NodeArena implements AutoCloseable
 	public ImportAttribute getImportAttribute(NodeIndex index)
 	{
 		validateIndex(index);
-		NodeType type = getType(index);
-		if (type != NodeType.IMPORT_DECLARATION && type != NodeType.STATIC_IMPORT_DECLARATION)
+		if (getType(index) != NodeType.IMPORT_DECLARATION)
 		{
-			throw new IllegalArgumentException("Expected IMPORT_DECLARATION or STATIC_IMPORT_DECLARATION " +
-				"but was " + type);
+			throw new IllegalArgumentException("Expected IMPORT_DECLARATION but was " + getType(index));
 		}
 		NodeAttribute attribute = attributes.get(index);
 		if (attribute instanceof ImportAttribute importAttribute)

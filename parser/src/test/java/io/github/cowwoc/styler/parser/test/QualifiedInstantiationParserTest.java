@@ -6,19 +6,10 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.THIS_EXPRESSION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
 
 /**
  * Tests for parsing qualified class instantiation expressions ({@code outer.new Inner()}).
@@ -43,14 +34,14 @@ public final class QualifiedInstantiationParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 52),
-			semanticNode(CLASS_DECLARATION, 0, 51, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 49),
-			semanticNode(BLOCK, 24, 49),
-			semanticNode(OBJECT_CREATION, 28, 45),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(IDENTIFIER, 28, 33),
-			semanticNode(QUALIFIED_NAME, 38, 43));
+			compilationUnit( 0, 52),
+			typeDeclaration(CLASS_DECLARATION, 0, 51, "Test"),
+			methodDeclaration( 14, 49),
+			block( 24, 49),
+			objectCreation( 28, 45),
+			qualifiedName( 28, 34),
+			identifier( 28, 33),
+			qualifiedName( 38, 43));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -72,16 +63,16 @@ public final class QualifiedInstantiationParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 63),
-			semanticNode(CLASS_DECLARATION, 0, 62, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 60),
-			semanticNode(BLOCK, 24, 60),
-			semanticNode(METHOD_INVOCATION, 28, 56),
-			semanticNode(OBJECT_CREATION, 28, 45),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(IDENTIFIER, 28, 33),
-			semanticNode(QUALIFIED_NAME, 38, 43),
-			semanticNode(FIELD_ACCESS, 28, 54));
+			compilationUnit( 0, 63),
+			typeDeclaration(CLASS_DECLARATION, 0, 62, "Test"),
+			methodDeclaration( 14, 60),
+			block( 24, 60),
+			methodInvocation( 28, 56),
+			objectCreation( 28, 45),
+			qualifiedName( 28, 34),
+			identifier( 28, 33),
+			qualifiedName( 38, 43),
+			fieldAccess( 28, 54));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -103,15 +94,15 @@ public final class QualifiedInstantiationParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 57),
-			semanticNode(CLASS_DECLARATION, 0, 56, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 54),
-			semanticNode(BLOCK, 24, 54),
-			semanticNode(OBJECT_CREATION, 28, 50),
-			semanticNode(METHOD_INVOCATION, 28, 38),
-			semanticNode(QUALIFIED_NAME, 28, 36),
-			semanticNode(IDENTIFIER, 28, 36),
-			semanticNode(QUALIFIED_NAME, 43, 48));
+			compilationUnit( 0, 57),
+			typeDeclaration(CLASS_DECLARATION, 0, 56, "Test"),
+			methodDeclaration( 14, 54),
+			block( 24, 54),
+			objectCreation( 28, 50),
+			methodInvocation( 28, 38),
+			qualifiedName( 28, 36),
+			identifier( 28, 36),
+			qualifiedName( 43, 48));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -133,16 +124,16 @@ public final class QualifiedInstantiationParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 56),
-			semanticNode(CLASS_DECLARATION, 0, 55, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 53),
-			semanticNode(BLOCK, 24, 53),
-			semanticNode(OBJECT_CREATION, 28, 49),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(IDENTIFIER, 28, 33),
-			semanticNode(QUALIFIED_NAME, 38, 43),
-			semanticNode(INTEGER_LITERAL, 44, 45),
-			semanticNode(INTEGER_LITERAL, 47, 48));
+			compilationUnit( 0, 56),
+			typeDeclaration(CLASS_DECLARATION, 0, 55, "Test"),
+			methodDeclaration( 14, 53),
+			block( 24, 53),
+			objectCreation( 28, 49),
+			qualifiedName( 28, 34),
+			identifier( 28, 33),
+			qualifiedName( 38, 43),
+			integerLiteral( 44, 45),
+			integerLiteral( 47, 48));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -164,15 +155,15 @@ public final class QualifiedInstantiationParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 57),
-			semanticNode(CLASS_DECLARATION, 0, 56, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 54),
-			semanticNode(BLOCK, 24, 54),
-			semanticNode(OBJECT_CREATION, 28, 50),
-			semanticNode(THIS_EXPRESSION, 28, 38),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(IDENTIFIER, 28, 33),
-			semanticNode(QUALIFIED_NAME, 43, 48));
+			compilationUnit( 0, 57),
+			typeDeclaration(CLASS_DECLARATION, 0, 56, "Test"),
+			methodDeclaration( 14, 54),
+			block( 24, 54),
+			objectCreation( 28, 50),
+			thisExpression( 28, 38),
+			qualifiedName( 28, 34),
+			identifier( 28, 33),
+			qualifiedName( 43, 48));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -196,14 +187,14 @@ public final class QualifiedInstantiationParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 60),
-			semanticNode(CLASS_DECLARATION, 0, 59, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 57),
-			semanticNode(BLOCK, 24, 57),
-			semanticNode(OBJECT_CREATION, 28, 53),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(IDENTIFIER, 28, 33),
-			semanticNode(QUALIFIED_NAME, 38, 43));
+			compilationUnit( 0, 60),
+			typeDeclaration(CLASS_DECLARATION, 0, 59, "Test"),
+			methodDeclaration( 14, 57),
+			block( 24, 57),
+			objectCreation( 28, 53),
+			qualifiedName( 28, 34),
+			identifier( 28, 33),
+			qualifiedName( 38, 43));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

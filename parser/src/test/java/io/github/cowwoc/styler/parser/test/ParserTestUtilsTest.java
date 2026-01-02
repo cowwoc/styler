@@ -6,15 +6,12 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.IMPORT_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PACKAGE_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.importNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.packageNode;
 
 /**
  * Tests for {@link ParserTestUtils} utility methods.
@@ -35,8 +32,8 @@ public class ParserTestUtilsTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(CLASS_DECLARATION, 0, 14, "Test"),
-			semanticNode(COMPILATION_UNIT, 0, 14));
+			typeDeclaration(CLASS_DECLARATION, 0, 14, "Test"),
+			compilationUnit( 0, 14));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -73,9 +70,9 @@ public class ParserTestUtilsTest
 
 		// Expected nodes listed in different order than they appear in source
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(CLASS_DECLARATION, 24, 38, "Test"),
-			semanticNode(IMPORT_DECLARATION, 0, 22, "java.util.List"),
-			semanticNode(COMPILATION_UNIT, 0, 39));
+			typeDeclaration(CLASS_DECLARATION, 24, 38, "Test"),
+			importNode(0, 22, "java.util.List", false),
+			compilationUnit( 0, 39));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -96,9 +93,9 @@ public class ParserTestUtilsTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 33),
-			semanticNode(CLASS_DECLARATION, 0, 32, "Outer"),
-			semanticNode(CLASS_DECLARATION, 15, 30, "Inner"));
+			compilationUnit( 0, 33),
+			typeDeclaration(CLASS_DECLARATION, 0, 32, "Outer"),
+			typeDeclaration(CLASS_DECLARATION, 15, 30, "Inner"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -117,9 +114,9 @@ public class ParserTestUtilsTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 33),
-			semanticNode(CLASS_DECLARATION, 0, 15, "First"),
-			semanticNode(CLASS_DECLARATION, 16, 32, "Second"));
+			compilationUnit( 0, 33),
+			typeDeclaration(CLASS_DECLARATION, 0, 15, "First"),
+			typeDeclaration(CLASS_DECLARATION, 16, 32, "Second"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -142,12 +139,12 @@ public class ParserTestUtilsTest
 
 		// Two METHOD_DECLARATION nodes at different positions, each with its own BLOCK
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 47),
-			semanticNode(CLASS_DECLARATION, 0, 46, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 28),
-			semanticNode(METHOD_DECLARATION, 30, 44),
-			semanticNode(BLOCK, 25, 28),
-			semanticNode(BLOCK, 41, 44));
+			compilationUnit( 0, 47),
+			typeDeclaration(CLASS_DECLARATION, 0, 46, "Test"),
+			methodDeclaration( 14, 28),
+			methodDeclaration( 30, 44),
+			block( 25, 28),
+			block( 41, 44));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -170,12 +167,12 @@ public class ParserTestUtilsTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 83),
-			semanticNode(PACKAGE_DECLARATION, 0, 20, "com.example"),
-			semanticNode(QUALIFIED_NAME, 8, 19),
-			semanticNode(IMPORT_DECLARATION, 22, 44, "java.util.List"),
-			semanticNode(IMPORT_DECLARATION, 45, 66, "java.util.Map"),
-			semanticNode(CLASS_DECLARATION, 68, 82, "Test"));
+			compilationUnit( 0, 83),
+			packageNode( 0, 20, "com.example"),
+			qualifiedName( 8, 19),
+			importNode(22, 44, "java.util.List", false),
+			importNode(45, 66, "java.util.Map", false),
+			typeDeclaration(CLASS_DECLARATION, 68, 82, "Test"));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -187,8 +184,8 @@ public class ParserTestUtilsTest
 	@Test
 	public void semanticNodeShouldBeValueBased()
 	{
-		SemanticNode node1 = semanticNode(CLASS_DECLARATION, 0, 10, "Test");
-		SemanticNode node2 = semanticNode(CLASS_DECLARATION, 0, 10, "Test");
+		SemanticNode node1 = typeDeclaration(CLASS_DECLARATION, 0, 10, "Test");
+		SemanticNode node2 = typeDeclaration(CLASS_DECLARATION, 0, 10, "Test");
 
 		requireThat(node1, "node1").isEqualTo(node2);
 		requireThat(node1.hashCode(), "node1.hashCode()").isEqualTo(node2.hashCode());
@@ -201,8 +198,8 @@ public class ParserTestUtilsTest
 	@Test
 	public void semanticNodeShouldDifferByPosition()
 	{
-		SemanticNode node1 = semanticNode(CLASS_DECLARATION, 0, 10, "Test");
-		SemanticNode node2 = semanticNode(CLASS_DECLARATION, 20, 30, "Test");
+		SemanticNode node1 = typeDeclaration(CLASS_DECLARATION, 0, 10, "Test");
+		SemanticNode node2 = typeDeclaration(CLASS_DECLARATION, 20, 30, "Test");
 
 		requireThat(node1, "node1").isNotEqualTo(node2);
 	}
@@ -214,9 +211,9 @@ public class ParserTestUtilsTest
 	@Test
 	public void semanticNodeShouldHandleNullAttribute()
 	{
-		SemanticNode node1 = semanticNode(BLOCK, 0, 10);
-		SemanticNode node2 = semanticNode(BLOCK, 0, 10);
-		SemanticNode node3 = semanticNode(BLOCK, 5, 15);
+		SemanticNode node1 = block( 0, 10);
+		SemanticNode node2 = block( 0, 10);
+		SemanticNode node3 = block( 5, 15);
 
 		requireThat(node1, "node1").isEqualTo(node2);
 		requireThat(node1, "node1").isNotEqualTo(node3);

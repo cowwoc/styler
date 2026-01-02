@@ -6,27 +6,12 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.CONDITIONAL_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_REFERENCE;
-import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.SUPER_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.THIS_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.WILDCARD_TYPE;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseFails;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
 
 /**
  * Tests for parsing explicit type arguments on method and constructor calls.
@@ -58,16 +43,16 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 63),
-			semanticNode(CLASS_DECLARATION, 0, 62, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 60),
-			semanticNode(BLOCK, 21, 60),
-			semanticNode(METHOD_INVOCATION, 25, 56),
-			semanticNode(FIELD_ACCESS, 25, 54),
-			semanticNode(PARAMETERIZED_TYPE, 25, 45),
-			semanticNode(QUALIFIED_NAME, 25, 37),
-			semanticNode(IDENTIFIER, 25, 36),
-			semanticNode(QUALIFIED_NAME, 38, 44));
+			compilationUnit( 0, 63),
+			typeDeclaration(CLASS_DECLARATION, 0, 62, "T"),
+			methodDeclaration( 11, 60),
+			block( 21, 60),
+			methodInvocation( 25, 56),
+			fieldAccess( 25, 54),
+			parameterizedType( 25, 45),
+			qualifiedName( 25, 37),
+			identifier( 25, 36),
+			qualifiedName( 38, 44));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -91,14 +76,14 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 60),
-			semanticNode(CLASS_DECLARATION, 0, 59, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 57),
-			semanticNode(BLOCK, 21, 57),
-			semanticNode(METHOD_INVOCATION, 25, 53),
-			semanticNode(FIELD_ACCESS, 25, 51),
-			semanticNode(THIS_EXPRESSION, 25, 29),
-			semanticNode(QUALIFIED_NAME, 31, 37));
+			compilationUnit( 0, 60),
+			typeDeclaration(CLASS_DECLARATION, 0, 59, "T"),
+			methodDeclaration( 11, 57),
+			block( 21, 57),
+			methodInvocation( 25, 53),
+			fieldAccess( 25, 51),
+			thisExpression( 25, 29),
+			qualifiedName( 31, 37));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -122,17 +107,17 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 61),
-			semanticNode(CLASS_DECLARATION, 0, 60, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 58),
-			semanticNode(BLOCK, 21, 58),
-			semanticNode(METHOD_INVOCATION, 25, 54),
-			semanticNode(FIELD_ACCESS, 25, 52),
-			semanticNode(PARAMETERIZED_TYPE, 25, 46),
-			semanticNode(QUALIFIED_NAME, 25, 29),
-			semanticNode(IDENTIFIER, 25, 28),
-			semanticNode(QUALIFIED_NAME, 30, 36),
-			semanticNode(QUALIFIED_NAME, 38, 45));
+			compilationUnit( 0, 61),
+			typeDeclaration(CLASS_DECLARATION, 0, 60, "T"),
+			methodDeclaration( 11, 58),
+			block( 21, 58),
+			methodInvocation( 25, 54),
+			fieldAccess( 25, 52),
+			parameterizedType( 25, 46),
+			qualifiedName( 25, 29),
+			identifier( 25, 28),
+			qualifiedName( 30, 36),
+			qualifiedName( 38, 45));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -156,19 +141,19 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 58),
-			semanticNode(CLASS_DECLARATION, 0, 57, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 55),
-			semanticNode(BLOCK, 21, 55),
-			semanticNode(METHOD_INVOCATION, 25, 51),
-			semanticNode(FIELD_ACCESS, 25, 49),
-			semanticNode(PARAMETERIZED_TYPE, 25, 43),
-			semanticNode(QUALIFIED_NAME, 25, 29),
-			semanticNode(IDENTIFIER, 25, 28),
-			semanticNode(PARAMETERIZED_TYPE, 30, 43),
-			semanticNode(QUALIFIED_NAME, 30, 43),
-			semanticNode(QUALIFIED_NAME, 30, 34),
-			semanticNode(QUALIFIED_NAME, 35, 41));
+			compilationUnit( 0, 58),
+			typeDeclaration(CLASS_DECLARATION, 0, 57, "T"),
+			methodDeclaration( 11, 55),
+			block( 21, 55),
+			methodInvocation( 25, 51),
+			fieldAccess( 25, 49),
+			parameterizedType( 25, 43),
+			qualifiedName( 25, 29),
+			identifier( 25, 28),
+			parameterizedType( 30, 43),
+			qualifiedName( 30, 43),
+			qualifiedName( 30, 34),
+			qualifiedName( 35, 41));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -192,17 +177,17 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 62),
-			semanticNode(CLASS_DECLARATION, 0, 61, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 59),
-			semanticNode(BLOCK, 21, 59),
-			semanticNode(METHOD_INVOCATION, 25, 55),
-			semanticNode(FIELD_ACCESS, 25, 53),
-			semanticNode(PARAMETERIZED_TYPE, 25, 47),
-			semanticNode(QUALIFIED_NAME, 25, 29),
-			semanticNode(IDENTIFIER, 25, 28),
-			semanticNode(WILDCARD_TYPE, 30, 46),
-			semanticNode(QUALIFIED_NAME, 40, 46));
+			compilationUnit( 0, 62),
+			typeDeclaration(CLASS_DECLARATION, 0, 61, "T"),
+			methodDeclaration( 11, 59),
+			block( 21, 59),
+			methodInvocation( 25, 55),
+			fieldAccess( 25, 53),
+			parameterizedType( 25, 47),
+			qualifiedName( 25, 29),
+			identifier( 25, 28),
+			wildcardType( 30, 46),
+			qualifiedName( 40, 46));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -226,19 +211,19 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 64),
-			semanticNode(CLASS_DECLARATION, 0, 63, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 61),
-			semanticNode(BLOCK, 21, 61),
-			semanticNode(METHOD_INVOCATION, 25, 57),
-			semanticNode(FIELD_ACCESS, 25, 55),
-			semanticNode(METHOD_INVOCATION, 25, 42),
-			semanticNode(FIELD_ACCESS, 25, 40),
-			semanticNode(PARAMETERIZED_TYPE, 25, 37),
-			semanticNode(QUALIFIED_NAME, 25, 29),
-			semanticNode(IDENTIFIER, 25, 28),
-			semanticNode(QUALIFIED_NAME, 30, 36),
-			semanticNode(QUALIFIED_NAME, 44, 51));
+			compilationUnit( 0, 64),
+			typeDeclaration(CLASS_DECLARATION, 0, 63, "T"),
+			methodDeclaration( 11, 61),
+			block( 21, 61),
+			methodInvocation( 25, 57),
+			fieldAccess( 25, 55),
+			methodInvocation( 25, 42),
+			fieldAccess( 25, 40),
+			parameterizedType( 25, 37),
+			qualifiedName( 25, 29),
+			identifier( 25, 28),
+			qualifiedName( 30, 36),
+			qualifiedName( 44, 51));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -262,14 +247,14 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 54),
-			semanticNode(CLASS_DECLARATION, 0, 53, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 51),
-			semanticNode(BLOCK, 21, 51),
-			semanticNode(METHOD_INVOCATION, 25, 47),
-			semanticNode(FIELD_ACCESS, 25, 45),
-			semanticNode(SUPER_EXPRESSION, 25, 30),
-			semanticNode(QUALIFIED_NAME, 32, 38));
+			compilationUnit( 0, 54),
+			typeDeclaration(CLASS_DECLARATION, 0, 53, "T"),
+			methodDeclaration( 11, 51),
+			block( 21, 51),
+			methodInvocation( 25, 47),
+			fieldAccess( 25, 45),
+			superExpression( 25, 30),
+			qualifiedName( 32, 38));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -297,14 +282,14 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 66),
-			semanticNode(CLASS_DECLARATION, 0, 65, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 63),
-			semanticNode(BLOCK, 21, 63),
-			semanticNode(QUALIFIED_NAME, 25, 31),
-			semanticNode(OBJECT_CREATION, 36, 59),
-			semanticNode(QUALIFIED_NAME, 41, 47),
-			semanticNode(QUALIFIED_NAME, 48, 57));
+			compilationUnit( 0, 66),
+			typeDeclaration(CLASS_DECLARATION, 0, 65, "T"),
+			methodDeclaration( 11, 63),
+			block( 21, 63),
+			qualifiedName( 25, 31),
+			objectCreation( 36, 59),
+			qualifiedName( 41, 47),
+			qualifiedName( 48, 57));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -328,15 +313,15 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 70),
-			semanticNode(CLASS_DECLARATION, 0, 69, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 67),
-			semanticNode(BLOCK, 21, 67),
-			semanticNode(QUALIFIED_NAME, 25, 31),
-			semanticNode(OBJECT_CREATION, 36, 63),
-			semanticNode(QUALIFIED_NAME, 41, 47),
-			semanticNode(QUALIFIED_NAME, 49, 56),
-			semanticNode(QUALIFIED_NAME, 57, 61));
+			compilationUnit( 0, 70),
+			typeDeclaration(CLASS_DECLARATION, 0, 69, "T"),
+			methodDeclaration( 11, 67),
+			block( 21, 67),
+			qualifiedName( 25, 31),
+			objectCreation( 36, 63),
+			qualifiedName( 41, 47),
+			qualifiedName( 49, 56),
+			qualifiedName( 57, 61));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -360,16 +345,16 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 75),
-			semanticNode(CLASS_DECLARATION, 0, 74, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 72),
-			semanticNode(BLOCK, 21, 72),
-			semanticNode(QUALIFIED_NAME, 25, 31),
-			semanticNode(OBJECT_CREATION, 36, 68),
-			semanticNode(QUALIFIED_NAME, 41, 47),
-			semanticNode(PARAMETERIZED_TYPE, 48, 66),
-			semanticNode(QUALIFIED_NAME, 48, 57),
-			semanticNode(QUALIFIED_NAME, 58, 65));
+			compilationUnit( 0, 75),
+			typeDeclaration(CLASS_DECLARATION, 0, 74, "T"),
+			methodDeclaration( 11, 72),
+			block( 21, 72),
+			qualifiedName( 25, 31),
+			objectCreation( 36, 68),
+			qualifiedName( 41, 47),
+			parameterizedType( 48, 66),
+			qualifiedName( 48, 57),
+			qualifiedName( 58, 65));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -393,17 +378,17 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 70),
-			semanticNode(CLASS_DECLARATION, 0, 69, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 67),
-			semanticNode(BLOCK, 21, 67),
-			semanticNode(QUALIFIED_NAME, 25, 31),
-			semanticNode(OBJECT_CREATION, 36, 63),
-			semanticNode(QUALIFIED_NAME, 41, 54),
-			semanticNode(PARAMETERIZED_TYPE, 41, 54),
-			semanticNode(QUALIFIED_NAME, 41, 45),
-			semanticNode(QUALIFIED_NAME, 46, 52),
-			semanticNode(QUALIFIED_NAME, 54, 61));
+			compilationUnit( 0, 70),
+			typeDeclaration(CLASS_DECLARATION, 0, 69, "T"),
+			methodDeclaration( 11, 67),
+			block( 21, 67),
+			qualifiedName( 25, 31),
+			objectCreation( 36, 63),
+			qualifiedName( 41, 54),
+			parameterizedType( 41, 54),
+			qualifiedName( 41, 45),
+			qualifiedName( 46, 52),
+			qualifiedName( 54, 61));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -428,12 +413,12 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 42),
-			semanticNode(CLASS_DECLARATION, 0, 41, "T"),
-			semanticNode(FIELD_DECLARATION, 11, 39),
-			semanticNode(METHOD_REFERENCE, 22, 38),
-			semanticNode(IDENTIFIER, 22, 26),
-			semanticNode(QUALIFIED_NAME, 29, 35));
+			compilationUnit( 0, 42),
+			typeDeclaration(CLASS_DECLARATION, 0, 41, "T"),
+			fieldDeclaration( 11, 39),
+			methodReference( 22, 38),
+			identifier( 22, 26),
+			qualifiedName( 29, 35));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -454,13 +439,13 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 56),
-			semanticNode(CLASS_DECLARATION, 0, 55, "T"),
-			semanticNode(FIELD_DECLARATION, 11, 53),
-			semanticNode(METHOD_REFERENCE, 22, 52),
-			semanticNode(IDENTIFIER, 22, 26),
-			semanticNode(QUALIFIED_NAME, 29, 35),
-			semanticNode(QUALIFIED_NAME, 37, 44));
+			compilationUnit( 0, 56),
+			typeDeclaration(CLASS_DECLARATION, 0, 55, "T"),
+			fieldDeclaration( 11, 53),
+			methodReference( 22, 52),
+			identifier( 22, 26),
+			qualifiedName( 29, 35),
+			qualifiedName( 37, 44));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -481,12 +466,12 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 46),
-			semanticNode(CLASS_DECLARATION, 0, 45, "T"),
-			semanticNode(FIELD_DECLARATION, 11, 43),
-			semanticNode(METHOD_REFERENCE, 22, 42),
-			semanticNode(IDENTIFIER, 22, 28),
-			semanticNode(QUALIFIED_NAME, 31, 37));
+			compilationUnit( 0, 46),
+			typeDeclaration(CLASS_DECLARATION, 0, 45, "T"),
+			fieldDeclaration( 11, 43),
+			methodReference( 22, 42),
+			identifier( 22, 28),
+			qualifiedName( 31, 37));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -507,14 +492,14 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 66),
-			semanticNode(CLASS_DECLARATION, 0, 65, "T"),
-			semanticNode(FIELD_DECLARATION, 11, 63),
-			semanticNode(METHOD_REFERENCE, 22, 62),
-			semanticNode(FIELD_ACCESS, 22, 43),
-			semanticNode(FIELD_ACCESS, 22, 31),
-			semanticNode(IDENTIFIER, 22, 26),
-			semanticNode(QUALIFIED_NAME, 46, 52));
+			compilationUnit( 0, 66),
+			typeDeclaration(CLASS_DECLARATION, 0, 65, "T"),
+			fieldDeclaration( 11, 63),
+			methodReference( 22, 62),
+			fieldAccess( 22, 43),
+			fieldAccess( 22, 31),
+			identifier( 22, 26),
+			qualifiedName( 46, 52));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -539,12 +524,12 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 48),
-			semanticNode(CLASS_DECLARATION, 0, 47, "T"),
-			semanticNode(FIELD_DECLARATION, 11, 45),
-			semanticNode(METHOD_REFERENCE, 22, 44),
-			semanticNode(IDENTIFIER, 22, 31),
-			semanticNode(QUALIFIED_NAME, 34, 40));
+			compilationUnit( 0, 48),
+			typeDeclaration(CLASS_DECLARATION, 0, 47, "T"),
+			fieldDeclaration( 11, 45),
+			methodReference( 22, 44),
+			identifier( 22, 31),
+			qualifiedName( 34, 40));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -565,13 +550,13 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 55),
-			semanticNode(CLASS_DECLARATION, 0, 54, "T"),
-			semanticNode(FIELD_DECLARATION, 11, 52),
-			semanticNode(METHOD_REFERENCE, 22, 51),
-			semanticNode(IDENTIFIER, 22, 29),
-			semanticNode(QUALIFIED_NAME, 32, 38),
-			semanticNode(QUALIFIED_NAME, 40, 47));
+			compilationUnit( 0, 55),
+			typeDeclaration(CLASS_DECLARATION, 0, 54, "T"),
+			fieldDeclaration( 11, 52),
+			methodReference( 22, 51),
+			identifier( 22, 29),
+			qualifiedName( 32, 38),
+			qualifiedName( 40, 47));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -592,13 +577,13 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 50),
-			semanticNode(CLASS_DECLARATION, 0, 49, "T"),
-			semanticNode(FIELD_DECLARATION, 11, 47),
-			semanticNode(METHOD_REFERENCE, 22, 46),
-			semanticNode(FIELD_ACCESS, 22, 33),
-			semanticNode(IDENTIFIER, 22, 27),
-			semanticNode(QUALIFIED_NAME, 36, 42));
+			compilationUnit( 0, 50),
+			typeDeclaration(CLASS_DECLARATION, 0, 49, "T"),
+			fieldDeclaration( 11, 47),
+			methodReference( 22, 46),
+			fieldAccess( 22, 33),
+			identifier( 22, 27),
+			qualifiedName( 36, 42));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -628,17 +613,17 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 89),
-			semanticNode(CLASS_DECLARATION, 0, 88, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 86),
-			semanticNode(BLOCK, 21, 86),
-			semanticNode(OBJECT_CREATION, 33, 50),
-			semanticNode(PARAMETERIZED_TYPE, 37, 48),
-			semanticNode(QUALIFIED_NAME, 37, 46),
-			semanticNode(METHOD_INVOCATION, 62, 82),
-			semanticNode(FIELD_ACCESS, 62, 80),
-			semanticNode(IDENTIFIER, 62, 65),
-			semanticNode(QUALIFIED_NAME, 67, 73));
+			compilationUnit( 0, 89),
+			typeDeclaration(CLASS_DECLARATION, 0, 88, "T"),
+			methodDeclaration( 11, 86),
+			block( 21, 86),
+			objectCreation( 33, 50),
+			parameterizedType( 37, 48),
+			qualifiedName( 37, 46),
+			methodInvocation( 62, 82),
+			fieldAccess( 62, 80),
+			identifier( 62, 65),
+			qualifiedName( 67, 73));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -662,23 +647,23 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 72),
-			semanticNode(CLASS_DECLARATION, 0, 71, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 69),
-			semanticNode(BLOCK, 21, 69),
-			semanticNode(METHOD_INVOCATION, 25, 65),
-			semanticNode(FIELD_ACCESS, 25, 63),
-			semanticNode(PARAMETERIZED_TYPE, 25, 57),
-			semanticNode(QUALIFIED_NAME, 25, 29),
-			semanticNode(IDENTIFIER, 25, 28),
-			semanticNode(PARAMETERIZED_TYPE, 30, 57),
-			semanticNode(QUALIFIED_NAME, 30, 57),
-			semanticNode(QUALIFIED_NAME, 30, 33),
-			semanticNode(QUALIFIED_NAME, 34, 40),
-			semanticNode(PARAMETERIZED_TYPE, 42, 57),
-			semanticNode(QUALIFIED_NAME, 42, 57),
-			semanticNode(QUALIFIED_NAME, 42, 46),
-			semanticNode(QUALIFIED_NAME, 47, 54));
+			compilationUnit( 0, 72),
+			typeDeclaration(CLASS_DECLARATION, 0, 71, "T"),
+			methodDeclaration( 11, 69),
+			block( 21, 69),
+			methodInvocation( 25, 65),
+			fieldAccess( 25, 63),
+			parameterizedType( 25, 57),
+			qualifiedName( 25, 29),
+			identifier( 25, 28),
+			parameterizedType( 30, 57),
+			qualifiedName( 30, 57),
+			qualifiedName( 30, 33),
+			qualifiedName( 34, 40),
+			parameterizedType( 42, 57),
+			qualifiedName( 42, 57),
+			qualifiedName( 42, 46),
+			qualifiedName( 47, 54));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -702,22 +687,22 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 90),
-			semanticNode(CLASS_DECLARATION, 0, 89, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 87),
-			semanticNode(PARAMETER_DECLARATION, 18, 27, "f"),
-			semanticNode(BLOCK, 30, 87),
-			semanticNode(QUALIFIED_NAME, 34, 40),
-			semanticNode(CONDITIONAL_EXPRESSION, 45, 83),
-			semanticNode(IDENTIFIER, 45, 46),
-			semanticNode(METHOD_INVOCATION, 49, 64),
-			semanticNode(FIELD_ACCESS, 49, 62),
-			semanticNode(IDENTIFIER, 49, 52),
-			semanticNode(QUALIFIED_NAME, 54, 60),
-			semanticNode(METHOD_INVOCATION, 67, 83),
-			semanticNode(FIELD_ACCESS, 67, 81),
-			semanticNode(IDENTIFIER, 67, 70),
-			semanticNode(QUALIFIED_NAME, 72, 79));
+			compilationUnit( 0, 90),
+			typeDeclaration(CLASS_DECLARATION, 0, 89, "T"),
+			methodDeclaration( 11, 87),
+			parameterNode( 18, 27, "f"),
+			block( 30, 87),
+			qualifiedName( 34, 40),
+			conditionalExpression( 45, 83),
+			identifier( 45, 46),
+			methodInvocation( 49, 64),
+			fieldAccess( 49, 62),
+			identifier( 49, 52),
+			qualifiedName( 54, 60),
+			methodInvocation( 67, 83),
+			fieldAccess( 67, 81),
+			identifier( 67, 70),
+			qualifiedName( 72, 79));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
@@ -741,15 +726,15 @@ public final class ExplicitTypeArgumentParserTest
 		Set<SemanticNode> actual = parseSemanticAst(source);
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 72),
-			semanticNode(CLASS_DECLARATION, 0, 71, "T"),
-			semanticNode(METHOD_DECLARATION, 11, 69),
-			semanticNode(BLOCK, 23, 69),
-			semanticNode(RETURN_STATEMENT, 27, 66),
-			semanticNode(METHOD_INVOCATION, 34, 65),
-			semanticNode(FIELD_ACCESS, 34, 63),
-			semanticNode(IDENTIFIER, 34, 45),
-			semanticNode(QUALIFIED_NAME, 47, 53));
+			compilationUnit( 0, 72),
+			typeDeclaration(CLASS_DECLARATION, 0, 71, "T"),
+			methodDeclaration( 11, 69),
+			block( 23, 69),
+			returnStatement( 27, 66),
+			methodInvocation( 34, 65),
+			fieldAccess( 34, 63),
+			identifier( 34, 45),
+			qualifiedName( 47, 53));
 
 		requireThat(actual, "actual").isEqualTo(expected);
 	}

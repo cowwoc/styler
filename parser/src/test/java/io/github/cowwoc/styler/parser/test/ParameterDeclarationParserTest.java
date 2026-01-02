@@ -7,9 +7,10 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
 
 /**
  * Tests for parsing parameter declarations in methods, constructors, catch clauses, and records.
@@ -34,11 +35,11 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 52),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 51, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 49),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 42, "x"),
-			semanticNode(NodeType.BLOCK, 45, 49));
+			compilationUnit( 0, 52),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 51, "Test"),
+			methodDeclaration( 21, 49),
+			parameterNode(37, 42, "x"),
+			block( 45, 49));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -58,12 +59,12 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 58),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 57, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 55),
-			semanticNode(NodeType.QUALIFIED_NAME, 37, 43),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 48, "name"),
-			semanticNode(NodeType.BLOCK, 51, 55));
+			compilationUnit( 0, 58),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 57, "Test"),
+			methodDeclaration( 21, 55),
+			qualifiedName( 37, 43),
+			parameterNode(37, 48, "name"),
+			block( 51, 55));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -83,12 +84,12 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 66),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 65, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 63),
-			semanticNode(NodeType.QUALIFIED_NAME, 37, 51),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 56, "list"),
-			semanticNode(NodeType.BLOCK, 59, 63));
+			compilationUnit( 0, 66),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 65, "Test"),
+			methodDeclaration( 21, 63),
+			qualifiedName( 37, 51),
+			parameterNode(37, 56, "list"),
+			block( 59, 63));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -108,14 +109,14 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 72),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 71, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 69),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 42, "x"),
-			semanticNode(NodeType.QUALIFIED_NAME, 44, 50),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 44, 52, "y"),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 54, 62, "z"),
-			semanticNode(NodeType.BLOCK, 65, 69));
+			compilationUnit( 0, 72),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 71, "Test"),
+			methodDeclaration( 21, 69),
+			parameterNode(37, 42, "x"),
+			qualifiedName( 44, 50),
+			parameterNode(44, 52, "y"),
+			parameterNode(54, 62, "z"),
+			block( 65, 69));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -137,12 +138,12 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 64),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 63, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 61),
-			semanticNode(NodeType.QUALIFIED_NAME, 43, 49),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 54, "name"),
-			semanticNode(NodeType.BLOCK, 57, 61));
+			compilationUnit( 0, 64),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 63, "Test"),
+			methodDeclaration( 21, 61),
+			qualifiedName( 43, 49),
+			parameterNode(37, 54, "name"),
+			block( 57, 61));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -162,11 +163,11 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 62),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 61, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 59),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 52, "count"),
-			semanticNode(NodeType.BLOCK, 55, 59));
+			compilationUnit( 0, 62),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 61, "Test"),
+			methodDeclaration( 21, 59),
+			parameterNode(37, 52, "count"),
+			block( 55, 59));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -186,13 +187,13 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 74),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 73, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 71),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 48, "x"),
-			semanticNode(NodeType.QUALIFIED_NAME, 56, 62),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 50, 64, "y"),
-			semanticNode(NodeType.BLOCK, 67, 71));
+			compilationUnit( 0, 74),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 73, "Test"),
+			methodDeclaration( 21, 71),
+			parameterNode(37, 48, "x"),
+			qualifiedName( 56, 62),
+			parameterNode(50, 64, "y"),
+			block( 67, 71));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -214,12 +215,12 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 61),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 60, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 58),
-			semanticNode(NodeType.QUALIFIED_NAME, 37, 43),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 51, "args"),
-			semanticNode(NodeType.BLOCK, 54, 58));
+			compilationUnit( 0, 61),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 60, "Test"),
+			methodDeclaration( 21, 58),
+			qualifiedName( 37, 43),
+			parameterNode(37, 51, "args"),
+			block( 54, 58));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -239,13 +240,13 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 72),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 71, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 69),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 46, "first"),
-			semanticNode(NodeType.QUALIFIED_NAME, 48, 54),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 48, 62, "rest"),
-			semanticNode(NodeType.BLOCK, 65, 69));
+			compilationUnit( 0, 72),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 71, "Test"),
+			methodDeclaration( 21, 69),
+			parameterNode(37, 46, "first"),
+			qualifiedName( 48, 54),
+			parameterNode(48, 62, "rest"),
+			block( 65, 69));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -267,14 +268,14 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 67),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 66, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 64),
-			semanticNode(ANNOTATION, 37, 45),
-			semanticNode(NodeType.QUALIFIED_NAME, 38, 45),
-			semanticNode(NodeType.QUALIFIED_NAME, 46, 52),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 57, "name"),
-			semanticNode(NodeType.BLOCK, 60, 64));
+			compilationUnit( 0, 67),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 66, "Test"),
+			methodDeclaration( 21, 64),
+			annotation( 37, 45),
+			qualifiedName( 38, 45),
+			qualifiedName( 46, 52),
+			parameterNode(37, 57, "name"),
+			block( 60, 64));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -294,16 +295,16 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 77),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 76, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 74),
-			semanticNode(ANNOTATION, 37, 45),
-			semanticNode(NodeType.QUALIFIED_NAME, 38, 45),
-			semanticNode(ANNOTATION, 46, 55),
-			semanticNode(NodeType.QUALIFIED_NAME, 47, 55),
-			semanticNode(NodeType.QUALIFIED_NAME, 56, 62),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 67, "name"),
-			semanticNode(NodeType.BLOCK, 70, 74));
+			compilationUnit( 0, 77),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 76, "Test"),
+			methodDeclaration( 21, 74),
+			annotation( 37, 45),
+			qualifiedName( 38, 45),
+			annotation( 46, 55),
+			qualifiedName( 47, 55),
+			qualifiedName( 56, 62),
+			parameterNode(37, 67, "name"),
+			block( 70, 74));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -325,14 +326,14 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 65),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 64, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 62),
-			semanticNode(NodeType.PARAMETERIZED_TYPE, 37, 49),
-			semanticNode(NodeType.QUALIFIED_NAME, 37, 41),
-			semanticNode(NodeType.QUALIFIED_NAME, 42, 48),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 55, "items"),
-			semanticNode(NodeType.BLOCK, 58, 62));
+			compilationUnit( 0, 65),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 64, "Test"),
+			methodDeclaration( 21, 62),
+			parameterizedType( 37, 49),
+			qualifiedName( 37, 41),
+			qualifiedName( 42, 48),
+			parameterNode(37, 55, "items"),
+			block( 58, 62));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -352,18 +353,18 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 78),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 77, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 75),
-			semanticNode(NodeType.PARAMETERIZED_TYPE, 37, 63),
-			semanticNode(NodeType.PARAMETERIZED_TYPE, 49, 63),
-			semanticNode(NodeType.QUALIFIED_NAME, 37, 40),
-			semanticNode(NodeType.QUALIFIED_NAME, 41, 47),
-			semanticNode(NodeType.QUALIFIED_NAME, 49, 53),
-			semanticNode(NodeType.QUALIFIED_NAME, 49, 63),
-			semanticNode(NodeType.QUALIFIED_NAME, 54, 61),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 68, "data"),
-			semanticNode(NodeType.BLOCK, 71, 75));
+			compilationUnit( 0, 78),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 77, "Test"),
+			methodDeclaration( 21, 75),
+			parameterizedType( 37, 63),
+			parameterizedType( 49, 63),
+			qualifiedName( 37, 40),
+			qualifiedName( 41, 47),
+			qualifiedName( 49, 53),
+			qualifiedName( 49, 63),
+			qualifiedName( 54, 61),
+			parameterNode(37, 68, "data"),
+			block( 71, 75));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -383,12 +384,12 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 61),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 60, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 58),
-			semanticNode(NodeType.QUALIFIED_NAME, 37, 43),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 51, "names"),
-			semanticNode(NodeType.BLOCK, 54, 58));
+			compilationUnit( 0, 61),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 60, "Test"),
+			methodDeclaration( 21, 58),
+			qualifiedName( 37, 43),
+			parameterNode(37, 51, "names"),
+			block( 54, 58));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -408,11 +409,11 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 61),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 60, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 58),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 51, "matrix"),
-			semanticNode(NodeType.BLOCK, 54, 58));
+			compilationUnit( 0, 61),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 60, "Test"),
+			methodDeclaration( 21, 58),
+			parameterNode(37, 51, "matrix"),
+			block( 54, 58));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -434,13 +435,13 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 65),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 64, "Test"),
-			semanticNode(NodeType.CONSTRUCTOR_DECLARATION, 21, 62),
-			semanticNode(NodeType.QUALIFIED_NAME, 33, 39),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 33, 44, "name"),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 46, 55, "value"),
-			semanticNode(NodeType.BLOCK, 58, 62));
+			compilationUnit( 0, 65),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 64, "Test"),
+			constructorDeclaration( 21, 62),
+			qualifiedName( 33, 39),
+			parameterNode(33, 44, "name"),
+			parameterNode(46, 55, "value"),
+			block( 58, 62));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -457,10 +458,10 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 38),
-			semanticNode(NodeType.RECORD_DECLARATION, 7, 37, "Point"),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 20, 25, "x"),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 27, 32, "y"));
+			compilationUnit( 0, 38),
+			typeDeclaration(NodeType.RECORD_DECLARATION, 7, 37, "Point"),
+			parameterNode(20, 25, "x"),
+			parameterNode(27, 32, "y"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -486,16 +487,16 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 91),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 90, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 88),
-			semanticNode(NodeType.BLOCK, 40, 88),
-			semanticNode(NodeType.TRY_STATEMENT, 44, 85),
-			semanticNode(NodeType.BLOCK, 50, 55),
-			semanticNode(NodeType.CATCH_CLAUSE, 58, 85),
-			semanticNode(NodeType.QUALIFIED_NAME, 65, 74),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 65, 76, "e"),
-			semanticNode(NodeType.BLOCK, 80, 85));
+			compilationUnit( 0, 91),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 90, "Test"),
+			methodDeclaration( 21, 88),
+			block( 40, 88),
+			tryStatement( 44, 85),
+			block( 50, 55),
+			catchClause( 58, 85),
+			qualifiedName( 65, 74),
+			parameterNode(65, 76, "e"),
+			block( 80, 85));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -517,12 +518,12 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 59),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 58, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 56),
-			semanticNode(NodeType.QUALIFIED_NAME, 40, 44),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 40, 49, "this"),
-			semanticNode(NodeType.BLOCK, 52, 56));
+			compilationUnit( 0, 59),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 58, "Test"),
+			methodDeclaration( 21, 56),
+			qualifiedName( 40, 44),
+			parameterNode(40, 49, "this"),
+			block( 52, 56));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -542,12 +543,12 @@ public final class ParameterDeclarationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(NodeType.COMPILATION_UNIT, 0, 60),
-			semanticNode(NodeType.CLASS_DECLARATION, 7, 59, "Test"),
-			semanticNode(NodeType.METHOD_DECLARATION, 21, 57),
-			semanticNode(NodeType.QUALIFIED_NAME, 37, 43),
-			semanticNode(NodeType.PARAMETER_DECLARATION, 37, 50, "args"),
-			semanticNode(NodeType.BLOCK, 53, 57));
+			compilationUnit( 0, 60),
+			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 59, "Test"),
+			methodDeclaration( 21, 57),
+			qualifiedName( 37, 43),
+			parameterNode(37, 50, "args"),
+			block( 53, 57));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

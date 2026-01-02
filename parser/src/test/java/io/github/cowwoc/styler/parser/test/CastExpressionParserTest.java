@@ -6,26 +6,11 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.ARRAY_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.BINARY_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CAST_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.CONDITIONAL_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.RETURN_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.UNARY_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.WILDCARD_TYPE;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseFails;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
 
 /**
  * Tests for parsing cast expressions.
@@ -51,12 +36,12 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 58),
-			semanticNode(CLASS_DECLARATION, 0, 57, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 55),
-			semanticNode(BLOCK, 24, 55),
-			semanticNode(CAST_EXPRESSION, 36, 51),
-			semanticNode(IDENTIFIER, 42, 51));
+			compilationUnit( 0, 58),
+			typeDeclaration(CLASS_DECLARATION, 0, 57, "Test"),
+			methodDeclaration( 14, 55),
+			block( 24, 55),
+			castExpression( 36, 51),
+			identifier( 42, 51));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -77,12 +62,12 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 63),
-			semanticNode(CLASS_DECLARATION, 0, 62, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 60),
-			semanticNode(BLOCK, 24, 60),
-			semanticNode(CAST_EXPRESSION, 39, 56),
-			semanticNode(IDENTIFIER, 48, 56));
+			compilationUnit( 0, 63),
+			typeDeclaration(CLASS_DECLARATION, 0, 62, "Test"),
+			methodDeclaration( 14, 60),
+			block( 24, 60),
+			castExpression( 39, 56),
+			identifier( 48, 56));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -103,13 +88,13 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 58),
-			semanticNode(CLASS_DECLARATION, 0, 57, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 55),
-			semanticNode(BLOCK, 24, 55),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(CAST_EXPRESSION, 39, 51),
-			semanticNode(IDENTIFIER, 48, 51));
+			compilationUnit( 0, 58),
+			typeDeclaration(CLASS_DECLARATION, 0, 57, "Test"),
+			methodDeclaration( 14, 55),
+			block( 24, 55),
+			qualifiedName( 28, 34),
+			castExpression( 39, 51),
+			identifier( 48, 51));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -130,13 +115,13 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 68),
-			semanticNode(CLASS_DECLARATION, 0, 67, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 65),
-			semanticNode(BLOCK, 24, 65),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(CAST_EXPRESSION, 39, 61),
-			semanticNode(IDENTIFIER, 58, 61));
+			compilationUnit( 0, 68),
+			typeDeclaration(CLASS_DECLARATION, 0, 67, "Test"),
+			methodDeclaration( 14, 65),
+			block( 24, 65),
+			qualifiedName( 28, 34),
+			castExpression( 39, 61),
+			identifier( 58, 61));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -157,16 +142,16 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 73),
-			semanticNode(CLASS_DECLARATION, 0, 72, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 70),
-			semanticNode(BLOCK, 24, 70),
-			semanticNode(QUALIFIED_NAME, 28, 32),
-			semanticNode(QUALIFIED_NAME, 33, 39),
-			semanticNode(PARAMETERIZED_TYPE, 28, 40),
-			semanticNode(CAST_EXPRESSION, 48, 66),
-			semanticNode(QUALIFIED_NAME, 54, 60),
-			semanticNode(IDENTIFIER, 63, 66));
+			compilationUnit( 0, 73),
+			typeDeclaration(CLASS_DECLARATION, 0, 72, "Test"),
+			methodDeclaration( 14, 70),
+			block( 24, 70),
+			qualifiedName( 28, 32),
+			qualifiedName( 33, 39),
+			parameterizedType( 28, 40),
+			castExpression( 48, 66),
+			qualifiedName( 54, 60),
+			identifier( 63, 66));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -189,14 +174,14 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 82),
-			semanticNode(CLASS_DECLARATION, 0, 81, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 79),
-			semanticNode(BLOCK, 24, 79),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(CAST_EXPRESSION, 39, 75),
-			semanticNode(WILDCARD_TYPE, 66, 67),
-			semanticNode(IDENTIFIER, 70, 75));
+			compilationUnit( 0, 82),
+			typeDeclaration(CLASS_DECLARATION, 0, 81, "Test"),
+			methodDeclaration( 14, 79),
+			block( 24, 79),
+			qualifiedName( 28, 34),
+			castExpression( 39, 75),
+			wildcardType( 66, 67),
+			identifier( 70, 75));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -217,14 +202,14 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 94),
-			semanticNode(CLASS_DECLARATION, 0, 93, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 91),
-			semanticNode(BLOCK, 24, 91),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(CAST_EXPRESSION, 39, 87),
-			semanticNode(WILDCARD_TYPE, 66, 67),
-			semanticNode(IDENTIFIER, 82, 87));
+			compilationUnit( 0, 94),
+			typeDeclaration(CLASS_DECLARATION, 0, 93, "Test"),
+			methodDeclaration( 14, 91),
+			block( 24, 91),
+			qualifiedName( 28, 34),
+			castExpression( 39, 87),
+			wildcardType( 66, 67),
+			identifier( 82, 87));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -245,14 +230,14 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 100),
-			semanticNode(CLASS_DECLARATION, 0, 99, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 97),
-			semanticNode(BLOCK, 24, 97),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(CAST_EXPRESSION, 39, 93),
-			semanticNode(WILDCARD_TYPE, 84, 85),
-			semanticNode(IDENTIFIER, 88, 93));
+			compilationUnit( 0, 100),
+			typeDeclaration(CLASS_DECLARATION, 0, 99, "Test"),
+			methodDeclaration( 14, 97),
+			block( 24, 97),
+			qualifiedName( 28, 34),
+			castExpression( 39, 93),
+			wildcardType( 84, 85),
+			identifier( 88, 93));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -275,13 +260,13 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 66),
-			semanticNode(CLASS_DECLARATION, 0, 65, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 63),
-			semanticNode(BLOCK, 24, 63),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(CAST_EXPRESSION, 43, 59),
-			semanticNode(IDENTIFIER, 54, 59));
+			compilationUnit( 0, 66),
+			typeDeclaration(CLASS_DECLARATION, 0, 65, "Test"),
+			methodDeclaration( 14, 63),
+			block( 24, 63),
+			qualifiedName( 28, 34),
+			castExpression( 43, 59),
+			identifier( 54, 59));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -302,12 +287,12 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 67),
-			semanticNode(CLASS_DECLARATION, 0, 66, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 64),
-			semanticNode(BLOCK, 24, 64),
-			semanticNode(CAST_EXPRESSION, 45, 60),
-			semanticNode(IDENTIFIER, 55, 60));
+			compilationUnit( 0, 67),
+			typeDeclaration(CLASS_DECLARATION, 0, 66, "Test"),
+			methodDeclaration( 14, 64),
+			block( 24, 64),
+			castExpression( 45, 60),
+			identifier( 55, 60));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -328,12 +313,12 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 58),
-			semanticNode(CLASS_DECLARATION, 0, 57, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 55),
-			semanticNode(BLOCK, 24, 55),
-			semanticNode(CAST_EXPRESSION, 40, 51),
-			semanticNode(IDENTIFIER, 48, 51));
+			compilationUnit( 0, 58),
+			typeDeclaration(CLASS_DECLARATION, 0, 57, "Test"),
+			methodDeclaration( 14, 55),
+			block( 24, 55),
+			castExpression( 40, 51),
+			identifier( 48, 51));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -360,13 +345,13 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 55),
-			semanticNode(CLASS_DECLARATION, 0, 54, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 52),
-			semanticNode(BLOCK, 24, 52),
-			semanticNode(BINARY_EXPRESSION, 42, 48),
-			semanticNode(IDENTIFIER, 42, 43),
-			semanticNode(IDENTIFIER, 47, 48));
+			compilationUnit( 0, 55),
+			typeDeclaration(CLASS_DECLARATION, 0, 54, "Test"),
+			methodDeclaration( 14, 52),
+			block( 24, 52),
+			binaryExpression( 42, 48),
+			identifier( 42, 43),
+			identifier( 47, 48));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -389,13 +374,13 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 51),
-			semanticNode(CLASS_DECLARATION, 0, 50, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 48),
-			semanticNode(BLOCK, 24, 48),
-			semanticNode(CAST_EXPRESSION, 36, 44),
-			semanticNode(UNARY_EXPRESSION, 42, 44),
-			semanticNode(IDENTIFIER, 43, 44));
+			compilationUnit( 0, 51),
+			typeDeclaration(CLASS_DECLARATION, 0, 50, "Test"),
+			methodDeclaration( 14, 48),
+			block( 24, 48),
+			castExpression( 36, 44),
+			unaryExpression( 42, 44),
+			identifier( 43, 44));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -418,13 +403,13 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 55),
-			semanticNode(CLASS_DECLARATION, 0, 54, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 52),
-			semanticNode(BLOCK, 24, 52),
-			semanticNode(CAST_EXPRESSION, 36, 48),
-			semanticNode(UNARY_EXPRESSION, 42, 48),
-			semanticNode(IDENTIFIER, 43, 48));
+			compilationUnit( 0, 55),
+			typeDeclaration(CLASS_DECLARATION, 0, 54, "Test"),
+			methodDeclaration( 14, 52),
+			block( 24, 52),
+			castExpression( 36, 48),
+			unaryExpression( 42, 48),
+			identifier( 43, 48));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -445,14 +430,14 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 65),
-			semanticNode(CLASS_DECLARATION, 0, 64, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 62),
-			semanticNode(BLOCK, 24, 62),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(CAST_EXPRESSION, 39, 58),
-			semanticNode(METHOD_INVOCATION, 48, 58),
-			semanticNode(IDENTIFIER, 48, 56));
+			compilationUnit( 0, 65),
+			typeDeclaration(CLASS_DECLARATION, 0, 64, "Test"),
+			methodDeclaration( 14, 62),
+			block( 24, 62),
+			qualifiedName( 28, 34),
+			castExpression( 39, 58),
+			methodInvocation( 48, 58),
+			identifier( 48, 56));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -473,13 +458,13 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 58),
-			semanticNode(CLASS_DECLARATION, 0, 57, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 55),
-			semanticNode(BLOCK, 24, 55),
-			semanticNode(CAST_EXPRESSION, 36, 51),
-			semanticNode(FIELD_ACCESS, 42, 51),
-			semanticNode(IDENTIFIER, 42, 45));
+			compilationUnit( 0, 58),
+			typeDeclaration(CLASS_DECLARATION, 0, 57, "Test"),
+			methodDeclaration( 14, 55),
+			block( 24, 55),
+			castExpression( 36, 51),
+			fieldAccess( 42, 51),
+			identifier( 42, 45));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -502,14 +487,14 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 69),
-			semanticNode(CLASS_DECLARATION, 0, 68, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 66),
-			semanticNode(BLOCK, 24, 66),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(CAST_EXPRESSION, 39, 62),
-			semanticNode(CAST_EXPRESSION, 48, 62),
-			semanticNode(IDENTIFIER, 57, 62));
+			compilationUnit( 0, 69),
+			typeDeclaration(CLASS_DECLARATION, 0, 68, "Test"),
+			methodDeclaration( 14, 66),
+			block( 24, 66),
+			qualifiedName( 28, 34),
+			castExpression( 39, 62),
+			castExpression( 48, 62),
+			identifier( 57, 62));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -530,14 +515,14 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 68),
-			semanticNode(CLASS_DECLARATION, 0, 67, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 65),
-			semanticNode(BLOCK, 24, 65),
-			semanticNode(METHOD_INVOCATION, 39, 61),
-			semanticNode(FIELD_ACCESS, 39, 59),
-			semanticNode(CAST_EXPRESSION, 39, 51),
-			semanticNode(IDENTIFIER, 48, 51));
+			compilationUnit( 0, 68),
+			typeDeclaration(CLASS_DECLARATION, 0, 67, "Test"),
+			methodDeclaration( 14, 65),
+			block( 24, 65),
+			methodInvocation( 39, 61),
+			fieldAccess( 39, 59),
+			castExpression( 39, 51),
+			identifier( 48, 51));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -558,15 +543,15 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 56),
-			semanticNode(CLASS_DECLARATION, 0, 55, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 53),
-			semanticNode(BLOCK, 24, 53),
-			semanticNode(METHOD_INVOCATION, 28, 49),
-			semanticNode(QUALIFIED_NAME, 28, 35),
-			semanticNode(IDENTIFIER, 28, 35),
-			semanticNode(CAST_EXPRESSION, 36, 48),
-			semanticNode(IDENTIFIER, 45, 48));
+			compilationUnit( 0, 56),
+			typeDeclaration(CLASS_DECLARATION, 0, 55, "Test"),
+			methodDeclaration( 14, 53),
+			block( 24, 53),
+			methodInvocation( 28, 49),
+			qualifiedName( 28, 35),
+			identifier( 28, 35),
+			castExpression( 36, 48),
+			identifier( 45, 48));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -587,13 +572,13 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 56),
-			semanticNode(CLASS_DECLARATION, 0, 55, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 53),
-			semanticNode(BLOCK, 26, 53),
-			semanticNode(RETURN_STATEMENT, 30, 50),
-			semanticNode(CAST_EXPRESSION, 37, 49),
-			semanticNode(IDENTIFIER, 46, 49));
+			compilationUnit( 0, 56),
+			typeDeclaration(CLASS_DECLARATION, 0, 55, "Test"),
+			methodDeclaration( 14, 53),
+			block( 26, 53),
+			returnStatement( 30, 50),
+			castExpression( 37, 49),
+			identifier( 46, 49));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -616,17 +601,17 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 76),
-			semanticNode(CLASS_DECLARATION, 0, 75, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 73),
-			semanticNode(BLOCK, 24, 73),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(CONDITIONAL_EXPRESSION, 39, 69),
-			semanticNode(IDENTIFIER, 39, 43),
-			semanticNode(CAST_EXPRESSION, 46, 56),
-			semanticNode(IDENTIFIER, 55, 56),
-			semanticNode(CAST_EXPRESSION, 59, 69),
-			semanticNode(IDENTIFIER, 68, 69));
+			compilationUnit( 0, 76),
+			typeDeclaration(CLASS_DECLARATION, 0, 75, "Test"),
+			methodDeclaration( 14, 73),
+			block( 24, 73),
+			qualifiedName( 28, 34),
+			conditionalExpression( 39, 69),
+			identifier( 39, 43),
+			castExpression( 46, 56),
+			identifier( 55, 56),
+			castExpression( 59, 69),
+			identifier( 68, 69));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -647,15 +632,15 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 65),
-			semanticNode(CLASS_DECLARATION, 0, 64, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 62),
-			semanticNode(BLOCK, 24, 62),
-			semanticNode(BINARY_EXPRESSION, 41, 58),
-			semanticNode(CAST_EXPRESSION, 41, 48),
-			semanticNode(IDENTIFIER, 47, 48),
-			semanticNode(CAST_EXPRESSION, 51, 58),
-			semanticNode(IDENTIFIER, 57, 58));
+			compilationUnit( 0, 65),
+			typeDeclaration(CLASS_DECLARATION, 0, 64, "Test"),
+			methodDeclaration( 14, 62),
+			block( 24, 62),
+			binaryExpression( 41, 58),
+			castExpression( 41, 48),
+			identifier( 47, 48),
+			castExpression( 51, 58),
+			identifier( 57, 58));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -676,15 +661,15 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 67),
-			semanticNode(CLASS_DECLARATION, 0, 66, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 64),
-			semanticNode(BLOCK, 24, 64),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(ARRAY_ACCESS, 40, 60),
-			semanticNode(CAST_EXPRESSION, 40, 56),
-			semanticNode(IDENTIFIER, 51, 56),
-			semanticNode(INTEGER_LITERAL, 58, 59));
+			compilationUnit( 0, 67),
+			typeDeclaration(CLASS_DECLARATION, 0, 66, "Test"),
+			methodDeclaration( 14, 64),
+			block( 24, 64),
+			qualifiedName( 28, 34),
+			arrayAccess( 40, 60),
+			castExpression( 40, 56),
+			identifier( 51, 56),
+			integerLiteral( 58, 59));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -705,12 +690,12 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 57),
-			semanticNode(CLASS_DECLARATION, 0, 56, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 54),
-			semanticNode(BLOCK, 24, 54),
-			semanticNode(CAST_EXPRESSION, 39, 50),
-			semanticNode(INTEGER_LITERAL, 48, 50));
+			compilationUnit( 0, 57),
+			typeDeclaration(CLASS_DECLARATION, 0, 56, "Test"),
+			methodDeclaration( 14, 54),
+			block( 24, 54),
+			castExpression( 39, 50),
+			integerLiteral( 48, 50));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -739,12 +724,12 @@ public final class CastExpressionParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 54),
-			semanticNode(CLASS_DECLARATION, 0, 53, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 51),
-			semanticNode(BLOCK, 24, 51),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(IDENTIFIER, 40, 46));
+			compilationUnit( 0, 54),
+			typeDeclaration(CLASS_DECLARATION, 0, 53, "Test"),
+			methodDeclaration( 14, 51),
+			block( 24, 51),
+			qualifiedName( 28, 34),
+			identifier( 40, 46));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 

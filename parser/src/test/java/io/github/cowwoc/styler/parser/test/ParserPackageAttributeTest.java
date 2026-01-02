@@ -1,25 +1,20 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.ast.core.NodeArena;
-import io.github.cowwoc.styler.ast.core.NodeIndex;
-import io.github.cowwoc.styler.ast.core.NodeType;
-import io.github.cowwoc.styler.ast.core.PackageAttribute;
-import io.github.cowwoc.styler.parser.ParseResult;
-import io.github.cowwoc.styler.parser.Parser;
+import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.compilationUnit;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.packageNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.qualifiedName;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
 
 /**
  * Tests for package declaration attribute population during parsing.
- * <p>
- * Verifies that the parser correctly populates the {@code packageName} attribute
- * for package declarations.
- * <p>
- * <b>Thread-safety</b>: Thread-safe - all instances are created inside {@code @Test} methods.
  */
 public class ParserPackageAttributeTest
 {
@@ -32,18 +27,15 @@ public class ParserPackageAttributeTest
 		String source = """
 			package com.example; class Test {}
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> packages = findNodesOfType(arena, NodeType.PACKAGE_DECLARATION);
-			requireThat(packages.size(), "packages.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 35),
+			packageNode(0, 20, "com.example"),
+			qualifiedName(8, 19),
+			typeDeclaration(CLASS_DECLARATION, 21, 34, "Test"));
 
-			PackageAttribute attribute = arena.getPackageAttribute(packages.get(0));
-			requireThat(attribute.packageName(), "packageName").isEqualTo("com.example");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -55,19 +47,15 @@ public class ParserPackageAttributeTest
 		String source = """
 			package io.github.cowwoc.styler.formatter.internal; class Test {}
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> packages = findNodesOfType(arena, NodeType.PACKAGE_DECLARATION);
-			requireThat(packages.size(), "packages.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 66),
+			packageNode(0, 51, "io.github.cowwoc.styler.formatter.internal"),
+			qualifiedName(8, 50),
+			typeDeclaration(CLASS_DECLARATION, 52, 65, "Test"));
 
-			PackageAttribute attribute = arena.getPackageAttribute(packages.get(0));
-			requireThat(attribute.packageName(), "packageName").
-				isEqualTo("io.github.cowwoc.styler.formatter.internal");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -79,18 +67,15 @@ public class ParserPackageAttributeTest
 		String source = """
 			package utils; class Test {}
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> packages = findNodesOfType(arena, NodeType.PACKAGE_DECLARATION);
-			requireThat(packages.size(), "packages.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 29),
+			packageNode(0, 14, "utils"),
+			qualifiedName(8, 13),
+			typeDeclaration(CLASS_DECLARATION, 15, 28, "Test"));
 
-			PackageAttribute attribute = arena.getPackageAttribute(packages.get(0));
-			requireThat(attribute.packageName(), "packageName").isEqualTo("utils");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -102,35 +87,12 @@ public class ParserPackageAttributeTest
 		String source = """
 			class Test {}
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> packages = findNodesOfType(arena, NodeType.PACKAGE_DECLARATION);
-			requireThat(packages.size(), "packages.size()").isEqualTo(0);
-		}
-	}
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 14),
+			typeDeclaration(CLASS_DECLARATION, 0, 13, "Test"));
 
-	/**
-	 * Finds all nodes of the specified type in the arena.
-	 *
-	 * @param arena the arena to search
-	 * @param type  the node type to find
-	 * @return list of node indices matching the type
-	 */
-	private List<NodeIndex> findNodesOfType(NodeArena arena, NodeType type)
-	{
-		List<NodeIndex> result = new ArrayList<>();
-		for (int i = 0; i < arena.getNodeCount(); ++i)
-		{
-			NodeIndex index = new NodeIndex(i);
-			if (arena.getType(index) == type)
-			{
-				result.add(index);
-			}
-		}
-		return result;
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

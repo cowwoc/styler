@@ -6,14 +6,13 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.IMPORT_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.MODULE_IMPORT_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.STATIC_IMPORT_DECLARATION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseFails;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.importNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.moduleImportNode;
 
 /**
  * Tests for parsing module import declarations (JEP 511).
@@ -36,9 +35,9 @@ public final class ModuleImportParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, source.length()),
-			semanticNode(MODULE_IMPORT_DECLARATION, 0, 24, "java.base"),
-			semanticNode(CLASS_DECLARATION, 26, source.length() - 1, "Test"));
+			compilationUnit( 0, source.length()),
+			moduleImportNode( 0, 24, "java.base"),
+			typeDeclaration(CLASS_DECLARATION, 26, source.length() - 1, "Test"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -58,9 +57,9 @@ public final class ModuleImportParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, source.length()),
-			semanticNode(MODULE_IMPORT_DECLARATION, 0, 30, "com.example.app"),
-			semanticNode(CLASS_DECLARATION, 32, source.length() - 1, "Test"));
+			compilationUnit( 0, source.length()),
+			moduleImportNode( 0, 30, "com.example.app"),
+			typeDeclaration(CLASS_DECLARATION, 32, source.length() - 1, "Test"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -82,11 +81,11 @@ public final class ModuleImportParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, source.length()),
-			semanticNode(MODULE_IMPORT_DECLARATION, 0, 24, "java.base"),
-			semanticNode(MODULE_IMPORT_DECLARATION, 25, 48, "java.sql"),
-			semanticNode(MODULE_IMPORT_DECLARATION, 49, 76, "java.logging"),
-			semanticNode(CLASS_DECLARATION, 78, source.length() - 1, "Test"));
+			compilationUnit( 0, source.length()),
+			moduleImportNode( 0, 24, "java.base"),
+			moduleImportNode( 25, 48, "java.sql"),
+			moduleImportNode( 49, 76, "java.logging"),
+			typeDeclaration(CLASS_DECLARATION, 78, source.length() - 1, "Test"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -108,11 +107,11 @@ public final class ModuleImportParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, source.length()),
-			semanticNode(MODULE_IMPORT_DECLARATION, 0, 24, "java.base"),
-			semanticNode(IMPORT_DECLARATION, 25, 47, "java.util.List"),
-			semanticNode(IMPORT_DECLARATION, 48, 69, "java.util.Map"),
-			semanticNode(CLASS_DECLARATION, 71, source.length() - 1, "Test"));
+			compilationUnit( 0, source.length()),
+			moduleImportNode( 0, 24, "java.base"),
+			importNode(25, 47, "java.util.List", false),
+			importNode(48, 69, "java.util.Map", false),
+			typeDeclaration(CLASS_DECLARATION, 71, source.length() - 1, "Test"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -134,11 +133,11 @@ public final class ModuleImportParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, source.length()),
-			semanticNode(MODULE_IMPORT_DECLARATION, 0, 24, "java.base"),
-			semanticNode(STATIC_IMPORT_DECLARATION, 25, 57, "java.lang.Math.PI"),
-			semanticNode(STATIC_IMPORT_DECLARATION, 58, 91, "java.lang.Math.abs"),
-			semanticNode(CLASS_DECLARATION, 93, source.length() - 1, "Test"));
+			compilationUnit( 0, source.length()),
+			moduleImportNode( 0, 24, "java.base"),
+			importNode(25, 57, "java.lang.Math.PI", true),
+			importNode(58, 91, "java.lang.Math.abs", true),
+			typeDeclaration(CLASS_DECLARATION, 93, source.length() - 1, "Test"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -162,13 +161,13 @@ public final class ModuleImportParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, source.length()),
-			semanticNode(IMPORT_DECLARATION, 0, 22, "java.util.List"),
-			semanticNode(MODULE_IMPORT_DECLARATION, 23, 47, "java.base"),
-			semanticNode(STATIC_IMPORT_DECLARATION, 48, 80, "java.lang.Math.PI"),
-			semanticNode(IMPORT_DECLARATION, 81, 102, "java.util.Map"),
-			semanticNode(MODULE_IMPORT_DECLARATION, 103, 126, "java.sql"),
-			semanticNode(CLASS_DECLARATION, 128, source.length() - 1, "Test"));
+			compilationUnit( 0, source.length()),
+			importNode(0, 22, "java.util.List", false),
+			moduleImportNode( 23, 47, "java.base"),
+			importNode(48, 80, "java.lang.Math.PI", true),
+			importNode(81, 102, "java.util.Map", false),
+			moduleImportNode( 103, 126, "java.sql"),
+			typeDeclaration(CLASS_DECLARATION, 128, source.length() - 1, "Test"));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 

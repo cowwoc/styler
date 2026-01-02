@@ -6,15 +6,10 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.CAST_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
 
 /**
  * Tests for parsing JSR 308 type annotations on array dimensions.
@@ -39,11 +34,11 @@ public class ArrayDimensionAnnotationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 47),
-			semanticNode(CLASS_DECLARATION, 0, 46, "Container"),
-			semanticNode(FIELD_DECLARATION, 19, 44),
-			semanticNode(ANNOTATION, 26, 34),
-			semanticNode(QUALIFIED_NAME, 27, 34));
+			compilationUnit( 0, 47),
+			typeDeclaration(CLASS_DECLARATION, 0, 46, "Container"),
+			fieldDeclaration( 19, 44),
+			annotation( 26, 34),
+			qualifiedName( 27, 34));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -62,13 +57,13 @@ public class ArrayDimensionAnnotationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 44),
-			semanticNode(CLASS_DECLARATION, 0, 43, "Container"),
-			semanticNode(FIELD_DECLARATION, 19, 41),
-			semanticNode(ANNOTATION, 26, 28),
-			semanticNode(QUALIFIED_NAME, 27, 28),
-			semanticNode(ANNOTATION, 29, 31),
-			semanticNode(QUALIFIED_NAME, 30, 31));
+			compilationUnit( 0, 44),
+			typeDeclaration(CLASS_DECLARATION, 0, 43, "Container"),
+			fieldDeclaration( 19, 41),
+			annotation( 26, 28),
+			qualifiedName( 27, 28),
+			annotation( 29, 31),
+			qualifiedName( 30, 31));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -87,13 +82,13 @@ public class ArrayDimensionAnnotationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 45),
-			semanticNode(CLASS_DECLARATION, 0, 44, "Container"),
-			semanticNode(FIELD_DECLARATION, 19, 42),
-			semanticNode(ANNOTATION, 23, 25),
-			semanticNode(QUALIFIED_NAME, 24, 25),
-			semanticNode(ANNOTATION, 29, 31),
-			semanticNode(QUALIFIED_NAME, 30, 31));
+			compilationUnit( 0, 45),
+			typeDeclaration(CLASS_DECLARATION, 0, 44, "Container"),
+			fieldDeclaration( 19, 42),
+			annotation( 23, 25),
+			qualifiedName( 24, 25),
+			annotation( 29, 31),
+			qualifiedName( 30, 31));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -112,11 +107,11 @@ public class ArrayDimensionAnnotationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 45),
-			semanticNode(CLASS_DECLARATION, 0, 44, "Container"),
-			semanticNode(FIELD_DECLARATION, 19, 42),
-			semanticNode(ANNOTATION, 23, 31),
-			semanticNode(QUALIFIED_NAME, 24, 31));
+			compilationUnit( 0, 45),
+			typeDeclaration(CLASS_DECLARATION, 0, 44, "Container"),
+			fieldDeclaration( 19, 42),
+			annotation( 23, 31),
+			qualifiedName( 24, 31));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -136,14 +131,14 @@ public class ArrayDimensionAnnotationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 77),
-			semanticNode(CLASS_DECLARATION, 0, 76, "Container"),
-			semanticNode(FIELD_DECLARATION, 19, 30),
-			semanticNode(FIELD_DECLARATION, 32, 74),
-			semanticNode(CAST_EXPRESSION, 49, 73),
-			semanticNode(ANNOTATION, 57, 65),
-			semanticNode(QUALIFIED_NAME, 58, 65),
-			semanticNode(IDENTIFIER, 70, 73));
+			compilationUnit( 0, 77),
+			typeDeclaration(CLASS_DECLARATION, 0, 76, "Container"),
+			fieldDeclaration( 19, 30),
+			fieldDeclaration( 32, 74),
+			castExpression( 49, 73),
+			annotation( 57, 65),
+			qualifiedName( 58, 65),
+			identifier( 70, 73));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -162,13 +157,13 @@ public class ArrayDimensionAnnotationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 53),
-			semanticNode(CLASS_DECLARATION, 0, 52, "Container"),
-			semanticNode(FIELD_DECLARATION, 19, 50),
-			semanticNode(QUALIFIED_NAME, 24, 42),
-			semanticNode(QUALIFIED_NAME, 24, 30),
-			semanticNode(ANNOTATION, 31, 39),
-			semanticNode(QUALIFIED_NAME, 32, 39));
+			compilationUnit( 0, 53),
+			typeDeclaration(CLASS_DECLARATION, 0, 52, "Container"),
+			fieldDeclaration( 19, 50),
+			qualifiedName( 24, 42),
+			qualifiedName( 24, 30),
+			annotation( 31, 39),
+			qualifiedName( 32, 39));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -187,9 +182,9 @@ public class ArrayDimensionAnnotationParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 37),
-			semanticNode(CLASS_DECLARATION, 0, 36, "Container"),
-			semanticNode(FIELD_DECLARATION, 19, 34));
+			compilationUnit( 0, 37),
+			typeDeclaration(CLASS_DECLARATION, 0, 36, "Container"),
+			fieldDeclaration( 19, 34));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

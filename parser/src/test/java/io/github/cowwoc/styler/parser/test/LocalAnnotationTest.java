@@ -6,32 +6,11 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.ARRAY_INITIALIZER;
-import static io.github.cowwoc.styler.ast.core.NodeType.ASSIGNMENT_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.BINARY_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CATCH_CLAUSE;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.ENHANCED_FOR_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.FOR_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.LINE_COMMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.NULL_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.OBJECT_CREATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETER_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.PARAMETERIZED_TYPE;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.STRING_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.TRY_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.UNARY_EXPRESSION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
 
 /**
  * Tests for parsing local variable declarations with annotations and the {@code final} modifier.
@@ -55,17 +34,17 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 121),
-			semanticNode(CLASS_DECLARATION, 7, 120, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 118),
-			semanticNode(BLOCK, 43, 118),
-			semanticNode(ANNOTATION, 47, 77),
-			semanticNode(QUALIFIED_NAME, 48, 64),
-			semanticNode(STRING_LITERAL, 65, 76),
-			semanticNode(PARAMETERIZED_TYPE, 78, 100),
-			semanticNode(QUALIFIED_NAME, 78, 92),
-			semanticNode(QUALIFIED_NAME, 93, 99),
-			semanticNode(NULL_LITERAL, 110, 114));
+			compilationUnit( 0, 121),
+			typeDeclaration(CLASS_DECLARATION, 7, 120, "Test"),
+			methodDeclaration( 21, 118),
+			block( 43, 118),
+			annotation( 47, 77),
+			qualifiedName( 48, 64),
+			stringLiteral( 65, 76),
+			parameterizedType( 78, 100),
+			qualifiedName( 78, 92),
+			qualifiedName( 93, 99),
+			nullLiteral( 110, 114));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -86,11 +65,11 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 69),
-			semanticNode(CLASS_DECLARATION, 7, 68, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 66),
-			semanticNode(BLOCK, 43, 66),
-			semanticNode(INTEGER_LITERAL, 61, 62));
+			compilationUnit( 0, 69),
+			typeDeclaration(CLASS_DECLARATION, 7, 68, "Test"),
+			methodDeclaration( 21, 66),
+			block( 43, 66),
+			integerLiteral( 61, 62));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -111,14 +90,14 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 83),
-			semanticNode(CLASS_DECLARATION, 7, 82, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 80),
-			semanticNode(BLOCK, 43, 80),
-			semanticNode(ANNOTATION, 47, 56),
-			semanticNode(QUALIFIED_NAME, 48, 56),
-			semanticNode(QUALIFIED_NAME, 57, 63),
-			semanticNode(NULL_LITERAL, 72, 76));
+			compilationUnit( 0, 83),
+			typeDeclaration(CLASS_DECLARATION, 7, 82, "Test"),
+			methodDeclaration( 21, 80),
+			block( 43, 80),
+			annotation( 47, 56),
+			qualifiedName( 48, 56),
+			qualifiedName( 57, 63),
+			nullLiteral( 72, 76));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -139,15 +118,15 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 94),
-			semanticNode(CLASS_DECLARATION, 7, 93, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 91),
-			semanticNode(BLOCK, 43, 91),
-			semanticNode(ANNOTATION, 53, 61),
-			semanticNode(QUALIFIED_NAME, 54, 61),
-			semanticNode(QUALIFIED_NAME, 62, 68),
-			semanticNode(OBJECT_CREATION, 75, 87),
-			semanticNode(QUALIFIED_NAME, 79, 85));
+			compilationUnit( 0, 94),
+			typeDeclaration(CLASS_DECLARATION, 7, 93, "Test"),
+			methodDeclaration( 21, 91),
+			block( 43, 91),
+			annotation( 53, 61),
+			qualifiedName( 54, 61),
+			qualifiedName( 62, 68),
+			objectCreation( 75, 87),
+			qualifiedName( 79, 85));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -168,16 +147,16 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 100),
-			semanticNode(CLASS_DECLARATION, 7, 99, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 97),
-			semanticNode(BLOCK, 43, 97),
-			semanticNode(ANNOTATION, 47, 55),
-			semanticNode(QUALIFIED_NAME, 48, 55),
-			semanticNode(ANNOTATION, 56, 83),
-			semanticNode(QUALIFIED_NAME, 57, 73),
-			semanticNode(STRING_LITERAL, 74, 82),
-			semanticNode(INTEGER_LITERAL, 92, 93));
+			compilationUnit( 0, 100),
+			typeDeclaration(CLASS_DECLARATION, 7, 99, "Test"),
+			methodDeclaration( 21, 97),
+			block( 43, 97),
+			annotation( 47, 55),
+			qualifiedName( 48, 55),
+			annotation( 56, 83),
+			qualifiedName( 57, 73),
+			stringLiteral( 74, 82),
+			integerLiteral( 92, 93));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -198,17 +177,17 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 110),
-			semanticNode(CLASS_DECLARATION, 7, 109, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 107),
-			semanticNode(BLOCK, 43, 107),
-			semanticNode(ANNOTATION, 47, 74),
-			semanticNode(QUALIFIED_NAME, 48, 64),
-			semanticNode(STRING_LITERAL, 65, 73),
-			semanticNode(ANNOTATION, 81, 89),
-			semanticNode(QUALIFIED_NAME, 82, 89),
-			semanticNode(QUALIFIED_NAME, 90, 96),
-			semanticNode(STRING_LITERAL, 101, 103));
+			compilationUnit( 0, 110),
+			typeDeclaration(CLASS_DECLARATION, 7, 109, "Test"),
+			methodDeclaration( 21, 107),
+			block( 43, 107),
+			annotation( 47, 74),
+			qualifiedName( 48, 64),
+			stringLiteral( 65, 73),
+			annotation( 81, 89),
+			qualifiedName( 82, 89),
+			qualifiedName( 90, 96),
+			stringLiteral( 101, 103));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -233,26 +212,26 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 155),
-			semanticNode(CLASS_DECLARATION, 7, 154, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 152),
-			semanticNode(BLOCK, 43, 152),
-			semanticNode(PARAMETERIZED_TYPE, 47, 69),
-			semanticNode(QUALIFIED_NAME, 47, 61),
-			semanticNode(QUALIFIED_NAME, 62, 68),
-			semanticNode(NULL_LITERAL, 77, 81),
-			semanticNode(ENHANCED_FOR_STATEMENT, 85, 149),
-			semanticNode(ANNOTATION, 90, 98),
-			semanticNode(QUALIFIED_NAME, 91, 98),
-			semanticNode(QUALIFIED_NAME, 99, 105),
-			semanticNode(IDENTIFIER, 110, 114),
-			semanticNode(BLOCK, 118, 149),
-			semanticNode(IDENTIFIER, 123, 129),
-			semanticNode(METHOD_INVOCATION, 123, 144),
-			semanticNode(FIELD_ACCESS, 123, 133),
-			semanticNode(FIELD_ACCESS, 123, 141),
-			semanticNode(QUALIFIED_NAME, 123, 141),
-			semanticNode(IDENTIFIER, 142, 143));
+			compilationUnit( 0, 155),
+			typeDeclaration(CLASS_DECLARATION, 7, 154, "Test"),
+			methodDeclaration( 21, 152),
+			block( 43, 152),
+			parameterizedType( 47, 69),
+			qualifiedName( 47, 61),
+			qualifiedName( 62, 68),
+			nullLiteral( 77, 81),
+			enhancedForStatement( 85, 149),
+			annotation( 90, 98),
+			qualifiedName( 91, 98),
+			qualifiedName( 99, 105),
+			identifier( 110, 114),
+			block( 118, 149),
+			identifier( 123, 129),
+			methodInvocation( 123, 144),
+			fieldAccess( 123, 133),
+			fieldAccess( 123, 141),
+			qualifiedName( 123, 141),
+			identifier( 142, 143));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -277,26 +256,26 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 161),
-			semanticNode(CLASS_DECLARATION, 7, 160, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 158),
-			semanticNode(BLOCK, 43, 158),
-			semanticNode(PARAMETERIZED_TYPE, 47, 69),
-			semanticNode(QUALIFIED_NAME, 47, 61),
-			semanticNode(QUALIFIED_NAME, 62, 68),
-			semanticNode(NULL_LITERAL, 77, 81),
-			semanticNode(ENHANCED_FOR_STATEMENT, 85, 155),
-			semanticNode(ANNOTATION, 96, 104),
-			semanticNode(QUALIFIED_NAME, 97, 104),
-			semanticNode(QUALIFIED_NAME, 105, 111),
-			semanticNode(IDENTIFIER, 116, 120),
-			semanticNode(BLOCK, 124, 155),
-			semanticNode(IDENTIFIER, 129, 135),
-			semanticNode(METHOD_INVOCATION, 129, 150),
-			semanticNode(FIELD_ACCESS, 129, 139),
-			semanticNode(FIELD_ACCESS, 129, 147),
-			semanticNode(QUALIFIED_NAME, 129, 147),
-			semanticNode(IDENTIFIER, 148, 149));
+			compilationUnit( 0, 161),
+			typeDeclaration(CLASS_DECLARATION, 7, 160, "Test"),
+			methodDeclaration( 21, 158),
+			block( 43, 158),
+			parameterizedType( 47, 69),
+			qualifiedName( 47, 61),
+			qualifiedName( 62, 68),
+			nullLiteral( 77, 81),
+			enhancedForStatement( 85, 155),
+			annotation( 96, 104),
+			qualifiedName( 97, 104),
+			qualifiedName( 105, 111),
+			identifier( 116, 120),
+			block( 124, 155),
+			identifier( 129, 135),
+			methodInvocation( 129, 150),
+			fieldAccess( 129, 139),
+			fieldAccess( 129, 147),
+			qualifiedName( 129, 147),
+			identifier( 148, 149));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -324,25 +303,25 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 192),
-			semanticNode(CLASS_DECLARATION, 7, 191, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 189),
-			semanticNode(BLOCK, 43, 189),
-			semanticNode(TRY_STATEMENT, 47, 186),
-			semanticNode(ANNOTATION, 52, 81),
-			semanticNode(QUALIFIED_NAME, 53, 69),
-			semanticNode(STRING_LITERAL, 70, 80),
-			semanticNode(QUALIFIED_NAME, 82, 101),
-			semanticNode(NULL_LITERAL, 107, 111),
-			semanticNode(BLOCK, 115, 142),
-			semanticNode(IDENTIFIER, 128, 130),
-			semanticNode(METHOD_INVOCATION, 128, 137),
-			semanticNode(FIELD_ACCESS, 128, 135),
-			semanticNode(CATCH_CLAUSE, 145, 186),
-			semanticNode(QUALIFIED_NAME, 152, 161),
-			semanticNode(PARAMETER_DECLARATION, 152, 163, "e"),
-			semanticNode(BLOCK, 167, 186),
-			semanticNode(LINE_COMMENT, 172, 182));
+			compilationUnit( 0, 192),
+			typeDeclaration(CLASS_DECLARATION, 7, 191, "Test"),
+			methodDeclaration( 21, 189),
+			block( 43, 189),
+			tryStatement( 47, 186),
+			annotation( 52, 81),
+			qualifiedName( 53, 69),
+			stringLiteral( 70, 80),
+			qualifiedName( 82, 101),
+			nullLiteral( 107, 111),
+			block( 115, 142),
+			identifier( 128, 130),
+			methodInvocation( 128, 137),
+			fieldAccess( 128, 135),
+			catchClause( 145, 186),
+			qualifiedName( 152, 161),
+			parameterNode( 152, 163, "e"),
+			block( 167, 186),
+			lineComment( 172, 182));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -370,24 +349,24 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 177),
-			semanticNode(CLASS_DECLARATION, 7, 176, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 174),
-			semanticNode(BLOCK, 43, 174),
-			semanticNode(TRY_STATEMENT, 47, 171),
-			semanticNode(ANNOTATION, 58, 66),
-			semanticNode(QUALIFIED_NAME, 59, 66),
-			semanticNode(QUALIFIED_NAME, 67, 86),
-			semanticNode(NULL_LITERAL, 92, 96),
-			semanticNode(BLOCK, 100, 127),
-			semanticNode(FIELD_ACCESS, 113, 120),
-			semanticNode(IDENTIFIER, 113, 115),
-			semanticNode(METHOD_INVOCATION, 113, 122),
-			semanticNode(CATCH_CLAUSE, 130, 171),
-			semanticNode(QUALIFIED_NAME, 137, 146),
-			semanticNode(PARAMETER_DECLARATION, 137, 148, "e"),
-			semanticNode(BLOCK, 152, 171),
-			semanticNode(LINE_COMMENT, 157, 167));
+			compilationUnit( 0, 177),
+			typeDeclaration(CLASS_DECLARATION, 7, 176, "Test"),
+			methodDeclaration( 21, 174),
+			block( 43, 174),
+			tryStatement( 47, 171),
+			annotation( 58, 66),
+			qualifiedName( 59, 66),
+			qualifiedName( 67, 86),
+			nullLiteral( 92, 96),
+			block( 100, 127),
+			fieldAccess( 113, 120),
+			identifier( 113, 115),
+			methodInvocation( 113, 122),
+			catchClause( 130, 171),
+			qualifiedName( 137, 146),
+			parameterNode( 137, 148, "e"),
+			block( 152, 171),
+			lineComment( 157, 167));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -415,27 +394,27 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 201),
-			semanticNode(CLASS_DECLARATION, 7, 200, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 198),
-			semanticNode(BLOCK, 43, 198),
-			semanticNode(TRY_STATEMENT, 47, 195),
-			semanticNode(ANNOTATION, 52, 81),
-			semanticNode(QUALIFIED_NAME, 53, 69),
-			semanticNode(STRING_LITERAL, 70, 80),
-			semanticNode(ANNOTATION, 82, 90),
-			semanticNode(QUALIFIED_NAME, 83, 90),
-			semanticNode(QUALIFIED_NAME, 91, 110),
-			semanticNode(NULL_LITERAL, 116, 120),
-			semanticNode(BLOCK, 124, 151),
-			semanticNode(IDENTIFIER, 137, 139),
-			semanticNode(METHOD_INVOCATION, 137, 146),
-			semanticNode(FIELD_ACCESS, 137, 144),
-			semanticNode(CATCH_CLAUSE, 154, 195),
-			semanticNode(QUALIFIED_NAME, 161, 170),
-			semanticNode(PARAMETER_DECLARATION, 161, 172, "e"),
-			semanticNode(BLOCK, 176, 195),
-			semanticNode(LINE_COMMENT, 181, 191));
+			compilationUnit( 0, 201),
+			typeDeclaration(CLASS_DECLARATION, 7, 200, "Test"),
+			methodDeclaration( 21, 198),
+			block( 43, 198),
+			tryStatement( 47, 195),
+			annotation( 52, 81),
+			qualifiedName( 53, 69),
+			stringLiteral( 70, 80),
+			annotation( 82, 90),
+			qualifiedName( 83, 90),
+			qualifiedName( 91, 110),
+			nullLiteral( 116, 120),
+			block( 124, 151),
+			identifier( 137, 139),
+			methodInvocation( 137, 146),
+			fieldAccess( 137, 144),
+			catchClause( 154, 195),
+			qualifiedName( 161, 170),
+			parameterNode( 161, 172, "e"),
+			block( 176, 195),
+			lineComment( 181, 191));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -456,21 +435,21 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 119),
-			semanticNode(CLASS_DECLARATION, 7, 118, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 116),
-			semanticNode(BLOCK, 43, 116),
-			semanticNode(ANNOTATION, 47, 77),
-			semanticNode(QUALIFIED_NAME, 48, 64),
-			semanticNode(STRING_LITERAL, 65, 76),
-			semanticNode(METHOD_INVOCATION, 86, 112),
-			semanticNode(IDENTIFIER, 86, 90),
-			semanticNode(FIELD_ACCESS, 86, 100),
-			semanticNode(FIELD_ACCESS, 86, 95),
-			semanticNode(FIELD_ACCESS, 86, 103),
-			semanticNode(INTEGER_LITERAL, 104, 105),
-			semanticNode(INTEGER_LITERAL, 107, 108),
-			semanticNode(INTEGER_LITERAL, 110, 111));
+			compilationUnit( 0, 119),
+			typeDeclaration(CLASS_DECLARATION, 7, 118, "Test"),
+			methodDeclaration( 21, 116),
+			block( 43, 116),
+			annotation( 47, 77),
+			qualifiedName( 48, 64),
+			stringLiteral( 65, 76),
+			methodInvocation( 86, 112),
+			identifier( 86, 90),
+			fieldAccess( 86, 100),
+			fieldAccess( 86, 95),
+			fieldAccess( 86, 103),
+			integerLiteral( 104, 105),
+			integerLiteral( 107, 108),
+			integerLiteral( 110, 111));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -494,27 +473,27 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 143),
-			semanticNode(CLASS_DECLARATION, 7, 142, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 140),
-			semanticNode(BLOCK, 43, 140),
-			semanticNode(FOR_STATEMENT, 47, 137),
-			semanticNode(ANNOTATION, 52, 79),
-			semanticNode(QUALIFIED_NAME, 53, 69),
-			semanticNode(STRING_LITERAL, 70, 78),
-			semanticNode(INTEGER_LITERAL, 88, 89),
-			semanticNode(IDENTIFIER, 91, 92),
-			semanticNode(BINARY_EXPRESSION, 91, 97),
-			semanticNode(INTEGER_LITERAL, 95, 97),
-			semanticNode(UNARY_EXPRESSION, 99, 102),
-			semanticNode(IDENTIFIER, 101, 102),
-			semanticNode(BLOCK, 106, 137),
-			semanticNode(FIELD_ACCESS, 111, 129),
-			semanticNode(IDENTIFIER, 111, 117),
-			semanticNode(METHOD_INVOCATION, 111, 132),
-			semanticNode(QUALIFIED_NAME, 111, 129),
-			semanticNode(FIELD_ACCESS, 111, 121),
-			semanticNode(IDENTIFIER, 130, 131));
+			compilationUnit( 0, 143),
+			typeDeclaration(CLASS_DECLARATION, 7, 142, "Test"),
+			methodDeclaration( 21, 140),
+			block( 43, 140),
+			forStatement( 47, 137),
+			annotation( 52, 79),
+			qualifiedName( 53, 69),
+			stringLiteral( 70, 78),
+			integerLiteral( 88, 89),
+			identifier( 91, 92),
+			binaryExpression( 91, 97),
+			integerLiteral( 95, 97),
+			unaryExpression( 99, 102),
+			identifier( 101, 102),
+			block( 106, 137),
+			fieldAccess( 111, 129),
+			identifier( 111, 117),
+			methodInvocation( 111, 132),
+			qualifiedName( 111, 129),
+			fieldAccess( 111, 121),
+			identifier( 130, 131));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -535,19 +514,19 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 127),
-			semanticNode(CLASS_DECLARATION, 7, 126, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 124),
-			semanticNode(BLOCK, 43, 124),
-			semanticNode(ANNOTATION, 47, 85),
-			semanticNode(QUALIFIED_NAME, 48, 64),
-			semanticNode(IDENTIFIER, 65, 70),
-			semanticNode(ASSIGNMENT_EXPRESSION, 65, 84),
-			semanticNode(STRING_LITERAL, 73, 84),
-			semanticNode(PARAMETERIZED_TYPE, 86, 108),
-			semanticNode(QUALIFIED_NAME, 86, 100),
-			semanticNode(QUALIFIED_NAME, 101, 107),
-			semanticNode(NULL_LITERAL, 116, 120));
+			compilationUnit( 0, 127),
+			typeDeclaration(CLASS_DECLARATION, 7, 126, "Test"),
+			methodDeclaration( 21, 124),
+			block( 43, 124),
+			annotation( 47, 85),
+			qualifiedName( 48, 64),
+			identifier( 65, 70),
+			assignmentExpression( 65, 84),
+			stringLiteral( 73, 84),
+			parameterizedType( 86, 108),
+			qualifiedName( 86, 100),
+			qualifiedName( 101, 107),
+			nullLiteral( 116, 120));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -568,17 +547,17 @@ public class LocalAnnotationTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 125),
-			semanticNode(CLASS_DECLARATION, 7, 124, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 122),
-			semanticNode(BLOCK, 43, 122),
-			semanticNode(ANNOTATION, 47, 91),
-			semanticNode(QUALIFIED_NAME, 48, 64),
-			semanticNode(ARRAY_INITIALIZER, 65, 90),
-			semanticNode(STRING_LITERAL, 66, 77),
-			semanticNode(STRING_LITERAL, 79, 89),
-			semanticNode(QUALIFIED_NAME, 92, 106),
-			semanticNode(NULL_LITERAL, 114, 118));
+			compilationUnit( 0, 125),
+			typeDeclaration(CLASS_DECLARATION, 7, 124, "Test"),
+			methodDeclaration( 21, 122),
+			block( 43, 122),
+			annotation( 47, 91),
+			qualifiedName( 48, 64),
+			arrayInitializer( 65, 90),
+			stringLiteral( 66, 77),
+			stringLiteral( 79, 89),
+			qualifiedName( 92, 106),
+			nullLiteral( 114, 118));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

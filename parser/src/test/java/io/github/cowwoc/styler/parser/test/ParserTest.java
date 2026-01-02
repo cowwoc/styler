@@ -9,24 +9,10 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.ARRAY_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.ASSIGNMENT_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.BINARY_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.BOOLEAN_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.CONDITIONAL_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.FIELD_ACCESS;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_INVOCATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.QUALIFIED_NAME;
-import static io.github.cowwoc.styler.ast.core.NodeType.STRING_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.UNARY_EXPRESSION;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
 
 /**
  * Tests for parsing expressions, literals, and basic language constructs.
@@ -43,7 +29,7 @@ public class ParserTest
 		Set<SemanticNode> actual = parseSemanticAst("");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 0));
+			compilationUnit( 0, 0));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -76,11 +62,11 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 45),
-			semanticNode(CLASS_DECLARATION, 0, 44, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 42),
-			semanticNode(BLOCK, 24, 42),
-			semanticNode(INTEGER_LITERAL, 36, 38));
+			compilationUnit( 0, 45),
+			typeDeclaration(CLASS_DECLARATION, 0, 44, "Test"),
+			methodDeclaration( 14, 42),
+			block( 24, 42),
+			integerLiteral( 36, 38));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -103,12 +89,12 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 53),
-			semanticNode(CLASS_DECLARATION, 0, 52, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 50),
-			semanticNode(BLOCK, 24, 50),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(STRING_LITERAL, 39, 46));
+			compilationUnit( 0, 53),
+			typeDeclaration(CLASS_DECLARATION, 0, 52, "Test"),
+			methodDeclaration( 14, 50),
+			block( 24, 50),
+			qualifiedName( 28, 34),
+			stringLiteral( 39, 46));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -131,12 +117,12 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 56),
-			semanticNode(CLASS_DECLARATION, 0, 55, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 53),
-			semanticNode(BLOCK, 24, 53),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(IDENTIFIER, 39, 49));
+			compilationUnit( 0, 56),
+			typeDeclaration(CLASS_DECLARATION, 0, 55, "Test"),
+			methodDeclaration( 14, 53),
+			block( 24, 53),
+			qualifiedName( 28, 34),
+			identifier( 39, 49));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -159,13 +145,13 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 48),
-			semanticNode(CLASS_DECLARATION, 0, 47, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 45),
-			semanticNode(BLOCK, 24, 45),
-			semanticNode(BINARY_EXPRESSION, 36, 41),
-			semanticNode(INTEGER_LITERAL, 36, 37),
-			semanticNode(INTEGER_LITERAL, 40, 41));
+			compilationUnit( 0, 48),
+			typeDeclaration(CLASS_DECLARATION, 0, 47, "Test"),
+			methodDeclaration( 14, 45),
+			block( 24, 45),
+			binaryExpression( 36, 41),
+			integerLiteral( 36, 37),
+			integerLiteral( 40, 41));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -188,13 +174,13 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 48),
-			semanticNode(CLASS_DECLARATION, 0, 47, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 45),
-			semanticNode(BLOCK, 24, 45),
-			semanticNode(BINARY_EXPRESSION, 36, 41),
-			semanticNode(INTEGER_LITERAL, 36, 37),
-			semanticNode(INTEGER_LITERAL, 40, 41));
+			compilationUnit( 0, 48),
+			typeDeclaration(CLASS_DECLARATION, 0, 47, "Test"),
+			methodDeclaration( 14, 45),
+			block( 24, 45),
+			binaryExpression( 36, 41),
+			integerLiteral( 36, 37),
+			integerLiteral( 40, 41));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -217,15 +203,15 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 52),
-			semanticNode(CLASS_DECLARATION, 0, 51, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 49),
-			semanticNode(BLOCK, 24, 49),
-			semanticNode(BINARY_EXPRESSION, 36, 45),
-			semanticNode(BINARY_EXPRESSION, 40, 45),
-			semanticNode(INTEGER_LITERAL, 36, 37),
-			semanticNode(INTEGER_LITERAL, 40, 41),
-			semanticNode(INTEGER_LITERAL, 44, 45));
+			compilationUnit( 0, 52),
+			typeDeclaration(CLASS_DECLARATION, 0, 51, "Test"),
+			methodDeclaration( 14, 49),
+			block( 24, 49),
+			binaryExpression( 36, 45),
+			binaryExpression( 40, 45),
+			integerLiteral( 36, 37),
+			integerLiteral( 40, 41),
+			integerLiteral( 44, 45));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -248,15 +234,15 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 54),
-			semanticNode(CLASS_DECLARATION, 0, 53, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 51),
-			semanticNode(BLOCK, 24, 51),
-			semanticNode(BINARY_EXPRESSION, 37, 47),
-			semanticNode(BINARY_EXPRESSION, 37, 42),
-			semanticNode(INTEGER_LITERAL, 37, 38),
-			semanticNode(INTEGER_LITERAL, 41, 42),
-			semanticNode(INTEGER_LITERAL, 46, 47));
+			compilationUnit( 0, 54),
+			typeDeclaration(CLASS_DECLARATION, 0, 53, "Test"),
+			methodDeclaration( 14, 51),
+			block( 24, 51),
+			binaryExpression( 37, 47),
+			binaryExpression( 37, 42),
+			integerLiteral( 37, 38),
+			integerLiteral( 41, 42),
+			integerLiteral( 46, 47));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -279,12 +265,12 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 45),
-			semanticNode(CLASS_DECLARATION, 0, 44, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 42),
-			semanticNode(BLOCK, 24, 42),
-			semanticNode(UNARY_EXPRESSION, 36, 38),
-			semanticNode(INTEGER_LITERAL, 37, 38));
+			compilationUnit( 0, 45),
+			typeDeclaration(CLASS_DECLARATION, 0, 44, "Test"),
+			methodDeclaration( 14, 42),
+			block( 24, 42),
+			unaryExpression( 36, 38),
+			integerLiteral( 37, 38));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -307,12 +293,12 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 52),
-			semanticNode(CLASS_DECLARATION, 0, 51, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 49),
-			semanticNode(BLOCK, 24, 49),
-			semanticNode(UNARY_EXPRESSION, 40, 45),
-			semanticNode(BOOLEAN_LITERAL, 41, 45));
+			compilationUnit( 0, 52),
+			typeDeclaration(CLASS_DECLARATION, 0, 51, "Test"),
+			methodDeclaration( 14, 49),
+			block( 24, 49),
+			unaryExpression( 40, 45),
+			booleanLiteral( 41, 45));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -335,13 +321,13 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 40),
-			semanticNode(CLASS_DECLARATION, 0, 39, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 37),
-			semanticNode(BLOCK, 24, 37),
-			semanticNode(METHOD_INVOCATION, 28, 33),
-			semanticNode(QUALIFIED_NAME, 28, 31),
-			semanticNode(IDENTIFIER, 28, 31));
+			compilationUnit( 0, 40),
+			typeDeclaration(CLASS_DECLARATION, 0, 39, "Test"),
+			methodDeclaration( 14, 37),
+			block( 24, 37),
+			methodInvocation( 28, 33),
+			qualifiedName( 28, 31),
+			identifier( 28, 31));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -364,16 +350,16 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 47),
-			semanticNode(CLASS_DECLARATION, 0, 46, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 44),
-			semanticNode(BLOCK, 24, 44),
-			semanticNode(METHOD_INVOCATION, 28, 40),
-			semanticNode(QUALIFIED_NAME, 28, 31),
-			semanticNode(IDENTIFIER, 28, 31),
-			semanticNode(INTEGER_LITERAL, 32, 33),
-			semanticNode(INTEGER_LITERAL, 35, 36),
-			semanticNode(INTEGER_LITERAL, 38, 39));
+			compilationUnit( 0, 47),
+			typeDeclaration(CLASS_DECLARATION, 0, 46, "Test"),
+			methodDeclaration( 14, 44),
+			block( 24, 44),
+			methodInvocation( 28, 40),
+			qualifiedName( 28, 31),
+			identifier( 28, 31),
+			integerLiteral( 32, 33),
+			integerLiteral( 35, 36),
+			integerLiteral( 38, 39));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -396,13 +382,13 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 55),
-			semanticNode(CLASS_DECLARATION, 0, 54, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 52),
-			semanticNode(BLOCK, 24, 52),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(FIELD_ACCESS, 39, 48),
-			semanticNode(IDENTIFIER, 39, 42));
+			compilationUnit( 0, 55),
+			typeDeclaration(CLASS_DECLARATION, 0, 54, "Test"),
+			methodDeclaration( 14, 52),
+			block( 24, 52),
+			qualifiedName( 28, 34),
+			fieldAccess( 39, 48),
+			identifier( 39, 42));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -425,14 +411,14 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 54),
-			semanticNode(CLASS_DECLARATION, 0, 53, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 51),
-			semanticNode(BLOCK, 24, 51),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(ARRAY_ACCESS, 39, 47),
-			semanticNode(IDENTIFIER, 39, 44),
-			semanticNode(INTEGER_LITERAL, 45, 46));
+			compilationUnit( 0, 54),
+			typeDeclaration(CLASS_DECLARATION, 0, 53, "Test"),
+			methodDeclaration( 14, 51),
+			block( 24, 51),
+			qualifiedName( 28, 34),
+			arrayAccess( 39, 47),
+			identifier( 39, 44),
+			integerLiteral( 45, 46));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -455,14 +441,14 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 40),
-			semanticNode(CLASS_DECLARATION, 0, 39, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 37),
-			semanticNode(BLOCK, 24, 37),
-			semanticNode(ASSIGNMENT_EXPRESSION, 28, 33),
-			semanticNode(QUALIFIED_NAME, 28, 29),
-			semanticNode(IDENTIFIER, 28, 29),
-			semanticNode(INTEGER_LITERAL, 32, 33));
+			compilationUnit( 0, 40),
+			typeDeclaration(CLASS_DECLARATION, 0, 39, "Test"),
+			methodDeclaration( 14, 37),
+			block( 24, 37),
+			assignmentExpression( 28, 33),
+			qualifiedName( 28, 29),
+			identifier( 28, 29),
+			integerLiteral( 32, 33));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -485,14 +471,14 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 41),
-			semanticNode(CLASS_DECLARATION, 0, 40, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 38),
-			semanticNode(BLOCK, 24, 38),
-			semanticNode(ASSIGNMENT_EXPRESSION, 28, 34),
-			semanticNode(QUALIFIED_NAME, 28, 29),
-			semanticNode(IDENTIFIER, 28, 29),
-			semanticNode(INTEGER_LITERAL, 33, 34));
+			compilationUnit( 0, 41),
+			typeDeclaration(CLASS_DECLARATION, 0, 40, "Test"),
+			methodDeclaration( 14, 38),
+			block( 24, 38),
+			assignmentExpression( 28, 34),
+			qualifiedName( 28, 29),
+			identifier( 28, 29),
+			integerLiteral( 33, 34));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -515,15 +501,15 @@ public class ParserTest
 			""");
 
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 60),
-			semanticNode(CLASS_DECLARATION, 0, 59, "Test"),
-			semanticNode(METHOD_DECLARATION, 14, 57),
-			semanticNode(BLOCK, 24, 57),
-			semanticNode(QUALIFIED_NAME, 28, 34),
-			semanticNode(CONDITIONAL_EXPRESSION, 44, 53),
-			semanticNode(IDENTIFIER, 44, 45),
-			semanticNode(IDENTIFIER, 48, 49),
-			semanticNode(IDENTIFIER, 52, 53));
+			compilationUnit( 0, 60),
+			typeDeclaration(CLASS_DECLARATION, 0, 59, "Test"),
+			methodDeclaration( 14, 57),
+			block( 24, 57),
+			qualifiedName( 28, 34),
+			conditionalExpression( 44, 53),
+			identifier( 44, 45),
+			identifier( 48, 49),
+			identifier( 52, 53));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 

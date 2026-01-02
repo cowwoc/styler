@@ -6,19 +6,10 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.BINARY_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.BLOCK;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.FOR_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.LABELED_STATEMENT;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.UNARY_EXPRESSION;
-import static io.github.cowwoc.styler.ast.core.NodeType.WHILE_STATEMENT;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
 
 /**
  * Tests for parsing labeled statements.
@@ -44,19 +35,19 @@ public final class LabeledStatementParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 86),
-			semanticNode(CLASS_DECLARATION, 7, 85, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 83),
-			semanticNode(BLOCK, 33, 83),
-			semanticNode(LABELED_STATEMENT, 9, 80),
-			semanticNode(FOR_STATEMENT, 44, 80),
-			semanticNode(INTEGER_LITERAL, 57, 58),
-			semanticNode(BINARY_EXPRESSION, 60, 66),
-			semanticNode(IDENTIFIER, 60, 61),
-			semanticNode(INTEGER_LITERAL, 64, 66),
-			semanticNode(UNARY_EXPRESSION, 68, 71),
-			semanticNode(IDENTIFIER, 70, 71),
-			semanticNode(BLOCK, 75, 80));
+			compilationUnit( 0, 86),
+			typeDeclaration(CLASS_DECLARATION, 7, 85, "Test"),
+			methodDeclaration( 21, 83),
+			block( 33, 83),
+			labeledStatement( 9, 80),
+			forStatement( 44, 80),
+			integerLiteral( 57, 58),
+			binaryExpression( 60, 66),
+			identifier( 60, 61),
+			integerLiteral( 64, 66),
+			unaryExpression( 68, 71),
+			identifier( 70, 71),
+			block( 75, 80));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -80,18 +71,18 @@ public final class LabeledStatementParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 79),
-			semanticNode(CLASS_DECLARATION, 7, 78, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 76),
-			semanticNode(BLOCK, 33, 76),
-			semanticNode(LABELED_STATEMENT, 9, 73),
-			semanticNode(WHILE_STATEMENT, 44, 73),
-			semanticNode(BINARY_EXPRESSION, 51, 56),
-			semanticNode(IDENTIFIER, 51, 52),
-			semanticNode(INTEGER_LITERAL, 55, 56),
-			semanticNode(BLOCK, 60, 73),
-			semanticNode(UNARY_EXPRESSION, 65, 68),
-			semanticNode(IDENTIFIER, 67, 68));
+			compilationUnit( 0, 79),
+			typeDeclaration(CLASS_DECLARATION, 7, 78, "Test"),
+			methodDeclaration( 21, 76),
+			block( 33, 76),
+			labeledStatement( 9, 73),
+			whileStatement( 44, 73),
+			binaryExpression( 51, 56),
+			identifier( 51, 52),
+			integerLiteral( 55, 56),
+			block( 60, 73),
+			unaryExpression( 65, 68),
+			identifier( 67, 68));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -114,20 +105,20 @@ public final class LabeledStatementParserTest
 			""";
 		Set<SemanticNode> actual = parseSemanticAst(source);
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 85),
-			semanticNode(CLASS_DECLARATION, 7, 84, "Test"),
-			semanticNode(METHOD_DECLARATION, 21, 82),
-			semanticNode(BLOCK, 33, 82),
-			semanticNode(LABELED_STATEMENT, 9, 79),
-			semanticNode(LABELED_STATEMENT, 11, 79),
-			semanticNode(FOR_STATEMENT, 43, 79),
-			semanticNode(INTEGER_LITERAL, 56, 57),
-			semanticNode(BINARY_EXPRESSION, 59, 65),
-			semanticNode(IDENTIFIER, 59, 60),
-			semanticNode(INTEGER_LITERAL, 63, 65),
-			semanticNode(UNARY_EXPRESSION, 67, 70),
-			semanticNode(IDENTIFIER, 69, 70),
-			semanticNode(BLOCK, 74, 79));
+			compilationUnit( 0, 85),
+			typeDeclaration(CLASS_DECLARATION, 7, 84, "Test"),
+			methodDeclaration( 21, 82),
+			block( 33, 82),
+			labeledStatement( 9, 79),
+			labeledStatement( 11, 79),
+			forStatement( 43, 79),
+			integerLiteral( 56, 57),
+			binaryExpression( 59, 65),
+			identifier( 59, 60),
+			integerLiteral( 63, 65),
+			unaryExpression( 67, 70),
+			identifier( 69, 70),
+			block( 74, 79));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

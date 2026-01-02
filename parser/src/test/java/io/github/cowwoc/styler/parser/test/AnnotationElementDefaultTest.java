@@ -6,18 +6,10 @@ import org.testng.annotations.Test;
 import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.ARRAY_INITIALIZER;
-import static io.github.cowwoc.styler.ast.core.NodeType.BOOLEAN_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.COMPILATION_UNIT;
-import static io.github.cowwoc.styler.ast.core.NodeType.IDENTIFIER;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTEGER_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.METHOD_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.STRING_LITERAL;
-import static io.github.cowwoc.styler.ast.core.NodeType.WILDCARD_TYPE;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.semanticNode;
+import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION_DECLARATION;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
 
 /**
  * Tests for parsing annotation type element declarations with default values.
@@ -38,10 +30,10 @@ public final class AnnotationElementDefaultTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 53),
-			semanticNode(ANNOTATION_DECLARATION, 0, 52, "Config"),
-			semanticNode(METHOD_DECLARATION, 21, 50),
-			semanticNode(STRING_LITERAL, 43, 49));
+			compilationUnit( 0, 53),
+			typeDeclaration(ANNOTATION_DECLARATION, 0, 52, "Config"),
+			methodDeclaration( 21, 50),
+			stringLiteral( 43, 49));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -59,10 +51,10 @@ public final class AnnotationElementDefaultTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 48),
-			semanticNode(ANNOTATION_DECLARATION, 0, 47, "Priority"),
-			semanticNode(METHOD_DECLARATION, 23, 45),
-			semanticNode(INTEGER_LITERAL, 43, 44));
+			compilationUnit( 0, 48),
+			typeDeclaration(ANNOTATION_DECLARATION, 0, 47, "Priority"),
+			methodDeclaration( 23, 45),
+			integerLiteral( 43, 44));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -80,10 +72,10 @@ public final class AnnotationElementDefaultTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 55),
-			semanticNode(ANNOTATION_DECLARATION, 0, 54, "Enabled"),
-			semanticNode(METHOD_DECLARATION, 22, 52),
-			semanticNode(BOOLEAN_LITERAL, 47, 51));
+			compilationUnit( 0, 55),
+			typeDeclaration(ANNOTATION_DECLARATION, 0, 54, "Enabled"),
+			methodDeclaration( 22, 52),
+			booleanLiteral( 47, 51));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -101,10 +93,10 @@ public final class AnnotationElementDefaultTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 51),
-			semanticNode(ANNOTATION_DECLARATION, 0, 50, "Tags"),
-			semanticNode(METHOD_DECLARATION, 19, 48),
-			semanticNode(ARRAY_INITIALIZER, 45, 47));
+			compilationUnit( 0, 51),
+			typeDeclaration(ANNOTATION_DECLARATION, 0, 50, "Tags"),
+			methodDeclaration( 19, 48),
+			arrayInitializer( 45, 47));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -122,12 +114,12 @@ public final class AnnotationElementDefaultTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 59),
-			semanticNode(ANNOTATION_DECLARATION, 0, 58, "Tags"),
-			semanticNode(METHOD_DECLARATION, 19, 56),
-			semanticNode(ARRAY_INITIALIZER, 45, 55),
-			semanticNode(STRING_LITERAL, 46, 49),
-			semanticNode(STRING_LITERAL, 51, 54));
+			compilationUnit( 0, 59),
+			typeDeclaration(ANNOTATION_DECLARATION, 0, 58, "Tags"),
+			methodDeclaration( 19, 56),
+			arrayInitializer( 45, 55),
+			stringLiteral( 46, 49),
+			stringLiteral( 51, 54));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -145,12 +137,12 @@ public final class AnnotationElementDefaultTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 62),
-			semanticNode(ANNOTATION_DECLARATION, 0, 61, "TypeRef"),
-			semanticNode(METHOD_DECLARATION, 22, 59),
-			semanticNode(WILDCARD_TYPE, 28, 29),
-			semanticNode(CLASS_LITERAL, 46, 58),
-			semanticNode(IDENTIFIER, 46, 52));
+			compilationUnit( 0, 62),
+			typeDeclaration(ANNOTATION_DECLARATION, 0, 61, "TypeRef"),
+			methodDeclaration( 22, 59),
+			wildcardType( 28, 29),
+			classLiteral( 46, 58),
+			identifier( 46, 52));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -168,9 +160,9 @@ public final class AnnotationElementDefaultTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 41),
-			semanticNode(ANNOTATION_DECLARATION, 0, 40, "Required"),
-			semanticNode(METHOD_DECLARATION, 23, 38));
+			compilationUnit( 0, 41),
+			typeDeclaration(ANNOTATION_DECLARATION, 0, 40, "Required"),
+			methodDeclaration( 23, 38));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
@@ -190,13 +182,13 @@ public final class AnnotationElementDefaultTest
 			}
 			""");
 		Set<SemanticNode> expected = Set.of(
-			semanticNode(COMPILATION_UNIT, 0, 98),
-			semanticNode(ANNOTATION_DECLARATION, 0, 97, "Config"),
-			semanticNode(METHOD_DECLARATION, 21, 35),
-			semanticNode(METHOD_DECLARATION, 37, 62),
-			semanticNode(INTEGER_LITERAL, 60, 61),
-			semanticNode(METHOD_DECLARATION, 64, 95),
-			semanticNode(BOOLEAN_LITERAL, 90, 94));
+			compilationUnit( 0, 98),
+			typeDeclaration(ANNOTATION_DECLARATION, 0, 97, "Config"),
+			methodDeclaration( 21, 35),
+			methodDeclaration( 37, 62),
+			integerLiteral( 60, 61),
+			methodDeclaration( 64, 95),
+			booleanLiteral( 90, 94));
 		requireThat(actual, "actual").isEqualTo(expected);
 	}
 }

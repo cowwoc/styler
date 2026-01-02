@@ -1,17 +1,21 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.ast.core.NodeArena;
-import io.github.cowwoc.styler.ast.core.NodeIndex;
-import io.github.cowwoc.styler.ast.core.NodeType;
-import io.github.cowwoc.styler.ast.core.PackageAttribute;
 import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
+import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.annotation;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.arrayInitializer;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.compilationUnit;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.lineComment;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.packageNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.qualifiedName;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.stringLiteral;
 
 /**
  * Tests for parsing package annotations in package-info.java files.
@@ -28,21 +32,16 @@ public class PackageAnnotationParserTest
 			@Deprecated
 			package com.example;
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> packages = findNodesOfType(arena, NodeType.PACKAGE_DECLARATION);
-			requireThat(packages.size(), "packages.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 33),
+			annotation(0, 11),
+			qualifiedName(1, 11),
+			packageNode(0, 32, "com.example"),
+			qualifiedName(20, 31));
 
-			List<NodeIndex> annotations = findNodesOfType(arena, NodeType.ANNOTATION);
-			requireThat(annotations.size(), "annotations.size()").isEqualTo(1);
-
-			PackageAttribute attribute = arena.getPackageAttribute(packages.get(0));
-			requireThat(attribute.packageName(), "packageName").isEqualTo("com.example");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -55,21 +54,17 @@ public class PackageAnnotationParserTest
 			@SuppressWarnings("unchecked")
 			package com.example;
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> packages = findNodesOfType(arena, NodeType.PACKAGE_DECLARATION);
-			requireThat(packages.size(), "packages.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 52),
+			annotation(0, 30),
+			qualifiedName(1, 17),
+			stringLiteral(18, 29),
+			packageNode(0, 51, "com.example"),
+			qualifiedName(39, 50));
 
-			List<NodeIndex> annotations = findNodesOfType(arena, NodeType.ANNOTATION);
-			requireThat(annotations.size(), "annotations.size()").isEqualTo(1);
-
-			PackageAttribute attribute = arena.getPackageAttribute(packages.get(0));
-			requireThat(attribute.packageName(), "packageName").isEqualTo("com.example");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -84,21 +79,22 @@ public class PackageAnnotationParserTest
 			@Generated("test")
 			package com.example;
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> packages = findNodesOfType(arena, NodeType.PACKAGE_DECLARATION);
-			requireThat(packages.size(), "packages.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 83),
+			annotation(0, 11),
+			qualifiedName(1, 11),
+			annotation(12, 42),
+			qualifiedName(13, 29),
+			stringLiteral(30, 41),
+			annotation(43, 61),
+			qualifiedName(44, 53),
+			stringLiteral(54, 60),
+			packageNode(0, 82, "com.example"),
+			qualifiedName(70, 81));
 
-			List<NodeIndex> annotations = findNodesOfType(arena, NodeType.ANNOTATION);
-			requireThat(annotations.size(), "annotations.size()").isEqualTo(3);
-
-			PackageAttribute attribute = arena.getPackageAttribute(packages.get(0));
-			requireThat(attribute.packageName(), "packageName").isEqualTo("com.example");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -111,21 +107,17 @@ public class PackageAnnotationParserTest
 			@javax.annotation.Generated("test")
 			package com.example;
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> packages = findNodesOfType(arena, NodeType.PACKAGE_DECLARATION);
-			requireThat(packages.size(), "packages.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 57),
+			annotation(0, 35),
+			qualifiedName(1, 27),
+			stringLiteral(28, 34),
+			packageNode(0, 56, "com.example"),
+			qualifiedName(44, 55));
 
-			List<NodeIndex> annotations = findNodesOfType(arena, NodeType.ANNOTATION);
-			requireThat(annotations.size(), "annotations.size()").isEqualTo(1);
-
-			PackageAttribute attribute = arena.getPackageAttribute(packages.get(0));
-			requireThat(attribute.packageName(), "packageName").isEqualTo("com.example");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -138,21 +130,19 @@ public class PackageAnnotationParserTest
 			@SuppressWarnings({"unchecked", "rawtypes"})
 			package com.example;
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> packages = findNodesOfType(arena, NodeType.PACKAGE_DECLARATION);
-			requireThat(packages.size(), "packages.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 66),
+			annotation(0, 44),
+			qualifiedName(1, 17),
+			arrayInitializer(18, 43),
+			stringLiteral(19, 30),
+			stringLiteral(32, 42),
+			packageNode(0, 65, "com.example"),
+			qualifiedName(53, 64));
 
-			List<NodeIndex> annotations = findNodesOfType(arena, NodeType.ANNOTATION);
-			requireThat(annotations.size(), "annotations.size()").isEqualTo(1);
-
-			PackageAttribute attribute = arena.getPackageAttribute(packages.get(0));
-			requireThat(attribute.packageName(), "packageName").isEqualTo("com.example");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -167,21 +157,20 @@ public class PackageAnnotationParserTest
 			@SuppressWarnings("unchecked")
 			package com.example;
 			""";
-		try (Parser parser = new Parser(source))
-		{
-			ParseResult result = parser.parse();
-			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		Set<SemanticNode> actual = parseSemanticAst(source);
 
-			NodeArena arena = parser.getArena();
-			List<NodeIndex> packages = findNodesOfType(arena, NodeType.PACKAGE_DECLARATION);
-			requireThat(packages.size(), "packages.size()").isEqualTo(1);
+		Set<SemanticNode> expected = Set.of(
+			compilationUnit(0, 105),
+			annotation(0, 11),
+			qualifiedName(1, 11),
+			lineComment(12, 52),
+			annotation(53, 83),
+			qualifiedName(54, 70),
+			stringLiteral(71, 82),
+			packageNode(0, 104, "com.example"),
+			qualifiedName(92, 103));
 
-			List<NodeIndex> annotations = findNodesOfType(arena, NodeType.ANNOTATION);
-			requireThat(annotations.size(), "annotations.size()").isEqualTo(2);
-
-			PackageAttribute attribute = arena.getPackageAttribute(packages.get(0));
-			requireThat(attribute.packageName(), "packageName").isEqualTo("com.example");
-		}
+		requireThat(actual, "actual").isEqualTo(expected);
 	}
 
 	/**
@@ -202,26 +191,5 @@ public class PackageAnnotationParserTest
 			ParseResult result = parser.parse();
 			requireThat(result, "result").isInstanceOf(ParseResult.Failure.class);
 		}
-	}
-
-	/**
-	 * Finds all nodes of the specified type in the arena.
-	 *
-	 * @param arena the arena to search
-	 * @param type  the node type to find
-	 * @return list of node indices matching the type
-	 */
-	private List<NodeIndex> findNodesOfType(NodeArena arena, NodeType type)
-	{
-		List<NodeIndex> result = new ArrayList<>();
-		for (int i = 0; i < arena.getNodeCount(); ++i)
-		{
-			NodeIndex index = new NodeIndex(i);
-			if (arena.getType(index) == type)
-			{
-				result.add(index);
-			}
-		}
-		return result;
 	}
 }
