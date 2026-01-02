@@ -98,6 +98,45 @@ INIT → CLASSIFIED → REQUIREMENTS → SYNTHESIS → [PLAN APPROVAL] → IMPLE
 
 **Goal**: When user approves, they know EXACTLY what will be created, where, and how. No surprises during implementation.
 
+#### Plan Approval Presentation Structure {#plan-approval-presentation-structure}
+
+**CRITICAL**: Plan approval presentations MUST follow the Purpose → Approach → Benefits structure:
+
+1. **Purpose (MANDATORY)**: What problem does this solve? Why does this task exist?
+   - Users cannot evaluate a plan without understanding the problem
+   - 2-3 sentences explaining the issue or need being addressed
+
+2. **Approach (MANDATORY)**: How will we solve it?
+   - The implementation phases and key design decisions
+   - File manifest, API signatures, behavioral summary
+
+3. **Benefits (MANDATORY)**: What improvements will result?
+   - Concrete outcomes the user can expect
+   - How this improves the codebase or user experience
+
+❌ **WRONG** - Starting with approach or benefits:
+```markdown
+## Implementation Plan
+Here are the phases...
+Benefits: Improved performance, cleaner code...
+```
+
+✅ **CORRECT** - Start with Purpose:
+```markdown
+## Implementation Plan
+
+### Problem Statement
+Currently, the formatter lacks support for X, causing users to manually...
+This task adds support for X to automate...
+
+### Proposed Solution
+We will create a new Y component that...
+
+### Benefits
+- Reduces manual formatting by 80%
+- Consistent output across all files
+```
+
 #### Required Plan Components {#required-plan-components}
 
 **1. FILE MANIFEST** - Complete list of all files to be created or modified:
