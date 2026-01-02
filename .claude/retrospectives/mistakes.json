@@ -442,6 +442,54 @@
       "commit": "01acbd2",
       "recurrence_count": 0,
       "processed_in_retrospective": "R001"
+    },
+    {
+      "id": "M022",
+      "timestamp": "2026-01-02T15:52:52-05:00",
+      "category": "build_failure",
+      "pattern_id": null,
+      "description": "Auto-detected build_failure during Bash execution",
+      "root_cause": "Detected by auto-learn-from-mistakes hook. Details: BUILD FAILURE - Error compilation failed ",
+      "prevention_type": "pending",
+      "prevention_path": null,
+      "pattern_keywords": [],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "auto_detected": true,
+      "source_tool": "Bash"
+    },
+    {
+      "id": "M023",
+      "timestamp": "2026-01-02T15:52:52-05:00",
+      "category": "build_failure",
+      "pattern_id": null,
+      "description": "Auto-detected build_failure during Bash execution",
+      "root_cause": "Detected by auto-learn-from-mistakes hook. Details: 📝 Logged mistake M022 (build_failure) to mistakes.json {   \\\"hookSpecificOutput\\\": {     \\\"hookEventName\\\": \\\"PostToolUse\\\",     \\\"additionalContext\\\": \\\"📚 MISTAKE DETECTED: build_failure\\n\\n**MANDATORY**: Check TodoWrite for existing entry, add if not present:\\n- content: \\\\\"LFM: Investigate build_failure from Bash\\\\\"\\n- status: \\\\\"pending\\\\\"\\n- activeForm: \\\\\"Investigating build_failure mistake\\\\\"\\n\\n**Context**: Detected build_failure during Bash execution.\\n**Details**: BUILD FAILURE - Error compilat",
+      "prevention_type": "pending",
+      "prevention_path": null,
+      "pattern_keywords": [],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "auto_detected": true,
+      "source_tool": "Bash"
+    },
+    {
+      "id": "M024",
+      "timestamp": "2026-01-02T15:53:03-05:00",
+      "category": "build_failure",
+      "pattern_id": null,
+      "description": "Auto-detected build_failure during Bash execution",
+      "root_cause": "Detected by auto-learn-from-mistakes hook. Details:   \\\"category\\\": \\\"build_failure\\\",   \\\"pattern_id\\\": null,   \\\"description\\\": \\\"Auto-detected build_failure during Bash execution\\\",   \\\"root_cause\\\": \\\"Detected by auto-learn-from-mistakes hook. Details: 📝 Logged mistake M022 (build_failure) to mistakes.json {   \\\\\\\\\"hookSpecificOutput\\\\\\\\\": {     \\\\\\\\\"hookEventName\\\\\\\\\": \\\\\\\\\"PostToolUse\\\\\\\\\",     \\\\\\\\\"additionalContext\\\\\\\\\": \\\\\\\\\"📚 MISTAKE DETECTED: build_failure\\\\n\\\\n**MANDATORY**: Check TodoWrite for existing entry, add if not present:\\\\n- content: \\\\\\\\\\\\\"L",
+      "prevention_type": "pending",
+      "prevention_path": null,
+      "pattern_keywords": [],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "auto_detected": true,
+      "source_tool": "Bash"
     }
   ]
 }

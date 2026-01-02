@@ -190,7 +190,7 @@ allowed:
 
 ---
 
-## 8-Phase Process
+## 9-Phase Process
 
 1. **Mistake Identification** - Gather context
 2. **Conversation Analysis** - Review logs
@@ -203,8 +203,10 @@ allowed:
 6. **Validation** - Review completeness
 7. **Test by Reproduction** - ⚠️ Attempt to reproduce mistake to verify prevention
 8. **Documentation** - Add inline comments and commit messages
+9. **Cross-Session Logging** - ⚠️ Write mistake to `mistakes.json` for retrospective analysis
 
 **Critical**: Phase 7 requires actually reproducing the mistake (not mental simulation) to verify fixes work.
+**Critical**: Phase 9 is MANDATORY - all mistakes must be logged for pattern detection and effectiveness tracking.
 
 ### Phase 1: Mistake Identification
 
@@ -1752,6 +1754,132 @@ fi
 - Recurrence >20%: Re-invoke learn-from-mistakes to strengthen prevention
 - Zero recurrence: Document success pattern for reuse
 - High occurrence count: Prioritize systemic improvements
+
+## Phase 9: Cross-Session Mistake Logging (MANDATORY)
+
+**⚠️ CRITICAL**: After completing Phases 1-8, you MUST log the mistake to `mistakes.json` for retrospective
+analysis. This enables cross-session pattern detection and effectiveness tracking.
+
+### Logging Procedure
+
+```bash
+# Step 1: Determine next mistake ID
+MISTAKES_FILE="/workspace/.claude/retrospectives/mistakes.json"
+LAST_ID=$(jq -r '.mistakes | map(.id | ltrimstr("M") | tonumber) | max // 0' "$MISTAKES_FILE")
+NEXT_NUM=$((LAST_ID + 1))
+MISTAKE_ID=$(printf "M%03d" "$NEXT_NUM")
+echo "Next mistake ID: $MISTAKE_ID"
+
+# Step 2: Prepare mistake data (fill in from your analysis)
+TIMESTAMP=$(date -Iseconds)
+CATEGORY="<category from Phase 3>"           # e.g., "build_failure", "protocol_violation"
+DESCRIPTION="<brief description>"            # What went wrong
+ROOT_CAUSE="<root cause from Phase 3>"       # Why it happened
+PREVENTION_TYPE="<type from Phase 4>"        # "hook", "code_fix", "validation", "config"
+PREVENTION_PATH="<path to prevention>"       # e.g., ".claude/hooks/my-hook.sh"
+PATTERN_KEYWORDS='["keyword1", "keyword2"]'  # JSON array of searchable keywords
+```
+
+### Mistake Entry Schema
+
+```json
+{
+  "id": "M022",
+  "timestamp": "2026-01-02T10:30:00-05:00",
+  "category": "build_failure",
+  "pattern_id": null,
+  "description": "Checkstyle violations in parser implementation",
+  "root_cause": "Code style rules not followed during implementation",
+  "prevention_type": "hook",
+  "prevention_path": ".claude/hooks/pre-commit-style-check.sh",
+  "pattern_keywords": ["checkstyle", "style", "formatting"],
+  "commit": "abc1234",
+  "recurrence_count": 0,
+  "processed_in_retrospective": null
+}
+```
+
+### Writing the Entry
+
+Use jq to append the mistake entry atomically:
+
+```bash
+# Create the mistake entry
+jq --arg id "$MISTAKE_ID" \
+   --arg ts "$TIMESTAMP" \
+   --arg cat "$CATEGORY" \
+   --arg desc "$DESCRIPTION" \
+   --arg cause "$ROOT_CAUSE" \
+   --arg ptype "$PREVENTION_TYPE" \
+   --arg ppath "$PREVENTION_PATH" \
+   --argjson keywords "$PATTERN_KEYWORDS" \
+   '.mistakes += [{
+     id: $id,
+     timestamp: $ts,
+     category: $cat,
+     pattern_id: null,
+     description: $desc,
+     root_cause: $cause,
+     prevention_type: $ptype,
+     prevention_path: $ppath,
+     pattern_keywords: $keywords,
+     commit: null,
+     recurrence_count: 0,
+     processed_in_retrospective: null
+   }]' "$MISTAKES_FILE" > "${MISTAKES_FILE}.tmp" && mv "${MISTAKES_FILE}.tmp" "$MISTAKES_FILE"
+
+# Increment mistake counter in retrospectives.json
+RETRO_FILE="/workspace/.claude/retrospectives/retrospectives.json"
+jq '.mistake_count_since_last += 1' "$RETRO_FILE" > "${RETRO_FILE}.tmp" && mv "${RETRO_FILE}.tmp" "$RETRO_FILE"
+
+echo "✅ Logged mistake $MISTAKE_ID to mistakes.json"
+```
+
+### Valid Categories
+
+Use one of these categories (from `mistakes.json` schema):
+- `tdd_violation` - Skipped test phases
+- `detection_gap` - Validation missed issue
+- `bash_error` - Shell command failure
+- `edit_failure` - String not found
+- `architecture_issue` - Design-level problems
+- `protocol_violation` - Skipped required steps
+- `git_operation_failure` - Git command issues
+- `build_failure` - Compilation/style errors
+- `worktree_violation` - Wrong working directory
+- `giving_up` - Abandoned optimal solution
+- `documentation_violation` - Created prohibited docs
+- `logical_error` - Incorrect logic/thresholds
+- `test_failure` - Test execution failures
+- `merge_conflict` - Git merge conflicts
+- `other` - Uncategorized
+
+### Pattern Linking (Optional)
+
+If this mistake matches an existing pattern in `retrospectives.json`, link it:
+
+```bash
+# Check for existing pattern
+PATTERN_ID=$(jq -r --arg cat "$CATEGORY" '.recurring_patterns[] | select(.pattern == $cat) | .pattern_id' "$RETRO_FILE")
+
+if [[ -n "$PATTERN_ID" ]]; then
+  # Update the mistake entry with pattern_id
+  jq --arg id "$MISTAKE_ID" --arg pid "$PATTERN_ID" \
+    '(.mistakes[] | select(.id == $id)).pattern_id = $pid' \
+    "$MISTAKES_FILE" > "${MISTAKES_FILE}.tmp" && mv "${MISTAKES_FILE}.tmp" "$MISTAKES_FILE"
+  echo "Linked to pattern: $PATTERN_ID"
+fi
+```
+
+### Verification
+
+After logging, verify the entry was written:
+
+```bash
+jq --arg id "$MISTAKE_ID" '.mistakes[] | select(.id == $id)' "$MISTAKES_FILE"
+```
+
+---
 
 ## When to Use
 

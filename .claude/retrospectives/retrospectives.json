@@ -17,7 +17,7 @@
   },
   "escalations": [],
   "last_retrospective": "2025-11-28T08:30:00-05:00",
-  "mistake_count_since_last": 0,
+  "mistake_count_since_last": 3,
   "retrospectives": [
     {
       "id": "R001",
@@ -46,8 +46,18 @@
           "code_fix": 1
         },
         "high_recurrence": [
-          {"id": "M017", "category": "build_failure", "recurrence": 4, "description": "Checkstyle violations"},
-          {"id": "M018", "category": "build_failure", "recurrence": 3, "description": "PMD violations"}
+          {
+            "id": "M017",
+            "category": "build_failure",
+            "recurrence": 4,
+            "description": "Checkstyle violations"
+          },
+          {
+            "id": "M018",
+            "category": "build_failure",
+            "recurrence": 3,
+            "description": "PMD violations"
+          }
         ]
       }
     }
@@ -68,7 +78,9 @@
         "git-rebase skill with backup",
         "auto-learn-from-mistakes Pattern 7"
       ],
-      "related_action_items": ["A004"]
+      "related_action_items": [
+        "A004"
+      ]
     },
     {
       "pattern_id": "PATTERN-002",
@@ -84,7 +96,9 @@
         "auto-learn-from-mistakes hook (11 patterns)",
         "Various specialized detection hooks"
       ],
-      "related_action_items": ["A003"],
+      "related_action_items": [
+        "A003"
+      ],
       "note": "Most common category - each new detection gap leads to new pattern in hook"
     },
     {
@@ -102,7 +116,9 @@
         "mvn pmd:check",
         "pre-commit hook validation (A001)"
       ],
-      "related_action_items": ["A001"],
+      "related_action_items": [
+        "A001"
+      ],
       "note": "Pre-commit hook added 2025-11-28 - blocks commits with style violations"
     }
   ],
@@ -116,7 +132,10 @@
       "status": "implemented",
       "created_date": "2025-11-28T08:30:00-05:00",
       "completed_date": "2025-11-28T14:00:00-05:00",
-      "related_mistakes": ["M017", "M018"],
+      "related_mistakes": [
+        "M017",
+        "M018"
+      ],
       "effectiveness_check": {
         "mistakes_before": 3,
         "mistakes_after": 0,
@@ -152,7 +171,9 @@
       "status": "implemented",
       "created_date": "2025-11-28T08:00:00-05:00",
       "completed_date": "2025-11-28T08:05:00-05:00",
-      "related_mistakes": ["M011"],
+      "related_mistakes": [
+        "M011"
+      ],
       "effectiveness_check": {
         "mistakes_before": 7,
         "mistakes_after": 0,
@@ -170,7 +191,13 @@
       "status": "implemented",
       "created_date": "2025-11-06T00:00:00-05:00",
       "completed_date": "2025-11-12T00:00:00-05:00",
-      "related_mistakes": ["M001", "M002", "M003", "M006", "M010"],
+      "related_mistakes": [
+        "M001",
+        "M002",
+        "M003",
+        "M006",
+        "M010"
+      ],
       "effectiveness_check": {
         "mistakes_before": 4,
         "mistakes_after": 0,
