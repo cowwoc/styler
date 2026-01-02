@@ -21,12 +21,18 @@ DATE=$(date +%Y-%m-%d)
 [ -f "$TODO_FILE" ] || json_error "todo.md not found"
 [ -f "$CHANGELOG_FILE" ] || json_error "changelog.md not found"
 
-# Update todo.md: Mark task complete
-if ! grep -q "\[ \] $TASK_NAME" "$TODO_FILE"; then
+# Update todo.md: REMOVE task entry completely (NOT mark with [x])
+# Per task archival policy: completed tasks are DELETED from todo.md
+if ! grep -q "$TASK_NAME" "$TODO_FILE"; then
     json_error "Task not found in todo.md: $TASK_NAME"
 fi
 
-sed -i "s/\[ \] $TASK_NAME/[x] $TASK_NAME/" "$TODO_FILE"
+# Delete the task entry line and any following indented lines (sub-items)
+# Pattern: line starting with "- [ ]" or "- [x]" containing task name,
+# plus any immediately following lines that are indented (task details)
+sed -i "/^- \[.\] .*$TASK_NAME/,/^[^ ]/{/^- \[.\] .*$TASK_NAME/d; /^  /d}" "$TODO_FILE"
+# Also clean up any standalone task name line
+sed -i "/^- \[.\] $TASK_NAME$/d" "$TODO_FILE"
 
 # Update changelog.md: Add entry at top (after header)
 CHANGELOG_ENTRY="## [$DATE] - $TASK_NAME
@@ -42,7 +48,7 @@ $CHANGELOG_ENTRY" "$CHANGELOG_FILE"
 # Commit both atomically
 cd /workspace/main
 git add "$TODO_FILE" "$CHANGELOG_FILE"
-git commit -m "Update todo.md: Mark $TASK_NAME complete
+git commit -m "Archive task: $TASK_NAME (remove from todo.md)
 
 Added changelog entry:
 $CHANGES

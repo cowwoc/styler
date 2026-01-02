@@ -83,7 +83,7 @@ This ensures the atomic commit includes both implementation AND archival.
 TASK_NAME="{task-name}"
 cd /workspace/tasks/$TASK_NAME/code
 
-# Update todo.md: Mark task complete (change status from IN_PROGRESS to DONE)
+# Update todo.md: DELETE the entire task entry (NOT mark with [x] or DONE)
 # Update changelog.md: Add task completion entry with date and summary
 
 # Stage archival files
@@ -93,9 +93,9 @@ git add todo.md changelog.md
 **Archival Content Requirements**:
 
 **todo.md update**:
-- Change task status from `IN_PROGRESS` to `DONE`
-- Add completion date
-- Keep task entry for reference (will be cleaned in CLEANUP)
+- **DELETE the entire task entry** (do NOT mark with `[x]` or change status to `DONE`)
+- Remove the task line and all its sub-items (Dependencies, Blocks, etc.)
+- Per CLAUDE.md: "Completed tasks are REMOVED from todo.md (entire entry deleted)"
 
 **changelog.md update**:
 - Add entry under current date section
@@ -378,7 +378,7 @@ Before presenting to user, confirm:
 
 - [ ] All agent worktrees removed
 - [ ] All agent branches deleted
-- [ ] **todo.md updated** (task status changed to DONE)
+- [ ] **todo.md updated** (task entry DELETED, not marked with [x])
 - [ ] **changelog.md updated** (task completion entry added)
 - [ ] Config files (if any) squashed into FIRST commit
 - [ ] Implementation files squashed into LAST commit (including archival)
