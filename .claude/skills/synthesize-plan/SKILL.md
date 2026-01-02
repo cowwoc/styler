@@ -57,8 +57,22 @@ allowed-tools: Bash, Read, Write, Edit
 
 ### 4. Creates Unified Plan
 
+**CRITICAL**: Plan MUST follow Purpose → Approach → Benefits structure for user approval.
+
 ```markdown
 # Implementation Plan
+
+## Problem Statement (MANDATORY)
+[2-3 sentences: What problem does this solve? Why does this task exist?]
+[Users cannot evaluate a plan without understanding the problem]
+
+## Proposed Solution (MANDATORY)
+[2-3 sentences: High-level approach to solving the problem]
+
+## Benefits (MANDATORY)
+- [Concrete outcome 1]
+- [Concrete outcome 2]
+- [How this improves the codebase]
 
 ## Architecture
 [Key decisions from architect]
@@ -234,6 +248,9 @@ Script returns JSON:
   "conflicts_found": 1,
   "conflicts_resolved": 1,
   "plan_sections": [
+    "Problem Statement",
+    "Proposed Solution",
+    "Benefits",
     "Architecture",
     "Testing Strategy",
     "Documentation & Style",
