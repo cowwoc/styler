@@ -129,7 +129,8 @@ jq '.state = "X"' f.json > f.json.tmp && mv f.json.tmp f.json
 files, or `&&` chains.
 
 **Skill/SlashCommand**: Run SYNCHRONOUSLY (not async like Task). Immediately follow expanded prompt.
-Don't wait for "result".
+Don't wait for "result". **SUCCESS is silent; only report FAILURE to user** - success is expected, so
+continue with task silently. Only inform user and take corrective action when skill fails.
 
 ### Line Wrapping
 110 chars max. Use `format-documentation` skill for Claude-facing docs.
