@@ -68,9 +68,6 @@ Wrap at 72 characters.
 - Bullet points for multiple changes
 - Each point describes a discrete change
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ### Examples
@@ -82,8 +79,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - Added FormattingViolation data class
 - Implemented NoFixAvailable singleton pattern
 - Added comprehensive JavaDoc
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 ```
@@ -92,8 +87,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 - Upgraded checkstyle-maven-plugin to 3.3.1
 - Added SpotBugs exclusion patterns
 - Configured japicmp for API compatibility checks
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 ```
@@ -101,8 +94,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 Added null checks and validation to prevent NPE when
 configuration values are missing. Falls back to defaults.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 ## Branch Reference Resolution {#branch-reference-resolution}
@@ -295,12 +286,6 @@ squash m0n1o2p Fix PMD violations in TransformationContext
 - Implemented Fix abstraction with NoFixAvailable singleton
 - Added comprehensive test coverage
 - All checkstyle, PMD, and SpotBugs validations passing
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-Co-Authored-By: architect <noreply@anthropic.com>
-Co-Authored-By: style <noreply@anthropic.com>
 ```
 
 **Enforcement**: Pre-merge hook will block `git merge --ff-only {task-name}` if task branch contains more than 1 commit.
@@ -1151,9 +1136,7 @@ git commit -m "[feat] Combined functionality: descriptive message
 - Additional changes from intermediate commits
 - Comprehensive description of combined functionality
 
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>"
+"
 ```
 
 #### 7. Restore ALL Non-Target Commits   {#7-restore-all-non-target-commits}

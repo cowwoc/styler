@@ -449,9 +449,7 @@ After presenting the audit report:
    - [Fix 1 description]
    - [Fix 2 description]
 
-   🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-   Co-Authored-By: Claude <noreply@anthropic.com>"
+   "
    ```
 
 4. **Report Manual Fixes**:

@@ -345,9 +345,6 @@ Contributing agents:
 - style: Code style compliance
 - test: Test suite implementation
 
-Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 **Red Flags (Protocol Violations):**

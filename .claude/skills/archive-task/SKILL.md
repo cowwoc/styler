@@ -78,8 +78,7 @@ Added changelog entry:
 - Added comprehensive tests
 - Documented public API
 
-🤖 Generated with Claude Code
-Co-Authored-By: Claude <noreply@anthropic.com>"
+"
 ```
 
 ## Usage
@@ -123,8 +122,7 @@ git commit -m "Update todo.md: Mark task complete
 
 Added changelog entry: ...
 
-🤖 Generated with Claude Code
-Co-Authored-By: Claude <noreply@anthropic.com>"
+"
 ```
 
 **Result**: One commit, both files updated together

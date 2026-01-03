@@ -85,8 +85,6 @@ Add new feature file
 
 Description of what this file does.
 
-🤖 Generated with Claude Code
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 
 # Step 2: Execute atomic creation
@@ -144,9 +142,6 @@ cat > /tmp/commit-msg-$$.txt <<'MSG'
 Add temporary file cleanup script
 
 Removes .tmp files older than 7 days from /tmp directory.
-
-🤖 Generated with Claude Code
-Co-Authored-By: Claude <noreply@anthropic.com>
 MSG
 
 # Execute atomic creation
