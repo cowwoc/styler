@@ -203,9 +203,6 @@ git checkout $BRANCH_NAME
 git reset --soft \$(git merge-base main $BRANCH_NAME)
 git commit -m \"[Comprehensive task message summarizing all changes]
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 [List all contributing agents]\"
 
 # Verify and merge

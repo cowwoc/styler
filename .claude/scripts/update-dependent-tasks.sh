@@ -67,8 +67,7 @@ if [ ${#UNBLOCKED[@]} -gt 0 ]; then
 
 Unblocked: ${UNBLOCKED[*]}
 
-🤖 Generated with Claude Code
-Co-Authored-By: Claude <noreply@anthropic.com>"
+"
 fi
 
 json_success \

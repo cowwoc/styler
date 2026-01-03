@@ -53,8 +53,7 @@ git commit -m "Archive task: $TASK_NAME (remove from todo.md)
 Added changelog entry:
 $CHANGES
 
-🤖 Generated with Claude Code
-Co-Authored-By: Claude <noreply@anthropic.com>"
+"
 
 COMMIT_SHA=$(git rev-parse HEAD)
 

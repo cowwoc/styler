@@ -66,10 +66,6 @@ Changes:
 - Bullet point for third major change
 
 Additional context or rationale if needed.
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 ```
 
 ## Crafting Commit Messages
@@ -340,10 +336,6 @@ Changes:
 - <Third major change>
 
 <Rationale or context>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 
 # 4. Edit the template

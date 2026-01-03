@@ -568,9 +568,6 @@ Contributing agents:
 - formatter: Code style compliance
 - tester: Test suite implementation
 
-Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```

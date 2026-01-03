@@ -505,9 +505,6 @@ Changes:
 These enhancements enable proper multi-pass optimization with agent
 continuity between phases while maintaining session context.
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 
@@ -603,10 +600,6 @@ cat > /tmp/new-message.txt << 'EOF'
 New unified commit message
 
 Describes what the final code does...
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 
 # Step 3: Reset to squashed commit
@@ -946,9 +939,6 @@ Combined commit message
 
 [Details from all squashed commits]
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 echo "✅ Squashed commit created"
@@ -1524,9 +1514,6 @@ Combined feature improvements
 - Add validation logic
 - Fix edge cases
 - Update documentation
-
-🤖 Generated with Claude Code
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 
 # 3. Execute optimized script

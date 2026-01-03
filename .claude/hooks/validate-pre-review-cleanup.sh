@@ -76,11 +76,7 @@ cd $TASK_WORKTREE
 git reset --soft \$(git merge-base main HEAD)
 git commit -m \"Implement $TASK_NAME
 
-[Comprehensive description of all changes]
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>\"
+[Comprehensive description of all changes]\"
 
 # Verify exactly 1 commit
 git rev-list --count main..HEAD  # Should output: 1
