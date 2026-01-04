@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-01-03
+
+### Migrate Parser Tests to NodeArena ✅
+
+**Task**: `migrate-parser-tests-to-nodearena`
+
+**Problem Solved**:
+- Parser tests used `SemanticNode` wrapper class with Set-based comparison
+- This abstraction added 1300+ lines of boilerplate code
+- Set semantics lost ordering information important for NodeArena equality
+
+**Solution Implemented**:
+- Migrated all 38 test files from `parseSemanticAst()` + `Set<SemanticNode>` to `parse()` + `NodeArena`
+- Removed SemanticNode class and all factory methods (1305 lines removed)
+- ParserTestUtils reduced from 1341 lines to 56 lines
+- Tests now use direct NodeArena comparison with try-with-resources
+
+**Files Modified**:
+- `parser/src/test/java/.../parser/test/ParserTestUtils.java` - Removed SemanticNode, kept only parse() and assertParseFails()
+- 38 test files migrated to NodeArena pattern
+
+**Quality**:
+- All 633 parser tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ## 2026-01-02
 
 ### Refactor Parser Limits to be AST-Focused ✅

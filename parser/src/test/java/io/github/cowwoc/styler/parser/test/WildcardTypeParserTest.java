@@ -1,16 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
+import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
-import java.util.Set;
-
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing wildcard type nodes.
@@ -35,17 +33,20 @@ public class WildcardTypeParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 52),
-			typeDeclaration(CLASS_DECLARATION, 0, 51, "Test"),
-			methodDeclaration( 14, 49),
-			parameterizedType( 27, 38),
-			qualifiedName( 27, 35),
-			wildcardType( 36, 37),
-			parameterNode( 27, 42, "opt"),
-			block( 45, 49));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 27, 35);
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 36, 37);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 27, 38);
+			expected.allocateParameterDeclaration(27, 42, new ParameterAttribute("opt", false, false, false));
+			expected.allocateNode(NodeType.BLOCK, 45, 49);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 49);
+			expected.allocateClassDeclaration(0, 51, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 52);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -65,18 +66,21 @@ public class WildcardTypeParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 67),
-			typeDeclaration(CLASS_DECLARATION, 0, 66, "Test"),
-			methodDeclaration( 14, 64),
-			parameterizedType( 27, 49),
-			qualifiedName( 27, 31),
-			wildcardType( 32, 48),
-			qualifiedName( 42, 48),
-			parameterNode( 27, 57, "numbers"),
-			block( 60, 64));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 27, 31);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 42, 48);
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 32, 48);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 27, 49);
+			expected.allocateParameterDeclaration(27, 57, new ParameterAttribute("numbers", false, false, false));
+			expected.allocateNode(NodeType.BLOCK, 60, 64);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 64);
+			expected.allocateClassDeclaration(0, 66, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 67);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -96,18 +100,21 @@ public class WildcardTypeParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 70),
-			typeDeclaration(CLASS_DECLARATION, 0, 69, "Test"),
-			methodDeclaration( 14, 67),
-			parameterizedType( 26, 51),
-			qualifiedName( 26, 34),
-			wildcardType( 35, 50),
-			qualifiedName( 43, 50),
-			parameterNode( 26, 60, "consumer"),
-			block( 63, 67));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 26, 34);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 43, 50);
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 35, 50);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 26, 51);
+			expected.allocateParameterDeclaration(26, 60, new ParameterAttribute("consumer", false, false, false));
+			expected.allocateNode(NodeType.BLOCK, 63, 67);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 67);
+			expected.allocateClassDeclaration(0, 69, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 70);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -124,17 +131,21 @@ public class WildcardTypeParserTest
 				Map<String, List<?>> map;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 42),
-			typeDeclaration(CLASS_DECLARATION, 0, 41, "Test"),
-			fieldDeclaration( 14, 39),
-			qualifiedName( 18, 24),
-			parameterizedType( 26, 34),
-			qualifiedName( 26, 30),
-			qualifiedName( 26, 34),
-			wildcardType( 31, 32));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 18, 24);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 18, 24);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 26, 30);
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 31, 32);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 26, 34);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 26, 34);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 14, 39);
+			expected.allocateClassDeclaration(0, 41, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 42);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -151,14 +162,17 @@ public class WildcardTypeParserTest
 				Map<?, ?> map;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 31),
-			typeDeclaration(CLASS_DECLARATION, 0, 30, "Test"),
-			fieldDeclaration( 14, 28),
-			wildcardType( 18, 19),
-			wildcardType( 21, 22));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 18, 19);
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 21, 22);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 14, 28);
+			expected.allocateClassDeclaration(0, 30, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 31);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -175,13 +189,16 @@ public class WildcardTypeParserTest
 				List<?> items;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 31),
-			typeDeclaration(CLASS_DECLARATION, 0, 30, "Test"),
-			fieldDeclaration( 14, 28),
-			wildcardType( 19, 20));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 19, 20);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 14, 28);
+			expected.allocateClassDeclaration(0, 30, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 31);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -198,18 +215,22 @@ public class WildcardTypeParserTest
 				Map<String, List<? extends Number>> map;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 57),
-			typeDeclaration(CLASS_DECLARATION, 0, 56, "Test"),
-			fieldDeclaration( 14, 54),
-			qualifiedName( 18, 24),
-			parameterizedType( 26, 49),
-			qualifiedName( 26, 30),
-			qualifiedName( 26, 49),
-			wildcardType( 31, 47),
-			qualifiedName( 41, 47));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 18, 24);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 18, 24);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 26, 30);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 41, 47);
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 31, 47);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 26, 49);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 26, 49);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 14, 54);
+			expected.allocateClassDeclaration(0, 56, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 57);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -226,18 +247,22 @@ public class WildcardTypeParserTest
 				Map<String, Consumer<? super Integer>> map;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 60),
-			typeDeclaration(CLASS_DECLARATION, 0, 59, "Test"),
-			fieldDeclaration( 14, 57),
-			qualifiedName( 18, 24),
-			parameterizedType( 26, 52),
-			qualifiedName( 26, 34),
-			qualifiedName( 26, 52),
-			wildcardType( 35, 50),
-			qualifiedName( 43, 50));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 18, 24);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 18, 24);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 26, 34);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 43, 50);
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 35, 50);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 26, 52);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 26, 52);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 14, 57);
+			expected.allocateClassDeclaration(0, 59, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 60);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -257,15 +282,18 @@ public class WildcardTypeParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 56),
-			typeDeclaration(CLASS_DECLARATION, 0, 55, "Test"),
-			methodDeclaration( 14, 53),
-			wildcardType( 19, 20),
-			block( 34, 53),
-			returnStatement( 38, 50),
-			nullLiteral( 45, 49));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 19, 20);
+			expected.allocateNode(NodeType.NULL_LITERAL, 45, 49);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 38, 50);
+			expected.allocateNode(NodeType.BLOCK, 34, 53);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 53);
+			expected.allocateClassDeclaration(0, 55, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 56);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

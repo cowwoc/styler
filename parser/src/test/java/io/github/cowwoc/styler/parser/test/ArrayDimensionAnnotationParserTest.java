@@ -1,15 +1,13 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing JSR 308 type annotations on array dimensions.
@@ -32,14 +30,17 @@ public class ArrayDimensionAnnotationParserTest
 				String @NonNull [] names;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 47),
-			typeDeclaration(CLASS_DECLARATION, 0, 46, "Container"),
-			fieldDeclaration( 19, 44),
-			annotation( 26, 34),
-			qualifiedName( 27, 34));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 27, 34);
+			expected.allocateNode(NodeType.ANNOTATION, 26, 34);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 19, 44);
+			expected.allocateClassDeclaration(0, 46, new TypeDeclarationAttribute("Container"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 47);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -55,16 +56,19 @@ public class ArrayDimensionAnnotationParserTest
 				String @A @B [] names;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 44),
-			typeDeclaration(CLASS_DECLARATION, 0, 43, "Container"),
-			fieldDeclaration( 19, 41),
-			annotation( 26, 28),
-			qualifiedName( 27, 28),
-			annotation( 29, 31),
-			qualifiedName( 30, 31));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 27, 28);
+			expected.allocateNode(NodeType.ANNOTATION, 26, 28);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 30, 31);
+			expected.allocateNode(NodeType.ANNOTATION, 29, 31);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 19, 41);
+			expected.allocateClassDeclaration(0, 43, new TypeDeclarationAttribute("Container"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 44);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -80,16 +84,19 @@ public class ArrayDimensionAnnotationParserTest
 				int @A [] @B [] matrix;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 45),
-			typeDeclaration(CLASS_DECLARATION, 0, 44, "Container"),
-			fieldDeclaration( 19, 42),
-			annotation( 23, 25),
-			qualifiedName( 24, 25),
-			annotation( 29, 31),
-			qualifiedName( 30, 31));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 24, 25);
+			expected.allocateNode(NodeType.ANNOTATION, 23, 25);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 30, 31);
+			expected.allocateNode(NodeType.ANNOTATION, 29, 31);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 19, 42);
+			expected.allocateClassDeclaration(0, 44, new TypeDeclarationAttribute("Container"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 45);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -105,14 +112,17 @@ public class ArrayDimensionAnnotationParserTest
 				int @NonNull [] values;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 45),
-			typeDeclaration(CLASS_DECLARATION, 0, 44, "Container"),
-			fieldDeclaration( 19, 42),
-			annotation( 23, 31),
-			qualifiedName( 24, 31));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 24, 31);
+			expected.allocateNode(NodeType.ANNOTATION, 23, 31);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 19, 42);
+			expected.allocateClassDeclaration(0, 44, new TypeDeclarationAttribute("Container"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 45);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -129,17 +139,20 @@ public class ArrayDimensionAnnotationParserTest
 				String[] names = (String @NonNull []) obj;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 77),
-			typeDeclaration(CLASS_DECLARATION, 0, 76, "Container"),
-			fieldDeclaration( 19, 30),
-			fieldDeclaration( 32, 74),
-			castExpression( 49, 73),
-			annotation( 57, 65),
-			qualifiedName( 58, 65),
-			identifier( 70, 73));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 19, 30);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 58, 65);
+			expected.allocateNode(NodeType.ANNOTATION, 57, 65);
+			expected.allocateNode(NodeType.IDENTIFIER, 70, 73);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 49, 73);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 32, 74);
+			expected.allocateClassDeclaration(0, 76, new TypeDeclarationAttribute("Container"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 77);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -155,16 +168,19 @@ public class ArrayDimensionAnnotationParserTest
 				List<String @NonNull []> items;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 53),
-			typeDeclaration(CLASS_DECLARATION, 0, 52, "Container"),
-			fieldDeclaration( 19, 50),
-			qualifiedName( 24, 42),
-			qualifiedName( 24, 30),
-			annotation( 31, 39),
-			qualifiedName( 32, 39));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 24, 30);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 32, 39);
+			expected.allocateNode(NodeType.ANNOTATION, 31, 39);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 24, 42);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 19, 50);
+			expected.allocateClassDeclaration(0, 52, new TypeDeclarationAttribute("Container"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 53);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -180,11 +196,14 @@ public class ArrayDimensionAnnotationParserTest
 				String[] names;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 37),
-			typeDeclaration(CLASS_DECLARATION, 0, 36, "Container"),
-			fieldDeclaration( 19, 34));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 19, 34);
+			expected.allocateClassDeclaration(0, 36, new TypeDeclarationAttribute("Container"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 37);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

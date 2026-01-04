@@ -1,20 +1,16 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.ImportAttribute;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.PackageAttribute;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
+import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
-import java.util.Set;
-
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.importNode;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.packageNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing class, interface, and enum declarations.
@@ -31,13 +27,14 @@ public class ClassParserTest
 		String source = """
 			public class HelloWorld { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 28),
-			typeDeclaration(CLASS_DECLARATION, 7, 27, "HelloWorld"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateClassDeclaration(7, 27, new TypeDeclarationAttribute("HelloWorld"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 28);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -56,15 +53,16 @@ public class ClassParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 47),
-			typeDeclaration(CLASS_DECLARATION, 7, 46, "Test"),
-			methodDeclaration( 21, 44),
-			block( 40, 44));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.BLOCK, 40, 44);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 44);
+			expected.allocateClassDeclaration(7, 46, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 47);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -81,14 +79,15 @@ public class ClassParserTest
 				private int x;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 38),
-			typeDeclaration(CLASS_DECLARATION, 7, 37, "Test"),
-			fieldDeclaration( 21, 35));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 21, 35);
+			expected.allocateClassDeclaration(7, 37, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 38);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -107,15 +106,16 @@ public class ClassParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 43),
-			typeDeclaration(CLASS_DECLARATION, 7, 42, "Test"),
-			constructorDeclaration( 21, 40),
-			block( 36, 40));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.BLOCK, 36, 40);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 21, 40);
+			expected.allocateClassDeclaration(7, 42, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 43);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -129,14 +129,15 @@ public class ClassParserTest
 		String source = """
 			public class Child extends Parent { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 38),
-			typeDeclaration(CLASS_DECLARATION, 7, 37, "Child"),
-			qualifiedName( 27, 33));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 27, 33);
+			expected.allocateClassDeclaration(7, 37, new TypeDeclarationAttribute("Child"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 38);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -150,14 +151,15 @@ public class ClassParserTest
 		String source = """
 			public class Test implements Runnable { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 42),
-			typeDeclaration(CLASS_DECLARATION, 7, 41, "Test"),
-			qualifiedName( 29, 37));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 29, 37);
+			expected.allocateClassDeclaration(7, 41, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 42);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -171,13 +173,14 @@ public class ClassParserTest
 		String source = """
 			public class Box<T> { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 24),
-			typeDeclaration(CLASS_DECLARATION, 7, 23, "Box"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateClassDeclaration(7, 23, new TypeDeclarationAttribute("Box"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 24);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -191,13 +194,14 @@ public class ClassParserTest
 		String source = """
 			public interface Test { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 26),
-			typeDeclaration(INTERFACE_DECLARATION, 7, 25, "Test"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateInterfaceDeclaration(7, 25, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 26);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -211,16 +215,17 @@ public class ClassParserTest
 		String source = """
 			public enum Color { RED, GREEN, BLUE }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 39),
-			typeDeclaration(ENUM_DECLARATION, 7, 38, "Color"),
-			enumConstant( 20, 23),
-			enumConstant( 25, 30),
-			enumConstant( 32, 36));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 20, 23);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 25, 30);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 32, 36);
+			expected.allocateEnumDeclaration(7, 38, new TypeDeclarationAttribute("Color"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 39);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -236,15 +241,16 @@ public class ClassParserTest
 
 			public class Test { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 44),
-			packageNode( 0, 20, "com.example"),
-			typeDeclaration(CLASS_DECLARATION, 29, 43, "Test"),
-			qualifiedName( 8, 19));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 8, 19);
+			expected.allocatePackageDeclaration(0, 20, new PackageAttribute("com.example"));
+			expected.allocateClassDeclaration(29, 43, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 44);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -260,14 +266,15 @@ public class ClassParserTest
 
 			public class Test { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 46),
-			importNode(0, 22, "java.util.List", false),
-			typeDeclaration(CLASS_DECLARATION, 31, 45, "Test"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateImportDeclaration(0, 22, new ImportAttribute("java.util.List", false));
+			expected.allocateClassDeclaration(31, 45, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 46);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -283,14 +290,15 @@ public class ClassParserTest
 
 			public class Test { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 56),
-			importNode(0, 32, "java.lang.Math.PI", true),
-			typeDeclaration(CLASS_DECLARATION, 41, 55, "Test"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateImportDeclaration(0, 32, new ImportAttribute("java.lang.Math.PI", true));
+			expected.allocateClassDeclaration(41, 55, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 56);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -306,14 +314,15 @@ public class ClassParserTest
 
 			public class Test { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 43),
-			importNode(0, 19, "java.util.*", false),
-			typeDeclaration(CLASS_DECLARATION, 28, 42, "Test"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateImportDeclaration(0, 19, new ImportAttribute("java.util.*", false));
+			expected.allocateClassDeclaration(28, 42, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 43);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -332,18 +341,19 @@ public class ClassParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 62),
-			typeDeclaration(CLASS_DECLARATION, 7, 61, "Test"),
-			methodDeclaration( 21, 59),
-			parameterNode( 37, 42, "x"),
-			parameterNode( 44, 52, "y"),
-			block( 55, 59),
-			qualifiedName( 44, 50));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(37, 42, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 44, 50);
+			expected.allocateParameterDeclaration(44, 52, new ParameterAttribute("y", false, false, false));
+			expected.allocateNode(NodeType.BLOCK, 55, 59);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 59);
+			expected.allocateClassDeclaration(7, 61, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 62);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -362,17 +372,18 @@ public class ClassParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 61),
-			typeDeclaration(CLASS_DECLARATION, 7, 60, "Test"),
-			methodDeclaration( 21, 58),
-			parameterNode( 37, 51, "args"),
-			block( 54, 58),
-			qualifiedName( 37, 43));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 37, 43);
+			expected.allocateParameterDeclaration(37, 51, new ParameterAttribute("args", true, false, false));
+			expected.allocateNode(NodeType.BLOCK, 54, 58);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 58);
+			expected.allocateClassDeclaration(7, 60, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 61);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -391,15 +402,16 @@ public class ClassParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 64),
-			typeDeclaration(CLASS_DECLARATION, 7, 63, "Test"),
-			methodDeclaration( 21, 61),
-			block( 57, 61),
-			qualifiedName( 46, 55));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 46, 55);
+			expected.allocateNode(NodeType.BLOCK, 57, 61);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 61);
+			expected.allocateClassDeclaration(7, 63, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 64);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

@@ -1,21 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.PackageAttribute;
 import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
 import org.testng.annotations.Test;
 
-import java.util.Set;
-
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.annotation;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.arrayInitializer;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.compilationUnit;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.lineComment;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.packageNode;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.qualifiedName;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.stringLiteral;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing package annotations in package-info.java files.
@@ -32,16 +25,19 @@ public class PackageAnnotationParserTest
 			@Deprecated
 			package com.example;
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 33),
-			annotation(0, 11),
-			qualifiedName(1, 11),
-			packageNode(0, 32, "com.example"),
-			qualifiedName(20, 31));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 11);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 11);
+			expected.allocateNode(NodeType.ANNOTATION, 0, 11);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 20, 31);
+			expected.allocatePackageDeclaration(0, 32, new PackageAttribute("com.example"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 33);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -54,17 +50,20 @@ public class PackageAnnotationParserTest
 			@SuppressWarnings("unchecked")
 			package com.example;
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 52),
-			annotation(0, 30),
-			qualifiedName(1, 17),
-			stringLiteral(18, 29),
-			packageNode(0, 51, "com.example"),
-			qualifiedName(39, 50));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 17);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 17);
+			expected.allocateNode(NodeType.STRING_LITERAL, 18, 29);
+			expected.allocateNode(NodeType.ANNOTATION, 0, 30);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 39, 50);
+			expected.allocatePackageDeclaration(0, 51, new PackageAttribute("com.example"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 52);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -79,22 +78,32 @@ public class PackageAnnotationParserTest
 			@Generated("test")
 			package com.example;
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 83),
-			annotation(0, 11),
-			qualifiedName(1, 11),
-			annotation(12, 42),
-			qualifiedName(13, 29),
-			stringLiteral(30, 41),
-			annotation(43, 61),
-			qualifiedName(44, 53),
-			stringLiteral(54, 60),
-			packageNode(0, 82, "com.example"),
-			qualifiedName(70, 81));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			// Qualified names first pass
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 11);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 13, 29);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 44, 53);
+			// @Deprecated
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 11);
+			expected.allocateNode(NodeType.ANNOTATION, 0, 11);
+			// @SuppressWarnings("unchecked")
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 13, 29);
+			expected.allocateNode(NodeType.STRING_LITERAL, 30, 41);
+			expected.allocateNode(NodeType.ANNOTATION, 12, 42);
+			// @Generated("test")
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 44, 53);
+			expected.allocateNode(NodeType.STRING_LITERAL, 54, 60);
+			expected.allocateNode(NodeType.ANNOTATION, 43, 61);
+			// package com.example
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 70, 81);
+			expected.allocatePackageDeclaration(0, 82, new PackageAttribute("com.example"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 83);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -107,17 +116,20 @@ public class PackageAnnotationParserTest
 			@javax.annotation.Generated("test")
 			package com.example;
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 57),
-			annotation(0, 35),
-			qualifiedName(1, 27),
-			stringLiteral(28, 34),
-			packageNode(0, 56, "com.example"),
-			qualifiedName(44, 55));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 27);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 27);
+			expected.allocateNode(NodeType.STRING_LITERAL, 28, 34);
+			expected.allocateNode(NodeType.ANNOTATION, 0, 35);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 44, 55);
+			expected.allocatePackageDeclaration(0, 56, new PackageAttribute("com.example"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 57);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -130,19 +142,22 @@ public class PackageAnnotationParserTest
 			@SuppressWarnings({"unchecked", "rawtypes"})
 			package com.example;
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 66),
-			annotation(0, 44),
-			qualifiedName(1, 17),
-			arrayInitializer(18, 43),
-			stringLiteral(19, 30),
-			stringLiteral(32, 42),
-			packageNode(0, 65, "com.example"),
-			qualifiedName(53, 64));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 17);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 17);
+			expected.allocateNode(NodeType.STRING_LITERAL, 19, 30);
+			expected.allocateNode(NodeType.STRING_LITERAL, 32, 42);
+			expected.allocateNode(NodeType.ARRAY_INITIALIZER, 18, 43);
+			expected.allocateNode(NodeType.ANNOTATION, 0, 44);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 53, 64);
+			expected.allocatePackageDeclaration(0, 65, new PackageAttribute("com.example"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 66);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -157,20 +172,29 @@ public class PackageAnnotationParserTest
 			@SuppressWarnings("unchecked")
 			package com.example;
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 105),
-			annotation(0, 11),
-			qualifiedName(1, 11),
-			lineComment(12, 52),
-			annotation(53, 83),
-			qualifiedName(54, 70),
-			stringLiteral(71, 82),
-			packageNode(0, 104, "com.example"),
-			qualifiedName(92, 103));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			// Qualified names first pass
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 11);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 54, 70);
+			// @Deprecated
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 1, 11);
+			expected.allocateNode(NodeType.ANNOTATION, 0, 11);
+			// // comment
+			expected.allocateNode(NodeType.LINE_COMMENT, 12, 52);
+			// @SuppressWarnings("unchecked")
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 54, 70);
+			expected.allocateNode(NodeType.STRING_LITERAL, 71, 82);
+			expected.allocateNode(NodeType.ANNOTATION, 53, 83);
+			// package com.example
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 92, 103);
+			expected.allocatePackageDeclaration(0, 104, new PackageAttribute("com.example"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 105);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**

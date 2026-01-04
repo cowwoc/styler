@@ -1,16 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing local variable declarations with annotations and the {@code final} modifier.
@@ -24,7 +22,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseLocalVariableWithSingleAnnotation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -32,20 +30,26 @@ public class LocalAnnotationTest
 					@SuppressWarnings("unchecked") java.util.List<String> result = null;
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 121),
-			typeDeclaration(CLASS_DECLARATION, 7, 120, "Test"),
-			methodDeclaration( 21, 118),
-			block( 43, 118),
-			annotation( 47, 77),
-			qualifiedName( 48, 64),
-			stringLiteral( 65, 76),
-			parameterizedType( 78, 100),
-			qualifiedName( 78, 92),
-			qualifiedName( 93, 99),
-			nullLiteral( 110, 114));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 64);
+			expected.allocateNode(NodeType.STRING_LITERAL, 65, 76);
+			expected.allocateNode(NodeType.ANNOTATION, 47, 77);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 78, 92);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 93, 99);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 93, 99);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 78, 100);
+			expected.allocateNode(NodeType.NULL_LITERAL, 110, 114);
+			expected.allocateNode(NodeType.BLOCK, 43, 118);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 118);
+			expected.allocateClassDeclaration(7, 120, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 121);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -55,7 +59,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseLocalVariableWithFinalModifier()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -63,14 +67,18 @@ public class LocalAnnotationTest
 					final int x = 1;
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 69),
-			typeDeclaration(CLASS_DECLARATION, 7, 68, "Test"),
-			methodDeclaration( 21, 66),
-			block( 43, 66),
-			integerLiteral( 61, 62));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 61, 62);
+			expected.allocateNode(NodeType.BLOCK, 43, 66);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 66);
+			expected.allocateClassDeclaration(7, 68, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 69);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -80,7 +88,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseLocalVariableWithNullableAnnotation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -88,17 +96,22 @@ public class LocalAnnotationTest
 					@Nullable String value = null;
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 83),
-			typeDeclaration(CLASS_DECLARATION, 7, 82, "Test"),
-			methodDeclaration( 21, 80),
-			block( 43, 80),
-			annotation( 47, 56),
-			qualifiedName( 48, 56),
-			qualifiedName( 57, 63),
-			nullLiteral( 72, 76));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 56);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 56);
+			expected.allocateNode(NodeType.ANNOTATION, 47, 56);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 57, 63);
+			expected.allocateNode(NodeType.NULL_LITERAL, 72, 76);
+			expected.allocateNode(NodeType.BLOCK, 43, 80);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 80);
+			expected.allocateClassDeclaration(7, 82, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 83);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -108,7 +121,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseLocalVariableWithFinalAndTypeAnnotation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -116,18 +129,23 @@ public class LocalAnnotationTest
 					final @NonNull Object obj = new Object();
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 94),
-			typeDeclaration(CLASS_DECLARATION, 7, 93, "Test"),
-			methodDeclaration( 21, 91),
-			block( 43, 91),
-			annotation( 53, 61),
-			qualifiedName( 54, 61),
-			qualifiedName( 62, 68),
-			objectCreation( 75, 87),
-			qualifiedName( 79, 85));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 54, 61);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 54, 61);
+			expected.allocateNode(NodeType.ANNOTATION, 53, 61);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 62, 68);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 79, 85);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 75, 87);
+			expected.allocateNode(NodeType.BLOCK, 43, 91);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 91);
+			expected.allocateClassDeclaration(7, 93, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 94);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -137,7 +155,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseLocalVariableWithMultipleDeclarationAnnotations()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -145,19 +163,25 @@ public class LocalAnnotationTest
 					@Nonnull @SuppressWarnings("unused") int x = 1;
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 100),
-			typeDeclaration(CLASS_DECLARATION, 7, 99, "Test"),
-			methodDeclaration( 21, 97),
-			block( 43, 97),
-			annotation( 47, 55),
-			qualifiedName( 48, 55),
-			annotation( 56, 83),
-			qualifiedName( 57, 73),
-			stringLiteral( 74, 82),
-			integerLiteral( 92, 93));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 55);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 57, 73);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 55);
+			expected.allocateNode(NodeType.ANNOTATION, 47, 55);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 57, 73);
+			expected.allocateNode(NodeType.STRING_LITERAL, 74, 82);
+			expected.allocateNode(NodeType.ANNOTATION, 56, 83);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 92, 93);
+			expected.allocateNode(NodeType.BLOCK, 43, 97);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 97);
+			expected.allocateClassDeclaration(7, 99, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 100);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -167,7 +191,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseLocalVariableWithDeclarationAndTypeAnnotations()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -175,20 +199,26 @@ public class LocalAnnotationTest
 					@SuppressWarnings("unused") final @NonNull String s = "";
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 110),
-			typeDeclaration(CLASS_DECLARATION, 7, 109, "Test"),
-			methodDeclaration( 21, 107),
-			block( 43, 107),
-			annotation( 47, 74),
-			qualifiedName( 48, 64),
-			stringLiteral( 65, 73),
-			annotation( 81, 89),
-			qualifiedName( 82, 89),
-			qualifiedName( 90, 96),
-			stringLiteral( 101, 103));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 82, 89);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 64);
+			expected.allocateNode(NodeType.STRING_LITERAL, 65, 73);
+			expected.allocateNode(NodeType.ANNOTATION, 47, 74);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 82, 89);
+			expected.allocateNode(NodeType.ANNOTATION, 81, 89);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 90, 96);
+			expected.allocateNode(NodeType.STRING_LITERAL, 101, 103);
+			expected.allocateNode(NodeType.BLOCK, 43, 107);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 107);
+			expected.allocateClassDeclaration(7, 109, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 110);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -198,7 +228,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseEnhancedForLoopWithAnnotatedVariable()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -210,29 +240,34 @@ public class LocalAnnotationTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 155),
-			typeDeclaration(CLASS_DECLARATION, 7, 154, "Test"),
-			methodDeclaration( 21, 152),
-			block( 43, 152),
-			parameterizedType( 47, 69),
-			qualifiedName( 47, 61),
-			qualifiedName( 62, 68),
-			nullLiteral( 77, 81),
-			enhancedForStatement( 85, 149),
-			annotation( 90, 98),
-			qualifiedName( 91, 98),
-			qualifiedName( 99, 105),
-			identifier( 110, 114),
-			block( 118, 149),
-			identifier( 123, 129),
-			methodInvocation( 123, 144),
-			fieldAccess( 123, 133),
-			fieldAccess( 123, 141),
-			qualifiedName( 123, 141),
-			identifier( 142, 143));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 47, 61);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 62, 68);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 62, 68);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 47, 69);
+			expected.allocateNode(NodeType.NULL_LITERAL, 77, 81);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 91, 98);
+			expected.allocateNode(NodeType.ANNOTATION, 90, 98);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 99, 105);
+			expected.allocateNode(NodeType.IDENTIFIER, 110, 114);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 123, 141);
+			expected.allocateNode(NodeType.IDENTIFIER, 123, 129);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 123, 133);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 123, 141);
+			expected.allocateNode(NodeType.IDENTIFIER, 142, 143);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 123, 144);
+			expected.allocateNode(NodeType.BLOCK, 118, 149);
+			expected.allocateNode(NodeType.ENHANCED_FOR_STATEMENT, 85, 149);
+			expected.allocateNode(NodeType.BLOCK, 43, 152);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 152);
+			expected.allocateClassDeclaration(7, 154, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 155);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -242,7 +277,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseEnhancedForLoopWithFinalAndAnnotation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -254,29 +289,34 @@ public class LocalAnnotationTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 161),
-			typeDeclaration(CLASS_DECLARATION, 7, 160, "Test"),
-			methodDeclaration( 21, 158),
-			block( 43, 158),
-			parameterizedType( 47, 69),
-			qualifiedName( 47, 61),
-			qualifiedName( 62, 68),
-			nullLiteral( 77, 81),
-			enhancedForStatement( 85, 155),
-			annotation( 96, 104),
-			qualifiedName( 97, 104),
-			qualifiedName( 105, 111),
-			identifier( 116, 120),
-			block( 124, 155),
-			identifier( 129, 135),
-			methodInvocation( 129, 150),
-			fieldAccess( 129, 139),
-			fieldAccess( 129, 147),
-			qualifiedName( 129, 147),
-			identifier( 148, 149));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 47, 61);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 62, 68);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 62, 68);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 47, 69);
+			expected.allocateNode(NodeType.NULL_LITERAL, 77, 81);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 97, 104);
+			expected.allocateNode(NodeType.ANNOTATION, 96, 104);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 105, 111);
+			expected.allocateNode(NodeType.IDENTIFIER, 116, 120);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 129, 147);
+			expected.allocateNode(NodeType.IDENTIFIER, 129, 135);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 129, 139);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 129, 147);
+			expected.allocateNode(NodeType.IDENTIFIER, 148, 149);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 129, 150);
+			expected.allocateNode(NodeType.BLOCK, 124, 155);
+			expected.allocateNode(NodeType.ENHANCED_FOR_STATEMENT, 85, 155);
+			expected.allocateNode(NodeType.BLOCK, 43, 158);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 158);
+			expected.allocateClassDeclaration(7, 160, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 161);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -286,7 +326,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseTryWithResourcesWithAnnotation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -301,28 +341,32 @@ public class LocalAnnotationTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 192),
-			typeDeclaration(CLASS_DECLARATION, 7, 191, "Test"),
-			methodDeclaration( 21, 189),
-			block( 43, 189),
-			tryStatement( 47, 186),
-			annotation( 52, 81),
-			qualifiedName( 53, 69),
-			stringLiteral( 70, 80),
-			qualifiedName( 82, 101),
-			nullLiteral( 107, 111),
-			block( 115, 142),
-			identifier( 128, 130),
-			methodInvocation( 128, 137),
-			fieldAccess( 128, 135),
-			catchClause( 145, 186),
-			qualifiedName( 152, 161),
-			parameterNode( 152, 163, "e"),
-			block( 167, 186),
-			lineComment( 172, 182));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 53, 69);
+			expected.allocateNode(NodeType.STRING_LITERAL, 70, 80);
+			expected.allocateNode(NodeType.ANNOTATION, 52, 81);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 82, 101);
+			expected.allocateNode(NodeType.NULL_LITERAL, 107, 111);
+			expected.allocateNode(NodeType.IDENTIFIER, 128, 130);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 128, 135);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 128, 137);
+			expected.allocateNode(NodeType.BLOCK, 115, 142);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 152, 161);
+			expected.allocateParameterDeclaration(152, 163, new ParameterAttribute("e", false, false, false));
+			expected.allocateNode(NodeType.LINE_COMMENT, 172, 182);
+			expected.allocateNode(NodeType.BLOCK, 167, 186);
+			expected.allocateNode(NodeType.CATCH_CLAUSE, 145, 186);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 47, 186);
+			expected.allocateNode(NodeType.BLOCK, 43, 189);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 189);
+			expected.allocateClassDeclaration(7, 191, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 192);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -332,7 +376,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseTryWithResourcesWithFinalAndAnnotation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -347,27 +391,31 @@ public class LocalAnnotationTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 177),
-			typeDeclaration(CLASS_DECLARATION, 7, 176, "Test"),
-			methodDeclaration( 21, 174),
-			block( 43, 174),
-			tryStatement( 47, 171),
-			annotation( 58, 66),
-			qualifiedName( 59, 66),
-			qualifiedName( 67, 86),
-			nullLiteral( 92, 96),
-			block( 100, 127),
-			fieldAccess( 113, 120),
-			identifier( 113, 115),
-			methodInvocation( 113, 122),
-			catchClause( 130, 171),
-			qualifiedName( 137, 146),
-			parameterNode( 137, 148, "e"),
-			block( 152, 171),
-			lineComment( 157, 167));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 59, 66);
+			expected.allocateNode(NodeType.ANNOTATION, 58, 66);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 67, 86);
+			expected.allocateNode(NodeType.NULL_LITERAL, 92, 96);
+			expected.allocateNode(NodeType.IDENTIFIER, 113, 115);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 113, 120);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 113, 122);
+			expected.allocateNode(NodeType.BLOCK, 100, 127);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 137, 146);
+			expected.allocateParameterDeclaration(137, 148, new ParameterAttribute("e", false, false, false));
+			expected.allocateNode(NodeType.LINE_COMMENT, 157, 167);
+			expected.allocateNode(NodeType.BLOCK, 152, 171);
+			expected.allocateNode(NodeType.CATCH_CLAUSE, 130, 171);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 47, 171);
+			expected.allocateNode(NodeType.BLOCK, 43, 174);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 174);
+			expected.allocateClassDeclaration(7, 176, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 177);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -377,7 +425,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseTryWithResourcesWithMultipleAnnotations()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -392,30 +440,34 @@ public class LocalAnnotationTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 201),
-			typeDeclaration(CLASS_DECLARATION, 7, 200, "Test"),
-			methodDeclaration( 21, 198),
-			block( 43, 198),
-			tryStatement( 47, 195),
-			annotation( 52, 81),
-			qualifiedName( 53, 69),
-			stringLiteral( 70, 80),
-			annotation( 82, 90),
-			qualifiedName( 83, 90),
-			qualifiedName( 91, 110),
-			nullLiteral( 116, 120),
-			block( 124, 151),
-			identifier( 137, 139),
-			methodInvocation( 137, 146),
-			fieldAccess( 137, 144),
-			catchClause( 154, 195),
-			qualifiedName( 161, 170),
-			parameterNode( 161, 172, "e"),
-			block( 176, 195),
-			lineComment( 181, 191));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 53, 69);
+			expected.allocateNode(NodeType.STRING_LITERAL, 70, 80);
+			expected.allocateNode(NodeType.ANNOTATION, 52, 81);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 83, 90);
+			expected.allocateNode(NodeType.ANNOTATION, 82, 90);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 91, 110);
+			expected.allocateNode(NodeType.NULL_LITERAL, 116, 120);
+			expected.allocateNode(NodeType.IDENTIFIER, 137, 139);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 137, 144);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 137, 146);
+			expected.allocateNode(NodeType.BLOCK, 124, 151);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 161, 170);
+			expected.allocateParameterDeclaration(161, 172, new ParameterAttribute("e", false, false, false));
+			expected.allocateNode(NodeType.LINE_COMMENT, 181, 191);
+			expected.allocateNode(NodeType.BLOCK, 176, 195);
+			expected.allocateNode(NodeType.CATCH_CLAUSE, 154, 195);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 47, 195);
+			expected.allocateNode(NodeType.BLOCK, 43, 198);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 198);
+			expected.allocateClassDeclaration(7, 200, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 201);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -425,7 +477,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseVarWithAnnotation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -433,24 +485,29 @@ public class LocalAnnotationTest
 					@SuppressWarnings("unchecked") var x = java.util.List.of(1, 2, 3);
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 119),
-			typeDeclaration(CLASS_DECLARATION, 7, 118, "Test"),
-			methodDeclaration( 21, 116),
-			block( 43, 116),
-			annotation( 47, 77),
-			qualifiedName( 48, 64),
-			stringLiteral( 65, 76),
-			methodInvocation( 86, 112),
-			identifier( 86, 90),
-			fieldAccess( 86, 100),
-			fieldAccess( 86, 95),
-			fieldAccess( 86, 103),
-			integerLiteral( 104, 105),
-			integerLiteral( 107, 108),
-			integerLiteral( 110, 111));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 64);
+			expected.allocateNode(NodeType.STRING_LITERAL, 65, 76);
+			expected.allocateNode(NodeType.ANNOTATION, 47, 77);
+			expected.allocateNode(NodeType.IDENTIFIER, 86, 90);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 86, 95);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 86, 100);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 86, 103);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 104, 105);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 107, 108);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 110, 111);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 86, 112);
+			expected.allocateNode(NodeType.BLOCK, 43, 116);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 116);
+			expected.allocateClassDeclaration(7, 118, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 119);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -460,7 +517,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseRegularForLoopWithAnnotatedInitializer()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -471,30 +528,37 @@ public class LocalAnnotationTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 143),
-			typeDeclaration(CLASS_DECLARATION, 7, 142, "Test"),
-			methodDeclaration( 21, 140),
-			block( 43, 140),
-			forStatement( 47, 137),
-			annotation( 52, 79),
-			qualifiedName( 53, 69),
-			stringLiteral( 70, 78),
-			integerLiteral( 88, 89),
-			identifier( 91, 92),
-			binaryExpression( 91, 97),
-			integerLiteral( 95, 97),
-			unaryExpression( 99, 102),
-			identifier( 101, 102),
-			block( 106, 137),
-			fieldAccess( 111, 129),
-			identifier( 111, 117),
-			methodInvocation( 111, 132),
-			qualifiedName( 111, 129),
-			fieldAccess( 111, 121),
-			identifier( 130, 131));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 53, 69);
+			expected.allocateNode(NodeType.STRING_LITERAL, 70, 78);
+			expected.allocateNode(NodeType.ANNOTATION, 52, 79);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 53, 69);
+			expected.allocateNode(NodeType.STRING_LITERAL, 70, 78);
+			expected.allocateNode(NodeType.ANNOTATION, 52, 79);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 88, 89);
+			expected.allocateNode(NodeType.IDENTIFIER, 91, 92);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 95, 97);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 91, 97);
+			expected.allocateNode(NodeType.IDENTIFIER, 101, 102);
+			expected.allocateNode(NodeType.UNARY_EXPRESSION, 99, 102);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 111, 129);
+			expected.allocateNode(NodeType.IDENTIFIER, 111, 117);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 111, 121);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 111, 129);
+			expected.allocateNode(NodeType.IDENTIFIER, 130, 131);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 111, 132);
+			expected.allocateNode(NodeType.BLOCK, 106, 137);
+			expected.allocateNode(NodeType.FOR_STATEMENT, 47, 137);
+			expected.allocateNode(NodeType.BLOCK, 43, 140);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 140);
+			expected.allocateClassDeclaration(7, 142, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 143);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -504,7 +568,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseAnnotationWithArguments()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -512,22 +576,28 @@ public class LocalAnnotationTest
 					@SuppressWarnings(value = "unchecked") java.util.List<String> list = null;
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 127),
-			typeDeclaration(CLASS_DECLARATION, 7, 126, "Test"),
-			methodDeclaration( 21, 124),
-			block( 43, 124),
-			annotation( 47, 85),
-			qualifiedName( 48, 64),
-			identifier( 65, 70),
-			assignmentExpression( 65, 84),
-			stringLiteral( 73, 84),
-			parameterizedType( 86, 108),
-			qualifiedName( 86, 100),
-			qualifiedName( 101, 107),
-			nullLiteral( 116, 120));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 64);
+			expected.allocateNode(NodeType.IDENTIFIER, 65, 70);
+			expected.allocateNode(NodeType.STRING_LITERAL, 73, 84);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 65, 84);
+			expected.allocateNode(NodeType.ANNOTATION, 47, 85);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 86, 100);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 101, 107);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 101, 107);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 86, 108);
+			expected.allocateNode(NodeType.NULL_LITERAL, 116, 120);
+			expected.allocateNode(NodeType.BLOCK, 43, 124);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 124);
+			expected.allocateClassDeclaration(7, 126, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 127);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -537,7 +607,7 @@ public class LocalAnnotationTest
 	@Test
 	public void shouldParseAnnotationWithMultipleArguments()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -545,19 +615,24 @@ public class LocalAnnotationTest
 					@SuppressWarnings({"unchecked", "rawtypes"}) java.util.List list = null;
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 125),
-			typeDeclaration(CLASS_DECLARATION, 7, 124, "Test"),
-			methodDeclaration( 21, 122),
-			block( 43, 122),
-			annotation( 47, 91),
-			qualifiedName( 48, 64),
-			arrayInitializer( 65, 90),
-			stringLiteral( 66, 77),
-			stringLiteral( 79, 89),
-			qualifiedName( 92, 106),
-			nullLiteral( 114, 118));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 64);
+			expected.allocateNode(NodeType.STRING_LITERAL, 66, 77);
+			expected.allocateNode(NodeType.STRING_LITERAL, 79, 89);
+			expected.allocateNode(NodeType.ARRAY_INITIALIZER, 65, 90);
+			expected.allocateNode(NodeType.ANNOTATION, 47, 91);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 92, 106);
+			expected.allocateNode(NodeType.NULL_LITERAL, 114, 118);
+			expected.allocateNode(NodeType.BLOCK, 43, 122);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 122);
+			expected.allocateClassDeclaration(7, 124, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 125);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

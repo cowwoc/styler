@@ -1,17 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
+import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
-import java.util.Set;
-
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.RECORD_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing JEP 513 - Flexible Constructor Bodies.
@@ -45,27 +42,28 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 143),
-			typeDeclaration(CLASS_DECLARATION, 7, 142, "Child"),
-			qualifiedName( 27, 33),
-			constructorDeclaration( 37, 140),
-			parameterNode( 50, 59, "value"),
-			block( 62, 140),
-			ifStatement( 66, 121),
-			binaryExpression( 70, 79),
-			identifier( 70, 75),
-			integerLiteral( 78, 79),
-			throwStatement( 84, 121),
-			objectCreation( 90, 120),
-			qualifiedName( 94, 118),
-			methodInvocation( 124, 136),
-			superExpression( 124, 129),
-			identifier( 130, 135));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 27, 33);
+			expected.allocateParameterDeclaration(50, 59, new ParameterAttribute("value", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 70, 75);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 78, 79);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 70, 79);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 94, 118);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 90, 120);
+			expected.allocateNode(NodeType.THROW_STATEMENT, 84, 121);
+			expected.allocateNode(NodeType.IF_STATEMENT, 66, 121);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 124, 129);
+			expected.allocateNode(NodeType.IDENTIFIER, 130, 135);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 124, 136);
+			expected.allocateNode(NodeType.BLOCK, 62, 140);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 37, 140);
+			expected.allocateClassDeclaration(7, 142, new TypeDeclarationAttribute("Child"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 143);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -87,28 +85,29 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 119),
-			typeDeclaration(CLASS_DECLARATION, 7, 118, "Point"),
-			qualifiedName( 27, 31),
-			constructorDeclaration( 35, 116),
-			parameterNode( 48, 53, "a"),
-			parameterNode( 55, 60, "b"),
-			block( 63, 116),
-			binaryExpression( 75, 80),
-			identifier( 75, 76),
-			integerLiteral( 79, 80),
-			binaryExpression( 92, 97),
-			identifier( 92, 93),
-			integerLiteral( 96, 97),
-			methodInvocation( 101, 112),
-			superExpression( 101, 106),
-			identifier( 107, 108),
-			identifier( 110, 111));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 27, 31);
+			expected.allocateParameterDeclaration(48, 53, new ParameterAttribute("a", false, false, false));
+			expected.allocateParameterDeclaration(55, 60, new ParameterAttribute("b", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 75, 76);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 79, 80);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 75, 80);
+			expected.allocateNode(NodeType.IDENTIFIER, 92, 93);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 96, 97);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 92, 97);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 101, 106);
+			expected.allocateNode(NodeType.IDENTIFIER, 107, 108);
+			expected.allocateNode(NodeType.IDENTIFIER, 110, 111);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 101, 112);
+			expected.allocateNode(NodeType.BLOCK, 63, 116);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 35, 116);
+			expected.allocateClassDeclaration(7, 118, new TypeDeclarationAttribute("Point"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 119);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -129,25 +128,26 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 103),
-			typeDeclaration(CLASS_DECLARATION, 7, 102, "Data"),
-			qualifiedName( 26, 30),
-			constructorDeclaration( 34, 100),
-			parameterNode( 46, 58, "value"),
-			qualifiedName( 46, 52),
-			block( 61, 100),
-			methodInvocation( 65, 80),
-			qualifiedName( 65, 73),
-			identifier( 65, 73),
-			identifier( 74, 79),
-			methodInvocation( 84, 96),
-			superExpression( 84, 89),
-			identifier( 90, 95));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 26, 30);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 46, 52);
+			expected.allocateParameterDeclaration(46, 58, new ParameterAttribute("value", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 65, 73);
+			expected.allocateNode(NodeType.IDENTIFIER, 65, 73);
+			expected.allocateNode(NodeType.IDENTIFIER, 74, 79);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 65, 80);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 84, 89);
+			expected.allocateNode(NodeType.IDENTIFIER, 90, 95);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 84, 96);
+			expected.allocateNode(NodeType.BLOCK, 61, 100);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 34, 100);
+			expected.allocateClassDeclaration(7, 102, new TypeDeclarationAttribute("Data"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 103);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	// ========================================
@@ -176,32 +176,33 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 168),
-			typeDeclaration(CLASS_DECLARATION, 7, 167, "Wrapper"),
-			qualifiedName( 29, 33),
-			constructorDeclaration( 37, 165),
-			parameterNode( 52, 61, "value"),
-			block( 64, 165),
-			ifStatement( 84, 143),
-			binaryExpression( 88, 97),
-			identifier( 88, 93),
-			integerLiteral( 96, 97),
-			assignmentExpression( 102, 114),
-			qualifiedName( 102, 110),
-			identifier( 102, 110),
-			integerLiteral( 113, 114),
-			assignmentExpression( 126, 142),
-			qualifiedName( 126, 134),
-			identifier( 126, 134),
-			identifier( 137, 142),
-			methodInvocation( 146, 161),
-			superExpression( 146, 151),
-			identifier( 152, 160));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 29, 33);
+			expected.allocateParameterDeclaration(52, 61, new ParameterAttribute("value", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 88, 93);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 96, 97);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 88, 97);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 102, 110);
+			expected.allocateNode(NodeType.IDENTIFIER, 102, 110);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 113, 114);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 102, 114);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 126, 134);
+			expected.allocateNode(NodeType.IDENTIFIER, 126, 134);
+			expected.allocateNode(NodeType.IDENTIFIER, 137, 142);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 126, 142);
+			expected.allocateNode(NodeType.IF_STATEMENT, 84, 143);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 146, 151);
+			expected.allocateNode(NodeType.IDENTIFIER, 152, 160);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 146, 161);
+			expected.allocateNode(NodeType.BLOCK, 64, 165);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 37, 165);
+			expected.allocateClassDeclaration(7, 167, new TypeDeclarationAttribute("Wrapper"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 168);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -230,38 +231,39 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 205),
-			typeDeclaration(CLASS_DECLARATION, 7, 204, "Parser"),
-			qualifiedName( 28, 32),
-			constructorDeclaration( 36, 202),
-			parameterNode( 50, 61, "text"),
-			qualifiedName( 50, 56),
-			block( 64, 202),
-			tryStatement( 81, 183),
-			block( 87, 127),
-			assignmentExpression( 92, 122),
-			qualifiedName( 92, 97),
-			identifier( 92, 97),
-			methodInvocation( 100, 122),
-			fieldAccess( 100, 116),
-			identifier( 100, 107),
-			identifier( 117, 121),
-			catchClause( 130, 183),
-			parameterNode( 137, 160, "e"),
-			qualifiedName( 137, 158),
-			block( 164, 183),
-			assignmentExpression( 169, 178),
-			identifier( 169, 174),
-			qualifiedName( 169, 174),
-			integerLiteral( 177, 178),
-			methodInvocation( 186, 198),
-			superExpression( 186, 191),
-			identifier( 192, 197));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 32);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 50, 56);
+			expected.allocateParameterDeclaration(50, 61, new ParameterAttribute("text", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 92, 97);
+			expected.allocateNode(NodeType.IDENTIFIER, 92, 97);
+			expected.allocateNode(NodeType.IDENTIFIER, 100, 107);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 100, 116);
+			expected.allocateNode(NodeType.IDENTIFIER, 117, 121);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 100, 122);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 92, 122);
+			expected.allocateNode(NodeType.BLOCK, 87, 127);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 137, 158);
+			expected.allocateParameterDeclaration(137, 160, new ParameterAttribute("e", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 169, 174);
+			expected.allocateNode(NodeType.IDENTIFIER, 169, 174);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 177, 178);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 169, 178);
+			expected.allocateNode(NodeType.BLOCK, 164, 183);
+			expected.allocateNode(NodeType.CATCH_CLAUSE, 130, 183);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 81, 183);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 186, 191);
+			expected.allocateNode(NodeType.IDENTIFIER, 192, 197);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 186, 198);
+			expected.allocateNode(NodeType.BLOCK, 64, 202);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 36, 202);
+			expected.allocateClassDeclaration(7, 204, new TypeDeclarationAttribute("Parser"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 205);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -288,37 +290,38 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 208),
-			typeDeclaration(CLASS_DECLARATION, 7, 207, "Handler"),
-			qualifiedName( 29, 33),
-			constructorDeclaration( 37, 205),
-			parameterNode( 52, 60, "type"),
-			block( 63, 205),
-			qualifiedName( 67, 73),
-			switchStatement( 82, 187),
-			identifier( 90, 94),
-			integerLiteral( 108, 109),
-			assignmentExpression( 113, 125),
-			qualifiedName( 113, 117),
-			identifier( 113, 117),
-			stringLiteral( 120, 125),
-			integerLiteral( 135, 136),
-			assignmentExpression( 140, 152),
-			identifier( 140, 144),
-			qualifiedName( 140, 144),
-			stringLiteral( 147, 152),
-			assignmentExpression( 168, 182),
-			identifier( 168, 172),
-			qualifiedName( 168, 172),
-			stringLiteral( 175, 182),
-			methodInvocation( 190, 201),
-			superExpression( 190, 195),
-			identifier( 196, 200));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 29, 33);
+			expected.allocateParameterDeclaration(52, 60, new ParameterAttribute("type", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 67, 73);
+			expected.allocateNode(NodeType.IDENTIFIER, 90, 94);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 108, 109);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 113, 117);
+			expected.allocateNode(NodeType.IDENTIFIER, 113, 117);
+			expected.allocateNode(NodeType.STRING_LITERAL, 120, 125);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 113, 125);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 135, 136);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 140, 144);
+			expected.allocateNode(NodeType.IDENTIFIER, 140, 144);
+			expected.allocateNode(NodeType.STRING_LITERAL, 147, 152);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 140, 152);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 168, 172);
+			expected.allocateNode(NodeType.IDENTIFIER, 168, 172);
+			expected.allocateNode(NodeType.STRING_LITERAL, 175, 182);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 168, 182);
+			expected.allocateNode(NodeType.SWITCH_STATEMENT, 82, 187);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 190, 195);
+			expected.allocateNode(NodeType.IDENTIFIER, 196, 200);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 190, 201);
+			expected.allocateNode(NodeType.BLOCK, 63, 205);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 37, 205);
+			expected.allocateClassDeclaration(7, 207, new TypeDeclarationAttribute("Handler"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 208);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	// ========================================
@@ -348,31 +351,32 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 165),
-			typeDeclaration(CLASS_DECLARATION, 7, 164, "Range"),
-			constructorDeclaration( 22, 121),
-			parameterNode( 35, 42, "end"),
-			block( 45, 121),
-			ifStatement( 49, 102),
-			binaryExpression( 53, 60),
-			identifier( 53, 56),
-			integerLiteral( 59, 60),
-			throwStatement( 65, 102),
-			objectCreation( 71, 101),
-			qualifiedName( 75, 99),
-			methodInvocation( 105, 117),
-			thisExpression( 105, 109),
-			integerLiteral( 110, 111),
-			identifier( 113, 116),
-			constructorDeclaration( 124, 162),
-			parameterNode( 137, 146, "start"),
-			parameterNode( 148, 155, "end"),
-			block( 158, 162));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(35, 42, new ParameterAttribute("end", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 53, 56);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 59, 60);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 53, 60);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 75, 99);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 71, 101);
+			expected.allocateNode(NodeType.THROW_STATEMENT, 65, 102);
+			expected.allocateNode(NodeType.IF_STATEMENT, 49, 102);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 105, 109);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 110, 111);
+			expected.allocateNode(NodeType.IDENTIFIER, 113, 116);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 105, 117);
+			expected.allocateNode(NodeType.BLOCK, 45, 121);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 22, 121);
+			expected.allocateParameterDeclaration(137, 146, new ParameterAttribute("start", false, false, false));
+			expected.allocateParameterDeclaration(148, 155, new ParameterAttribute("end", false, false, false));
+			expected.allocateNode(NodeType.BLOCK, 158, 162);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 124, 162);
+			expected.allocateClassDeclaration(7, 164, new TypeDeclarationAttribute("Range"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 165);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -398,26 +402,27 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 173),
-			typeDeclaration(CLASS_DECLARATION, 7, 172, "Size"),
-			constructorDeclaration( 21, 127),
-			parameterNode( 33, 46, "dimension"),
-			block( 49, 127),
-			identifier( 65, 74),
-			identifier( 91, 100),
-			methodInvocation( 104, 123),
-			thisExpression( 104, 108),
-			identifier( 109, 114),
-			identifier( 116, 122),
-			constructorDeclaration( 130, 170),
-			parameterNode( 142, 151, "width"),
-			parameterNode( 153, 163, "height"),
-			block( 166, 170));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(33, 46, new ParameterAttribute("dimension", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 65, 74);
+			expected.allocateNode(NodeType.IDENTIFIER, 91, 100);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 104, 108);
+			expected.allocateNode(NodeType.IDENTIFIER, 109, 114);
+			expected.allocateNode(NodeType.IDENTIFIER, 116, 122);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 104, 123);
+			expected.allocateNode(NodeType.BLOCK, 49, 127);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 21, 127);
+			expected.allocateParameterDeclaration(142, 151, new ParameterAttribute("width", false, false, false));
+			expected.allocateParameterDeclaration(153, 163, new ParameterAttribute("height", false, false, false));
+			expected.allocateNode(NodeType.BLOCK, 166, 170);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 130, 170);
+			expected.allocateClassDeclaration(7, 172, new TypeDeclarationAttribute("Size"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 173);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	// ========================================
@@ -441,23 +446,24 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 86),
-			typeDeclaration(CLASS_DECLARATION, 7, 85, "Logger"),
-			constructorDeclaration( 23, 83),
-			parameterNode( 37, 48, "name"),
-			qualifiedName( 37, 43),
-			block( 51, 83),
-			methodInvocation( 55, 79),
-			qualifiedName( 55, 73),
-			fieldAccess( 55, 73),
-			fieldAccess( 55, 65),
-			identifier( 55, 61),
-			identifier( 74, 78));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 37, 43);
+			expected.allocateParameterDeclaration(37, 48, new ParameterAttribute("name", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 55, 73);
+			expected.allocateNode(NodeType.IDENTIFIER, 55, 61);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 55, 65);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 55, 73);
+			expected.allocateNode(NodeType.IDENTIFIER, 74, 78);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 55, 79);
+			expected.allocateNode(NodeType.BLOCK, 51, 83);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 23, 83);
+			expected.allocateClassDeclaration(7, 85, new TypeDeclarationAttribute("Logger"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 86);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -476,15 +482,16 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 45),
-			typeDeclaration(CLASS_DECLARATION, 7, 44, "Empty"),
-			constructorDeclaration( 22, 42),
-			block( 38, 42));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.BLOCK, 38, 42);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 22, 42);
+			expected.allocateClassDeclaration(7, 44, new TypeDeclarationAttribute("Empty"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 45);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	// ========================================
@@ -510,31 +517,32 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 138),
-			typeDeclaration(CLASS_DECLARATION, 7, 137, "Entity"),
-			qualifiedName( 28, 32),
-			constructorDeclaration( 36, 135),
-			parameterNode( 50, 61, "name"),
-			qualifiedName( 50, 56),
-			parameterNode( 63, 69, "id"),
-			block( 72, 135),
-			methodInvocation( 76, 94),
-			qualifiedName( 76, 88),
-			identifier( 76, 88),
-			identifier( 89, 93),
-			methodInvocation( 98, 112),
-			qualifiedName( 98, 108),
-			identifier( 98, 108),
-			identifier( 109, 111),
-			methodInvocation( 116, 131),
-			superExpression( 116, 121),
-			identifier( 122, 126),
-			identifier( 128, 130));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 32);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 50, 56);
+			expected.allocateParameterDeclaration(50, 61, new ParameterAttribute("name", false, false, false));
+			expected.allocateParameterDeclaration(63, 69, new ParameterAttribute("id", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 76, 88);
+			expected.allocateNode(NodeType.IDENTIFIER, 76, 88);
+			expected.allocateNode(NodeType.IDENTIFIER, 89, 93);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 76, 94);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 98, 108);
+			expected.allocateNode(NodeType.IDENTIFIER, 98, 108);
+			expected.allocateNode(NodeType.IDENTIFIER, 109, 111);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 98, 112);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 116, 121);
+			expected.allocateNode(NodeType.IDENTIFIER, 122, 126);
+			expected.allocateNode(NodeType.IDENTIFIER, 128, 130);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 116, 131);
+			expected.allocateNode(NodeType.BLOCK, 72, 135);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 36, 135);
+			expected.allocateClassDeclaration(7, 137, new TypeDeclarationAttribute("Entity"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 138);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -555,24 +563,25 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 124),
-			typeDeclaration(RECORD_DECLARATION, 7, 123, "Person"),
-			parameterNode( 21, 32, "name"),
-			qualifiedName( 21, 27),
-			parameterNode( 34, 41, "age"),
-			block( 61, 121),
-			ifStatement( 65, 118),
-			binaryExpression( 69, 76),
-			identifier( 69, 72),
-			integerLiteral( 75, 76),
-			throwStatement( 81, 118),
-			objectCreation( 87, 117),
-			qualifiedName( 91, 115));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 21, 27);
+			expected.allocateParameterDeclaration(21, 32, new ParameterAttribute("name", false, false, false));
+			expected.allocateParameterDeclaration(34, 41, new ParameterAttribute("age", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 69, 72);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 75, 76);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 69, 76);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 91, 115);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 87, 117);
+			expected.allocateNode(NodeType.THROW_STATEMENT, 81, 118);
+			expected.allocateNode(NodeType.IF_STATEMENT, 65, 118);
+			expected.allocateNode(NodeType.BLOCK, 61, 121);
+			expected.allocateRecordDeclaration(7, 123, new TypeDeclarationAttribute("Person"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 124);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -597,28 +606,29 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 173),
-			typeDeclaration(CLASS_DECLARATION, 7, 172, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 29, 170, "Inner"),
-			qualifiedName( 49, 53),
-			constructorDeclaration( 59, 167),
-			parameterNode( 72, 81, "value"),
-			block( 85, 167),
-			ifStatement( 90, 146),
-			binaryExpression( 94, 103),
-			identifier( 94, 99),
-			integerLiteral( 102, 103),
-			throwStatement( 109, 146),
-			objectCreation( 115, 145),
-			qualifiedName( 119, 143),
-			methodInvocation( 150, 162),
-			superExpression( 150, 155),
-			identifier( 156, 161));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 49, 53);
+			expected.allocateParameterDeclaration(72, 81, new ParameterAttribute("value", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 94, 99);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 102, 103);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 94, 103);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 119, 143);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 115, 145);
+			expected.allocateNode(NodeType.THROW_STATEMENT, 109, 146);
+			expected.allocateNode(NodeType.IF_STATEMENT, 90, 146);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 150, 155);
+			expected.allocateNode(NodeType.IDENTIFIER, 156, 161);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 150, 162);
+			expected.allocateNode(NodeType.BLOCK, 85, 167);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 59, 167);
+			expected.allocateClassDeclaration(29, 170, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(7, 172, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 173);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	// ========================================
@@ -643,24 +653,25 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 107),
-			typeDeclaration(CLASS_DECLARATION, 7, 106, "Derived"),
-			qualifiedName( 29, 33),
-			constructorDeclaration( 37, 104),
-			parameterNode( 52, 57, "a"),
-			parameterNode( 59, 64, "b"),
-			block( 67, 104),
-			binaryExpression( 81, 86),
-			identifier( 81, 82),
-			identifier( 85, 86),
-			methodInvocation( 90, 100),
-			superExpression( 90, 95),
-			identifier( 96, 99));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 29, 33);
+			expected.allocateParameterDeclaration(52, 57, new ParameterAttribute("a", false, false, false));
+			expected.allocateParameterDeclaration(59, 64, new ParameterAttribute("b", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 81, 82);
+			expected.allocateNode(NodeType.IDENTIFIER, 85, 86);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 81, 86);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 90, 95);
+			expected.allocateNode(NodeType.IDENTIFIER, 96, 99);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 90, 100);
+			expected.allocateNode(NodeType.BLOCK, 67, 104);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 37, 104);
+			expected.allocateClassDeclaration(7, 106, new TypeDeclarationAttribute("Derived"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 107);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -681,27 +692,28 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 139),
-			typeDeclaration(CLASS_DECLARATION, 7, 138, "Processor"),
-			qualifiedName( 31, 35),
-			constructorDeclaration( 39, 136),
-			parameterNode( 56, 65, "value"),
-			block( 68, 136),
-			qualifiedName( 72, 80),
-			lambdaExpression( 85, 116),
-			methodInvocation( 91, 116),
-			fieldAccess( 91, 109),
-			fieldAccess( 91, 101),
-			identifier( 91, 97),
-			identifier( 110, 115),
-			methodInvocation( 120, 132),
-			superExpression( 120, 125),
-			identifier( 126, 131));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 31, 35);
+			expected.allocateParameterDeclaration(56, 65, new ParameterAttribute("value", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 72, 80);
+			expected.allocateNode(NodeType.IDENTIFIER, 91, 97);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 91, 101);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 91, 109);
+			expected.allocateNode(NodeType.IDENTIFIER, 110, 115);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 91, 116);
+			expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 85, 116);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 120, 125);
+			expected.allocateNode(NodeType.IDENTIFIER, 126, 131);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 120, 132);
+			expected.allocateNode(NodeType.BLOCK, 68, 136);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 39, 136);
+			expected.allocateClassDeclaration(7, 138, new TypeDeclarationAttribute("Processor"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 139);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -727,24 +739,25 @@ public class FlexibleConstructorBodyParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 160),
-			typeDeclaration(CLASS_DECLARATION, 7, 159, "Handler"),
-			qualifiedName( 29, 33),
-			constructorDeclaration( 37, 157),
-			parameterNode( 52, 61, "value"),
-			block( 64, 157),
-			qualifiedName( 68, 76),
-			objectCreation( 84, 137),
-			qualifiedName( 88, 96),
-			methodDeclaration( 106, 133),
-			block( 127, 133),
-			methodInvocation( 141, 153),
-			superExpression( 141, 146),
-			identifier( 147, 152));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 29, 33);
+			expected.allocateParameterDeclaration(52, 61, new ParameterAttribute("value", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 68, 76);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 88, 96);
+			expected.allocateNode(NodeType.BLOCK, 127, 133);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 106, 133);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 84, 137);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 141, 146);
+			expected.allocateNode(NodeType.IDENTIFIER, 147, 152);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 141, 153);
+			expected.allocateNode(NodeType.BLOCK, 64, 157);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 37, 157);
+			expected.allocateClassDeclaration(7, 159, new TypeDeclarationAttribute("Handler"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 160);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

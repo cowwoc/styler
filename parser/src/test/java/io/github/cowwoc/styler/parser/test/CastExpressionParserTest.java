@@ -1,16 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseFails;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing cast expressions.
@@ -25,7 +23,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParsePrimitiveIntCast()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -33,16 +31,19 @@ public final class CastExpressionParserTest
 					int x = (int) longValue;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 58),
-			typeDeclaration(CLASS_DECLARATION, 0, 57, "Test"),
-			methodDeclaration( 14, 55),
-			block( 24, 55),
-			castExpression( 36, 51),
-			identifier( 42, 51));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 42, 51);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 36, 51);
+			expected.allocateNode(NodeType.BLOCK, 24, 55);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 55);
+			expected.allocateClassDeclaration(0, 57, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 58);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -51,7 +52,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParsePrimitiveDoubleCast()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -59,16 +60,19 @@ public final class CastExpressionParserTest
 					double d = (double) intValue;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 63),
-			typeDeclaration(CLASS_DECLARATION, 0, 62, "Test"),
-			methodDeclaration( 14, 60),
-			block( 24, 60),
-			castExpression( 39, 56),
-			identifier( 48, 56));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 48, 56);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 56);
+			expected.allocateNode(NodeType.BLOCK, 24, 60);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 60);
+			expected.allocateClassDeclaration(0, 62, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 63);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -77,7 +81,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseReferenceTypeCast()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -85,17 +89,20 @@ public final class CastExpressionParserTest
 					String s = (String) obj;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 58),
-			typeDeclaration(CLASS_DECLARATION, 0, 57, "Test"),
-			methodDeclaration( 14, 55),
-			block( 24, 55),
-			qualifiedName( 28, 34),
-			castExpression( 39, 51),
-			identifier( 48, 51));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 48, 51);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 51);
+			expected.allocateNode(NodeType.BLOCK, 24, 55);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 55);
+			expected.allocateClassDeclaration(0, 57, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 58);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -104,7 +111,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseQualifiedTypeCast()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -112,17 +119,20 @@ public final class CastExpressionParserTest
 					String s = (java.lang.String) obj;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 68),
-			typeDeclaration(CLASS_DECLARATION, 0, 67, "Test"),
-			methodDeclaration( 14, 65),
-			block( 24, 65),
-			qualifiedName( 28, 34),
-			castExpression( 39, 61),
-			identifier( 58, 61));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 58, 61);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 61);
+			expected.allocateNode(NodeType.BLOCK, 24, 65);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 65);
+			expected.allocateClassDeclaration(0, 67, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 68);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -131,7 +141,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseGenericTypeCast()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -139,20 +149,25 @@ public final class CastExpressionParserTest
 					List<String> list = (List<String>) obj;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 73),
-			typeDeclaration(CLASS_DECLARATION, 0, 72, "Test"),
-			methodDeclaration( 14, 70),
-			block( 24, 70),
-			qualifiedName( 28, 32),
-			qualifiedName( 33, 39),
-			parameterizedType( 28, 40),
-			castExpression( 48, 66),
-			qualifiedName( 54, 60),
-			identifier( 63, 66));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 32);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 33, 39);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 33, 39);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 28, 40);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 54, 60);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 54, 60);
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 66);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 48, 66);
+			expected.allocateNode(NodeType.BLOCK, 24, 70);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 70);
+			expected.allocateClassDeclaration(0, 72, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 73);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	// ========== Intersection Casts (3 tests) ==========
@@ -163,7 +178,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseIntersectionCastTwoTypes()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -171,18 +186,21 @@ public final class CastExpressionParserTest
 					Object o = (Serializable & Comparable<?>) value;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 82),
-			typeDeclaration(CLASS_DECLARATION, 0, 81, "Test"),
-			methodDeclaration( 14, 79),
-			block( 24, 79),
-			qualifiedName( 28, 34),
-			castExpression( 39, 75),
-			wildcardType( 66, 67),
-			identifier( 70, 75));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 66, 67);
+			expected.allocateNode(NodeType.IDENTIFIER, 70, 75);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 75);
+			expected.allocateNode(NodeType.BLOCK, 24, 79);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 79);
+			expected.allocateClassDeclaration(0, 81, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 82);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -191,7 +209,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseIntersectionCastThreeTypes()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -199,18 +217,21 @@ public final class CastExpressionParserTest
 					Object o = (Serializable & Comparable<?> & Cloneable) value;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 94),
-			typeDeclaration(CLASS_DECLARATION, 0, 93, "Test"),
-			methodDeclaration( 14, 91),
-			block( 24, 91),
-			qualifiedName( 28, 34),
-			castExpression( 39, 87),
-			wildcardType( 66, 67),
-			identifier( 82, 87));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 66, 67);
+			expected.allocateNode(NodeType.IDENTIFIER, 82, 87);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 87);
+			expected.allocateNode(NodeType.BLOCK, 24, 91);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 91);
+			expected.allocateClassDeclaration(0, 93, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 94);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -219,7 +240,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseIntersectionCastQualifiedTypes()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -227,18 +248,21 @@ public final class CastExpressionParserTest
 					Object o = (java.io.Serializable & java.lang.Comparable<?>) value;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 100),
-			typeDeclaration(CLASS_DECLARATION, 0, 99, "Test"),
-			methodDeclaration( 14, 97),
-			block( 24, 97),
-			qualifiedName( 28, 34),
-			castExpression( 39, 93),
-			wildcardType( 84, 85),
-			identifier( 88, 93));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 84, 85);
+			expected.allocateNode(NodeType.IDENTIFIER, 88, 93);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 93);
+			expected.allocateNode(NodeType.BLOCK, 24, 97);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 97);
+			expected.allocateClassDeclaration(0, 99, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 100);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	// ========== Array Casts (3 tests) ==========
@@ -249,7 +273,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseSingleDimensionArrayCast()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -257,17 +281,20 @@ public final class CastExpressionParserTest
 					String[] arr = (String[]) array;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 66),
-			typeDeclaration(CLASS_DECLARATION, 0, 65, "Test"),
-			methodDeclaration( 14, 63),
-			block( 24, 63),
-			qualifiedName( 28, 34),
-			castExpression( 43, 59),
-			identifier( 54, 59));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 54, 59);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 43, 59);
+			expected.allocateNode(NodeType.BLOCK, 24, 63);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 63);
+			expected.allocateClassDeclaration(0, 65, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 66);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -276,7 +303,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseMultiDimensionArrayCast()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -284,16 +311,19 @@ public final class CastExpressionParserTest
 					int[][] matrix = (int[][]) array;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 67),
-			typeDeclaration(CLASS_DECLARATION, 0, 66, "Test"),
-			methodDeclaration( 14, 64),
-			block( 24, 64),
-			castExpression( 45, 60),
-			identifier( 55, 60));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 55, 60);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 45, 60);
+			expected.allocateNode(NodeType.BLOCK, 24, 64);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 64);
+			expected.allocateClassDeclaration(0, 66, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 67);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -302,7 +332,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParsePrimitiveArrayCast()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -310,16 +340,19 @@ public final class CastExpressionParserTest
 					int[] arr = (int[]) obj;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 58),
-			typeDeclaration(CLASS_DECLARATION, 0, 57, "Test"),
-			methodDeclaration( 14, 55),
-			block( 24, 55),
-			castExpression( 40, 51),
-			identifier( 48, 51));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 48, 51);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 40, 51);
+			expected.allocateNode(NodeType.BLOCK, 24, 55);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 55);
+			expected.allocateClassDeclaration(0, 57, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 58);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	// ========== Disambiguation (5 tests) ==========
@@ -334,7 +367,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldDisambiguateParenthesizedExpressionFromCast()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -342,17 +375,20 @@ public final class CastExpressionParserTest
 					int result = (a) + b;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 55),
-			typeDeclaration(CLASS_DECLARATION, 0, 54, "Test"),
-			methodDeclaration( 14, 52),
-			block( 24, 52),
-			binaryExpression( 42, 48),
-			identifier( 42, 43),
-			identifier( 47, 48));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 42, 43);
+			expected.allocateNode(NodeType.IDENTIFIER, 47, 48);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 42, 48);
+			expected.allocateNode(NodeType.BLOCK, 24, 52);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 52);
+			expected.allocateClassDeclaration(0, 54, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 55);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -363,7 +399,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParsePrimitiveCastOfUnaryPlus()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -371,17 +407,20 @@ public final class CastExpressionParserTest
 					int i = (int) +b;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 51),
-			typeDeclaration(CLASS_DECLARATION, 0, 50, "Test"),
-			methodDeclaration( 14, 48),
-			block( 24, 48),
-			castExpression( 36, 44),
-			unaryExpression( 42, 44),
-			identifier( 43, 44));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 43, 44);
+			expected.allocateNode(NodeType.UNARY_EXPRESSION, 42, 44);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 36, 44);
+			expected.allocateNode(NodeType.BLOCK, 24, 48);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 48);
+			expected.allocateClassDeclaration(0, 50, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 51);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -392,7 +431,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParsePrimitiveCastOfUnaryMinus()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -400,17 +439,20 @@ public final class CastExpressionParserTest
 					int d = (int) -value;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 55),
-			typeDeclaration(CLASS_DECLARATION, 0, 54, "Test"),
-			methodDeclaration( 14, 52),
-			block( 24, 52),
-			castExpression( 36, 48),
-			unaryExpression( 42, 48),
-			identifier( 43, 48));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 43, 48);
+			expected.allocateNode(NodeType.UNARY_EXPRESSION, 42, 48);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 36, 48);
+			expected.allocateNode(NodeType.BLOCK, 24, 52);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 52);
+			expected.allocateClassDeclaration(0, 54, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 55);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -419,7 +461,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseCastOfMethodCall()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -427,18 +469,21 @@ public final class CastExpressionParserTest
 					String s = (String) getValue();
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 65),
-			typeDeclaration(CLASS_DECLARATION, 0, 64, "Test"),
-			methodDeclaration( 14, 62),
-			block( 24, 62),
-			qualifiedName( 28, 34),
-			castExpression( 39, 58),
-			methodInvocation( 48, 58),
-			identifier( 48, 56));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 48, 56);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 48, 58);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 58);
+			expected.allocateNode(NodeType.BLOCK, 24, 62);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 62);
+			expected.allocateClassDeclaration(0, 64, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 65);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -447,7 +492,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseCastOfFieldAccess()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -455,17 +500,20 @@ public final class CastExpressionParserTest
 					int x = (int) obj.field;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 58),
-			typeDeclaration(CLASS_DECLARATION, 0, 57, "Test"),
-			methodDeclaration( 14, 55),
-			block( 24, 55),
-			castExpression( 36, 51),
-			fieldAccess( 42, 51),
-			identifier( 42, 45));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 42, 45);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 42, 51);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 36, 51);
+			expected.allocateNode(NodeType.BLOCK, 24, 55);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 55);
+			expected.allocateClassDeclaration(0, 57, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 58);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	// ========== Chained/Nested (4 tests) ==========
@@ -476,7 +524,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseChainedCasts()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -484,18 +532,21 @@ public final class CastExpressionParserTest
 					Object o = (Object) (String) value;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 69),
-			typeDeclaration(CLASS_DECLARATION, 0, 68, "Test"),
-			methodDeclaration( 14, 66),
-			block( 24, 66),
-			qualifiedName( 28, 34),
-			castExpression( 39, 62),
-			castExpression( 48, 62),
-			identifier( 57, 62));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 57, 62);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 48, 62);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 62);
+			expected.allocateNode(NodeType.BLOCK, 24, 66);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 66);
+			expected.allocateClassDeclaration(0, 68, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 69);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -504,7 +555,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseCastWithMethodCallOnResult()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -512,18 +563,21 @@ public final class CastExpressionParserTest
 					int len = ((String) obj).length();
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 68),
-			typeDeclaration(CLASS_DECLARATION, 0, 67, "Test"),
-			methodDeclaration( 14, 65),
-			block( 24, 65),
-			methodInvocation( 39, 61),
-			fieldAccess( 39, 59),
-			castExpression( 39, 51),
-			identifier( 48, 51));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 48, 51);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 51);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 39, 59);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 39, 61);
+			expected.allocateNode(NodeType.BLOCK, 24, 65);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 65);
+			expected.allocateClassDeclaration(0, 67, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 68);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -532,7 +586,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseCastAsMethodArgument()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -540,19 +594,22 @@ public final class CastExpressionParserTest
 					process((String) obj);
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 56),
-			typeDeclaration(CLASS_DECLARATION, 0, 55, "Test"),
-			methodDeclaration( 14, 53),
-			block( 24, 53),
-			methodInvocation( 28, 49),
-			qualifiedName( 28, 35),
-			identifier( 28, 35),
-			castExpression( 36, 48),
-			identifier( 45, 48));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 35);
+			expected.allocateNode(NodeType.IDENTIFIER, 28, 35);
+			expected.allocateNode(NodeType.IDENTIFIER, 45, 48);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 36, 48);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 28, 49);
+			expected.allocateNode(NodeType.BLOCK, 24, 53);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 53);
+			expected.allocateClassDeclaration(0, 55, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 56);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -561,7 +618,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseCastInReturnStatement()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				String m()
@@ -569,17 +626,20 @@ public final class CastExpressionParserTest
 					return (String) obj;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 56),
-			typeDeclaration(CLASS_DECLARATION, 0, 55, "Test"),
-			methodDeclaration( 14, 53),
-			block( 26, 53),
-			returnStatement( 30, 50),
-			castExpression( 37, 49),
-			identifier( 46, 49));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 46, 49);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 37, 49);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 30, 50);
+			expected.allocateNode(NodeType.BLOCK, 26, 53);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 53);
+			expected.allocateClassDeclaration(0, 55, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 56);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	// ========== Expression Contexts (4 tests) ==========
@@ -590,7 +650,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseCastsInTernaryExpression()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -598,21 +658,24 @@ public final class CastExpressionParserTest
 					String s = flag ? (String) a : (String) b;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 76),
-			typeDeclaration(CLASS_DECLARATION, 0, 75, "Test"),
-			methodDeclaration( 14, 73),
-			block( 24, 73),
-			qualifiedName( 28, 34),
-			conditionalExpression( 39, 69),
-			identifier( 39, 43),
-			castExpression( 46, 56),
-			identifier( 55, 56),
-			castExpression( 59, 69),
-			identifier( 68, 69));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 39, 43);
+			expected.allocateNode(NodeType.IDENTIFIER, 55, 56);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 46, 56);
+			expected.allocateNode(NodeType.IDENTIFIER, 68, 69);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 59, 69);
+			expected.allocateNode(NodeType.CONDITIONAL_EXPRESSION, 39, 69);
+			expected.allocateNode(NodeType.BLOCK, 24, 73);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 73);
+			expected.allocateClassDeclaration(0, 75, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 76);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -621,7 +684,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseCastsInBinaryExpression()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -629,19 +692,22 @@ public final class CastExpressionParserTest
 					int result = (int) a + (int) b;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 65),
-			typeDeclaration(CLASS_DECLARATION, 0, 64, "Test"),
-			methodDeclaration( 14, 62),
-			block( 24, 62),
-			binaryExpression( 41, 58),
-			castExpression( 41, 48),
-			identifier( 47, 48),
-			castExpression( 51, 58),
-			identifier( 57, 58));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 47, 48);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 41, 48);
+			expected.allocateNode(NodeType.IDENTIFIER, 57, 58);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 51, 58);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 41, 58);
+			expected.allocateNode(NodeType.BLOCK, 24, 62);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 62);
+			expected.allocateClassDeclaration(0, 64, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 65);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -650,7 +716,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseCastWithArrayAccess()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -658,19 +724,22 @@ public final class CastExpressionParserTest
 					String s = ((String[]) array)[0];
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 67),
-			typeDeclaration(CLASS_DECLARATION, 0, 66, "Test"),
-			methodDeclaration( 14, 64),
-			block( 24, 64),
-			qualifiedName( 28, 34),
-			arrayAccess( 40, 60),
-			castExpression( 40, 56),
-			identifier( 51, 56),
-			integerLiteral( 58, 59));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 51, 56);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 40, 56);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 58, 59);
+			expected.allocateNode(NodeType.ARRAY_ACCESS, 40, 60);
+			expected.allocateNode(NodeType.BLOCK, 24, 64);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 64);
+			expected.allocateClassDeclaration(0, 66, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 67);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -679,7 +748,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseCastOfLiteral()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -687,16 +756,19 @@ public final class CastExpressionParserTest
 					double d = (double) 42;
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 57),
-			typeDeclaration(CLASS_DECLARATION, 0, 56, "Test"),
-			methodDeclaration( 14, 54),
-			block( 24, 54),
-			castExpression( 39, 50),
-			integerLiteral( 48, 50));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 48, 50);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 50);
+			expected.allocateNode(NodeType.BLOCK, 24, 54);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 54);
+			expected.allocateClassDeclaration(0, 56, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 57);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	// ========== Error Cases (3 tests) ==========
@@ -713,7 +785,7 @@ public final class CastExpressionParserTest
 	@Test
 	public void shouldParseParenthesizedTypeAsExpression()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -721,16 +793,19 @@ public final class CastExpressionParserTest
 					String s = (String);
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 54),
-			typeDeclaration(CLASS_DECLARATION, 0, 53, "Test"),
-			methodDeclaration( 14, 51),
-			block( 24, 51),
-			qualifiedName( 28, 34),
-			identifier( 40, 46));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 40, 46);
+			expected.allocateNode(NodeType.BLOCK, 24, 51);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 51);
+			expected.allocateClassDeclaration(0, 53, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 54);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**

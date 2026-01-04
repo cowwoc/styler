@@ -1,16 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
+import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
-import java.util.Set;
-
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing multi-catch (union type) exception handling (JDK 7+).
@@ -38,21 +36,25 @@ public final class MultiCatchParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 108),
-			typeDeclaration(CLASS_DECLARATION, 7, 107, "Test"),
-			methodDeclaration( 21, 105),
-			block( 40, 105),
-			tryStatement( 44, 102),
-			block( 50, 55),
-			catchClause( 58, 102),
-			unionType( 65, 91),
-			qualifiedName( 65, 76),
-			qualifiedName( 79, 91),
-			parameterNode( 65, 93, "e"),
-			block( 97, 102));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.BLOCK, 50, 55);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 65, 76);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 79, 91);
+			expected.allocateNode(NodeType.UNION_TYPE, 65, 91);
+			expected.allocateParameterDeclaration(65, 93, new ParameterAttribute("e", false, false, false));
+			expected.allocateNode(NodeType.BLOCK, 97, 102);
+			expected.allocateNode(NodeType.CATCH_CLAUSE, 58, 102);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 44, 102);
+			expected.allocateNode(NodeType.BLOCK, 40, 105);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 105);
+			expected.allocateClassDeclaration(7, 107, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 108);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -76,22 +78,26 @@ public final class MultiCatchParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 127),
-			typeDeclaration(CLASS_DECLARATION, 7, 126, "Test"),
-			methodDeclaration( 21, 124),
-			block( 40, 124),
-			tryStatement( 44, 121),
-			block( 50, 55),
-			catchClause( 58, 121),
-			unionType( 65, 110),
-			qualifiedName( 65, 76),
-			qualifiedName( 79, 91),
-			qualifiedName( 94, 110),
-			parameterNode( 65, 112, "e"),
-			block( 116, 121));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.BLOCK, 50, 55);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 65, 76);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 79, 91);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 94, 110);
+			expected.allocateNode(NodeType.UNION_TYPE, 65, 110);
+			expected.allocateParameterDeclaration(65, 112, new ParameterAttribute("e", false, false, false));
+			expected.allocateNode(NodeType.BLOCK, 116, 121);
+			expected.allocateNode(NodeType.CATCH_CLAUSE, 58, 121);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 44, 121);
+			expected.allocateNode(NodeType.BLOCK, 40, 124);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 124);
+			expected.allocateClassDeclaration(7, 126, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 127);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -117,27 +123,31 @@ public final class MultiCatchParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 111),
-			typeDeclaration(CLASS_DECLARATION, 7, 110, "Test"),
-			methodDeclaration( 21, 108),
-			block( 40, 108),
-			tryStatement( 44, 105),
-			block( 50, 65),
-			qualifiedName( 55, 56),
-			identifier( 55, 56),
-			integerLiteral( 59, 60),
-			assignmentExpression( 55, 60),
-			catchClause( 68, 105),
-			qualifiedName( 75, 84),
-			parameterNode( 75, 86, "e"),
-			block( 90, 105),
-			qualifiedName( 95, 96),
-			identifier( 95, 96),
-			integerLiteral( 99, 100),
-			assignmentExpression( 95, 100));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 55, 56);
+			expected.allocateNode(NodeType.IDENTIFIER, 55, 56);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 59, 60);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 55, 60);
+			expected.allocateNode(NodeType.BLOCK, 50, 65);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 75, 84);
+			expected.allocateParameterDeclaration(75, 86, new ParameterAttribute("e", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 95, 96);
+			expected.allocateNode(NodeType.IDENTIFIER, 95, 96);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 99, 100);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 95, 100);
+			expected.allocateNode(NodeType.BLOCK, 90, 105);
+			expected.allocateNode(NodeType.CATCH_CLAUSE, 68, 105);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 44, 105);
+			expected.allocateNode(NodeType.BLOCK, 40, 108);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 108);
+			expected.allocateClassDeclaration(7, 110, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 111);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -161,21 +171,25 @@ public final class MultiCatchParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 114),
-			typeDeclaration(CLASS_DECLARATION, 7, 113, "Test"),
-			methodDeclaration( 21, 111),
-			block( 40, 111),
-			tryStatement( 44, 108),
-			block( 50, 55),
-			catchClause( 58, 108),
-			unionType( 71, 97),
-			qualifiedName( 71, 82),
-			qualifiedName( 85, 97),
-			parameterNode( 65, 99, "e"),
-			block( 103, 108));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.BLOCK, 50, 55);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 71, 82);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 85, 97);
+			expected.allocateNode(NodeType.UNION_TYPE, 71, 97);
+			expected.allocateParameterDeclaration(65, 99, new ParameterAttribute("e", false, true, false));
+			expected.allocateNode(NodeType.BLOCK, 103, 108);
+			expected.allocateNode(NodeType.CATCH_CLAUSE, 58, 108);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 44, 108);
+			expected.allocateNode(NodeType.BLOCK, 40, 111);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 111);
+			expected.allocateClassDeclaration(7, 113, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 114);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -199,20 +213,24 @@ public final class MultiCatchParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 125),
-			typeDeclaration(CLASS_DECLARATION, 7, 124, "Test"),
-			methodDeclaration( 21, 122),
-			block( 40, 122),
-			tryStatement( 44, 119),
-			block( 50, 55),
-			catchClause( 58, 119),
-			unionType( 65, 108),
-			qualifiedName( 65, 84),
-			qualifiedName( 87, 108),
-			parameterNode( 65, 110, "e"),
-			block( 114, 119));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.BLOCK, 50, 55);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 65, 84);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 87, 108);
+			expected.allocateNode(NodeType.UNION_TYPE, 65, 108);
+			expected.allocateParameterDeclaration(65, 110, new ParameterAttribute("e", false, false, false));
+			expected.allocateNode(NodeType.BLOCK, 114, 119);
+			expected.allocateNode(NodeType.CATCH_CLAUSE, 58, 119);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 44, 119);
+			expected.allocateNode(NodeType.BLOCK, 40, 122);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 122);
+			expected.allocateClassDeclaration(7, 124, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 125);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

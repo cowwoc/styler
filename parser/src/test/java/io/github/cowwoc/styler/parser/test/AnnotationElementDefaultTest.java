@@ -1,15 +1,13 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing annotation type element declarations with default values.
@@ -23,18 +21,22 @@ public final class AnnotationElementDefaultTest
 	@Test
 	public void shouldParseStringDefault()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Config
 			{
 				String name() default "test";
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 53),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 52, "Config"),
-			methodDeclaration( 21, 50),
-			stringLiteral( 43, 49));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.STRING_LITERAL, 43, 49);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 50);
+			expected.allocateAnnotationTypeDeclaration(0, 52, new TypeDeclarationAttribute("Config"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 53);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -44,18 +46,22 @@ public final class AnnotationElementDefaultTest
 	@Test
 	public void shouldParseIntDefault()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Priority
 			{
 				int value() default 5;
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 48),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 47, "Priority"),
-			methodDeclaration( 23, 45),
-			integerLiteral( 43, 44));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 43, 44);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 23, 45);
+			expected.allocateAnnotationTypeDeclaration(0, 47, new TypeDeclarationAttribute("Priority"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 48);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -65,18 +71,22 @@ public final class AnnotationElementDefaultTest
 	@Test
 	public void shouldParseBooleanDefault()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Enabled
 			{
 				boolean active() default true;
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 55),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 54, "Enabled"),
-			methodDeclaration( 22, 52),
-			booleanLiteral( 47, 51));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.BOOLEAN_LITERAL, 47, 51);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 22, 52);
+			expected.allocateAnnotationTypeDeclaration(0, 54, new TypeDeclarationAttribute("Enabled"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 55);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -86,18 +96,22 @@ public final class AnnotationElementDefaultTest
 	@Test
 	public void shouldParseEmptyArrayDefault()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Tags
 			{
 				String[] values() default {};
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 51),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 50, "Tags"),
-			methodDeclaration( 19, 48),
-			arrayInitializer( 45, 47));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.ARRAY_INITIALIZER, 45, 47);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 19, 48);
+			expected.allocateAnnotationTypeDeclaration(0, 50, new TypeDeclarationAttribute("Tags"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 51);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -107,20 +121,24 @@ public final class AnnotationElementDefaultTest
 	@Test
 	public void shouldParseNonEmptyArrayDefault()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Tags
 			{
 				String[] values() default {"a", "b"};
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 59),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 58, "Tags"),
-			methodDeclaration( 19, 56),
-			arrayInitializer( 45, 55),
-			stringLiteral( 46, 49),
-			stringLiteral( 51, 54));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.STRING_LITERAL, 46, 49);
+			expected.allocateNode(NodeType.STRING_LITERAL, 51, 54);
+			expected.allocateNode(NodeType.ARRAY_INITIALIZER, 45, 55);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 19, 56);
+			expected.allocateAnnotationTypeDeclaration(0, 58, new TypeDeclarationAttribute("Tags"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 59);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -130,20 +148,24 @@ public final class AnnotationElementDefaultTest
 	@Test
 	public void shouldParseClassLiteralDefault()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface TypeRef
 			{
 				Class<?> type() default Object.class;
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 62),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 61, "TypeRef"),
-			methodDeclaration( 22, 59),
-			wildcardType( 28, 29),
-			classLiteral( 46, 58),
-			identifier( 46, 52));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 28, 29);
+			expected.allocateNode(NodeType.IDENTIFIER, 46, 52);
+			expected.allocateNode(NodeType.CLASS_LITERAL, 46, 58);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 22, 59);
+			expected.allocateAnnotationTypeDeclaration(0, 61, new TypeDeclarationAttribute("TypeRef"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 62);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -153,17 +175,21 @@ public final class AnnotationElementDefaultTest
 	@Test
 	public void shouldParseElementWithoutDefault()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Required
 			{
 				String value();
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 41),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 40, "Required"),
-			methodDeclaration( 23, 38));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 23, 38);
+			expected.allocateAnnotationTypeDeclaration(0, 40, new TypeDeclarationAttribute("Required"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 41);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -173,22 +199,26 @@ public final class AnnotationElementDefaultTest
 	@Test
 	public void shouldParseMixedElementsWithAndWithoutDefaults()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Config
 			{
 				String name();
 				int priority() default 1;
 				boolean enabled() default true;
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 98),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 97, "Config"),
-			methodDeclaration( 21, 35),
-			methodDeclaration( 37, 62),
-			integerLiteral( 60, 61),
-			methodDeclaration( 64, 95),
-			booleanLiteral( 90, 94));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 35);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 60, 61);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 37, 62);
+			expected.allocateNode(NodeType.BOOLEAN_LITERAL, 90, 94);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 64, 95);
+			expected.allocateAnnotationTypeDeclaration(0, 97, new TypeDeclarationAttribute("Config"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 98);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

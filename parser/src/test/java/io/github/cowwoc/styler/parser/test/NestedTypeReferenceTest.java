@@ -1,15 +1,13 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing nested type references like {@code Outer.Inner} in field and method declarations.
@@ -29,15 +27,16 @@ public class NestedTypeReferenceTest
 			    Outer.Inner field;
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 38),
-			typeDeclaration(CLASS_DECLARATION, 0, 37, "Test"),
-			fieldDeclaration( 17, 35));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 17, 35);
+			expected.allocateClassDeclaration(0, 37, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 38);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -54,15 +53,16 @@ public class NestedTypeReferenceTest
 			    Outer.Middle.Inner field;
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 45),
-			typeDeclaration(CLASS_DECLARATION, 0, 44, "Test"),
-			fieldDeclaration( 17, 42));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 17, 42);
+			expected.allocateClassDeclaration(0, 44, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 45);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -81,18 +81,19 @@ public class NestedTypeReferenceTest
 			    }
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 73),
-			typeDeclaration(CLASS_DECLARATION, 0, 72, "Test"),
-			methodDeclaration( 17, 70),
-			block( 42, 70),
-			returnStatement( 52, 64),
-			nullLiteral( 59, 63));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.NULL_LITERAL, 59, 63);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 52, 64);
+			expected.allocateNode(NodeType.BLOCK, 42, 70);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 17, 70);
+			expected.allocateClassDeclaration(0, 72, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 73);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -108,16 +109,18 @@ public class NestedTypeReferenceTest
 			    Outer.Inner<String> field;
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 46),
-			typeDeclaration(CLASS_DECLARATION, 0, 45, "Test"),
-			fieldDeclaration( 17, 43),
-			qualifiedName( 29, 35));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 29, 35);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 29, 35);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 17, 43);
+			expected.allocateClassDeclaration(0, 45, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 46);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -133,15 +136,16 @@ public class NestedTypeReferenceTest
 			    Outer.Inner[] field;
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 40),
-			typeDeclaration(CLASS_DECLARATION, 0, 39, "Test"),
-			fieldDeclaration( 17, 37));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 17, 37);
+			expected.allocateClassDeclaration(0, 39, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 40);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -157,15 +161,16 @@ public class NestedTypeReferenceTest
 			    private static final ValueLayout.OfInt INT_LAYOUT = null;
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 77),
-			typeDeclaration(CLASS_DECLARATION, 0, 76, "Test"),
-			fieldDeclaration( 17, 74),
-			nullLiteral( 69, 73));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.NULL_LITERAL, 69, 73);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 17, 74);
+			expected.allocateClassDeclaration(0, 76, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 77);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

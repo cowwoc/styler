@@ -1,15 +1,13 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing qualified class instantiation expressions ({@code outer.new Inner()}).
@@ -23,7 +21,7 @@ public final class QualifiedInstantiationParserTest
 	@Test
 	public void testSimpleQualifiedInstantiation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -31,18 +29,21 @@ public final class QualifiedInstantiationParserTest
 					outer.new Inner();
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 52),
-			typeDeclaration(CLASS_DECLARATION, 0, 51, "Test"),
-			methodDeclaration( 14, 49),
-			block( 24, 49),
-			objectCreation( 28, 45),
-			qualifiedName( 28, 34),
-			identifier( 28, 33),
-			qualifiedName( 38, 43));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 28, 33);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 38, 43);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 28, 45);
+			expected.allocateNode(NodeType.BLOCK, 24, 49);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 49);
+			expected.allocateClassDeclaration(0, 51, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 52);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -52,7 +53,7 @@ public final class QualifiedInstantiationParserTest
 	@Test
 	public void testChainedQualifiedInstantiation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -60,20 +61,23 @@ public final class QualifiedInstantiationParserTest
 					outer.new Inner().getValue();
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 63),
-			typeDeclaration(CLASS_DECLARATION, 0, 62, "Test"),
-			methodDeclaration( 14, 60),
-			block( 24, 60),
-			methodInvocation( 28, 56),
-			objectCreation( 28, 45),
-			qualifiedName( 28, 34),
-			identifier( 28, 33),
-			qualifiedName( 38, 43),
-			fieldAccess( 28, 54));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 28, 33);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 38, 43);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 28, 45);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 28, 54);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 28, 56);
+			expected.allocateNode(NodeType.BLOCK, 24, 60);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 60);
+			expected.allocateClassDeclaration(0, 62, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 63);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -83,7 +87,7 @@ public final class QualifiedInstantiationParserTest
 	@Test
 	public void testExpressionQualifierInstantiation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -91,19 +95,22 @@ public final class QualifiedInstantiationParserTest
 					getOuter().new Inner();
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 57),
-			typeDeclaration(CLASS_DECLARATION, 0, 56, "Test"),
-			methodDeclaration( 14, 54),
-			block( 24, 54),
-			objectCreation( 28, 50),
-			methodInvocation( 28, 38),
-			qualifiedName( 28, 36),
-			identifier( 28, 36),
-			qualifiedName( 43, 48));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 36);
+			expected.allocateNode(NodeType.IDENTIFIER, 28, 36);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 28, 38);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 43, 48);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 28, 50);
+			expected.allocateNode(NodeType.BLOCK, 24, 54);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 54);
+			expected.allocateClassDeclaration(0, 56, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 57);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -113,7 +120,7 @@ public final class QualifiedInstantiationParserTest
 	@Test
 	public void testQualifiedInstantiationWithArguments()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -121,20 +128,23 @@ public final class QualifiedInstantiationParserTest
 					outer.new Inner(1, 2);
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 56),
-			typeDeclaration(CLASS_DECLARATION, 0, 55, "Test"),
-			methodDeclaration( 14, 53),
-			block( 24, 53),
-			objectCreation( 28, 49),
-			qualifiedName( 28, 34),
-			identifier( 28, 33),
-			qualifiedName( 38, 43),
-			integerLiteral( 44, 45),
-			integerLiteral( 47, 48));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 28, 33);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 38, 43);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 44, 45);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 47, 48);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 28, 49);
+			expected.allocateNode(NodeType.BLOCK, 24, 53);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 53);
+			expected.allocateClassDeclaration(0, 55, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 56);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -144,7 +154,7 @@ public final class QualifiedInstantiationParserTest
 	@Test
 	public void testNestedQualifiedInstantiation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -152,19 +162,22 @@ public final class QualifiedInstantiationParserTest
 					Outer.this.new Inner();
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 57),
-			typeDeclaration(CLASS_DECLARATION, 0, 56, "Test"),
-			methodDeclaration( 14, 54),
-			block( 24, 54),
-			objectCreation( 28, 50),
-			thisExpression( 28, 38),
-			qualifiedName( 28, 34),
-			identifier( 28, 33),
-			qualifiedName( 43, 48));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 28, 33);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 28, 38);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 43, 48);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 28, 50);
+			expected.allocateNode(NodeType.BLOCK, 24, 54);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 54);
+			expected.allocateClassDeclaration(0, 56, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 57);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -174,7 +187,7 @@ public final class QualifiedInstantiationParserTest
 	@Test
 	public void testQualifiedInstantiationWithAnonymousClass()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Test
 			{
 				void m()
@@ -184,17 +197,20 @@ public final class QualifiedInstantiationParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 60),
-			typeDeclaration(CLASS_DECLARATION, 0, 59, "Test"),
-			methodDeclaration( 14, 57),
-			block( 24, 57),
-			objectCreation( 28, 53),
-			qualifiedName( 28, 34),
-			identifier( 28, 33),
-			qualifiedName( 38, 43));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 28, 33);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 38, 43);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 28, 53);
+			expected.allocateNode(NodeType.BLOCK, 24, 57);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 57);
+			expected.allocateClassDeclaration(0, 59, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 60);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }
