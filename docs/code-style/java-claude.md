@@ -479,6 +479,42 @@ public methods)
 
 ## TIER 2 IMPORTANT - Code Review
 
+### Abstract Methods - Must Have JavaDoc
+**Detection Pattern**: `(public|protected)\s+abstract\s+\w+` without preceding `/**`
+**Violation**: Abstract method without JavaDoc documentation
+**Correct**: Abstract method with JavaDoc explaining the contract
+**Detection Commands**:
+```bash
+# Find abstract methods without JavaDoc (check 3 lines before for /**)
+grep -rn -B3 'abstract\s\+\w\+\s\+\w\+(' --include="*.java" . | \
+  grep -A3 'abstract' | grep -v '/\*\*'
+```
+**Examples**:
+```java
+// VIOLATION - Abstract method without JavaDoc
+public abstract NodeIndex allocateNode(NodeType type, int start, int end);
+
+// CORRECT - Abstract method with JavaDoc explaining contract
+/**
+ * Allocates a new node in the arena.
+ *
+ * @param type  the type of node to create
+ * @param start the start position in the source code
+ * @param end   the end position in the source code
+ * @return the index of the newly created node
+ * @throws NullPointerException     if {@code type} is null
+ * @throws IllegalArgumentException if positions are negative
+ */
+public abstract NodeIndex allocateNode(NodeType type, int start, int end);
+```
+**Rationale**: Abstract methods define contracts that implementations must fulfill. Without documentation,
+implementers must guess the expected behavior, preconditions, and postconditions. This leads to inconsistent
+implementations and bugs. Every abstract method should document:
+- What the method does (summary line)
+- Parameter requirements (@param tags)
+- Return value semantics (@return tag)
+- Exceptions that may be thrown (@throws tags)
+
 ### Exception Declaration - Unreachable Throws in Final Classes
 **Detection Pattern**: `public final class.*\{.*public.*throws.*Exception` where implementation cannot throw
 **Violation**: Method in final class declares `throws` for exceptions the implementation never throws
