@@ -1,15 +1,13 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing labeled statements.
@@ -33,22 +31,26 @@ public final class LabeledStatementParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 86),
-			typeDeclaration(CLASS_DECLARATION, 7, 85, "Test"),
-			methodDeclaration( 21, 83),
-			block( 33, 83),
-			labeledStatement( 9, 80),
-			forStatement( 44, 80),
-			integerLiteral( 57, 58),
-			binaryExpression( 60, 66),
-			identifier( 60, 61),
-			integerLiteral( 64, 66),
-			unaryExpression( 68, 71),
-			identifier( 70, 71),
-			block( 75, 80));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 57, 58);
+			expected.allocateNode(NodeType.IDENTIFIER, 60, 61);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 64, 66);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 60, 66);
+			expected.allocateNode(NodeType.IDENTIFIER, 70, 71);
+			expected.allocateNode(NodeType.UNARY_EXPRESSION, 68, 71);
+			expected.allocateNode(NodeType.BLOCK, 75, 80);
+			expected.allocateNode(NodeType.FOR_STATEMENT, 44, 80);
+			expected.allocateNode(NodeType.LABELED_STATEMENT, 9, 80);
+			expected.allocateNode(NodeType.BLOCK, 33, 83);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 83);
+			expected.allocateClassDeclaration(7, 85, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 86);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -69,21 +71,25 @@ public final class LabeledStatementParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 79),
-			typeDeclaration(CLASS_DECLARATION, 7, 78, "Test"),
-			methodDeclaration( 21, 76),
-			block( 33, 76),
-			labeledStatement( 9, 73),
-			whileStatement( 44, 73),
-			binaryExpression( 51, 56),
-			identifier( 51, 52),
-			integerLiteral( 55, 56),
-			block( 60, 73),
-			unaryExpression( 65, 68),
-			identifier( 67, 68));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.IDENTIFIER, 51, 52);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 55, 56);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 51, 56);
+			expected.allocateNode(NodeType.IDENTIFIER, 67, 68);
+			expected.allocateNode(NodeType.UNARY_EXPRESSION, 65, 68);
+			expected.allocateNode(NodeType.BLOCK, 60, 73);
+			expected.allocateNode(NodeType.WHILE_STATEMENT, 44, 73);
+			expected.allocateNode(NodeType.LABELED_STATEMENT, 9, 73);
+			expected.allocateNode(NodeType.BLOCK, 33, 76);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 76);
+			expected.allocateClassDeclaration(7, 78, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 79);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -103,22 +109,26 @@ public final class LabeledStatementParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 85),
-			typeDeclaration(CLASS_DECLARATION, 7, 84, "Test"),
-			methodDeclaration( 21, 82),
-			block( 33, 82),
-			labeledStatement( 9, 79),
-			labeledStatement( 11, 79),
-			forStatement( 43, 79),
-			integerLiteral( 56, 57),
-			binaryExpression( 59, 65),
-			identifier( 59, 60),
-			integerLiteral( 63, 65),
-			unaryExpression( 67, 70),
-			identifier( 69, 70),
-			block( 74, 79));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 56, 57);
+			expected.allocateNode(NodeType.IDENTIFIER, 59, 60);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 63, 65);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 59, 65);
+			expected.allocateNode(NodeType.IDENTIFIER, 69, 70);
+			expected.allocateNode(NodeType.UNARY_EXPRESSION, 67, 70);
+			expected.allocateNode(NodeType.BLOCK, 74, 79);
+			expected.allocateNode(NodeType.FOR_STATEMENT, 43, 79);
+			expected.allocateNode(NodeType.LABELED_STATEMENT, 11, 79);
+			expected.allocateNode(NodeType.LABELED_STATEMENT, 9, 79);
+			expected.allocateNode(NodeType.BLOCK, 33, 82);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 82);
+			expected.allocateClassDeclaration(7, 84, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 85);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

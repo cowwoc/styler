@@ -1,16 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing yield statements in switch expressions.
@@ -23,7 +21,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testSimpleYieldWithIntegerLiteral()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x)
@@ -38,23 +36,26 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 134),
-			typeDeclaration(CLASS_DECLARATION, 7, 133, "Test"),
-			methodDeclaration( 21, 131),
-			parameterNode( 36, 41, "x"),
-			block( 44, 131),
-			returnStatement( 48, 128),
-			switchExpression( 55, 127),
-			identifier( 63, 64),
-			integerLiteral( 78, 79),
-			block( 86, 106),
-			yieldStatement( 92, 101),
-			integerLiteral( 98, 100),
-			integerLiteral( 121, 122));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 64);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 78, 79);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 98, 100);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 92, 101);
+			expected.allocateNode(NodeType.BLOCK, 86, 106);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 121, 122);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 55, 127);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 48, 128);
+			expected.allocateNode(NodeType.BLOCK, 44, 131);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 131);
+			expected.allocateClassDeclaration(7, 133, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 134);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -63,7 +64,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldWithStringLiteral()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public String foo(int x)
@@ -78,23 +79,26 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 143),
-			typeDeclaration(CLASS_DECLARATION, 7, 142, "Test"),
-			methodDeclaration( 21, 140),
-			parameterNode( 39, 44, "x"),
-			block( 47, 140),
-			returnStatement( 51, 137),
-			switchExpression( 58, 136),
-			identifier( 66, 67),
-			integerLiteral( 81, 82),
-			block( 89, 114),
-			yieldStatement( 95, 109),
-			stringLiteral( 101, 108),
-			stringLiteral( 129, 131));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(39, 44, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 66, 67);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 81, 82);
+			expected.allocateNode(NodeType.STRING_LITERAL, 101, 108);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 95, 109);
+			expected.allocateNode(NodeType.BLOCK, 89, 114);
+			expected.allocateNode(NodeType.STRING_LITERAL, 129, 131);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 58, 136);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 51, 137);
+			expected.allocateNode(NodeType.BLOCK, 47, 140);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 140);
+			expected.allocateClassDeclaration(7, 142, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 143);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -103,7 +107,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldWithMethodInvocation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x)
@@ -118,24 +122,27 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 141),
-			typeDeclaration(CLASS_DECLARATION, 7, 140, "Test"),
-			methodDeclaration( 21, 138),
-			parameterNode( 36, 41, "x"),
-			block( 44, 138),
-			returnStatement( 48, 135),
-			switchExpression( 55, 134),
-			identifier( 63, 64),
-			integerLiteral( 78, 79),
-			block( 86, 113),
-			yieldStatement( 92, 108),
-			identifier( 98, 105),
-			methodInvocation( 98, 107),
-			integerLiteral( 128, 129));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 64);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 78, 79);
+			expected.allocateNode(NodeType.IDENTIFIER, 98, 105);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 98, 107);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 92, 108);
+			expected.allocateNode(NodeType.BLOCK, 86, 113);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 128, 129);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 55, 134);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 48, 135);
+			expected.allocateNode(NodeType.BLOCK, 44, 138);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 138);
+			expected.allocateClassDeclaration(7, 140, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 141);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -144,7 +151,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldWithBinaryExpression()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x)
@@ -160,26 +167,29 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 158),
-			typeDeclaration(CLASS_DECLARATION, 7, 157, "Test"),
-			methodDeclaration( 21, 155),
-			parameterNode( 36, 41, "x"),
-			block( 44, 155),
-			returnStatement( 48, 152),
-			switchExpression( 55, 151),
-			identifier( 63, 64),
-			integerLiteral( 78, 79),
-			block( 86, 130),
-			integerLiteral( 103, 104),
-			yieldStatement( 110, 125),
-			binaryExpression( 116, 124),
-			identifier( 116, 120),
-			integerLiteral( 123, 124),
-			integerLiteral( 145, 146));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 64);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 78, 79);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 103, 104);
+			expected.allocateNode(NodeType.IDENTIFIER, 116, 120);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 123, 124);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 116, 124);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 110, 125);
+			expected.allocateNode(NodeType.BLOCK, 86, 130);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 145, 146);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 55, 151);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 48, 152);
+			expected.allocateNode(NodeType.BLOCK, 44, 155);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 155);
+			expected.allocateClassDeclaration(7, 157, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 158);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -188,7 +198,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldWithNullLiteral()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public Object foo(int x)
@@ -203,23 +213,26 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 140),
-			typeDeclaration(CLASS_DECLARATION, 7, 139, "Test"),
-			methodDeclaration( 21, 137),
-			parameterNode( 39, 44, "x"),
-			block( 47, 137),
-			returnStatement( 51, 134),
-			switchExpression( 58, 133),
-			identifier( 66, 67),
-			integerLiteral( 81, 82),
-			block( 89, 111),
-			yieldStatement( 95, 106),
-			nullLiteral( 101, 105),
-			stringLiteral( 126, 128));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(39, 44, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 66, 67);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 81, 82);
+			expected.allocateNode(NodeType.NULL_LITERAL, 101, 105);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 95, 106);
+			expected.allocateNode(NodeType.BLOCK, 89, 111);
+			expected.allocateNode(NodeType.STRING_LITERAL, 126, 128);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 58, 133);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 51, 134);
+			expected.allocateNode(NodeType.BLOCK, 47, 137);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 137);
+			expected.allocateClassDeclaration(7, 139, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 140);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -228,7 +241,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldWithTernaryExpression()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x, boolean flag)
@@ -243,27 +256,30 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 160),
-			typeDeclaration(CLASS_DECLARATION, 7, 159, "Test"),
-			methodDeclaration( 21, 157),
-			parameterNode( 36, 41, "x"),
-			parameterNode( 43, 55, "flag"),
-			block( 58, 157),
-			returnStatement( 62, 154),
-			switchExpression( 69, 153),
-			identifier( 77, 78),
-			integerLiteral( 92, 93),
-			block( 100, 132),
-			yieldStatement( 106, 127),
-			conditionalExpression( 112, 126),
-			identifier( 112, 116),
-			integerLiteral( 119, 122),
-			integerLiteral( 125, 126),
-			integerLiteral( 147, 148));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateParameterDeclaration(43, 55, new ParameterAttribute("flag", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 77, 78);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 92, 93);
+			expected.allocateNode(NodeType.IDENTIFIER, 112, 116);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 119, 122);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 125, 126);
+			expected.allocateNode(NodeType.CONDITIONAL_EXPRESSION, 112, 126);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 106, 127);
+			expected.allocateNode(NodeType.BLOCK, 100, 132);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 147, 148);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 69, 153);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 62, 154);
+			expected.allocateNode(NodeType.BLOCK, 58, 157);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 157);
+			expected.allocateClassDeclaration(7, 159, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 160);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -272,7 +288,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldWithObjectCreation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public Object foo(int x)
@@ -287,24 +303,27 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 150),
-			typeDeclaration(CLASS_DECLARATION, 7, 149, "Test"),
-			methodDeclaration( 21, 147),
-			parameterNode( 39, 44, "x"),
-			block( 47, 147),
-			returnStatement( 51, 144),
-			switchExpression( 58, 143),
-			identifier( 66, 67),
-			integerLiteral( 81, 82),
-			block( 89, 119),
-			yieldStatement( 95, 114),
-			qualifiedName( 105, 111),
-			objectCreation( 101, 113),
-			nullLiteral( 134, 138));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(39, 44, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 66, 67);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 81, 82);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 105, 111);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 101, 113);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 95, 114);
+			expected.allocateNode(NodeType.BLOCK, 89, 119);
+			expected.allocateNode(NodeType.NULL_LITERAL, 134, 138);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 58, 143);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 51, 144);
+			expected.allocateNode(NodeType.BLOCK, 47, 147);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 147);
+			expected.allocateClassDeclaration(7, 149, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 150);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -313,7 +332,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldAfterMultipleStatements()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x)
@@ -331,28 +350,31 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 186),
-			typeDeclaration(CLASS_DECLARATION, 7, 185, "Test"),
-			methodDeclaration( 21, 183),
-			parameterNode( 36, 41, "x"),
-			block( 44, 183),
-			returnStatement( 48, 180),
-			switchExpression( 55, 179),
-			identifier( 63, 64),
-			integerLiteral( 78, 79),
-			block( 86, 158),
-			integerLiteral( 100, 101),
-			integerLiteral( 115, 116),
-			binaryExpression( 132, 137),
-			identifier( 132, 133),
-			identifier( 136, 137),
-			yieldStatement( 143, 153),
-			identifier( 149, 152),
-			integerLiteral( 173, 174));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 64);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 78, 79);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 100, 101);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 115, 116);
+			expected.allocateNode(NodeType.IDENTIFIER, 132, 133);
+			expected.allocateNode(NodeType.IDENTIFIER, 136, 137);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 132, 137);
+			expected.allocateNode(NodeType.IDENTIFIER, 149, 152);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 143, 153);
+			expected.allocateNode(NodeType.BLOCK, 86, 158);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 173, 174);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 55, 179);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 48, 180);
+			expected.allocateNode(NodeType.BLOCK, 44, 183);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 183);
+			expected.allocateClassDeclaration(7, 185, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 186);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -361,7 +383,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testNestedSwitchExpressionWithYield()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x, int y)
@@ -380,28 +402,31 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 199),
-			typeDeclaration(CLASS_DECLARATION, 7, 198, "Test"),
-			methodDeclaration( 21, 196),
-			parameterNode( 36, 41, "x"),
-			parameterNode( 43, 48, "y"),
-			block( 51, 196),
-			returnStatement( 55, 193),
-			switchExpression( 62, 192),
-			identifier( 70, 71),
-			integerLiteral( 85, 86),
-			switchExpression( 90, 170),
-			identifier( 98, 99),
-			integerLiteral( 115, 116),
-			block( 124, 146),
-			yieldStatement( 131, 140),
-			integerLiteral( 137, 139),
-			integerLiteral( 162, 164),
-			integerLiteral( 186, 187));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateParameterDeclaration(43, 48, new ParameterAttribute("y", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 70, 71);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 85, 86);
+			expected.allocateNode(NodeType.IDENTIFIER, 98, 99);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 115, 116);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 137, 139);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 131, 140);
+			expected.allocateNode(NodeType.BLOCK, 124, 146);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 162, 164);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 90, 170);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 186, 187);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 62, 192);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 55, 193);
+			expected.allocateNode(NodeType.BLOCK, 51, 196);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 196);
+			expected.allocateClassDeclaration(7, 198, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 199);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -410,7 +435,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldInColonStyleSwitchBlock()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x)
@@ -426,24 +451,27 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 140),
-			typeDeclaration(CLASS_DECLARATION, 7, 139, "Test"),
-			methodDeclaration( 21, 137),
-			parameterNode( 36, 41, "x"),
-			block( 44, 137),
-			returnStatement( 48, 134),
-			switchExpression( 55, 133),
-			identifier( 63, 64),
-			integerLiteral( 78, 79),
-			block( 84, 104),
-			yieldStatement( 90, 99),
-			integerLiteral( 96, 98),
-			yieldStatement( 121, 129),
-			integerLiteral( 127, 128));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 64);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 78, 79);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 96, 98);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 90, 99);
+			expected.allocateNode(NodeType.BLOCK, 84, 104);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 127, 128);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 121, 129);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 55, 133);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 48, 134);
+			expected.allocateNode(NodeType.BLOCK, 44, 137);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 137);
+			expected.allocateClassDeclaration(7, 139, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 140);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -452,7 +480,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldWithComment()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x)
@@ -467,25 +495,28 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 160),
-			typeDeclaration(CLASS_DECLARATION, 7, 159, "Test"),
-			methodDeclaration( 21, 157),
-			parameterNode( 36, 41, "x"),
-			block( 44, 157),
-			returnStatement( 48, 154),
-			switchExpression( 55, 153),
-			identifier( 63, 64),
-			integerLiteral( 78, 79),
-			block( 86, 132),
-			blockComment( 92, 105),
-			yieldStatement( 106, 127),
-			blockComment( 112, 123),
-			integerLiteral( 124, 126),
-			integerLiteral( 147, 148));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 64);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 78, 79);
+			expected.allocateNode(NodeType.BLOCK_COMMENT, 92, 105);
+			expected.allocateNode(NodeType.BLOCK_COMMENT, 112, 123);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 124, 126);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 106, 127);
+			expected.allocateNode(NodeType.BLOCK, 86, 132);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 147, 148);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 55, 153);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 48, 154);
+			expected.allocateNode(NodeType.BLOCK, 44, 157);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 157);
+			expected.allocateClassDeclaration(7, 159, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 160);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -494,7 +525,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testMultipleCasesWithYield()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x)
@@ -520,33 +551,36 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 228),
-			typeDeclaration(CLASS_DECLARATION, 7, 227, "Test"),
-			methodDeclaration( 21, 225),
-			parameterNode( 36, 41, "x"),
-			block( 44, 225),
-			returnStatement( 48, 222),
-			switchExpression( 55, 221),
-			identifier( 63, 64),
-			integerLiteral( 78, 79),
-			block( 86, 106),
-			yieldStatement( 92, 101),
-			integerLiteral( 98, 100),
-			integerLiteral( 115, 116),
-			block( 123, 143),
-			yieldStatement( 129, 138),
-			integerLiteral( 135, 137),
-			integerLiteral( 152, 153),
-			block( 160, 180),
-			yieldStatement( 166, 175),
-			integerLiteral( 172, 174),
-			block( 198, 217),
-			yieldStatement( 204, 212),
-			integerLiteral( 210, 211));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 64);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 78, 79);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 98, 100);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 92, 101);
+			expected.allocateNode(NodeType.BLOCK, 86, 106);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 115, 116);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 135, 137);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 129, 138);
+			expected.allocateNode(NodeType.BLOCK, 123, 143);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 152, 153);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 172, 174);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 166, 175);
+			expected.allocateNode(NodeType.BLOCK, 160, 180);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 210, 211);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 204, 212);
+			expected.allocateNode(NodeType.BLOCK, 198, 217);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 55, 221);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 48, 222);
+			expected.allocateNode(NodeType.BLOCK, 44, 225);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 225);
+			expected.allocateClassDeclaration(7, 227, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 228);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -555,7 +589,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldInDefaultCase()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x)
@@ -570,23 +604,26 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 134),
-			typeDeclaration(CLASS_DECLARATION, 7, 133, "Test"),
-			methodDeclaration( 21, 131),
-			parameterNode( 36, 41, "x"),
-			block( 44, 131),
-			returnStatement( 48, 128),
-			switchExpression( 55, 127),
-			identifier( 63, 64),
-			integerLiteral( 78, 79),
-			integerLiteral( 83, 85),
-			block( 104, 123),
-			yieldStatement( 110, 118),
-			integerLiteral( 116, 117));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 64);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 78, 79);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 83, 85);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 116, 117);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 110, 118);
+			expected.allocateNode(NodeType.BLOCK, 104, 123);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 55, 127);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 48, 128);
+			expected.allocateNode(NodeType.BLOCK, 44, 131);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 131);
+			expected.allocateClassDeclaration(7, 133, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 134);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -595,7 +632,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldInVariableAssignment()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void foo(int x)
@@ -610,22 +647,25 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 141),
-			typeDeclaration(CLASS_DECLARATION, 7, 140, "Test"),
-			methodDeclaration( 21, 138),
-			parameterNode( 37, 42, "x"),
-			block( 45, 138),
-			switchExpression( 62, 134),
-			identifier( 70, 71),
-			integerLiteral( 85, 86),
-			block( 93, 113),
-			yieldStatement( 99, 108),
-			integerLiteral( 105, 107),
-			integerLiteral( 128, 129));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(37, 42, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 70, 71);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 85, 86);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 105, 107);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 99, 108);
+			expected.allocateNode(NodeType.BLOCK, 93, 113);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 128, 129);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 62, 134);
+			expected.allocateNode(NodeType.BLOCK, 45, 138);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 138);
+			expected.allocateClassDeclaration(7, 140, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 141);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -634,7 +674,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldWithLambdaExpression()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public java.util.function.Supplier<Integer> foo(int x)
@@ -649,26 +689,30 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 179),
-			typeDeclaration(CLASS_DECLARATION, 7, 178, "Test"),
-			methodDeclaration( 21, 176),
-			qualifiedName( 56, 63),
-			parameterNode( 69, 74, "x"),
-			block( 77, 176),
-			returnStatement( 81, 173),
-			switchExpression( 88, 172),
-			identifier( 96, 97),
-			integerLiteral( 111, 112),
-			block( 119, 145),
-			yieldStatement( 125, 140),
-			lambdaExpression( 131, 139),
-			integerLiteral( 137, 139),
-			lambdaExpression( 160, 167),
-			integerLiteral( 166, 167));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 56, 63);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 56, 63);
+			expected.allocateParameterDeclaration(69, 74, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 96, 97);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 111, 112);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 137, 139);
+			expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 131, 139);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 125, 140);
+			expected.allocateNode(NodeType.BLOCK, 119, 145);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 166, 167);
+			expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 160, 167);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 88, 172);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 81, 173);
+			expected.allocateNode(NodeType.BLOCK, 77, 176);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 176);
+			expected.allocateClassDeclaration(7, 178, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 179);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -677,7 +721,7 @@ public final class YieldStatementParserTest
 	@Test
 	public void testYieldWithArrayAccess()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int[] arr, int x)
@@ -692,26 +736,29 @@ public final class YieldStatementParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 150),
-			typeDeclaration(CLASS_DECLARATION, 7, 149, "Test"),
-			methodDeclaration( 21, 147),
-			parameterNode( 36, 45, "arr"),
-			parameterNode( 47, 52, "x"),
-			block( 55, 147),
-			returnStatement( 59, 144),
-			switchExpression( 66, 143),
-			identifier( 74, 75),
-			integerLiteral( 89, 90),
-			block( 97, 121),
-			yieldStatement( 103, 116),
-			arrayAccess( 109, 115),
-			identifier( 109, 112),
-			integerLiteral( 113, 114),
-			unaryExpression( 136, 138),
-			integerLiteral( 137, 138));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 45, new ParameterAttribute("arr", false, false, false));
+			expected.allocateParameterDeclaration(47, 52, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 74, 75);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 89, 90);
+			expected.allocateNode(NodeType.IDENTIFIER, 109, 112);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 113, 114);
+			expected.allocateNode(NodeType.ARRAY_ACCESS, 109, 115);
+			expected.allocateNode(NodeType.YIELD_STATEMENT, 103, 116);
+			expected.allocateNode(NodeType.BLOCK, 97, 121);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 137, 138);
+			expected.allocateNode(NodeType.UNARY_EXPRESSION, 136, 138);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 66, 143);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 59, 144);
+			expected.allocateNode(NodeType.BLOCK, 55, 147);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 147);
+			expected.allocateClassDeclaration(7, 149, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 150);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

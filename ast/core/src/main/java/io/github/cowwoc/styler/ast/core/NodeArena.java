@@ -512,6 +512,68 @@ public final class NodeArena implements AutoCloseable
 	}
 
 	@Override
+	public boolean equals(Object obj)
+	{
+		if (this == obj)
+			return true;
+		if (!(obj instanceof NodeArena other))
+			return false;
+		if (nodeCount != other.nodeCount)
+			return false;
+
+		// Compare all nodes by type, start, and end positions
+		for (int i = 0; i < nodeCount; ++i)
+		{
+			NodeIndex index = new NodeIndex(i);
+			if (getType(index) != other.getType(index))
+				return false;
+			if (getStart(index) != other.getStart(index))
+				return false;
+			if (getEnd(index) != other.getEnd(index))
+				return false;
+		}
+
+		// Compare attributes
+		return attributes.equals(other.attributes);
+	}
+
+	@Override
+	public int hashCode()
+	{
+		int result = nodeCount;
+		for (int i = 0; i < nodeCount; ++i)
+		{
+			NodeIndex index = new NodeIndex(i);
+			result = 31 * result + getType(index).hashCode();
+			result = 31 * result + getStart(index);
+			result = 31 * result + getEnd(index);
+		}
+		result = 31 * result + attributes.hashCode();
+		return result;
+	}
+
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("NodeArena[nodeCount=").append(nodeCount).append(", nodes=[");
+		for (int i = 0; i < nodeCount; ++i)
+		{
+			if (i > 0)
+				sb.append(", ");
+			NodeIndex index = new NodeIndex(i);
+			sb.append(getType(index)).append('(').
+				append(getStart(index)).append(", ").
+				append(getEnd(index)).append(')');
+			NodeAttribute attr = attributes.get(index);
+			if (attr != null)
+				sb.append(" attr=").append(attr);
+		}
+		sb.append("]]");
+		return sb.toString();
+	}
+
+	@Override
 	public void close()
 	{
 		arena.close();

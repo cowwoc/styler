@@ -1,17 +1,15 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.ImportAttribute;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.PackageAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
+import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
-import java.util.Set;
-
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.importNode;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.packageNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for {@link ParserTestUtils} utility methods.
@@ -21,43 +19,48 @@ import static io.github.cowwoc.styler.parser.test.ParserTestUtils.packageNode;
 public class ParserTestUtilsTest
 {
 	/**
-	 * Verifies that semantic AST comparison works correctly.
-	 * The semantic comparison uses Set equality, so node order does not matter.
+	 * Verifies that NodeArena comparison works correctly.
+	 * The comparison uses structural equality, so allocation order matters.
 	 * Position information is included to distinguish nodes at different locations.
 	 */
 	@Test
-	public void shouldCompareSemanticAst()
+	public void shouldCompareNodeArena()
 	{
 		String source = "class Test { }";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			typeDeclaration(CLASS_DECLARATION, 0, 14, "Test"),
-			compilationUnit( 0, 14));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateClassDeclaration(0, 14, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 14);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
-	 * Verifies that semantic comparison correctly identifies different ASTs.
-	 * Two different source files should produce different semantic node sets.
+	 * Verifies that comparison correctly identifies different ASTs.
+	 * Two different source files should produce different node arenas.
 	 */
 	@Test
-	public void semanticAstShouldDistinguishDifferentSources()
+	public void nodeArenaShouldDistinguishDifferentSources()
 	{
-		Set<SemanticNode> ast1 = parseSemanticAst("class Foo { }");
-		Set<SemanticNode> ast2 = parseSemanticAst("class Bar { }");
+		try (Parser parser1 = parse("class Foo { }");
+			Parser parser2 = parse("class Bar { }"))
+		{
+			NodeArena ast1 = parser1.getArena();
+			NodeArena ast2 = parser2.getArena();
 
-		// Same structure, different type names
-		requireThat(ast1, "ast1").isNotEqualTo(ast2);
+			// Same structure, different type names
+			requireThat(ast1, "ast1").isNotEqualTo(ast2);
+		}
 	}
 
 	/**
-	 * Verifies that semantic comparison is order-independent.
-	 * The expected set can be constructed in any order and still match.
+	 * Verifies that comparison with imports works correctly.
+	 * The expected arena can be constructed with proper node allocation order.
 	 */
 	@Test
-	public void semanticAstShouldBeOrderIndependent()
+	public void nodeArenaShouldHandleImports()
 	{
 		String source = """
 			import java.util.List;
@@ -66,23 +69,23 @@ public class ParserTestUtilsTest
 			{
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		// Expected nodes listed in different order than they appear in source
-		Set<SemanticNode> expected = Set.of(
-			typeDeclaration(CLASS_DECLARATION, 24, 38, "Test"),
-			importNode(0, 22, "java.util.List", false),
-			compilationUnit( 0, 39));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateImportDeclaration(0, 22, new ImportAttribute("java.util.List", false));
+			expected.allocateClassDeclaration(24, 38, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 39);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
-	 * Verifies semantic comparison distinguishes nested classes by position.
+	 * Verifies comparison distinguishes nested classes by position.
 	 * Two classes with the same name at different positions should be distinct nodes.
 	 */
 	@Test
-	public void semanticAstShouldDistinguishNestedClasses()
+	public void nodeArenaShouldDistinguishNestedClasses()
 	{
 		String source = """
 			class Outer
@@ -90,43 +93,45 @@ public class ParserTestUtilsTest
 				class Inner { }
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 33),
-			typeDeclaration(CLASS_DECLARATION, 0, 32, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 15, 30, "Inner"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateClassDeclaration(15, 30, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(0, 32, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 33);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
-	 * Verifies semantic comparison correctly handles multiple top-level types.
+	 * Verifies comparison correctly handles multiple top-level types.
 	 * Each type should be distinguishable by both name and position.
 	 */
 	@Test
-	public void semanticAstShouldHandleMultipleTopLevelTypes()
+	public void nodeArenaShouldHandleMultipleTopLevelTypes()
 	{
 		String source = """
 			class First { }
 			class Second { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 33),
-			typeDeclaration(CLASS_DECLARATION, 0, 15, "First"),
-			typeDeclaration(CLASS_DECLARATION, 16, 32, "Second"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateClassDeclaration(0, 15, new TypeDeclarationAttribute("First"));
+			expected.allocateClassDeclaration(16, 32, new TypeDeclarationAttribute("Second"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 33);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
-	 * Verifies semantic comparison distinguishes nodes with same type but different positions.
+	 * Verifies comparison distinguishes nodes with same type but different positions.
 	 * Position information is critical for distinguishing structurally similar nodes.
 	 */
 	@Test
-	public void semanticAstShouldDistinguishByPosition()
+	public void nodeArenaShouldDistinguishByPosition()
 	{
 		String source = """
 			class Test
@@ -135,26 +140,26 @@ public class ParserTestUtilsTest
 				void bar() { }
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		// Two METHOD_DECLARATION nodes at different positions, each with its own BLOCK
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 47),
-			typeDeclaration(CLASS_DECLARATION, 0, 46, "Test"),
-			methodDeclaration( 14, 28),
-			methodDeclaration( 30, 44),
-			block( 25, 28),
-			block( 41, 44));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.BLOCK, 25, 28);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 28);
+			expected.allocateNode(NodeType.BLOCK, 41, 44);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 30, 44);
+			expected.allocateClassDeclaration(0, 46, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 47);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
-	 * Verifies semantic comparison with package, imports, and class together.
+	 * Verifies comparison with package, imports, and class together.
 	 * Tests a realistic compilation unit structure with all common elements.
 	 */
 	@Test
-	public void semanticAstShouldHandleFullCompilationUnit()
+	public void nodeArenaShouldHandleFullCompilationUnit()
 	{
 		String source = """
 			package com.example;
@@ -164,58 +169,71 @@ public class ParserTestUtilsTest
 
 			class Test { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 83),
-			packageNode( 0, 20, "com.example"),
-			qualifiedName( 8, 19),
-			importNode(22, 44, "java.util.List", false),
-			importNode(45, 66, "java.util.Map", false),
-			typeDeclaration(CLASS_DECLARATION, 68, 82, "Test"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 8, 19);
+			expected.allocatePackageDeclaration(0, 20, new PackageAttribute("com.example"));
+			expected.allocateImportDeclaration(22, 44, new ImportAttribute("java.util.List", false));
+			expected.allocateImportDeclaration(45, 66, new ImportAttribute("java.util.Map", false));
+			expected.allocateClassDeclaration(68, 82, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 83);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
-	 * Verifies semantic nodes are truly value-based (equal by content, not identity).
-	 * Two independently created nodes with same values should be equal.
+	 * Verifies that NodeArena instances are value-based (equal by content, not identity).
+	 * Two independently created arenas with same values should be equal.
 	 */
 	@Test
-	public void semanticNodeShouldBeValueBased()
+	public void nodeArenaShouldBeValueBased()
 	{
-		SemanticNode node1 = typeDeclaration(CLASS_DECLARATION, 0, 10, "Test");
-		SemanticNode node2 = typeDeclaration(CLASS_DECLARATION, 0, 10, "Test");
+		try (NodeArena arena1 = new NodeArena();
+			NodeArena arena2 = new NodeArena())
+		{
+			arena1.allocateClassDeclaration(0, 10, new TypeDeclarationAttribute("Test"));
+			arena2.allocateClassDeclaration(0, 10, new TypeDeclarationAttribute("Test"));
 
-		requireThat(node1, "node1").isEqualTo(node2);
-		requireThat(node1.hashCode(), "node1.hashCode()").isEqualTo(node2.hashCode());
+			requireThat(arena1, "arena1").isEqualTo(arena2);
+		}
 	}
 
 	/**
-	 * Verifies semantic nodes with different positions are not equal.
-	 * Even with same type and name, position difference makes nodes distinct.
+	 * Verifies that arenas with different positions are not equal.
+	 * Even with same type and name, position difference makes arenas distinct.
 	 */
 	@Test
-	public void semanticNodeShouldDifferByPosition()
+	public void nodeArenaShouldDifferByPosition()
 	{
-		SemanticNode node1 = typeDeclaration(CLASS_DECLARATION, 0, 10, "Test");
-		SemanticNode node2 = typeDeclaration(CLASS_DECLARATION, 20, 30, "Test");
+		try (NodeArena arena1 = new NodeArena();
+			NodeArena arena2 = new NodeArena())
+		{
+			arena1.allocateClassDeclaration(0, 10, new TypeDeclarationAttribute("Test"));
+			arena2.allocateClassDeclaration(20, 30, new TypeDeclarationAttribute("Test"));
 
-		requireThat(node1, "node1").isNotEqualTo(node2);
+			requireThat(arena1, "arena1").isNotEqualTo(arena2);
+		}
 	}
 
 	/**
-	 * Verifies semantic nodes with null attribute are handled correctly.
+	 * Verifies that simple nodes without attributes are handled correctly.
 	 * Type-only nodes (no name/value) should be distinguishable by position.
 	 */
 	@Test
-	public void semanticNodeShouldHandleNullAttribute()
+	public void nodeArenaShouldHandleSimpleNodes()
 	{
-		SemanticNode node1 = block( 0, 10);
-		SemanticNode node2 = block( 0, 10);
-		SemanticNode node3 = block( 5, 15);
+		try (NodeArena arena1 = new NodeArena();
+			NodeArena arena2 = new NodeArena();
+			NodeArena arena3 = new NodeArena())
+		{
+			arena1.allocateNode(NodeType.BLOCK, 0, 10);
+			arena2.allocateNode(NodeType.BLOCK, 0, 10);
+			arena3.allocateNode(NodeType.BLOCK, 5, 15);
 
-		requireThat(node1, "node1").isEqualTo(node2);
-		requireThat(node1, "node1").isNotEqualTo(node3);
+			requireThat(arena1, "arena1").isEqualTo(arena2);
+			requireThat(arena1, "arena1").isNotEqualTo(arena3);
+		}
 	}
 }

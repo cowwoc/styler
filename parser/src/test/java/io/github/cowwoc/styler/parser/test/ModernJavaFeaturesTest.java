@@ -1,18 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
+import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
-import java.util.Set;
-
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.RECORD_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing modern Java features (JDK 16+): records, sealed classes, and pattern matching.
@@ -29,14 +25,16 @@ public class ModernJavaFeaturesTest
 		String source = """
 			record Point(int x, int y) { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 31),
-			typeDeclaration(RECORD_DECLARATION, 0, 30, "Point"),
-			parameterNode( 13, 18, "x"),
-			parameterNode( 20, 25, "y"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(13, 18, new ParameterAttribute("x", false, false, false));
+			expected.allocateParameterDeclaration(20, 25, new ParameterAttribute("y", false, false, false));
+			expected.allocateRecordDeclaration(0, 30, new TypeDeclarationAttribute("Point"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 31);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 
@@ -51,14 +49,16 @@ public class ModernJavaFeaturesTest
 		String source = """
 			record Box<T>(T value) { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 27),
-			typeDeclaration(RECORD_DECLARATION, 0, 26, "Box"),
-			qualifiedName( 14, 15),
-			parameterNode( 14, 21, "value"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 14, 15);
+			expected.allocateParameterDeclaration(14, 21, new ParameterAttribute("value", false, false, false));
+			expected.allocateRecordDeclaration(0, 26, new TypeDeclarationAttribute("Box"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 27);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -72,17 +72,20 @@ public class ModernJavaFeaturesTest
 		String source = """
 			record Point(int x, int y) implements Comparable<Point> { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 60),
-			typeDeclaration(RECORD_DECLARATION, 0, 59, "Point"),
-			parameterizedType( 38, 55),
-			qualifiedName( 38, 48),
-			qualifiedName( 49, 54),
-			parameterNode( 13, 18, "x"),
-			parameterNode( 20, 25, "y"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(13, 18, new ParameterAttribute("x", false, false, false));
+			expected.allocateParameterDeclaration(20, 25, new ParameterAttribute("y", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 38, 48);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 49, 54);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 49, 54);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 38, 55);
+			expected.allocateRecordDeclaration(0, 59, new TypeDeclarationAttribute("Point"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 60);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -102,27 +105,29 @@ public class ModernJavaFeaturesTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 98),
-			typeDeclaration(RECORD_DECLARATION, 0, 97, "Point"),
-			methodDeclaration( 30, 95),
-			returnStatement( 60, 92),
-			methodInvocation( 67, 91),
-			fieldAccess( 67, 76),
-			identifier( 67, 71),
-			identifier( 77, 78),
-			identifier( 81, 82),
-			identifier( 85, 86),
-			identifier( 89, 90),
-			block( 56, 95),
-			binaryExpression( 77, 82),
-			binaryExpression( 85, 90),
-			binaryExpression( 77, 90),
-			parameterNode( 13, 18, "x"),
-			parameterNode( 20, 25, "y"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(13, 18, new ParameterAttribute("x", false, false, false));
+			expected.allocateParameterDeclaration(20, 25, new ParameterAttribute("y", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 67, 71);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 67, 76);
+			expected.allocateNode(NodeType.IDENTIFIER, 77, 78);
+			expected.allocateNode(NodeType.IDENTIFIER, 81, 82);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 77, 82);
+			expected.allocateNode(NodeType.IDENTIFIER, 85, 86);
+			expected.allocateNode(NodeType.IDENTIFIER, 89, 90);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 85, 90);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 77, 90);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 67, 91);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 60, 92);
+			expected.allocateNode(NodeType.BLOCK, 56, 95);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 30, 95);
+			expected.allocateRecordDeclaration(0, 97, new TypeDeclarationAttribute("Point"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 98);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -136,14 +141,16 @@ public class ModernJavaFeaturesTest
 		String source = """
 			sealed class Shape permits Circle, Rectangle { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 49),
-			typeDeclaration(CLASS_DECLARATION, 7, 48, "Shape"),
-			qualifiedName( 27, 33),
-			qualifiedName( 35, 44));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 27, 33);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 35, 44);
+			expected.allocateClassDeclaration(7, 48, new TypeDeclarationAttribute("Shape"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 49);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -157,14 +164,16 @@ public class ModernJavaFeaturesTest
 		String source = """
 			sealed interface Shape permits Circle, Rectangle { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 53),
-			typeDeclaration(INTERFACE_DECLARATION, 7, 52, "Shape"),
-			qualifiedName( 31, 37),
-			qualifiedName( 39, 48));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 31, 37);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 39, 48);
+			expected.allocateInterfaceDeclaration(7, 52, new TypeDeclarationAttribute("Shape"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 53);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -178,13 +187,15 @@ public class ModernJavaFeaturesTest
 		String source = """
 			non-sealed class Square extends Shape { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 42),
-			typeDeclaration(CLASS_DECLARATION, 11, 41, "Square"),
-			qualifiedName( 32, 37));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 32, 37);
+			expected.allocateClassDeclaration(11, 41, new TypeDeclarationAttribute("Square"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 42);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -204,15 +215,17 @@ public class ModernJavaFeaturesTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 64),
-			typeDeclaration(CLASS_DECLARATION, 7, 63, "Test"),
-			methodDeclaration( 21, 61),
-			block( 43, 61),
-			integerLiteral( 55, 57));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 55, 57);
+			expected.allocateNode(NodeType.BLOCK, 43, 61);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 61);
+			expected.allocateClassDeclaration(7, 63, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 64);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -226,16 +239,18 @@ public class ModernJavaFeaturesTest
 		String source = """
 			sealed class Shape permits Circle, Rectangle, Triangle, Square { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 67),
-			typeDeclaration(CLASS_DECLARATION, 7, 66, "Shape"),
-			qualifiedName( 27, 33),
-			qualifiedName( 35, 44),
-			qualifiedName( 46, 54),
-			qualifiedName( 56, 62));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 27, 33);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 35, 44);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 46, 54);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 56, 62);
+			expected.allocateClassDeclaration(7, 66, new TypeDeclarationAttribute("Shape"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 67);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -249,19 +264,21 @@ public class ModernJavaFeaturesTest
 		String source = """
 			record Person(String name, int age, String email, String phone) { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 68),
-			typeDeclaration(RECORD_DECLARATION, 0, 67, "Person"),
-			qualifiedName( 14, 20),
-			qualifiedName( 36, 42),
-			qualifiedName( 50, 56),
-			parameterNode( 14, 25, "name"),
-			parameterNode( 27, 34, "age"),
-			parameterNode( 36, 48, "email"),
-			parameterNode( 50, 62, "phone"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 14, 20);
+			expected.allocateParameterDeclaration(14, 25, new ParameterAttribute("name", false, false, false));
+			expected.allocateParameterDeclaration(27, 34, new ParameterAttribute("age", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 36, 42);
+			expected.allocateParameterDeclaration(36, 48, new ParameterAttribute("email", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 50, 56);
+			expected.allocateParameterDeclaration(50, 62, new ParameterAttribute("phone", false, false, false));
+			expected.allocateRecordDeclaration(0, 67, new TypeDeclarationAttribute("Person"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 68);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -278,14 +295,16 @@ public class ModernJavaFeaturesTest
 				record Inner(int value) { }
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 56),
-			typeDeclaration(CLASS_DECLARATION, 7, 55, "Container"),
-			typeDeclaration(RECORD_DECLARATION, 26, 53, "Inner"),
-			parameterNode( 39, 48, "value"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(39, 48, new ParameterAttribute("value", false, false, false));
+			expected.allocateRecordDeclaration(26, 53, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(7, 55, new TypeDeclarationAttribute("Container"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 56);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -299,14 +318,16 @@ public class ModernJavaFeaturesTest
 		String source = """
 			public record Point(int x, int y) { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 38),
-			typeDeclaration(RECORD_DECLARATION, 7, 37, "Point"),
-			parameterNode( 20, 25, "x"),
-			parameterNode( 27, 32, "y"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(20, 25, new ParameterAttribute("x", false, false, false));
+			expected.allocateParameterDeclaration(27, 32, new ParameterAttribute("y", false, false, false));
+			expected.allocateRecordDeclaration(7, 37, new TypeDeclarationAttribute("Point"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 38);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -320,15 +341,17 @@ public class ModernJavaFeaturesTest
 		String source = """
 			sealed class Circle extends Shape permits FilledCircle, HollowCircle { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 73),
-			typeDeclaration(CLASS_DECLARATION, 7, 72, "Circle"),
-			qualifiedName( 28, 33),
-			qualifiedName( 42, 54),
-			qualifiedName( 56, 68));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 33);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 42, 54);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 56, 68);
+			expected.allocateClassDeclaration(7, 72, new TypeDeclarationAttribute("Circle"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 73);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -342,11 +365,13 @@ public class ModernJavaFeaturesTest
 		String source = """
 			record Empty() { }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 19),
-			typeDeclaration(RECORD_DECLARATION, 0, 18, "Empty"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateRecordDeclaration(0, 18, new TypeDeclarationAttribute("Empty"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 19);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

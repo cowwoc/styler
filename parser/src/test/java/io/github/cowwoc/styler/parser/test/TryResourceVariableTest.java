@@ -1,16 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing try-with-resources variable references (JDK 9+).
@@ -36,23 +34,24 @@ public class TryResourceVariableTest
 				}
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 107),
-			typeDeclaration(CLASS_DECLARATION, 7, 106, "Test"),
-			methodDeclaration( 21, 104),
-			parameterNode( 37, 59, "resource"),
-			qualifiedName( 37, 50),
-			block( 62, 104),
-			tryStatement( 66, 101),
-			identifier( 71, 79),
-			block( 83, 101),
-			methodInvocation( 88, 96),
-			qualifiedName( 88, 94),
-			identifier( 88, 94));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 37, 50);
+			expected.allocateParameterDeclaration(37, 59, new ParameterAttribute("resource", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 71, 79);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 88, 94);
+			expected.allocateNode(NodeType.IDENTIFIER, 88, 94);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 88, 96);
+			expected.allocateNode(NodeType.BLOCK, 83, 101);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 66, 101);
+			expected.allocateNode(NodeType.BLOCK, 62, 104);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 104);
+			expected.allocateClassDeclaration(7, 106, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 107);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -74,26 +73,27 @@ public class TryResourceVariableTest
 				}
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 137),
-			typeDeclaration(CLASS_DECLARATION, 7, 136, "Test"),
-			methodDeclaration( 21, 134),
-			parameterNode( 37, 58, "stream1"),
-			qualifiedName( 37, 50),
-			parameterNode( 60, 81, "stream2"),
-			qualifiedName( 60, 73),
-			block( 84, 134),
-			tryStatement( 88, 131),
-			identifier( 93, 100),
-			identifier( 102, 109),
-			block( 113, 131),
-			methodInvocation( 118, 126),
-			qualifiedName( 118, 124),
-			identifier( 118, 124));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 37, 50);
+			expected.allocateParameterDeclaration(37, 58, new ParameterAttribute("stream1", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 60, 73);
+			expected.allocateParameterDeclaration(60, 81, new ParameterAttribute("stream2", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 93, 100);
+			expected.allocateNode(NodeType.IDENTIFIER, 102, 109);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 118, 124);
+			expected.allocateNode(NodeType.IDENTIFIER, 118, 124);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 118, 126);
+			expected.allocateNode(NodeType.BLOCK, 113, 131);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 88, 131);
+			expected.allocateNode(NodeType.BLOCK, 84, 134);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 134);
+			expected.allocateClassDeclaration(7, 136, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 137);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -115,28 +115,29 @@ public class TryResourceVariableTest
 				}
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 180),
-			typeDeclaration(CLASS_DECLARATION, 7, 179, "Test"),
-			methodDeclaration( 21, 177),
-			parameterNode( 37, 65, "existing"),
-			qualifiedName( 37, 56),
-			block( 68, 177),
-			tryStatement( 72, 174),
-			qualifiedName( 77, 99),
-			objectCreation( 105, 137),
-			qualifiedName( 109, 131),
-			nullLiteral( 132, 136),
-			identifier( 139, 147),
-			block( 151, 174),
-			methodInvocation( 156, 169),
-			fieldAccess( 156, 167),
-			qualifiedName( 156, 167),
-			identifier( 156, 158));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 37, 56);
+			expected.allocateParameterDeclaration(37, 65, new ParameterAttribute("existing", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 77, 99);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 109, 131);
+			expected.allocateNode(NodeType.NULL_LITERAL, 132, 136);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 105, 137);
+			expected.allocateNode(NodeType.IDENTIFIER, 139, 147);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 156, 167);
+			expected.allocateNode(NodeType.IDENTIFIER, 156, 158);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 156, 167);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 156, 169);
+			expected.allocateNode(NodeType.BLOCK, 151, 174);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 72, 174);
+			expected.allocateNode(NodeType.BLOCK, 68, 177);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 177);
+			expected.allocateClassDeclaration(7, 179, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 180);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -158,28 +159,29 @@ public class TryResourceVariableTest
 				}
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 180),
-			typeDeclaration(CLASS_DECLARATION, 7, 179, "Test"),
-			methodDeclaration( 21, 177),
-			parameterNode( 37, 65, "existing"),
-			qualifiedName( 37, 56),
-			block( 68, 177),
-			tryStatement( 72, 174),
-			identifier( 77, 85),
-			qualifiedName( 87, 109),
-			objectCreation( 115, 147),
-			qualifiedName( 119, 141),
-			nullLiteral( 142, 146),
-			block( 151, 174),
-			methodInvocation( 156, 169),
-			fieldAccess( 156, 167),
-			qualifiedName( 156, 167),
-			identifier( 156, 158));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 37, 56);
+			expected.allocateParameterDeclaration(37, 65, new ParameterAttribute("existing", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 77, 85);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 87, 109);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 119, 141);
+			expected.allocateNode(NodeType.NULL_LITERAL, 142, 146);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 115, 147);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 156, 167);
+			expected.allocateNode(NodeType.IDENTIFIER, 156, 158);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 156, 167);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 156, 169);
+			expected.allocateNode(NodeType.BLOCK, 151, 174);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 72, 174);
+			expected.allocateNode(NodeType.BLOCK, 68, 177);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 177);
+			expected.allocateClassDeclaration(7, 179, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 180);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -205,30 +207,31 @@ public class TryResourceVariableTest
 				}
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 155),
-			typeDeclaration(CLASS_DECLARATION, 7, 154, "Test"),
-			methodDeclaration( 21, 152),
-			parameterNode( 37, 59, "resource"),
-			qualifiedName( 37, 50),
-			block( 62, 152),
-			tryStatement( 66, 149),
-			identifier( 71, 79),
-			block( 83, 101),
-			methodInvocation( 88, 96),
-			qualifiedName( 88, 94),
-			identifier( 88, 94),
-			catchClause( 104, 149),
-			parameterNode( 111, 122, "e"),
-			qualifiedName( 111, 120),
-			block( 126, 149),
-			methodInvocation( 131, 144),
-			qualifiedName( 131, 142),
-			identifier( 131, 142));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 37, 50);
+			expected.allocateParameterDeclaration(37, 59, new ParameterAttribute("resource", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 71, 79);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 88, 94);
+			expected.allocateNode(NodeType.IDENTIFIER, 88, 94);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 88, 96);
+			expected.allocateNode(NodeType.BLOCK, 83, 101);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 111, 120);
+			expected.allocateParameterDeclaration(111, 122, new ParameterAttribute("e", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 131, 142);
+			expected.allocateNode(NodeType.IDENTIFIER, 131, 142);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 131, 144);
+			expected.allocateNode(NodeType.BLOCK, 126, 149);
+			expected.allocateNode(NodeType.CATCH_CLAUSE, 104, 149);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 66, 149);
+			expected.allocateNode(NodeType.BLOCK, 62, 152);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 152);
+			expected.allocateClassDeclaration(7, 154, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 155);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -254,28 +257,29 @@ public class TryResourceVariableTest
 				}
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 139),
-			typeDeclaration(CLASS_DECLARATION, 7, 138, "Test"),
-			methodDeclaration( 21, 136),
-			parameterNode( 37, 59, "resource"),
-			qualifiedName( 37, 50),
-			block( 62, 136),
-			tryStatement( 66, 133),
-			identifier( 71, 79),
-			block( 83, 101),
-			methodInvocation( 88, 96),
-			qualifiedName( 88, 94),
-			identifier( 88, 94),
-			finallyClause( 104, 133),
-			block( 114, 133),
-			methodInvocation( 119, 128),
-			qualifiedName( 119, 126),
-			identifier( 119, 126));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 37, 50);
+			expected.allocateParameterDeclaration(37, 59, new ParameterAttribute("resource", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 71, 79);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 88, 94);
+			expected.allocateNode(NodeType.IDENTIFIER, 88, 94);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 88, 96);
+			expected.allocateNode(NodeType.BLOCK, 83, 101);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 119, 126);
+			expected.allocateNode(NodeType.IDENTIFIER, 119, 126);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 119, 128);
+			expected.allocateNode(NodeType.BLOCK, 114, 133);
+			expected.allocateNode(NodeType.FINALLY_CLAUSE, 104, 133);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 66, 133);
+			expected.allocateNode(NodeType.BLOCK, 62, 136);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 136);
+			expected.allocateClassDeclaration(7, 138, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 139);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -297,26 +301,27 @@ public class TryResourceVariableTest
 				}
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 118),
-			typeDeclaration(CLASS_DECLARATION, 7, 117, "Test"),
-			methodDeclaration( 21, 115),
-			parameterNode( 37, 53, "r1"),
-			qualifiedName( 37, 50),
-			parameterNode( 55, 71, "r2"),
-			qualifiedName( 55, 68),
-			block( 74, 115),
-			tryStatement( 78, 112),
-			identifier( 83, 85),
-			identifier( 87, 89),
-			block( 94, 112),
-			methodInvocation( 99, 107),
-			qualifiedName( 99, 105),
-			identifier( 99, 105));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 37, 50);
+			expected.allocateParameterDeclaration(37, 53, new ParameterAttribute("r1", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 55, 68);
+			expected.allocateParameterDeclaration(55, 71, new ParameterAttribute("r2", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 83, 85);
+			expected.allocateNode(NodeType.IDENTIFIER, 87, 89);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 99, 105);
+			expected.allocateNode(NodeType.IDENTIFIER, 99, 105);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 99, 107);
+			expected.allocateNode(NodeType.BLOCK, 94, 112);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 78, 112);
+			expected.allocateNode(NodeType.BLOCK, 74, 115);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 115);
+			expected.allocateClassDeclaration(7, 117, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 118);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -338,29 +343,30 @@ public class TryResourceVariableTest
 				}
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 133),
-			typeDeclaration(CLASS_DECLARATION, 7, 132, "Test"),
-			methodDeclaration( 21, 130),
-			parameterNode( 37, 52, "a"),
-			qualifiedName( 37, 50),
-			parameterNode( 54, 69, "b"),
-			qualifiedName( 54, 67),
-			parameterNode( 71, 86, "c"),
-			qualifiedName( 71, 84),
-			block( 89, 130),
-			tryStatement( 93, 127),
-			identifier( 98, 99),
-			identifier( 101, 102),
-			identifier( 104, 105),
-			block( 109, 127),
-			methodInvocation( 114, 122),
-			qualifiedName( 114, 120),
-			identifier( 114, 120));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 37, 50);
+			expected.allocateParameterDeclaration(37, 52, new ParameterAttribute("a", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 54, 67);
+			expected.allocateParameterDeclaration(54, 69, new ParameterAttribute("b", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 71, 84);
+			expected.allocateParameterDeclaration(71, 86, new ParameterAttribute("c", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 98, 99);
+			expected.allocateNode(NodeType.IDENTIFIER, 101, 102);
+			expected.allocateNode(NodeType.IDENTIFIER, 104, 105);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 114, 120);
+			expected.allocateNode(NodeType.IDENTIFIER, 114, 120);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 114, 122);
+			expected.allocateNode(NodeType.BLOCK, 109, 127);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 93, 127);
+			expected.allocateNode(NodeType.BLOCK, 89, 130);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 130);
+			expected.allocateClassDeclaration(7, 132, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 133);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -382,26 +388,27 @@ public class TryResourceVariableTest
 				}
 			}
 			""";
-
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 159),
-			typeDeclaration(CLASS_DECLARATION, 7, 158, "Test"),
-			methodDeclaration( 21, 156),
-			parameterNode( 37, 59, "existing"),
-			qualifiedName( 37, 50),
-			block( 62, 156),
-			tryStatement( 66, 153),
-			qualifiedName( 71, 85),
-			nullLiteral( 91, 95),
-			identifier( 97, 105),
-			qualifiedName( 107, 121),
-			nullLiteral( 127, 131),
-			block( 135, 153),
-			methodInvocation( 140, 148),
-			qualifiedName( 140, 146),
-			identifier( 140, 146));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 37, 50);
+			expected.allocateParameterDeclaration(37, 59, new ParameterAttribute("existing", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 71, 85);
+			expected.allocateNode(NodeType.NULL_LITERAL, 91, 95);
+			expected.allocateNode(NodeType.IDENTIFIER, 97, 105);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 107, 121);
+			expected.allocateNode(NodeType.NULL_LITERAL, 127, 131);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 140, 146);
+			expected.allocateNode(NodeType.IDENTIFIER, 140, 146);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 140, 148);
+			expected.allocateNode(NodeType.BLOCK, 135, 153);
+			expected.allocateNode(NodeType.TRY_STATEMENT, 66, 153);
+			expected.allocateNode(NodeType.BLOCK, 62, 156);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 156);
+			expected.allocateClassDeclaration(7, 158, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 159);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

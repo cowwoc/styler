@@ -1,16 +1,13 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.ANNOTATION_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing nested annotations in annotation element values.
@@ -24,7 +21,7 @@ public final class NestedAnnotationParserTest
 	@Test
 	public void shouldParseSingleNestedAnnotation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Bar
 			{
 			}
@@ -36,18 +33,22 @@ public final class NestedAnnotationParserTest
 			class Test
 			{
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 78),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 18, "Bar"),
-			typeDeclaration(ANNOTATION_DECLARATION, 19, 51, "Foo"),
-			methodDeclaration( 37, 49),
-			annotation( 52, 62),
-			qualifiedName( 53, 56),
-			annotation( 57, 61),
-			qualifiedName( 58, 61),
-			typeDeclaration(CLASS_DECLARATION, 63, 77, "Test"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateAnnotationTypeDeclaration(0, 18, new TypeDeclarationAttribute("Bar"));
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 37, 49);
+			expected.allocateAnnotationTypeDeclaration(19, 51, new TypeDeclarationAttribute("Foo"));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 53, 56);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 58, 61);
+			expected.allocateNode(NodeType.ANNOTATION, 57, 61);
+			expected.allocateNode(NodeType.ANNOTATION, 52, 62);
+			expected.allocateClassDeclaration(63, 77, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 78);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -57,7 +58,7 @@ public final class NestedAnnotationParserTest
 	@Test
 	public void shouldParseNestedAnnotationWithValue()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Bar
 			{
 				String value();
@@ -70,20 +71,24 @@ public final class NestedAnnotationParserTest
 			class Test
 			{
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 104),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 35, "Bar"),
-			methodDeclaration( 18, 33),
-			typeDeclaration(ANNOTATION_DECLARATION, 36, 68, "Foo"),
-			methodDeclaration( 54, 66),
-			annotation( 69, 88),
-			qualifiedName( 70, 73),
-			annotation( 74, 87),
-			qualifiedName( 75, 78),
-			stringLiteral( 79, 86),
-			typeDeclaration(CLASS_DECLARATION, 89, 103, "Test"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 18, 33);
+			expected.allocateAnnotationTypeDeclaration(0, 35, new TypeDeclarationAttribute("Bar"));
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 54, 66);
+			expected.allocateAnnotationTypeDeclaration(36, 68, new TypeDeclarationAttribute("Foo"));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 70, 73);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 75, 78);
+			expected.allocateNode(NodeType.STRING_LITERAL, 79, 86);
+			expected.allocateNode(NodeType.ANNOTATION, 74, 87);
+			expected.allocateNode(NodeType.ANNOTATION, 69, 88);
+			expected.allocateClassDeclaration(89, 103, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 104);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -93,7 +98,7 @@ public final class NestedAnnotationParserTest
 	@Test
 	public void shouldParseNestedAnnotationsInArray()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Bar
 			{
 			}
@@ -108,22 +113,26 @@ public final class NestedAnnotationParserTest
 			class Test
 			{
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 107),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 18, "Bar"),
-			typeDeclaration(ANNOTATION_DECLARATION, 19, 37, "Baz"),
-			typeDeclaration(ANNOTATION_DECLARATION, 38, 72, "Foo"),
-			methodDeclaration( 56, 70),
-			annotation( 73, 91),
-			qualifiedName( 74, 77),
-			arrayInitializer( 78, 90),
-			annotation( 79, 83),
-			qualifiedName( 80, 83),
-			annotation( 85, 89),
-			qualifiedName( 86, 89),
-			typeDeclaration(CLASS_DECLARATION, 92, 106, "Test"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateAnnotationTypeDeclaration(0, 18, new TypeDeclarationAttribute("Bar"));
+			expected.allocateAnnotationTypeDeclaration(19, 37, new TypeDeclarationAttribute("Baz"));
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 56, 70);
+			expected.allocateAnnotationTypeDeclaration(38, 72, new TypeDeclarationAttribute("Foo"));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 74, 77);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 80, 83);
+			expected.allocateNode(NodeType.ANNOTATION, 79, 83);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 86, 89);
+			expected.allocateNode(NodeType.ANNOTATION, 85, 89);
+			expected.allocateNode(NodeType.ARRAY_INITIALIZER, 78, 90);
+			expected.allocateNode(NodeType.ANNOTATION, 73, 91);
+			expected.allocateClassDeclaration(92, 106, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 107);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -133,7 +142,7 @@ public final class NestedAnnotationParserTest
 	@Test
 	public void shouldParseDeeplyNestedAnnotation()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Baz
 			{
 			}
@@ -149,22 +158,26 @@ public final class NestedAnnotationParserTest
 			class Test
 			{
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 117),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 18, "Baz"),
-			typeDeclaration(ANNOTATION_DECLARATION, 19, 51, "Bar"),
-			methodDeclaration( 37, 49),
-			typeDeclaration(ANNOTATION_DECLARATION, 52, 84, "Foo"),
-			methodDeclaration( 70, 82),
-			annotation( 85, 101),
-			qualifiedName( 86, 89),
-			annotation( 90, 100),
-			qualifiedName( 91, 94),
-			annotation( 95, 99),
-			qualifiedName( 96, 99),
-			typeDeclaration(CLASS_DECLARATION, 102, 116, "Test"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateAnnotationTypeDeclaration(0, 18, new TypeDeclarationAttribute("Baz"));
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 37, 49);
+			expected.allocateAnnotationTypeDeclaration(19, 51, new TypeDeclarationAttribute("Bar"));
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 70, 82);
+			expected.allocateAnnotationTypeDeclaration(52, 84, new TypeDeclarationAttribute("Foo"));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 86, 89);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 91, 94);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 96, 99);
+			expected.allocateNode(NodeType.ANNOTATION, 95, 99);
+			expected.allocateNode(NodeType.ANNOTATION, 90, 100);
+			expected.allocateNode(NodeType.ANNOTATION, 85, 101);
+			expected.allocateClassDeclaration(102, 116, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 117);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -175,7 +188,7 @@ public final class NestedAnnotationParserTest
 	@Test
 	public void shouldParseMixedArrayElements()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Bar
 			{
 			}
@@ -187,21 +200,25 @@ public final class NestedAnnotationParserTest
 			class Test
 			{
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 99),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 18, "Bar"),
-			typeDeclaration(ANNOTATION_DECLARATION, 19, 56, "Foo"),
-			methodDeclaration( 37, 54),
-			annotation( 57, 83),
-			qualifiedName( 58, 61),
-			arrayInitializer( 62, 82),
-			annotation( 63, 67),
-			qualifiedName( 64, 67),
-			stringLiteral( 69, 77),
-			integerLiteral( 79, 81),
-			typeDeclaration(CLASS_DECLARATION, 84, 98, "Test"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateAnnotationTypeDeclaration(0, 18, new TypeDeclarationAttribute("Bar"));
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 37, 54);
+			expected.allocateAnnotationTypeDeclaration(19, 56, new TypeDeclarationAttribute("Foo"));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 58, 61);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 64, 67);
+			expected.allocateNode(NodeType.ANNOTATION, 63, 67);
+			expected.allocateNode(NodeType.STRING_LITERAL, 69, 77);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 79, 81);
+			expected.allocateNode(NodeType.ARRAY_INITIALIZER, 62, 82);
+			expected.allocateNode(NodeType.ANNOTATION, 57, 83);
+			expected.allocateClassDeclaration(84, 98, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 99);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -211,7 +228,7 @@ public final class NestedAnnotationParserTest
 	@Test
 	public void shouldParseNestedAnnotationInDefaultValue()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			@interface Bar
 			{
 			}
@@ -219,14 +236,18 @@ public final class NestedAnnotationParserTest
 			{
 				Bar value() default @Bar;
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 65),
-			typeDeclaration(ANNOTATION_DECLARATION, 0, 18, "Bar"),
-			typeDeclaration(ANNOTATION_DECLARATION, 19, 64, "Foo"),
-			methodDeclaration( 37, 62),
-			annotation( 57, 61),
-			qualifiedName( 58, 61));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateAnnotationTypeDeclaration(0, 18, new TypeDeclarationAttribute("Bar"));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 58, 61);
+			expected.allocateNode(NodeType.ANNOTATION, 57, 61);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 37, 62);
+			expected.allocateAnnotationTypeDeclaration(19, 64, new TypeDeclarationAttribute("Foo"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 65);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

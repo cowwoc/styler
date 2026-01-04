@@ -1,18 +1,16 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.ImportAttribute;
+import io.github.cowwoc.styler.ast.core.ModuleImportAttribute;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
+import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
-
-import java.util.Set;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 import static io.github.cowwoc.styler.parser.test.ParserTestUtils.assertParseFails;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.importNode;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.moduleImportNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing module import declarations (JEP 511).
@@ -33,12 +31,15 @@ public final class ModuleImportParserTest
 			{
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, source.length()),
-			moduleImportNode( 0, 24, "java.base"),
-			typeDeclaration(CLASS_DECLARATION, 26, source.length() - 1, "Test"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateModuleImportDeclaration(0, 24, new ModuleImportAttribute("java.base"));
+			expected.allocateClassDeclaration(26, source.length() - 1, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, source.length());
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -55,12 +56,15 @@ public final class ModuleImportParserTest
 			{
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, source.length()),
-			moduleImportNode( 0, 30, "com.example.app"),
-			typeDeclaration(CLASS_DECLARATION, 32, source.length() - 1, "Test"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateModuleImportDeclaration(0, 30, new ModuleImportAttribute("com.example.app"));
+			expected.allocateClassDeclaration(32, source.length() - 1, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, source.length());
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -79,14 +83,17 @@ public final class ModuleImportParserTest
 			{
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, source.length()),
-			moduleImportNode( 0, 24, "java.base"),
-			moduleImportNode( 25, 48, "java.sql"),
-			moduleImportNode( 49, 76, "java.logging"),
-			typeDeclaration(CLASS_DECLARATION, 78, source.length() - 1, "Test"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateModuleImportDeclaration(0, 24, new ModuleImportAttribute("java.base"));
+			expected.allocateModuleImportDeclaration(25, 48, new ModuleImportAttribute("java.sql"));
+			expected.allocateModuleImportDeclaration(49, 76, new ModuleImportAttribute("java.logging"));
+			expected.allocateClassDeclaration(78, source.length() - 1, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, source.length());
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -105,14 +112,17 @@ public final class ModuleImportParserTest
 			{
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, source.length()),
-			moduleImportNode( 0, 24, "java.base"),
-			importNode(25, 47, "java.util.List", false),
-			importNode(48, 69, "java.util.Map", false),
-			typeDeclaration(CLASS_DECLARATION, 71, source.length() - 1, "Test"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateModuleImportDeclaration(0, 24, new ModuleImportAttribute("java.base"));
+			expected.allocateImportDeclaration(25, 47, new ImportAttribute("java.util.List", false));
+			expected.allocateImportDeclaration(48, 69, new ImportAttribute("java.util.Map", false));
+			expected.allocateClassDeclaration(71, source.length() - 1, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, source.length());
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -131,14 +141,17 @@ public final class ModuleImportParserTest
 			{
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, source.length()),
-			moduleImportNode( 0, 24, "java.base"),
-			importNode(25, 57, "java.lang.Math.PI", true),
-			importNode(58, 91, "java.lang.Math.abs", true),
-			typeDeclaration(CLASS_DECLARATION, 93, source.length() - 1, "Test"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateModuleImportDeclaration(0, 24, new ModuleImportAttribute("java.base"));
+			expected.allocateImportDeclaration(25, 57, new ImportAttribute("java.lang.Math.PI", true));
+			expected.allocateImportDeclaration(58, 91, new ImportAttribute("java.lang.Math.abs", true));
+			expected.allocateClassDeclaration(93, source.length() - 1, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, source.length());
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -159,16 +172,19 @@ public final class ModuleImportParserTest
 			{
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, source.length()),
-			importNode(0, 22, "java.util.List", false),
-			moduleImportNode( 23, 47, "java.base"),
-			importNode(48, 80, "java.lang.Math.PI", true),
-			importNode(81, 102, "java.util.Map", false),
-			moduleImportNode( 103, 126, "java.sql"),
-			typeDeclaration(CLASS_DECLARATION, 128, source.length() - 1, "Test"));
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateImportDeclaration(0, 22, new ImportAttribute("java.util.List", false));
+			expected.allocateModuleImportDeclaration(23, 47, new ModuleImportAttribute("java.base"));
+			expected.allocateImportDeclaration(48, 80, new ImportAttribute("java.lang.Math.PI", true));
+			expected.allocateImportDeclaration(81, 102, new ImportAttribute("java.util.Map", false));
+			expected.allocateModuleImportDeclaration(103, 126, new ModuleImportAttribute("java.sql"));
+			expected.allocateClassDeclaration(128, source.length() - 1, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, source.length());
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**

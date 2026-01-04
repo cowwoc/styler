@@ -1,16 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing switch expressions with arrow syntax.
@@ -24,7 +22,7 @@ public class SwitchExpressionParserTest
 	@Test
 	public void testMultiLabelCaseWithArrow()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public boolean foo(char ch)
@@ -36,23 +34,26 @@ public class SwitchExpressionParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 139),
-			typeDeclaration(CLASS_DECLARATION, 7, 138, "Test"),
-			methodDeclaration( 21, 136),
-			parameterNode( 40, 47, "ch"),
-			block( 50, 136),
-			returnStatement( 54, 133),
-			switchExpression( 61, 132),
-			identifier( 69, 71),
-			charLiteral( 85, 88),
-			charLiteral( 90, 93),
-			charLiteral( 95, 98),
-			booleanLiteral( 102, 106),
-			booleanLiteral( 122, 127));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(40, 47, new ParameterAttribute("ch", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 69, 71);
+			expected.allocateNode(NodeType.CHAR_LITERAL, 85, 88);
+			expected.allocateNode(NodeType.CHAR_LITERAL, 90, 93);
+			expected.allocateNode(NodeType.CHAR_LITERAL, 95, 98);
+			expected.allocateNode(NodeType.BOOLEAN_LITERAL, 102, 106);
+			expected.allocateNode(NodeType.BOOLEAN_LITERAL, 122, 127);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 61, 132);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 54, 133);
+			expected.allocateNode(NodeType.BLOCK, 50, 136);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 136);
+			expected.allocateClassDeclaration(7, 138, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 139);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -62,7 +63,7 @@ public class SwitchExpressionParserTest
 	@Test
 	public void testSingleCaseWithArrow()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x)
@@ -75,23 +76,26 @@ public class SwitchExpressionParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 131),
-			typeDeclaration(CLASS_DECLARATION, 7, 130, "Test"),
-			methodDeclaration( 21, 128),
-			parameterNode( 36, 41, "x"),
-			block( 44, 128),
-			returnStatement( 48, 125),
-			switchExpression( 55, 124),
-			identifier( 63, 64),
-			integerLiteral( 78, 79),
-			integerLiteral( 83, 85),
-			integerLiteral( 95, 96),
-			integerLiteral( 100, 102),
-			integerLiteral( 118, 119));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 64);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 78, 79);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 83, 85);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 95, 96);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 100, 102);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 118, 119);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 55, 124);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 48, 125);
+			expected.allocateNode(NodeType.BLOCK, 44, 128);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 128);
+			expected.allocateClassDeclaration(7, 130, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 131);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -101,7 +105,7 @@ public class SwitchExpressionParserTest
 	@Test
 	public void testSwitchExpressionReturningStrings()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public String foo(int x)
@@ -114,23 +118,26 @@ public class SwitchExpressionParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 146),
-			typeDeclaration(CLASS_DECLARATION, 7, 145, "Test"),
-			methodDeclaration( 21, 143),
-			parameterNode( 39, 44, "x"),
-			block( 47, 143),
-			returnStatement( 51, 140),
-			switchExpression( 58, 139),
-			identifier( 66, 67),
-			integerLiteral( 81, 82),
-			stringLiteral( 86, 91),
-			integerLiteral( 101, 102),
-			stringLiteral( 106, 111),
-			stringLiteral( 127, 134));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(39, 44, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 66, 67);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 81, 82);
+			expected.allocateNode(NodeType.STRING_LITERAL, 86, 91);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 101, 102);
+			expected.allocateNode(NodeType.STRING_LITERAL, 106, 111);
+			expected.allocateNode(NodeType.STRING_LITERAL, 127, 134);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 58, 139);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 51, 140);
+			expected.allocateNode(NodeType.BLOCK, 47, 143);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 143);
+			expected.allocateClassDeclaration(7, 145, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 146);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -140,7 +147,7 @@ public class SwitchExpressionParserTest
 	@Test
 	public void testSwitchExpressionDefaultOnly()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x)
@@ -151,19 +158,22 @@ public class SwitchExpressionParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 97),
-			typeDeclaration(CLASS_DECLARATION, 7, 96, "Test"),
-			methodDeclaration( 21, 94),
-			parameterNode( 36, 41, "x"),
-			block( 44, 94),
-			returnStatement( 48, 91),
-			switchExpression( 55, 90),
-			identifier( 63, 64),
-			integerLiteral( 84, 85));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 64);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 84, 85);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 55, 90);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 48, 91);
+			expected.allocateNode(NodeType.BLOCK, 44, 94);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 94);
+			expected.allocateClassDeclaration(7, 96, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 97);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -173,7 +183,7 @@ public class SwitchExpressionParserTest
 	@Test
 	public void testSwitchExpressionWithBooleanSelector()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public String foo(boolean b)
@@ -185,22 +195,25 @@ public class SwitchExpressionParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 133),
-			typeDeclaration(CLASS_DECLARATION, 7, 132, "Test"),
-			methodDeclaration( 21, 130),
-			parameterNode( 39, 48, "b"),
-			block( 51, 130),
-			returnStatement( 55, 127),
-			switchExpression( 62, 126),
-			identifier( 70, 71),
-			booleanLiteral( 85, 89),
-			stringLiteral( 93, 98),
-			booleanLiteral( 108, 113),
-			stringLiteral( 117, 121));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(39, 48, new ParameterAttribute("b", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 70, 71);
+			expected.allocateNode(NodeType.BOOLEAN_LITERAL, 85, 89);
+			expected.allocateNode(NodeType.STRING_LITERAL, 93, 98);
+			expected.allocateNode(NodeType.BOOLEAN_LITERAL, 108, 113);
+			expected.allocateNode(NodeType.STRING_LITERAL, 117, 121);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 62, 126);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 55, 127);
+			expected.allocateNode(NodeType.BLOCK, 51, 130);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 130);
+			expected.allocateClassDeclaration(7, 132, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 133);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -210,7 +223,7 @@ public class SwitchExpressionParserTest
 	@Test
 	public void testNestedSwitchExpression()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public int foo(int x, int y)
@@ -226,26 +239,29 @@ public class SwitchExpressionParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 176),
-			typeDeclaration(CLASS_DECLARATION, 7, 175, "Test"),
-			methodDeclaration( 21, 173),
-			parameterNode( 36, 41, "x"),
-			parameterNode( 43, 48, "y"),
-			block( 51, 173),
-			returnStatement( 55, 170),
-			switchExpression( 62, 169),
-			identifier( 70, 71),
-			integerLiteral( 85, 86),
-			switchExpression( 90, 147),
-			identifier( 98, 99),
-			integerLiteral( 115, 116),
-			integerLiteral( 120, 122),
-			integerLiteral( 139, 141),
-			integerLiteral( 163, 164));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(36, 41, new ParameterAttribute("x", false, false, false));
+			expected.allocateParameterDeclaration(43, 48, new ParameterAttribute("y", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 70, 71);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 85, 86);
+			expected.allocateNode(NodeType.IDENTIFIER, 98, 99);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 115, 116);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 120, 122);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 139, 141);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 90, 147);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 163, 164);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 62, 169);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 55, 170);
+			expected.allocateNode(NodeType.BLOCK, 51, 173);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 173);
+			expected.allocateClassDeclaration(7, 175, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 176);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -255,7 +271,7 @@ public class SwitchExpressionParserTest
 	@Test
 	public void testSwitchExpressionInVariableAssignment()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void foo(int x)
@@ -267,19 +283,22 @@ public class SwitchExpressionParserTest
 					};
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 122),
-			typeDeclaration(CLASS_DECLARATION, 7, 121, "Test"),
-			methodDeclaration( 21, 119),
-			parameterNode( 37, 42, "x"),
-			block( 45, 119),
-			switchExpression( 62, 115),
-			identifier( 70, 71),
-			integerLiteral( 85, 86),
-			integerLiteral( 90, 93),
-			integerLiteral( 109, 110));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(37, 42, new ParameterAttribute("x", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 70, 71);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 85, 86);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 90, 93);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 109, 110);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 62, 115);
+			expected.allocateNode(NodeType.BLOCK, 45, 119);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 119);
+			expected.allocateClassDeclaration(7, 121, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 122);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

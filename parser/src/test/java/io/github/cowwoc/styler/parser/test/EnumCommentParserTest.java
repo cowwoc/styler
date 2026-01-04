@@ -1,17 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
+import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
-import java.util.Set;
-
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing enums with comments in constant lists.
@@ -31,15 +28,16 @@ public class EnumCommentParserTest
 				RED
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 45),
-			typeDeclaration(ENUM_DECLARATION, 7, 44, "Color"),
-			lineComment( 21, 37),
-			enumConstant( 39, 42));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.LINE_COMMENT, 21, 37);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 39, 42);
+			expected.allocateEnumDeclaration(7, 44, new TypeDeclarationAttribute("Color"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 45);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -55,15 +53,16 @@ public class EnumCommentParserTest
 				ACTIVE
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 52),
-			typeDeclaration(ENUM_DECLARATION, 7, 51, "Status"),
-			blockComment( 22, 41),
-			enumConstant( 43, 49));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.BLOCK_COMMENT, 22, 41);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 43, 49);
+			expected.allocateEnumDeclaration(7, 51, new TypeDeclarationAttribute("Status"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 52);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -81,15 +80,16 @@ public class EnumCommentParserTest
 				HIGH
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 65),
-			typeDeclaration(ENUM_DECLARATION, 7, 64, "Priority"),
-			javadocComment( 24, 56),
-			enumConstant( 58, 62));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.JAVADOC_COMMENT, 24, 56);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 58, 62);
+			expected.allocateEnumDeclaration(7, 64, new TypeDeclarationAttribute("Priority"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 65);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -107,17 +107,18 @@ public class EnumCommentParserTest
 				WEST
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 73),
-			typeDeclaration(ENUM_DECLARATION, 7, 72, "Direction"),
-			enumConstant( 25, 30),
-			lineComment( 33, 57),
-			enumConstant( 59, 63),
-			enumConstant( 66, 70));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 25, 30);
+			expected.allocateNode(NodeType.LINE_COMMENT, 33, 57);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 59, 63);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 66, 70);
+			expected.allocateEnumDeclaration(7, 72, new TypeDeclarationAttribute("Direction"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 73);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -135,17 +136,18 @@ public class EnumCommentParserTest
 				FALL
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 66),
-			typeDeclaration(ENUM_DECLARATION, 7, 65, "Season"),
-			enumConstant( 22, 28),
-			blockComment( 31, 48),
-			enumConstant( 50, 56),
-			enumConstant( 59, 63));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 22, 28);
+			expected.allocateNode(NodeType.BLOCK_COMMENT, 31, 48);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 50, 56);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 59, 63);
+			expected.allocateEnumDeclaration(7, 65, new TypeDeclarationAttribute("Season"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 66);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -163,17 +165,18 @@ public class EnumCommentParserTest
 				MEDIUM
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 73),
-			typeDeclaration(ENUM_DECLARATION, 7, 72, "Level"),
-			lineComment( 21, 37),
-			lineComment( 39, 56),
-			enumConstant( 58, 61),
-			enumConstant( 64, 70));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.LINE_COMMENT, 21, 37);
+			expected.allocateNode(NodeType.LINE_COMMENT, 39, 56);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 58, 61);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 64, 70);
+			expected.allocateEnumDeclaration(7, 72, new TypeDeclarationAttribute("Level"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 73);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -192,18 +195,19 @@ public class EnumCommentParserTest
 				SECOND
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 91),
-			typeDeclaration(ENUM_DECLARATION, 7, 90, "Type"),
-			lineComment( 20, 35),
-			javadocComment( 37, 51),
-			enumConstant( 53, 58),
-			blockComment( 61, 80),
-			enumConstant( 82, 88));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.LINE_COMMENT, 20, 35);
+			expected.allocateNode(NodeType.JAVADOC_COMMENT, 37, 51);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 53, 58);
+			expected.allocateNode(NodeType.BLOCK_COMMENT, 61, 80);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 82, 88);
+			expected.allocateEnumDeclaration(7, 90, new TypeDeclarationAttribute("Type"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 91);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -220,16 +224,17 @@ public class EnumCommentParserTest
 				;
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 49),
-			typeDeclaration(ENUM_DECLARATION, 7, 48, "Item"),
-			enumConstant( 20, 23),
-			enumConstant( 26, 29),
-			lineComment( 31, 43));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 20, 23);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 26, 29);
+			expected.allocateNode(NodeType.LINE_COMMENT, 31, 43);
+			expected.allocateEnumDeclaration(7, 48, new TypeDeclarationAttribute("Item"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 49);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -245,16 +250,17 @@ public class EnumCommentParserTest
 				NO // Final option
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 47),
-			typeDeclaration(ENUM_DECLARATION, 7, 46, "Flag"),
-			enumConstant( 20, 23),
-			enumConstant( 26, 28),
-			lineComment( 29, 44));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 20, 23);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 26, 28);
+			expected.allocateNode(NodeType.LINE_COMMENT, 29, 44);
+			expected.allocateEnumDeclaration(7, 46, new TypeDeclarationAttribute("Flag"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 47);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -276,22 +282,23 @@ public class EnumCommentParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 120),
-			typeDeclaration(ENUM_DECLARATION, 7, 119, "Operation"),
-			lineComment( 25, 49),
-			enumConstant( 51, 54),
-			enumConstant( 57, 65),
-			methodDeclaration( 69, 117),
-			parameterNode( 86, 91, "a"),
-			parameterNode( 93, 98, "b"),
-			block( 101, 117),
-			returnStatement( 105, 114),
-			integerLiteral( 112, 113));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.LINE_COMMENT, 25, 49);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 51, 54);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 57, 65);
+			expected.allocateParameterDeclaration(86, 91, new ParameterAttribute("a", false, false, false));
+			expected.allocateParameterDeclaration(93, 98, new ParameterAttribute("b", false, false, false));
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 112, 113);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 105, 114);
+			expected.allocateNode(NodeType.BLOCK, 101, 117);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 69, 117);
+			expected.allocateEnumDeclaration(7, 119, new TypeDeclarationAttribute("Operation"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 120);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -306,14 +313,15 @@ public class EnumCommentParserTest
 				// Empty enum
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 37),
-			typeDeclaration(ENUM_DECLARATION, 7, 36, "Empty"),
-			lineComment( 21, 34));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.LINE_COMMENT, 21, 34);
+			expected.allocateEnumDeclaration(7, 36, new TypeDeclarationAttribute("Empty"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 37);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -333,19 +341,20 @@ public class EnumCommentParserTest
 				BLUE
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 99),
-			typeDeclaration(ENUM_DECLARATION, 7, 98, "Color"),
-			javadocComment( 21, 37),
-			enumConstant( 39, 42),
-			javadocComment( 45, 63),
-			enumConstant( 65, 70),
-			javadocComment( 73, 90),
-			enumConstant( 92, 96));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.JAVADOC_COMMENT, 21, 37);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 39, 42);
+			expected.allocateNode(NodeType.JAVADOC_COMMENT, 45, 63);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 65, 70);
+			expected.allocateNode(NodeType.JAVADOC_COMMENT, 73, 90);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 92, 96);
+			expected.allocateEnumDeclaration(7, 98, new TypeDeclarationAttribute("Color"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 99);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -364,16 +373,17 @@ public class EnumCommentParserTest
 				}
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 82),
-			typeDeclaration(CLASS_DECLARATION, 7, 81, "Outer"),
-			typeDeclaration(ENUM_DECLARATION, 29, 79, "Inner"),
-			lineComment( 45, 68),
-			enumConstant( 71, 76));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.LINE_COMMENT, 45, 68);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 71, 76);
+			expected.allocateEnumDeclaration(29, 79, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(7, 81, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 82);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -391,17 +401,18 @@ public class EnumCommentParserTest
 				B
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 51),
-			typeDeclaration(ENUM_DECLARATION, 7, 50, "Sample"),
-			lineComment( 22, 30),
-			enumConstant( 32, 33),
-			lineComment( 36, 45),
-			enumConstant( 47, 48));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.LINE_COMMENT, 22, 30);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 32, 33);
+			expected.allocateNode(NodeType.LINE_COMMENT, 36, 45);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 47, 48);
+			expected.allocateEnumDeclaration(7, 50, new TypeDeclarationAttribute("Sample"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 51);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -421,21 +432,22 @@ public class EnumCommentParserTest
 				MARS(5.5)
 			}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit( 0, 118),
-			typeDeclaration(ENUM_DECLARATION, 7, 117, "Planet"),
-			lineComment( 22, 39),
-			enumConstant( 41, 53),
-			doubleLiteral( 49, 52),
-			blockComment( 56, 71),
-			enumConstant( 73, 84),
-			doubleLiteral( 79, 83),
-			javadocComment( 87, 104),
-			enumConstant( 106, 115),
-			doubleLiteral( 111, 114));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.LINE_COMMENT, 22, 39);
+			expected.allocateNode(NodeType.DOUBLE_LITERAL, 49, 52);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 41, 53);
+			expected.allocateNode(NodeType.BLOCK_COMMENT, 56, 71);
+			expected.allocateNode(NodeType.DOUBLE_LITERAL, 79, 83);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 73, 84);
+			expected.allocateNode(NodeType.JAVADOC_COMMENT, 87, 104);
+			expected.allocateNode(NodeType.DOUBLE_LITERAL, 111, 114);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 106, 115);
+			expected.allocateEnumDeclaration(7, 117, new TypeDeclarationAttribute("Planet"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 118);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

@@ -1,20 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
+import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
-import java.util.Set;
-
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.ENUM_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.INTERFACE_DECLARATION;
-import static io.github.cowwoc.styler.ast.core.NodeType.RECORD_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.compilationUnit;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.enumConstant;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for type declaration attribute population during parsing.
@@ -30,13 +24,15 @@ public class ParserTypeAttributeTest
 		String source = """
 			class MyClass {}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 17),
-			typeDeclaration(CLASS_DECLARATION, 0, 16, "MyClass"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateClassDeclaration(0, 16, new TypeDeclarationAttribute("MyClass"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 17);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -48,13 +44,15 @@ public class ParserTypeAttributeTest
 		String source = """
 			class MyClass {}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 17),
-			typeDeclaration(CLASS_DECLARATION, 0, 16, "MyClass"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateClassDeclaration(0, 16, new TypeDeclarationAttribute("MyClass"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 17);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -66,13 +64,15 @@ public class ParserTypeAttributeTest
 		String source = """
 			interface MyInterface {}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 25),
-			typeDeclaration(INTERFACE_DECLARATION, 0, 24, "MyInterface"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateInterfaceDeclaration(0, 24, new TypeDeclarationAttribute("MyInterface"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 25);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -84,15 +84,17 @@ public class ParserTypeAttributeTest
 		String source = """
 			enum MyEnum { A, B }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 21),
-			typeDeclaration(ENUM_DECLARATION, 0, 20, "MyEnum"),
-			enumConstant(14, 15),
-			enumConstant(17, 18));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 14, 15);
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 17, 18);
+			expected.allocateEnumDeclaration(0, 20, new TypeDeclarationAttribute("MyEnum"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 21);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -104,14 +106,16 @@ public class ParserTypeAttributeTest
 		String source = """
 			record MyRecord(int x) {}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 26),
-			typeDeclaration(RECORD_DECLARATION, 0, 25, "MyRecord"),
-			parameterNode(16, 21, "x"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateParameterDeclaration(16, 21, new ParameterAttribute("x", false, false, false));
+			expected.allocateRecordDeclaration(0, 25, new TypeDeclarationAttribute("MyRecord"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 26);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -123,14 +127,16 @@ public class ParserTypeAttributeTest
 		String source = """
 			class Outer { class Inner {} }
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 31),
-			typeDeclaration(CLASS_DECLARATION, 0, 30, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 14, 28, "Inner"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateClassDeclaration(14, 28, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(0, 30, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 31);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -142,13 +148,15 @@ public class ParserTypeAttributeTest
 		String source = """
 			class Box<T> {}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 16),
-			typeDeclaration(CLASS_DECLARATION, 0, 15, "Box"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateClassDeclaration(0, 15, new TypeDeclarationAttribute("Box"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 16);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -160,12 +168,14 @@ public class ParserTypeAttributeTest
 		String source = """
 			public abstract class MyClass {}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 33),
-			typeDeclaration(CLASS_DECLARATION, 16, 32, "MyClass"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateClassDeclaration(16, 32, new TypeDeclarationAttribute("MyClass"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 33);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

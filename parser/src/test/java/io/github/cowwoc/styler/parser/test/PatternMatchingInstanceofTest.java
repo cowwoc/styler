@@ -1,16 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
+import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeType;
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing pattern matching instanceof expressions introduced in Java 16.
@@ -24,7 +22,7 @@ public class PatternMatchingInstanceofTest
 	@Test
 	public void shouldParseBasicPatternMatchingInstanceof()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method(Object obj)
@@ -35,26 +33,30 @@ public class PatternMatchingInstanceofTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			qualifiedName( 40, 46),
-			identifier( 61, 64),
-			qualifiedName( 76, 82),
-			binaryExpression( 61, 84),
-			qualifiedName( 93, 111),
-			identifier( 93, 99),
-			fieldAccess( 93, 103),
-			fieldAccess( 93, 111),
-			identifier( 112, 113),
-			methodInvocation( 93, 114),
-			block( 88, 119),
-			ifStatement( 57, 119),
-			block( 53, 122),
-			methodDeclaration( 21, 122),
-			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 124, "Test"),
-			compilationUnit( 0, 125),
-			parameterNode( 40, 50, "obj"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 40, 46);
+			expected.allocateParameterDeclaration(40, 50, new ParameterAttribute("obj", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 61, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 76, 82);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 61, 84);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 93, 111);
+			expected.allocateNode(NodeType.IDENTIFIER, 93, 99);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 93, 103);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 93, 111);
+			expected.allocateNode(NodeType.IDENTIFIER, 112, 113);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 93, 114);
+			expected.allocateNode(NodeType.BLOCK, 88, 119);
+			expected.allocateNode(NodeType.IF_STATEMENT, 57, 119);
+			expected.allocateNode(NodeType.BLOCK, 53, 122);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 122);
+			expected.allocateClassDeclaration(7, 124, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 125);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -64,7 +66,7 @@ public class PatternMatchingInstanceofTest
 	@Test
 	public void shouldParsePatternMatchingWithGenerics()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method(Object obj)
@@ -75,30 +77,35 @@ public class PatternMatchingInstanceofTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			qualifiedName( 40, 46),
-			identifier( 61, 64),
-			parameterizedType( 76, 98),
-			qualifiedName( 76, 90),
-			qualifiedName( 91, 97),
-			binaryExpression( 61, 103),
-			qualifiedName( 112, 130),
-			identifier( 112, 118),
-			fieldAccess( 112, 122),
-			fieldAccess( 112, 130),
-			identifier( 131, 135),
-			fieldAccess( 131, 140),
-			methodInvocation( 131, 142),
-			methodInvocation( 112, 143),
-			block( 107, 148),
-			ifStatement( 57, 148),
-			block( 53, 151),
-			methodDeclaration( 21, 151),
-			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 153, "Test"),
-			compilationUnit( 0, 154),
-			parameterNode( 40, 50, "obj"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 40, 46);
+			expected.allocateParameterDeclaration(40, 50, new ParameterAttribute("obj", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 61, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 76, 90);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 91, 97);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 91, 97);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 76, 98);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 61, 103);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 112, 130);
+			expected.allocateNode(NodeType.IDENTIFIER, 112, 118);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 112, 122);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 112, 130);
+			expected.allocateNode(NodeType.IDENTIFIER, 131, 135);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 131, 140);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 131, 142);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 112, 143);
+			expected.allocateNode(NodeType.BLOCK, 107, 148);
+			expected.allocateNode(NodeType.IF_STATEMENT, 57, 148);
+			expected.allocateNode(NodeType.BLOCK, 53, 151);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 151);
+			expected.allocateClassDeclaration(7, 153, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 154);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -108,7 +115,7 @@ public class PatternMatchingInstanceofTest
 	@Test
 	public void shouldParsePatternMatchingWithNestedType()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method(Object obj)
@@ -119,28 +126,32 @@ public class PatternMatchingInstanceofTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			qualifiedName( 40, 46),
-			identifier( 61, 64),
-			qualifiedName( 76, 95),
-			binaryExpression( 61, 101),
-			qualifiedName( 110, 128),
-			identifier( 110, 116),
-			fieldAccess( 110, 120),
-			fieldAccess( 110, 128),
-			identifier( 129, 134),
-			fieldAccess( 129, 141),
-			methodInvocation( 129, 143),
-			methodInvocation( 110, 144),
-			block( 105, 149),
-			ifStatement( 57, 149),
-			block( 53, 152),
-			methodDeclaration( 21, 152),
-			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 154, "Test"),
-			compilationUnit( 0, 155),
-			parameterNode( 40, 50, "obj"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 40, 46);
+			expected.allocateParameterDeclaration(40, 50, new ParameterAttribute("obj", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 61, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 76, 95);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 61, 101);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 110, 128);
+			expected.allocateNode(NodeType.IDENTIFIER, 110, 116);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 110, 120);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 110, 128);
+			expected.allocateNode(NodeType.IDENTIFIER, 129, 134);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 129, 141);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 129, 143);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 110, 144);
+			expected.allocateNode(NodeType.BLOCK, 105, 149);
+			expected.allocateNode(NodeType.IF_STATEMENT, 57, 149);
+			expected.allocateNode(NodeType.BLOCK, 53, 152);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 152);
+			expected.allocateClassDeclaration(7, 154, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 155);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -150,7 +161,7 @@ public class PatternMatchingInstanceofTest
 	@Test
 	public void shouldParsePatternMatchingInIfStatement()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method(Object obj)
@@ -161,28 +172,32 @@ public class PatternMatchingInstanceofTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			qualifiedName( 40, 46),
-			identifier( 61, 64),
-			qualifiedName( 76, 83),
-			binaryExpression( 61, 85),
-			qualifiedName( 94, 112),
-			identifier( 94, 100),
-			fieldAccess( 94, 104),
-			fieldAccess( 94, 112),
-			identifier( 113, 114),
-			integerLiteral( 117, 118),
-			binaryExpression( 113, 118),
-			methodInvocation( 94, 119),
-			block( 89, 124),
-			ifStatement( 57, 124),
-			block( 53, 127),
-			methodDeclaration( 21, 127),
-			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 129, "Test"),
-			compilationUnit( 0, 130),
-			parameterNode( 40, 50, "obj"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 40, 46);
+			expected.allocateParameterDeclaration(40, 50, new ParameterAttribute("obj", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 61, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 76, 83);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 61, 85);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 94, 112);
+			expected.allocateNode(NodeType.IDENTIFIER, 94, 100);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 94, 104);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 94, 112);
+			expected.allocateNode(NodeType.IDENTIFIER, 113, 114);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 117, 118);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 113, 118);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 94, 119);
+			expected.allocateNode(NodeType.BLOCK, 89, 124);
+			expected.allocateNode(NodeType.IF_STATEMENT, 57, 124);
+			expected.allocateNode(NodeType.BLOCK, 53, 127);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 127);
+			expected.allocateClassDeclaration(7, 129, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 130);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -192,7 +207,7 @@ public class PatternMatchingInstanceofTest
 	@Test
 	public void shouldParsePatternMatchingInLogicalExpression()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method(Object obj)
@@ -203,32 +218,36 @@ public class PatternMatchingInstanceofTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			qualifiedName( 40, 46),
-			identifier( 61, 64),
-			qualifiedName( 76, 82),
-			binaryExpression( 61, 84),
-			identifier( 88, 89),
-			fieldAccess( 88, 96),
-			methodInvocation( 88, 98),
-			integerLiteral( 101, 102),
-			binaryExpression( 88, 102),
-			binaryExpression( 61, 102),
-			qualifiedName( 111, 129),
-			identifier( 111, 117),
-			fieldAccess( 111, 121),
-			fieldAccess( 111, 129),
-			identifier( 130, 131),
-			methodInvocation( 111, 132),
-			block( 106, 137),
-			ifStatement( 57, 137),
-			block( 53, 140),
-			methodDeclaration( 21, 140),
-			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 142, "Test"),
-			compilationUnit( 0, 143),
-			parameterNode( 40, 50, "obj"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 40, 46);
+			expected.allocateParameterDeclaration(40, 50, new ParameterAttribute("obj", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 61, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 76, 82);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 61, 84);
+			expected.allocateNode(NodeType.IDENTIFIER, 88, 89);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 88, 96);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 88, 98);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 101, 102);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 88, 102);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 61, 102);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 111, 129);
+			expected.allocateNode(NodeType.IDENTIFIER, 111, 117);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 111, 121);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 111, 129);
+			expected.allocateNode(NodeType.IDENTIFIER, 130, 131);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 111, 132);
+			expected.allocateNode(NodeType.BLOCK, 106, 137);
+			expected.allocateNode(NodeType.IF_STATEMENT, 57, 137);
+			expected.allocateNode(NodeType.BLOCK, 53, 140);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 140);
+			expected.allocateClassDeclaration(7, 142, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 143);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -238,7 +257,7 @@ public class PatternMatchingInstanceofTest
 	@Test
 	public void shouldParsePatternMatchingWithArrayType()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method(Object obj)
@@ -249,27 +268,31 @@ public class PatternMatchingInstanceofTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			qualifiedName( 40, 46),
-			identifier( 61, 64),
-			qualifiedName( 76, 82),
-			binaryExpression( 61, 88),
-			qualifiedName( 97, 115),
-			identifier( 97, 103),
-			fieldAccess( 97, 107),
-			fieldAccess( 97, 115),
-			identifier( 116, 119),
-			fieldAccess( 116, 126),
-			methodInvocation( 97, 127),
-			block( 92, 132),
-			ifStatement( 57, 132),
-			block( 53, 135),
-			methodDeclaration( 21, 135),
-			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 137, "Test"),
-			compilationUnit( 0, 138),
-			parameterNode( 40, 50, "obj"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 40, 46);
+			expected.allocateParameterDeclaration(40, 50, new ParameterAttribute("obj", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 61, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 76, 82);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 61, 88);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 97, 115);
+			expected.allocateNode(NodeType.IDENTIFIER, 97, 103);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 97, 107);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 97, 115);
+			expected.allocateNode(NodeType.IDENTIFIER, 116, 119);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 116, 126);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 97, 127);
+			expected.allocateNode(NodeType.BLOCK, 92, 132);
+			expected.allocateNode(NodeType.IF_STATEMENT, 57, 132);
+			expected.allocateNode(NodeType.BLOCK, 53, 135);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 135);
+			expected.allocateClassDeclaration(7, 137, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 138);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -279,7 +302,7 @@ public class PatternMatchingInstanceofTest
 	@Test
 	public void shouldParseNegatedPatternMatching()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method(Object obj)
@@ -290,27 +313,31 @@ public class PatternMatchingInstanceofTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			qualifiedName( 40, 46),
-			identifier( 63, 66),
-			qualifiedName( 78, 84),
-			binaryExpression( 63, 86),
-			unaryExpression( 61, 86),
-			qualifiedName( 96, 114),
-			identifier( 96, 102),
-			fieldAccess( 96, 106),
-			fieldAccess( 96, 114),
-			stringLiteral( 115, 129),
-			methodInvocation( 96, 130),
-			block( 91, 135),
-			ifStatement( 57, 135),
-			block( 53, 138),
-			methodDeclaration( 21, 138),
-			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 140, "Test"),
-			compilationUnit( 0, 141),
-			parameterNode( 40, 50, "obj"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 40, 46);
+			expected.allocateParameterDeclaration(40, 50, new ParameterAttribute("obj", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 66);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 78, 84);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 63, 86);
+			expected.allocateNode(NodeType.UNARY_EXPRESSION, 61, 86);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 96, 114);
+			expected.allocateNode(NodeType.IDENTIFIER, 96, 102);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 96, 106);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 96, 114);
+			expected.allocateNode(NodeType.STRING_LITERAL, 115, 129);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 96, 130);
+			expected.allocateNode(NodeType.BLOCK, 91, 135);
+			expected.allocateNode(NodeType.IF_STATEMENT, 57, 135);
+			expected.allocateNode(NodeType.BLOCK, 53, 138);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 138);
+			expected.allocateClassDeclaration(7, 140, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 141);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -320,7 +347,7 @@ public class PatternMatchingInstanceofTest
 	@Test
 	public void shouldParsePatternMatchingInTernary()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method(Object obj)
@@ -329,28 +356,32 @@ public class PatternMatchingInstanceofTest
 					System.out.println(result);
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			qualifiedName( 40, 46),
-			qualifiedName( 57, 63),
-			identifier( 73, 76),
-			qualifiedName( 88, 94),
-			binaryExpression( 73, 96),
-			identifier( 99, 100),
-			stringLiteral( 103, 112),
-			conditionalExpression( 73, 112),
-			qualifiedName( 116, 134),
-			identifier( 116, 122),
-			fieldAccess( 116, 126),
-			fieldAccess( 116, 134),
-			identifier( 135, 141),
-			methodInvocation( 116, 142),
-			block( 53, 146),
-			methodDeclaration( 21, 146),
-			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 148, "Test"),
-			compilationUnit( 0, 149),
-			parameterNode( 40, 50, "obj"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 40, 46);
+			expected.allocateParameterDeclaration(40, 50, new ParameterAttribute("obj", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 57, 63);
+			expected.allocateNode(NodeType.IDENTIFIER, 73, 76);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 88, 94);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 73, 96);
+			expected.allocateNode(NodeType.IDENTIFIER, 99, 100);
+			expected.allocateNode(NodeType.STRING_LITERAL, 103, 112);
+			expected.allocateNode(NodeType.CONDITIONAL_EXPRESSION, 73, 112);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 116, 134);
+			expected.allocateNode(NodeType.IDENTIFIER, 116, 122);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 116, 126);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 116, 134);
+			expected.allocateNode(NodeType.IDENTIFIER, 135, 141);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 116, 142);
+			expected.allocateNode(NodeType.BLOCK, 53, 146);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 146);
+			expected.allocateClassDeclaration(7, 148, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 149);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -360,7 +391,7 @@ public class PatternMatchingInstanceofTest
 	@Test
 	public void shouldParseMultiplePatternMatchingInstanceof()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method(Object obj1, Object obj2)
@@ -371,34 +402,38 @@ public class PatternMatchingInstanceofTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			qualifiedName( 40, 46),
-			qualifiedName( 53, 59),
-			identifier( 75, 79),
-			qualifiedName( 91, 97),
-			binaryExpression( 75, 99),
-			identifier( 103, 107),
-			qualifiedName( 119, 126),
-			binaryExpression( 103, 128),
-			binaryExpression( 75, 128),
-			qualifiedName( 137, 155),
-			identifier( 137, 143),
-			fieldAccess( 137, 147),
-			fieldAccess( 137, 155),
-			identifier( 156, 157),
-			identifier( 160, 161),
-			binaryExpression( 156, 161),
-			methodInvocation( 137, 162),
-			block( 132, 167),
-			ifStatement( 71, 167),
-			block( 67, 170),
-			methodDeclaration( 21, 170),
-			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 172, "Test"),
-			compilationUnit( 0, 173),
-			parameterNode( 40, 51, "obj1"),
-			parameterNode( 53, 64, "obj2"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 40, 46);
+			expected.allocateParameterDeclaration(40, 51, new ParameterAttribute("obj1", false, false, false));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 53, 59);
+			expected.allocateParameterDeclaration(53, 64, new ParameterAttribute("obj2", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 75, 79);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 91, 97);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 75, 99);
+			expected.allocateNode(NodeType.IDENTIFIER, 103, 107);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 119, 126);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 103, 128);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 75, 128);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 137, 155);
+			expected.allocateNode(NodeType.IDENTIFIER, 137, 143);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 137, 147);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 137, 155);
+			expected.allocateNode(NodeType.IDENTIFIER, 156, 157);
+			expected.allocateNode(NodeType.IDENTIFIER, 160, 161);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 156, 161);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 137, 162);
+			expected.allocateNode(NodeType.BLOCK, 132, 167);
+			expected.allocateNode(NodeType.IF_STATEMENT, 71, 167);
+			expected.allocateNode(NodeType.BLOCK, 67, 170);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 170);
+			expected.allocateClassDeclaration(7, 172, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 173);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -408,7 +443,7 @@ public class PatternMatchingInstanceofTest
 	@Test
 	public void shouldParseTraditionalInstanceof()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method(Object obj)
@@ -419,26 +454,30 @@ public class PatternMatchingInstanceofTest
 					}
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			qualifiedName( 40, 46),
-			identifier( 61, 64),
-			qualifiedName( 76, 82),
-			binaryExpression( 61, 82),
-			qualifiedName( 91, 109),
-			identifier( 91, 97),
-			fieldAccess( 91, 101),
-			fieldAccess( 91, 109),
-			stringLiteral( 110, 125),
-			methodInvocation( 91, 126),
-			block( 86, 131),
-			ifStatement( 57, 131),
-			block( 53, 134),
-			methodDeclaration( 21, 134),
-			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 136, "Test"),
-			compilationUnit( 0, 137),
-			parameterNode( 40, 50, "obj"));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 40, 46);
+			expected.allocateParameterDeclaration(40, 50, new ParameterAttribute("obj", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 61, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 76, 82);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 61, 82);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 91, 109);
+			expected.allocateNode(NodeType.IDENTIFIER, 91, 97);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 91, 101);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 91, 109);
+			expected.allocateNode(NodeType.STRING_LITERAL, 110, 125);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 91, 126);
+			expected.allocateNode(NodeType.BLOCK, 86, 131);
+			expected.allocateNode(NodeType.IF_STATEMENT, 57, 131);
+			expected.allocateNode(NodeType.BLOCK, 53, 134);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 134);
+			expected.allocateClassDeclaration(7, 136, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 137);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -448,7 +487,7 @@ public class PatternMatchingInstanceofTest
 	@Test
 	public void shouldParsePatternMatchingInWhileLoop()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			public class Test
 			{
 				public void method()
@@ -465,35 +504,39 @@ public class PatternMatchingInstanceofTest
 					return null;
 				}
 			}
-			""");
-		Set<SemanticNode> expected = Set.of(
-			qualifiedName( 47, 53),
-			identifier( 60, 69),
-			methodInvocation( 60, 71),
-			identifier( 82, 85),
-			qualifiedName( 97, 103),
-			binaryExpression( 82, 105),
-			qualifiedName( 114, 132),
-			identifier( 114, 120),
-			fieldAccess( 114, 124),
-			fieldAccess( 114, 132),
-			identifier( 133, 134),
-			methodInvocation( 114, 135),
-			qualifiedName( 140, 143),
-			identifier( 140, 143),
-			identifier( 146, 155),
-			methodInvocation( 146, 157),
-			assignmentExpression( 140, 157),
-			block( 109, 162),
-			whileStatement( 75, 162),
-			block( 43, 165),
-			methodDeclaration( 21, 165),
-			nullLiteral( 206, 210),
-			returnStatement( 199, 211),
-			block( 195, 214),
-			methodDeclaration( 167, 214),
-			typeDeclaration(NodeType.CLASS_DECLARATION, 7, 216, "Test"),
-			compilationUnit( 0, 217));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 47, 53);
+			expected.allocateNode(NodeType.IDENTIFIER, 60, 69);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 60, 71);
+			expected.allocateNode(NodeType.IDENTIFIER, 82, 85);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 97, 103);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 82, 105);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 114, 132);
+			expected.allocateNode(NodeType.IDENTIFIER, 114, 120);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 114, 124);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 114, 132);
+			expected.allocateNode(NodeType.IDENTIFIER, 133, 134);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 114, 135);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 140, 143);
+			expected.allocateNode(NodeType.IDENTIFIER, 140, 143);
+			expected.allocateNode(NodeType.IDENTIFIER, 146, 155);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 146, 157);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 140, 157);
+			expected.allocateNode(NodeType.BLOCK, 109, 162);
+			expected.allocateNode(NodeType.WHILE_STATEMENT, 75, 162);
+			expected.allocateNode(NodeType.BLOCK, 43, 165);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 165);
+			expected.allocateNode(NodeType.NULL_LITERAL, 206, 210);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 199, 211);
+			expected.allocateNode(NodeType.BLOCK, 195, 214);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 167, 214);
+			expected.allocateClassDeclaration(7, 216, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 217);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

@@ -1,17 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.PackageAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
+import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
-import java.util.Set;
-
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.compilationUnit;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.packageNode;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.qualifiedName;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for package declaration attribute population during parsing.
@@ -27,15 +24,17 @@ public class ParserPackageAttributeTest
 		String source = """
 			package com.example; class Test {}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 35),
-			packageNode(0, 20, "com.example"),
-			qualifiedName(8, 19),
-			typeDeclaration(CLASS_DECLARATION, 21, 34, "Test"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 8, 19);
+			expected.allocatePackageDeclaration(0, 20, new PackageAttribute("com.example"));
+			expected.allocateClassDeclaration(21, 34, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 35);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -47,15 +46,18 @@ public class ParserPackageAttributeTest
 		String source = """
 			package io.github.cowwoc.styler.formatter.internal; class Test {}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 66),
-			packageNode(0, 51, "io.github.cowwoc.styler.formatter.internal"),
-			qualifiedName(8, 50),
-			typeDeclaration(CLASS_DECLARATION, 52, 65, "Test"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 8, 50);
+			expected.allocatePackageDeclaration(0, 51,
+				new PackageAttribute("io.github.cowwoc.styler.formatter.internal"));
+			expected.allocateClassDeclaration(52, 65, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 66);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -67,15 +69,17 @@ public class ParserPackageAttributeTest
 		String source = """
 			package utils; class Test {}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 29),
-			packageNode(0, 14, "utils"),
-			qualifiedName(8, 13),
-			typeDeclaration(CLASS_DECLARATION, 15, 28, "Test"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 8, 13);
+			expected.allocatePackageDeclaration(0, 14, new PackageAttribute("utils"));
+			expected.allocateClassDeclaration(15, 28, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 29);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -87,12 +91,14 @@ public class ParserPackageAttributeTest
 		String source = """
 			class Test {}
 			""";
-		Set<SemanticNode> actual = parseSemanticAst(source);
-
-		Set<SemanticNode> expected = Set.of(
-			compilationUnit(0, 14),
-			typeDeclaration(CLASS_DECLARATION, 0, 13, "Test"));
-
-		requireThat(actual, "actual").isEqualTo(expected);
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Parser allocates nodes in post-order (children before parents)
+			expected.allocateClassDeclaration(0, 13, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 14);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }

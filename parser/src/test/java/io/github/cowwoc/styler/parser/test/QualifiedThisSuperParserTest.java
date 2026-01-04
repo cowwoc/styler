@@ -1,16 +1,14 @@
 package io.github.cowwoc.styler.parser.test;
 
-import io.github.cowwoc.styler.parser.test.ParserTestUtils.SemanticNode;
+import io.github.cowwoc.styler.ast.core.NodeArena;
+import io.github.cowwoc.styler.ast.core.NodeType;
+import io.github.cowwoc.styler.ast.core.ParameterAttribute;
+import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
-
-import java.util.Set;
+import io.github.cowwoc.styler.parser.Parser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parseSemanticAst;
-import static io.github.cowwoc.styler.ast.core.NodeType.CLASS_DECLARATION;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.*;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.typeDeclaration;
-import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parameterNode;
+import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
 
 /**
  * Tests for parsing qualified {@code this} and {@code super} expressions.
@@ -24,7 +22,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testSimpleQualifiedThis()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Outer
 			{
 				class Inner
@@ -35,18 +33,21 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			block( 48, 81),
-			typeDeclaration(CLASS_DECLARATION, 0, 86, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 15, 84, "Inner"),
-			compilationUnit( 0, 87),
-			identifier( 66, 71),
-			methodDeclaration( 32, 81),
-			qualifiedName( 53, 59),
-			thisExpression( 66, 76));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 53, 59);
+			expected.allocateNode(NodeType.IDENTIFIER, 66, 71);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 66, 76);
+			expected.allocateNode(NodeType.BLOCK, 48, 81);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 32, 81);
+			expected.allocateClassDeclaration(15, 84, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(0, 86, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 87);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -56,7 +57,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testSimpleQualifiedSuper()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Parent
 			{
 				void helper()
@@ -74,24 +75,27 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			block( 102, 132),
-			block( 31, 35),
-			typeDeclaration(CLASS_DECLARATION, 0, 37, "Parent"),
-			typeDeclaration(CLASS_DECLARATION, 39, 137, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 69, 135, "Inner"),
-			compilationUnit( 0, 138),
-			fieldAccess( 107, 125),
-			identifier( 107, 112),
-			methodDeclaration( 16, 35),
-			methodDeclaration( 86, 132),
-			methodInvocation( 107, 127),
-			qualifiedName( 107, 113),
-			qualifiedName( 59, 65),
-			superExpression( 107, 118));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.BLOCK, 31, 35);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 16, 35);
+			expected.allocateClassDeclaration(0, 37, new TypeDeclarationAttribute("Parent"));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 59, 65);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 107, 113);
+			expected.allocateNode(NodeType.IDENTIFIER, 107, 112);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 107, 118);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 107, 125);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 107, 127);
+			expected.allocateNode(NodeType.BLOCK, 102, 132);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 86, 132);
+			expected.allocateClassDeclaration(69, 135, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(39, 137, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 138);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -101,7 +105,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testNestedQualifiedThis()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Outer
 			{
 				class Middle
@@ -115,19 +119,22 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			block( 69, 105),
-			typeDeclaration(CLASS_DECLARATION, 0, 114, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 15, 112, "Middle"),
-			typeDeclaration(CLASS_DECLARATION, 33, 109, "Inner"),
-			compilationUnit( 0, 115),
-			identifier( 88, 94),
-			methodDeclaration( 52, 105),
-			qualifiedName( 75, 81),
-			thisExpression( 88, 99));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 75, 81);
+			expected.allocateNode(NodeType.IDENTIFIER, 88, 94);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 88, 99);
+			expected.allocateNode(NodeType.BLOCK, 69, 105);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 52, 105);
+			expected.allocateClassDeclaration(33, 109, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(15, 112, new TypeDeclarationAttribute("Middle"));
+			expected.allocateClassDeclaration(0, 114, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 115);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -137,7 +144,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testQualifiedThisInAssignment()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Outer
 			{
 				class Inner
@@ -150,21 +157,24 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			assignmentExpression( 70, 88),
-			block( 65, 93),
-			typeDeclaration(CLASS_DECLARATION, 0, 98, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 15, 96, "Inner"),
-			compilationUnit( 0, 99),
-			fieldDeclaration( 32, 45),
-			identifier( 70, 75),
-			identifier( 78, 83),
-			methodDeclaration( 49, 93),
-			qualifiedName( 70, 75),
-			thisExpression( 78, 88));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 32, 45);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 70, 75);
+			expected.allocateNode(NodeType.IDENTIFIER, 70, 75);
+			expected.allocateNode(NodeType.IDENTIFIER, 78, 83);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 78, 88);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 70, 88);
+			expected.allocateNode(NodeType.BLOCK, 65, 93);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 49, 93);
+			expected.allocateClassDeclaration(15, 96, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(0, 98, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 99);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -174,7 +184,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testQualifiedSuperMethodCall()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Parent
 			{
 				void doWork()
@@ -192,24 +202,27 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			block( 102, 132),
-			block( 31, 35),
-			typeDeclaration(CLASS_DECLARATION, 0, 37, "Parent"),
-			typeDeclaration(CLASS_DECLARATION, 39, 137, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 69, 135, "Inner"),
-			compilationUnit( 0, 138),
-			fieldAccess( 107, 125),
-			identifier( 107, 112),
-			methodDeclaration( 16, 35),
-			methodDeclaration( 86, 132),
-			methodInvocation( 107, 127),
-			qualifiedName( 107, 113),
-			qualifiedName( 59, 65),
-			superExpression( 107, 118));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.BLOCK, 31, 35);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 16, 35);
+			expected.allocateClassDeclaration(0, 37, new TypeDeclarationAttribute("Parent"));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 59, 65);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 107, 113);
+			expected.allocateNode(NodeType.IDENTIFIER, 107, 112);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 107, 118);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 107, 125);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 107, 127);
+			expected.allocateNode(NodeType.BLOCK, 102, 132);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 86, 132);
+			expected.allocateClassDeclaration(69, 135, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(39, 137, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 138);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -219,7 +232,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testQualifiedSuperFieldAccess()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Parent
 			{
 				int value = 42;
@@ -235,23 +248,26 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			block( 99, 133),
-			typeDeclaration(CLASS_DECLARATION, 0, 33, "Parent"),
-			typeDeclaration(CLASS_DECLARATION, 35, 138, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 65, 136, "Inner"),
-			compilationUnit( 0, 139),
-			fieldAccess( 111, 128),
-			fieldDeclaration( 16, 31),
-			identifier( 111, 116),
-			integerLiteral( 28, 30),
-			methodDeclaration( 82, 133),
-			qualifiedName( 55, 61),
-			returnStatement( 104, 129),
-			superExpression( 111, 122));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 28, 30);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 16, 31);
+			expected.allocateClassDeclaration(0, 33, new TypeDeclarationAttribute("Parent"));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 55, 61);
+			expected.allocateNode(NodeType.IDENTIFIER, 111, 116);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 111, 122);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 111, 128);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 104, 129);
+			expected.allocateNode(NodeType.BLOCK, 99, 133);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 82, 133);
+			expected.allocateClassDeclaration(65, 136, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(35, 138, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 139);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -261,7 +277,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testQualifiedThisInReturnStatement()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Outer
 			{
 				class Inner
@@ -272,18 +288,21 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			block( 51, 78),
-			typeDeclaration(CLASS_DECLARATION, 0, 83, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 15, 81, "Inner"),
-			compilationUnit( 0, 84),
-			identifier( 63, 68),
-			methodDeclaration( 32, 78),
-			returnStatement( 56, 74),
-			thisExpression( 63, 73));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.IDENTIFIER, 63, 68);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 63, 73);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 56, 74);
+			expected.allocateNode(NodeType.BLOCK, 51, 78);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 32, 78);
+			expected.allocateClassDeclaration(15, 81, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(0, 83, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 84);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -293,7 +312,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testQualifiedThisAsMethodArgument()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Outer
 			{
 				void accept(Object obj)
@@ -308,24 +327,27 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			block( 40, 44),
-			block( 80, 108),
-			typeDeclaration(CLASS_DECLARATION, 0, 113, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 47, 111, "Inner"),
-			compilationUnit( 0, 114),
-			identifier( 85, 91),
-			identifier( 92, 97),
-			methodDeclaration( 15, 44),
-			methodDeclaration( 64, 108),
-			methodInvocation( 85, 103),
-			parameterNode( 27, 37, "obj"),
-			qualifiedName( 27, 33),
-			qualifiedName( 85, 91),
-			thisExpression( 92, 102));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 27, 33);
+			expected.allocateParameterDeclaration(27, 37, new ParameterAttribute("obj", false, false, false));
+			expected.allocateNode(NodeType.BLOCK, 40, 44);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 15, 44);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 85, 91);
+			expected.allocateNode(NodeType.IDENTIFIER, 85, 91);
+			expected.allocateNode(NodeType.IDENTIFIER, 92, 97);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 92, 102);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 85, 103);
+			expected.allocateNode(NodeType.BLOCK, 80, 108);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 64, 108);
+			expected.allocateClassDeclaration(47, 111, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(0, 113, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 114);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -335,7 +357,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testChainedQualifiedSuperMethodCall()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Parent
 			{
 			}
@@ -350,22 +372,25 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			block( 83, 122),
-			typeDeclaration(CLASS_DECLARATION, 0, 16, "Parent"),
-			typeDeclaration(CLASS_DECLARATION, 18, 127, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 48, 125, "Inner"),
-			compilationUnit( 0, 128),
-			fieldAccess( 95, 115),
-			identifier( 95, 100),
-			methodDeclaration( 65, 122),
-			methodInvocation( 95, 117),
-			qualifiedName( 38, 44),
-			returnStatement( 88, 118),
-			superExpression( 95, 106));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateClassDeclaration(0, 16, new TypeDeclarationAttribute("Parent"));
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 38, 44);
+			expected.allocateNode(NodeType.IDENTIFIER, 95, 100);
+			expected.allocateNode(NodeType.SUPER_EXPRESSION, 95, 106);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 95, 115);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 95, 117);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 88, 118);
+			expected.allocateNode(NodeType.BLOCK, 83, 122);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 65, 122);
+			expected.allocateClassDeclaration(48, 125, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(18, 127, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 128);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -375,7 +400,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testGenericOuterClassQualifiedThis()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Outer<T>
 			{
 				class Inner
@@ -386,19 +411,23 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			block( 57, 84),
-			typeDeclaration(CLASS_DECLARATION, 0, 89, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 18, 87, "Inner"),
-			compilationUnit( 0, 90),
-			identifier( 69, 74),
-			methodDeclaration( 35, 84),
-			qualifiedName( 41, 42),
-			returnStatement( 62, 80),
-			thisExpression( 69, 79));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 41, 42);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 41, 42);
+			expected.allocateNode(NodeType.IDENTIFIER, 69, 74);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 69, 79);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 62, 80);
+			expected.allocateNode(NodeType.BLOCK, 57, 84);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 35, 84);
+			expected.allocateClassDeclaration(18, 87, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(0, 89, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 90);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -408,7 +437,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testQualifiedThisInInnerClassConstructor()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Outer
 			{
 				Object outerRef;
@@ -421,21 +450,24 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			assignmentExpression( 66, 87),
-			block( 61, 92),
-			typeDeclaration(CLASS_DECLARATION, 0, 97, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 34, 95, "Inner"),
-			compilationUnit( 0, 98),
-			constructorDeclaration( 51, 92),
-			fieldDeclaration( 15, 31),
-			identifier( 66, 74),
-			identifier( 77, 82),
-			qualifiedName( 66, 74),
-			thisExpression( 77, 87));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 15, 31);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 66, 74);
+			expected.allocateNode(NodeType.IDENTIFIER, 66, 74);
+			expected.allocateNode(NodeType.IDENTIFIER, 77, 82);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 77, 87);
+			expected.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, 66, 87);
+			expected.allocateNode(NodeType.BLOCK, 61, 92);
+			expected.allocateNode(NodeType.CONSTRUCTOR_DECLARATION, 51, 92);
+			expected.allocateClassDeclaration(34, 95, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(0, 97, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 98);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 
 	/**
@@ -445,7 +477,7 @@ public final class QualifiedThisSuperParserTest
 	@Test
 	public void testQualifiedThisInComparison()
 	{
-		Set<SemanticNode> actual = parseSemanticAst("""
+		String source = """
 			class Outer
 			{
 				class Inner
@@ -456,21 +488,24 @@ public final class QualifiedThisSuperParserTest
 					}
 				}
 			}
-			""");
-
-		Set<SemanticNode> expected = Set.of(
-			binaryExpression( 75, 94),
-			block( 63, 99),
-			typeDeclaration(CLASS_DECLARATION, 0, 104, "Outer"),
-			typeDeclaration(CLASS_DECLARATION, 15, 102, "Inner"),
-			compilationUnit( 0, 105),
-			identifier( 75, 80),
-			identifier( 89, 94),
-			methodDeclaration( 32, 99),
-			parameterNode( 47, 59, "other"),
-			qualifiedName( 47, 53),
-			returnStatement( 68, 95),
-			thisExpression( 75, 85));
-		requireThat(actual, "actual").isEqualTo(expected);
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 47, 53);
+			expected.allocateParameterDeclaration(47, 59, new ParameterAttribute("other", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 75, 80);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 75, 85);
+			expected.allocateNode(NodeType.IDENTIFIER, 89, 94);
+			expected.allocateNode(NodeType.BINARY_EXPRESSION, 75, 94);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 68, 95);
+			expected.allocateNode(NodeType.BLOCK, 63, 99);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 32, 99);
+			expected.allocateClassDeclaration(15, 102, new TypeDeclarationAttribute("Inner"));
+			expected.allocateClassDeclaration(0, 104, new TypeDeclarationAttribute("Outer"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 105);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
 	}
 }
