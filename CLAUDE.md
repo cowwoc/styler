@@ -1,6 +1,6 @@
 # Claude Code Configuration Guide
 
-> **Version:** 4.0 | **Last Updated:** 2025-12-30
+> **Version:** 4.1 | **Last Updated:** 2026-01-04
 > **Related:** [main-agent-coordination.md](docs/project/main-agent-coordination.md) •
 [task-protocol-agents.md](docs/project/task-protocol-agents.md) •
 [style-guide.md](docs/project/style-guide.md) • [quality-guide.md](docs/project/quality-guide.md)
