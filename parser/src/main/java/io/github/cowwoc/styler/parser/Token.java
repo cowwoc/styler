@@ -5,21 +5,48 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 /**
  * Immutable token representing a lexical element in Java source code.
  * Tokens are lightweight and arena-independent, containing only essential information.
+ * <p>
+ * When the token contains Unicode escapes (per
+ * <a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-3.html#jls-3.3">JLS &#167;3.3</a>),
+ * {@code text} preserves the original escape sequences while {@code decodedText} contains the decoded
+ * characters. For tokens without Unicode escapes, both fields reference the same {@code String} instance.
  *
- * @param type  the type of this token
- * @param start the start position in source code (inclusive)
- * @param end   the end position in source code (exclusive)
- * @param text  the text content of this token (may be {@code null} for structural tokens)
+ * @param type        the type of this token
+ * @param start       the start position in source code (inclusive)
+ * @param end         the end position in source code (exclusive)
+ * @param text        the original text content of this token (may be {@code null} for structural tokens)
+ * @param decodedText the decoded text content with Unicode escapes resolved (may be {@code null} for
+ *                    structural tokens)
  */
-public record Token(TokenType type, int start, int end, String text)
+public record Token(TokenType type, int start, int end, String text, String decodedText)
 {
 	/**
-	 * Creates a new token.
+	 * Creates a new token with matching {@code text} and {@code decodedText}.
+	 * <p>
+	 * Use this constructor when the token contains no Unicode escapes. Both {@code text()} and
+	 * {@code decodedText()} will return the same {@code String} instance.
 	 *
 	 * @param type  the type of this token
 	 * @param start the start position in source code (inclusive)
 	 * @param end   the end position in source code (exclusive)
 	 * @param text  the text content of this token (may be {@code null} for structural tokens)
+	 * @throws NullPointerException     if {@code type} is {@code null}
+	 * @throws IllegalArgumentException if {@code start} is negative or {@code end} is less than {@code start}
+	 */
+	public Token(TokenType type, int start, int end, String text)
+	{
+		this(type, start, end, text, text);
+	}
+
+	/**
+	 * Creates a new token.
+	 *
+	 * @param type        the type of this token
+	 * @param start       the start position in source code (inclusive)
+	 * @param end         the end position in source code (exclusive)
+	 * @param text        the original text content of this token (may be {@code null} for structural tokens)
+	 * @param decodedText the decoded text content with Unicode escapes resolved (may be {@code null} for
+	 *                    structural tokens)
 	 * @throws NullPointerException     if {@code type} is {@code null}
 	 * @throws IllegalArgumentException if {@code start} is negative or {@code end} is less than {@code start}
 	 */
@@ -88,22 +115,6 @@ public record Token(TokenType type, int start, int end, String text)
 	{
 		return type.ordinal() >= TokenType.ASSIGN.ordinal() &&
 			type.ordinal() <= TokenType.UNSIGNED_RIGHT_SHIFT_ASSIGN.ordinal();
-	}
-
-	/**
-	 * Returns the text of this token extracted from the source code.
-	 * <p>
-	 * This is a convenience method that extracts the substring from the source code
-	 * using this token's start and end positions.
-	 *
-	 * @param sourceCode the source code string
-	 * @return the token text
-	 * @throws NullPointerException      if {@code sourceCode} is null
-	 * @throws IndexOutOfBoundsException if token positions are outside source code bounds
-	 */
-	public String getText(String sourceCode)
-	{
-		return sourceCode.substring(start, end);
 	}
 
 	@Override

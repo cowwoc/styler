@@ -344,7 +344,7 @@ public final class Parser implements AutoCloseable
 		// Build the qualified name from tokens
 		StringBuilder qualifiedName = new StringBuilder();
 		expect(TokenType.IDENTIFIER);
-		qualifiedName.append(previousToken().getText(sourceCode));
+		qualifiedName.append(previousToken().decodedText());
 
 		while (currentToken().type() == TokenType.DOT)
 		{
@@ -360,7 +360,7 @@ public final class Parser implements AutoCloseable
 				return arena.allocateImportDeclaration(start, end, attribute);
 			}
 			expect(TokenType.IDENTIFIER);
-			qualifiedName.append(previousToken().getText(sourceCode));
+			qualifiedName.append(previousToken().decodedText());
 		}
 		expect(TokenType.SEMICOLON);
 		int end = previousToken().end();
@@ -381,14 +381,14 @@ public final class Parser implements AutoCloseable
 		// Build the module name from tokens
 		StringBuilder moduleName = new StringBuilder();
 		expect(TokenType.IDENTIFIER);
-		moduleName.append(previousToken().getText(sourceCode));
+		moduleName.append(previousToken().decodedText());
 
 		while (currentToken().type() == TokenType.DOT)
 		{
 			consume(); // DOT
 			moduleName.append('.');
 			expect(TokenType.IDENTIFIER);
-			moduleName.append(previousToken().getText(sourceCode));
+			moduleName.append(previousToken().decodedText());
 		}
 
 		expect(TokenType.SEMICOLON);
@@ -486,7 +486,7 @@ public final class Parser implements AutoCloseable
 		// Capture type name and position before consuming
 		Token nameToken = currentToken();
 		expect(TokenType.IDENTIFIER);
-		String typeName = nameToken.getText(sourceCode);
+		String typeName = nameToken.decodedText();
 
 		// Type parameters
 		if (match(TokenType.LESS_THAN))
@@ -536,7 +536,7 @@ public final class Parser implements AutoCloseable
 		// Capture type name and position before consuming
 		Token nameToken = currentToken();
 		expect(TokenType.IDENTIFIER);
-		String typeName = nameToken.getText(sourceCode);
+		String typeName = nameToken.decodedText();
 
 		if (match(TokenType.LESS_THAN))
 		{
@@ -577,7 +577,7 @@ public final class Parser implements AutoCloseable
 		// Capture type name and position before consuming
 		Token nameToken = currentToken();
 		expect(TokenType.IDENTIFIER);
-		String typeName = nameToken.getText(sourceCode);
+		String typeName = nameToken.decodedText();
 
 		if (match(TokenType.IMPLEMENTS))
 		{
@@ -612,7 +612,7 @@ public final class Parser implements AutoCloseable
 		// Capture type name and position before consuming
 		Token nameToken = currentToken();
 		expect(TokenType.IDENTIFIER);
-		String typeName = nameToken.getText(sourceCode);
+		String typeName = nameToken.decodedText();
 
 		parseClassBody();
 		int end = previousToken().end();
@@ -635,7 +635,7 @@ public final class Parser implements AutoCloseable
 		// Capture type name and position before consuming
 		Token nameToken = currentToken();
 		expect(TokenType.IDENTIFIER);
-		String typeName = nameToken.getText(sourceCode);
+		String typeName = nameToken.decodedText();
 
 		// Type parameters (optional)
 		if (match(TokenType.LESS_THAN))
@@ -1353,7 +1353,7 @@ public final class Parser implements AutoCloseable
 		{
 			Token nameToken = currentToken();
 			expect(TokenType.IDENTIFIER);
-			parameterName = nameToken.getText(sourceCode);
+			parameterName = nameToken.decodedText();
 		}
 
 		// Handle C-style array syntax: String args[]
@@ -1410,7 +1410,7 @@ public final class Parser implements AutoCloseable
 		// Parameter name
 		Token nameToken = currentToken();
 		expect(TokenType.IDENTIFIER);
-		String parameterName = nameToken.getText(sourceCode);
+		String parameterName = nameToken.decodedText();
 
 		int end = previousToken().end();
 		ParameterAttribute attribute = new ParameterAttribute(parameterName, false, isFinal, false);
@@ -2059,7 +2059,7 @@ public final class Parser implements AutoCloseable
 	{
 		// Check for unnamed pattern: _
 		if (currentToken().type() == TokenType.IDENTIFIER &&
-			"_".equals(currentToken().getText(sourceCode)))
+			"_".equals(currentToken().decodedText()))
 		{
 			consume();
 			return;
@@ -2124,7 +2124,7 @@ public final class Parser implements AutoCloseable
 	private boolean isContextualKeyword(String keyword)
 	{
 		return currentToken().type() == TokenType.IDENTIFIER &&
-			currentToken().getText(sourceCode).equals(keyword);
+			currentToken().decodedText().equals(keyword);
 	}
 
 	/**

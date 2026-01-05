@@ -533,4 +533,188 @@ public class LexerTest
 		requireThat(tokens.size(), "tokens.size()").isEqualTo(2); // public + END_OF_FILE
 		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.PUBLIC);
 	}
+
+	/**
+	 * Tests that Unicode escapes in identifiers are properly decoded per JLS 3.3.
+	 * The identifier uses a Unicode escape for 'A', which should be decoded
+	 * for keyword matching while preserving original text.
+	 */
+	@Test
+	public void testUnicodeEscapeInIdentifier()
+	{
+		// \u0041 is 'A'
+		Lexer lexer = new Lexer("\\u0041bc");
+		List<Token> tokens = lexer.tokenize();
+
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2);
+		Token token = tokens.getFirst();
+		requireThat(token.type(), "token.type()").isEqualTo(TokenType.IDENTIFIER);
+		requireThat(token.text(), "token.text()").isEqualTo("\\u0041bc");
+		requireThat(token.decodedText(), "token.decodedText()").isEqualTo("Abc");
+	}
+
+	/**
+	 * Tests that Unicode escapes that form a keyword are recognized as the keyword.
+	 * Per JLS 3.3, Unicode escapes are processed before lexical analysis,
+	 * so an escaped keyword should be recognized as that keyword.
+	 */
+	@Test
+	public void testUnicodeEscapeFormingKeyword()
+	{
+		// \u0070ublic = "public"
+		Lexer lexer = new Lexer("\\u0070ublic");
+		List<Token> tokens = lexer.tokenize();
+
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2);
+		Token token = tokens.getFirst();
+		requireThat(token.type(), "token.type()").isEqualTo(TokenType.PUBLIC);
+		requireThat(token.text(), "token.text()").isEqualTo("\\u0070ublic");
+		requireThat(token.decodedText(), "token.decodedText()").isEqualTo("public");
+	}
+
+	/**
+	 * Tests that multiple consecutive 'u' characters in Unicode escapes are valid per JLS 3.3.
+	 * The JLS allows \uuuu0041 as a valid escape for 'A'.
+	 */
+	@Test
+	public void testMultipleUnicodeEscapePrefix()
+	{
+		// \uuuu0041 is valid and decodes to 'A'
+		Lexer lexer = new Lexer("\\uuuu0041");
+		List<Token> tokens = lexer.tokenize();
+
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2);
+		Token token = tokens.getFirst();
+		requireThat(token.type(), "token.type()").isEqualTo(TokenType.IDENTIFIER);
+		requireThat(token.text(), "token.text()").isEqualTo("\\uuuu0041");
+		requireThat(token.decodedText(), "token.decodedText()").isEqualTo("A");
+	}
+
+	/**
+	 * Tests that a fully escaped keyword is recognized properly.
+	 * The word 'int' is entirely represented with Unicode escapes.
+	 */
+	@Test
+	public void testFullyEscapedKeyword()
+	{
+		// \u0069\u006e\u0074 = "int"
+		Lexer lexer = new Lexer("\\u0069\\u006e\\u0074");
+		List<Token> tokens = lexer.tokenize();
+
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2);
+		Token token = tokens.getFirst();
+		requireThat(token.type(), "token.type()").isEqualTo(TokenType.INT);
+		requireThat(token.text(), "token.text()").isEqualTo("\\u0069\\u006e\\u0074");
+		requireThat(token.decodedText(), "token.decodedText()").isEqualTo("int");
+	}
+
+	/**
+	 * Tests that tokens without Unicode escapes have matching text and decodedText.
+	 * For efficiency, both should reference the same String instance.
+	 */
+	@Test
+	@SuppressWarnings("PMD.UseEqualsToCompareStrings")
+	public void testNoUnicodeEscapeSharesTextInstance()
+	{
+		Lexer lexer = new Lexer("myVariable");
+		List<Token> tokens = lexer.tokenize();
+
+		Token token = tokens.getFirst();
+		requireThat(token.text(), "token.text()").isEqualTo("myVariable");
+		// Identity check (==) is intentional - verify same String instance for memory efficiency
+		requireThat(token.text() == token.decodedText(), "sameInstance").isTrue();
+	}
+
+	/**
+	 * Tests Unicode escape at the start of source code that forms an identifier start character.
+	 * This validates the lexer properly handles Unicode escapes in the initial character position.
+	 */
+	@Test
+	public void testUnicodeEscapeAtSourceStart()
+	{
+		// \u0078 is 'x'
+		Lexer lexer = new Lexer("\\u0078");
+		List<Token> tokens = lexer.tokenize();
+
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2);
+		Token token = tokens.getFirst();
+		requireThat(token.type(), "token.type()").isEqualTo(TokenType.IDENTIFIER);
+		requireThat(token.text(), "token.text()").isEqualTo("\\u0078");
+		requireThat(token.decodedText(), "token.decodedText()").isEqualTo("x");
+	}
+
+	/**
+	 * Tests Unicode escapes mixed with regular characters in an identifier.
+	 * The identifier contains both escaped and non-escaped characters.
+	 */
+	@Test
+	public void testMixedUnicodeEscapeIdentifier()
+	{
+		// my\u0056ar = "myVar"
+		Lexer lexer = new Lexer("my\\u0056ar");
+		List<Token> tokens = lexer.tokenize();
+
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2);
+		Token token = tokens.getFirst();
+		requireThat(token.type(), "token.type()").isEqualTo(TokenType.IDENTIFIER);
+		requireThat(token.text(), "token.text()").isEqualTo("my\\u0056ar");
+		requireThat(token.decodedText(), "token.decodedText()").isEqualTo("myVar");
+	}
+
+	/**
+	 * Tests a variable declaration using Unicode escapes.
+	 * Validates that the lexer correctly tokenizes a statement where the identifier
+	 * is written with Unicode escapes.
+	 */
+	@Test
+	public void testUnicodeEscapeVariableDeclaration()
+	{
+		// int \u0041 = 1; where \u0041 is 'A'
+		Lexer lexer = new Lexer("int \\u0041 = 1;");
+		List<Token> tokens = lexer.tokenize();
+
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(6);
+		requireThat(tokens.get(0).type(), "tokens.get(0).type()").isEqualTo(TokenType.INT);
+		Token identToken = tokens.get(1);
+		requireThat(identToken.type(), "identToken.type()").isEqualTo(TokenType.IDENTIFIER);
+		requireThat(identToken.text(), "identToken.text()").isEqualTo("\\u0041");
+		requireThat(identToken.decodedText(), "identToken.decodedText()").isEqualTo("A");
+		requireThat(tokens.get(2).type(), "tokens.get(2).type()").isEqualTo(TokenType.ASSIGN);
+		requireThat(tokens.get(3).type(), "tokens.get(3).type()").isEqualTo(TokenType.INTEGER_LITERAL);
+		requireThat(tokens.get(4).type(), "tokens.get(4).type()").isEqualTo(TokenType.SEMICOLON);
+	}
+
+	/**
+	 * Tests lowercase hex digits in Unicode escapes.
+	 * Both uppercase and lowercase hex digits should be valid.
+	 */
+	@Test
+	public void testLowercaseHexInUnicodeEscape()
+	{
+		// \u006d is 'm' (lowercase hex)
+		Lexer lexer = new Lexer("\\u006d");
+		List<Token> tokens = lexer.tokenize();
+
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2);
+		Token token = tokens.getFirst();
+		requireThat(token.type(), "token.type()").isEqualTo(TokenType.IDENTIFIER);
+		requireThat(token.decodedText(), "token.decodedText()").isEqualTo("m");
+	}
+
+	/**
+	 * Tests uppercase hex digits in Unicode escapes.
+	 * Both uppercase and lowercase hex digits should be valid.
+	 */
+	@Test
+	public void testUppercaseHexInUnicodeEscape()
+	{
+		// \u004D is 'M' (uppercase hex)
+		Lexer lexer = new Lexer("\\u004D");
+		List<Token> tokens = lexer.tokenize();
+
+		requireThat(tokens.size(), "tokens.size()").isEqualTo(2);
+		Token token = tokens.getFirst();
+		requireThat(token.type(), "token.type()").isEqualTo(TokenType.IDENTIFIER);
+		requireThat(token.decodedText(), "token.decodedText()").isEqualTo("M");
+	}
 }
