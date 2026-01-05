@@ -1258,6 +1258,91 @@ Avoid this procedure when:
 - The commit history is complex with many merge commits
 - Working on shared branches with multiple contributors
 
+## File Extraction from Commits - Stale Base Danger {#file-extraction-stale-base}
+
+### The Problem
+
+When extracting files from commits using `git show <commit>:<file>` or `git checkout <commit> -- <file>`,
+the extracted file contains the **ENTIRE file content** from that commit - not just the changes made in
+that commit.
+
+**If the source commit was based on an older version of main**, the extracted file will contain:
+1. The base code from the OLD main (missing newer changes)
+2. Plus the changes made in that commit
+
+This silently removes any code that was added to main AFTER the source commit's base.
+
+### Real-World Example
+
+```
+main:        A --- B --- C --- D  (current main, D has new switch-parsing code)
+                    \
+feature:             E --- F --- G  (feature branch, based on B)
+```
+
+If you extract `Parser.java` from commit G:
+- You get Parser.java as it existed at G
+- This is based on B's version of Parser.java
+- **Missing**: All changes from C and D (60 lines of switch-parsing code)
+
+**Result**: If you use this extracted file, you silently DELETE the switch-parsing code.
+
+### Detection
+
+The `warn-file-extraction.sh` hook detects these patterns and warns:
+- `git show <commit>:<file>`
+- `git checkout <commit> -- <file>`
+- `git restore --source=<commit> -- <file>`
+
+### Safe Alternatives
+
+**Alternative 1: Apply only the delta changes (RECOMMENDED)**:
+```bash
+# Find the base of the source commit
+BASE_COMMIT=$(git merge-base main <source-commit>)
+
+# Extract ONLY the changes made between base and source
+git diff $BASE_COMMIT..<source-commit> -- <file> | git apply
+```
+
+**Alternative 2: Rebase the source branch onto current main first**:
+```bash
+# Rebase feature branch to current main
+git checkout feature-branch
+git rebase main
+
+# Now files in feature-branch have current main as base
+```
+
+**Alternative 3: Manual merge of specific changes**:
+```bash
+# Compare the file between commits
+git diff main:<file> <source-commit>:<file>
+
+# Manually apply only the NEW changes from source-commit
+# while keeping the current main base
+```
+
+### Verification Before File Extraction
+
+**MANDATORY checks before extracting files from commits**:
+
+```bash
+# 1. Find what main looked like when source commit was created
+MERGE_BASE=$(git merge-base main <source-commit>)
+echo "Source commit was based on: $MERGE_BASE"
+
+# 2. Check if main has moved forward since then
+git log --oneline $MERGE_BASE..main
+# If there are commits here, main has NEW code not in source commit
+
+# 3. Compare the specific file
+git diff main:<file> <source-commit>:<file>
+# Lines starting with '-' are code that WOULD BE REMOVED by extraction
+```
+
+**If main has moved forward**: Do NOT use file extraction. Use the delta approach instead.
+
 ## Git History Rewriting Safety {#git-history-rewriting-safety}
 
 ### Overview

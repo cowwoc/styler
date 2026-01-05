@@ -490,6 +490,26 @@
       "processed_in_retrospective": null,
       "auto_detected": true,
       "source_tool": "Bash"
+    },
+    {
+      "id": "M025",
+      "timestamp": "2026-01-05T14:25:00-05:00",
+      "category": "git_operation_failure",
+      "pattern_id": null,
+      "description": "Cherry-picked files from commit based on stale main, causing 60 lines of switch-parsing code to be removed",
+      "root_cause": "File extraction commands (git show/checkout) return entire file content from that commit, not just changes. If source commit was based on older main, extracted files have stale base code.",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/warn-file-extraction.sh",
+      "pattern_keywords": [
+        "cherry-pick",
+        "file extraction",
+        "stale base",
+        "data loss",
+        "git show"
+      ],
+      "commit": "0e286ca",
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ]
 }
