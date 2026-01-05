@@ -77,6 +77,15 @@ public enum NodeType
 	PACKAGE_DECLARATION,
 	IMPORT_DECLARATION,
 	MODULE_IMPORT_DECLARATION,  // JDK 25+ (JEP 511 module imports)
+
+	// Module declarations (JDK 9+ JPMS module-info.java)
+	MODULE_DECLARATION,    // [open] module module-name { directives }
+	REQUIRES_DIRECTIVE,    // requires [transitive] [static] module-name;
+	EXPORTS_DIRECTIVE,     // exports package-name [to module-list];
+	OPENS_DIRECTIVE,       // opens package-name [to module-list];
+	USES_DIRECTIVE,        // uses service-interface;
+	PROVIDES_DIRECTIVE,    // provides service-interface with impl-list;
+
 	CLASS_DECLARATION,
 	IMPLICIT_CLASS_DECLARATION,  // JDK 25+ (JEP 512 implicit classes)
 	INTERFACE_DECLARATION,

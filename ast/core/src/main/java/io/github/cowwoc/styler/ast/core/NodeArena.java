@@ -266,6 +266,132 @@ public final class NodeArena implements AutoCloseable
 	}
 
 	/**
+	 * Allocates a module declaration node with its associated attribute.
+	 * <p>
+	 * Module declarations are the root node for module-info.java files and contain directives
+	 * that define the module's exports, requires, provides, and uses.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the module declaration attribute containing the module name and open flag
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateModuleDeclaration(int start, int end, ModuleDeclarationAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.MODULE_DECLARATION, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates a requires directive node with its associated attribute.
+	 * <p>
+	 * The requires directive declares a dependency on another module, optionally with
+	 * {@code transitive} and/or {@code static} modifiers.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the requires directive attribute containing the module name and modifiers
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateRequiresDirective(int start, int end, RequiresDirectiveAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.REQUIRES_DIRECTIVE, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates an exports directive node with its associated attribute.
+	 * <p>
+	 * The exports directive makes a package accessible to other modules, optionally
+	 * qualified to specific modules using the {@code to} clause.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the exports directive attribute containing the package name and target modules
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateExportsDirective(int start, int end, ExportsDirectiveAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.EXPORTS_DIRECTIVE, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates an opens directive node with its associated attribute.
+	 * <p>
+	 * The opens directive grants deep reflective access to a package at runtime, optionally
+	 * qualified to specific modules using the {@code to} clause.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the opens directive attribute containing the package name and target modules
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateOpensDirective(int start, int end, OpensDirectiveAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.OPENS_DIRECTIVE, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates a uses directive node with its associated attribute.
+	 * <p>
+	 * The uses directive declares that this module consumes implementations of a service
+	 * interface via {@link java.util.ServiceLoader}.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the uses directive attribute containing the service type name
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateUsesDirective(int start, int end, UsesDirectiveAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.USES_DIRECTIVE, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
+	 * Allocates a provides directive node with its associated attribute.
+	 * <p>
+	 * The provides directive declares that this module provides implementations of a service
+	 * interface, making them available to consumers via {@link java.util.ServiceLoader}.
+	 *
+	 * @param start     the start position in the source code
+	 * @param end       the end position in the source code
+	 * @param attribute the provides directive attribute containing the service type and implementations
+	 * @return the index of the newly created node
+	 * @throws NullPointerException     if {@code attribute} is null
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateProvidesDirective(int start, int end, ProvidesDirectiveAttribute attribute)
+	{
+		requireThat(attribute, "attribute").isNotNull();
+		NodeIndex index = allocateNode(NodeType.PROVIDES_DIRECTIVE, start, end);
+		attributes.put(index, attribute);
+		return index;
+	}
+
+	/**
 	 * Returns the import attribute associated with a node.
 	 *
 	 * @param index the node index

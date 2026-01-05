@@ -415,12 +415,41 @@ private final AtomicBoolean closed = new AtomicBoolean();
 ### PMD Suppression
 Only suppress with documented legitimate reason. "Too much work" is NOT valid.
 
-**NcssCount violations**: ALWAYS attempt to fix by breaking down the method into smaller helper methods.
-Suppression is a LAST RESORT, acceptable only when decomposition would genuinely harm readability (e.g.,
-tightly coupled state machine logic where extraction creates unclear control flow). Before suppressing:
-1. Identify logical blocks that can become helper methods
-2. Extract repetitive patterns into shared utilities
-3. Consider if the method is doing too much (Single Responsibility Principle)
+**NcssCount violations**: **NEVER suppress without actually attempting decomposition first.**
+
+⚠️ **CRITICAL**: Reasoning about why decomposition "would be hard" is NOT the same as attempting it.
+
+**MANDATORY before ANY NcssCount suppression**:
+1. **Actually extract** at least one helper method or helper class
+2. **Run the build** to verify extraction works
+3. **Compare readability** of extracted vs original code
+4. **Only if extraction genuinely harms readability**, add suppression with a comment explaining:
+   - What decomposition was attempted
+   - Why it harmed readability (be specific)
+
+**Valid reasons for suppression** (after attempting decomposition):
+- State machine logic where extraction breaks control flow clarity
+- Switch statements with many cases that cannot be reasonably grouped
+- Parser methods with tightly coupled position/token state
+
+**INVALID reasons** (do NOT suppress):
+- "Shared state would need to be exposed" - use inner classes or pass state
+- "Would need to pass many parameters" - create parameter objects or extract to helper class
+- "Class is inherently large" - extract to multiple classes (e.g., ModuleParser helper)
+
+**Example - Parser too large**:
+```java
+// ❌ WRONG - Suppressing without extraction
+// "Parser needs shared state so extraction is hard"
+@SuppressWarnings("PMD.NcssCount")
+public class Parser { /* 1600+ lines */ }
+
+// ✅ CORRECT - Extract to helper class
+public class Parser {
+    private final ModuleParser moduleParser;  // Handles module-info.java
+    // ... now under threshold
+}
+```
 
 ### @SuppressWarnings("unchecked") - Minimal Scope
 Never apply to entire method. Always apply to single expression:

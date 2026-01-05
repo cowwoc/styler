@@ -37,6 +37,18 @@ public enum TokenType
 	INTERFACE,
 	LONG,
 	MODULE,     // JDK 25+ (JEP 511 module imports)
+
+	// Module directives (JDK 9+ JPMS module-info.java)
+	REQUIRES,    // requires [transitive] [static] module-name;
+	EXPORTS,     // exports package-name [to module-list];
+	OPENS,       // opens package-name [to module-list];
+	USES,        // uses service-interface;
+	PROVIDES,    // provides service-interface with impl-list;
+	WITH,        // with clause in provides directive
+	TO,          // to clause in exports/opens directives
+	TRANSITIVE,  // transitive modifier for requires directive
+	OPEN,        // open modifier for module declaration
+
 	NATIVE,
 	NEW,
 	NON_SEALED, // JDK 17+

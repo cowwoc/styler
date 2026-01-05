@@ -1,10 +1,12 @@
 #!/bin/bash
 # Hook: warn-ncsscount-suppression.sh
 # Trigger: PostToolUse (Edit)
-# Purpose: Warn when NcssCount suppression is added without documented justification
+# Purpose: BLOCK NcssCount suppression unless decomposition was actually attempted
 #
 # ADDED: 2025-12-31 after engineer agent added NcssCount suppression to parsePostfix()
 # without attempting decomposition first.
+# UPDATED: 2026-01-05 - Made blocking (exit 2) instead of warning-only.
+# Hook was not registered previously, allowing violations to slip through.
 # PREVENTS: Lazy suppression shortcuts that violate the style guide.
 
 set -euo pipefail
@@ -24,28 +26,36 @@ NEW_STRING=$(echo "$INPUT" | jq -r '.tool_input.new_string // ""')
 
 # Check if it contains NcssCount suppression
 if echo "$NEW_STRING" | grep -q 'SuppressWarnings.*PMD.NcssCount\|SuppressWarnings.*NcssCount'; then
-    # Check if there's a justification comment
-    if ! echo "$NEW_STRING" | grep -qiE '(decomposition|extract|helper|state.machine|control.flow|switch.cases)'; then
-        echo "" >&2
-        echo "⚠️ NCSSCOUNT SUPPRESSION DETECTED" >&2
-        echo "" >&2
-        echo "You added @SuppressWarnings(\"PMD.NcssCount\")." >&2
-        echo "" >&2
-        echo "MANDATORY CHECKLIST (from java-style.md):" >&2
-        echo "" >&2
-        echo "  1. ☐ Identified logical blocks that could become helper methods" >&2
-        echo "  2. ☐ Checked for existing helper method patterns in the class" >&2
-        echo "  3. ☐ Actually ATTEMPTED to extract at least ONE helper method" >&2
-        echo "  4. ☐ Documented WHY decomposition failed (if suppression needed)" >&2
-        echo "" >&2
-        echo "If you haven't completed this checklist:" >&2
-        echo "  - Remove the suppression" >&2
-        echo "  - Extract helper methods to reduce method size" >&2
-        echo "  - Only add suppression if decomposition genuinely harms readability" >&2
-        echo "" >&2
-        echo "Reference: .claude/rules/java-style.md § PMD Suppression" >&2
-        echo "" >&2
-    fi
+    echo "" >&2
+    echo "🚨 NCSSCOUNT SUPPRESSION BLOCKED" >&2
+    echo "" >&2
+    echo "You added @SuppressWarnings(\"PMD.NcssCount\")." >&2
+    echo "" >&2
+    echo "Per java-style.md: NEVER suppress NcssCount without ACTUALLY attempting decomposition." >&2
+    echo "" >&2
+    echo "MANDATORY STEPS (must be completed BEFORE suppression):" >&2
+    echo "" >&2
+    echo "  1. Actually EXTRACT at least one helper method or helper class" >&2
+    echo "  2. Run the build to verify extraction works" >&2
+    echo "  3. Compare readability of extracted vs original" >&2
+    echo "  4. ONLY if extraction genuinely harms readability, add suppression" >&2
+    echo "" >&2
+    echo "INVALID JUSTIFICATIONS (these are NOT acceptable):" >&2
+    echo "  ❌ 'Shared state would need to be exposed' - use inner classes" >&2
+    echo "  ❌ 'Would need to pass many parameters' - create parameter objects" >&2
+    echo "  ❌ 'Class is inherently large' - extract to helper classes" >&2
+    echo "" >&2
+    echo "ACTION REQUIRED:" >&2
+    echo "  1. Remove the @SuppressWarnings annotation" >&2
+    echo "  2. Extract module parsing methods to ModuleParser helper class" >&2
+    echo "  3. OR extract other logical blocks to helper methods" >&2
+    echo "  4. Re-run PMD to verify class is under threshold" >&2
+    echo "" >&2
+    echo "Reference: .claude/rules/java-style.md § PMD Suppression" >&2
+    echo "" >&2
+    # Exit 2 signals hook rejection (blocks the edit conceptually, though PostToolUse
+    # can't actually roll back - it serves as a strong signal to undo)
+    exit 2
 fi
 
 exit 0
