@@ -513,6 +513,76 @@ public void processFile(Path path) {
 - Lambda expressions with block bodies
 - Static and instance initializers
 
+### Brace Omission - Single-Line Control Statements
+**Why omit braces for single-line statements**: When a control structure (if, else, for, while, do-while)
+has only a single statement in its body, braces add visual noise without providing clarity. The indentation
+already clearly indicates which statement belongs to the control structure.
+
+**Visual benefit**: Removing unnecessary braces reduces vertical space, allowing more code to fit on screen
+and making the overall structure easier to scan:
+```java
+// ✅ PREFERRED - Clean, minimal syntax
+if (condition)
+    return;
+
+for (int i = 0; i < count; ++i)
+    process(i);
+
+while (hasNext())
+    advance();
+
+// ❌ AVOID - Unnecessary vertical expansion
+if (condition)
+{
+    return;
+}
+
+for (int i = 0; i < count; ++i)
+{
+    process(i);
+}
+```
+
+**When braces ARE required**:
+- **Multi-line bodies**: Two or more statements require braces to delimit the block
+- **Bodies containing comments**: Comments add visual complexity that benefits from explicit block delimiters
+
+**Practical examples**:
+```java
+// ✅ CORRECT - Single-line body, no braces needed
+if (input == null)
+    throw new NullPointerException("input");
+
+// ✅ CORRECT - Else with single-line body
+if (value > threshold)
+    handleHigh(value);
+else
+    handleLow(value);
+
+// ✅ CORRECT - Multi-line body requires braces
+if (condition)
+{
+    validate();
+    process();
+}
+
+// ✅ CORRECT - Nested single-line structures also omit braces
+if (shouldProcess)
+    for (int i = 0; i < count; ++i)
+        process(i);
+
+// ✅ CORRECT - Comment in body requires braces
+if (condition)
+{
+    // Handle the special case
+    handleSpecialCase();
+}
+```
+
+**Consistency with Allman style**: Even when omitting braces, if you need them (for multi-statement bodies),
+they still follow Allman style with opening brace on its own line. This maintains visual consistency across
+the codebase.
+
 ### Class Organization - User-Facing Members First
 **Why API-first organization matters**: When reviewing parser classes, developers first want to understand the
 public interface - what methods are available and what they return. Presenting the API surface before

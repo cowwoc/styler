@@ -164,6 +164,38 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   }
   ```
 
+### Brace Omission for Single-Line Statements
+Omit braces for `if`, `else`, `for`, `while`, and `do-while` when the body is a single line:
+```java
+// ✅ CORRECT - Omit braces for single-line body
+if (condition)
+    return;
+
+for (int i = 0; i < count; ++i)
+    process(i);
+
+while (hasNext())
+    advance();
+
+// ❌ WRONG - Unnecessary braces for single-line body
+if (condition)
+{
+    return;
+}
+
+for (int i = 0; i < count; ++i)
+{
+    process(i);
+}
+// ✅ CORRECT - Nested single-line structures also omit braces
+if (condition)
+    for (int i = 0; i < count; ++i)
+        process(i);
+```
+**When braces ARE required:**
+- Multi-line bodies (2+ statements)
+- Bodies containing comments
+
 ### Code Patterns
 - `strip()` over `trim()` (Unicode whitespace)
 - `List.of()`/`Set.of()`/`Map.of()` over array literals for constants (truly immutable)
