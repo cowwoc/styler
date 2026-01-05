@@ -63,9 +63,7 @@ public final class FileDiscoveryEdgeCasesTest
 	public void discoverSymlinkToFileFollowedByDefault() throws IOException
 	{
 		if (!supportsSymlinks())
-		{
 			return;
-		}
 
 		Path tempDir = Files.createTempDirectory("test-symlink-file-");
 		try
@@ -89,9 +87,7 @@ public final class FileDiscoveryEdgeCasesTest
 	public void discoverSymlinkToDirectoryFollowedWhenEnabled() throws IOException
 	{
 		if (!supportsSymlinks())
-		{
 			return;
-		}
 
 		Path tempDir = Files.createTempDirectory("test-symlink-dir-");
 		Path realDir = Files.createTempDirectory("test-symlink-target-");
@@ -118,9 +114,7 @@ public final class FileDiscoveryEdgeCasesTest
 	public void discoverSymlinkToDirectoryOutsideRootBlockedBySecurityConfig() throws IOException
 	{
 		if (!supportsSymlinks())
-		{
 			return;
-		}
 
 		Path tempRoot = Files.createTempDirectory("test-symlink-escape-root-");
 		Path tempOutside = Files.createTempDirectory("test-symlink-escape-outside-");
@@ -148,9 +142,7 @@ public final class FileDiscoveryEdgeCasesTest
 	public void discoverCircularSymlinkHandledGracefully() throws IOException
 	{
 		if (!supportsSymlinks())
-		{
 			return;
-		}
 
 		Path tempDir = Files.createTempDirectory("test-circular-");
 		try
@@ -175,9 +167,7 @@ public final class FileDiscoveryEdgeCasesTest
 	public void discoverUnicodeFilenamesDiscoveredCorrectly() throws IOException
 	{
 		if (!supportsUnicodeFilenames())
-		{
 			return;
-		}
 
 		Path tempDir = Files.createTempDirectory("test-unicode-");
 		try
@@ -242,9 +232,7 @@ public final class FileDiscoveryEdgeCasesTest
 		{
 			Path current = tempDir;
 			for (int i = 0; i < 50; ++i)
-			{
 				current = Files.createDirectory(current.resolve("level" + i));
-			}
 			Files.createFile(current.resolve("Deep.java"));
 
 			DiscoveryConfiguration config = new DiscoveryConfiguration.Builder().maxDepth(10).build();
@@ -285,9 +273,7 @@ public final class FileDiscoveryEdgeCasesTest
 	public void discoverMixedPermissionsSkipsUnreadableDirectories() throws IOException
 	{
 		if (!supportsUnixPermissions())
-		{
 			return;
-		}
 
 		Path tempDir = Files.createTempDirectory("test-perms-");
 		try
@@ -318,9 +304,7 @@ public final class FileDiscoveryEdgeCasesTest
 	public void discoverPermissionDeniedOnFileReportsError() throws IOException
 	{
 		if (!supportsUnixPermissions())
-		{
 			return;
-		}
 
 		Path tempDir = Files.createTempDirectory("test-file-perms-");
 		try

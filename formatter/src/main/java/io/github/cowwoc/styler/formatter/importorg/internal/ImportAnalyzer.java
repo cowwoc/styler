@@ -85,10 +85,8 @@ public final class ImportAnalyzer
 		context.checkDeadline();
 
 		if (!config.expandWildcardImports())
-		{
 			// User opted out of wildcard expansion - use conservative approach
 			return analyzeWithoutWildcardExpansion(imports, usedIdentifiers, context);
-		}
 
 		// Attempt full symbol resolution
 		SymbolResolutionResult resolution = SymbolResolver.resolve(imports, usedIdentifiers,
@@ -96,10 +94,8 @@ public final class ImportAnalyzer
 		context.checkDeadline();
 
 		if (!resolution.isComplete())
-		{
 			// Cannot safely expand wildcards - report violation and preserve all wildcards
 			return createResolutionFailureResult(imports, usedIdentifiers, resolution, context);
-		}
 
 		// All symbols resolved - safe to expand wildcards
 		return analyzeWithFullResolution(imports, usedIdentifiers, resolution, context);
@@ -137,23 +133,17 @@ public final class ImportAnalyzer
 
 			// Skip identifiers before or at the import section end
 			if (start <= importSectionEnd)
-			{
 				continue;
-			}
 
 			// Skip identifiers inside strings or comments (AST-based filtering)
 			if (textAndCommentPositions.get(start))
-			{
 				continue;
-			}
 
 			String identifier = matcher.group(1);
 
 			// Exclude Java keywords that could appear as identifiers
 			if (!isJavaKeyword(identifier))
-			{
 				identifiers.add(identifier);
-			}
 		}
 
 		return identifiers;
@@ -205,15 +195,11 @@ public final class ImportAnalyzer
 
 			// Skip wildcards - they are preserved silently when expansion is disabled
 			if (imp.isWildcard())
-			{
 				continue;
-			}
 
 			// Check if the simple name is used
 			if (!usedIdentifiers.contains(imp.simpleName()))
-			{
 				unused.add(imp.qualifiedName());
-			}
 		}
 
 		return new ImportAnalysisResult(unused, Set.of());
@@ -254,15 +240,11 @@ public final class ImportAnalyzer
 
 			// Skip wildcards - they are preserved when resolution is incomplete
 			if (imp.isWildcard())
-			{
 				continue;
-			}
 
 			// Check if the simple name is used
 			if (!usedIdentifiers.contains(imp.simpleName()))
-			{
 				unused.add(imp.qualifiedName());
-			}
 		}
 
 		return new ImportAnalysisResult(unused, resolution.unresolvedSymbols());
@@ -306,18 +288,14 @@ public final class ImportAnalyzer
 					anyMatch(qn -> qn.startsWith(packagePrefix));
 
 				if (!hasResolvedSymbol)
-				{
 					// No classes from this wildcard are used
 					unused.add(imp.qualifiedName());
-				}
 			}
 			else
 			{
 				// Explicit import - check if the simple name is used
 				if (!usedIdentifiers.contains(imp.simpleName()))
-				{
 					unused.add(imp.qualifiedName());
-				}
 			}
 		}
 

@@ -97,9 +97,7 @@ public class StylerFormatMojo extends AbstractStylerMojo
 	public void execute() throws MojoExecutionException, MojoFailureException
 	{
 		if (shouldSkip())
-		{
 			return;
-		}
 
 		Log log = getLog();
 
@@ -115,13 +113,9 @@ public class StylerFormatMojo extends AbstractStylerMojo
 		}
 
 		if (dryRun)
-		{
 			log.info("Performing dry run on " + files.size() + " file(s)");
-		}
 		else
-		{
 			log.info("Formatting " + files.size() + " file(s)");
-		}
 
 		// Build pipeline in format mode
 		FileProcessingPipeline pipeline = buildPipeline(config, false);
@@ -165,9 +159,7 @@ public class StylerFormatMojo extends AbstractStylerMojo
 				{
 					// Create backup if requested
 					if (backupOriginals)
-					{
 						createBackup(file, log);
-					}
 
 					// Write formatted content
 					Files.writeString(file, formattedContent, getEncodingCharset());
@@ -184,17 +176,13 @@ public class StylerFormatMojo extends AbstractStylerMojo
 
 		// Report summary
 		if (dryRun)
-		{
 			log.info(String.format(
 				"Dry run complete: %d file(s) would be formatted, %d file(s) unchanged",
 				filesFormatted, filesUnchanged));
-		}
 		else
-		{
 			log.info(String.format(
 				"Formatting complete: %d file(s) formatted, %d file(s) unchanged",
 				filesFormatted, filesUnchanged));
-		}
 
 		if (!failedFiles.isEmpty())
 		{
@@ -202,9 +190,7 @@ public class StylerFormatMojo extends AbstractStylerMojo
 				"Failed to format %d file(s)", failedFiles.size());
 
 			if (failOnViolation)
-			{
 				throw new MojoFailureException(message);
-			}
 			log.warn(message);
 		}
 	}

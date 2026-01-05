@@ -745,7 +745,6 @@ public final class CompilationValidatorTest
 		try
 		{
 			if (Files.exists(directory))
-			{
 				Files.walk(directory).
 					sorted((a, b) -> b.compareTo(a)).
 					forEach(path ->
@@ -759,7 +758,6 @@ public final class CompilationValidatorTest
 							// Intentionally ignored during cleanup
 						}
 					});
-			}
 		}
 		catch (IOException _)
 		{

@@ -166,9 +166,7 @@ public final class Parser implements AutoCloseable
 				column = 1;
 			}
 			else
-			{
 				++column;
-			}
 		}
 		return new ParseError(position, line, column, message);
 	}
@@ -198,13 +196,9 @@ public final class Parser implements AutoCloseable
 			// Package declaration start: first annotation if present, else 'package' keyword position
 			int effectiveStart;
 			if (packageAnnotationsStart >= 0)
-			{
 				effectiveStart = packageAnnotationsStart;
-			}
 			else
-			{
 				effectiveStart = previousToken().start();
-			}
 			parsePackageDeclaration(effectiveStart);
 		}
 
@@ -225,38 +219,26 @@ public final class Parser implements AutoCloseable
 			{
 				parseComments();
 				if (isTypeDeclarationStart())
-				{
 					parseTypeDeclaration();
-				}
 				else if (currentToken().type() == TokenType.SEMICOLON)
-				{
 					consume(); // Empty statement at top level
-				}
 				else if (currentToken().type() == TokenType.END_OF_FILE)
-				{
 					break;
-				}
 				else
-				{
 					throw new ParserException(
 						"Unexpected token at top level: " + currentToken().type() +
 						" (expected type declaration, import, or package)",
 						currentToken().start());
-				}
 			}
 		}
 		else if (isMemberDeclarationStart())
-		{
 			// JEP 512: Implicit class - members without explicit class declaration
 			parseImplicitClassDeclaration();
-		}
 		else if (currentToken().type() != TokenType.END_OF_FILE)
-		{
 			throw new ParserException(
 				"Unexpected token at top level: " + currentToken().type() +
 				" (expected type declaration, import, or package)",
 				currentToken().start());
-		}
 
 		int end = tokens.get(tokens.size() - 1).end();
 		return arena.allocateNode(NodeType.COMPILATION_UNIT, start, end);
@@ -271,15 +253,11 @@ public final class Parser implements AutoCloseable
 			TokenType type = tokens.get(lookahead).type();
 			if (type == TokenType.CLASS || type == TokenType.INTERFACE ||
 				type == TokenType.ENUM || type == TokenType.RECORD)
-			{
 				return true;
-			}
 			// @interface is an annotation type declaration
 			if (type == TokenType.AT_SIGN && lookahead + 1 < tokens.size() &&
 				tokens.get(lookahead + 1).type() == TokenType.INTERFACE)
-			{
 				return true;
-			}
 			// Skip modifiers to continue looking
 			if (isModifierToken(type))
 			{
@@ -321,14 +299,10 @@ public final class Parser implements AutoCloseable
 	{
 		int lookahead = startPosition + 1;
 		if (lookahead >= tokens.size() || tokens.get(lookahead).type() != TokenType.IDENTIFIER)
-		{
 			return lookahead;
-		}
 		++lookahead;
 		if (lookahead >= tokens.size() || tokens.get(lookahead).type() != TokenType.LEFT_PARENTHESIS)
-		{
 			return lookahead;
-		}
 		// Skip annotation arguments
 		int parenDepth = 1;
 		++lookahead;
@@ -369,14 +343,10 @@ public final class Parser implements AutoCloseable
 	private boolean hasPackageLevelAnnotations()
 	{
 		if (currentToken().type() != TokenType.AT_SIGN)
-		{
 			return false;
-		}
 		// Don't treat @interface as package annotation
 		if (isAnnotationTypeDeclaration())
-		{
 			return false;
-		}
 
 		// Save position for lookahead
 		int checkpoint = position;
@@ -388,15 +358,11 @@ public final class Parser implements AutoCloseable
 			consume(); // @
 			parseQualifiedName();
 			if (match(TokenType.LEFT_PARENTHESIS))
-			{
 				skipBalancedParens();
-			}
 			// Skip any comments between annotations
 			while (currentToken().type() == TokenType.LINE_COMMENT ||
 				currentToken().type() == TokenType.BLOCK_COMMENT)
-			{
 				consume();
-			}
 		}
 
 		boolean isPackageAnnotation = currentToken().type() == TokenType.PACKAGE;
@@ -424,9 +390,7 @@ public final class Parser implements AutoCloseable
 
 		// JEP 511: Module import syntax: import module java.base;
 		if (match(TokenType.MODULE))
-		{
 			return parseModuleImport(start);
-		}
 
 		boolean isStatic = match(TokenType.STATIC);
 
@@ -493,13 +457,9 @@ public final class Parser implements AutoCloseable
 		while (match(TokenType.DOT))
 		{
 			if (currentToken().type() == TokenType.IDENTIFIER)
-			{
 				consume();
-			}
 			else
-			{
 				break;
-			}
 		}
 		int end = previousToken().end();
 		return arena.allocateNode(NodeType.QUALIFIED_NAME, start, end);
@@ -529,27 +489,17 @@ public final class Parser implements AutoCloseable
 				parseAnnotation();
 			}
 			else
-			{
 				consume();
-			}
 		}
 
 		if (match(TokenType.CLASS))
-		{
 			parseClassDeclaration();
-		}
 		else if (match(TokenType.INTERFACE))
-		{
 			parseInterfaceDeclaration();
-		}
 		else if (match(TokenType.ENUM))
-		{
 			parseEnumDeclaration();
-		}
 		else if (match(TokenType.RECORD))
-		{
 			parseRecordDeclaration();
-		}
 		else if (match(TokenType.AT_SIGN))
 		{
 			expect(TokenType.INTERFACE);
@@ -631,24 +581,18 @@ public final class Parser implements AutoCloseable
 
 		// Type parameters
 		if (match(TokenType.LESS_THAN))
-		{
 			parseTypeParameters();
-		}
 
 		// Extends clause
 		if (match(TokenType.EXTENDS))
-		{
 			parseType();
-		}
 
 		// Implements clause
 		if (match(TokenType.IMPLEMENTS))
 		{
 			parseType();
 			while (match(TokenType.COMMA))
-			{
 				parseType();
-			}
 		}
 
 		// Permits clause (for sealed classes)
@@ -656,9 +600,7 @@ public final class Parser implements AutoCloseable
 		{
 			parseType();
 			while (match(TokenType.COMMA))
-			{
 				parseType();
-			}
 		}
 
 		// Class body
@@ -680,17 +622,13 @@ public final class Parser implements AutoCloseable
 		String typeName = nameToken.decodedText();
 
 		if (match(TokenType.LESS_THAN))
-		{
 			parseTypeParameters();
-		}
 
 		if (match(TokenType.EXTENDS))
 		{
 			parseType();
 			while (match(TokenType.COMMA))
-			{
 				parseType();
-			}
 		}
 
 		// Permits clause (for sealed interfaces)
@@ -698,9 +636,7 @@ public final class Parser implements AutoCloseable
 		{
 			parseType();
 			while (match(TokenType.COMMA))
-			{
 				parseType();
-			}
 		}
 
 		parseClassBody();
@@ -724,9 +660,7 @@ public final class Parser implements AutoCloseable
 		{
 			parseType();
 			while (match(TokenType.COMMA))
-			{
 				parseType();
-			}
 		}
 
 		expect(TokenType.LEFT_BRACE);
@@ -780,9 +714,7 @@ public final class Parser implements AutoCloseable
 
 		// Type parameters (optional)
 		if (match(TokenType.LESS_THAN))
-		{
 			parseTypeParameters();
-		}
 
 		// Record components (mandatory)
 		expect(TokenType.LEFT_PARENTHESIS);
@@ -807,9 +739,7 @@ public final class Parser implements AutoCloseable
 		{
 			parseType();
 			while (match(TokenType.COMMA))
-			{
 				parseType();
-			}
 		}
 
 		// Record body (optional - can be empty)
@@ -841,9 +771,7 @@ public final class Parser implements AutoCloseable
 		{
 			parseType();
 			while (match(TokenType.BITWISE_AND))
-			{
 				parseType();
-			}
 		}
 	}
 
@@ -851,18 +779,12 @@ public final class Parser implements AutoCloseable
 	{
 		// Parse type annotations (e.g., @Nullable, @NonNull)
 		while (currentToken().type() == TokenType.AT_SIGN)
-		{
 			parseAnnotation();
-		}
 		if (isPrimitiveType(currentToken().type()))
-		{
 			consume();
-		}
 		else if (currentToken().type() == TokenType.VAR)
-		{
 			// Type inference with 'var' keyword (JDK 10+)
 			consume();
-		}
 		else
 		{
 			int typeStart = currentToken().start();
@@ -902,13 +824,9 @@ public final class Parser implements AutoCloseable
 		while (true)
 		{
 			while (currentToken().type() == TokenType.AT_SIGN)
-			{
 				parseAnnotation();
-			}
 			if (!match(TokenType.LEFT_BRACKET))
-			{
 				break;
-			}
 			expect(TokenType.RIGHT_BRACKET);
 			hasArrayDimensions = true;
 		}
@@ -990,14 +908,10 @@ public final class Parser implements AutoCloseable
 		{
 			// Parse annotations before type (e.g., (@NonNull String) value)
 			while (currentToken().type() == TokenType.AT_SIGN)
-			{
 				parseAnnotation();
-			}
 
 			if (isPrimitive)
-			{
 				consume();
-			}
 			else if (currentToken().type() == TokenType.IDENTIFIER)
 			{
 				// Parse qualified name (e.g., java.lang.String)
@@ -1015,9 +929,7 @@ public final class Parser implements AutoCloseable
 
 				// Parse type arguments (e.g., List<String>)
 				if (match(TokenType.LESS_THAN))
-				{
 					parseTypeArguments();
-				}
 
 				// Parse intersection types (e.g., Serializable & Comparable)
 				while (match(TokenType.BITWISE_AND))
@@ -1025,9 +937,7 @@ public final class Parser implements AutoCloseable
 					isIntersectionType = true;
 					// Parse annotations before intersection type component
 					while (currentToken().type() == TokenType.AT_SIGN)
-					{
 						parseAnnotation();
-					}
 					if (currentToken().type() != TokenType.IDENTIFIER)
 					{
 						// Not a valid intersection type, restore and return null
@@ -1045,9 +955,7 @@ public final class Parser implements AutoCloseable
 						consume();
 					}
 					if (match(TokenType.LESS_THAN))
-					{
 						parseTypeArguments();
-					}
 				}
 			}
 			else
@@ -1079,16 +987,12 @@ public final class Parser implements AutoCloseable
 		TokenType nextTokenType = currentToken().type();
 		boolean validCast;
 		if (isPrimitive && !isIntersectionType)
-		{
 			// Primitive type cast: can be followed by any unary operand
 			validCast = canStartUnaryExpression(nextTokenType);
-		}
 		else
-		{
 			// Reference type cast (or intersection type): cannot be followed by + or -
 			// to avoid ambiguity with binary expressions like (a) + b
 			validCast = canStartUnaryExpressionNotPlusMinus(nextTokenType);
-		}
 
 		if (!validCast)
 		{
@@ -1154,14 +1058,10 @@ public final class Parser implements AutoCloseable
 		{
 			parseComments();
 			if (currentToken().type() == TokenType.RIGHT_BRACE)
-			{
 				// Let match() in while condition consume the RIGHT_BRACE
 				continue;
-			}
 			if (currentToken().type() == TokenType.END_OF_FILE)
-			{
 				throw new ParserException("Unexpected END_OF_FILE in class body", currentToken().start());
-			}
 			parseMemberDeclaration();
 		}
 	}
@@ -1178,9 +1078,7 @@ public final class Parser implements AutoCloseable
 				// Handle comments after comma (e.g., trailing comma with comment before semicolon)
 				parseComments();
 				if (currentToken().type() == TokenType.SEMICOLON || currentToken().type() == TokenType.RIGHT_BRACE)
-				{
 					break;
-				}
 				parseEnumConstant();
 			}
 		}
@@ -1188,12 +1086,8 @@ public final class Parser implements AutoCloseable
 		parseComments();
 
 		if (match(TokenType.SEMICOLON))
-		{
 			while (currentToken().type() != TokenType.RIGHT_BRACE)
-			{
 				parseMemberDeclaration();
-			}
-		}
 	}
 
 	private void parseEnumConstant()
@@ -1205,18 +1099,12 @@ public final class Parser implements AutoCloseable
 		{
 			parseExpression();
 			while (match(TokenType.COMMA))
-			{
 				parseExpression();
-			}
 			expect(TokenType.RIGHT_PARENTHESIS);
 		}
 		if (match(TokenType.LEFT_BRACE))
-		{
 			while (!match(TokenType.RIGHT_BRACE))
-			{
 				parseMemberDeclaration();
-			}
-		}
 		int end = previousToken().end();
 		arena.allocateNode(NodeType.ENUM_CONSTANT, start, end);
 	}
@@ -1227,15 +1115,11 @@ public final class Parser implements AutoCloseable
 		skipMemberModifiers();
 
 		if (parseNestedTypeDeclaration())
-		{
 			return;
-		}
 
 		// Type parameters (for methods)
 		if (match(TokenType.LESS_THAN))
-		{
 			parseTypeParameters();
-		}
 
 		parseMemberBody(start);
 	}
@@ -1248,13 +1132,9 @@ public final class Parser implements AutoCloseable
 			currentToken().type() == TokenType.NON_SEALED)
 		{
 			if (currentToken().type() == TokenType.AT_SIGN)
-			{
 				parseAnnotation();
-			}
 			else
-			{
 				consume();
-			}
 		}
 	}
 
@@ -1293,26 +1173,18 @@ public final class Parser implements AutoCloseable
 	private void parseMemberBody(int start)
 	{
 		if (currentToken().type() == TokenType.IDENTIFIER)
-		{
 			parseIdentifierMember(start);
-		}
 		else if (isPrimitiveType(currentToken().type()) || currentToken().type() == TokenType.VOID)
-		{
 			parsePrimitiveTypedMember(start);
-		}
 		else if (currentToken().type() == TokenType.LEFT_BRACE)
-		{
 			// Instance or static initializer (parseBlock expects the LEFT_BRACE)
 			parseBlock();
-		}
 		else if (match(TokenType.SEMICOLON))
 		{
 			// Empty declaration
 		}
 		else
-		{
 			throw new ParserException("Unexpected token in member declaration: " + currentToken().type(), start);
-		}
 	}
 
 	private void parseIdentifierMember(int memberStart)
@@ -1345,9 +1217,7 @@ public final class Parser implements AutoCloseable
 
 		// Handle generic type arguments: List<String>, Map<K, V>, etc.
 		if (match(TokenType.LESS_THAN))
-		{
 			parseTypeArguments();
-		}
 
 		parseArrayDimensionsWithAnnotations();
 
@@ -1379,13 +1249,9 @@ public final class Parser implements AutoCloseable
 		parseArrayDimensionsWithAnnotations();
 		expect(TokenType.IDENTIFIER);
 		if (match(TokenType.LEFT_PARENTHESIS))
-		{
 			parseMethodRest(memberStart, false);
-		}
 		else
-		{
 			parseFieldRest(memberStart);
-		}
 	}
 
 	private NodeIndex parseAnnotation()
@@ -1397,9 +1263,7 @@ public final class Parser implements AutoCloseable
 		{
 			parseExpression();
 			while (match(TokenType.COMMA))
-			{
 				parseExpression();
-			}
 			expect(TokenType.RIGHT_PARENTHESIS);
 		}
 		int end = previousToken().end();
@@ -1430,16 +1294,12 @@ public final class Parser implements AutoCloseable
 		{
 			parseQualifiedName();
 			while (match(TokenType.COMMA))
-			{
 				parseQualifiedName();
-			}
 		}
 
 		// Annotation element default value (for @interface methods)
 		if (match(TokenType.DEFAULT))
-		{
 			parseExpression();
-		}
 
 		// Method body or semicolon
 		if (match(TokenType.SEMICOLON))
@@ -1447,9 +1307,7 @@ public final class Parser implements AutoCloseable
 			// Abstract method
 		}
 		else
-		{
 			parseBlock();
-		}
 
 		int end = previousToken().end();
 		NodeType nodeType;
@@ -1469,9 +1327,7 @@ public final class Parser implements AutoCloseable
 		while (currentToken().type() == TokenType.FINAL || currentToken().type() == TokenType.AT_SIGN)
 		{
 			if (currentToken().type() == TokenType.AT_SIGN)
-			{
 				parseAnnotation();
-			}
 			else
 			{
 				consume();
@@ -1540,9 +1396,7 @@ public final class Parser implements AutoCloseable
 		if (currentToken().type() == TokenType.BITWISE_OR)
 		{
 			while (match(TokenType.BITWISE_OR))
-			{
 				parseType();
-			}
 			// Create UNION_TYPE node spanning all exception types
 			int typeEnd = previousToken().end();
 			arena.allocateNode(NodeType.UNION_TYPE, typeStart, typeEnd);
@@ -1564,18 +1418,14 @@ public final class Parser implements AutoCloseable
 		parseArrayDimensionsWithAnnotations();
 
 		if (match(TokenType.ASSIGN))
-		{
 			parseExpression();
-		}
 
 		while (match(TokenType.COMMA))
 		{
 			expect(TokenType.IDENTIFIER);
 			parseArrayDimensionsWithAnnotations();
 			if (match(TokenType.ASSIGN))
-			{
 				parseExpression();
-			}
 		}
 
 		expect(TokenType.SEMICOLON);
@@ -1592,14 +1442,10 @@ public final class Parser implements AutoCloseable
 		{
 			parseComments();
 			if (currentToken().type() == TokenType.RIGHT_BRACE)
-			{
 				// Let match() in while condition consume the RIGHT_BRACE
 				continue;
-			}
 			if (currentToken().type() == TokenType.END_OF_FILE)
-			{
 				throw new ParserException("Unexpected END_OF_FILE in block", currentToken().start());
-			}
 			parseStatement();
 		}
 		int end = previousToken().end();
@@ -1684,14 +1530,10 @@ public final class Parser implements AutoCloseable
 				consume();
 				parseQualifiedName();
 				if (match(TokenType.LEFT_PARENTHESIS))
-				{
 					skipBalancedParens();
-				}
 			}
 			else
-			{
 				consume();
-			}
 		}
 		boolean result = switch (currentToken().type())
 		{
@@ -1729,17 +1571,11 @@ public final class Parser implements AutoCloseable
 		while (depth > 0 && currentToken().type() != TokenType.END_OF_FILE)
 		{
 			if (match(TokenType.LEFT_PARENTHESIS))
-			{
 				++depth;
-			}
 			else if (match(TokenType.RIGHT_PARENTHESIS))
-			{
 				--depth;
-			}
 			else
-			{
 				consume();
-			}
 		}
 	}
 
@@ -1748,9 +1584,7 @@ public final class Parser implements AutoCloseable
 		int start = currentToken().start();
 		consume();
 		if (currentToken().type() == TokenType.IDENTIFIER)
-		{
 			consume();
-		}
 		expect(TokenType.SEMICOLON);
 		int end = previousToken().end();
 		return arena.allocateNode(NodeType.BREAK_STATEMENT, start, end);
@@ -1761,9 +1595,7 @@ public final class Parser implements AutoCloseable
 		int start = currentToken().start();
 		consume();
 		if (currentToken().type() == TokenType.IDENTIFIER)
-		{
 			consume();
-		}
 		expect(TokenType.SEMICOLON);
 		int end = previousToken().end();
 		return arena.allocateNode(NodeType.CONTINUE_STATEMENT, start, end);
@@ -1804,14 +1636,10 @@ public final class Parser implements AutoCloseable
 				return false;
 			// Consume declaration annotations (before FINAL)
 			while (currentToken().type() == TokenType.AT_SIGN)
-			{
 				parseAnnotation();
-			}
 			// Consume FINAL modifier if present
 			if (currentToken().type() == TokenType.FINAL)
-			{
 				consume();
-			}
 			parseType();
 			if (currentToken().type() != TokenType.IDENTIFIER)
 				return false;
@@ -1862,9 +1690,7 @@ public final class Parser implements AutoCloseable
 		position = checkpoint;
 		// Regular for
 		if (!match(TokenType.SEMICOLON))
-		{
 			parseExpressionOrVariableStatement();
-		}
 		if (!match(TokenType.SEMICOLON))
 		{
 			parseExpression();
@@ -1874,9 +1700,7 @@ public final class Parser implements AutoCloseable
 		{
 			parseExpression();
 			while (match(TokenType.COMMA))
-			{
 				parseExpression();
-			}
 		}
 		expect(TokenType.RIGHT_PARENTHESIS);
 		parseStatement();
@@ -1932,22 +1756,16 @@ public final class Parser implements AutoCloseable
 				parseCaseLabelElement();
 				// Handle multiple case labels: case 1, 2, 3 -> or case 'L', 'l':
 				while (match(TokenType.COMMA))
-				{
 					parseCaseLabelElement();
-				}
 			}
 			else
-			{
 				consume(); // DEFAULT
-			}
 
 			if (match(TokenType.ARROW))
 			{
 				// Arrow case: case 1 -> expr; or case 1 -> { ... }
 				if (currentToken().type() == TokenType.LEFT_BRACE)
-				{
 					parseBlock();
-				}
 				else if (currentToken().type() == TokenType.THROW)
 				{
 					consume();
@@ -1955,9 +1773,7 @@ public final class Parser implements AutoCloseable
 					expect(TokenType.SEMICOLON);
 				}
 				else
-				{
 					parseStatement();
-				}
 			}
 			else
 			{
@@ -1968,9 +1784,7 @@ public final class Parser implements AutoCloseable
 				while (currentToken().type() != TokenType.CASE &&
 					currentToken().type() != TokenType.DEFAULT &&
 					currentToken().type() != TokenType.RIGHT_BRACE)
-				{
 					parseStatement();
-				}
 			}
 			// Handle comments between case/default labels
 			parseComments();
@@ -1996,23 +1810,17 @@ public final class Parser implements AutoCloseable
 				parseCaseLabelElement();
 				// Handle multiple case labels: case 1, 2, 3 ->
 				while (match(TokenType.COMMA))
-				{
 					parseCaseLabelElement();
-				}
 			}
 			else
-			{
 				consume(); // DEFAULT
-			}
 
 			if (match(TokenType.ARROW))
 			{
 				// Arrow case: case 1 -> expr;
 				if (currentToken().type() == TokenType.LEFT_BRACE)
-				{
 					// Block body: case 1 -> { ... }
 					parseBlock();
-				}
 				else if (currentToken().type() == TokenType.THROW)
 				{
 					// Throw expression: case 1 -> throw new Exception();
@@ -2034,9 +1842,7 @@ public final class Parser implements AutoCloseable
 				while (currentToken().type() != TokenType.CASE &&
 					currentToken().type() != TokenType.DEFAULT &&
 					currentToken().type() != TokenType.RIGHT_BRACE)
-				{
 					parseStatement();
-				}
 			}
 		}
 
@@ -2062,26 +1868,18 @@ public final class Parser implements AutoCloseable
 	{
 		// Handle special keywords that can appear as case labels
 		if (match(TokenType.NULL_LITERAL))
-		{
 			return;
-		}
 		if (match(TokenType.DEFAULT))
-		{
 			return;
-		}
 
 		// Try to detect primitive type pattern (JEP 507): int i, double d, etc.
 		if (tryParsePrimitiveTypePattern())
-		{
 			return;
-		}
 
 		// Try to detect reference type pattern: Type identifier or Type _
 		// Type patterns look like: String s, Foo.Bar bar, Integer _, etc.
 		if (currentToken().type() == TokenType.IDENTIFIER && tryParseTypePattern())
-		{
 			return;
-		}
 
 		// Parse as regular expression
 		parseExpression();
@@ -2103,9 +1901,7 @@ public final class Parser implements AutoCloseable
 	private boolean tryParsePrimitiveTypePattern()
 	{
 		if (!isPrimitiveType(currentToken().type()))
-		{
 			return false;
-		}
 
 		int checkpoint = position;
 		consume(); // primitive type keyword
@@ -2122,9 +1918,7 @@ public final class Parser implements AutoCloseable
 
 		// Check for optional guard: "when" expression
 		if (isContextualKeyword("when"))
-		{
 			parseGuardExpression();
-		}
 		return true;
 	}
 
@@ -2173,9 +1967,7 @@ public final class Parser implements AutoCloseable
 			consume();
 			// Check for optional guard: "when" expression
 			if (isContextualKeyword("when"))
-			{
 				parseGuardExpression();
-			}
 			return true;
 		}
 
@@ -2207,9 +1999,7 @@ public final class Parser implements AutoCloseable
 
 		// Check for optional guard: "when" expression
 		if (isContextualKeyword("when"))
-		{
 			parseGuardExpression();
-		}
 
 		int end = previousToken().end();
 		return arena.allocateNode(NodeType.RECORD_PATTERN, typeStart, end);
@@ -2223,15 +2013,11 @@ public final class Parser implements AutoCloseable
 	{
 		// Handle empty component list: Empty()
 		if (currentToken().type() == TokenType.RIGHT_PARENTHESIS)
-		{
 			return;
-		}
 
 		parseComponentPattern();
 		while (match(TokenType.COMMA))
-		{
 			parseComponentPattern();
-		}
 	}
 
 	/**
@@ -2257,14 +2043,10 @@ public final class Parser implements AutoCloseable
 		// Parse type (may be primitive, var, or qualified reference type)
 		int componentTypeStart = currentToken().start();
 		if (isPrimitiveType(currentToken().type()))
-		{
 			consume();
-		}
 		else if (currentToken().type() == TokenType.VAR)
-		{
 			// Type inference with 'var' keyword
 			consume();
-		}
 		else if (currentToken().type() == TokenType.IDENTIFIER)
 		{
 			consume();
@@ -2290,15 +2072,11 @@ public final class Parser implements AutoCloseable
 		// - LEFT_PARENTHESIS -> nested record pattern
 		// - IDENTIFIER -> type pattern with variable name
 		if (currentToken().type() == TokenType.LEFT_PARENTHESIS)
-		{
 			// Nested record pattern
 			parseRecordPattern(componentTypeStart);
-		}
 		else if (currentToken().type() == TokenType.IDENTIFIER)
-		{
 			// Type pattern: consume the variable name
 			consume();
-		}
 		// else: just a type without variable (could happen in some edge cases)
 	}
 
@@ -2335,9 +2113,7 @@ public final class Parser implements AutoCloseable
 		int start = currentToken().start();
 		expect(TokenType.RETURN);
 		if (currentToken().type() != TokenType.SEMICOLON)
-		{
 			parseExpression();
-		}
 		expect(TokenType.SEMICOLON);
 		int end = previousToken().end();
 		return arena.allocateNode(NodeType.RETURN_STATEMENT, start, end);
@@ -2384,12 +2160,8 @@ public final class Parser implements AutoCloseable
 		{
 			parseResource();
 			while (match(TokenType.SEMICOLON))
-			{
 				if (currentToken().type() != TokenType.RIGHT_PARENTHESIS)
-				{
 					parseResource();
-				}
-			}
 			expect(TokenType.RIGHT_PARENTHESIS);
 		}
 
@@ -2407,9 +2179,7 @@ public final class Parser implements AutoCloseable
 
 		// Finally clause
 		if (currentToken().type() == TokenType.FINALLY)
-		{
 			parseFinallyClause();
-		}
 
 		int end = previousToken().end();
 		return arena.allocateNode(NodeType.TRY_STATEMENT, start, end);
@@ -2457,18 +2227,12 @@ public final class Parser implements AutoCloseable
 	{
 		// Consume declaration annotations (e.g., @Cleanup)
 		while (currentToken().type() == TokenType.AT_SIGN)
-		{
 			parseAnnotation();
-		}
 
 		if (isResourceVariableReference())
-		{
 			parseResourceVariableReference();
-		}
 		else
-		{
 			parseResourceDeclaration();
-		}
 	}
 
 	/**
@@ -2488,9 +2252,7 @@ public final class Parser implements AutoCloseable
 	{
 		// Field access: this.resource or Outer.this.resource
 		if (currentToken().type() == TokenType.THIS)
-		{
 			return true;
-		}
 
 		// Simple identifier followed by ; or ) indicates variable reference
 		// Note: qualified names like java.io.Reader would be followed by IDENTIFIER (variable name)
@@ -2527,9 +2289,7 @@ public final class Parser implements AutoCloseable
 	{
 		// Optional FINAL modifier
 		if (currentToken().type() == TokenType.FINAL)
-		{
 			consume();
-		}
 		parseType();
 		expect(TokenType.IDENTIFIER);
 		expect(TokenType.ASSIGN);
@@ -2554,9 +2314,7 @@ public final class Parser implements AutoCloseable
 		expect(TokenType.ASSERT);
 		parseExpression();
 		if (match(TokenType.COLON))
-		{
 			parseExpression();
-		}
 		expect(TokenType.SEMICOLON);
 		int end = previousToken().end();
 		return arena.allocateNode(NodeType.ASSERT_STATEMENT, start, end);
@@ -2574,14 +2332,10 @@ public final class Parser implements AutoCloseable
 		{
 			// Consume declaration annotations (before FINAL modifier)
 			while (currentToken().type() == TokenType.AT_SIGN)
-			{
 				parseAnnotation();
-			}
 			// Consume optional FINAL modifier
 			if (currentToken().type() == TokenType.FINAL)
-			{
 				consume();
-			}
 			parseType();
 			if (currentToken().type() != TokenType.IDENTIFIER)
 			{
@@ -2636,9 +2390,7 @@ public final class Parser implements AutoCloseable
 			isPrimitiveType(currentToken().type()) ||
 			currentToken().type() == TokenType.IDENTIFIER) &&
 			tryParseVariableDeclaration(checkpoint))
-		{
 			return;
-		}
 
 		// Parse as expression statement
 		parseExpression();
@@ -2658,10 +2410,8 @@ public final class Parser implements AutoCloseable
 			consume(); // consume identifier
 
 			if (match(TokenType.ARROW))
-			{
 				// This is a lambda expression: x -> body
 				return parseLambdaBody(start);
-			}
 
 			// Not a lambda, restore position
 			position = checkpoint;
@@ -2717,9 +2467,7 @@ public final class Parser implements AutoCloseable
 		// Try to parse as a cast expression
 		NodeIndex castExpr = tryCastExpression(start);
 		if (castExpr != null)
-		{
 			return castExpr;
-		}
 
 		// Parse the content inside parens
 		NodeIndex expr = parseExpression();
@@ -2727,9 +2475,7 @@ public final class Parser implements AutoCloseable
 
 		// Check if this is a lambda: (params) -> expr
 		if (match(TokenType.ARROW))
-		{
 			return parseLambdaBody(start);
-		}
 
 		// Regular parenthesized expression
 		return expr;
@@ -2814,13 +2560,11 @@ public final class Parser implements AutoCloseable
 	{
 		TokenType current = currentToken().type();
 		for (TokenType type : types)
-		{
 			if (current == type)
 			{
 				consume();
 				return true;
 			}
-		}
 		return false;
 	}
 
@@ -2964,9 +2708,7 @@ public final class Parser implements AutoCloseable
 				parseComments();
 				// Explicit type arguments: Type::<String>method
 				if (match(TokenType.LESS_THAN))
-				{
 					parseTypeArguments();
-				}
 				// Method reference: Type::method or Type::new
 				int end;
 				if (match(TokenType.NEW))
@@ -3015,9 +2757,7 @@ public final class Parser implements AutoCloseable
 		parseComments();
 		// Explicit type arguments: obj.<String>method()
 		if (match(TokenType.LESS_THAN))
-		{
 			parseTypeArguments();
-		}
 		if (currentToken().type() == TokenType.IDENTIFIER)
 		{
 			// Field access: obj.field
@@ -3115,35 +2855,23 @@ public final class Parser implements AutoCloseable
 			}
 
 			if (match(TokenType.LEFT_PARENTHESIS))
-			{
 				return parseParenthesizedOrLambda(start);
-			}
 
 			if (match(TokenType.NEW))
-			{
 				return parseNewExpression(start);
-			}
 
 			if (match(TokenType.THIS))
-			{
 				return arena.allocateNode(NodeType.THIS_EXPRESSION, start, end);
-			}
 
 			if (match(TokenType.SUPER))
-			{
 				return arena.allocateNode(NodeType.SUPER_EXPRESSION, start, end);
-			}
 
 			if (match(TokenType.LEFT_BRACE))
-			{
 				// Array initializer: {1, 2, 3}
 				return parseArrayInitializer(start);
-			}
 
 			if (token.type() == TokenType.AT_SIGN)
-			{
 				return parseAnnotation();
-			}
 
 			if (isPrimitiveType(token.type()))
 			{
@@ -3152,10 +2880,8 @@ public final class Parser implements AutoCloseable
 			}
 
 			if (match(TokenType.SWITCH))
-			{
 				// Switch expression: switch (x) { case 1 -> 10; default -> 0; }
 				return parseSwitchExpression(start);
-			}
 
 			if (token.type() == TokenType.ARROW)
 			{
@@ -3252,20 +2978,14 @@ public final class Parser implements AutoCloseable
 	{
 		// Explicit type arguments: new <String>Constructor()
 		if (match(TokenType.LESS_THAN))
-		{
 			parseTypeArguments();
-		}
 		// Object creation: new Type() or new Type[]
 		parseType();
 
 		if (match(TokenType.LEFT_BRACKET))
-		{
 			return parseArrayCreation(start);
-		}
 		if (match(TokenType.LEFT_PARENTHESIS))
-		{
 			return parseObjectCreation(start);
-		}
 		throw new ParserException(
 			"Expected '(' or '[' after 'new' but found " + currentToken().type(),
 			currentToken().start());
@@ -3275,17 +2995,13 @@ public final class Parser implements AutoCloseable
 	{
 		// Array creation with dimensions
 		if (currentToken().type() != TokenType.RIGHT_BRACKET)
-		{
 			parseExpression();
-		}
 		expect(TokenType.RIGHT_BRACKET);
 
 		while (match(TokenType.LEFT_BRACKET))
 		{
 			if (currentToken().type() != TokenType.RIGHT_BRACKET)
-			{
 				parseExpression();
-			}
 			expect(TokenType.RIGHT_BRACKET);
 		}
 
@@ -3296,9 +3012,7 @@ public final class Parser implements AutoCloseable
 			while (match(TokenType.COMMA))
 			{
 				if (currentToken().type() == TokenType.RIGHT_BRACE)
-				{
 					break;
-				}
 				parseExpression();
 			}
 			expect(TokenType.RIGHT_BRACE);
@@ -3315,9 +3029,7 @@ public final class Parser implements AutoCloseable
 		{
 			parseExpression();
 			while (match(TokenType.COMMA))
-			{
 				parseExpression();
-			}
 			expect(TokenType.RIGHT_PARENTHESIS);
 		}
 
@@ -3325,9 +3037,7 @@ public final class Parser implements AutoCloseable
 		if (match(TokenType.LEFT_BRACE))
 		{
 			while (currentToken().type() != TokenType.RIGHT_BRACE && currentToken().type() != TokenType.END_OF_FILE)
-			{
 				parseMemberDeclaration();
-			}
 			expect(TokenType.RIGHT_BRACE);
 		}
 
@@ -3350,17 +3060,13 @@ public final class Parser implements AutoCloseable
 				parseArrayInitializer(nestedStart);
 			}
 			else
-			{
 				parseExpression();
-			}
 			while (match(TokenType.COMMA))
 			{
 				// Handle comments after comma
 				parseComments();
 				if (currentToken().type() == TokenType.RIGHT_BRACE)
-				{
 					break;
-				}
 				if (currentToken().type() == TokenType.LEFT_BRACE)
 				{
 					int nestedStart = currentToken().start();
@@ -3368,9 +3074,7 @@ public final class Parser implements AutoCloseable
 					parseArrayInitializer(nestedStart);
 				}
 				else
-				{
 					parseExpression();
-				}
 			}
 			// Handle comments before closing brace
 			parseComments();
@@ -3427,9 +3131,7 @@ public final class Parser implements AutoCloseable
 	private Token currentToken()
 	{
 		if (position < tokens.size())
-		{
 			return tokens.get(position);
-		}
 		return tokens.get(tokens.size() - 1);
 	}
 
@@ -3451,19 +3153,15 @@ public final class Parser implements AutoCloseable
 		{
 			tokenCheckCounter = 0;
 			if (Instant.now().isAfter(parsingDeadline))
-			{
 				throw new ParserException(
 					"Parsing timeout exceeded (" + SecurityConfig.PARSING_TIMEOUT_MS + "ms) at position " +
 					currentToken().start(),
 					currentToken().start());
-			}
 		}
 
 		Token current = currentToken();
 		if (position < tokens.size() - 1)
-		{
 			++position;
-		}
 		return current;
 	}
 
@@ -3505,9 +3203,7 @@ public final class Parser implements AutoCloseable
 
 		TokenType type = currentToken().type();
 		if (type == TokenType.GREATER_THAN)
-		{
 			consume();
-		}
 		else if (type == TokenType.RIGHT_SHIFT)
 		{
 			// RIGHT_SHIFT (>>) represents two GREATER_THAN tokens

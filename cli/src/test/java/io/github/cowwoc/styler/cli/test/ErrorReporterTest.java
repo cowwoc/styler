@@ -132,9 +132,6 @@ public class ErrorReporterTest
 		};
 
 		for (Exception e : exceptions)
-		{
-			String message = errorReporter.report(e);
-			requireThat(message, "message").isNotEmpty();
-		}
+			requireThat(errorReporter.report(e), "message").isNotEmpty();
 	}
 }

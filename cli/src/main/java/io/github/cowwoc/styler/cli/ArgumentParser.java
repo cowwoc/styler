@@ -50,9 +50,7 @@ public final class ArgumentParser
 		requireThat(args, "args").isNotNull();
 
 		if (args.length == 0)
-		{
 			throw new HelpRequestedException(helpFormatter.formatHelp());
-		}
 
 		CommandSpec spec = createCommandSpec();
 		ParseResult parseResult = parseArguments(spec, args);
@@ -147,13 +145,9 @@ public final class ArgumentParser
 	private void checkForHelpOrVersion(ParseResult parseResult) throws HelpRequestedException
 	{
 		if (parseResult.hasMatchedOption("--help"))
-		{
 			throw new HelpRequestedException(helpFormatter.formatHelp());
-		}
 		if (parseResult.hasMatchedOption("--version"))
-		{
 			throw new HelpRequestedException(helpFormatter.formatVersion());
-		}
 	}
 
 	/**
@@ -194,20 +188,14 @@ public final class ArgumentParser
 	{
 		List<String> positionals = List.of();
 		if (!parseResult.matchedPositionals().isEmpty())
-		{
 			positionals = parseResult.matchedPositionals().getFirst().originalStringValues();
-		}
 
 		if (positionals.isEmpty())
-		{
 			throw new UsageException("No input files or directories specified. " +
 				"Use --help for usage information.");
-		}
 
 		for (String pathString : positionals)
-		{
 			builder.addInputPath(Path.of(pathString));
-		}
 	}
 
 	/**
@@ -219,10 +207,7 @@ public final class ArgumentParser
 	private void addConfigPath(ParseResult parseResult, CLIOptions.Builder builder)
 	{
 		if (parseResult.hasMatchedOption("--config"))
-		{
-			Path configPath = parseResult.matchedOptionValue("--config", null);
-			builder.setConfigPath(configPath);
-		}
+			builder.setConfigPath(parseResult.matchedOptionValue("--config", null));
 	}
 
 	/**
@@ -246,14 +231,9 @@ public final class ArgumentParser
 	private void addClasspathEntries(ParseResult parseResult, CLIOptions.Builder builder)
 	{
 		if (parseResult.hasMatchedOption("--classpath"))
-		{
-			String classpathValue = parseResult.matchedOptionValue("--classpath", "");
-			builder.setClasspathEntries(parsePathList(classpathValue));
-		}
+			builder.setClasspathEntries(parsePathList(parseResult.matchedOptionValue("--classpath", "")));
 		else
-		{
 			builder.setClasspathEntries(List.of());
-		}
 	}
 
 	/**
@@ -265,14 +245,9 @@ public final class ArgumentParser
 	private void addModulepathEntries(ParseResult parseResult, CLIOptions.Builder builder)
 	{
 		if (parseResult.hasMatchedOption("--module-path"))
-		{
-			String modulepathValue = parseResult.matchedOptionValue("--module-path", "");
-			builder.setModulepathEntries(parsePathList(modulepathValue));
-		}
+			builder.setModulepathEntries(parsePathList(parseResult.matchedOptionValue("--module-path", "")));
 		else
-		{
 			builder.setModulepathEntries(List.of());
-		}
 	}
 
 	/**
@@ -284,9 +259,7 @@ public final class ArgumentParser
 	private List<Path> parsePathList(String pathListString)
 	{
 		if (pathListString == null || pathListString.isBlank())
-		{
 			return List.of();
-		}
 		return Arrays.stream(pathListString.split(Pattern.quote(File.pathSeparator))).
 			map(String::strip).
 			filter(s -> !s.isEmpty()).

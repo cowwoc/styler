@@ -132,9 +132,7 @@ public final class Lexer
 		skipWhitespace();
 
 		if (position >= source.length())
-		{
 			return new Token(TokenType.END_OF_FILE, position, position, null);
-		}
 
 		int start = position;
 		char ch = source.charAt(position);
@@ -143,38 +141,26 @@ public final class Lexer
 		if (ch == '/')
 		{
 			if (peek() == '/')
-			{
 				return scanLineComment(start);
-			}
 			if (peek() == '*')
-			{
 				return scanBlockComment(start);
-			}
 		}
 
 		// Identifiers and keywords - check both direct characters and Unicode escapes
 		if (Character.isJavaIdentifierStart(ch) || isIdentifierStartAtPosition())
-		{
 			return scanIdentifierOrKeyword(start);
-		}
 
 		// Numbers
 		if (Character.isDigit(ch))
-		{
 			return scanNumber(start);
-		}
 
 		// String literals
 		if (ch == '"')
-		{
 			return scanStringLiteral(start);
-		}
 
 		// Char literals
 		if (ch == '\'')
-		{
 			return scanCharLiteral(start);
-		}
 
 		// Operators and separators
 		return scanOperatorOrSeparator(start);
@@ -183,9 +169,7 @@ public final class Lexer
 	private void skipWhitespace()
 	{
 		while (position < source.length() && Character.isWhitespace(source.charAt(position)))
-		{
 			++position;
-		}
 	}
 
 	private Token scanLineComment(int start)
@@ -197,9 +181,7 @@ public final class Lexer
 		boolean isMarkdownDoc = position < source.length() && source.charAt(position) == '/';
 
 		while (position < source.length() && source.charAt(position) != '\n')
-		{
 			++position;
-		}
 		String text = source.substring(start, position);
 		TokenType type;
 		if (isMarkdownDoc)
@@ -229,13 +211,9 @@ public final class Lexer
 		String text = source.substring(start, position);
 		TokenType type;
 		if (isJavadoc)
-		{
 			type = TokenType.JAVADOC_COMMENT;
-		}
 		else
-		{
 			type = TokenType.BLOCK_COMMENT;
-		}
 		return new Token(type, start, position, text);
 	}
 
@@ -338,13 +316,9 @@ public final class Lexer
 		{
 			char nextChar = source.charAt(position + 1);
 			if (nextChar == 'b' || nextChar == 'B')
-			{
 				return scanBinaryLiteral(start);
-			}
 			if (nextChar == 'x' || nextChar == 'X')
-			{
 				return scanHexLiteral(start);
-			}
 		}
 
 		// Decimal number scanning - handles integers, longs, floats, doubles
@@ -356,9 +330,7 @@ public final class Lexer
 			char ch = source.charAt(position);
 
 			if (Character.isDigit(ch) || ch == '_')
-			{
 				++position;
-			}
 			else if (ch == '.' && !hasDecimal && !hasExponent)
 			{
 				hasDecimal = true;
@@ -375,10 +347,7 @@ public final class Lexer
 			{
 				switch (ch)
 				{
-					case 'L', 'l' ->
-					{
-						++position;
-					}
+					case 'L', 'l' -> ++position;
 					case 'F', 'f', 'D', 'd' ->
 					{
 						++position;
@@ -397,21 +366,13 @@ public final class Lexer
 		TokenType type;
 
 		if (text.endsWith("L") || text.endsWith("l"))
-		{
 			type = TokenType.LONG_LITERAL;
-		}
 		else if (text.endsWith("F") || text.endsWith("f"))
-		{
 			type = TokenType.FLOAT_LITERAL;
-		}
 		else if (text.endsWith("D") || text.endsWith("d") || hasDecimal)
-		{
 			type = TokenType.DOUBLE_LITERAL;
-		}
 		else
-		{
 			type = TokenType.INTEGER_LITERAL;
-		}
 
 		return new Token(type, start, position, text);
 	}
@@ -445,13 +406,9 @@ public final class Lexer
 		{
 			char ch = source.charAt(position);
 			if (isBinaryDigit(ch) || ch == '_')
-			{
 				++position;
-			}
 			else
-			{
 				break;
-			}
 		}
 
 		// Check for long suffix
@@ -484,26 +441,18 @@ public final class Lexer
 		{
 			char ch = source.charAt(position);
 			if (isHexDigit(ch) || ch == '_')
-			{
 				++position;
-			}
 			else
-			{
 				break;
-			}
 		}
 
 		// Check for hexadecimal floating-point literal
 		if (position < source.length() && source.charAt(position) == '.')
-		{
 			return scanHexFloatLiteral(start);
-		}
 
 		// Check for binary exponent (p or P)
 		if (position < source.length() && (source.charAt(position) == 'p' || source.charAt(position) == 'P'))
-		{
 			return scanHexFloatLiteral(start);
-		}
 
 		// Check for long suffix
 		if (position < source.length() && (source.charAt(position) == 'L' || source.charAt(position) == 'l'))
@@ -537,13 +486,9 @@ public final class Lexer
 			{
 				char ch = source.charAt(position);
 				if (isHexDigit(ch) || ch == '_')
-				{
 					++position;
-				}
 				else
-				{
 					break;
-				}
 			}
 		}
 
@@ -554,22 +499,16 @@ public final class Lexer
 
 			// Optional sign for exponent
 			if (position < source.length() && (source.charAt(position) == '+' || source.charAt(position) == '-'))
-			{
 				++position;
-			}
 
 			// Decimal exponent digits
 			while (position < source.length())
 			{
 				char ch = source.charAt(position);
 				if (Character.isDigit(ch) || ch == '_')
-				{
 					++position;
-				}
 				else
-				{
 					break;
-				}
 			}
 		}
 
@@ -615,9 +554,7 @@ public final class Lexer
 		if (position + 1 < source.length() &&
 			source.charAt(position) == '"' &&
 			source.charAt(position + 1) == '"')
-		{
 			return scanTextBlock(start);
-		}
 
 		while (position < source.length())
 		{
@@ -633,9 +570,7 @@ public final class Lexer
 				consumeEscapeSequence();
 			}
 			else
-			{
 				++position;
-			}
 		}
 
 		String text = source.substring(start, position);
@@ -651,18 +586,14 @@ public final class Lexer
 		while (position < source.length() && source.charAt(position) != '\n')
 		{
 			if (!Character.isWhitespace(source.charAt(position)))
-			{
 				throw new LexerException(
 					"Text block opening delimiter must be followed by line terminator", position);
-			}
 			++position;
 		}
 
 		// Skip the newline
 		if (position < source.length())
-		{
 			++position;
-		}
 
 		// Scan until closing """
 		while (position + 2 < source.length())
@@ -682,9 +613,7 @@ public final class Lexer
 				consumeEscapeSequence();
 			}
 			else
-			{
 				++position;
-			}
 		}
 
 		throw new LexerException("Unclosed text block starting at position " + start, start);
@@ -702,15 +631,11 @@ public final class Lexer
 				consumeEscapeSequence();
 			}
 			else
-			{
 				++position;
-			}
 		}
 
 		if (position < source.length() && source.charAt(position) == '\'')
-		{
 			++position;
-		}
 
 		String text = source.substring(start, position);
 		return new Token(TokenType.CHAR_LITERAL, start, position, text);
@@ -730,9 +655,7 @@ public final class Lexer
 		{
 			// Unicode escape: skip all 'u' chars (JLS allows multiple 'u' chars before hex digits)
 			while (position < source.length() && source.charAt(position) == 'u')
-			{
 				++position;
-			}
 			// Skip up to 4 hex digits
 			int hexCount = 0;
 			while (position < source.length() && hexCount < 4 && isHexDigit(source.charAt(position)))
@@ -742,10 +665,8 @@ public final class Lexer
 			}
 		}
 		else
-		{
 			// Standard escape: skip single character
 			++position;
-		}
 	}
 
 	private boolean isHexDigit(char ch)
@@ -794,137 +715,96 @@ public final class Lexer
 			case ':' ->
 			{
 				if (matchAndConsume(':'))
-				{
 					yield TokenType.DOUBLE_COLON;
-				}
 				yield TokenType.COLON;
 			}
 			case '.' ->
 			{
 				if (matchAndConsume('.') && matchAndConsume('.'))
-				{
 					yield TokenType.ELLIPSIS;
-				}
 				yield TokenType.DOT;
 			}
 			case '=' ->
 			{
 				if (matchAndConsume('='))
-				{
 					yield TokenType.EQUAL;
-				}
 				yield TokenType.ASSIGN;
 			}
 			case '!' ->
 			{
 				if (matchAndConsume('='))
-				{
 					yield TokenType.NOT_EQUAL;
-				}
 				yield TokenType.NOT;
 			}
 			case '<' ->
 			{
 				if (matchAndConsume('='))
-				{
 					yield TokenType.LESS_THAN_OR_EQUAL;
-				}
 				if (matchAndConsume('<'))
 				{
 					if (matchAndConsume('='))
-					{
 						yield TokenType.LEFT_SHIFT_ASSIGN;
-					}
 					yield TokenType.LEFT_SHIFT;
 				}
 				yield TokenType.LESS_THAN;
 			}
-			case '>' ->
-			{
-				yield scanGreaterThanOperator();
-			}
+			case '>' -> scanGreaterThanOperator();
 			case '&' ->
 			{
 				if (matchAndConsume('&'))
-				{
 					yield TokenType.LOGICAL_AND;
-				}
 				if (matchAndConsume('='))
-				{
 					yield TokenType.BITWISE_AND_ASSIGN;
-				}
 				yield TokenType.BITWISE_AND;
 			}
 			case '|' ->
 			{
 				if (matchAndConsume('|'))
-				{
 					yield TokenType.LOGICAL_OR;
-				}
 				if (matchAndConsume('='))
-				{
 					yield TokenType.BITWISE_OR_ASSIGN;
-				}
 				yield TokenType.BITWISE_OR;
 			}
 			case '+' ->
 			{
 				if (matchAndConsume('+'))
-				{
 					yield TokenType.INCREMENT;
-				}
 				if (matchAndConsume('='))
-				{
 					yield TokenType.PLUS_ASSIGN;
-				}
 				yield TokenType.PLUS;
 			}
 			case '-' ->
 			{
 				if (matchAndConsume('-'))
-				{
 					yield TokenType.DECREMENT;
-				}
 				if (matchAndConsume('='))
-				{
 					yield TokenType.MINUS_ASSIGN;
-				}
 				if (matchAndConsume('>'))
-				{
 					yield TokenType.ARROW;
-				}
 				yield TokenType.MINUS;
 			}
 			case '*' ->
 			{
 				if (matchAndConsume('='))
-				{
 					yield TokenType.STAR_ASSIGN;
-				}
 				yield TokenType.STAR;
 			}
 			case '/' ->
 			{
 				if (matchAndConsume('='))
-				{
 					yield TokenType.DIVIDE_ASSIGN;
-				}
 				yield TokenType.DIVIDE;
 			}
 			case '^' ->
 			{
 				if (matchAndConsume('='))
-				{
 					yield TokenType.CARET_ASSIGN;
-				}
 				yield TokenType.CARET;
 			}
 			case '%' ->
 			{
 				if (matchAndConsume('='))
-				{
 					yield TokenType.MODULO_ASSIGN;
-				}
 				yield TokenType.MODULO;
 			}
 			default -> TokenType.ERROR;
@@ -981,9 +861,7 @@ public final class Lexer
 	{
 		int nextPos = position + 1;
 		if (nextPos < source.length())
-		{
 			return source.charAt(nextPos);
-		}
 		return '\0';
 	}
 
@@ -1017,9 +895,7 @@ public final class Lexer
 
 		// Skip all consecutive 'u' characters (JLS allows \uuuu0041)
 		while (position < source.length() && source.charAt(position) == 'u')
-		{
 			++position;
-		}
 
 		// Must have exactly 4 hex digits
 		if (position + 4 > source.length())

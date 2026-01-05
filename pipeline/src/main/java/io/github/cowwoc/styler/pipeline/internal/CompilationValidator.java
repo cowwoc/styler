@@ -85,19 +85,13 @@ public final class CompilationValidator
 			OptionalLong classLastModified = scanner.getClassLastModified(fqn);
 
 			if (classLastModified.isEmpty())
-			{
 				missingClasses.add(fqn);
-			}
 			else if (classLastModified.getAsLong() < sourceLastModified)
-			{
 				staleClasses.add(fqn);
-			}
 		}
 
 		if (missingClasses.isEmpty() && staleClasses.isEmpty())
-		{
 			return new CompilationValidationResult.Valid();
-		}
 		return new CompilationValidationResult.Invalid(missingClasses, staleClasses, sourceFile);
 	}
 
@@ -111,9 +105,7 @@ public final class CompilationValidator
 	private String buildFullyQualifiedName(String packageName, String typeName)
 	{
 		if (packageName.isEmpty())
-		{
 			return typeName;
-		}
 		return packageName + "." + typeName;
 	}
 }

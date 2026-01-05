@@ -28,9 +28,7 @@ public final class RecursionDepthTracker
 		depth.set(currentDepth);
 
 		if (currentDepth > config.maxRecursionDepth())
-		{
 			throw new RecursionDepthExceededException(currentDepth, config.maxRecursionDepth());
-		}
 	}
 
 	/**
@@ -44,9 +42,7 @@ public final class RecursionDepthTracker
 	{
 		int currentDepth = depth.get();
 		if (currentDepth <= 0)
-		{
 			throw new IllegalStateException("Recursion depth is already zero. Mismatched enter/exit calls.");
-		}
 		depth.set(currentDepth - 1);
 	}
 

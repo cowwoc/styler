@@ -44,7 +44,6 @@ public interface FormattingConfiguration
 
 		T found = null;
 		for (FormattingConfiguration config : configs)
-		{
 			if (configType.isInstance(config))
 			{
 				if (found != null)
@@ -54,11 +53,8 @@ public interface FormattingConfiguration
 				}
 				found = configType.cast(config);
 			}
-		}
 		if (found != null)
-		{
 			return found;
-		}
 		return defaultConfig;
 	}
 }

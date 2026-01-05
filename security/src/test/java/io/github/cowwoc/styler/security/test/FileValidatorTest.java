@@ -167,7 +167,6 @@ public class FileValidatorTest
 	private void cleanupDirectory(Path directory) throws IOException
 	{
 		if (directory != null && Files.exists(directory))
-		{
 			Files.walk(directory)
 				.sorted((a, b) -> -a.compareTo(b))
 				.forEach(path -> {
@@ -180,6 +179,5 @@ public class FileValidatorTest
 						// Ignore cleanup errors
 					}
 				});
-		}
 	}
 }

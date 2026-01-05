@@ -261,14 +261,10 @@ public final class WhitespaceAnalyzer
 	{
 		// Check multi-character operators first
 		for (String op : MULTI_CHAR_OPERATORS)
-		{
 			if (position + op.length() <= sourceCode.length() &&
 				sourceCode.substring(position, position + op.length()).equals(op))
-			{
 				// Special case: :: is method reference, not binary operator
 				return !op.equals("::");
-			}
-		}
 
 		// Check single-character operators
 		char current = sourceCode.charAt(position);
@@ -318,17 +314,13 @@ public final class WhitespaceAnalyzer
 	{
 		// For multi-character operators, we need to find the exact start
 		for (String op : MULTI_CHAR_OPERATORS)
-		{
 			if (position >= op.length() - 1)
 			{
 				int checkPos = position - (op.length() - 1);
 				if (checkPos >= 0 && checkPos + op.length() <= sourceCode.length() &&
 					sourceCode.substring(checkPos, checkPos + op.length()).equals(op))
-				{
 					return checkPos;
-				}
 			}
-		}
 
 		return position;
 	}
@@ -343,13 +335,9 @@ public final class WhitespaceAnalyzer
 	private static int getOperatorLength(String sourceCode, int position)
 	{
 		for (String op : MULTI_CHAR_OPERATORS)
-		{
 			if (position + op.length() <= sourceCode.length() &&
 				sourceCode.substring(position, position + op.length()).equals(op))
-			{
 				return op.length();
-			}
-		}
 
 		return 1;
 	}
@@ -364,10 +352,8 @@ public final class WhitespaceAnalyzer
 	private static boolean isControlKeyword(String sourceCode, int position)
 	{
 		for (String keyword : CONTROL_KEYWORDS)
-		{
 			if (matchesKeywordAt(sourceCode, position, keyword))
 				return true;
-		}
 		return false;
 	}
 
@@ -420,9 +406,7 @@ public final class WhitespaceAnalyzer
 		int start = position;
 		while (start > 0 && (Character.isLetterOrDigit(sourceCode.charAt(start - 1)) ||
 			sourceCode.charAt(start - 1) == '_'))
-		{
 			--start;
-		}
 
 		return start;
 	}
@@ -439,9 +423,7 @@ public final class WhitespaceAnalyzer
 		int end = start;
 		while (end < sourceCode.length() &&
 			(Character.isLetterOrDigit(sourceCode.charAt(end)) || sourceCode.charAt(end) == '_'))
-		{
 			++end;
-		}
 
 		return end;
 	}

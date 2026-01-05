@@ -300,9 +300,7 @@ public class ViolationOutputFormatterTest
 	private void validateViolationsList(List<FormattingViolation> violations)
 	{
 		if (violations == null)
-		{
 			throw new NullPointerException("violations cannot be null");
-		}
 	}
 
 	/**
@@ -319,9 +317,10 @@ public class ViolationOutputFormatterTest
 		StringBuilder json = new StringBuilder(256);
 		json.append('{').append("\"violations\":[");
 
-		for (int i = 0; i < violations.size(); i += 1)
+		for (int i = 0; i < violations.size(); ++i)
 		{
-			if (i > 0) json.append(',');
+			if (i > 0)
+				json.append(',');
 			FormattingViolation v = violations.get(i);
 			json.append('{').
 				append("\"ruleId\":\"").append(v.ruleId()).append("\",").
@@ -372,16 +371,15 @@ public class ViolationOutputFormatterTest
 	{
 		Map<String, Integer> ruleCounts = new HashMap<>();
 		for (FormattingViolation v : violations)
-		{
 			ruleCounts.put(v.ruleId(), ruleCounts.getOrDefault(v.ruleId(), 0) + 1);
-		}
 
 		StringBuilder json = new StringBuilder(64);
 		json.append('{');
 		boolean first = true;
 		for (Map.Entry<String, Integer> entry : ruleCounts.entrySet())
 		{
-			if (!first) json.append(',');
+			if (!first)
+				json.append(',');
 			json.append('"').append(entry.getKey()).append("\":").append(entry.getValue());
 			first = false;
 		}
@@ -401,7 +399,7 @@ public class ViolationOutputFormatterTest
 		for (FormattingViolation v : violations)
 		{
 			String severity = v.severity().toString();
-			severityCounts.put(severity, severityCounts.getOrDefault(severity, 0) + 1);
+			severityCounts.merge(severity, 1, Integer::sum);
 		}
 
 		StringBuilder json = new StringBuilder(64);
@@ -409,7 +407,8 @@ public class ViolationOutputFormatterTest
 		boolean first = true;
 		for (Map.Entry<String, Integer> entry : severityCounts.entrySet())
 		{
-			if (!first) json.append(',');
+			if (!first)
+				json.append(',');
 			json.append('"').append(entry.getKey()).append("\":").append(entry.getValue());
 			first = false;
 		}

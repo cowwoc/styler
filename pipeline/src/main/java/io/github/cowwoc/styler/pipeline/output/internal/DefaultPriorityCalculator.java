@@ -29,9 +29,7 @@ public final class DefaultPriorityCalculator implements PriorityCalculator
 		requireThat(violations, "violations").isNotNull();
 
 		if (violations.isEmpty())
-		{
 			return Map.of();
-		}
 
 		Map<String, Integer> counts = violations.stream().
 			collect(Collectors.groupingBy(

@@ -129,16 +129,12 @@ public class RecursionDepthTrackerTest
 		try
 		{
 			for (int i = 0; i < 100; i++)
-			{
 				tracker.enter(deepConfig);
-			}
 
 			assertEquals(tracker.getCurrentDepth(), 100);
 
 			for (int i = 0; i < 100; i++)
-			{
 				tracker.exit();
-			}
 
 			assertEquals(tracker.getCurrentDepth(), 0);
 		}

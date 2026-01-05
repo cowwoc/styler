@@ -77,13 +77,9 @@ public final class StringWrapper
 		{
 			String toAdd;
 			if (currentPart.length() == 1)
-			{
 				toAdd = word;
-			}
 			else
-			{
 				toAdd = " " + word;
-			}
 
 			if (currentPart.length() + toAdd.length() + 1 > maxLength)
 			{
@@ -94,9 +90,7 @@ public final class StringWrapper
 				currentPart.append(word);
 			}
 			else
-			{
 				currentPart.append(toAdd);
-			}
 		}
 
 		// Add the final part
@@ -108,13 +102,9 @@ public final class StringWrapper
 
 		List<String> result;
 		if (parts.isEmpty())
-		{
 			result = List.of(stringLiteral);
-		}
 		else
-		{
 			result = parts;
-		}
 		return result;
 	}
 
@@ -130,9 +120,7 @@ public final class StringWrapper
 		boolean hasUrl = content.contains("://") || content.contains("http") ||
 			content.contains("https");
 		if (hasUrl)
-		{
 			return true;
-		}
 
 		// Protect file paths with slashes or backslashes
 		return content.contains("/") || content.contains("\\");
@@ -149,9 +137,7 @@ public final class StringWrapper
 		if (stringLiteral.length() >= 2 &&
 			stringLiteral.startsWith("\"") &&
 			stringLiteral.endsWith("\""))
-		{
 			return stringLiteral.substring(1, stringLiteral.length() - 1);
-		}
 		return stringLiteral;
 	}
 }

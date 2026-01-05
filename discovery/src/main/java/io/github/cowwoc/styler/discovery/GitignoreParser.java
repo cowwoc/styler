@@ -49,9 +49,7 @@ public final class GitignoreParser
 			String line = lines.get(lineNumber);
 			GitignoreRule rule = parseLine(line, lineNumber + 1);
 			if (rule != null)
-			{
 				rules.add(rule);
-			}
 		}
 
 		return rules;
@@ -76,12 +74,8 @@ public final class GitignoreParser
 		boolean ignored = false;
 
 		for (GitignoreRule rule : rules)
-		{
 			if (matches(path, rule))
-			{
 				ignored = !rule.negation();
-			}
-		}
 
 		return ignored;
 	}
@@ -98,9 +92,7 @@ public final class GitignoreParser
 		// Handle empty lines and comments
 		String trimmed = line.strip();
 		if (trimmed.isEmpty() || trimmed.startsWith("#"))
-		{
 			return null;
-		}
 
 		boolean negation = false;
 		String pattern = trimmed;
@@ -140,9 +132,7 @@ public final class GitignoreParser
 
 		// Handle directory-only patterns (ending with /)
 		if (rule.directoryOnly())
-		{
 			return matchesDirectoryPattern(pathStr, pattern);
-		}
 
 		// Handle anchored patterns (starting with /)
 		if (rule.anchored())
@@ -160,9 +150,7 @@ public final class GitignoreParser
 		// For non-anchored patterns, match against the filename or any path segment
 		String filename = path.getFileName().toString();
 		if (matchesPattern(filename, pattern))
-		{
 			return true;
-		}
 
 		// Also try matching the full path for patterns with wildcards
 		return matchesPattern(pathStr, pattern) || matchesPattern(pathStr, "*/" + pattern);
@@ -179,9 +167,7 @@ public final class GitignoreParser
 	{
 		// Match if path starts with the directory name
 		if (pathStr.startsWith(pattern + "/") || pathStr.equals(pattern))
-		{
 			return true;
-		}
 		// For patterns with **, check if any segment matches
 		if (pattern.contains("**"))
 		{
@@ -203,9 +189,7 @@ public final class GitignoreParser
 	{
 		// Handle ** pattern for any directory depth
 		if (pattern.contains("**"))
-		{
 			pattern = pattern.replace("**", "*");
-		}
 
 		return simpleGlobMatch(text, pattern);
 	}
@@ -252,9 +236,7 @@ public final class GitignoreParser
 							patternIdx = patternTmp + 1;
 						}
 						else
-						{
 							return false;
-						}
 						break;
 				}
 			}
@@ -265,15 +247,11 @@ public final class GitignoreParser
 				patternIdx = patternTmp + 1;
 			}
 			else
-			{
 				return false;
-			}
 		}
 
 		while (patternIdx < pattern.length() && pattern.charAt(patternIdx) == '*')
-		{
 			++patternIdx;
-		}
 
 		return patternIdx == pattern.length();
 	}

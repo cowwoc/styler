@@ -33,9 +33,7 @@ public final class PathSanitizer
 		Path canonicalRoot = allowedRoot.toRealPath();
 
 		if (!canonicalPath.startsWith(canonicalRoot))
-		{
 			throw new PathTraversalException(path, canonicalPath, canonicalRoot);
-		}
 
 		return canonicalPath;
 	}

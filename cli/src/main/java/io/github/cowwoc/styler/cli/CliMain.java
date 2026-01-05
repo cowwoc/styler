@@ -100,10 +100,7 @@ public final class CliMain
 			// Step 4: Process files
 			List<PipelineResult> results = new ArrayList<>();
 			for (Path inputPath : options.inputPaths())
-			{
-				PipelineResult result = processFile(pipeline, inputPath);
-				results.add(result);
-			}
+				results.add(processFile(pipeline, inputPath));
 
 			// Step 5: Determine and return exit code
 			return determineExitCode(results, options);
@@ -171,27 +168,21 @@ public final class CliMain
 			// Use parent directory of specified config file
 			Path configPath = options.configPath().get();
 			startDir = configPath.getParent();
+			// Config file in current directory - use CWD
 			if (startDir == null)
-			{
-				// Config file in current directory - use CWD
 				startDir = Path.of(System.getProperty("user.dir"));
-			}
 		}
 		else if (options.inputPaths().isEmpty())
-		{
 			// Use current working directory
 			startDir = Path.of(System.getProperty("user.dir"));
-		}
 		else
 		{
 			// Use parent directory of first input file
 			Path firstPath = options.inputPaths().get(0);
 			startDir = firstPath.getParent();
+			// File in current directory - use CWD
 			if (startDir == null)
-			{
-				// File in current directory - use CWD
 				startDir = Path.of(System.getProperty("user.dir"));
-			}
 		}
 
 		ConfigurationLoader loader = new ConfigurationLoader();
@@ -307,10 +298,7 @@ public final class CliMain
 
 		// Check if file is readable
 		if (!Files.isReadable(filePath))
-		{
-			throw new IllegalArgumentException(
-				"File is not readable: " + filePath);
-		}
+			throw new IllegalArgumentException("File is not readable: " + filePath);
 
 		return pipeline.processFile(filePath);
 	}
@@ -336,27 +324,17 @@ public final class CliMain
 
 		// Check for processing failures
 		for (PipelineResult result : results)
-		{
 			if (!result.overallSuccess())
-			{
 				// Processing failed for at least one file
 				// Error details are in result.stageResults()
 				// For now, return IO_ERROR as a generic failure code
 				return ExitCode.IO_ERROR.code();
-			}
-		}
 
 		// Check for violations in check mode
 		if (options.checkMode())
-		{
 			for (PipelineResult result : results)
-			{
 				if (!result.violations().isEmpty())
-				{
 					return ExitCode.VIOLATIONS_FOUND.code();
-				}
-			}
-		}
 
 		// Success: no errors or all in fix mode
 		return ExitCode.SUCCESS.code();

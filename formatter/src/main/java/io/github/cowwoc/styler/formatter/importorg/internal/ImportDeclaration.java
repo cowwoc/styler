@@ -44,9 +44,7 @@ public record ImportDeclaration(
 		requireThat(lineNumber, "lineNumber").isPositive();
 		// Module imports cannot be static
 		if (isStatic && isModule)
-		{
 			throw new IllegalArgumentException("Import cannot be both static and module");
-		}
 	}
 
 	/**
@@ -69,15 +67,11 @@ public record ImportDeclaration(
 	public String simpleName()
 	{
 		if (isWildcard())
-		{
 			return "*";
-		}
 
 		int lastDot = qualifiedName.lastIndexOf('.');
 		if (lastDot < 0)
-		{
 			return qualifiedName;
-		}
 
 		return qualifiedName.substring(lastDot + 1);
 	}
@@ -93,9 +87,7 @@ public record ImportDeclaration(
 	{
 		int lastDot = qualifiedName.lastIndexOf('.');
 		if (lastDot < 0)
-		{
 			return "";
-		}
 
 		return qualifiedName.substring(0, lastDot);
 	}

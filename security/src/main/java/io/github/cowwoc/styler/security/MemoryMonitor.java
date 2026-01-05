@@ -44,9 +44,7 @@ public final class MemoryMonitor
 
 		long usedMemory = runtime.totalMemory() - runtime.freeMemory();
 		if (usedMemory > config.maxHeapBytes())
-		{
 			throw new MemoryLimitExceededException(usedMemory, config.maxHeapBytes());
-		}
 	}
 
 	/**

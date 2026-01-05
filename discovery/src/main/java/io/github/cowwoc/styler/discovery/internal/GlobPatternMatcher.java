@@ -82,10 +82,8 @@ public final class GlobPatternMatcher implements PatternMatcher
 
 		// Try all pattern variations - if any matches, return true
 		for (PathMatcher matcher : pathMatchers)
-		{
 			if (matcher.matches(path))
 				return true;
-		}
 
 		return false;
 	}

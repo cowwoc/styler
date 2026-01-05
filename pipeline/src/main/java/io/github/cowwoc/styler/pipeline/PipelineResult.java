@@ -184,8 +184,6 @@ public final class PipelineResult implements AutoCloseable
 	public void close()
 	{
 		if (arena != null)
-		{
 			arena.close();
-		}
 	}
 }

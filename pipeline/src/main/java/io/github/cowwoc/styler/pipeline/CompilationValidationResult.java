@@ -75,6 +75,7 @@ public sealed interface CompilationValidationResult
 		 *
 		 * @return formatted error message suitable for display to users
 		 */
+		@SuppressWarnings("PMD.ConsecutiveAppendsShouldReuse")
 		public String getErrorMessage()
 		{
 			// Estimate size: header + per-class entries + footer
@@ -82,30 +83,22 @@ public sealed interface CompilationValidationResult
 			StringBuilder message = new StringBuilder(estimatedSize);
 
 			if (sourceFile != null)
-			{
 				message.append("Compilation required for: ").append(sourceFile).append('\n');
-			}
 			else
-			{
 				message.append("Compilation required before formatting.\n");
-			}
 
 			if (!missingClasses.isEmpty())
 			{
 				message.append("Missing class files:\n");
 				for (String className : missingClasses)
-				{
 					message.append("  - ").append(className).append('\n');
-				}
 			}
 
 			if (!staleClasses.isEmpty())
 			{
 				message.append("Stale class files (source is newer):\n");
 				for (String className : staleClasses)
-				{
 					message.append("  - ").append(className).append('\n');
-				}
 			}
 
 			message.append("\nRun 'mvn compile' or 'javac' before formatting.");

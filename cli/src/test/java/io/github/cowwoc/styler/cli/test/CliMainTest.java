@@ -126,7 +126,6 @@ public class CliMainTest
 		finally
 		{
 			if (tempDir != null && Files.exists(tempDir))
-			{
 				Files.walk(tempDir).
 					sorted((p1, p2) -> p2.compareTo(p1)).
 					forEach(path ->
@@ -138,10 +137,9 @@ public class CliMainTest
 						catch (IOException e)
 						{
 							// Best effort cleanup
-						assert e != null;
+							assert e != null;
 						}
 					});
-			}
 		}
 	}
 
@@ -167,7 +165,6 @@ public class CliMainTest
 		finally
 		{
 			if (tempDir != null && Files.exists(tempDir))
-			{
 				Files.walk(tempDir).
 					sorted((p1, p2) -> p2.compareTo(p1)).
 					forEach(path ->
@@ -179,10 +176,9 @@ public class CliMainTest
 						catch (IOException e)
 						{
 							// Best effort cleanup
-						assert e != null;
+							assert e != null;
 						}
 					});
-			}
 		}
 	}
 
@@ -212,7 +208,6 @@ public class CliMainTest
 		finally
 		{
 			if (tempDir != null && Files.exists(tempDir))
-			{
 				Files.walk(tempDir).
 					sorted((p1, p2) -> p2.compareTo(p1)).
 					forEach(path ->
@@ -224,10 +219,9 @@ public class CliMainTest
 						catch (IOException e)
 						{
 							// Best effort cleanup
-						assert e != null;
+							assert e != null;
 						}
 					});
-			}
 		}
 	}
 
@@ -268,7 +262,6 @@ public class CliMainTest
 		finally
 		{
 			if (tempDir != null && Files.exists(tempDir))
-			{
 				Files.walk(tempDir).
 					sorted((p1, p2) -> p2.compareTo(p1)).
 					forEach(path ->
@@ -280,10 +273,9 @@ public class CliMainTest
 						catch (IOException e)
 						{
 							// Best effort cleanup
-						assert e != null;
+							assert e != null;
 						}
 					});
-			}
 		}
 	}
 
@@ -326,7 +318,6 @@ public class CliMainTest
 		finally
 		{
 			if (tempDir != null && Files.exists(tempDir))
-			{
 				Files.walk(tempDir).
 					sorted((p1, p2) -> p2.compareTo(p1)).
 					forEach(path ->
@@ -338,10 +329,9 @@ public class CliMainTest
 						catch (IOException e)
 						{
 							// Best effort cleanup
-						assert e != null;
+							assert e != null;
 						}
 					});
-			}
 		}
 	}
 
@@ -372,7 +362,6 @@ public class CliMainTest
 		finally
 		{
 			if (tempDir != null && Files.exists(tempDir))
-			{
 				Files.walk(tempDir).
 					sorted((p1, p2) -> p2.compareTo(p1)).
 					forEach(path ->
@@ -384,10 +373,9 @@ public class CliMainTest
 						catch (IOException e)
 						{
 							// Best effort cleanup
-						assert e != null;
+							assert e != null;
 						}
 					});
-			}
 		}
 	}
 
@@ -411,7 +399,6 @@ public class CliMainTest
 		finally
 		{
 			if (tempDir != null && Files.exists(tempDir))
-			{
 				Files.walk(tempDir).
 					sorted((p1, p2) -> p2.compareTo(p1)).
 					forEach(path ->
@@ -423,10 +410,9 @@ public class CliMainTest
 						catch (IOException e)
 						{
 							// Best effort cleanup
-						assert e != null;
+							assert e != null;
 						}
 					});
-			}
 		}
 	}
 
@@ -451,7 +437,6 @@ public class CliMainTest
 		finally
 		{
 			if (tempDir != null && Files.exists(tempDir))
-			{
 				Files.walk(tempDir).
 					sorted((p1, p2) -> p2.compareTo(p1)).
 					forEach(path ->
@@ -463,10 +448,9 @@ public class CliMainTest
 						catch (IOException e)
 						{
 							// Best effort cleanup
-						assert e != null;
+							assert e != null;
 						}
 					});
-			}
 		}
 	}
 
@@ -491,7 +475,6 @@ public class CliMainTest
 		finally
 		{
 			if (tempDir != null && Files.exists(tempDir))
-			{
 				Files.walk(tempDir).
 					sorted((p1, p2) -> p2.compareTo(p1)).
 					forEach(path ->
@@ -503,10 +486,9 @@ public class CliMainTest
 						catch (IOException e)
 						{
 							// Best effort cleanup
-						assert e != null;
+							assert e != null;
 						}
 					});
-			}
 		}
 	}
 
@@ -540,7 +522,6 @@ public class CliMainTest
 		finally
 		{
 			if (tempDir != null && Files.exists(tempDir))
-			{
 				Files.walk(tempDir).
 					sorted((p1, p2) -> p2.compareTo(p1)).
 					forEach(path ->
@@ -552,10 +533,9 @@ public class CliMainTest
 						catch (IOException e)
 						{
 							// Best effort cleanup
-						assert e != null;
+							assert e != null;
 						}
 					});
-			}
 		}
 	}
 
@@ -581,7 +561,6 @@ public class CliMainTest
 		finally
 		{
 			if (tempDir != null && Files.exists(tempDir))
-			{
 				Files.walk(tempDir).
 					sorted((p1, p2) -> p2.compareTo(p1)).
 					forEach(path ->
@@ -593,10 +572,9 @@ public class CliMainTest
 						catch (IOException e)
 						{
 							// Best effort cleanup
-						assert e != null;
+							assert e != null;
 						}
 					});
-			}
 		}
 	}
 }

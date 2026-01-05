@@ -100,9 +100,7 @@ public final class FileDiscoverySecurityIntegrationTest
 			// Create a 100-level deep directory
 			Path current = tempDir;
 			for (int i = 0; i < 100; ++i)
-			{
 				current = Files.createDirectory(current.resolve("level" + i));
-			}
 			Files.createFile(current.resolve("Deep.java"));
 
 			DiscoveryConfiguration config = new DiscoveryConfiguration.Builder().maxDepth(50).build();

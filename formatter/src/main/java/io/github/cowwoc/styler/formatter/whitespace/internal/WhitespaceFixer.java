@@ -171,9 +171,7 @@ public final class WhitespaceFixer
 		{
 			// Method reference - remove spaces
 			if (config.noSpaceAroundMethodReference())
-			{
 				removeSpacesAround(source, opStart, opEnd);
-			}
 
 			return;
 		}
@@ -182,9 +180,7 @@ public final class WhitespaceFixer
 		{
 			// Lambda arrow
 			if (config.spaceAroundArrowInLambda())
-			{
 				normalizeSpacesAround(source, opStart, opEnd, " ", " ");
-			}
 
 			return;
 		}
@@ -268,15 +264,11 @@ public final class WhitespaceFixer
 			int extraSpaces = 1;
 			while (position + 1 + extraSpaces < source.length() &&
 				source.charAt(position + 1 + extraSpaces) == ' ')
-			{
 				source.deleteCharAt(position + 1);
-			}
 		}
 		else if (after != '\n' && after != '\r')
-		{
 			// No space, add one
 			source.insert(position + 1, ' ');
-		}
 	}
 
 	/**
@@ -291,9 +283,7 @@ public final class WhitespaceFixer
 		{
 			// Remove space after opening paren
 			if (position + 1 < source.length() && source.charAt(position + 1) == ' ')
-			{
 				source.deleteCharAt(position + 1);
-			}
 
 			// Remove space before opening paren for method calls (not control keywords)
 			if (position > 0 && source.charAt(position - 1) == ' ')
@@ -304,22 +294,17 @@ public final class WhitespaceFixer
 					--prev;
 
 				if (prev >= 0)
-				{
 					// Check if this is a control keyword - those should keep space
 					if (!isControlKeywordBefore(source.toString(), position))
-					{
 						// It's a method call - remove space before paren
 						while (position > 0 && source.charAt(position - 1) == ' ')
 						{
 							source.deleteCharAt(position - 1);
 							--position;
 						}
-					}
-				}
 			}
 		}
 		else if (source.charAt(position) == ')')
-		{
 			// Remove space before closing paren
 			if (position > 0 && source.charAt(position - 1) == ' ')
 			{
@@ -328,11 +313,8 @@ public final class WhitespaceFixer
 					--prevNonSpace;
 
 				if (prevNonSpace >= 0 && source.charAt(prevNonSpace) != '(')
-				{
 					source.deleteCharAt(position - 1);
-				}
 			}
-		}
 	}
 
 	/**
@@ -347,12 +329,9 @@ public final class WhitespaceFixer
 		{
 			// Remove space after opening bracket
 			if (position + 1 < source.length() && source.charAt(position + 1) == ' ')
-			{
 				source.deleteCharAt(position + 1);
-			}
 		}
 		else if (source.charAt(position) == ']')
-		{
 			// Remove space before closing bracket
 			if (position > 0 && source.charAt(position - 1) == ' ')
 			{
@@ -361,11 +340,8 @@ public final class WhitespaceFixer
 					--prevNonSpace;
 
 				if (prevNonSpace >= 0 && source.charAt(prevNonSpace) != '[')
-				{
 					source.deleteCharAt(position - 1);
-				}
 			}
-		}
 	}
 
 	/**
@@ -380,9 +356,7 @@ public final class WhitespaceFixer
 		// First, remove space after ::
 		int end = position + 2;
 		while (end < source.length() && source.charAt(end) == ' ')
-		{
 			source.deleteCharAt(end);
-		}
 
 		// Then, remove space before ::
 		int start = position;
@@ -403,9 +377,7 @@ public final class WhitespaceFixer
 	{
 		// Remove space before semicolon
 		if (position > 0 && source.charAt(position - 1) == ' ')
-		{
 			source.deleteCharAt(position - 1);
-		}
 	}
 
 	/**
@@ -421,9 +393,7 @@ public final class WhitespaceFixer
 		// Remove space after the operator (between ++ and operand for prefix)
 		int afterOp = position + 2;
 		while (afterOp < source.length() && source.charAt(afterOp) == ' ')
-		{
 			source.deleteCharAt(afterOp);
-		}
 
 		// Remove space before the operator (between operand and ++ for postfix)
 		while (position > 0 && source.charAt(position - 1) == ' ')
@@ -449,9 +419,7 @@ public final class WhitespaceFixer
 		// Remove space after !
 		int afterBang = position + 1;
 		while (afterBang < source.length() && source.charAt(afterBang) == ' ')
-		{
 			source.deleteCharAt(afterBang);
-		}
 	}
 
 	/**
@@ -476,9 +444,7 @@ public final class WhitespaceFixer
 
 		// Remove spaces after operator
 		while (opEnd < source.length() && source.charAt(opEnd) == ' ')
-		{
 			source.deleteCharAt(opEnd);
-		}
 
 		// Add proper spacing
 		source.insert(opEnd, spaceAfter);
@@ -504,9 +470,7 @@ public final class WhitespaceFixer
 
 		// Remove spaces after
 		while (opEnd < source.length() && source.charAt(opEnd) == ' ')
-		{
 			source.deleteCharAt(opEnd);
-		}
 	}
 
 	/**
@@ -523,9 +487,7 @@ public final class WhitespaceFixer
 			// Check if this position starts the operator
 			if (position + op.length() <= sourceCode.length() &&
 				sourceCode.substring(position, position + op.length()).equals(op))
-			{
 				return true;
-			}
 
 			// Check if this position is within the operator (second char)
 			if (position > 0 && position + op.length() - 1 <= sourceCode.length())
@@ -553,13 +515,9 @@ public final class WhitespaceFixer
 			return false;
 
 		for (String op : BINARY_OPERATORS)
-		{
 			if (position + op.length() <= sourceCode.length() &&
 				sourceCode.substring(position, position + op.length()).equals(op))
-			{
 				return true;
-			}
-		}
 
 		char current = sourceCode.charAt(position);
 
@@ -610,30 +568,22 @@ public final class WhitespaceFixer
 	{
 		// Check no-space operators first
 		for (String op : NO_SPACE_OPERATORS)
-		{
 			if (position >= op.length() - 1)
 			{
 				int checkPos = position - (op.length() - 1);
 				if (checkPos >= 0 && checkPos + op.length() <= sourceCode.length() &&
 					sourceCode.substring(checkPos, checkPos + op.length()).equals(op))
-				{
 					return checkPos;
-				}
 			}
-		}
 
 		for (String op : BINARY_OPERATORS)
-		{
 			if (position >= op.length() - 1)
 			{
 				int checkPos = position - (op.length() - 1);
 				if (checkPos >= 0 && checkPos + op.length() <= sourceCode.length() &&
 					sourceCode.substring(checkPos, checkPos + op.length()).equals(op))
-				{
 					return checkPos;
-				}
 			}
-		}
 
 		return position;
 	}
@@ -649,22 +599,14 @@ public final class WhitespaceFixer
 	{
 		// Check no-space operators first
 		for (String op : NO_SPACE_OPERATORS)
-		{
 			if (position + op.length() <= sourceCode.length() &&
 				sourceCode.substring(position, position + op.length()).equals(op))
-			{
 				return op.length();
-			}
-		}
 
 		for (String op : BINARY_OPERATORS)
-		{
 			if (position + op.length() <= sourceCode.length() &&
 				sourceCode.substring(position, position + op.length()).equals(op))
-			{
 				return op.length();
-			}
-		}
 
 		return 1;
 	}
@@ -679,7 +621,6 @@ public final class WhitespaceFixer
 	private static boolean isControlKeywordStart(String sourceCode, int position)
 	{
 		for (String keyword : CONTROL_KEYWORDS)
-		{
 			if (position + keyword.length() <= sourceCode.length())
 			{
 				String candidate = sourceCode.substring(position, position + keyword.length());
@@ -703,7 +644,6 @@ public final class WhitespaceFixer
 					return true;
 				}
 			}
-		}
 
 		return false;
 	}
@@ -720,10 +660,8 @@ public final class WhitespaceFixer
 		// Look backward for control keyword
 		int searchStart = Math.max(0, position - 20);
 		for (int i = searchStart; i <= position; ++i)
-		{
 			if (isControlKeywordStart(sourceCode, i))
 				return true;
-		}
 
 		return false;
 	}
@@ -740,9 +678,7 @@ public final class WhitespaceFixer
 		int start = position;
 		while (start > 0 && (Character.isLetterOrDigit(sourceCode.charAt(start - 1)) ||
 			sourceCode.charAt(start - 1) == '_'))
-		{
 			--start;
-		}
 
 		return start;
 	}
@@ -759,9 +695,7 @@ public final class WhitespaceFixer
 		int end = start;
 		while (end < sourceCode.length() &&
 			(Character.isLetterOrDigit(sourceCode.charAt(end)) || sourceCode.charAt(end) == '_'))
-		{
 			++end;
-		}
 
 		return end;
 	}
@@ -1056,14 +990,10 @@ public final class WhitespaceFixer
 
 		// Remove all spaces after "new"
 		while (afterNew < source.length() && source.charAt(afterNew) == ' ')
-		{
 			source.deleteCharAt(afterNew);
-		}
 
 		// Add exactly one space
 		if (afterNew < source.length() && source.charAt(afterNew) != '(')
-		{
 			source.insert(afterNew, ' ');
-		}
 	}
 }

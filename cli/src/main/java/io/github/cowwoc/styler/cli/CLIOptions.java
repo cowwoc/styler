@@ -47,10 +47,8 @@ public record CLIOptions(List<Path> inputPaths, Optional<Path> configPath,
 
 		// Business rule: checkMode and fixMode are mutually exclusive
 		if (checkMode && fixMode)
-		{
 			throw new IllegalArgumentException(
 				"Cannot enable both check mode and fix mode simultaneously");
-		}
 	}
 
 	/**

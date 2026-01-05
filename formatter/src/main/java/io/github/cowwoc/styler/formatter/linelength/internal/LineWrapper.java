@@ -65,9 +65,7 @@ public final class LineWrapper
 
 			// Check if this character is a valid break point based on context
 			if (isBreakCharacter(currentChar, context))
-			{
 				breakPoints.add(i);
-			}
 		}
 
 		return breakPoints;

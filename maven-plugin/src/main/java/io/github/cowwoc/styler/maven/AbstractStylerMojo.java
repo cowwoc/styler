@@ -177,36 +177,24 @@ public abstract class AbstractStylerMojo extends AbstractMojo
 
 		// Add explicitly configured source directories
 		if (sourceDirectories != null && !sourceDirectories.isEmpty())
-		{
 			for (File dir : sourceDirectories)
-			{
 				dirs.add(dir.toPath());
-			}
-		}
 		else
 		{
 			// Use Maven project's compile source roots
 			for (String root : project.getCompileSourceRoots())
-			{
 				dirs.add(Path.of(root));
-			}
 		}
 
 		// Add explicitly configured test source directories
 		if (testSourceDirectories != null && !testSourceDirectories.isEmpty())
-		{
 			for (File dir : testSourceDirectories)
-			{
 				dirs.add(dir.toPath());
-			}
-		}
 		else
 		{
 			// Use Maven project's test compile source roots
 			for (String root : project.getTestCompileSourceRoots())
-			{
 				dirs.add(Path.of(root));
-			}
 		}
 
 		return dirs;
@@ -226,23 +214,15 @@ public abstract class AbstractStylerMojo extends AbstractMojo
 
 		List<String> effectiveIncludes;
 		if (includes != null)
-		{
 			effectiveIncludes = includes;
-		}
 		else
-		{
 			effectiveIncludes = List.of("**/*.java");
-		}
 
 		List<String> effectiveExcludes;
 		if (excludes != null)
-		{
 			effectiveExcludes = excludes;
-		}
 		else
-		{
 			effectiveExcludes = List.of();
-		}
 
 		MavenConfigAdapter adapter = new MavenConfigAdapter(effectiveIncludes, effectiveExcludes);
 
@@ -252,9 +232,7 @@ public abstract class AbstractStylerMojo extends AbstractMojo
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
 			{
 				if (adapter.matches(directory, file))
-				{
 					files.add(file);
-				}
 				return FileVisitResult.CONTINUE;
 			}
 
@@ -285,19 +263,13 @@ public abstract class AbstractStylerMojo extends AbstractMojo
 			{
 				Path configPath = configFile.toPath();
 				if (!Files.exists(configPath))
-				{
 					throw new MojoExecutionException("Configuration file not found: " + configPath);
-				}
 				startDir = configPath.getParent();
 				if (startDir == null)
-				{
 					startDir = project.getBasedir().toPath();
-				}
 			}
 			else
-			{
 				startDir = project.getBasedir().toPath();
-			}
 
 			ConfigurationLoader loader = new ConfigurationLoader();
 			return loader.load(startDir);
