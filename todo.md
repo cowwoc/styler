@@ -480,31 +480,6 @@ benchmarking, and validate with Maven plugin integration.
 **Priority**: These are REQUIRED for "100% JDK 25 support" claim in scope.md. Should be completed before
 production release.
 
-- [ ] **READY:** `add-compact-source-files` - Support JEP 512 implicit classes and instance main
-  - **Dependencies**: None
-  - **Blocks**: None (enhancement for full JDK 25 support)
-  - **Parallelizable With**: Any Phase E parser task
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Parse implicit/unnamed classes and instance main methods (JEP 512 - finalized in JDK 25)
-  - **Features to Support**:
-    - Files without explicit class declaration (implicit class)
-    - Instance main method: `void main()` or `void main(String[] args)` (not static)
-    - Top-level fields, methods without enclosing class
-  - **Example**:
-    ```java
-    // No class declaration needed - this is a complete Java file
-    void main() {
-        System.out.println("Hello, World!");
-    }
-    ```
-  - **Implementation**:
-    - Add `IMPLICIT_CLASS_DECLARATION` to `NodeType` enum
-    - Modify `parseCompilationUnit()` to detect absence of class/interface declaration
-    - When no type declaration found, wrap top-level members in implicit class node
-    - Handle instance main method signature detection
-  - **Scope Limitation**: Focus on parsing correctness; formatting of implicit classes secondary
-  - **Quality**: Parser tests for implicit classes, instance main, mixed with imports/package
-
 - [ ] **BLOCKED:** `add-primitive-type-patterns` - Support JEP 507 primitive patterns (preview)
   - **Dependencies**: None
   - **Blocks**: None (preview feature, lower priority)

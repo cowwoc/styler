@@ -216,29 +216,46 @@ public final class Parser implements AutoCloseable
 			parseComments();
 		}
 
-		// Type declarations (class, interface, enum)
-		while (currentToken().type() != TokenType.END_OF_FILE)
+		// Type declarations (class, interface, enum) or implicit class (JEP 512)
+		parseComments();
+		if (isTypeDeclarationStart())
 		{
-			parseComments();
-			if (isTypeDeclarationStart())
+			// Traditional type declarations
+			while (currentToken().type() != TokenType.END_OF_FILE)
 			{
-				parseTypeDeclaration();
+				parseComments();
+				if (isTypeDeclarationStart())
+				{
+					parseTypeDeclaration();
+				}
+				else if (currentToken().type() == TokenType.SEMICOLON)
+				{
+					consume(); // Empty statement at top level
+				}
+				else if (currentToken().type() == TokenType.END_OF_FILE)
+				{
+					break;
+				}
+				else
+				{
+					throw new ParserException(
+						"Unexpected token at top level: " + currentToken().type() +
+						" (expected type declaration, import, or package)",
+						currentToken().start());
+				}
 			}
-			else if (currentToken().type() == TokenType.SEMICOLON)
-			{
-				consume(); // Empty statement at top level
-			}
-			else if (currentToken().type() == TokenType.END_OF_FILE)
-			{
-				break;
-			}
-			else
-			{
-				throw new ParserException(
-					"Unexpected token at top level: " + currentToken().type() +
-					" (expected type declaration, import, or package)",
-					currentToken().start());
-			}
+		}
+		else if (isMemberDeclarationStart())
+		{
+			// JEP 512: Implicit class - members without explicit class declaration
+			parseImplicitClassDeclaration();
+		}
+		else if (currentToken().type() != TokenType.END_OF_FILE)
+		{
+			throw new ParserException(
+				"Unexpected token at top level: " + currentToken().type() +
+				" (expected type declaration, import, or package)",
+				currentToken().start());
 		}
 
 		int end = tokens.get(tokens.size() - 1).end();
@@ -247,12 +264,84 @@ public final class Parser implements AutoCloseable
 
 	private boolean isTypeDeclarationStart()
 	{
-		return switch (currentToken().type())
+		// Look ahead past modifiers to find the actual declaration keyword
+		int lookahead = position;
+		while (lookahead < tokens.size())
 		{
-			case CLASS, INTERFACE, ENUM, RECORD, SEALED, NON_SEALED, AT_SIGN, PUBLIC, PRIVATE, PROTECTED, STATIC,
-				FINAL, ABSTRACT, STRICTFP -> true;
+			TokenType type = tokens.get(lookahead).type();
+			if (type == TokenType.CLASS || type == TokenType.INTERFACE ||
+				type == TokenType.ENUM || type == TokenType.RECORD)
+			{
+				return true;
+			}
+			// @interface is an annotation type declaration
+			if (type == TokenType.AT_SIGN && lookahead + 1 < tokens.size() &&
+				tokens.get(lookahead + 1).type() == TokenType.INTERFACE)
+			{
+				return true;
+			}
+			// Skip modifiers to continue looking
+			if (isModifierToken(type))
+			{
+				++lookahead;
+				continue;
+			}
+			// Skip annotations (@ followed by identifier and optional arguments)
+			if (type == TokenType.AT_SIGN)
+			{
+				lookahead = skipAnnotationAt(lookahead);
+				continue;
+			}
+			// Found a non-modifier, non-type-keyword token - not a type declaration
+			return false;
+		}
+		return false;
+	}
+
+	private boolean isModifierToken(TokenType type)
+	{
+		return switch (type)
+		{
+			case PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, ABSTRACT, SEALED, NON_SEALED, STRICTFP -> true;
 			default -> false;
 		};
+	}
+
+	/**
+	 * Skips over an annotation starting at the given position.
+	 * <p>
+	 * Handles both marker annotations ({@code @Override}) and annotations with arguments
+	 * ({@code @SuppressWarnings("unchecked")}).
+	 *
+	 * @param startPosition the token index of the {@code @} symbol
+	 * @return the token index immediately after the annotation (the first token that is not part of the
+	 *         annotation)
+	 */
+	private int skipAnnotationAt(int startPosition)
+	{
+		int lookahead = startPosition + 1;
+		if (lookahead >= tokens.size() || tokens.get(lookahead).type() != TokenType.IDENTIFIER)
+		{
+			return lookahead;
+		}
+		++lookahead;
+		if (lookahead >= tokens.size() || tokens.get(lookahead).type() != TokenType.LEFT_PARENTHESIS)
+		{
+			return lookahead;
+		}
+		// Skip annotation arguments
+		int parenDepth = 1;
+		++lookahead;
+		while (lookahead < tokens.size() && parenDepth > 0)
+		{
+			TokenType type = tokens.get(lookahead).type();
+			if (type == TokenType.LEFT_PARENTHESIS)
+				++parenDepth;
+			else if (type == TokenType.RIGHT_PARENTHESIS)
+				--parenDepth;
+			++lookahead;
+		}
+		return lookahead;
 	}
 
 	/**
@@ -476,6 +565,58 @@ public final class Parser implements AutoCloseable
 				TRANSIENT, VOLATILE, DEFAULT -> true;
 			default -> false;
 		};
+	}
+
+	/**
+	 * Checks if the current position could start a member declaration (field or method).
+	 * <p>
+	 * Used to detect implicit class content (JEP 512) where top-level members appear without
+	 * an explicit class declaration.
+	 *
+	 * @return {@code true} if the current token could begin a member declaration
+	 */
+	private boolean isMemberDeclarationStart()
+	{
+		TokenType type = currentToken().type();
+		return switch (type)
+		{
+			// Return type or field type (could be void for methods)
+			case IDENTIFIER, VOID -> true;
+			// Member modifiers
+			case PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, ABSTRACT, SYNCHRONIZED, NATIVE,
+				TRANSIENT, VOLATILE, DEFAULT -> true;
+			// Primitive types (for fields or method return types)
+			case BOOLEAN, BYTE, SHORT, INT, LONG, CHAR, FLOAT, DOUBLE -> true;
+			// Annotation on member (but not @interface which is a type declaration)
+			case AT_SIGN -> !isAnnotationTypeDeclaration();
+			default -> false;
+		};
+	}
+
+	/**
+	 * Parses an implicit class declaration (JEP 512).
+	 * <p>
+	 * An implicit class contains top-level members (fields and methods) without an explicit class declaration.
+	 * This is used for simple "Hello World" style programs.
+	 *
+	 * @return a {@link NodeIndex} pointing to the allocated {@link NodeType#IMPLICIT_CLASS_DECLARATION} node
+	 */
+	private NodeIndex parseImplicitClassDeclaration()
+	{
+		int implicitStart = currentToken().start();
+
+		while (currentToken().type() != TokenType.END_OF_FILE)
+		{
+			parseComments();
+			if (currentToken().type() == TokenType.END_OF_FILE)
+			{
+				break;
+			}
+			parseMemberDeclaration();
+		}
+
+		int implicitEnd = previousToken().end();
+		return arena.allocateImplicitClassDeclaration(implicitStart, implicitEnd);
 	}
 
 	private NodeIndex parseClassDeclaration()
