@@ -1309,6 +1309,12 @@ jq '.state = "SYNTHESIS"' /workspace/tasks/{task-name}/task.json > /tmp/lock.tmp
 mv /tmp/lock.tmp /workspace/tasks/{task-name}/task.json
 ```
 
+## 🚨 AUTOMATIC TASK SELECTION {#automatic-task-selection}
+
+**"Next Task" Selection**: When user asks to "work on the next task", automatically select the first READY
+task that is NOT already IN_PROGRESS (check `/workspace/locks/` for active locks). Do not prompt user to
+choose - just start the next available task.
+
 ## 🚨 TASK UNAVAILABILITY HANDLING {#task-unavailability-handling}
 
 **CRITICAL**: When user requests "work on the next task" or similar, verify task availability before starting
