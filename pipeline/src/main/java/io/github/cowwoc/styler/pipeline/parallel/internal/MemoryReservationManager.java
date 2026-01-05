@@ -104,12 +104,10 @@ public final class MemoryReservationManager
 		// Fail-fast if file requires more permits than total available
 		if (permits > totalPermits)
 		{
-			long requiredMb = (long) permits * PERMIT_UNIT_BYTES / (1024 * 1024);
-			long availableMb = (long) totalPermits * PERMIT_UNIT_BYTES / (1024 * 1024);
 			throw new IllegalArgumentException(
 				"Insufficient heap memory to process file. " +
-				"Estimated memory required: " + requiredMb + " MB, " +
-				"available for processing: " + availableMb + " MB. " +
+				"Estimated memory required: " + (long) permits * PERMIT_UNIT_BYTES / (1024 * 1024) + " MB, " +
+				"available for processing: " + (long) totalPermits * PERMIT_UNIT_BYTES / (1024 * 1024) + " MB. " +
 				"Increase -Xmx or skip this file.");
 		}
 

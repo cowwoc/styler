@@ -114,7 +114,8 @@ public class ViolationOutputIntegrationTest
 
 		for (int i = 0; i < violations.size(); ++i)
 		{
-			if (i > 0) json.append(',');
+			if (i > 0)
+				json.append(',');
 			FormattingViolation v = violations.get(i);
 			json.append("{ \"rule\": \"").append(v.ruleId()).
 				append("\", \"severity\": \"").append(v.severity()).

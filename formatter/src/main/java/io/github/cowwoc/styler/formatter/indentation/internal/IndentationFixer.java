@@ -112,10 +112,8 @@ public final class IndentationFixer
 	{
 		int position = 0;
 		for (int i = 0; i < lineIndex; ++i)
-		{
 			// +1 for the newline character
 			position += lines[i].length() + 1;
-		}
 
 		return position;
 	}

@@ -91,9 +91,7 @@ public final class MavenResultHandler
 
 			// Add column if available
 			if (violation.columnNumber() > 0)
-			{
 				sb.append(':').append(violation.columnNumber());
-			}
 		}
 
 		sb.append(" [").
@@ -128,13 +126,9 @@ public final class MavenResultHandler
 					file, failure.message());
 
 				if (failure.cause() != null)
-				{
 					log.error(errorMessage, failure.cause());
-				}
 				else
-				{
 					log.error(errorMessage);
-				}
 				return;
 			}
 		}

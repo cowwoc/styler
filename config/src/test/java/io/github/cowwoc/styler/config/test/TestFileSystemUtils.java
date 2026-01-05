@@ -29,7 +29,6 @@ public final class TestFileSystemUtils
 	public static void deleteDirectory(Path dir) throws IOException
 	{
 		if (Files.exists(dir))
-		{
 			Files.walk(dir)
 				.sorted((a, b) -> b.compareTo(a))  // Delete files before directories
 				.forEach(path ->
@@ -43,6 +42,5 @@ public final class TestFileSystemUtils
 						// Ignore cleanup failures
 					}
 				});
-		}
 	}
 }

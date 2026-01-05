@@ -2,7 +2,7 @@
 
 ## 🚀 READY TO WORK NOW (Multi-Instance Coordination)
 
-**Current Status**: Phase C in progress - `create-maven-plugin` complete, `create-jmh-benchmarks` and `benchmark-concurrency-models` now unblocked
+**Current Status**: Phase C in progress - `create-maven-plugin` complete, `create-jmh-benchmarks` and `benchmark-concurrency-models` now unblocked. Brace omission style applied codebase-wide (2026-01-05).
 
 **Phase B**: ✅ COMPLETE (8/8 tasks)
 **Phase C**: In progress (4/6 tasks - benchmarks now unblocked)

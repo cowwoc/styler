@@ -49,9 +49,7 @@ public final class ExecutionTimeoutManager
 
 		Duration elapsed = Duration.between(start, Instant.now());
 		if (elapsed.compareTo(config.executionTimeout()) > 0)
-		{
 			throw new ExecutionTimeoutException(file, config.executionTimeout());
-		}
 	}
 
 	/**

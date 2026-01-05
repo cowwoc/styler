@@ -93,9 +93,7 @@ public record BatchResult(
 	public double successRate()
 	{
 		if (totalFiles == 0)
-		{
 			return 0.0;
-		}
 		return (successCount * 100.0) / totalFiles;
 	}
 }

@@ -208,9 +208,7 @@ public class NodeAllocationTest
 		{
 			NodeIndex index = new NodeIndex(i);
 			if (arena.getType(index) == targetType)
-			{
 				return true;
-			}
 		}
 		return false;
 	}

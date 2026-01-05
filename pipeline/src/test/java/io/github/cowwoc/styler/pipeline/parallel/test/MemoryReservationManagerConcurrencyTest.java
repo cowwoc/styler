@@ -113,9 +113,7 @@ public class MemoryReservationManagerConcurrencyTest
 
 		// Wait for all threads to complete (test timeout protects against hangs)
 		for (Thread thread : threads)
-		{
 			thread.join();
-		}
 
 		// Verify all threads succeeded
 		requireThat(successCount.get(), "successCount").isEqualTo(50);
@@ -138,13 +136,9 @@ public class MemoryReservationManagerConcurrencyTest
 		{
 			final long fileSize;
 			if (i % 2 == 0)
-			{
 				fileSize = 1024;
-			}
 			else
-			{
 				fileSize = 5 * 1024 * 1024;
-			}
 			Thread thread = new Thread(() ->
 			{
 				try
@@ -165,9 +159,7 @@ public class MemoryReservationManagerConcurrencyTest
 
 		// Wait for all threads to complete (test timeout protects against hangs)
 		for (Thread thread : threads)
-		{
 			thread.join();
-		}
 
 		// Verify all reservations succeeded
 		requireThat(successCount.get(), "successCount").isEqualTo(20);
@@ -232,6 +224,7 @@ public class MemoryReservationManagerConcurrencyTest
 			initialReservation.close();
 			return;
 		}
+
 
 		// If thread was blocked and interrupted, verify it received InterruptedException
 		// Note: If there were enough permits, the thread may have completed normally

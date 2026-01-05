@@ -73,9 +73,7 @@ public final class NodeArena implements AutoCloseable
 		requireThat(end, "end").isNotNegative();
 
 		if (nodeCount >= capacity)
-		{
 			grow();
-		}
 
 		long offset = (long) nodeCount * BYTES_PER_NODE;
 		segment.set(INT_LAYOUT, offset + TYPE_OFFSET, type.ordinal());
@@ -279,14 +277,10 @@ public final class NodeArena implements AutoCloseable
 	{
 		validateIndex(index);
 		if (getType(index) != NodeType.IMPORT_DECLARATION)
-		{
 			throw new IllegalArgumentException("Expected IMPORT_DECLARATION but was " + getType(index));
-		}
 		NodeAttribute attribute = attributes.get(index);
 		if (attribute instanceof ImportAttribute importAttribute)
-		{
 			return importAttribute;
-		}
 		throw new AssertionError("Import node at position " + getStart(index) +
 			" is missing ImportAttribute");
 	}
@@ -303,14 +297,10 @@ public final class NodeArena implements AutoCloseable
 	{
 		validateIndex(index);
 		if (getType(index) != NodeType.MODULE_IMPORT_DECLARATION)
-		{
 			throw new IllegalArgumentException("Expected MODULE_IMPORT_DECLARATION but was " + getType(index));
-		}
 		NodeAttribute attribute = attributes.get(index);
 		if (attribute instanceof ModuleImportAttribute moduleImportAttribute)
-		{
 			return moduleImportAttribute;
-		}
 		throw new AssertionError("Module import node at position " + getStart(index) +
 			" is missing ModuleImportAttribute");
 	}
@@ -327,14 +317,10 @@ public final class NodeArena implements AutoCloseable
 	{
 		validateIndex(index);
 		if (getType(index) != NodeType.PACKAGE_DECLARATION)
-		{
 			throw new IllegalArgumentException("Expected PACKAGE_DECLARATION but was " + getType(index));
-		}
 		NodeAttribute attribute = attributes.get(index);
 		if (attribute instanceof PackageAttribute packageAttribute)
-		{
 			return packageAttribute;
-		}
 		throw new AssertionError("Package node at position " + getStart(index) +
 			" is missing PackageAttribute");
 	}
@@ -352,14 +338,10 @@ public final class NodeArena implements AutoCloseable
 		validateIndex(index);
 		NodeType type = getType(index);
 		if (!isTypeDeclaration(type))
-		{
 			throw new IllegalArgumentException("Expected type declaration but was " + type);
-		}
 		NodeAttribute attribute = attributes.get(index);
 		if (attribute instanceof TypeDeclarationAttribute typeDeclarationAttribute)
-		{
 			return typeDeclarationAttribute;
-		}
 		throw new AssertionError("Type declaration node at position " + getStart(index) +
 			" is missing TypeDeclarationAttribute");
 	}
@@ -376,14 +358,10 @@ public final class NodeArena implements AutoCloseable
 	{
 		validateIndex(index);
 		if (getType(index) != NodeType.PARAMETER_DECLARATION)
-		{
 			throw new IllegalArgumentException("Expected PARAMETER_DECLARATION but was " + getType(index));
-		}
 		NodeAttribute attribute = attributes.get(index);
 		if (attribute instanceof ParameterAttribute parameterAttribute)
-		{
 			return parameterAttribute;
-		}
 		throw new AssertionError("Parameter node at position " + getStart(index) +
 			" is missing ParameterAttribute");
 	}
@@ -514,10 +492,8 @@ public final class NodeArena implements AutoCloseable
 
 		// SEC-011: Arena capacity limit to prevent unbounded memory growth
 		if (newCapacity > SecurityConfig.MAX_ARENA_CAPACITY)
-		{
 			throw new IllegalStateException(
 				"Arena capacity limit exceeded: cannot grow beyond " + SecurityConfig.MAX_ARENA_CAPACITY + " nodes");
-		}
 
 		MemorySegment newSegment = arena.allocate(BYTES_PER_NODE * (long) newCapacity);
 

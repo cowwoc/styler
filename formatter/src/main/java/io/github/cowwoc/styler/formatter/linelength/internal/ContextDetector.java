@@ -59,10 +59,8 @@ public final class ContextDetector
 		NodeIndex node = positionIndex.findEnclosingNode(position);
 
 		if (node == null)
-		{
 			throw new AssertionError("Position " + position +
 				" not found in spatial index (should be in at least CompilationUnit)");
-		}
 
 		return classifyNode(node);
 	}

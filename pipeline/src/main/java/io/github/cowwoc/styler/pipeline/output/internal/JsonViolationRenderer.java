@@ -153,15 +153,13 @@ public final class JsonViolationRenderer implements ViolationReportRenderer
 	{
 		json.append("[\n");
 		List<FormattingViolation> violations = report.violations();
-		for (int i = 0; i < violations.size(); i += 1)
+		for (int i = 0; i < violations.size(); ++i)
 		{
 			json.append(indent(spaces)).append("{\n");
 			appendViolation(json, violations.get(i), spaces + 2);
 			json.append(indent(spaces)).append('}');
 			if (i < violations.size() - 1)
-			{
 				json.append(',');
-			}
 			json.append('\n');
 		}
 		return json.append(indent(spaces - 2)).append(']');
@@ -227,7 +225,7 @@ public final class JsonViolationRenderer implements ViolationReportRenderer
 	{
 		json.append(indent(spaces)).append("\"fixes\": [\n");
 		List<FixStrategy> fixes = violation.suggestedFixes();
-		for (int i = 0; i < fixes.size(); i += 1)
+		for (int i = 0; i < fixes.size(); ++i)
 		{
 			FixStrategy fix = fixes.get(i);
 			json.
@@ -240,9 +238,7 @@ public final class JsonViolationRenderer implements ViolationReportRenderer
 				append(indent(spaces + 2)).
 				append('}');
 			if (i < fixes.size() - 1)
-			{
 				json.append(',');
-			}
 			json.append('\n');
 		}
 		return json.append(indent(spaces)).append("]\n");
@@ -268,7 +264,7 @@ public final class JsonViolationRenderer implements ViolationReportRenderer
 				ruleCounts.getOrDefault(a, 0))).
 			collect(Collectors.toList());
 
-		for (int i = 0; i < sortedRules.size(); i += 1)
+		for (int i = 0; i < sortedRules.size(); ++i)
 		{
 			String ruleId = sortedRules.get(i);
 			int count = byRule.get(ruleId).size();
@@ -281,9 +277,7 @@ public final class JsonViolationRenderer implements ViolationReportRenderer
 				append(indent(spaces)).
 				append('}');
 			if (i < sortedRules.size() - 1)
-			{
 				json.append(',');
-			}
 			json.append('\n');
 		}
 		return json.append(indent(spaces - 2)).append('}');

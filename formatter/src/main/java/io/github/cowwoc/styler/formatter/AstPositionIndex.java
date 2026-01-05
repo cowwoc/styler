@@ -94,7 +94,6 @@ public final class AstPositionIndex
 
 		// Linear search: check all intervals, track smallest that contains position
 		for (NodeInterval interval : spatialIndex)
-		{
 			if (interval.start <= position && position < interval.end)
 			{
 				int size = interval.end - interval.start;
@@ -104,7 +103,6 @@ public final class AstPositionIndex
 					smallestSize = size;
 				}
 			}
-		}
 
 		return smallest;
 	}
@@ -124,12 +122,8 @@ public final class AstPositionIndex
 		List<NodeInterval> enclosing = new ArrayList<>();
 
 		for (NodeInterval interval : spatialIndex)
-		{
 			if (interval.start <= position && position < interval.end)
-			{
 				enclosing.add(interval);
-			}
-		}
 
 		// Sort by size (smallest first)
 		enclosing.sort((a, b) -> Integer.compare(a.end - a.start, b.end - b.start));
@@ -152,12 +146,8 @@ public final class AstPositionIndex
 
 		List<NodeIndex> result = new ArrayList<>();
 		for (NodeInterval interval : spatialIndex)
-		{
 			if (arena.getType(interval.node) == type)
-			{
 				result.add(interval.node);
-			}
-		}
 		return result;
 	}
 
@@ -261,15 +251,11 @@ public final class AstPositionIndex
 			// Sort by start position first
 			int cmp = Integer.compare(start, other.start);
 			if (cmp != 0)
-			{
 				return cmp;
-			}
 			// For same start, sort by size (smaller first) for nested contexts
 			cmp = Integer.compare(end - start, other.end - other.start);
 			if (cmp != 0)
-			{
 				return cmp;
-			}
 			// Final tiebreaker: node index ensures total ordering consistent with equals()
 			return Integer.compare(node.index(), other.node.index());
 		}

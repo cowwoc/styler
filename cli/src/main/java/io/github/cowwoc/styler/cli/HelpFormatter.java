@@ -86,9 +86,7 @@ public final class HelpFormatter
 	{
 		Module module = getClass().getModule();
 		if (module != null && module.getDescriptor() != null)
-		{
 			return module.getDescriptor().rawVersion().orElse("UNKNOWN");
-		}
 		return "UNKNOWN";
 	}
 }

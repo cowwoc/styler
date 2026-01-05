@@ -92,14 +92,10 @@ public final class LineAnalyzer
 		{
 			char currentChar = line.charAt(i);
 			if (currentChar == '\t')
-			{
 				// Expand tab to next tab stop
 				length = length + tabWidth - (length % tabWidth);
-			}
 			else
-			{
 				++length;
-			}
 		}
 		return length;
 	}
@@ -119,9 +115,7 @@ public final class LineAnalyzer
 		for (int i = 0; i < sourceCode.length(); ++i)
 		{
 			if (currentLine == lineIndex)
-			{
 				return position;
-			}
 
 			if (sourceCode.charAt(i) == '\n')
 			{

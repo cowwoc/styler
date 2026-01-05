@@ -38,10 +38,8 @@ public class VirtualThreadExecutorTest
 		ParallelProcessingConfig config = TestConfigFactory.createDefaultConfig();
 
 		List<Path> files = new ArrayList<>();
-		for (int i = 0; i < 10; i += 1)
-		{
+		for (int i = 0; i < 10; ++i)
 			files.add(TestFileFactory.createValidJavaFile());
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
@@ -58,9 +56,7 @@ public class VirtualThreadExecutorTest
 		finally
 		{
 			for (Path file : files)
-			{
 				Files.deleteIfExists(file);
-			}
 		}
 	}
 
@@ -74,10 +70,8 @@ public class VirtualThreadExecutorTest
 		ParallelProcessingConfig config = TestConfigFactory.createLimitedConcurrencyConfig(5);
 
 		List<Path> files = new ArrayList<>();
-		for (int i = 0; i < 20; i += 1)
-		{
+		for (int i = 0; i < 20; ++i)
 			files.add(TestFileFactory.createValidJavaFile());
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
@@ -90,9 +84,7 @@ public class VirtualThreadExecutorTest
 		finally
 		{
 			for (Path file : files)
-			{
 				Files.deleteIfExists(file);
-			}
 		}
 	}
 
@@ -106,10 +98,8 @@ public class VirtualThreadExecutorTest
 		ParallelProcessingConfig config = TestConfigFactory.createDefaultConfig();
 
 		List<Path> files = new ArrayList<>();
-		for (int i = 0; i < 30; i += 1)
-		{
+		for (int i = 0; i < 30; ++i)
 			files.add(TestFileFactory.createValidJavaFile());
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
@@ -119,9 +109,7 @@ public class VirtualThreadExecutorTest
 		finally
 		{
 			for (Path file : files)
-			{
 				Files.deleteIfExists(file);
-			}
 		}
 	}
 
@@ -140,10 +128,8 @@ public class VirtualThreadExecutorTest
 			build();
 
 		List<Path> files = new ArrayList<>();
-		for (int i = 0; i < 15; i += 1)
-		{
+		for (int i = 0; i < 15; ++i)
 			files.add(TestFileFactory.createValidJavaFile());
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
@@ -155,9 +141,7 @@ public class VirtualThreadExecutorTest
 		finally
 		{
 			for (Path file : files)
-			{
 				Files.deleteIfExists(file);
-			}
 		}
 	}
 }

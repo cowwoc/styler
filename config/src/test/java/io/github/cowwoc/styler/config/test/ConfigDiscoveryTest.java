@@ -190,13 +190,11 @@ public final class ConfigDiscoveryTest
 	private void deleteRecursively(Path path) throws IOException
 	{
 		if (Files.isDirectory(path))
-		{
 			try (var stream = Files.list(path))
 			{
 				for (Path child : stream.toList())
 					deleteRecursively(child);
 			}
-		}
 		Files.deleteIfExists(path);
 	}
 }

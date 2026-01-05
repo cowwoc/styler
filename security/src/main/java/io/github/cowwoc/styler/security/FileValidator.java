@@ -48,13 +48,9 @@ public final class FileValidator
 	private void validateExists(Path file)
 	{
 		if (!Files.exists(file))
-		{
 			throw new IllegalArgumentException("File does not exist: " + file);
-		}
 		if (!Files.isRegularFile(file))
-		{
 			throw new IllegalArgumentException("Path is not a regular file: " + file);
-		}
 	}
 
 	/**
@@ -66,9 +62,7 @@ public final class FileValidator
 	private void validateReadable(Path file)
 	{
 		if (!Files.isReadable(file))
-		{
 			throw new IllegalArgumentException("File is not readable: " + file);
-		}
 	}
 
 	/**
@@ -81,10 +75,8 @@ public final class FileValidator
 	{
 		String fileName = file.getFileName().toString();
 		if (!fileName.endsWith(JAVA_EXTENSION))
-		{
 			throw new IllegalArgumentException(
 				String.format("File must have %s extension: %s", JAVA_EXTENSION, file));
-		}
 	}
 
 	/**
@@ -100,8 +92,6 @@ public final class FileValidator
 	{
 		long fileSize = Files.size(file);
 		if (fileSize > config.maxFileSizeBytes())
-		{
 			throw new FileSizeLimitExceededException(file, fileSize, config.maxFileSizeBytes());
-		}
 	}
 }

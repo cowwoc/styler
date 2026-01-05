@@ -144,9 +144,7 @@ public final class FileProcessingPipeline
 		requireThat(sourceFiles, "sourceFiles").isNotNull();
 
 		if (sourceFiles.isEmpty())
-		{
 			return new CompilationValidationResult.Valid();
-		}
 
 		try (ClasspathScanner scanner = ClasspathScanner.create(typeResolutionConfig))
 		{
@@ -160,18 +158,14 @@ public final class FileProcessingPipeline
 
 				// Skip special files that don't produce standard class files
 				if (fileName.equals("package-info.java") || fileName.equals("module-info.java"))
-				{
 					continue;
-				}
 
 				String sourceCode = Files.readString(sourceFile, StandardCharsets.UTF_8);
 				String packageName = extractPackageName(sourceCode);
 				List<String> typeNames = extractTypeNames(sourceCode);
 
 				if (typeNames.isEmpty())
-				{
 					continue;
-				}
 
 				CompilationValidationResult result = validator.validate(sourceFile, packageName, typeNames);
 
@@ -183,9 +177,7 @@ public final class FileProcessingPipeline
 			}
 
 			if (allMissing.isEmpty() && allStale.isEmpty())
-			{
 				return new CompilationValidationResult.Valid();
-			}
 			return new CompilationValidationResult.Invalid(allMissing, allStale, null);
 		}
 	}
@@ -209,9 +201,7 @@ public final class FileProcessingPipeline
 	{
 		Matcher matcher = PACKAGE_PATTERN.matcher(sourceCode);
 		if (matcher.find())
-		{
 			return matcher.group(1);
-		}
 		return "";
 	}
 
@@ -220,9 +210,7 @@ public final class FileProcessingPipeline
 		List<String> typeNames = new ArrayList<>();
 		Matcher matcher = TYPE_DECLARATION_PATTERN.matcher(sourceCode);
 		while (matcher.find())
-		{
 			typeNames.add(matcher.group(1));
-		}
 		return typeNames;
 	}
 
@@ -257,9 +245,7 @@ public final class FileProcessingPipeline
 
 			// Stop on failure (file-level isolation)
 			if (!result.isSuccess())
-			{
 				break;
-			}
 
 			// Extract data from successful result for next stage
 			if (result instanceof StageResult.Success success)
@@ -294,9 +280,7 @@ public final class FileProcessingPipeline
 
 		List<PipelineResult> results = new ArrayList<>();
 		for (Path path : filePaths)
-		{
 			results.add(processFile(path));
-		}
 		return results;
 	}
 
@@ -445,9 +429,7 @@ public final class FileProcessingPipeline
 		{
 			// Validate file exists before attempting to process
 			if (!Files.exists(context.filePath()))
-			{
 				return new StageResult.Failure("File not found: " + context.filePath(), null);
-			}
 
 			// Read source code
 			String sourceCode = Files.readString(context.filePath(), StandardCharsets.UTF_8);
@@ -516,9 +498,7 @@ public final class FileProcessingPipeline
 		{
 			// Extract parsed data from previous stage
 			if (!(previousStageData instanceof ParsedData parsed))
-			{
 				return new StageResult.Failure("Expected ParsedData from previous stage", null);
-			}
 
 			List<FormattingRule> rules = context.formattingRules();
 			List<FormattingConfiguration> configs = context.formattingConfigs();
@@ -537,9 +517,7 @@ public final class FileProcessingPipeline
 				// Validation-only mode: analyze rules without formatting
 				List<FormattingViolation> allViolations = new ArrayList<>();
 				for (FormattingRule rule : rules)
-				{
 					allViolations.addAll(rule.analyze(txContext, configs));
-				}
 				return new StageResult.Success(new FormatResult(parsed.sourceCode(), allViolations));
 			}
 
@@ -561,9 +539,7 @@ public final class FileProcessingPipeline
 			// Collect violations in the final formatted source
 			List<FormattingViolation> violations = new ArrayList<>();
 			for (FormattingRule rule : rules)
-			{
 				violations.addAll(rule.analyze(txContext, configs));
-			}
 
 			return new StageResult.Success(new FormatResult(currentSource, violations));
 		}
@@ -623,9 +599,7 @@ public final class FileProcessingPipeline
 		{
 			// Extract format result from previous stage
 			if (!(previousStageData instanceof FormatResult formatResult))
-			{
 				return new StageResult.Failure("Expected FormatResult from previous stage", null);
-			}
 
 			// Count violations by rule
 			Map<String, Integer> ruleCounts = new HashMap<>();
@@ -699,16 +673,12 @@ public final class FileProcessingPipeline
 		{
 			// Extract violation report from previous stage
 			if (!(previousStageData instanceof ViolationReport report))
-			{
 				return new StageResult.Failure("Expected ViolationReport from previous stage", null);
-			}
 
 			// Determine output format
 			OutputFormat format = context.outputFormatOverride();
 			if (format == null)
-			{
 				format = OutputFormat.HUMAN;
-			}
 
 			// Render report
 			ViolationReportRenderer renderer = ViolationReportRenderer.create(format);

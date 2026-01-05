@@ -34,9 +34,7 @@ public class BatchProcessorMemoryReservationIntegrationTest
 		{
 			// Create valid files
 			for (int i = 0; i < 3; ++i)
-			{
 				files.add(TestFileFactory.createValidJavaFile());
-			}
 
 			// Add a nonexistent file
 			files.add(Path.of("/nonexistent/file.java"));
@@ -73,9 +71,7 @@ public class BatchProcessorMemoryReservationIntegrationTest
 		{
 			// Create multiple files
 			for (int i = 0; i < 10; ++i)
-			{
 				files.add(TestFileFactory.createValidJavaFile());
-			}
 
 			try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 			{

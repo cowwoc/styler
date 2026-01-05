@@ -49,9 +49,7 @@ public final class FileDiscoveryPerformanceTest
 			{
 				Path subdir = Files.createDirectory(tempDir.resolve("dir" + i));
 				for (int j = 0; j < filesPerDir; ++j)
-				{
 					Files.createFile(subdir.resolve("File" + j + ".java"));
-				}
 			}
 
 			Instant startTime = Instant.now();
@@ -79,9 +77,7 @@ public final class FileDiscoveryPerformanceTest
 			{
 				Path subdir = Files.createDirectory(tempDir.resolve("dir" + i));
 				for (int j = 0; j < filesPerDir; ++j)
-				{
 					Files.createFile(subdir.resolve("File" + j + ".java"));
-				}
 			}
 
 			Instant startTime = Instant.now();
@@ -163,17 +159,13 @@ public final class FileDiscoveryPerformanceTest
 			// Create .gitignore with 1000 patterns
 			StringBuilder gitignoreContent = new StringBuilder();
 			for (int i = 0; i < 1000; ++i)
-			{
 				gitignoreContent.append("*.pattern").append(i).append("\n");
-			}
 			Path gitignorePath = Files.createFile(tempDir.resolve(".gitignore"));
 			Files.writeString(gitignorePath, gitignoreContent.toString());
 
 			// Create 100 Java files
 			for (int i = 0; i < 100; ++i)
-			{
 				Files.createFile(tempDir.resolve("File" + i + ".java"));
-			}
 
 			Instant startTime = Instant.now();
 			List<Path> files = discoverFiles(tempDir, DiscoveryConfiguration.DEFAULT);

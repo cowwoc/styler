@@ -2,6 +2,33 @@
 
 ## 2026-01-05
 
+### Apply Brace Omission Style for Single-Line Control Statements ✅
+
+**Task**: `apply-brace-omission-style`
+
+**Problem Solved**:
+- Codebase had inconsistent brace usage for single-line control statements
+- No documented style rule for when to omit braces
+
+**Solution Implemented**:
+- Added brace omission rule to style documentation (java-style.md, java-claude.md, java-human.md)
+- Applied style across 68 source files in the codebase
+- Clarified rule: Omit braces ONLY when body fits on ONE visual line
+- Multi-line statements (throws with string concatenation, etc.) require braces
+
+**Files Modified**:
+- `.claude/rules/java-style.md` - Quick reference with examples
+- `docs/code-style/java-claude.md` - Detection patterns for violations
+- `docs/code-style/java-human.md` - Rationale and practical examples
+- 68 Java source files across all modules (brace removal for single-line bodies)
+- 5 Java files (brace restoration for multi-line throw statements)
+
+**Quality**:
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ### Add Compilation Validation for Source Files ✅
 
 **Task**: `add-compilation-check`

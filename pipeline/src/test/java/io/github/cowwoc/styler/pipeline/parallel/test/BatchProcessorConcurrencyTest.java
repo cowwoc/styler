@@ -35,10 +35,8 @@ public class BatchProcessorConcurrencyTest
 		ParallelProcessingConfig config = TestConfigFactory.createDefaultConfig();
 
 		List<Path> files = new ArrayList<>();
-		for (int i = 0; i < 20; i += 1)
-		{
+		for (int i = 0; i < 20; ++i)
 			files.add(TestFileFactory.createValidJavaFile());
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
@@ -70,10 +68,8 @@ public class BatchProcessorConcurrencyTest
 			build();
 
 		List<Path> files = new ArrayList<>();
-		for (int i = 0; i < 15; i += 1)
-		{
+		for (int i = 0; i < 15; ++i)
 			files.add(TestFileFactory.createValidJavaFile());
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
@@ -106,9 +102,7 @@ public class BatchProcessorConcurrencyTest
 			try
 			{
 				for (int i = 0; i < 10; ++i)
-				{
 					files.add(TestFileFactory.createValidJavaFile());
-				}
 
 				try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 				{
@@ -134,18 +128,12 @@ public class BatchProcessorConcurrencyTest
 		Path tempDir = Files.createTempDirectory("temp");
 
 		List<Path> files = new ArrayList<>();
-		for (int i = 0; i < 20; i += 1)
-		{
+		for (int i = 0; i < 20; ++i)
 			if (i % 4 == 0)
-			{
 				// Create non-existent file to trigger failure
 				files.add(tempDir.resolve("missing_" + i + ".java"));
-			}
 			else
-			{
 				files.add(TestFileFactory.createValidJavaFile());
-			}
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
@@ -193,10 +181,8 @@ public class BatchProcessorConcurrencyTest
 			build();
 
 		List<Path> files = new ArrayList<>();
-		for (int i = 0; i < 25; i += 1)
-		{
+		for (int i = 0; i < 25; ++i)
 			files.add(TestFileFactory.createValidJavaFile());
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{

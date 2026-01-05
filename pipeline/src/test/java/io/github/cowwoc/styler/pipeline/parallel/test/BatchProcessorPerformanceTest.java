@@ -38,10 +38,8 @@ public class BatchProcessorPerformanceTest
 
 		// Create 100 files (not 500 to keep test reasonable)
 		List<Path> files = new ArrayList<>();
-		for (int i = 0; i < 100; i += 1)
-		{
+		for (int i = 0; i < 100; ++i)
 			files.add(TestFileFactory.createValidJavaFile());
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
@@ -85,10 +83,8 @@ public class BatchProcessorPerformanceTest
 		int fileCount = processors * 10; // 10 files per core
 
 		List<Path> files = new ArrayList<>();
-		for (int i = 0; i < fileCount; i += 1)
-		{
+		for (int i = 0; i < fileCount; ++i)
 			files.add(TestFileFactory.createValidJavaFile());
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
@@ -128,10 +124,8 @@ public class BatchProcessorPerformanceTest
 		ParallelProcessingConfig config = TestConfigFactory.createDefaultConfig();
 
 		List<Path> files = new ArrayList<>();
-		for (int i = 0; i < 50; i += 1)
-		{
+		for (int i = 0; i < 50; ++i)
 			files.add(TestFileFactory.createValidJavaFile());
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{

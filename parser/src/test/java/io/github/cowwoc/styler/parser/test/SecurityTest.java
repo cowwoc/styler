@@ -28,9 +28,7 @@ public class SecurityTest
 		int maxChars = SecurityConfig.MAX_SOURCE_SIZE_BYTES / 2; // UTF-16 uses 2 bytes per char
 		StringBuilder source = new StringBuilder(maxChars + 1);
 		for (int i = 0; i < maxChars + 1; i += 1)
-		{
 			source.append('a');
-		}
 
 		new Parser(source.toString());
 	}
@@ -49,9 +47,7 @@ public class SecurityTest
 		// Fill with valid Java tokens to avoid parser errors
 		source.append("class LargeFile {\n");
 		for (int i = source.length(); i < maxChars - 2; i += 1)
-		{
 			source.append(' ');
-		}
 		source.append('}');
 
 		// Should not throw at construction
@@ -72,9 +68,7 @@ public class SecurityTest
 		// Create source with 1M + 1 tokens (semicolons)
 		StringBuilder source = new StringBuilder();
 		for (int i = 0; i < SecurityConfig.MAX_TOKEN_COUNT + 1; i += 1)
-		{
 			source.append(';');
-		}
 
 		new Parser(source.toString());
 	}
@@ -97,9 +91,7 @@ public class SecurityTest
 
 		// Create 30K array accesses = ~90K nodes, well within all limits
 		for (int i = 0; i < 30_000; i += 1)
-		{
 			source.append("[0]");
-		}
 		source.append("; } }");
 
 		// Should parse successfully - just verifies the implementation has the limit logic
@@ -127,14 +119,10 @@ public class SecurityTest
 		int nestedParentheses = SecurityConfig.MAX_NODE_DEPTH - 1;
 		StringBuilder source = new StringBuilder("class Test { void m() { int x = ");
 		for (int i = 0; i < nestedParentheses; ++i)
-		{
 			source.append('(');
-		}
 		source.append('1');
 		for (int i = 0; i < nestedParentheses; ++i)
-		{
 			source.append(')');
-		}
 		source.append("; } }");
 
 		// Should parse successfully - verifies timeout monitoring is in place

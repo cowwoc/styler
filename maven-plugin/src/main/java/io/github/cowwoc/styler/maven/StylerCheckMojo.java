@@ -75,9 +75,7 @@ public class StylerCheckMojo extends AbstractStylerMojo
 	public void execute() throws MojoExecutionException, MojoFailureException
 	{
 		if (shouldSkip())
-		{
 			return;
-		}
 
 		Log log = getLog();
 
@@ -136,8 +134,6 @@ public class StylerCheckMojo extends AbstractStylerMojo
 			log.warn(message);
 		}
 		else
-		{
 			log.info("No formatting violations found");
-		}
 	}
 }

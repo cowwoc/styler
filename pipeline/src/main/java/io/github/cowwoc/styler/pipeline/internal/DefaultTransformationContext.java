@@ -113,12 +113,8 @@ public final class DefaultTransformationContext implements TransformationContext
 
 		int lineNumber = 1;
 		for (int i = 0; i < position; ++i)
-		{
 			if (sourceCode.charAt(i) == '\n')
-			{
 				++lineNumber;
-			}
-		}
 		return lineNumber;
 	}
 
@@ -136,9 +132,7 @@ public final class DefaultTransformationContext implements TransformationContext
 		for (int i = position - 1; i >= 0; --i)
 		{
 			if (sourceCode.charAt(i) == '\n')
-			{
 				break;
-			}
 			++columnNumber;
 		}
 		return columnNumber;
@@ -148,9 +142,7 @@ public final class DefaultTransformationContext implements TransformationContext
 	public void checkDeadline()
 	{
 		if (Instant.now().isAfter(deadline))
-		{
 			throw new ExecutionTimeoutException(filePath, securityConfig.executionTimeout());
-		}
 	}
 
 	@Override

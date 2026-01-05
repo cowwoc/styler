@@ -27,9 +27,7 @@ public final class TestUtils
 	public static void deleteDirectoryRecursively(Path directory)
 	{
 		if (directory == null)
-		{
 			return;
-		}
 		try
 		{
 			Files.walk(directory).sorted((a, b) -> b.compareTo(a)).forEach(path ->

@@ -54,20 +54,12 @@ public final class ImportGrouper
 		List<ImportDeclaration> regularImports = new ArrayList<>();
 
 		for (ImportDeclaration imp : imports)
-		{
 			if (imp.isStatic())
-			{
 				staticImports.add(imp);
-			}
 			else if (imp.isModule())
-			{
 				moduleImports.add(imp);
-			}
 			else
-			{
 				regularImports.add(imp);
-			}
-		}
 
 		Map<ImportGroup, List<ImportDeclaration>> regularGroups =
 			groupByPattern(regularImports, config);
@@ -88,9 +80,7 @@ public final class ImportGrouper
 			appendGroups(result, staticGroups, config.groupOrder(), true, false);
 			appendModuleImportsSection(result, moduleImports, !staticImports.isEmpty());
 			if ((!staticImports.isEmpty() || !moduleImports.isEmpty()) && !regularImports.isEmpty())
-			{
 				result.append('\n');
-			}
 			appendGroups(result, regularGroups, config.groupOrder(), false, false);
 		}
 		else
@@ -98,9 +88,7 @@ public final class ImportGrouper
 			appendGroups(result, regularGroups, config.groupOrder(), false, false);
 			appendModuleImportsSection(result, moduleImports, !regularImports.isEmpty());
 			if ((!regularImports.isEmpty() || !moduleImports.isEmpty()) && !staticImports.isEmpty())
-			{
 				result.append('\n');
-			}
 			appendGroups(result, staticGroups, config.groupOrder(), true, false);
 		}
 
@@ -122,19 +110,13 @@ public final class ImportGrouper
 		boolean hasPrevious)
 	{
 		if (moduleImports.isEmpty())
-		{
 			return;
-		}
 
 		if (hasPrevious)
-		{
 			result.append('\n');
-		}
 
 		for (ImportDeclaration imp : moduleImports)
-		{
 			result.append("import module ").append(imp.qualifiedName()).append(";\n");
-		}
 	}
 
 	/**
@@ -153,9 +135,7 @@ public final class ImportGrouper
 	{
 		Map<ImportGroup, List<ImportDeclaration>> groups = new EnumMap<>(ImportGroup.class);
 		for (ImportGroup group : config.groupOrder())
-		{
 			groups.put(group, new ArrayList<>());
-		}
 		groups.putIfAbsent(ImportGroup.THIRD_PARTY, new ArrayList<>());
 
 		for (ImportDeclaration imp : imports)
@@ -196,16 +176,10 @@ public final class ImportGrouper
 		}
 
 		for (CustomImportPattern customPattern : config.customPatterns())
-		{
 			if (customPattern.matches(qualifiedName))
-			{
 				for (ImportGroup group : config.groupOrder())
-				{
 					if (group.name().equalsIgnoreCase(customPattern.groupName()))
 						return group;
-				}
-			}
-		}
 
 		return ImportGroup.THIRD_PARTY;
 	}
@@ -245,26 +219,18 @@ public final class ImportGrouper
 		{
 			List<ImportDeclaration> groupImports = groups.get(group);
 			if (groupImports == null || groupImports.isEmpty())
-			{
 				continue;
-			}
 
 			if (needsBlankLine)
-			{
 				result.append('\n');
-			}
 
 			for (ImportDeclaration imp : groupImports)
 			{
 				result.append("import ");
 				if (isStatic)
-				{
 					result.append("static ");
-				}
 				else if (isModule)
-				{
 					result.append("module ");
-				}
 				result.append(imp.qualifiedName()).append(";\n");
 			}
 

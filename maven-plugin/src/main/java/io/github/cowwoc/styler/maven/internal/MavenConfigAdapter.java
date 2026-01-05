@@ -105,18 +105,12 @@ public final class MavenConfigAdapter
 		}
 
 		if (!included)
-		{
 			return false;
-		}
 
 		// Check if any exclude pattern matches
 		for (PathMatcher excludeMatcher : excludeMatchers)
-		{
 			if (excludeMatcher.matches(relativePath) || excludeMatcher.matches(file.getFileName()))
-			{
 				return false;
-			}
-		}
 
 		return true;
 	}

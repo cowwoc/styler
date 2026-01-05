@@ -66,9 +66,7 @@ public final class VirtualThreadExecutor implements AutoCloseable
 	{
 		requireThat(task, "task").isNotNull();
 		if (closed.get())
-		{
 			throw new IllegalStateException("Executor has been closed");
-		}
 		executor.submit(() ->
 		{
 			try
@@ -103,17 +101,13 @@ public final class VirtualThreadExecutor implements AutoCloseable
 	public void close()
 	{
 		if (!closed.compareAndSet(false, true))
-		{
 			return;
-		}
 
 		executor.shutdown();
 		try
 		{
 			if (!executor.awaitTermination(30, TimeUnit.SECONDS))
-			{
 				executor.shutdownNow();
-			}
 		}
 		catch (InterruptedException e)
 		{

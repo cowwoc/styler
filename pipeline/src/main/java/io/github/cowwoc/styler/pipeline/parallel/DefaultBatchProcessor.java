@@ -114,9 +114,7 @@ public final class DefaultBatchProcessor implements BatchProcessor
 	public BatchResult processFiles(List<Path> files) throws InterruptedException
 	{
 		if (closed.get())
-		{
 			throw new IllegalStateException("Processor has been closed");
-		}
 
 		requireThat(files, "files").isNotNull().doesNotContain(null);
 
@@ -131,6 +129,7 @@ public final class DefaultBatchProcessor implements BatchProcessor
 			Duration duration = Duration.between(startTime, Instant.now());
 			return new BatchResult(0, 0, 0, List.of(), Map.of(), duration, 0.0);
 		}
+
 
 		// Initialize executor lazily to defer resource allocation until first use
 		lock.lock();
@@ -168,9 +167,7 @@ public final class DefaultBatchProcessor implements BatchProcessor
 				int completed = completedCount.incrementAndGet();
 				latch.countDown();
 				if (config.progressCallback() != null)
-				{
 					config.progressCallback().onProgress(completed, files.size(), file);
-				}
 				continue;
 			}
 
@@ -182,9 +179,7 @@ public final class DefaultBatchProcessor implements BatchProcessor
 					try (PipelineResult result = pipeline.processFile(file))
 					{
 						if (result.overallSuccess())
-						{
 							results.put(file, result);
-						}
 						else
 						{
 							// Extract error message from failed stage
@@ -202,13 +197,9 @@ public final class DefaultBatchProcessor implements BatchProcessor
 				{
 					String errorMessage;
 					if (e.getMessage() != null)
-					{
 						errorMessage = e.getMessage();
-					}
 					else
-					{
 						errorMessage = e.getClass().getSimpleName();
-					}
 					errors.put(file, errorMessage);
 					errorCount.incrementAndGet();
 				}
@@ -217,9 +208,7 @@ public final class DefaultBatchProcessor implements BatchProcessor
 					int completed = completedCount.incrementAndGet();
 					latch.countDown();
 					if (config.progressCallback() != null)
-					{
 						config.progressCallback().onProgress(completed, files.size(), file);
-					}
 				}
 			});
 		}
@@ -248,9 +237,7 @@ public final class DefaultBatchProcessor implements BatchProcessor
 	private double calculateThroughput(int fileCount, Duration duration)
 	{
 		if (duration.isZero() || duration.isNegative())
-		{
 			return 0.0;
-		}
 		double seconds = duration.toMillis() / 1000.0;
 		return fileCount / seconds;
 	}
@@ -265,9 +252,7 @@ public final class DefaultBatchProcessor implements BatchProcessor
 	public void close()
 	{
 		if (!closed.compareAndSet(false, true))
-		{
 			return;
-		}
 		if (executor != null)
 		{
 			try

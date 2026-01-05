@@ -89,9 +89,7 @@ public final class SymbolResolver
 		{
 			String wildcardPackage = wildcard.packageName();
 			if (!wildcardPackageClasses.containsKey(wildcardPackage))
-			{
 				wildcardPackageClasses.put(wildcardPackage, scanner.listPackageClasses(wildcardPackage));
-			}
 		}
 
 		// Resolve each used identifier
@@ -104,13 +102,9 @@ public final class SymbolResolver
 				identifier, explicitImports, wildcardImports, wildcardPackageClasses);
 
 			if (resolvedImport != null)
-			{
 				resolved.put(identifier, resolvedImport);
-			}
 			else if (requiresImport(identifier, localTypes, packageName, scanner))
-			{
 				unresolved.add(identifier);
-			}
 			// else: identifier is from java.lang, declared locally, in same package, or a primitive/keyword
 		}
 
@@ -127,12 +121,8 @@ public final class SymbolResolver
 	{
 		Map<String, String> result = new HashMap<>();
 		for (ImportDeclaration imp : imports)
-		{
 			if (!imp.isWildcard())
-			{
 				result.put(imp.simpleName(), imp.qualifiedName());
-			}
-		}
 		return result;
 	}
 
@@ -154,9 +144,7 @@ public final class SymbolResolver
 		// Check explicit imports first (highest priority)
 		String explicit = explicitImports.get(identifier);
 		if (explicit != null)
-		{
 			return explicit;
-		}
 
 		// Check wildcard imports
 		for (ImportDeclaration wildcard : wildcardImports)
@@ -165,17 +153,13 @@ public final class SymbolResolver
 			Set<String> packageClasses = wildcardPackageClasses.get(packageName);
 
 			if (packageClasses != null)
-			{
 				for (String qualifiedClass : packageClasses)
 				{
 					String simpleName = extractSimpleName(qualifiedClass);
 					if (simpleName.equals(identifier))
-					{
 						// Convert internal format (with $) to import format (with .)
 						return qualifiedClass.replace('$', '.');
-					}
 				}
-			}
 		}
 
 		return null;
@@ -206,30 +190,22 @@ public final class SymbolResolver
 	{
 		// Lowercase identifiers are typically variables/methods, not types
 		if (Character.isLowerCase(identifier.charAt(0)))
-		{
 			return false;
-		}
 
 		// Check if it is a java.lang type (implicitly imported)
 		String javaLangClass = "java.lang." + identifier;
 		if (scanner.classExists(javaLangClass))
-		{
 			return false;
-		}
 
 		if (localTypes.contains(identifier))
-		{
 			return false;
-		}
 
 		// Check if it is a same-package type (no import needed for types in same package)
 		if (!packageName.isEmpty())
 		{
 			String samePackageClass = packageName + "." + identifier;
 			if (scanner.classExists(samePackageClass))
-			{
 				return false;
-			}
 		}
 
 		// Uppercase identifier that is not in java.lang, not local, and not in same package
@@ -250,16 +226,12 @@ public final class SymbolResolver
 		// Handle nested classes: java.util.Map$Entry -> Entry
 		int lastDollar = qualifiedName.lastIndexOf('$');
 		if (lastDollar >= 0)
-		{
 			return qualifiedName.substring(lastDollar + 1);
-		}
 
 		// Handle regular classes: java.util.List -> List
 		int lastDot = qualifiedName.lastIndexOf('.');
 		if (lastDot >= 0)
-		{
 			return qualifiedName.substring(lastDot + 1);
-		}
 
 		return qualifiedName;
 	}
@@ -276,18 +248,14 @@ public final class SymbolResolver
 		List<NodeIndex> packageNodes = positionIndex.findNodesByType(NodeType.PACKAGE_DECLARATION);
 
 		if (packageNodes.isEmpty())
-		{
 			return "";
-		}
 
 		// Get the package declaration text and extract the qualified name
 		String packageText = context.getSourceText(packageNodes.get(0));
 		// Format: "package foo.bar.baz;" - extract the qualified name
 		String result = packageText.strip();
 		if (result.startsWith("package "))
-		{
 			result = result.substring("package ".length());
-		}
 		result = result.replace(";", "").strip();
 		return result;
 	}
@@ -309,16 +277,12 @@ public final class SymbolResolver
 		// Find all type declaration nodes and extract their names
 		for (NodeType typeNodeType : List.of(NodeType.CLASS_DECLARATION,
 			NodeType.INTERFACE_DECLARATION, NodeType.ENUM_DECLARATION, NodeType.RECORD_DECLARATION))
-		{
 			for (NodeIndex node : positionIndex.findNodesByType(typeNodeType))
 			{
 				String typeName = extractTypeNameFromDeclaration(context, node, typeNodeType);
 				if (typeName != null)
-				{
 					types.add(typeName);
-				}
 			}
-		}
 
 		return types;
 	}
@@ -348,9 +312,7 @@ public final class SymbolResolver
 		};
 
 		if (keyword == null)
-		{
 			return null;
-		}
 
 		return extractTypeNameAfterKeyword(declarationText, keyword);
 	}
@@ -370,37 +332,27 @@ public final class SymbolResolver
 		{
 			keywordIndex = declarationText.indexOf(keyword + "\t");
 			if (keywordIndex < 0)
-			{
 				keywordIndex = declarationText.indexOf(keyword + "\n");
-			}
 		}
 
 		if (keywordIndex < 0)
-		{
 			return null;
-		}
 
 		// Extract the type name (first identifier after the keyword)
 		int nameStart = keywordIndex + keyword.length();
 		// Skip whitespace
 		while (nameStart < declarationText.length() &&
 			Character.isWhitespace(declarationText.charAt(nameStart)))
-		{
 			++nameStart;
-		}
 
 		// Read the identifier
 		int nameEnd = nameStart;
 		while (nameEnd < declarationText.length() &&
 			(Character.isJavaIdentifierPart(declarationText.charAt(nameEnd))))
-		{
 			++nameEnd;
-		}
 
 		if (nameEnd > nameStart)
-		{
 			return declarationText.substring(nameStart, nameEnd);
-		}
 
 		return null;
 	}

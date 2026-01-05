@@ -134,9 +134,7 @@ public final class HumanViolationRenderer implements ViolationReportRenderer
 		{
 			List<FormattingViolation> violations = bySeverity.getOrDefault(severity, List.of());
 			if (violations.isEmpty())
-			{
 				continue;
-			}
 
 			appendSeveritySection(output, severity, violations, ruleCounts);
 		}
@@ -227,18 +225,14 @@ public final class HumanViolationRenderer implements ViolationReportRenderer
 	{
 		List<FixStrategy> fixes = violation.suggestedFixes();
 		if (fixes.isEmpty())
-		{
 			return output;
-		}
 
 		output.append("    Fixes:\n");
 		for (FixStrategy fix : fixes)
 		{
 			output.append("      - ").append(fix.description());
 			if (fix.isAutoApplicable())
-			{
 				output.append(" [auto-fixable]");
-			}
 			output.append('\n');
 		}
 		return output;

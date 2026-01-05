@@ -54,13 +54,9 @@ public record Token(TokenType type, int start, int end, String text, String deco
 	{
 		requireThat(type, "type").isNotNull();
 		if (start < 0)
-		{
 			throw new IllegalArgumentException("start must be non-negative, got: " + start);
-		}
 		if (end < start)
-		{
 			throw new IllegalArgumentException("end must be >= start, got: start=" + start + ", end=" + end);
-		}
 	}
 
 	/**
@@ -121,9 +117,7 @@ public record Token(TokenType type, int start, int end, String text, String deco
 	public String toString()
 	{
 		if (text != null)
-		{
 			return type + "[" + start + ":" + end + ", \"" + text + "\"]";
-		}
 		return type + "[" + start + ":" + end + "]";
 	}
 }
