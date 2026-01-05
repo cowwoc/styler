@@ -647,11 +647,17 @@ public final class Parser implements AutoCloseable
 		expect(TokenType.LEFT_PARENTHESIS);
 		if (currentToken().type() != TokenType.RIGHT_PARENTHESIS)
 		{
+			// Handle comments before first component
+			parseComments();
 			parseParameter();
 			while (match(TokenType.COMMA))
 			{
+				// Handle comments between components
+				parseComments();
 				parseParameter();
 			}
+			// Handle comments before closing parenthesis
+			parseComments();
 		}
 		expect(TokenType.RIGHT_PARENTHESIS);
 
@@ -675,9 +681,13 @@ public final class Parser implements AutoCloseable
 
 	private void parseTypeParameters()
 	{
+		// Handle comments before first type parameter
+		parseComments();
 		parseTypeParameter();
 		while (match(TokenType.COMMA))
 		{
+			// Handle comments between type parameters
+			parseComments();
 			parseTypeParameter();
 		}
 		expectGTInGeneric();
@@ -960,10 +970,14 @@ public final class Parser implements AutoCloseable
 			expectGTInGeneric();
 			return;
 		}
+		// Handle comments before first type argument
+		parseComments();
 		// Parse type arguments and allocate nodes (return value is the allocated NodeIndex)
 		parseTypeArgument();
 		while (match(TokenType.COMMA))
 		{
+			// Handle comments between type arguments
+			parseComments();
 			parseTypeArgument();
 		}
 		expectGTInGeneric();
@@ -1256,11 +1270,17 @@ public final class Parser implements AutoCloseable
 		// Parameters already consumed opening paren
 		if (!match(TokenType.RIGHT_PARENTHESIS))
 		{
+			// Handle comments before first parameter
+			parseComments();
 			parseParameter();
 			while (match(TokenType.COMMA))
 			{
+				// Handle comments between parameters
+				parseComments();
 				parseParameter();
 			}
+			// Handle comments before closing parenthesis
+			parseComments();
 			expect(TokenType.RIGHT_PARENTHESIS);
 		}
 
@@ -1612,12 +1632,18 @@ public final class Parser implements AutoCloseable
 	{
 		int start = currentToken().start();
 		expect(TokenType.IF);
+		// Handle comments after 'if' keyword
+		parseComments();
 		expect(TokenType.LEFT_PARENTHESIS);
 		parseExpression();
 		expect(TokenType.RIGHT_PARENTHESIS);
+		// Handle comments after condition
+		parseComments();
 		parseStatement();
 		if (match(TokenType.ELSE))
 		{
+			// Handle comments after 'else' keyword
+			parseComments();
 			parseStatement();
 		}
 		int end = previousToken().end();
@@ -1674,7 +1700,11 @@ public final class Parser implements AutoCloseable
 	{
 		int start = currentToken().start();
 		expect(TokenType.FOR);
+		// Handle comments after 'for' keyword
+		parseComments();
 		expect(TokenType.LEFT_PARENTHESIS);
+		// Handle comments after opening parenthesis
+		parseComments();
 
 		// Enhanced for or regular for
 		int checkpoint = position;
@@ -1717,9 +1747,13 @@ public final class Parser implements AutoCloseable
 	{
 		int start = currentToken().start();
 		expect(TokenType.WHILE);
+		// Handle comments after 'while' keyword
+		parseComments();
 		expect(TokenType.LEFT_PARENTHESIS);
 		parseExpression();
 		expect(TokenType.RIGHT_PARENTHESIS);
+		// Handle comments after condition
+		parseComments();
 		parseStatement();
 		int end = previousToken().end();
 		return arena.allocateNode(NodeType.WHILE_STATEMENT, start, end);
@@ -1747,6 +1781,8 @@ public final class Parser implements AutoCloseable
 		parseExpression();
 		expect(TokenType.RIGHT_PARENTHESIS);
 		expect(TokenType.LEFT_BRACE);
+		// Handle comments after opening brace
+		parseComments();
 		while (currentToken().type() == TokenType.CASE || currentToken().type() == TokenType.DEFAULT)
 		{
 			if (match(TokenType.CASE))
@@ -1786,6 +1822,8 @@ public final class Parser implements AutoCloseable
 			{
 				// Colon case (traditional): case 1:
 				expect(TokenType.COLON);
+				// Handle comments after colon
+				parseComments();
 				while (currentToken().type() != TokenType.CASE &&
 					currentToken().type() != TokenType.DEFAULT &&
 					currentToken().type() != TokenType.RIGHT_BRACE)
@@ -1793,6 +1831,8 @@ public final class Parser implements AutoCloseable
 					parseStatement();
 				}
 			}
+			// Handle comments between case/default labels
+			parseComments();
 		}
 		expect(TokenType.RIGHT_BRACE);
 		int end = previousToken().end();
@@ -2166,10 +2206,14 @@ public final class Parser implements AutoCloseable
 
 		parseBlock();
 
+		// Handle comments before catch clauses
+		parseComments();
 		// Catch clauses
 		while (currentToken().type() == TokenType.CATCH)
 		{
 			parseCatchClause();
+			// Handle comments between catch/finally clauses
+			parseComments();
 		}
 
 		// Finally clause
@@ -2187,7 +2231,11 @@ public final class Parser implements AutoCloseable
 		int start = currentToken().start();
 		expect(TokenType.CATCH);
 		expect(TokenType.LEFT_PARENTHESIS);
+		// Handle comments before catch parameter
+		parseComments();
 		parseCatchParameter();
+		// Handle comments after catch parameter
+		parseComments();
 		expect(TokenType.RIGHT_PARENTHESIS);
 		parseBlock();
 		int end = previousToken().end();
@@ -2435,6 +2483,8 @@ public final class Parser implements AutoCloseable
 
 	private NodeIndex parseLambdaBody(int start)
 	{
+		// Handle comments between arrow and body
+		parseComments();
 		int end;
 		if (currentToken().type() == TokenType.LEFT_BRACE)
 		{
@@ -3099,6 +3149,8 @@ public final class Parser implements AutoCloseable
 	private NodeIndex parseArrayInitializer(int start)
 	{
 		// LEFT_BRACE already consumed
+		// Handle comments after opening brace
+		parseComments();
 		if (!match(TokenType.RIGHT_BRACE))
 		{
 			// Handle nested array initializers or expressions
@@ -3114,6 +3166,8 @@ public final class Parser implements AutoCloseable
 			}
 			while (match(TokenType.COMMA))
 			{
+				// Handle comments after comma
+				parseComments();
 				if (currentToken().type() == TokenType.RIGHT_BRACE)
 				{
 					break;
@@ -3129,6 +3183,8 @@ public final class Parser implements AutoCloseable
 					parseExpression();
 				}
 			}
+			// Handle comments before closing brace
+			parseComments();
 			expect(TokenType.RIGHT_BRACE);
 		}
 		int end = previousToken().end();
