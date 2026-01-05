@@ -400,37 +400,6 @@ benchmarking, and validate with Maven plugin integration.
 
 *All previously listed tasks (add-wildcard-type-nodes, add-parameterized-type-nodes, add-parameter-declaration-nodes) have been completed.*
 
-### Parser Enhancement: Missing Core Java Features
-
-**Priority**: These are basic Java features that should already be supported. Required for correct parsing.
-
-
-- [ ] **READY:** `add-module-info-parsing` - Parse module-info.java module declarations
-  - **Dependencies**: None
-  - **Blocks**: None (required for JPMS module support)
-  - **Parallelizable With**: Any Phase E parser task
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Parse module-info.java files with module declarations (JDK 9+)
-  - **Current Gap**: Parser only handles compilation units with package/import/type declarations
-  - **Syntax**: `module name { requires/exports/opens/uses/provides directives }`
-  - **Example**:
-    ```java
-    module com.example.app {
-        requires java.base;
-        requires transitive java.sql;
-        exports com.example.api;
-        opens com.example.internal to framework;
-        uses com.example.spi.Service;
-        provides com.example.spi.Service with com.example.impl.ServiceImpl;
-    }
-    ```
-  - **Implementation**:
-    - Add MODULE token type and related directive tokens
-    - Add `MODULE_DECLARATION`, `REQUIRES_DIRECTIVE`, `EXPORTS_DIRECTIVE`, etc. to NodeType
-    - Detect module-info.java files or `module` keyword at compilation unit level
-    - Parse module name, then directives until closing brace
-  - **Quality**: Parser tests for all directive types, qualified names, modifiers
-
 ### Parser Enhancement: JDK 25 Language Features
 
 **Priority**: These are REQUIRED for "100% JDK 25 support" claim in scope.md. Should be completed before

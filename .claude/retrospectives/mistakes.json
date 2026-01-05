@@ -593,6 +593,26 @@
       "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M030",
+      "timestamp": "2026-01-05T15:15:33-05:00",
+      "category": "build_failure",
+      "pattern_id": null,
+      "description": "Added @SuppressWarnings(PMD.NcssCount) to Parser.java without attempting decomposition first",
+      "root_cause": "Took easy suppression path without verifying if refactoring was actually infeasible. Rationalized that shared state made extraction hard without actually attempting it.",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/warn-ncsscount-suppression.sh",
+      "pattern_keywords": [
+        "NcssCount",
+        "PMD",
+        "suppression",
+        "decomposition",
+        "Parser"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ]
 }

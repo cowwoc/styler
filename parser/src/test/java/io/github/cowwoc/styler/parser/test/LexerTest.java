@@ -612,8 +612,8 @@ public class LexerTest
 	 * Tests that tokens without Unicode escapes have matching text and decodedText.
 	 * For efficiency, both should reference the same String instance.
 	 */
-	@Test
 	@SuppressWarnings("PMD.UseEqualsToCompareStrings")
+	@Test
 	public void testNoUnicodeEscapeSharesTextInstance()
 	{
 		Lexer lexer = new Lexer("myVariable");

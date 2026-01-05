@@ -1,7 +1,6 @@
 package io.github.cowwoc.styler.parser;
 
 import io.github.cowwoc.styler.ast.core.ImportAttribute;
-import io.github.cowwoc.styler.ast.core.ModuleImportAttribute;
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.ast.core.NodeType;
@@ -53,6 +52,11 @@ public final class Parser implements AutoCloseable
 	 * indicate that the next GREATER_THAN expectation should not advance the position.
 	 */
 	private int pendingGTCount;
+
+	/**
+	 * Helper for parsing module-info.java files (JPMS module declarations).
+	 */
+	private final ModuleParser moduleParser;
 
 	/**
 	 * Creates a parser by reading a file with UTF-8 encoding.
@@ -114,6 +118,7 @@ public final class Parser implements AutoCloseable
 		}
 
 		this.arena = new NodeArena();
+		this.moduleParser = new ModuleParser(this);
 
 		// SEC-006: Set parsing deadline for timeout enforcement
 		this.parsingDeadline = Instant.now().plusMillis(SecurityConfig.PARSING_TIMEOUT_MS);
@@ -127,6 +132,46 @@ public final class Parser implements AutoCloseable
 	public NodeArena getArena()
 	{
 		return arena;
+	}
+
+	/**
+	 * Returns the source code being parsed.
+	 *
+	 * @return the source code
+	 */
+	String getSourceCode()
+	{
+		return sourceCode;
+	}
+
+	/**
+	 * Returns the token list.
+	 *
+	 * @return the tokens
+	 */
+	List<Token> getTokens()
+	{
+		return tokens;
+	}
+
+	/**
+	 * Returns the current token position.
+	 *
+	 * @return the position
+	 */
+	int getPosition()
+	{
+		return position;
+	}
+
+	/**
+	 * Sets the current token position.
+	 *
+	 * @param position the new position
+	 */
+	void setPosition(int position)
+	{
+		this.position = position;
 	}
 
 	/**
@@ -175,8 +220,15 @@ public final class Parser implements AutoCloseable
 	{
 		int start = currentToken().start();
 
-		// Package declaration (may be preceded by annotations in package-info.java)
+		// Parse any leading comments before detection
 		parseComments();
+
+		// Check if this is a module declaration (module-info.java)
+		// Module declarations start with optional annotations, optional "open", then "module"
+		if (moduleParser.isModuleDeclarationStart())
+		{
+			return moduleParser.parseModuleCompilationUnit();
+		}
 
 		// Check for package-level annotations
 		// Only consume annotations if they are followed by 'package' keyword (not @interface or class)
@@ -390,7 +442,7 @@ public final class Parser implements AutoCloseable
 
 		// JEP 511: Module import syntax: import module java.base;
 		if (match(TokenType.MODULE))
-			return parseModuleImport(start);
+			return moduleParser.parseModuleImport(start);
 
 		boolean isStatic = match(TokenType.STATIC);
 
@@ -421,36 +473,7 @@ public final class Parser implements AutoCloseable
 		return arena.allocateImportDeclaration(start, end, attribute);
 	}
 
-	/**
-	 * Parses a module import declaration (JEP 511).
-	 * <p>
-	 * Syntax: {@code import module <module-name>;}
-	 *
-	 * @param start the start position of the import keyword
-	 * @return the node index of the created module import declaration
-	 */
-	private NodeIndex parseModuleImport(int start)
-	{
-		// Build the module name from tokens
-		StringBuilder moduleName = new StringBuilder();
-		expect(TokenType.IDENTIFIER);
-		moduleName.append(previousToken().decodedText());
-
-		while (currentToken().type() == TokenType.DOT)
-		{
-			consume(); // DOT
-			moduleName.append('.');
-			expect(TokenType.IDENTIFIER);
-			moduleName.append(previousToken().decodedText());
-		}
-
-		expect(TokenType.SEMICOLON);
-		int end = previousToken().end();
-		ModuleImportAttribute attribute = new ModuleImportAttribute(moduleName.toString());
-		return arena.allocateModuleImportDeclaration(start, end, attribute);
-	}
-
-	private NodeIndex parseQualifiedName()
+	NodeIndex parseQualifiedName()
 	{
 		int start = currentToken().start();
 		expect(TokenType.IDENTIFIER);
@@ -1254,7 +1277,7 @@ public final class Parser implements AutoCloseable
 			parseFieldRest(memberStart);
 	}
 
-	private NodeIndex parseAnnotation()
+	NodeIndex parseAnnotation()
 	{
 		int start = currentToken().start();
 		expect(TokenType.AT_SIGN);
@@ -3090,7 +3113,7 @@ public final class Parser implements AutoCloseable
 	 * Parses comment tokens and creates AST nodes for them.
 	 * Comments are preserved in the AST to support pure AST-based position checking.
 	 */
-	private void parseComments()
+	void parseComments()
 	{
 		while (true)
 		{
@@ -3128,7 +3151,7 @@ public final class Parser implements AutoCloseable
 		}
 	}
 
-	private Token currentToken()
+	Token currentToken()
 	{
 		if (position < tokens.size())
 			return tokens.get(position);
@@ -3140,12 +3163,12 @@ public final class Parser implements AutoCloseable
 	 *
 	 * @return the previous token
 	 */
-	private Token previousToken()
+	Token previousToken()
 	{
 		return tokens.get(position - 1);
 	}
 
-	private Token consume()
+	Token consume()
 	{
 		// SEC-006: Periodic timeout checking to detect hung parsers
 		++tokenCheckCounter;
@@ -3165,7 +3188,7 @@ public final class Parser implements AutoCloseable
 		return current;
 	}
 
-	private boolean match(TokenType type)
+	boolean match(TokenType type)
 	{
 		if (currentToken().type() == type)
 		{
@@ -3175,7 +3198,7 @@ public final class Parser implements AutoCloseable
 		return false;
 	}
 
-	private void expect(TokenType type)
+	void expect(TokenType type)
 	{
 		if (currentToken().type() != type)
 		{
