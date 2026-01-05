@@ -13,7 +13,7 @@ DATE=$(date +%Y-%m-%d)
 YEAR=$(date +%Y)
 ARCHIVE_FILE="/workspace/main/changelog-${YEAR}.md"
 
-# Function to archive changelog entries to yearly archive
+# Function to archive changelog entries to yearly archive files (by entry date)
 # Returns 0 if archived, 1 if no archival needed
 archive_changelog_entries() {
     local line_count
@@ -23,42 +23,99 @@ archive_changelog_entries() {
         return 1  # No archival needed
     fi
 
-    echo "Changelog exceeds $MAX_CHANGELOG_LINES lines ($line_count), archiving to $ARCHIVE_FILE"
+    echo "Changelog exceeds $MAX_CHANGELOG_LINES lines ($line_count), archiving by entry date"
 
-    # Extract entries (everything after the first line "# Changelog")
-    local entries
-    entries=$(tail -n +2 "$CHANGELOG_FILE")
+    # Use Python to split entries by year, keeping recent entries in changelog.md
+    python3 << 'PYTHON_SCRIPT'
+import re
+import os
 
-    # Create or prepend to archive file
-    if [ -f "$ARCHIVE_FILE" ]; then
-        # Prepend new entries to existing archive (after archive header)
-        local existing_content
-        existing_content=$(tail -n +2 "$ARCHIVE_FILE")
-        {
-            echo "# Changelog Archive - $YEAR"
-            echo "$entries"
-            echo "$existing_content"
-        } > "$ARCHIVE_FILE.tmp"
-        mv "$ARCHIVE_FILE.tmp" "$ARCHIVE_FILE"
-    else
-        # Create new archive file
-        {
-            echo "# Changelog Archive - $YEAR"
-            echo "$entries"
-        } > "$ARCHIVE_FILE"
-    fi
+changelog_file = "/workspace/main/changelog.md"
+max_lines = 500
 
-    # Reset changelog.md to header only
-    echo "# Changelog" > "$CHANGELOG_FILE"
+with open(changelog_file, 'r') as f:
+    content = f.read()
 
-    # Stage archive file for commit
-    git add "$ARCHIVE_FILE"
+# Split into sections by date headers (## YYYY-MM-DD)
+sections = re.split(r'(^## \d{4}-\d{2}-\d{2})', content, flags=re.MULTILINE)
+
+# Parse entries in order (newest first)
+entries = []
+i = 1  # Skip header
+while i < len(sections):
+    if re.match(r'^## (\d{4})', sections[i]):
+        year = sections[i][3:7]
+        header = sections[i]
+        body = sections[i+1] if i+1 < len(sections) else ""
+        entry = header + body
+        entries.append((year, entry))
+        i += 2
+    else:
+        i += 1
+
+# Determine how many entries to keep in changelog.md (stay under max_lines)
+keep_entries = []
+keep_lines = 1  # Start with header line
+for year, entry in entries:
+    entry_lines = entry.count('\n') + 1
+    if keep_lines + entry_lines <= max_lines:
+        keep_entries.append((year, entry))
+        keep_lines += entry_lines
+    else:
+        break  # Stop adding to keep, rest goes to archive
+
+# Entries to archive (the rest)
+archive_entries = entries[len(keep_entries):]
+
+if not archive_entries:
+    print("No entries to archive")
+    exit(0)
+
+# Group archive entries by year
+entries_by_year = {}
+for year, entry in archive_entries:
+    if year not in entries_by_year:
+        entries_by_year[year] = []
+    entries_by_year[year].append(entry)
+
+# Write each year's entries to its archive file
+for year, year_entries in entries_by_year.items():
+    archive_file = f"/workspace/main/changelog-{year}.md"
+    archive_header = f"# Changelog Archive - {year}\n"
+    new_content = "".join(year_entries)
+
+    if os.path.exists(archive_file):
+        # Prepend new entries after header
+        with open(archive_file, 'r') as f:
+            existing = f.read()
+        existing_entries = existing.split('\n', 1)[1] if '\n' in existing else ""
+        with open(archive_file, 'w') as f:
+            f.write(archive_header + new_content + existing_entries)
+    else:
+        with open(archive_file, 'w') as f:
+            f.write(archive_header + new_content)
+
+    print(f"Archived {len(year_entries)} entries to changelog-{year}.md")
+
+# Rewrite changelog.md with kept entries only
+with open(changelog_file, 'w') as f:
+    f.write("# Changelog\n")
+    for year, entry in keep_entries:
+        f.write(entry)
+
+print(f"Kept {len(keep_entries)} entries in changelog.md ({keep_lines} lines)")
+PYTHON_SCRIPT
+
+    # Stage all archive files for commit
+    for archive in /workspace/main/changelog-[0-9][0-9][0-9][0-9].md; do
+        [ -f "$archive" ] && git add "$archive"
+    done
 }
 
 # Handle --archive-now flag for manual archival
 if [ "${1:-}" = "--archive-now" ]; then
     if archive_changelog_entries; then
-        echo "Archived to $ARCHIVE_FILE"
+        echo "Archival complete (entries split by date)"
     else
         echo "No archival needed (under $MAX_CHANGELOG_LINES lines)"
     fi
@@ -118,7 +175,7 @@ $CHANGES
 
 if [ "$ARCHIVED" = "true" ]; then
     COMMIT_MSG="${COMMIT_MSG}
-Archived changelog entries to $ARCHIVE_FILE (exceeded $MAX_CHANGELOG_LINES lines)
+Archived changelog entries by date (exceeded $MAX_CHANGELOG_LINES lines)
 "
 fi
 

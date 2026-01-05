@@ -524,11 +524,46 @@ if (condition)
         process(i);
 ```
 **When braces ARE required**:
-- Multi-line bodies (2+ statements)
+- Multi-statement bodies (2+ statements)
+- Multi-line statements (single statement spanning multiple visual lines - e.g., long throw, method call)
 - Bodies containing comments
+
+**⚠️ CRITICAL - Multi-Line Statement Detection**:
+"Single-line" means ONE VISUAL LINE, not "one statement". A statement that wraps to multiple lines requires
+braces even though it's syntactically one statement.
+
+**Detection Pattern for Multi-Line Statement Violation**:
+```bash
+# Find control statements followed by indented statement that continues on next line
+# This pattern catches throw/return/method calls that span multiple lines WITHOUT braces
+grep -rn -A4 -E '^\s*(if|else|for|while)\s*(\([^)]*\))?\s*$' --include="*.java" . | \
+  grep -A3 '^\s+(throw|return|[a-z]+\()' | grep -E '^\s+[^{].*[+"]$'
+```
+
+**Multi-Line Statement Examples**:
+```java
+// ❌ VIOLATION - Multi-line throw WITHOUT braces
+if (Files.isDirectory(filePath))
+    throw new IllegalArgumentException(
+        "Directory processing not yet supported: " + filePath +
+        ". Use explicit file paths.");
+
+// ✅ CORRECT - Multi-line statement WITH braces
+if (Files.isDirectory(filePath))
+{
+    throw new IllegalArgumentException(
+        "Directory processing not yet supported: " + filePath +
+        ". Use explicit file paths.");
+}
+
+// ✅ CORRECT - Truly single-line throw, braces omitted
+if (input == null)
+    throw new NullPointerException("input");
+```
+
 **Rationale**: Omitting braces for single-line statements reduces visual noise and vertical space. The
-indentation clearly shows the statement belongs to the control structure. This follows the principle of
-minimal syntax for simple cases.
+indentation clearly shows the statement belongs to the control structure. However, multi-line statements
+need braces to clearly delineate where the control body ends.
 
 ### Class Organization - User-Facing Members First
 **Detection Pattern**: `(public|protected).*record\s+\w+.*\{.*\n.*public\s+\w+.*\(` (nested types before

@@ -354,9 +354,12 @@ archive rotation**:
 ### Archive Trigger
 
 When `changelog.md` exceeds **500 lines**, the archive-task script:
-1. Reads all entries from `changelog.md` (excluding header)
-2. **Appends** entries to `changelog-{current-year}.md` (creates if needed)
-3. Resets `changelog.md` to header only
+1. Keeps recent entries in `changelog.md` (up to 500 lines)
+2. Parses older entries' dates from `## YYYY-MM-DD` headers
+3. Groups older entries by year
+4. **Appends** each year's entries to `changelog-{year}.md` (creates if needed)
+
+**Key**: Recent history stays visible; only older entries are archived by their date.
 
 ### Archive File Format
 
