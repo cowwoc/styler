@@ -42,10 +42,8 @@ public final class ConfigMerger
 
 		// For each field, use the first explicitly set value
 		for (ConfigBuilder builder : builders)
-		{
 			if (merged.getMaxLineLength().isEmpty() && builder.getMaxLineLength().isPresent())
 				merged.maxLineLength(builder.getMaxLineLength().orElseThrow());
-		}
 
 		return merged.build();
 	}

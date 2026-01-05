@@ -473,6 +473,7 @@ validation would catch context-sensitive errors.
     - Systematic validation for each NodeType that has semantic constraints
   - **Quality**: Tests for each semantic constraint category, integration with parse pipeline
 
+
 ---
 
 ## IDE & Integration Ecosystem

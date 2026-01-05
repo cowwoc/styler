@@ -89,17 +89,13 @@ public class ProgressCallbackTest
 			threads[i] = new Thread(() ->
 			{
 				for (int j = 0; j < 10; ++j)
-				{
 					callback.onProgress(index * 10 + j, 100, Paths.get("test" + index + "_" + j + ".java"));
-				}
 			});
 		}
 
 		// Start all threads
 		for (Thread thread : threads)
-		{
 			thread.start();
-		}
 
 		// Wait for all threads to complete
 		for (Thread thread : threads)

@@ -35,10 +35,8 @@ final class ConfigBuilderDeserializer extends StdDeserializer<ConfigBuilder>
 
 			// Expect START_OBJECT token
 			if (parser.currentToken() != JsonToken.START_OBJECT)
-			{
 				throw context.wrongTokenException(parser, ConfigBuilder.class, JsonToken.START_OBJECT,
 					"Expected START_OBJECT");
-			}
 
 			// Read all fields
 			while (parser.nextToken() != JsonToken.END_OBJECT)

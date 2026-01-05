@@ -72,9 +72,7 @@ public final class TestFileFactory
 	{
 		List<Path> files = new ArrayList<>();
 		for (int i = 0; i < count; ++i)
-		{
 			files.add(createValidJavaFile());
-		}
 		return files;
 	}
 

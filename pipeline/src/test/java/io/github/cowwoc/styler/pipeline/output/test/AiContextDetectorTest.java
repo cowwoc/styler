@@ -47,10 +47,7 @@ public class AiContextDetectorTest
 
 		// Then: If no console, should return JSON format
 		if (!hasConsole)
-		{
-			OutputFormat format = detector.detectContext();
-			requireThat(format, "format").isEqualTo(OutputFormat.JSON);
-		}
+			requireThat(detector.detectContext(), "format").isEqualTo(OutputFormat.JSON);
 	}
 
 	/**
@@ -85,9 +82,6 @@ public class AiContextDetectorTest
 
 		// Then: If in CI, context detector should return JSON
 		if (inCi)
-		{
-			OutputFormat format = detector.detectContext();
-			requireThat(format, "format").isEqualTo(OutputFormat.JSON);
-		}
+			requireThat(detector.detectContext(), "format").isEqualTo(OutputFormat.JSON);
 	}
 }

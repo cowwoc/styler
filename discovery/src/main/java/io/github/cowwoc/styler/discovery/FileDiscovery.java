@@ -92,9 +92,7 @@ public final class FileDiscovery
 				}
 
 				if (Files.isDirectory(path))
-				{
 					discoverDirectory(path, discoveredFiles, errors, context);
-				}
 				else if (Files.isRegularFile(path))
 				{
 					try
@@ -154,9 +152,7 @@ public final class FileDiscovery
 
 			EnumSet<FileVisitOption> options = EnumSet.noneOf(FileVisitOption.class);
 			if (context.config.followSymlinks())
-			{
 				options.add(FileVisitOption.FOLLOW_LINKS);
-			}
 
 			int maxDepth = context.config.maxDepth();
 			FileVisitor visitor = new FileVisitor(context, discoveredFiles, errors, directory);
@@ -167,13 +163,9 @@ public final class FileDiscovery
 			// Handle permission denied errors gracefully
 			Throwable cause = e.getCause();
 			if (cause instanceof AccessDeniedException)
-			{
 				errors.put(directory, "Access denied: " + cause.getMessage());
-			}
 			else
-			{
 				errors.put(directory, "Failed to traverse directory: " + e.getMessage());
-			}
 		}
 		catch (Exception e)
 		{
@@ -220,9 +212,7 @@ public final class FileDiscovery
 			{
 				// Check depth limit
 				if (currentDepth >= context.config.maxDepth())
-				{
 					return FileVisitResult.SKIP_SUBTREE;
-				}
 
 				++currentDepth;
 				++context.directoriesScanned;
@@ -263,18 +253,14 @@ public final class FileDiscovery
 
 				// Check if file matches .java extension
 				if (!file.toString().endsWith(JAVA_EXTENSION))
-				{
 					return FileVisitResult.CONTINUE;
-				}
 
 				// Check gitignore rules
 				if (context.config.respectGitignore())
 				{
 					Path relativePath = rootDirectory.relativize(file);
 					if (isIgnoredByGitignore(file, relativePath))
-					{
 						return FileVisitResult.CONTINUE;
-					}
 				}
 
 				// Check include patterns
@@ -282,9 +268,7 @@ public final class FileDiscovery
 				{
 					Path relativePath = rootDirectory.relativize(file);
 					if (!matchesAnyPattern(relativePath, context.config.includePatterns()))
-					{
 						return FileVisitResult.CONTINUE;
-					}
 				}
 
 				// Check exclude patterns
@@ -292,9 +276,7 @@ public final class FileDiscovery
 				{
 					Path relativePath = rootDirectory.relativize(file);
 					if (matchesAnyPattern(relativePath, context.config.excludePatterns()))
-					{
 						return FileVisitResult.CONTINUE;
-					}
 				}
 
 				// Validate file with security validator
@@ -348,9 +330,7 @@ public final class FileDiscovery
 				{
 					Path relativeToGitignore = current.relativize(file);
 					if (gitignoreParser.isIgnored(relativeToGitignore, rules))
-					{
 						return true;
-					}
 				}
 				current = current.getParent();
 			}
@@ -372,9 +352,7 @@ public final class FileDiscovery
 				{
 					PatternMatcher matcher = new GlobPatternMatcher(pattern);
 					if (matcher.matches(path))
-					{
 						return true;
-					}
 				}
 				catch (IllegalArgumentException e)
 				{

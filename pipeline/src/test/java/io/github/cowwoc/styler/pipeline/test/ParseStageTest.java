@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.pipeline.test;
 
-import static org.testng.Assert.*;
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -66,9 +66,8 @@ public class ParseStageTest
 		try (PipelineResult result = pipeline.processFile(validFile))
 		{
 			// Assertions: Verify processing completes
-			assertNotNull(result, "Pipeline should return result for valid Java file");
-			assertNotNull(result.stageResults(), "Stage results should be present");
-			assertFalse(result.stageResults().isEmpty(), "At least one stage should execute");
+			requireThat(result, "result").isNotNull();
+			requireThat(result.stageResults(), "result.stageResults()").isNotEmpty();
 			// Test passes if pipeline executes any stage without throwing exception
 		}
 	}
@@ -95,8 +94,8 @@ public class ParseStageTest
 		try (PipelineResult result = pipeline.processFile(malformedFile))
 		{
 			// Assertions: Verify processing attempts to handle malformed code
-			assertNotNull(result, "Pipeline should return result");
-			assertFalse(result.stageResults().isEmpty(), "At least parse stage should execute");
+			requireThat(result, "result").isNotNull();
+			requireThat(result.stageResults(), "result.stageResults()").isNotEmpty();
 			// When parse stage is implemented, it should fail for malformed code
 			// For now, stages may return Skipped if not yet implemented
 		}
@@ -124,17 +123,21 @@ public class ParseStageTest
 		try (PipelineResult result = pipeline.processFile(nonExistentFile))
 		{
 			// Assertions: Verify failure is reported
-			assertFalse(result.overallSuccess(), "Pipeline should fail for non-existent file");
-			assertFalse(result.stageResults().isEmpty(), "At least parse stage should execute");
+			requireThat(result.overallSuccess(), "result.overallSuccess()").isFalse();
+			requireThat(result.stageResults(), "result.stageResults()").isNotEmpty();
 
-			StageResult firstResult = result.stageResults().get(0);
-			assertFalse(firstResult.isSuccess(), "Parse stage should fail for non-existent file");
-			assertTrue(firstResult.errorMessage().isPresent(), "Error message should be present");
+			// Find the stage that failed
+			StageResult failedResult = result.stageResults().stream()
+				.filter(r -> r instanceof StageResult.Failure)
+				.findFirst()
+				.orElse(null);
 
-			String errorMsg = firstResult.errorMessage().get();
-			assertTrue(
-				errorMsg.toLowerCase(java.util.Locale.ROOT).contains("not found") || errorMsg.toLowerCase(java.util.Locale.ROOT).contains("file"),
-				"Error message should reference missing file: " + errorMsg);
+			requireThat(failedResult, "failedResult").isNotNull();
+			requireThat(failedResult.errorMessage(), "failedResult.errorMessage()").isPresent();
+
+			String errorMsg = failedResult.errorMessage().get().toLowerCase(java.util.Locale.ROOT);
+			boolean mentionsFile = errorMsg.contains("not found") || errorMsg.contains("file");
+			requireThat(mentionsFile, "mentionsFile").isTrue();
 		}
 	}
 
@@ -166,8 +169,8 @@ public class ParseStageTest
 			try (PipelineResult result = pipeline.processFile(tempFile))
 			{
 				// Assertions: Verify pipeline completes without exception
-				assertNotNull(result, "Pipeline should return result");
-				assertFalse(result.stageResults().isEmpty(), "At least one stage should execute");
+				requireThat(result, "result").isNotNull();
+				requireThat(result.stageResults(), "result.stageResults()").isNotEmpty();
 			}
 		}
 		finally
@@ -201,8 +204,8 @@ public class ParseStageTest
 			// Assertions: Verify arena handling
 			// When parse stage is implemented, arena should be present for valid files
 			// For now, test that pipeline returns valid result
-			assertNotNull(result, "Pipeline should return result");
-			assertNotNull(result.arena(), "Arena optional should be present");
+			requireThat(result, "result").isNotNull();
+			requireThat(result.arena(), "result.arena()").isNotNull();
 		}
 	}
 }
