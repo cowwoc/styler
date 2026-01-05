@@ -396,23 +396,6 @@ benchmarking, and validate with Maven plugin integration.
 
 **Goal**: Improve formatter architecture for better maintainability, accuracy, and extensibility.
 
-### Parser Enhancement: Systematic Comment Handling
-- [ ] **READY:** `fix-remaining-comment-gaps` - Handle comments in all remaining parser locations
-  - **Dependencies**: `fix-enum-constant-comments` ✅
-  - **Blocks**: None (enhancement for edge cases)
-  - **Parallelizable With**: Any Phase E task
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Systematically add parseComments() calls to all locations where comments can appear
-  - **Known Gaps** (from analysis):
-    - Method/constructor parameters (between params)
-    - Block statements (after opening brace, before closing brace)
-    - Control flow statements (if/else, for, while, switch, try/catch)
-    - Array initializers (between elements)
-    - Lambda expressions (between arrow and body)
-    - Type parameters/arguments (between generic type params)
-  - **Priority**: Lower than self-hosting blockers - these are edge cases
-  - **Quality**: Parser tests for comment placement in each identified location
-
 ### Parser Enhancement: Missing Node Types
 
 *All previously listed tasks (add-wildcard-type-nodes, add-parameterized-type-nodes, add-parameter-declaration-nodes) have been completed.*
