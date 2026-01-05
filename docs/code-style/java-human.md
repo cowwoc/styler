@@ -103,6 +103,196 @@ and correctness are critical because:
 
 **Why this matters**: Placing `<p>` on its own line creates visual separation and makes the structure of JavaDoc comments easier to scan. It also aligns with the broader formatting style where block-level elements stand alone.
 
+### JavaDoc - No Blank Line Before Member
+**Why this matters**: JavaDoc must immediately precede the element it documents. A blank line between the closing `*/` and the declaration breaks the association and may cause documentation tools to misinterpret the relationship.
+
+**Practical example**:
+```java
+// ✅ CORRECT - No blank line between JavaDoc and member
+/**
+ * Parses the source file.
+ */
+public void parse(Path path)
+{
+    // ...
+}
+
+// ❌ VIOLATION - Blank line breaks the association
+/**
+ * Parses the source file.
+ */
+
+public void parse(Path path)
+{
+    // ...
+}
+```
+
+**Why this matters**: Many documentation generators and IDEs use the physical proximity of JavaDoc to determine which element it documents. A blank line can cause orphaned documentation or documentation attached to the wrong element.
+
+### JavaDoc - Avoid @since Tags
+**Why this matters**: Version history is tracked in git commits and changelogs, not in source code. `@since` tags become stale, create maintenance burden, and duplicate information already available in version control.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - @since tag in JavaDoc
+/**
+ * Formats source code according to style rules.
+ *
+ * @since 1.0
+ */
+public void format(SourceFile file)
+
+// ✅ CORRECT - No @since tag (use git history instead)
+/**
+ * Formats source code according to style rules.
+ */
+public void format(SourceFile file)
+```
+
+**Why this matters**: When a method is modified after its introduction, the `@since` tag doesn't capture this evolution. Git history provides complete information about when code was added and how it changed over time.
+
+### JavaDoc - Omit Redundant "(required)" When All Parameters Are Required
+**Why this matters**: When all parameters are required (validated with `requireThat().isNotNull()`), marking each one as "(required)" adds noise without information. Only annotate nullability when it varies.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - Redundant "(required)" on every parameter
+/**
+ * Creates a new formatter.
+ *
+ * @param config the configuration (required)
+ * @param rules the formatting rules (required)
+ * @param options the processing options (required)
+ */
+public Formatter(Config config, Rules rules, Options options)
+
+// ✅ CORRECT - Omit redundant markers when all are required
+/**
+ * Creates a new formatter.
+ *
+ * @param config the configuration
+ * @param rules the formatting rules
+ * @param options the processing options
+ */
+public Formatter(Config config, Rules rules, Options options)
+```
+
+**When to annotate nullability**: Use "(may be null)" for optional parameters to highlight exceptions to the default assumption that parameters are required.
+
+### JavaDoc - @throws for Null Arguments Should Not Exclude Primitives
+**Why this matters**: Primitives cannot be null, so excluding them in `@throws` documentation is redundant and confusing. Simply state "if any argument is null" - readers understand primitives are implicitly excluded.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - Unnecessarily excludes primitive parameter
+/**
+ * @param enabled whether the feature is enabled
+ * @param config the configuration
+ * @throws NullPointerException if any parameter except {@code enabled} is null
+ */
+public void configure(boolean enabled, Config config)
+
+// ✅ CORRECT - Simple statement (primitives implicitly excluded)
+/**
+ * @param enabled whether the feature is enabled
+ * @param config the configuration
+ * @throws NullPointerException if any argument is null
+ */
+public void configure(boolean enabled, Config config)
+```
+
+### JavaDoc - Compact Constructors Must Have @param Tags
+**Why this matters**: JavaDoc `@param` tags from record declarations are NOT automatically inherited by compact constructors. Checkstyle enforces JavaDoc on public constructors, which includes compact constructors. Each compact constructor must have its own `@param` documentation.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - Compact constructor without @param tags
+/**
+ * Configuration for type resolution.
+ *
+ * @param classpathEntries paths to JAR files
+ * @param modulepathEntries paths to modules
+ */
+public record TypeResolutionConfig(List<Path> classpathEntries, List<Path> modulepathEntries)
+{
+    // Compact constructor WITHOUT @param tags - VIOLATION
+    public TypeResolutionConfig
+    {
+        classpathEntries = List.copyOf(classpathEntries);
+    }
+}
+
+// ✅ CORRECT - Compact constructor with its own @param tags
+/**
+ * Configuration for type resolution.
+ *
+ * @param classpathEntries paths to JAR files
+ * @param modulepathEntries paths to modules
+ */
+public record TypeResolutionConfig(List<Path> classpathEntries, List<Path> modulepathEntries)
+{
+    /**
+     * Creates a new type resolution configuration.
+     *
+     * @param classpathEntries paths to JAR files
+     * @param modulepathEntries paths to modules
+     * @throws NullPointerException if any argument is null
+     */
+    public TypeResolutionConfig
+    {
+        classpathEntries = List.copyOf(classpathEntries);
+    }
+}
+```
+
+### JavaDoc - Use "Returns" Not "Gets" for Accessor Methods
+**Why this matters**: "Returns" is more precise for methods that return values. "Gets" implies retrieval from somewhere, while "Returns" accurately describes what the method does - it returns a value to the caller.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - Using "Gets" in method description
+/**
+ * Gets the file path.
+ */
+public Path filePath()
+
+// ✅ CORRECT - Using "Returns" for accessor methods
+/**
+ * Returns the file path.
+ */
+public Path filePath()
+```
+
+### Inline Comments - No Duplication of JavaDoc
+**Why this matters**: Inline comments that duplicate JavaDoc create maintenance burden. If JavaDoc changes, the inline comment becomes stale or contradictory. Trust the JavaDoc as the source of truth.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - Inline comment duplicates JavaDoc
+/**
+ * @param arena the node arena (may be null)
+ */
+public Parser(NodeArena arena)
+{
+    this.arena = arena;  // May be null
+}
+
+// ✅ CORRECT - No redundant inline comment
+/**
+ * @param arena the node arena (may be null)
+ */
+public Parser(NodeArena arena)
+{
+    this.arena = arena;
+}
+```
+
+**When inline comments ARE appropriate**:
+- Implementation details not in JavaDoc (algorithm notes, performance considerations)
+- Non-obvious code behavior that wouldn't belong in API docs
+- Temporary notes (TODO, FIXME with ticket references)
+
 ### External Source Documentation - Missing URLs
 **Why this matters**: Parser implementations must be traceable to official Java Language Specification
 sources. This rule ensures language compliance and makes JDK updates easier.
@@ -202,6 +392,33 @@ public record WhitespaceFormattingConfiguration(String ruleId, boolean spaceAfte
     }
 }
 ```
+
+### Defensive Copies - Create Once in Constructor
+**Why this matters**: If a collection field is never modified after construction, creating a defensive copy on every getter invocation wastes CPU and memory. Create the copy once in the constructor and return the immutable field directly in the getter.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - Creates defensive copy on every getter call
+public List<StageResult> stageResults()
+{
+    return List.copyOf(stageResults);  // WRONG: Allocates new list each call
+}
+
+// ✅ CORRECT - Create defensive copy once in constructor
+// Constructor
+public Pipeline(List<StageResult> stageResults)
+{
+    this.stageResults = List.copyOf(stageResults);  // Copy once
+}
+
+// Getter
+public List<StageResult> stageResults()
+{
+    return stageResults;  // Return already-immutable list
+}
+```
+
+**Why this matters**: Defensive copying is essential for immutability, but the cost should be paid once at construction time, not on every access. This is especially important in hot paths where getters are called frequently.
 
 ### Parameter Formatting - Multi-line Declarations and Calls
 **Line-filling principle**: Multi-parameter constructs (records, constructor calls, method calls) should
@@ -312,6 +529,34 @@ compilation unit, making this organization technically feasible.
 first, then `ParseResult` record below, creates a logical flow from usage to implementation.
 
 ## ⚠️ TIER 2 IMPORTANT - Code Review
+
+### Abstract Methods - Must Have JavaDoc
+**Why this matters**: Abstract methods define contracts that implementations must fulfill. Without documentation, implementers must guess the expected behavior, preconditions, and postconditions. This leads to inconsistent implementations and bugs.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - Abstract method without JavaDoc
+public abstract NodeIndex allocateNode(NodeType type, int start, int end);
+
+// ✅ CORRECT - Abstract method with JavaDoc explaining contract
+/**
+ * Allocates a new node in the arena.
+ *
+ * @param type  the type of node to create
+ * @param start the start position in the source code
+ * @param end   the end position in the source code
+ * @return the index of the newly created node
+ * @throws NullPointerException     if {@code type} is null
+ * @throws IllegalArgumentException if positions are negative
+ */
+public abstract NodeIndex allocateNode(NodeType type, int start, int end);
+```
+
+**What to document**: Every abstract method should document:
+- What the method does (summary line)
+- Parameter requirements (@param tags)
+- Return value semantics (@return tag)
+- Exceptions that may be thrown (@throws tags)
 
 ### Exception Declaration - Unreachable Throws in Final Classes
 **Why this matters**: When a final class declares that a method throws an exception that the implementation
@@ -446,6 +691,119 @@ public <T> T getAttribute(NodeIndex index, Class<T> type)
     return null;
 }
 ```
+
+### Thread-Safety - volatile Provides Visibility Not Atomicity
+**Why this matters**: The `volatile` keyword only provides visibility (all threads see the same value), but does NOT provide atomicity. The check-then-act pattern `if (!flag) { doSomething(); flag = true; }` has a race condition even with `volatile` - two threads can both read `false`, both enter the block, then both set to `true`.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - volatile doesn't make check-then-act atomic
+/**
+ * <b>Thread-safety</b>: This class is thread-safe.
+ */
+public final class Scanner implements AutoCloseable
+{
+    private volatile boolean closed;
+
+    @Override
+    public void close()
+    {
+        // RACE CONDITION: Two threads can both see closed=false,
+        // both enter the block, both call resource.close()
+        if (!closed)
+        {
+            resource.close();
+            closed = true;
+        }
+    }
+}
+
+// ✅ CORRECT - Uses AtomicBoolean with compareAndSet for atomic check-then-act
+/**
+ * <b>Thread-safety</b>: This class is thread-safe.
+ */
+public final class Scanner implements AutoCloseable
+{
+    private final AtomicBoolean closed = new AtomicBoolean();
+
+    @Override
+    public void close()
+    {
+        // THREAD-SAFE: Only one thread wins the compareAndSet race
+        if (closed.compareAndSet(false, true))
+        {
+            resource.close();
+        }
+    }
+}
+```
+
+**Key distinction**: Use `AtomicBoolean.compareAndSet()` which atomically checks AND sets in one operation.
+
+### Field Initialization - Avoid Redundant Default Values
+**Why this matters**: Java automatically initializes primitive fields to their default values (0 for numeric types, false for boolean, null for objects). Explicit assignment to default values is redundant and adds unnecessary code.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - Explicit default values in field declarations
+private int position = 0;
+private long count = 0L;
+private boolean initialized = false;
+private double value = 0.0;
+
+// ✅ CORRECT - Rely on Java's default initialization
+private int position;
+private long count;
+private boolean initialized;
+private double value;
+
+// ❌ VIOLATION - Redundant default assignments in constructor
+public Parser(String source)
+{
+    this.arena = new NodeArena();
+    this.position = 0;           // Redundant - int defaults to 0
+    this.depth = 0;              // Redundant
+    this.tokenCheckCounter = 0;  // Redundant
+}
+
+// ✅ CORRECT - Only assign non-default values
+public Parser(String source)
+{
+    this.arena = new NodeArena();
+    // position, depth, tokenCheckCounter automatically initialized to 0
+}
+```
+
+**When explicit values are required**: Non-default initializations (e.g., `private int maxDepth = 100;`) are required and should not be removed. This rule only applies when the assigned value equals Java's default.
+
+### Control Flow - Multiple OR Comparisons Should Use Switch
+**Why this matters**: Switch statements with multiple case labels (comma-separated) are more concise, easier to maintain, and less error-prone than long chains of OR comparisons. The switch pattern makes it immediately clear that we're checking for membership in a set of values.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - Multiple OR comparisons
+private boolean isAssignmentOperator(TokenType type)
+{
+    return type == TokenType.ASSIGN ||
+        type == TokenType.PLUS_ASSIGN ||
+        type == TokenType.MINUS_ASSIGN ||
+        type == TokenType.STAR_ASSIGN ||
+        type == TokenType.DIVIDE_ASSIGN ||
+        type == TokenType.MODULO_ASSIGN;
+}
+
+// ✅ CORRECT - Switch statement
+private boolean isAssignmentOperator(TokenType type)
+{
+    return switch (type)
+    {
+        case ASSIGN, PLUS_ASSIGN, MINUS_ASSIGN, STAR_ASSIGN, DIVIDE_ASSIGN, MODULO_ASSIGN -> true;
+        default -> false;
+    };
+}
+```
+
+**When to apply**: Use this pattern when you have 3 or more equality comparisons against the same variable. For complex conditions (e.g., `x > 5 && x < 10`) or conditions on different variables, if-else may still be appropriate.
 
 ### Class Visibility - Prefer Non-Exported Packages Over Package-Protected
 **Why this approach is preferred**: Instead of using package-private (default) visibility for implementation
@@ -871,6 +1229,44 @@ code months later.
 
 **Codebase consistency**: When refactoring existing methods, prefer clarity. If a method name seems unclear
 during code review, it's a good candidate for renaming to a more descriptive alternative.
+
+### Class Naming - CamelCase for All Java Files
+**Why this matters**: Java class names must match file names, and class names follow CamelCase convention. This applies to ALL Java files including test fixtures and resources. Non-CamelCase file names cause compilation errors or require workarounds that obscure intent.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - Non-CamelCase file names
+malformed-missing-brace.java   // Kebab-case
+valid_simple.java              // Snake_case
+testinput.java                 // All lowercase
+
+// ✅ CORRECT - CamelCase file names
+MalformedMissingBrace.java
+ValidSimple.java
+TestInput.java
+```
+
+**Why this matters for test resources**: Even Java files used as test input (not compiled) should follow CamelCase. This maintains consistency across the codebase and avoids confusion about which naming conventions apply where.
+
+### Naming - Acronyms as CamelCase Not ALL-CAPS
+**Why this matters**: Treating acronyms as regular words in CamelCase improves readability and consistency. When acronyms are ALL-CAPS, word boundaries become ambiguous (is it `XMLHTTP` or `XML` + `HTTP`?) and the visual rhythm of CamelCase is broken.
+
+**Practical example**:
+```java
+// ❌ VIOLATION - ALL-CAPS acronyms
+public interface AIOutputFormatter { }
+public class HTTPClientFactory { }
+public String formatForAI() { }
+public void parseJSON() { }
+
+// ✅ CORRECT - CamelCase acronyms
+public interface AiOutputFormatter { }
+public class HttpClientFactory { }
+public String formatForAi() { }
+public void parseJson() { }
+```
+
+**This applies to**: Both type names (classes, interfaces, enums, records) and method names. The goal is consistent visual rhythm where each "word" in the name starts with exactly one capital letter.
 
 ### JavaDoc/Comments/Errors - Use "empty" Not "blank" for String Validation
 

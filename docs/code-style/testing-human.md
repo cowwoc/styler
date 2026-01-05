@@ -372,6 +372,128 @@ public void mergeConfigsProjectOverridesUser()
 - If the test would break when refactoring without changing behavior, it tests implementation details.
 - Tests should verify WHAT the code does, not HOW it does it internally.
 
+### Parser Test Patterns
+
+Parser tests have two distinct utilities with different purposes:
+
+| Utility | Purpose | Use Case |
+|---------|---------|----------|
+| `parseSemanticAst()` | Parse + return AST nodes | Unit tests that validate node types |
+| `assertParseSucceeds()` | Parse only, verify no crash | Integration/smoke tests on real files |
+
+#### When to Use Each
+
+**`parseSemanticAst()` + AST comparison** (REQUIRED for ALL feature tests):
+- Testing a new parser feature (e.g., class literals, generics)
+- Verifying specific node types are created
+- Testing node positions/attributes
+- **Any test validating parser correctness**
+
+**`assertParseSucceeds()` - Limited Value** (consider avoiding):
+- ONLY legitimate use: Smoke tests on real project files where maintaining expected AST is impractical
+- **Does NOT validate semantic correctness** - only that parser doesn't crash
+- **Prefer `parseSemanticAst()` for all new tests** - it validates both success AND correctness
+
+#### Critical: Deriving Expected Values Manually
+
+**NEVER generate expected values by running the test and copying actual output.**
+
+Expected values MUST be derived by manually analyzing the source code string:
+
+```java
+// Source to test:
+String source = """
+    void main()
+    {
+    }
+    """;
+
+// ❌ WRONG: Run test, see actual output, copy it as expected
+// This approach:
+// 1. Tests nothing - you're comparing parser output to itself
+// 2. Masks bugs - if parser is wrong, you'll enshrine the bug in expected
+// 3. Provides no verification - expected should be independent truth
+
+// ✅ CORRECT: Manually analyze source string to derive expected
+// Step 1: Count character positions in source
+//   "void main()" = positions 0-10
+//   "\n" = position 11
+//   "{" = position 12 (start of BLOCK)
+//   "\n" = position 13
+//   "}" = position 14 (end of BLOCK content)
+//   "\n" = position 15 (end position is exclusive, so BLOCK ends at 15)
+//
+// Step 2: Identify expected node types and their spans
+//   - BLOCK: starts at "{" (12), ends after "}" (15)
+//   - METHOD_DECLARATION: starts at "void" (0), ends after block (15)
+//   - IMPLICIT_CLASS_DECLARATION: wraps the method (0, 15)
+//   - COMPILATION_UNIT: entire source (0, 16)
+//
+// Step 3: Write expected values based on YOUR analysis
+expected.allocateNode(NodeType.BLOCK, 12, 15);
+expected.allocateNode(NodeType.METHOD_DECLARATION, 0, 15);
+expected.allocateImplicitClassDeclaration(0, 15);
+expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 16);
+```
+
+**Why manual derivation matters:**
+- Expected values are the **specification** - what the parser SHOULD produce
+- If you copy actual output, you're testing that "parser produces what parser produces"
+- Manual analysis catches parser bugs because your expectation is independent
+- When test fails, the diff shows whether parser or expectation is wrong
+
+**Process for writing parser test expectations:**
+1. Write the source code string
+2. Count character positions manually (or use a simple counter)
+3. Identify what AST nodes SHOULD be created based on Java grammar
+4. Determine start/end positions for each node from character counting
+5. Write expected allocations in the order nodes are created
+6. Run test - if it fails, analyze WHETHER parser or your calculation is wrong
+
+#### Parser Unit Test Requirements
+
+**Parser unit tests MUST validate AST structure**, not just parsing success:
+
+```java
+// ❌ WRONG - Only verifies parsing doesn't crash
+@Test
+public void classLiteralInExpression()
+{
+    String source = "String s = String.class.getName();";
+    assertParseSucceeds(source);  // Tests NOTHING about CLASS_LITERAL node!
+}
+
+// ❌ WRONG - isNotEmpty() is a WEAK assertion (equally bad as assertParseSucceeds)
+@Test
+public void recordPatternInSwitch()
+{
+    String source = "case Point(int x, int y) -> ...";
+    Set<SemanticNode> actual = parseSemanticAst(source);
+    requireThat(actual, "actual").isNotEmpty();  // Tests NOTHING about RECORD_PATTERN node!
+}
+
+// ✅ CORRECT - Validates correct AST nodes are created
+@Test
+public void classLiteralInExpression()
+{
+    String source = "String s = String.class.getName();";
+    Set<SemanticNode> actual = parseSemanticAst(source);
+    Set<SemanticNode> expected = Set.of(
+        semanticNode(COMPILATION_UNIT, 0, 60),
+        semanticNode(CLASS_DECLARATION, 0, 59, "Test"),
+        semanticNode(CLASS_LITERAL, 41, 53),  // Verify the new node type!
+        // ... other expected nodes
+    );
+    requireThat(actual, "actual").isEqualTo(expected);
+}
+```
+
+**Why `isNotEmpty()` is WRONG for parser tests:**
+- Non-empty only means SOME nodes were produced - NOT that the CORRECT nodes exist
+- The new feature (e.g., `RECORD_PATTERN`, `GUARDED_PATTERN`) might not be created at all
+- Test passes even if parser produces completely wrong AST structure
+- Use `isEqualTo(expected)` with explicit expected nodes including the NEW node type
+
 ---
 
 ## ⚠️ STANDARD CONVENTIONS

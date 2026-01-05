@@ -1,7 +1,7 @@
 # TypeScript Style Guide - Human Understanding
 
 **Purpose**: TypeScript-specific practices for code formatter development
-**Companion**: See `claude-typescript-minimal-style.md` for detection patterns
+**Companion**: See `typescript-claude.md` for detection patterns
 
 ## 📋 Table of Contents
 
