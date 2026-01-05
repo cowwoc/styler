@@ -8,11 +8,26 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 
 /**
  * Lexical analyzer for Java source code.
- * Tokenizes source code into a stream of tokens, handling keywords, identifiers,
- * literals, operators, and comments. Provides error recovery for malformed input.
+ * <p>
+ * Tokenizes source code into a stream of tokens, handling keywords, identifiers, literals, operators, and
+ * comments. Provides error recovery for malformed input.
+ * <p>
+ * <b>Unicode Escape Processing</b>: Per
+ * <a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-3.html#jls-3.3">JLS &#167;3.3</a>, Unicode
+ * escapes ({@code &#92;uXXXX}) are decoded during lexical analysis. Tokens preserve the original escape text
+ * in {@link Token#text()} while providing decoded characters via {@link Token#decodedText()} for keyword
+ * matching and semantic analysis.
  */
 public final class Lexer
 {
+	/**
+	 * Maximum safe recursion depth for Unicode escape decoding to prevent stack overflow.
+	 */
+	private static final int MAX_DECODE_DEPTH = 1000;
+	/**
+	 * The suffix "-sealed" that follows "non" to form the "non-sealed" keyword.
+	 */
+	private static final String NON_SEALED_SUFFIX = "-sealed";
 	private static final Map<String, TokenType> KEYWORDS = Map.ofEntries(
 		Map.entry("abstract", TokenType.ABSTRACT),
 		Map.entry("assert", TokenType.ASSERT),
@@ -137,8 +152,8 @@ public final class Lexer
 			}
 		}
 
-		// Identifiers and keywords
-		if (Character.isJavaIdentifierStart(ch))
+		// Identifiers and keywords - check both direct characters and Unicode escapes
+		if (Character.isJavaIdentifierStart(ch) || isIdentifierStartAtPosition())
 		{
 			return scanIdentifierOrKeyword(start);
 		}
@@ -196,6 +211,7 @@ public final class Lexer
 
 	private Token scanBlockComment(int start)
 	{
+		// Skip "/*"
 		position += 2;
 		boolean isJavadoc = position < source.length() && source.charAt(position) == '*';
 
@@ -203,6 +219,7 @@ public final class Lexer
 		{
 			if (source.charAt(position) == '*' && peek() == '/')
 			{
+				// Skip "*/"
 				position += 2;
 				break;
 			}
@@ -224,27 +241,94 @@ public final class Lexer
 
 	private Token scanIdentifierOrKeyword(int start)
 	{
-		while (position < source.length() && Character.isJavaIdentifierPart(source.charAt(position)))
-		{
-			++position;
-		}
+		boolean containsUnicodeEscape = scanIdentifierChars();
 
 		String text = source.substring(start, position);
+		String decodedText = resolveDecodedText(text, containsUnicodeEscape);
 
 		// Special case for "non-sealed" keyword (contains hyphen)
-		if (text.equals("non") && position + 7 <= source.length())
+		if (isNonSealedKeyword(decodedText))
 		{
-			String remaining = source.substring(position, position + 7);
-			if (remaining.equals("-sealed"))
-			{
-				position += 7;
-				text = "non-sealed";
-				return new Token(TokenType.NON_SEALED, start, position, text);
-			}
+			position += NON_SEALED_SUFFIX.length();
+			text = source.substring(start, position);
+			decodedText = resolveDecodedText(text, containsUnicodeEscape);
+			return new Token(TokenType.NON_SEALED, start, position, text, decodedText);
 		}
 
-		TokenType type = KEYWORDS.getOrDefault(text, TokenType.IDENTIFIER);
+		// Use decoded text for keyword lookup
+		TokenType type = KEYWORDS.getOrDefault(decodedText, TokenType.IDENTIFIER);
+
+		// For memory efficiency, use same String instance when no Unicode escapes present
+		if (containsUnicodeEscape)
+			return new Token(type, start, position, text, decodedText);
 		return new Token(type, start, position, text);
+	}
+
+	/**
+	 * Scans identifier characters including Unicode escapes.
+	 *
+	 * @return {@code true} if any Unicode escapes were found
+	 */
+	private boolean scanIdentifierChars()
+	{
+		boolean containsUnicodeEscape = false;
+
+		while (position < source.length())
+		{
+			char ch = source.charAt(position);
+
+			// Check for Unicode escape
+			if (ch == '\\' && position + 1 < source.length() && source.charAt(position + 1) == 'u')
+			{
+				int checkpoint = position;
+				int decoded = tryParseUnicodeEscape();
+				if (decoded >= 0 && Character.isJavaIdentifierPart((char) decoded))
+				{
+					containsUnicodeEscape = true;
+					continue;
+				}
+				// Not a valid identifier part, rollback and break
+				position = checkpoint;
+				break;
+			}
+
+			if (Character.isJavaIdentifierPart(ch))
+				++position;
+			else
+				break;
+		}
+
+		return containsUnicodeEscape;
+	}
+
+	/**
+	 * Resolves the decoded text, decoding Unicode escapes if present.
+	 *
+	 * @param text                  the original text
+	 * @param containsUnicodeEscape whether the text contains Unicode escapes
+	 * @return the decoded text, or the original text if no escapes
+	 */
+	private String resolveDecodedText(String text, boolean containsUnicodeEscape)
+	{
+		if (containsUnicodeEscape)
+			return decodeUnicodeEscapes(text);
+		return text;
+	}
+
+	/**
+	 * Checks if the decoded identifier represents the "non-sealed" keyword.
+	 *
+	 * @param decodedText the decoded identifier text
+	 * @return {@code true} if followed by "-sealed" to form the non-sealed keyword
+	 */
+	private boolean isNonSealedKeyword(String decodedText)
+	{
+		if (!decodedText.equals("non"))
+			return false;
+		if (position + 7 > source.length())
+			return false;
+		String remaining = source.substring(position, position + 7);
+		return remaining.equals("-sealed");
 	}
 
 	private Token scanNumber(int start)
@@ -587,6 +671,7 @@ public final class Lexer
 				source.charAt(position + 1) == '"' &&
 				source.charAt(position + 2) == '"')
 			{
+				// Skip closing """
 				position += 3;
 				String text = source.substring(start, position);
 				return new Token(TokenType.STRING_LITERAL, start, position, text);
@@ -900,6 +985,217 @@ public final class Lexer
 			return source.charAt(nextPos);
 		}
 		return '\0';
+	}
+
+	/**
+	 * Attempts to parse a Unicode escape sequence starting at the current position.
+	 * <p>
+	 * Per <a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-3.html#jls-3.3">JLS &#167;3.3</a>,
+	 * a Unicode escape has the form {@code &#92;uXXXX} where each {@code X} is a hexadecimal digit. Multiple
+	 * {@code u} characters are allowed (e.g., {@code &#92;uuuu0041}).
+	 * <p>
+	 * Uses checkpoint/rollback pattern: saves position, attempts parse, rolls back on failure.
+	 *
+	 * @return the decoded character (0-65535), or -1 if no valid Unicode escape at current position
+	 */
+	private int tryParseUnicodeEscape()
+	{
+		if (position >= source.length() || source.charAt(position) != '\\')
+			return -1;
+
+		// Must have at least 6 characters for backslash-u-XXXX
+		if (position + 5 >= source.length())
+			return -1;
+
+		int checkpoint = position;
+		++position;
+		if (source.charAt(position) != 'u')
+		{
+			position = checkpoint;
+			return -1;
+		}
+
+		// Skip all consecutive 'u' characters (JLS allows \uuuu0041)
+		while (position < source.length() && source.charAt(position) == 'u')
+		{
+			++position;
+		}
+
+		// Must have exactly 4 hex digits
+		if (position + 4 > source.length())
+		{
+			position = checkpoint;
+			return -1;
+		}
+
+		int value = 0;
+		for (int i = 0; i < 4; ++i)
+		{
+			char ch = source.charAt(position);
+			int digit = hexDigitValue(ch);
+			if (digit < 0)
+			{
+				position = checkpoint;
+				return -1;
+			}
+			value = (value << 4) | digit;
+			++position;
+		}
+
+		return value;
+	}
+
+	/**
+	 * Returns the numeric value of a hexadecimal digit character.
+	 *
+	 * @param ch the character to evaluate
+	 * @return the value (0-15), or -1 if not a hex digit
+	 */
+	private int hexDigitValue(char ch)
+	{
+		if (ch >= '0' && ch <= '9')
+			return ch - '0';
+		if (ch >= 'a' && ch <= 'f')
+			return ch - 'a' + 10;
+		if (ch >= 'A' && ch <= 'F')
+			return ch - 'A' + 10;
+		return -1;
+	}
+
+	/**
+	 * Decodes all Unicode escapes in the given text.
+	 * <p>
+	 * Per <a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-3.html#jls-3.3">JLS &#167;3.3</a>,
+	 * this processes the text as if Unicode escapes were replaced with their corresponding characters.
+	 *
+	 * @param text the text that may contain Unicode escapes
+	 * @return the decoded text with escapes replaced, or the original text if no escapes found
+	 */
+	private String decodeUnicodeEscapes(String text)
+	{
+		// Fast path: no backslash means no escapes
+		int backslashIndex = text.indexOf('\\');
+		if (backslashIndex < 0)
+			return text;
+
+		return decodeUnicodeEscapesWithDepth(text, 0);
+	}
+
+	/**
+	 * Internal decoder with depth tracking to prevent stack overflow.
+	 *
+	 * @param text  the text to decode
+	 * @param depth current recursion depth
+	 * @return the decoded text
+	 */
+	private String decodeUnicodeEscapesWithDepth(String text, int depth)
+	{
+		if (depth > MAX_DECODE_DEPTH)
+			throw new LexerException("Unicode escape nesting too deep at position " + position, position);
+
+		StringBuilder result = new StringBuilder(text.length());
+		int[] index = {0};
+		while (index[0] < text.length())
+		{
+			char ch = text.charAt(index[0]);
+			if (ch == '\\' && index[0] + 1 < text.length() && text.charAt(index[0] + 1) == 'u')
+				decodeEscapeSequence(text, index, result);
+			else
+			{
+				result.append(ch);
+				++index[0];
+			}
+		}
+
+		return result.toString();
+	}
+
+	/**
+	 * Decodes a single Unicode escape sequence from the text.
+	 *
+	 * @param text   the source text
+	 * @param index  array containing current index (modified by this method)
+	 * @param result the result builder to append to
+	 */
+	private void decodeEscapeSequence(String text, int[] index, StringBuilder result)
+	{
+		int escapeStart = index[0];
+		++index[0];
+
+		// Skip all 'u' characters
+		while (index[0] < text.length() && text.charAt(index[0]) == 'u')
+			++index[0];
+
+		// Need 4 hex digits
+		if (index[0] + 4 > text.length())
+		{
+			result.append(text, escapeStart, index[0]);
+			return;
+		}
+
+		int decoded = tryDecodeHexDigits(text, index[0]);
+		if (decoded >= 0)
+		{
+			result.append((char) decoded);
+			index[0] += 4;
+		}
+		else
+		{
+			result.append(text, escapeStart, index[0]);
+		}
+	}
+
+	/**
+	 * Attempts to decode 4 hexadecimal digits starting at the given position.
+	 *
+	 * @param text  the source text
+	 * @param start the starting position
+	 * @return the decoded value (0-65535), or -1 if not valid hex digits
+	 */
+	private int tryDecodeHexDigits(String text, int start)
+	{
+		int value = 0;
+		for (int j = 0; j < 4; ++j)
+		{
+			int digit = hexDigitValue(text.charAt(start + j));
+			if (digit < 0)
+				return -1;
+			value = (value << 4) | digit;
+		}
+		return value;
+	}
+
+	/**
+	 * Peeks at the character at the current position, decoding a Unicode escape if present.
+	 *
+	 * @return the character at current position (decoded if Unicode escape), or '\0' if at end
+	 */
+	private char peekCurrentCharDecoded()
+	{
+		if (position >= source.length())
+			return '\0';
+
+		char ch = source.charAt(position);
+		if (ch == '\\' && position + 1 < source.length() && source.charAt(position + 1) == 'u')
+		{
+			int checkpoint = position;
+			int decoded = tryParseUnicodeEscape();
+			position = checkpoint;
+			if (decoded >= 0)
+				return (char) decoded;
+		}
+		return ch;
+	}
+
+	/**
+	 * Checks if an identifier could start at the current position, considering Unicode escapes.
+	 *
+	 * @return {@code true} if an identifier start character is at current position (possibly escaped)
+	 */
+	private boolean isIdentifierStartAtPosition()
+	{
+		char ch = peekCurrentCharDecoded();
+		return Character.isJavaIdentifierStart(ch);
 	}
 
 	/**

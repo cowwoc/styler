@@ -475,32 +475,6 @@ benchmarking, and validate with Maven plugin integration.
     - Return appropriate node (reuse ANNOTATION or create ANNOTATION_VALUE node)
   - **Quality**: Parser tests for single nested annotation, annotation in array, deeply nested
 
-- [ ] **READY:** `add-unicode-escape-preprocessing` - Handle Unicode escapes outside string literals
-  - **Dependencies**: None
-  - **Blocks**: None (required for JLS compliance)
-  - **Parallelizable With**: Any Phase E parser task
-  - **Estimated Effort**: 1-2 days
-  - **Purpose**: Handle Unicode escapes (`\uXXXX`) anywhere in Java source, not just strings
-  - **Current Gap**: Lexer only processes Unicode escapes inside string/char literals via
-    `consumeEscapeSequence()`. Code like `int \u0041 = 1;` (valid Java for `int A = 1;`) fails to parse.
-  - **JLS Reference**: §3.3 - Unicode escapes are processed as a translation step BEFORE lexical analysis
-  - **Syntax**: `\uXXXX` where XXXX is 4 hex digits, can appear in identifiers, keywords, operators
-  - **Example**:
-    ```java
-    int \u0041 = 1;           // Same as: int A = 1;
-    \u0070ublic class Test {} // Same as: public class Test {}
-    String s \u003D "hi";     // Same as: String s = "hi";
-    ```
-  - **Implementation**:
-    - Option A: Preprocess entire source to expand Unicode escapes before lexing
-      - Simpler but loses original source representation
-    - Option B: Handle in lexer by checking for `\u` pattern during identifier/keyword scanning
-      - More complex but preserves original text for formatting output
-    - For a formatter, Option B is preferred to preserve source fidelity
-    - Need to handle `\uuuuXXXX` (multiple u's allowed per JLS)
-  - **Priority**: Lower - rarely used outside strings in practice, but required for full JLS compliance
-  - **Quality**: Lexer tests for Unicode escapes in identifiers, keywords, operators
-
 ### Parser Enhancement: JDK 25 Language Features
 
 **Priority**: These are REQUIRED for "100% JDK 25 support" claim in scope.md. Should be completed before
