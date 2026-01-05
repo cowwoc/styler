@@ -470,6 +470,66 @@ public class FileProcessor
 its own line, making block boundaries unambiguous and improving vertical scanning.
 **Applies to**: All blocks - classes, interfaces, methods, control structures, lambdas, initializers.
 
+### Brace Omission - Single-Line Control Statements
+**Detection Pattern**: `(if|else|for|while)\s*\([^)]*\)\s*\n\s*\{` followed by single statement and `\}`
+**Violation**: Braces around single-line body in control statements
+**Correct**: Omit braces when body is a single line
+**Detection Commands**:
+```bash
+# Find if/for/while with braces containing only one statement
+# This requires manual review - look for patterns like:
+grep -rn -A2 -E '(if|for|while)\s*\([^)]*\)\s*$' --include="*.java" . | grep -A1 '^\s*{$' | grep -A1 'single statement' | grep '^\s*}$'
+
+# Simplified: Find control statements followed by opening brace on next line
+grep -rn -B1 '^\s*{$' --include="*.java" . | grep -E '(if|for|while|else)\s*(\([^)]*\))?\s*$'
+```
+**Examples**:
+```java
+// VIOLATION - Unnecessary braces for single-line body
+if (condition)
+{
+    return;
+}
+
+for (int i = 0; i < count; ++i)
+{
+    process(i);
+}
+
+while (hasNext())
+{
+    advance();
+}
+
+// CORRECT - Omit braces for single-line body
+if (condition)
+    return;
+
+for (int i = 0; i < count; ++i)
+    process(i);
+
+while (hasNext())
+    advance();
+
+// CORRECT - Braces required for multi-line body
+if (condition)
+{
+    validate();
+    process();
+}
+
+// CORRECT - Nested single-line structures also omit braces
+if (condition)
+    for (int i = 0; i < count; ++i)
+        process(i);
+```
+**When braces ARE required**:
+- Multi-line bodies (2+ statements)
+- Bodies containing comments
+**Rationale**: Omitting braces for single-line statements reduces visual noise and vertical space. The
+indentation clearly shows the statement belongs to the control structure. This follows the principle of
+minimal syntax for simple cases.
+
 ### Class Organization - User-Facing Members First
 **Detection Pattern**: `(public|protected).*record\s+\w+.*\{.*\n.*public\s+\w+.*\(` (nested types before
 public methods)
