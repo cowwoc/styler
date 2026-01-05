@@ -85,6 +85,9 @@ if [[ -n "$DELETIONS" ]]; then
   echo "  2. git reset --hard <backup-branch>" >&2
   echo "  3. Rebase agent branch onto current main first" >&2
   echo "  4. Retry the operation" >&2
+  echo "" >&2
+  echo "COMMON CAUSE: File extraction from commits based on stale main." >&2
+  echo "See: docs/project/git-workflow.md § File Extraction from Commits" >&2
   echo "============================================================" >&2
   echo "" >&2
 fi
