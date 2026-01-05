@@ -6,6 +6,7 @@ paths:
 # Java Code Style (Quick Reference)
 
 **Full guide**: [docs/project/style-guide.md](../../docs/project/style-guide.md)
+**Validation API**: [requirements-api.md](requirements-api.md) - requireThat/assert patterns
 
 ## Validation Requirements
 
@@ -45,18 +46,6 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   {
       method(null);
   }
-  ```
-- Use `requireThat()` for assertions, not manual if-throw
-- Don't chain redundant validators (`isNotEmpty()` implies `isNotNull()`)
-- Trust natural NPE from method calls (don't check null before calling methods that would throw NPE anyway)
-- Don't validate before calling methods that already validate the same parameter:
-  ```java
-  // ❌ WRONG - validateIndex() already checks isNotNull()
-  requireThat(index, "index").isNotNull();
-  validateIndex(index);
-
-  // ✅ CORRECT - Let validateIndex() handle validation
-  validateIndex(index);
   ```
 - Add JavaDoc comments to test classes/methods instead of `@SuppressWarnings("PMD.CommentRequired")`
 - Test class JavaDoc should describe the **category of tests** (what functionality is being tested), not
@@ -374,61 +363,6 @@ private final AtomicBoolean closed = new AtomicBoolean();
 // if (closed.compareAndSet(false, true)) { x.close(); }  // Thread-safe
 ```
 
-### Validation: Public vs Internal Types
-```java
-// Public API - use requireThat() (always validates, throws on failure)
-public void process(String input)
-{
-    requireThat(input, "input").isNotNull();
-}
-
-// Internal types - use assert that() (validates only with -ea flag)
-record InternalData(String value)
-{
-    InternalData
-    {
-        assert that(value, "value").isNotNull().elseThrow();
-    }
-}
-```
-
-**When to use which:**
-- `requireThat()` - Public constructors, public methods, API boundaries
-- `assert that().elseThrow()` - Internal records, package-private types, invariants
-
-### Validation Chaining
-```java
-// ❌ Separate calls
-requireThat(x, "x").isPositive();
-requireThat(x, "x").isLessThan(100);
-
-// ✅ Single chain
-requireThat(x, "x").isPositive().isLessThan(100);
-```
-
-### Contextual Validation Errors
-When validating derived values or method results, the parameter name alone may not provide enough context
-for debugging. Use `withContext()` to add diagnostic information:
-```java
-// ❌ WRONG - Unhelpful error: "root.isValid() must be true"
-requireThat(success.rootNode().isValid(), "root.isValid()").isTrue();
-
-// ✅ CORRECT - Includes diagnostic context
-requireThat(success.rootNode().isValid(), "root.isValid()").
-    withContext(success.rootNode(), "rootNode").
-    isTrue();
-```
-
-**When to use `withContext()`:**
-- Validating method return values (e.g., `x.isValid()`, `list.isEmpty()`)
-- Validating computed/derived values
-- When the parameter name alone won't help diagnose failures
-
-**What to include in context:**
-- The object being validated (for inspecting its state)
-- Related values that help understand the failure
-- Source code or input that led to the value
-
 ### PMD Suppression
 Only suppress with documented legitimate reason. "Too much work" is NOT valid.
 
@@ -458,18 +392,3 @@ public <T> T getAttribute(Class<T> type)
 }
 ```
 
-### JavaDoc/Comments/Errors - Use "empty" Not "blank"
-When documenting string validation that checks for null/whitespace-only values, use "empty" in user-facing text:
-```java
-// ❌ WRONG - Uses "blank" in documentation
-/**
- * @throws IllegalArgumentException if {@code name} is blank
- */
-
-// ✅ CORRECT - Uses "empty" for user-facing documentation
-/**
- * @throws IllegalArgumentException if {@code name} is empty
- */
-```
-
-**Note**: The method call `isNotBlank()` remains unchanged - only the documentation terminology changes.
