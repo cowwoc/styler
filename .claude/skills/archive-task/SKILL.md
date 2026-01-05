@@ -341,19 +341,59 @@ AFTER:
 
 **Rationale**: Latest changes at top, easy to see recent work
 
-### Append to Bottom
+## Changelog Archive Management {#changelog-archive-management}
+
+### Size Threshold and Yearly Archives
+
+To keep `changelog.md` readable for both humans and Claude, the file uses a **size threshold with yearly
+archive rotation**:
+
+- **Working file**: `changelog.md` (≤500 lines) - Claude reads this
+- **Archive files**: `changelog-YYYY.md` (append-only) - Full history by year
+
+### Archive Trigger
+
+When `changelog.md` exceeds **500 lines**, the archive-task script:
+1. Reads all entries from `changelog.md` (excluding header)
+2. **Appends** entries to `changelog-{current-year}.md` (creates if needed)
+3. Resets `changelog.md` to header only
+
+### Archive File Format
 
 ```markdown
-# Changelog
+# Changelog Archive - 2025
 
-## [2025-11-01] - old-task
-...
+## [2025-12-31] - task-name
+- Changes from this task
 
-## [2025-11-11] - implement-formatter-api ← NEW ENTRY
+## [2025-12-30] - earlier-task
+- Changes from earlier task
 ...
 ```
 
-**Rationale**: Chronological order, but latest buried
+**Key points**:
+- Archive files are **append-only** (new archives prepend to existing content)
+- One archive file per year (`changelog-2025.md`, `changelog-2026.md`)
+- Within each year, entries remain in reverse chronological order (newest first)
+- Users can search any year's archive for historical changes
+
+### File Locations
+
+```
+/workspace/main/
+├── changelog.md           # Active working file (Claude reads)
+├── changelog-2026.md      # 2026 archived entries
+├── changelog-2025.md      # 2025 archived entries
+└── ...
+```
+
+### Manual Archive Trigger
+
+To manually trigger archival (regardless of size):
+
+```bash
+/workspace/main/.claude/scripts/archive-task.sh --archive-now
+```
 
 ## Related Skills
 
