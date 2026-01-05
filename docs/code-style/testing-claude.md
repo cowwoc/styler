@@ -30,6 +30,62 @@ Parser tests have two distinct utilities with DIFFERENT purposes:
 - **Does NOT validate semantic correctness** - only that parser doesn't crash
 - **Prefer `parseSemanticAst()` for all new tests** - it validates both success AND correctness
 
+### 🚨 CRITICAL: Deriving Expected Values Manually {#derive-expected-values-manually}
+
+**NEVER generate expected values by running the test and copying actual output.**
+
+Expected values MUST be derived by manually analyzing the source code string:
+
+```java
+// Source to test:
+String source = """
+    void main()
+    {
+    }
+    """;
+
+// ❌ WRONG: Run test, see actual output, copy it as expected
+// This approach:
+// 1. Tests nothing - you're comparing parser output to itself
+// 2. Masks bugs - if parser is wrong, you'll enshrine the bug in expected
+// 3. Provides no verification - expected should be independent truth
+
+// ✅ CORRECT: Manually analyze source string to derive expected
+// Step 1: Count character positions in source
+//   "void main()" = positions 0-10
+//   "\n" = position 11
+//   "{" = position 12 (start of BLOCK)
+//   "\n" = position 13
+//   "}" = position 14 (end of BLOCK content)
+//   "\n" = position 15 (end position is exclusive, so BLOCK ends at 15)
+//
+// Step 2: Identify expected node types and their spans
+//   - BLOCK: starts at "{" (12), ends after "}" (15)
+//   - METHOD_DECLARATION: starts at "void" (0), ends after block (15)
+//   - IMPLICIT_CLASS_DECLARATION: wraps the method (0, 15)
+//   - COMPILATION_UNIT: entire source (0, 16)
+//
+// Step 3: Write expected values based on YOUR analysis
+expected.allocateNode(NodeType.BLOCK, 12, 15);
+expected.allocateNode(NodeType.METHOD_DECLARATION, 0, 15);
+expected.allocateImplicitClassDeclaration(0, 15);
+expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 16);
+```
+
+**Why manual derivation matters:**
+- Expected values are the **specification** - what the parser SHOULD produce
+- If you copy actual output, you're testing that "parser produces what parser produces"
+- Manual analysis catches parser bugs because your expectation is independent
+- When test fails, the diff shows whether parser or expectation is wrong
+
+**Process for writing parser test expectations:**
+1. Write the source code string
+2. Count character positions manually (or use a simple counter)
+3. Identify what AST nodes SHOULD be created based on Java grammar
+4. Determine start/end positions for each node from character counting
+5. Write expected allocations in the order nodes are created
+6. Run test - if it fails, analyze WHETHER parser or your calculation is wrong
+
 ### 🚨 CRITICAL: Unit Test Requirements
 
 **Parser unit tests MUST validate AST structure**, not just parsing success:
@@ -80,6 +136,14 @@ public void classLiteralInExpression()
 - ❌ `parseSemanticAst\(.*\).*isNotEmpty\(\)` - Weak assertion, tests nothing about new feature
 - ❌ `assertParseSucceeds\(` in `*ParserTest.java` - Wrong utility for unit tests
 - ✅ `assertParseSucceeds\(` in `IntegrationTest.java` - Correct for integration tests
+
+### Expected Value Derivation Anti-Patterns
+
+- ❌ Copying `actual` output from failed test directly into `expected` - Tests nothing
+- ❌ Comments like `// Based on actual parser output` - Indicates copied values
+- ❌ Multiple identical node positions without manual verification
+- ✅ Comments showing character position calculation - Evidence of manual derivation
+- ✅ Step-by-step position comments matching source string analysis
 
 ---
 
