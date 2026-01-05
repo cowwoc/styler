@@ -220,6 +220,23 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 - Explicit types preferred over `var` (use `var` only for long generics)
 - Pre-increment `++i` over post-increment `i++` (Checkstyle enforces)
 - Pre-increment `++i` over `i += 1` (consistency with codebase)
+- Magic numbers: Use named constants or inline comments to explain non-obvious numeric values:
+  ```java
+  // ❌ WRONG - Magic number with no explanation
+  position += 7;
+
+  // ✅ CORRECT - Named constant explains the value
+  private static final String NON_SEALED_SUFFIX = "-sealed";
+  position += NON_SEALED_SUFFIX.length();
+
+  // ✅ ALSO CORRECT - Inline comment when constant would be overkill
+  // Skip "*/"
+  position += 2;
+  ```
+  **When to use which:**
+  - Named constant: Value used multiple times OR represents domain concept (e.g., `MAX_RETRIES`)
+  - Inline comment: Value used once AND meaning is clear from context (e.g., skipping known tokens)
+  - No explanation needed: Obvious values like `0`, `1`, `-1` in common idioms
 - Combine consecutive conditionals with same body (unless it harms readability):
   ```java
   // ❌ WRONG - Separate statements with same body
