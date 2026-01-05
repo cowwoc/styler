@@ -544,8 +544,13 @@ for (int i = 0; i < count; ++i)
 ```
 
 **When braces ARE required**:
-- **Multi-line bodies**: Two or more statements require braces to delimit the block
+- **Multi-statement bodies**: Two or more statements require braces to delimit the block
+- **Multi-line statements**: When a single statement spans multiple visual lines (long method calls, string
+  concatenations, multi-line throw statements), braces ARE required for readability
 - **Bodies containing comments**: Comments add visual complexity that benefits from explicit block delimiters
+
+**Critical clarification**: "Single-line" means the body fits on ONE VISUAL LINE, not just "one statement".
+A throw statement with a multi-line message is NOT single-line even though it's one statement.
 
 **Practical examples**:
 ```java
@@ -577,6 +582,20 @@ if (condition)
     // Handle the special case
     handleSpecialCase();
 }
+
+// ✅ CORRECT - Multi-line statement requires braces (4 visual lines)
+if (Files.isDirectory(filePath))
+{
+    throw new IllegalArgumentException(
+        "Directory processing not yet supported: " + filePath +
+        ". Use explicit file paths. File discovery will be implemented in a future release.");
+}
+
+// ❌ WRONG - Multi-line statement WITHOUT braces (looks like single-line but isn't)
+if (Files.isDirectory(filePath))
+    throw new IllegalArgumentException(
+        "Directory processing not yet supported: " + filePath +
+        ". Use explicit file paths. File discovery will be implemented in a future release.");
 ```
 
 **Consistency with Allman style**: Even when omitting braces, if you need them (for multi-statement bodies),

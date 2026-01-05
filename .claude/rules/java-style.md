@@ -193,8 +193,25 @@ if (condition)
         process(i);
 ```
 **When braces ARE required:**
-- Multi-line bodies (2+ statements)
+- Multi-statement bodies (2+ statements)
+- Multi-line statements (single statement spanning multiple visual lines)
 - Bodies containing comments
+
+**⚠️ CRITICAL**: "Single-line" means ONE VISUAL LINE, not "one statement". A throw/return/method call
+that spans multiple lines requires braces:
+```java
+// ❌ WRONG - Multi-line statement WITHOUT braces
+if (Files.isDirectory(filePath))
+    throw new IllegalArgumentException(
+        "Directory not supported: " + filePath);
+
+// ✅ CORRECT - Multi-line statement WITH braces
+if (Files.isDirectory(filePath))
+{
+    throw new IllegalArgumentException(
+        "Directory not supported: " + filePath);
+}
+```
 
 ### Code Patterns
 - `strip()` over `trim()` (Unicode whitespace)

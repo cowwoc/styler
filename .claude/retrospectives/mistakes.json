@@ -573,6 +573,26 @@
       "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M029",
+      "timestamp": "2026-01-05T15:52:14-05:00",
+      "category": "logical_error",
+      "pattern_id": null,
+      "description": "Applied brace omission rule incorrectly - removed braces from statements spanning multiple visual lines",
+      "root_cause": "Documentation used 'single-line' ambiguously without clarifying it means ONE VISUAL LINE, not just one statement. Multi-line throw statements were incorrectly treated as single-line.",
+      "prevention_type": "config",
+      "prevention_path": "docs/code-style/java-human.md, docs/code-style/java-claude.md, .claude/rules/java-style.md",
+      "pattern_keywords": [
+        "brace omission",
+        "single-line",
+        "multi-line",
+        "visual line",
+        "throw statement"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ]
 }
