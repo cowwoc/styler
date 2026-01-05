@@ -510,6 +510,28 @@
       "commit": "0e286ca",
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M026",
+      "timestamp": "2026-01-05T00:00:00-05:00",
+      "category": "git_operation_failure",
+      "pattern_id": null,
+      "description": "Ran 'git reflog expire --expire=now --all && git gc --prune=now' immediately after git filter-branch, permanently destroying recovery options",
+      "root_cause": "Documentation in git-rebase skill showed reflog expire and gc prune as normal cleanup step without warning about when this is dangerous. Agent followed documentation pattern without understanding implications.",
+      "prevention_type": "hook",
+      "prevention_path": ".claude/hooks/block-reflog-destruction.sh",
+      "pattern_keywords": [
+        "reflog",
+        "expire",
+        "gc",
+        "prune",
+        "filter-branch",
+        "recovery",
+        "data loss"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ]
 }

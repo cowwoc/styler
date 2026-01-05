@@ -868,6 +868,27 @@ rm -f /tmp/squash-vars.sh
 echo "✅ Backup removed after successful verification"
 ```
 
+**⚠️ CRITICAL: Do NOT Run Immediate Reflog/GC Cleanup**
+
+<!-- ADDED: 2026-01-05 after agent ran reflog expire immediately after filter-branch,
+     permanently destroying the safety net for recovery. -->
+
+**NEVER** run these commands immediately after squash:
+```bash
+# ❌ DANGEROUS - Destroys recovery safety net
+git reflog expire --expire=now --all
+git gc --prune=now
+```
+
+**Why this is dangerous:**
+- The reflog keeps references to ALL previous HEAD positions (~90 days default)
+- If the squash had issues (lost changes, wrong commits), reflog lets you recover
+- Running `reflog expire --expire=now` PERMANENTLY destroys this safety net
+
+**Safe approach:**
+- Let git's natural gc handle cleanup (90-day default expiration)
+- Only consider aggressive cleanup after verifying operation was 100% correct AND you have a remote backup
+
 ## Complete Example
 
 ### Example: Squash 2 Commits

@@ -175,6 +175,19 @@ jq '.hooks' /workspace/.claude/settings.json
 - **Protection**: Prevents accidental rewriting of version branches
 - **Reference**: git-workflow.md § Git History Rewriting Safety
 
+#### block-reflog-destruction.sh
+- **Purpose**: **BLOCK** premature reflog/gc cleanup that destroys recovery options
+- **Trigger**: PreToolUse (Bash with git reflog expire or git gc --prune=now)
+- **Registration**: ✅ REQUIRED
+- **Blocking**: **YES**
+- **Protection**: Prevents destruction of git recovery safety net after history rewriting
+- **Blocked Commands**:
+  - `git reflog expire --expire=now` (destroys recovery references)
+  - `git gc --prune=now` (removes unreachable objects immediately)
+- **Why**: Reflog is the primary recovery mechanism after filter-branch, rebase, reset
+- **Added**: 2026-01-05 after agent destroyed recovery options post-filter-branch
+- **Reference**: git-rebase/SKILL.md § Step 6: Cleanup
+
 #### block-retrospective-docs.sh
 - **Purpose**: **BLOCK** creation of retrospective documentation
 - **Trigger**: PreToolUse (Write, Edit)
