@@ -436,13 +436,13 @@ benchmarking, and validate with Maven plugin integration.
 **Priority**: These are REQUIRED for "100% JDK 25 support" claim in scope.md. Should be completed before
 production release.
 
-- [ ] **BLOCKED:** `add-primitive-type-patterns` - Support JEP 507 primitive patterns (preview)
+- [ ] **AWAITING_APPROVAL:** `add-primitive-type-patterns` - Support JEP 507 primitive patterns (preview)
   - **Dependencies**: None
   - **Blocks**: None (preview feature, lower priority)
   - **Parallelizable With**: Any Phase E parser task
   - **Estimated Effort**: 1-2 days
   - **Purpose**: Parse primitive types in pattern matching (JEP 507 - third preview in JDK 25)
-  - **Status**: BLOCKED - Preview feature, defer until finalized or user demand
+  - **Status**: AWAITING_APPROVAL - Implementation complete, awaiting user review
   - **Features When Implemented**:
     - `case int i when i > 0 ->` in switch expressions
     - `obj instanceof int i` for primitive patterns
@@ -455,36 +455,35 @@ production release.
 JDK 25. Do NOT implement string template parsing. The architecture.md reference to "string templates" is
 outdated and should be corrected.
 
-### Semantic Validation
+### Compilation Precondition Validation
 
-**Priority**: Enhancement for better error detection. Parser currently handles syntax only; semantic
-validation would catch context-sensitive errors.
+**Priority**: Fail-fast validation to ensure code was compiled before formatting. Styler assumes semantic
+validation is the compiler's job (see scope.md § Compilation Precondition).
 
-- [ ] **READY:** `add-semantic-validation` - Add semantic analysis pass for ALL context-sensitive validation
-  - **Dependencies**: None
-  - **Blocks**: None (enhancement for better error messages)
+- [ ] **READY:** `add-compilation-check` - Verify class files exist and are up-to-date before formatting
+  - **Dependencies**: `add-classpath-support` ✅ COMPLETE
+  - **Blocks**: None (optional validation when classpath available)
   - **Parallelizable With**: Any Phase E task
-  - **Estimated Effort**: 5-7 days
-  - **Purpose**: Comprehensive semantic validation for ALL node types requiring context-sensitive checks
-  - **Scope**: Validate ALL semantic constraints the parser intentionally defers (not just control flow)
-  - **Examples of Constraints** (non-exhaustive - full analysis required):
-    - Control flow: `yield` in switch, `break/continue` in loops, `return` in methods
-    - Labels: `break label;` where label exists and is reachable
-    - Modifiers: `static` not allowed on local classes, `abstract` only on classes/methods
-    - Annotations: `@Override` on overriding methods, target type validation
-    - Expressions: `this` not in static context, `super` in appropriate contexts
-    - Declarations: duplicate variable names in scope, unreachable code detection
-  - **Design Approach**:
-    - Create `SemanticValidator` class as separate AST visitor pass
-    - Run after parsing, before formatting
-    - Collect ALL semantic errors without stopping at first error
-    - Return `SemanticValidationResult` with complete list of semantic errors
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Fail fast if source files haven't been compiled, preventing formatting of invalid code
+  - **Scope**: Verify `.class` file exists on classpath with newer timestamp than `.java` source
+  - **Behavior**:
+    - When classpath provided: Check each source file has corresponding up-to-date class file
+    - When classpath not provided: Skip validation (best-effort formatting)
+    - On validation failure: Report error with message indicating compilation required
   - **Implementation**:
-    - Add `SemanticError` record (location, message, severity, error code)
-    - Add `SemanticValidator` visitor that walks entire AST
-    - Track context stack (scope, enclosing type, method context, loop depth, etc.)
-    - Systematic validation for each NodeType that has semantic constraints
-  - **Quality**: Tests for each semantic constraint category, integration with parse pipeline
+    - Add `CompilationValidator` class in pipeline module
+    - Map source file FQN to expected class file path on classpath
+    - Compare timestamps: `classFile.lastModified() >= sourceFile.lastModified()`
+    - Return `CompilationValidationResult` with list of stale/missing class files
+  - **Error Message Format**:
+    ```
+    Compilation required before formatting:
+    - src/main/java/com/example/Foo.java: class file missing
+    - src/main/java/com/example/Bar.java: class file older than source (stale)
+    Run 'mvn compile' or 'javac' before 'styler format'
+    ```
+  - **Quality**: Tests for missing class files, stale class files, valid class files
 
 ---
 
