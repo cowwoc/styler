@@ -102,6 +102,10 @@ git add todo.md changelog.md
 - Format: `- [task-name] Brief description of what was accomplished`
 - Include key deliverables
 
+**⚠️ Multi-Commit Pattern Note**: When using code/docs/config separation (3+ commits), archival files
+MUST be included in the `[docs]` commit - NOT as a separate commit. See
+[git-squash § Archival Multi-Commit](../git-squash/SKILL.md#archival-multi-commit).
+
 ### Step 4: Squash Commits (Two-Commit Structure)
 
 Squash task branch commits into TWO commits (or one if no config changes):

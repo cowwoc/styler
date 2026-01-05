@@ -93,6 +93,78 @@ User: Squash commits X, Y into one
 
 **Default assumption**: Each squash request is independent and should be executed separately.
 
+## Archival Files in Multi-Commit Patterns {#archival-multi-commit}
+
+**⚠️ CRITICAL**: When organizing commits into a multi-commit pattern (e.g., code/docs/config separation),
+archival files (`todo.md` and `changelog.md`) MUST be included in the appropriate existing commit - NOT
+added as a separate commit.
+
+### Archival File Placement Rules
+
+| Commit Pattern | Where Archival Goes | Rationale |
+|----------------|---------------------|-----------|
+| Single commit | Same commit | All changes together |
+| code / docs | `[docs]` commit | Archival is documentation |
+| code / docs / config | `[docs]` commit | Archival is documentation |
+| implementation / config | Implementation commit | No separate docs commit |
+
+### Common Mistake
+
+```bash
+# ❌ WRONG - Archival as separate 4th commit
+[code] feat: Add feature implementation
+[docs] docs: Update JavaDoc
+[config] chore: Update CLAUDE.md
+[archival] docs: Update todo.md and changelog.md  # UNNECESSARY 4TH COMMIT!
+
+# ✅ CORRECT - Archival included in docs commit
+[code] feat: Add feature implementation
+[docs] docs: Update JavaDoc, todo.md, changelog.md  # ARCHIVAL INCLUDED HERE
+[config] chore: Update CLAUDE.md
+```
+
+### When Hook Blocks Merge for Missing Archival
+
+If merge is blocked because archival files are missing AFTER commits are already organized:
+
+```bash
+# Scenario: 3 commits already organized, hook blocks for missing archival
+
+# ✅ CORRECT: Amend the docs commit to include archival
+git log --oneline -3
+# abc123 [config] chore: Update CLAUDE.md
+# def456 [docs] docs: Update JavaDoc       ← AMEND THIS ONE
+# ghi789 [code] feat: Add feature
+
+# Step 1: Interactive rebase to edit the docs commit
+git rebase -i ghi789^  # Parent of first commit
+
+# Step 2: Mark docs commit for edit (change 'pick' to 'edit')
+# pick ghi789 [code] feat: Add feature
+# edit def456 [docs] docs: Update JavaDoc   ← Change to 'edit'
+# pick abc123 [config] chore: Update CLAUDE.md
+
+# Step 3: When rebase stops, add archival and amend
+# (Edit todo.md and changelog.md)
+git add todo.md changelog.md
+git commit --amend --no-edit
+git rebase --continue
+
+# ❌ WRONG: Create new commit for archival
+git add todo.md changelog.md
+git commit -m "docs: Update archival"  # Creates unnecessary 4th commit!
+```
+
+### Pre-Squash Archival Checklist
+
+Before finalizing a multi-commit pattern, verify:
+
+- [ ] Archival files (todo.md, changelog.md) are updated
+- [ ] Archival is included in an existing commit (not separate)
+- [ ] If docs commit exists: archival is in docs commit
+- [ ] If no docs commit: archival is in implementation commit
+- [ ] `git show --stat <docs-commit>` shows both todo.md AND changelog.md
+
 ## Supports Both Tip and Mid-History Squashing
 
 **This skill now handles both scenarios**:
