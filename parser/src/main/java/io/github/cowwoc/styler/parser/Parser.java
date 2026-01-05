@@ -2051,6 +2051,7 @@ public final class Parser implements AutoCloseable
 	 * <ul>
 	 *   <li>Constant expressions: {@code case 1}, {@code case 'L'}, {@code case FOO}</li>
 	 *   <li>Type patterns: {@code case String s}, {@code case Foo.Bar bar}, {@code case Type _}</li>
+	 *   <li>Primitive type patterns (JEP 507): {@code case int i}, {@code case double d}</li>
 	 *   <li>{@code null} keyword: {@code case null}</li>
 	 *   <li>{@code default} keyword: {@code case null, default}</li>
 	 * </ul>
@@ -2069,7 +2070,13 @@ public final class Parser implements AutoCloseable
 			return;
 		}
 
-		// Try to detect type pattern: Type identifier or Type _
+		// Try to detect primitive type pattern (JEP 507): int i, double d, etc.
+		if (tryParsePrimitiveTypePattern())
+		{
+			return;
+		}
+
+		// Try to detect reference type pattern: Type identifier or Type _
 		// Type patterns look like: String s, Foo.Bar bar, Integer _, etc.
 		if (currentToken().type() == TokenType.IDENTIFIER && tryParseTypePattern())
 		{
@@ -2078,6 +2085,47 @@ public final class Parser implements AutoCloseable
 
 		// Parse as regular expression
 		parseExpression();
+	}
+
+	/**
+	 * Attempts to parse a primitive type pattern in a case label.
+	 * Primitive type patterns have the form: {@code primitiveType patternVariable}
+	 * <p>
+	 * Examples:
+	 * <ul>
+	 *   <li>{@code case int i ->}</li>
+	 *   <li>{@code case double d when d > 0 ->}</li>
+	 *   <li>{@code case long _}</li>
+	 * </ul>
+	 *
+	 * @return {@code true} if a primitive type pattern was parsed, {@code false} otherwise
+	 */
+	private boolean tryParsePrimitiveTypePattern()
+	{
+		if (!isPrimitiveType(currentToken().type()))
+		{
+			return false;
+		}
+
+		int checkpoint = position;
+		consume(); // primitive type keyword
+
+		// Check if followed by identifier (pattern variable)
+		if (currentToken().type() != TokenType.IDENTIFIER)
+		{
+			// Not a type pattern, restore position
+			position = checkpoint;
+			return false;
+		}
+
+		consume(); // pattern variable
+
+		// Check for optional guard: "when" expression
+		if (isContextualKeyword("when"))
+		{
+			parseGuardExpression();
+		}
+		return true;
 	}
 
 	/**

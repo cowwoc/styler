@@ -180,18 +180,6 @@ system should be **flexible** and support any combination of formatting rules.
 - <1% false positive rate in formatting decisions
 - Support for incremental formatting of changed sections only
 
-**Compilation Precondition:** {#compilation-precondition}
-Styler assumes source files have been successfully compiled before formatting. Semantic validation (e.g.,
-`yield` outside switch, `this` in static context, modifier conflicts) is the Java compiler's responsibility,
-not Styler's. This assumption:
-- Avoids duplicating `javac`'s semantic analysis
-- Aligns with Checkstyle/PMD which also assume compilable code
-- Enables fail-fast validation via class file timestamp checks (when classpath available)
-
-When classpath is provided, Styler verifies each source file's corresponding `.class` file exists and has a
-newer timestamp than the source. If validation fails, Styler reports an error indicating compilation is
-required before formatting.
-
 ## Technical Capabilities {#technical-capabilities}
 
 ### Classpath and Modulepath Access {#classpath-modulepath-access}

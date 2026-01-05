@@ -108,6 +108,17 @@ public void recordPatternInSwitch()
     requireThat(actual, "actual").isNotEmpty();  // Tests NOTHING about RECORD_PATTERN node!
 }
 
+// ❌ WRONG - isNotNull() on arena only verifies parsing succeeded, NOT AST correctness
+@Test
+public void primitiveTypePatternInSwitch()
+{
+    String source = "case int i -> ...";
+    try (Parser parser = parse(source))
+    {
+        requireThat(parser.getArena(), "arena").isNotNull();  // Tests NOTHING about new node types!
+    }
+}
+
 // ✅ CORRECT - Validates correct AST nodes are created
 @Test
 public void classLiteralInExpression()
@@ -124,16 +135,19 @@ public void classLiteralInExpression()
 }
 ```
 
-**Why `isNotEmpty()` is WRONG for parser tests:**
-- Non-empty only means SOME nodes were produced - NOT that the CORRECT nodes exist
-- The new feature (e.g., `RECORD_PATTERN`, `GUARDED_PATTERN`) might not be created at all
+**Why `isNotEmpty()` / `isNotNull()` is WRONG for parser tests:**
+- `isNotEmpty()`: Non-empty only means SOME nodes were produced - NOT that the CORRECT nodes exist
+- `isNotNull()` on arena: Only verifies parsing completed - NOT that the AST structure is correct
+- The new feature (e.g., `RECORD_PATTERN`, `PRIMITIVE_TYPE_PATTERN`) might not be created at all
 - Test passes even if parser produces completely wrong AST structure
 - Use `isEqualTo(expected)` with explicit expected nodes including the NEW node type
 
 ### Detection Patterns
 
 - ✅ `parseSemanticAst\(.*\).*isEqualTo\(expected\)` - Correct AST validation
+- ✅ `parser\.getArena\(\).*isEqualTo\(expected\)` - Correct arena comparison
 - ❌ `parseSemanticAst\(.*\).*isNotEmpty\(\)` - Weak assertion, tests nothing about new feature
+- ❌ `parser\.getArena\(\).*isNotNull\(\)` - Weak assertion, only verifies parsing succeeded
 - ❌ `assertParseSucceeds\(` in `*ParserTest.java` - Wrong utility for unit tests
 - ✅ `assertParseSucceeds\(` in `IntegrationTest.java` - Correct for integration tests
 
