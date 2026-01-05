@@ -532,6 +532,47 @@
       "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M027",
+      "timestamp": "2026-01-05T12:00:00-05:00",
+      "category": "test_failure",
+      "pattern_id": null,
+      "description": "Parser tests using isNotNull() on arena instead of isEqualTo(expected) - tests nothing about AST structure",
+      "root_cause": "Documentation only prohibited isNotEmpty() but not isNotNull() on arena, which has the same problem of only verifying parsing succeeded",
+      "prevention_type": "config",
+      "prevention_path": "docs/code-style/testing-claude.md",
+      "pattern_keywords": [
+        "parser",
+        "test",
+        "isNotNull",
+        "arena",
+        "weak assertion",
+        "AST"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
+    },
+    {
+      "id": "M028",
+      "timestamp": "2026-01-05T10:41:18-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Archival files committed as separate 4th commit instead of being included in docs commit when using code/docs/config separation pattern",
+      "root_cause": "Documentation gap - no explicit guidance on archival placement in multi-commit patterns; agent added archival as new commit instead of amending existing docs commit",
+      "prevention_type": "config",
+      "prevention_path": ".claude/skills/git-squash/SKILL.md",
+      "pattern_keywords": [
+        "archival",
+        "multi-commit",
+        "code-docs-config",
+        "squash",
+        "separate-commit"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ]
 }

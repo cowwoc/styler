@@ -77,7 +77,9 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
    */
   public class ClassParserTest { }
   ```
-- Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` - see [testing-claude.md](../../docs/code-style/testing-claude.md#parser-test-patterns)
+- Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` or `isNotNull()` on arena - see [testing-claude.md](../../docs/code-style/testing-claude.md#parser-test-patterns)
+  - `isNotEmpty()` on nodes: Tests nothing about specific node types
+  - `isNotNull()` on arena: Only verifies parsing succeeded, NOT AST correctness
 - No meaningless assertions - `assertTrue(true, ...)` always passes and tests nothing:
   ```java
   // ❌ WRONG - Useless assertion that always passes
