@@ -176,11 +176,30 @@ fi
 ```bash
 # Delete backup after verification
 git branch -D "$BACKUP_BRANCH"
+```
 
-# Garbage collect
+**⚠️ CRITICAL: Do NOT Run Immediate Reflog/GC Cleanup**
+
+<!-- ADDED: 2026-01-05 after agent ran reflog expire immediately after filter-branch,
+     permanently destroying the safety net for recovery. -->
+
+**NEVER** run these commands immediately after rebase or filter-branch:
+```bash
+# ❌ DANGEROUS - Destroys recovery safety net
 git reflog expire --expire=now --all
 git gc --prune=now --aggressive
 ```
+
+**Why this is dangerous:**
+- The reflog is your PRIMARY recovery mechanism after history-rewriting operations
+- If the rebase had subtle issues (lost commits, wrong content), reflog lets you recover
+- Running `reflog expire --expire=now` PERMANENTLY destroys this safety net
+
+**Safe approach:**
+1. Keep the backup branch for at least 24-48 hours
+2. Let git's natural gc handle cleanup (90-day default expiration)
+3. Only consider aggressive cleanup after verifying operation was 100% correct
+4. If you MUST cleanup immediately, ensure you have an external backup (remote, clone)
 
 ## Complete Examples
 
