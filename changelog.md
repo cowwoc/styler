@@ -37,6 +37,47 @@
 
 ## 2026-01-03
 
+### JEP 512 Implicit Classes and Instance Main Methods ✅
+
+**Task**: `add-compact-source-files`
+
+**Problem Solved**:
+- Parser did not support JEP 512 implicit classes (JDK 25 feature)
+- Files without explicit class declarations failed to parse
+- Instance main methods (`void main()` without static) were not recognized
+
+**Solution Implemented**:
+- Added `IMPLICIT_CLASS_DECLARATION` to `NodeType` enum
+- Added `allocateImplicitClassDeclaration()` to `NodeArena`
+- Modified `parseCompilationUnit()` to detect implicit class scenarios
+- Added `isTypeDeclarationStart()` with lookahead past modifiers to distinguish type declarations from members
+- Added `isMemberDeclarationStart()` for detecting implicit class content
+- Added `parseImplicitClassDeclaration()` to wrap top-level members
+- Updated `ContextDetector` exhaustive switch for new node type
+
+**Files Modified**:
+- `ast/core/src/main/java/.../ast/core/NodeType.java` - Added IMPLICIT_CLASS_DECLARATION
+- `ast/core/src/main/java/.../ast/core/NodeArena.java` - Added allocation method, updated isTypeDeclaration()
+- `parser/src/main/java/.../parser/Parser.java` - Added implicit class detection and parsing
+- `formatter/src/main/java/.../linelength/internal/ContextDetector.java` - Added switch case
+
+**Files Created**:
+- `parser/src/test/java/.../parser/test/ImplicitClassParserTest.java` - 25 tests
+
+**Test Coverage**:
+- Basic implicit class with void main()
+- Instance main with String[] args
+- Static members in implicit classes (static void main(), static fields)
+- Mixed fields and methods
+- With package declaration and imports
+- Annotations and JavaDoc comments
+- Multiple methods and complex scenarios
+
+**Quality**:
+- All tests passing
+- Zero Checkstyle/PMD violations
+- Build successful
+
 ### Migrate Parser Tests to NodeArena ✅
 
 **Task**: `migrate-parser-tests-to-nodearena`

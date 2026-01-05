@@ -252,6 +252,22 @@ public final class NodeArena implements AutoCloseable
 	}
 
 	/**
+	 * Allocates an implicit class declaration node.
+	 * <p>
+	 * Implicit classes (JEP 512) contain top-level members without an explicit class declaration.
+	 * The compiler generates a class name based on the source file name.
+	 *
+	 * @param start the start position in the source code
+	 * @param end   the end position in the source code
+	 * @return the index of the newly created node
+	 * @throws IllegalArgumentException if {@code start} or {@code end} positions are negative
+	 */
+	public NodeIndex allocateImplicitClassDeclaration(int start, int end)
+	{
+		return allocateNode(NodeType.IMPLICIT_CLASS_DECLARATION, start, end);
+	}
+
+	/**
 	 * Returns the import attribute associated with a node.
 	 *
 	 * @param index the node index
@@ -376,14 +392,15 @@ public final class NodeArena implements AutoCloseable
 	 * Checks if the given node type is a type declaration.
 	 *
 	 * @param type the node type to check
-	 * @return {@code true} if the type is a class, interface, enum, record, or annotation declaration
+	 * @return {@code true} if the type is a class, interface, enum, record, annotation, or implicit class
+	 *         declaration
 	 */
 	private static boolean isTypeDeclaration(NodeType type)
 	{
 		return switch (type)
 		{
 			case CLASS_DECLARATION, INTERFACE_DECLARATION, ENUM_DECLARATION,
-				RECORD_DECLARATION, ANNOTATION_DECLARATION -> true;
+				RECORD_DECLARATION, ANNOTATION_DECLARATION, IMPLICIT_CLASS_DECLARATION -> true;
 			default -> false;
 		};
 	}
