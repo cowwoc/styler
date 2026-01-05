@@ -1,12 +1,15 @@
 package io.github.cowwoc.styler.formatter.internal;
 
 import io.github.classgraph.ClassGraph;
+import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.List;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
@@ -134,6 +137,37 @@ public final class ClasspathScanner implements AutoCloseable
 
 		// Check if resource exists - this doesn't require valid bytecode
 		return !scanResult.getResourcesWithPath(resourcePath).isEmpty();
+	}
+
+	/**
+	 * Returns the last modified time of a class file on the classpath/modulepath.
+	 *
+	 * @param qualifiedName fully-qualified class name (e.g., {@code "java.util.List"})
+	 * @return the last modified time in milliseconds since epoch, or empty if class not found
+	 * @throws NullPointerException  if {@code qualifiedName} is {@code null}
+	 * @throws IllegalStateException if the scanner has been closed
+	 */
+	public OptionalLong getClassLastModified(String qualifiedName)
+	{
+		requireThat(qualifiedName, "qualifiedName").isNotNull();
+
+		if (closed.get())
+		{
+			throw new IllegalStateException("Scanner has been closed");
+		}
+
+		// Convert class name to resource path
+		String resourcePath = qualifiedName.replace('.', '/') + ".class";
+
+		List<Resource> resources = scanResult.getResourcesWithPath(resourcePath);
+		if (resources.isEmpty())
+		{
+			return OptionalLong.empty();
+		}
+
+		// Return the first match's last modified time
+		Resource resource = resources.get(0);
+		return OptionalLong.of(resource.getLastModified());
 	}
 
 	/**

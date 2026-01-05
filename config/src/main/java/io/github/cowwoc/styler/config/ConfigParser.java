@@ -61,11 +61,9 @@ public final class ConfigParser
 			// Check file size to prevent memory exhaustion (security)
 			long fileSize = Files.size(path);
 			if (fileSize > MAX_FILE_SIZE_BYTES)
-			{
 				throw new ConfigurationSyntaxException(
 					"Configuration file too large: " + fileSize + " bytes (max: " +
 						MAX_FILE_SIZE_BYTES + " bytes) at " + path);
-			}
 
 			String content = Files.readString(path);
 			return parseToml(content, path.toString());

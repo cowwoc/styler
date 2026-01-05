@@ -107,14 +107,12 @@ public class ViolationOutputIntegrationTest
 	private String formatViolations(List<FormattingViolation> violations)
 	{
 		if (violations.isEmpty())
-		{
 			return "{ \"violations\": [] }";
-		}
 
 		StringBuilder json = new StringBuilder(128);
 		json.append("{ \"violations\": [");
 
-		for (int i = 0; i < violations.size(); i += 1)
+		for (int i = 0; i < violations.size(); ++i)
 		{
 			if (i > 0) json.append(',');
 			FormattingViolation v = violations.get(i);

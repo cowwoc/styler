@@ -110,9 +110,7 @@ public final class ConfigurationLoader
 				// Format location with line number if available (>= 1)
 				String location;
 				if (lineNumber != null && lineNumber >= 1)
-				{
 					location = configPath + "@" + lineNumber;
-				}
 				else
 				{
 					// Line number not available or invalid - show just file path

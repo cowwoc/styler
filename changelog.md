@@ -2,6 +2,49 @@
 
 ## 2026-01-05
 
+### Add Compilation Validation for Source Files ✅
+
+**Task**: `add-compilation-check`
+
+**Problem Solved**:
+- No validation existed to ensure source files were compiled before formatting
+- Users could run formatter on stale or missing class files, leading to issues
+- Styler's scope.md specifies compilation is a precondition for proper formatting
+
+**Solution Implemented**:
+- Added `CompilationValidator` class for validating class file existence and timestamps
+- Added `CompilationValidationResult` sealed interface with `Valid` and `Invalid` variants
+- Added `validateCompilation(Collection<Path>)` method to `FileProcessingPipeline`
+- Upfront validation: check all source files at start, before processing any files
+- Timestamp comparison: class file must be at least as new as source file
+
+**Files Created**:
+- `pipeline/src/main/java/.../pipeline/CompilationValidationResult.java` - Result types
+- `pipeline/src/main/java/.../pipeline/internal/CompilationValidator.java` - Validation logic
+- `pipeline/src/test/java/.../pipeline/internal/test/CompilationValidatorTest.java` - 17 tests
+
+**Files Modified**:
+- `pipeline/src/main/java/.../pipeline/FileProcessingPipeline.java` - Added validateCompilation()
+- `pipeline/src/test/java/module-info.java` - Exported test package
+
+**API**:
+```java
+// One-time upfront validation before processing
+CompilationValidationResult result = pipeline.validateCompilation(sourceFiles);
+if (result instanceof CompilationValidationResult.Invalid invalid) {
+    System.err.println(invalid.getErrorMessage());
+    return;
+}
+// Proceed with formatting...
+```
+
+**Quality**:
+- All tests passing (17 new tests)
+- Zero Checkstyle/PMD violations
+- Build successful
+
+---
+
 ### Add Primitive Type Pattern Support (JEP 507) ✅
 
 **Task**: `add-primitive-type-patterns`

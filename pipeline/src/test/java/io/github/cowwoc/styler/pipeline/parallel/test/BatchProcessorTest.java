@@ -97,9 +97,7 @@ public class BatchProcessorTest
 		List<Path> files = new ArrayList<>();
 
 		for (int i = 0; i < 5; ++i)
-		{
 			files.add(TestFileFactory.createValidJavaFile());
-		}
 
 		try (BatchProcessor processor = new DefaultBatchProcessor(pipeline, config))
 		{
@@ -113,9 +111,7 @@ public class BatchProcessorTest
 		finally
 		{
 			for (Path file : files)
-			{
 				Files.deleteIfExists(file);
-			}
 		}
 	}
 

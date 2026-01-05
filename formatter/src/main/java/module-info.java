@@ -24,8 +24,9 @@ module io.github.cowwoc.styler.formatter
 	exports io.github.cowwoc.styler.formatter.whitespace;
 	exports io.github.cowwoc.styler.formatter.indentation;
 
-	// Allow test module to access internal implementation classes for testing
-	exports io.github.cowwoc.styler.formatter.internal to io.github.cowwoc.styler.formatter.test;
+	// Allow test module and pipeline module to access internal implementation classes
+	exports io.github.cowwoc.styler.formatter.internal to io.github.cowwoc.styler.formatter.test,
+		io.github.cowwoc.styler.pipeline, io.github.cowwoc.styler.pipeline.test;
 	exports io.github.cowwoc.styler.formatter.linelength.internal to io.github.cowwoc.styler.formatter.test;
 	exports io.github.cowwoc.styler.formatter.importorg.internal to io.github.cowwoc.styler.formatter.test;
 	exports io.github.cowwoc.styler.formatter.brace.internal to io.github.cowwoc.styler.formatter.test;

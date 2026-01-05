@@ -71,14 +71,10 @@ public class ViolationReportImmutabilityTest
 
 			Map<String, List<FormattingViolation>> grouped = new HashMap<>();
 			for (FormattingViolation v : violations)
-			{
 				grouped.computeIfAbsent(v.ruleId(), k -> new ArrayList<>()).add(v);
-			}
 
 			for (Map.Entry<String, List<FormattingViolation>> entry : grouped.entrySet())
-			{
 				grouped.put(entry.getKey(), List.copyOf(entry.getValue()));
-			}
 
 			this.groupedByRule = Map.copyOf(grouped);
 		}

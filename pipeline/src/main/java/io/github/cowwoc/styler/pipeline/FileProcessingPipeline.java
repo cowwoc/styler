@@ -2,22 +2,29 @@ package io.github.cowwoc.styler.pipeline;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import io.github.cowwoc.styler.formatter.FormattingRule;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
+import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
+import io.github.cowwoc.styler.formatter.internal.ClasspathScanner;
 import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
+import io.github.cowwoc.styler.pipeline.internal.CompilationValidator;
 import io.github.cowwoc.styler.pipeline.internal.DefaultTransformationContext;
 import io.github.cowwoc.styler.pipeline.internal.FormatResult;
 import io.github.cowwoc.styler.pipeline.internal.ParsedData;
@@ -72,6 +79,7 @@ public final class FileProcessingPipeline
 	private final List<FormattingRule> formattingRules;
 	private final List<FormattingConfiguration> formattingConfigs;
 	private final boolean validationOnly;
+	private final TypeResolutionConfig typeResolutionConfig;
 	private final List<PipelineStage> stages;
 
 	/**
@@ -80,20 +88,29 @@ public final class FileProcessingPipeline
 	 * @param securityConfig the security configuration
 	 * @param formattingRules the formatting rules to apply
 	 * @param formattingConfigs the list of formatting configurations for all rules
-	 * @param validationOnly true to only validate without applying fixes
+	 * @param validationOnly {@code true} to only validate without applying fixes
+	 * @param typeResolutionConfig configuration for classpath and modulepath
 	 * @param stages the pipeline stages in execution order
+	 * @throws NullPointerException if any of the parameters is {@code null}
 	 */
 	private FileProcessingPipeline(
 			SecurityConfig securityConfig,
 			List<FormattingRule> formattingRules,
 			List<FormattingConfiguration> formattingConfigs,
 			boolean validationOnly,
+			TypeResolutionConfig typeResolutionConfig,
 			List<PipelineStage> stages)
 	{
+		requireThat(securityConfig, "securityConfig").isNotNull();
+		requireThat(formattingRules, "formattingRules").isNotNull();
+		requireThat(formattingConfigs, "formattingConfigs").isNotNull();
+		requireThat(typeResolutionConfig, "typeResolutionConfig").isNotNull();
+		requireThat(stages, "stages").isNotNull();
 		this.securityConfig = securityConfig;
 		this.formattingRules = List.copyOf(formattingRules);
 		this.formattingConfigs = List.copyOf(formattingConfigs);
 		this.validationOnly = validationOnly;
+		this.typeResolutionConfig = typeResolutionConfig;
 		this.stages = List.copyOf(stages);
 	}
 
@@ -105,6 +122,108 @@ public final class FileProcessingPipeline
 	public static Builder builder()
 	{
 		return new Builder();
+	}
+
+	/**
+	 * Validates that all source files have been compiled and are up-to-date.
+	 * <p>
+	 * This method should be called <b>once at the start</b> before processing any files.
+	 * It checks that each source file has a corresponding {@code .class} file on the classpath
+	 * with a timestamp newer than or equal to the source file.
+	 * <p>
+	 * If any class files are missing or stale, this method returns a failure result with details
+	 * about which files need to be recompiled.
+	 *
+	 * @param sourceFiles the source files that will be processed
+	 * @return validation result indicating success or listing stale/missing class files
+	 * @throws NullPointerException if {@code sourceFiles} is {@code null}
+	 * @throws IOException if an I/O error occurs reading file timestamps
+	 */
+	public CompilationValidationResult validateCompilation(Collection<Path> sourceFiles) throws IOException
+	{
+		requireThat(sourceFiles, "sourceFiles").isNotNull();
+
+		if (sourceFiles.isEmpty())
+		{
+			return new CompilationValidationResult.Valid();
+		}
+
+		try (ClasspathScanner scanner = ClasspathScanner.create(typeResolutionConfig))
+		{
+			CompilationValidator validator = new CompilationValidator(scanner);
+			List<String> allMissing = new ArrayList<>();
+			List<String> allStale = new ArrayList<>();
+
+			for (Path sourceFile : sourceFiles)
+			{
+				String fileName = sourceFile.getFileName().toString();
+
+				// Skip special files that don't produce standard class files
+				if (fileName.equals("package-info.java") || fileName.equals("module-info.java"))
+				{
+					continue;
+				}
+
+				String sourceCode = Files.readString(sourceFile, StandardCharsets.UTF_8);
+				String packageName = extractPackageName(sourceCode);
+				List<String> typeNames = extractTypeNames(sourceCode);
+
+				if (typeNames.isEmpty())
+				{
+					continue;
+				}
+
+				CompilationValidationResult result = validator.validate(sourceFile, packageName, typeNames);
+
+				if (result instanceof CompilationValidationResult.Invalid invalid)
+				{
+					allMissing.addAll(invalid.missingClasses());
+					allStale.addAll(invalid.staleClasses());
+				}
+			}
+
+			if (allMissing.isEmpty() && allStale.isEmpty())
+			{
+				return new CompilationValidationResult.Valid();
+			}
+			return new CompilationValidationResult.Invalid(allMissing, allStale, null);
+		}
+	}
+
+	/**
+	 * Pattern to extract package declaration from source code.
+	 */
+	private static final Pattern PACKAGE_PATTERN = Pattern.compile(
+		"^\\s*package\\s+([a-zA-Z_][a-zA-Z0-9_.]*?)\\s*;",
+		Pattern.MULTILINE);
+
+	/**
+	 * Pattern to extract top-level type declarations.
+	 */
+	private static final Pattern TYPE_DECLARATION_PATTERN = Pattern.compile(
+		"(?:^|\\n)\\s*(?:public\\s+|protected\\s+|private\\s+)?(?:abstract\\s+|final\\s+|sealed\\s+|" +
+			"non-sealed\\s+|static\\s+)*(?:class|interface|enum|record|@interface)\\s+" +
+			"([a-zA-Z_][a-zA-Z0-9_]*)");
+
+	private String extractPackageName(String sourceCode)
+	{
+		Matcher matcher = PACKAGE_PATTERN.matcher(sourceCode);
+		if (matcher.find())
+		{
+			return matcher.group(1);
+		}
+		return "";
+	}
+
+	private List<String> extractTypeNames(String sourceCode)
+	{
+		List<String> typeNames = new ArrayList<>();
+		Matcher matcher = TYPE_DECLARATION_PATTERN.matcher(sourceCode);
+		while (matcher.find())
+		{
+			typeNames.add(matcher.group(1));
+		}
+		return typeNames;
 	}
 
 	/**
@@ -127,7 +246,7 @@ public final class FileProcessingPipeline
 				formattingConfigs,
 				formattingRules,
 				validationOnly,
-				TypeResolutionConfig.EMPTY);
+				typeResolutionConfig);
 
 		// Execute stages in sequence, passing data between them
 		Object previousStageData = null;
@@ -190,6 +309,7 @@ public final class FileProcessingPipeline
 		private List<FormattingRule> formattingRules = List.of();
 		private List<FormattingConfiguration> formattingConfigs = List.of();
 		private boolean validationOnly = true;
+		private TypeResolutionConfig typeResolutionConfig = TypeResolutionConfig.EMPTY;
 
 		/**
 		 * Sets the security configuration.
@@ -243,6 +363,24 @@ public final class FileProcessingPipeline
 		}
 
 		/**
+		 * Sets the type resolution configuration for classpath and modulepath.
+		 * <p>
+		 * When source files are processed, a classpath must be provided to enable compilation
+		 * validation. The validator verifies that class files exist and are up-to-date before
+		 * formatting. Using {@link TypeResolutionConfig#EMPTY} will cause compilation validation
+		 * to fail with an error.
+		 *
+		 * @param config the type resolution configuration
+		 * @return this builder for chaining
+		 * @throws NullPointerException if {@code config} is {@code null}
+		 */
+		public Builder typeResolutionConfig(TypeResolutionConfig config)
+		{
+			this.typeResolutionConfig = requireThat(config, "config").isNotNull().getValue();
+			return this;
+		}
+
+		/**
 		 * Builds the FileProcessingPipeline with validated configuration.
 		 *
 		 * @return the configured pipeline
@@ -265,6 +403,7 @@ public final class FileProcessingPipeline
 					formattingRules,
 					formattingConfigs,
 					validationOnly,
+					typeResolutionConfig,
 					stages);
 		}
 	}

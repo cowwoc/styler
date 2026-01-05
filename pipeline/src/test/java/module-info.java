@@ -13,4 +13,5 @@ module io.github.cowwoc.styler.pipeline.test
 	opens io.github.cowwoc.styler.pipeline.parallel.test to org.testng;
 	opens io.github.cowwoc.styler.pipeline.output.test to org.testng;
 	opens io.github.cowwoc.styler.pipeline.test to org.testng;
+	opens io.github.cowwoc.styler.pipeline.internal.test to org.testng;
 }
