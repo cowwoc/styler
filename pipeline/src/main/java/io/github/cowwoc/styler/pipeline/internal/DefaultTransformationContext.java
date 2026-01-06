@@ -2,6 +2,7 @@ package io.github.cowwoc.styler.pipeline.internal;
 
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
+import io.github.cowwoc.styler.formatter.ClasspathScanner;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
 import io.github.cowwoc.styler.formatter.AstPositionIndex;
@@ -29,6 +30,7 @@ public final class DefaultTransformationContext implements TransformationContext
 	private final Instant deadline;
 	private final TypeResolutionConfig typeResolutionConfig;
 	private final AstPositionIndex positionIndex;
+	private final ClasspathScanner classpathScanner;
 
 	/**
 	 * Creates a transformation context with the given data.
@@ -39,6 +41,7 @@ public final class DefaultTransformationContext implements TransformationContext
 	 * @param filePath the path to the source file
 	 * @param securityConfig the security configuration for deadline enforcement
 	 * @param typeResolutionConfig the type resolution configuration for classpath access
+	 * @param classpathScanner the shared classpath scanner for type resolution
 	 * @throws NullPointerException if any argument is null
 	 */
 	public DefaultTransformationContext(
@@ -47,7 +50,8 @@ public final class DefaultTransformationContext implements TransformationContext
 			String sourceCode,
 			Path filePath,
 			SecurityConfig securityConfig,
-			TypeResolutionConfig typeResolutionConfig)
+			TypeResolutionConfig typeResolutionConfig,
+			ClasspathScanner classpathScanner)
 	{
 		this.arena = requireThat(arena, "arena").isNotNull().getValue();
 		this.rootNode = requireThat(rootNode, "rootNode").isNotNull().getValue();
@@ -55,6 +59,7 @@ public final class DefaultTransformationContext implements TransformationContext
 		this.filePath = requireThat(filePath, "filePath").isNotNull().getValue();
 		this.securityConfig = requireThat(securityConfig, "securityConfig").isNotNull().getValue();
 		this.typeResolutionConfig = requireThat(typeResolutionConfig, "typeResolutionConfig").isNotNull().getValue();
+		this.classpathScanner = requireThat(classpathScanner, "classpathScanner").isNotNull().getValue();
 
 		// Calculate execution deadline based on current time + timeout
 		this.deadline = Instant.now().plus(securityConfig.executionTimeout());
@@ -155,5 +160,11 @@ public final class DefaultTransformationContext implements TransformationContext
 	public AstPositionIndex positionIndex()
 	{
 		return positionIndex;
+	}
+
+	@Override
+	public ClasspathScanner classpathScanner()
+	{
+		return classpathScanner;
 	}
 }

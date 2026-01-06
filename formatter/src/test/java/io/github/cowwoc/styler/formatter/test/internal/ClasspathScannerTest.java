@@ -1,7 +1,7 @@
 package io.github.cowwoc.styler.formatter.test.internal;
 
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
-import io.github.cowwoc.styler.formatter.internal.ClasspathScanner;
+import io.github.cowwoc.styler.formatter.ClasspathScanner;
 import org.testng.annotations.Test;
 
 import java.io.IOException;

@@ -101,4 +101,14 @@ public interface TransformationContext
 	 * @return the position index
 	 */
 	AstPositionIndex positionIndex();
+
+	/**
+	 * Returns the shared classpath scanner for type resolution.
+	 * <p>
+	 * The scanner is shared across all files in a pipeline run. Callers must NOT close
+	 * the returned scanner - it is managed by the pipeline.
+	 *
+	 * @return the classpath scanner
+	 */
+	ClasspathScanner classpathScanner();
 }

@@ -5,7 +5,7 @@ import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerConfiguration;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportAnalysisResult;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportAnalyzer;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportDeclaration;
-import io.github.cowwoc.styler.formatter.internal.ClasspathScanner;
+import io.github.cowwoc.styler.formatter.ClasspathScanner;
 import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import io.github.cowwoc.styler.formatter.test.internal.ClasspathTestUtils;
 import org.testng.annotations.Test;

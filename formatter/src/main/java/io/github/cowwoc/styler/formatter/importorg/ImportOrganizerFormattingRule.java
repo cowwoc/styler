@@ -5,14 +5,13 @@ import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.TransformationContext;
-import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportAnalysisResult;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportAnalyzer;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportDeclaration;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportExtractor;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportGrouper;
-import io.github.cowwoc.styler.formatter.internal.ClasspathScanner;
+import io.github.cowwoc.styler.formatter.ClasspathScanner;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -371,12 +370,7 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 			return ImportAnalyzer.findUnusedImports(imports, context, importConfig, ClasspathScanner.empty());
 		}
 
-		// Scanner needed for symbol resolution. If classpath is not configured, scanner will be
-		// empty and resolution will fail gracefully (wildcards preserved, warning reported)
-		TypeResolutionConfig typeConfig = context.typeResolutionConfig();
-		try (ClasspathScanner scanner = ClasspathScanner.create(typeConfig))
-		{
-			return ImportAnalyzer.findUnusedImports(imports, context, importConfig, scanner);
-		}
+		// Use shared scanner from context - pipeline owns the scanner lifecycle
+		return ImportAnalyzer.findUnusedImports(imports, context, importConfig, context.classpathScanner());
 	}
 }

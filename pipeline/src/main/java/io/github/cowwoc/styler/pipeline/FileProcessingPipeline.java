@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +22,7 @@ import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
-import io.github.cowwoc.styler.formatter.internal.ClasspathScanner;
+import io.github.cowwoc.styler.formatter.ClasspathScanner;
 import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
 import io.github.cowwoc.styler.pipeline.internal.CompilationValidator;
@@ -73,14 +74,16 @@ import io.github.cowwoc.styler.security.SecurityConfig;
  *     <li>Zero GC pressure during processing (off-heap allocation)</li>
  * </ul>
  */
-public final class FileProcessingPipeline
+public final class FileProcessingPipeline implements AutoCloseable
 {
 	private final SecurityConfig securityConfig;
 	private final List<FormattingRule> formattingRules;
 	private final List<FormattingConfiguration> formattingConfigs;
 	private final boolean validationOnly;
 	private final TypeResolutionConfig typeResolutionConfig;
+	private final ClasspathScanner classpathScanner;
 	private final List<PipelineStage> stages;
+	private final AtomicBoolean closed = new AtomicBoolean();
 
 	/**
 	 * Creates a FileProcessingPipeline with configuration.
@@ -90,6 +93,7 @@ public final class FileProcessingPipeline
 	 * @param formattingConfigs the list of formatting configurations for all rules
 	 * @param validationOnly {@code true} to only validate without applying fixes
 	 * @param typeResolutionConfig configuration for classpath and modulepath
+	 * @param classpathScanner the shared classpath scanner for type resolution
 	 * @param stages the pipeline stages in execution order
 	 * @throws NullPointerException if any of the parameters is {@code null}
 	 */
@@ -99,18 +103,21 @@ public final class FileProcessingPipeline
 			List<FormattingConfiguration> formattingConfigs,
 			boolean validationOnly,
 			TypeResolutionConfig typeResolutionConfig,
+			ClasspathScanner classpathScanner,
 			List<PipelineStage> stages)
 	{
 		requireThat(securityConfig, "securityConfig").isNotNull();
 		requireThat(formattingRules, "formattingRules").isNotNull();
 		requireThat(formattingConfigs, "formattingConfigs").isNotNull();
 		requireThat(typeResolutionConfig, "typeResolutionConfig").isNotNull();
+		requireThat(classpathScanner, "classpathScanner").isNotNull();
 		requireThat(stages, "stages").isNotNull();
 		this.securityConfig = securityConfig;
 		this.formattingRules = List.copyOf(formattingRules);
 		this.formattingConfigs = List.copyOf(formattingConfigs);
 		this.validationOnly = validationOnly;
 		this.typeResolutionConfig = typeResolutionConfig;
+		this.classpathScanner = classpathScanner;
 		this.stages = List.copyOf(stages);
 	}
 
@@ -234,7 +241,8 @@ public final class FileProcessingPipeline
 				formattingConfigs,
 				formattingRules,
 				validationOnly,
-				typeResolutionConfig);
+				typeResolutionConfig,
+				classpathScanner);
 
 		// Execute stages in sequence, passing data between them
 		Object previousStageData = null;
@@ -282,6 +290,16 @@ public final class FileProcessingPipeline
 		for (Path path : filePaths)
 			results.add(processFile(path));
 		return results;
+	}
+
+	/**
+	 * Closes the pipeline and releases the shared classpath scanner.
+	 */
+	@Override
+	public void close()
+	{
+		if (closed.compareAndSet(false, true))
+			classpathScanner.close();
 	}
 
 	/**
@@ -382,12 +400,16 @@ public final class FileProcessingPipeline
 			stages.add(new ValidationStage());
 			stages.add(new OutputStage());
 
+			// Create shared classpath scanner from type resolution config
+			ClasspathScanner scanner = ClasspathScanner.create(typeResolutionConfig);
+
 			return new FileProcessingPipeline(
 					securityConfig,
 					formattingRules,
 					formattingConfigs,
 					validationOnly,
 					typeResolutionConfig,
+					scanner,
 					stages);
 		}
 	}
@@ -510,7 +532,8 @@ public final class FileProcessingPipeline
 				parsed.sourceCode(),
 				parsed.filePath(),
 				context.securityConfig(),
-				context.typeResolutionConfig());
+				context.typeResolutionConfig(),
+				context.classpathScanner());
 
 			if (context.validationOnly())
 			{
@@ -533,7 +556,8 @@ public final class FileProcessingPipeline
 					currentSource,
 					parsed.filePath(),
 					context.securityConfig(),
-					context.typeResolutionConfig());
+					context.typeResolutionConfig(),
+					context.classpathScanner());
 			}
 
 			// Collect violations in the final formatted source

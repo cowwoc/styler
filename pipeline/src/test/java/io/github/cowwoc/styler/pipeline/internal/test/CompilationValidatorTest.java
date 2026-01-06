@@ -14,7 +14,7 @@ import java.util.Locale;
 import org.testng.annotations.Test;
 
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
-import io.github.cowwoc.styler.formatter.internal.ClasspathScanner;
+import io.github.cowwoc.styler.formatter.ClasspathScanner;
 import io.github.cowwoc.styler.pipeline.CompilationValidationResult;
 import io.github.cowwoc.styler.pipeline.internal.CompilationValidator;
 

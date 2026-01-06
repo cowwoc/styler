@@ -5,6 +5,7 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 import java.nio.file.Path;
 import java.util.List;
 
+import io.github.cowwoc.styler.formatter.ClasspathScanner;
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
@@ -35,6 +36,7 @@ import io.github.cowwoc.styler.security.SecurityConfig;
  * @param validationOnly true to only validate without applying fixes
  * @param outputFormatOverride override for output format, or {@code null} for automatic detection
  * @param typeResolutionConfig configuration for type resolution during formatting
+ * @param classpathScanner the shared classpath scanner for type resolution
  */
 public record ProcessingContext(
 		Path filePath,
@@ -43,7 +45,8 @@ public record ProcessingContext(
 		List<FormattingRule> formattingRules,
 		boolean validationOnly,
 		OutputFormat outputFormatOverride,
-		TypeResolutionConfig typeResolutionConfig)
+		TypeResolutionConfig typeResolutionConfig,
+		ClasspathScanner classpathScanner)
 {
 	/**
 	 * Creates a ProcessingContext without output format override (uses automatic detection).
@@ -54,6 +57,7 @@ public record ProcessingContext(
 	 * @param formattingRules the list of formatting rules to apply (may be empty)
 	 * @param validationOnly true to only validate without applying fixes
 	 * @param typeResolutionConfig configuration for type resolution
+	 * @param classpathScanner the shared classpath scanner
 	 * @return a new ProcessingContext
 	 * @throws NullPointerException if any argument is {@code null}
 	 */
@@ -63,10 +67,11 @@ public record ProcessingContext(
 			List<FormattingConfiguration> formattingConfigs,
 			List<FormattingRule> formattingRules,
 			boolean validationOnly,
-			TypeResolutionConfig typeResolutionConfig)
+			TypeResolutionConfig typeResolutionConfig,
+			ClasspathScanner classpathScanner)
 	{
 		return new ProcessingContext(filePath, securityConfig, formattingConfigs, formattingRules,
-			validationOnly, null, typeResolutionConfig);
+			validationOnly, null, typeResolutionConfig, classpathScanner);
 	}
 
 	/**
@@ -79,6 +84,7 @@ public record ProcessingContext(
 	 * @param validationOnly true to only validate without applying fixes
 	 * @param outputFormatOverride the output format to use
 	 * @param typeResolutionConfig configuration for type resolution
+	 * @param classpathScanner the shared classpath scanner
 	 * @return a new ProcessingContext
 	 * @throws NullPointerException if any argument is {@code null}
 	 */
@@ -89,11 +95,12 @@ public record ProcessingContext(
 			List<FormattingRule> formattingRules,
 			boolean validationOnly,
 			OutputFormat outputFormatOverride,
-			TypeResolutionConfig typeResolutionConfig)
+			TypeResolutionConfig typeResolutionConfig,
+			ClasspathScanner classpathScanner)
 	{
 		requireThat(outputFormatOverride, "outputFormatOverride").isNotNull();
 		return new ProcessingContext(filePath, securityConfig, formattingConfigs, formattingRules,
-			validationOnly, outputFormatOverride, typeResolutionConfig);
+			validationOnly, outputFormatOverride, typeResolutionConfig, classpathScanner);
 	}
 
 	/**
@@ -106,6 +113,7 @@ public record ProcessingContext(
 		requireThat(formattingConfigs, "formattingConfigs").isNotNull();
 		requireThat(formattingRules, "formattingRules").isNotNull();
 		requireThat(typeResolutionConfig, "typeResolutionConfig").isNotNull();
+		requireThat(classpathScanner, "classpathScanner").isNotNull();
 		// outputFormatOverride is intentionally nullable - null means automatic detection
 	}
 }

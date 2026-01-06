@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalLong;
 
-import io.github.cowwoc.styler.formatter.internal.ClasspathScanner;
+import io.github.cowwoc.styler.formatter.ClasspathScanner;
 import io.github.cowwoc.styler.pipeline.CompilationValidationResult;
 
 /**

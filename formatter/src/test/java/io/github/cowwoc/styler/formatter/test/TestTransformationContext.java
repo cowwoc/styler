@@ -3,6 +3,7 @@ package io.github.cowwoc.styler.formatter.test;
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.formatter.AstPositionIndex;
+import io.github.cowwoc.styler.formatter.ClasspathScanner;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
 import io.github.cowwoc.styler.parser.ParseResult;
@@ -162,5 +163,11 @@ public final class TestTransformationContext implements TransformationContext
 	public AstPositionIndex positionIndex()
 	{
 		return positionIndex;
+	}
+
+	@Override
+	public ClasspathScanner classpathScanner()
+	{
+		return ClasspathScanner.empty();
 	}
 }
