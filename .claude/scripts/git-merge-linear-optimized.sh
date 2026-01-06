@@ -146,22 +146,15 @@ if [[ "$CLEANUP_MODE" == "--cleanup" ]]; then
   echo ""
   echo "Step 4: Cleaning up task branch..."
 
-  # Delete task branch
-  if git branch -d "$TASK_BRANCH" 2>&1; then
-    echo "✅ Task branch deleted: $TASK_BRANCH"
-    CLEANUP_PERFORMED=true
-  else
-    echo "⚠️  Warning: Failed to delete task branch $TASK_BRANCH" >&2
-    echo "   You can manually delete it with: git branch -D $TASK_BRANCH" >&2
-  fi
-
-  # If task worktree exists, remove it
+  # IMPORTANT: Remove worktree BEFORE deleting branch
+  # Git prevents deleting a branch that's checked out in an active worktree
   TASK_WORKTREE="/workspace/tasks/$TASK_BRANCH/code"
   if [[ -d "$TASK_WORKTREE" ]]; then
     if git worktree remove "$TASK_WORKTREE" 2>&1; then
       echo "✅ Task worktree removed: $TASK_WORKTREE"
     else
       echo "⚠️  Warning: Failed to remove worktree $TASK_WORKTREE" >&2
+      echo "   Cannot delete branch while worktree exists" >&2
     fi
 
     # Remove task directory if empty
@@ -173,6 +166,15 @@ if [[ "$CLEANUP_MODE" == "--cleanup" ]]; then
         echo "⚠️  Task directory not empty: $TASK_DIR (manual cleanup required)" >&2
       fi
     fi
+  fi
+
+  # Delete task branch (after worktree removal)
+  if git branch -d "$TASK_BRANCH" 2>&1; then
+    echo "✅ Task branch deleted: $TASK_BRANCH"
+    CLEANUP_PERFORMED=true
+  else
+    echo "⚠️  Warning: Failed to delete task branch $TASK_BRANCH" >&2
+    echo "   You can manually delete it with: git branch -D $TASK_BRANCH" >&2
   fi
 else
   echo ""
