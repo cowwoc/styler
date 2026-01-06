@@ -69,6 +69,10 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 - Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` or `isNotNull()` on arena - see [testing-claude.md](../../docs/code-style/testing-claude.md#parser-test-patterns)
   - `isNotEmpty()` on nodes: Tests nothing about specific node types
   - `isNotNull()` on arena: Only verifies parsing succeeded, NOT AST correctness
+- Parser test position values: Use placeholder technique to verify - see [testing-claude.md](../../docs/code-style/testing-claude.md#verify-position-calculations)
+  - Write test with `(0, 0)` placeholders first, run to see actual positions
+  - VERIFY actual positions are correct before updating expected values
+  - Manual byte counting is error-prone (tabs, newlines, text block indentation)
 - No meaningless assertions - `assertTrue(true, ...)` always passes and tests nothing:
   ```java
   // ❌ WRONG - Useless assertion that always passes
