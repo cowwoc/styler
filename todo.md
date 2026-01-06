@@ -86,6 +86,9 @@ B2-B5 have sequential dependencies.
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Resolve `import java.util.*` to determine which classes are actually used
   - **Scope**: Extend ImportAnalyzer to use classpath for wildcard import analysis
+  - **Real-World Impact**: Spring Framework 6.2.1 test (2026-01-06) showed ~400 warnings:
+    - `Cannot expand wildcard imports: unresolved symbols [...]`
+    - Most files in org.springframework.* use wildcard imports for java.lang.annotation.*
   - **Components**:
     - WildcardResolver: Scan classpath for classes matching wildcard patterns
     - ImportAnalyzer enhancement: Use classpath to detect unused wildcard imports
@@ -271,9 +274,14 @@ benchmarking, and validate with Maven plugin integration.
     - Memory validated: 351 MB per 1000 files ✅ (target: ≤512 MB)
     - CoreScalingBenchmark validated: 62.4% efficiency at 8 cores ✅
     - RealWorldProjectBenchmark: configured to fail fast on parse errors
-  - **Parser Status** (2026-01-06): Parser successfully handles real-world codebases:
-    - Spring Framework: 1691 files ✅ (0 errors)
-    - Guava, JUnit5 samples ✅
+  - **Parser Status** (2026-01-06): Parser handles most real-world code:
+    - Spring Framework 6.2.1: 784 files, ~50 parse errors (~94% success)
+    - Parse errors from unsupported syntax: anonymous inner classes, array initializers in annotations
+    - See "Parser Enhancement: Real-World Compatibility" section for fix tasks
+  - **Maven Plugin Performance** (2026-01-06):
+    - Spring Core sources: 784 files in 1.97s Maven time (4s wall clock with JVM startup)
+    - Throughput: ~400 files/second processing, ~190 files/second including startup
+    - CPU utilization: 335-342% (effective parallel processing)
   - **Decisions Made**:
     - Scalability target: ≥60% efficiency at 8 cores (was: linear scaling to 32 cores)
       - WSL2/Docker adds ~10-20% virtualization overhead
@@ -417,6 +425,68 @@ benchmarking, and validate with Maven plugin integration.
 ### Parser Enhancement: Missing Node Types
 
 *All previously listed tasks (add-wildcard-type-nodes, add-parameterized-type-nodes, add-parameter-declaration-nodes) have been completed.*
+
+### Parser Enhancement: Real-World Compatibility (Spring Framework)
+
+**Priority**: These issues were discovered when running `styler:check` on Spring Framework 6.2.1 sources
+(784 files). Parse failures prevent processing ~50 files. Fix these for real-world codebase compatibility.
+
+**Source**: `spring-core-6.2.1-sources.jar` test run (2026-01-06)
+
+- [ ] **READY:** `add-anonymous-inner-class-support` - Parse anonymous inner class declarations
+  - **Dependencies**: None
+  - **Blocks**: Real-world codebase processing
+  - **Estimated Effort**: 2-3 days
+  - **Purpose**: Parse `new Type() { ... }` anonymous class syntax
+  - **Error Example**: `Expected '(' or '[' after 'new' but found LEFT_BRACE`
+  - **Affected Files**: ~30 files in Spring's cglib, objenesis, asm packages
+  - **Scope**:
+    - Extend expression parser to handle `new Type() { classBody }`
+    - Support constructor arguments: `new Type(args) { classBody }`
+    - Support generic types: `new Generic<T>() { ... }`
+  - **Quality**: Test with Spring Framework cglib package
+
+- [ ] **READY:** `fix-static-import-identifier-parsing` - Handle static import member references
+  - **Dependencies**: None
+  - **Blocks**: Real-world codebase processing
+  - **Estimated Effort**: 1 day
+  - **Purpose**: Parse code using statically imported identifiers without qualification
+  - **Error Example**: `Expected DOT but found IDENTIFIER`
+  - **Affected Files**: ~10 files in Spring's cglib/beans, core packages
+  - **Scope**: Parser expects qualified name but finds unqualified identifier from static import
+  - **Quality**: Test with Spring Framework BulkBean, ClassesKey patterns
+
+- [ ] **READY:** `fix-block-comment-in-member-declaration` - Handle block comments in class members
+  - **Dependencies**: None
+  - **Blocks**: Real-world codebase processing
+  - **Estimated Effort**: 0.5 day
+  - **Purpose**: Parse block comments that appear between member declarations
+  - **Error Example**: `Unexpected token in member declaration: BLOCK_COMMENT`
+  - **Affected Files**: FixedKeySet.java and similar
+  - **Scope**: Ensure block comments are properly skipped in member declaration context
+  - **Quality**: Test with Spring Framework FixedKeySet pattern
+
+- [ ] **READY:** `add-array-initializer-in-annotation-support` - Parse array initializers in annotations
+  - **Dependencies**: None
+  - **Blocks**: Real-world codebase processing
+  - **Estimated Effort**: 1 day
+  - **Purpose**: Parse `@Annotation({value1, value2})` syntax
+  - **Error Example**: `Expected RIGHT_BRACKET but found INTEGER_LITERAL`
+  - **Affected Files**: LocalVariablesSorter.java, ObjectUtils.java
+  - **Scope**: Extend annotation parser to handle array element values
+  - **Quality**: Test with ASM-style annotations
+
+- [ ] **READY:** `fix-switch-expression-case-parsing` - Handle complex switch expression patterns
+  - **Dependencies**: None
+  - **Blocks**: Real-world codebase processing
+  - **Estimated Effort**: 1-2 days
+  - **Purpose**: Parse switch expressions with complex case patterns
+  - **Error Examples**:
+    - `Unexpected token in expression: CASE`
+    - `Unexpected token in expression: ELSE`
+  - **Affected Files**: CodeEmitter.java, ConcurrentReferenceHashMap.java
+  - **Scope**: Ensure switch expression parser handles all JDK 21+ patterns
+  - **Quality**: Test with Spring Framework switch patterns
 
 ### Parser Enhancement: JDK 25 Language Features
 
