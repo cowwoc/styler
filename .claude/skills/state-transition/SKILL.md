@@ -196,7 +196,7 @@ jq -r '.agents | to_entries | .[] | select(.value.merged == false)' task.json
 # Should return empty
 ```
 
-### VALIDATION → AWAITING_USER_APPROVAL
+### VALIDATION → REVIEW
 
 ```bash
 Prerequisites:
@@ -208,6 +208,35 @@ Prerequisites:
 Validation:
 mvn clean verify
 ```
+
+### REVIEW → AWAITING_USER_APPROVAL
+
+```bash
+Prerequisites:
+- ✅ Agent reviews unanimous (all agents approved)
+- ✅ Pre-presentation cleanup COMPLETE (CRITICAL):
+  * Task branch squashed to 1 commit
+  * All agent branches deleted
+  * All agent worktrees removed
+- Changes ready to present to user
+
+Validation (automation):
+git rev-list --count main..HEAD     # Should output: 1
+git branch | grep '{task}-'         # Should show ONLY task branch
+ls /workspace/tasks/{task}/agents/*/code 2>&1  # Should show no agent worktrees
+
+Required cleanup if failing:
+Use: pre-presentation-cleanup skill
+OR: Follow manual steps in pre-presentation-cleanup/SKILL.md
+```
+
+**CRITICAL**: This transition validates pre-presentation cleanup because:
+- User should review a clean, single commit
+- Agent branches are implementation scaffolding, not for user review
+- Multiple commits create messy history after merge to main
+- Per task-protocol-core.md: cleanup MANDATORY before presentation
+
+**If validation fails**: The state-transition script will block the transition and show required cleanup steps.
 
 ### AWAITING_USER_APPROVAL → COMPLETE
 
