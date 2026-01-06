@@ -456,16 +456,6 @@ benchmarking, and validate with Maven plugin integration.
   - **Scope**: Parser expects qualified name but finds unqualified identifier from static import
   - **Quality**: Test with Spring Framework BulkBean, ClassesKey patterns
 
-- [ ] **READY:** `fix-block-comment-in-member-declaration` - Handle block comments in class members
-  - **Dependencies**: None
-  - **Blocks**: Real-world codebase processing
-  - **Estimated Effort**: 0.5 day
-  - **Purpose**: Parse block comments that appear between member declarations
-  - **Error Example**: `Unexpected token in member declaration: BLOCK_COMMENT`
-  - **Affected Files**: FixedKeySet.java and similar
-  - **Scope**: Ensure block comments are properly skipped in member declaration context
-  - **Quality**: Test with Spring Framework FixedKeySet pattern
-
 - [ ] **READY:** `add-array-initializer-in-annotation-support` - Parse array initializers in annotations
   - **Dependencies**: None
   - **Blocks**: Real-world codebase processing

@@ -1134,6 +1134,7 @@ public final class Parser implements AutoCloseable
 
 	private void parseMemberDeclaration()
 	{
+		parseComments();
 		int start = currentToken().start();
 		skipMemberModifiers();
 

@@ -1,6 +1,35 @@
 # Changelog
 ## 2026-01-06
 
+### Fix Block Comment in Member Declaration ✅
+
+**Task**: `fix-block-comment-in-member-declaration`
+
+**Problem Solved**:
+- Block comments between class/interface/enum member declarations caused parse errors
+- Error: "Unexpected token in member declaration: BLOCK_COMMENT"
+- Affected ~10 files in Spring Framework's cglib, objenesis, asm packages
+
+**Root Cause**:
+- `parseMemberDeclaration()` didn't call `parseComments()` at its start
+- Some call sites (class body loop) correctly called `parseComments()` first
+- Other call sites (enum body after semicolon, anonymous class bodies) did not
+
+**Solution Implemented**:
+- Added `parseComments()` call at start of `parseMemberDeclaration()` (Parser.java:1137)
+- Ensures all member declaration contexts uniformly handle leading comments
+
+**Files Modified**:
+- `parser/src/main/java/.../parser/Parser.java` - Added parseComments() call (+1 line)
+- `parser/src/test/java/.../BlockCommentParserTest.java` - Added test (+27 lines)
+
+**Quality**:
+- All parser tests pass (55 test classes)
+- Full project build passes
+- Zero Checkstyle/PMD violations
+
+---
+
 ### Fix ClasspathScanner Per-File Overhead ✅
 
 **Task**: `fix-classpath-scanner-per-file-overhead`
