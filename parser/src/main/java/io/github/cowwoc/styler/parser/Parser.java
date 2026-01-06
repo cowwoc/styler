@@ -798,7 +798,28 @@ public final class Parser implements AutoCloseable
 		}
 	}
 
+	/**
+	 * Parses a complete type reference including array dimension brackets.
+	 * <p>
+	 * This method handles primitive types, reference types with optional type arguments, and array
+	 * dimensions. For array creation expressions where dimension brackets contain expressions or
+	 * initializers, use {@link #parseTypeWithoutArrayDimensions()} instead.
+	 */
 	private void parseType()
+	{
+		parseTypeWithoutArrayDimensions();
+		parseArrayDimensionsWithAnnotations();
+	}
+
+	/**
+	 * Parses a type reference without consuming array dimension brackets.
+	 * <p>
+	 * This method is used specifically in array creation expressions ({@code new Type[size]}) where the array
+	 * brackets must be parsed separately to capture dimension expressions or initializers.
+	 * <p>
+	 * For general type parsing including array brackets, use {@link #parseType()}.
+	 */
+	private void parseTypeWithoutArrayDimensions()
 	{
 		// Parse type annotations (e.g., @Nullable, @NonNull)
 		while (currentToken().type() == TokenType.AT_SIGN)
@@ -820,8 +841,6 @@ public final class Parser implements AutoCloseable
 				arena.allocateNode(NodeType.PARAMETERIZED_TYPE, typeStart, typeEnd);
 			}
 		}
-
-		parseArrayDimensionsWithAnnotations();
 	}
 
 	private boolean isPrimitiveType(TokenType type)
@@ -2998,30 +3017,60 @@ public final class Parser implements AutoCloseable
 		return arena.allocateNode(NodeType.CLASS_LITERAL, start, classEnd);
 	}
 
+	/**
+	 * Parses a new expression for object instantiation or array creation.
+	 * <p>
+	 * Handles both object creation ({@code new Type()}) and array creation with dimension
+	 * expressions ({@code new int[5]}) or initializers ({@code new int[]{1, 2, 3}}).
+	 * <p>
+	 * Array creation uses {@link #parseTypeWithoutArrayDimensions()} because the array brackets
+	 * must be parsed separately to capture dimension expressions or initializers, rather than
+	 * being consumed as part of the type.
+	 *
+	 * @param start the start position of the {@code new} keyword
+	 * @return the node index for the parsed expression
+	 */
 	private NodeIndex parseNewExpression(int start)
 	{
 		// Explicit type arguments: new <String>Constructor()
 		if (match(TokenType.LESS_THAN))
 			parseTypeArguments();
-		// Object creation: new Type() or new Type[]
-		parseType();
+
+		// Parse type without array brackets - brackets must be handled separately
+		// to capture dimension expressions (new int[5]) or initializers (new int[]{1, 2})
+		parseTypeWithoutArrayDimensions();
 
 		if (match(TokenType.LEFT_BRACKET))
 			return parseArrayCreation(start);
 		if (match(TokenType.LEFT_PARENTHESIS))
 			return parseObjectCreation(start);
+
 		throw new ParserException(
 			"Expected '(' or '[' after 'new' but found " + currentToken().type(),
 			currentToken().start());
 	}
 
+	/**
+	 * Parses array creation after the opening bracket has been consumed.
+	 * <p>
+	 * Handles three forms of array creation:
+	 * <ul>
+	 *   <li>Dimension expressions: {@code new int[5]} or {@code new int[2][3]}</li>
+	 *   <li>Partially specified dimensions: {@code new int[2][]} (expression followed by empty)</li>
+	 *   <li>Array initializers: {@code new int[]{1, 2, 3}}</li>
+	 * </ul>
+	 *
+	 * @param start the start position of the {@code new} keyword
+	 * @return the node index for the {@link NodeType#ARRAY_CREATION} node
+	 */
 	private NodeIndex parseArrayCreation(int start)
 	{
-		// Array creation with dimensions
+		// Parse dimension expression if present (e.g., new int[5])
 		if (currentToken().type() != TokenType.RIGHT_BRACKET)
 			parseExpression();
 		expect(TokenType.RIGHT_BRACKET);
 
+		// Handle multi-dimensional arrays: new int[2][3] or mixed new int[2][]
 		while (match(TokenType.LEFT_BRACKET))
 		{
 			if (currentToken().type() != TokenType.RIGHT_BRACKET)
@@ -3029,7 +3078,7 @@ public final class Parser implements AutoCloseable
 			expect(TokenType.RIGHT_BRACKET);
 		}
 
-		// Array initializer
+		// Array initializer: new int[]{1, 2, 3}
 		if (match(TokenType.LEFT_BRACE) && !match(TokenType.RIGHT_BRACE))
 		{
 			parseExpression();
