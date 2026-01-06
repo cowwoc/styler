@@ -206,9 +206,9 @@ public final class DefaultBatchProcessor implements BatchProcessor
 				finally
 				{
 					int completed = completedCount.incrementAndGet();
-					latch.countDown();
 					if (config.progressCallback() != null)
 						config.progressCallback().onProgress(completed, files.size(), file);
+					latch.countDown();
 				}
 			});
 		}
