@@ -656,6 +656,27 @@
       "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M033",
+      "timestamp": "2026-01-06T13:58:15-05:00",
+      "category": "git_operation_failure",
+      "pattern_id": null,
+      "description": "git-merge-linear-optimized.sh cleanup tried to delete branch before removing worktree",
+      "root_cause": "Script executed git branch -D before git worktree remove. Git prevents deleting a branch that's checked out in an active worktree, causing error message.",
+      "prevention_type": "code_fix",
+      "prevention_path": ".claude/scripts/git-merge-linear-optimized.sh",
+      "pattern_keywords": [
+        "worktree",
+        "branch",
+        "delete",
+        "cleanup",
+        "order",
+        "git"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ]
 }

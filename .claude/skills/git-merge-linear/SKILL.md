@@ -8,6 +8,7 @@ allowed-tools: Bash, Read
 
 <!-- PATTERN EVOLUTION:
      - 2025-11-02: Added pre-merge and post-merge verification to prevent broken code in main
+     - 2026-01-06: Fixed cleanup order: remove worktree BEFORE deleting branch (git constraint)
 -->
 
 **When to Use**:
@@ -129,19 +130,20 @@ echo "✅ Linear history verified"
 
 ### Step 4: Cleanup (Optional)
 
-**Delete Task Branch**:
+**Remove Worktree and Delete Branch**:
 ```bash
-# Only delete if merge was successful
-git branch -d "$TASK_BRANCH"
-echo "✅ Task branch deleted"
-
-# If task worktree exists, remove it
+# IMPORTANT: Remove worktree BEFORE deleting branch
+# Git prevents deleting a branch that's checked out in an active worktree
 TASK_WORKTREE="/workspace/tasks/$TASK_BRANCH/code"
 if [[ -d "$TASK_WORKTREE" ]]; then
   git worktree remove "$TASK_WORKTREE"
   rm -rf "/workspace/tasks/$TASK_BRANCH"
   echo "✅ Task worktree cleaned up"
 fi
+
+# Delete task branch (after worktree removal)
+git branch -d "$TASK_BRANCH"
+echo "✅ Task branch deleted"
 ```
 
 ## Complete Workflow Script
@@ -215,15 +217,17 @@ echo ""
 echo "Cleanup task branch? (y/n)"
 read -r CLEANUP
 if [[ "$CLEANUP" == "y" ]]; then
-  git branch -d "$TASK_BRANCH"
-  echo "✅ Task branch deleted"
-
+  # IMPORTANT: Remove worktree BEFORE deleting branch
+  # Git prevents deleting a branch that's checked out in an active worktree
   TASK_WORKTREE="/workspace/tasks/$TASK_BRANCH/code"
   if [[ -d "$TASK_WORKTREE" ]]; then
     git worktree remove "$TASK_WORKTREE" 2>/dev/null || true
     rm -rf "/workspace/tasks/$TASK_BRANCH"
     echo "✅ Task worktree removed"
   fi
+
+  git branch -d "$TASK_BRANCH"
+  echo "✅ Task branch deleted"
 fi
 
 echo ""
