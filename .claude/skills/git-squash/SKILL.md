@@ -241,11 +241,14 @@ while interactive rebase is the traditional git approach.
 ## Prerequisites
 
 Before using this skill, verify:
+- [ ] **You are in a git repository**: Run `pwd` and verify you're in the task worktree (e.g., `/workspace/tasks/<task>/code`), NOT `/workspace`
 - [ ] Working directory is clean: `git status` shows no uncommitted changes
 - [ ] Know base commit (where to squash back to - parent of first commit to squash)
 - [ ] Know first and last commits to squash
 - [ ] **HEAD is positioned at the LAST commit to squash** (not beyond it)
 - [ ] Current branch is correct
+
+**⚠️ CRITICAL**: After context resumption, you may be in `/workspace` instead of the task worktree. Git commands will fail with "fatal: not a git repository". Always verify with `pwd` first.
 
 **⚠️ CRITICAL**: If HEAD has commits beyond the last commit you want to squash,
 you will squash MORE commits than intended. Ensure HEAD is exactly at the

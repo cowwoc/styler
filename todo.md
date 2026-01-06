@@ -433,19 +433,6 @@ benchmarking, and validate with Maven plugin integration.
 
 **Source**: `spring-core-6.2.1-sources.jar` test run (2026-01-06)
 
-- [ ] **READY:** `add-anonymous-inner-class-support` - Parse anonymous inner class declarations
-  - **Dependencies**: None
-  - **Blocks**: Real-world codebase processing
-  - **Estimated Effort**: 2-3 days
-  - **Purpose**: Parse `new Type() { ... }` anonymous class syntax
-  - **Error Example**: `Expected '(' or '[' after 'new' but found LEFT_BRACE`
-  - **Affected Files**: ~30 files in Spring's cglib, objenesis, asm packages
-  - **Scope**:
-    - Extend expression parser to handle `new Type() { classBody }`
-    - Support constructor arguments: `new Type(args) { classBody }`
-    - Support generic types: `new Generic<T>() { ... }`
-  - **Quality**: Test with Spring Framework cglib package
-
 - [ ] **READY:** `fix-static-import-identifier-parsing` - Handle static import member references
   - **Dependencies**: None
   - **Blocks**: Real-world codebase processing

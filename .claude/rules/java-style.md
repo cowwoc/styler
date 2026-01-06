@@ -71,8 +71,9 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   - `isNotNull()` on arena: Only verifies parsing succeeded, NOT AST correctness
 - Parser test position values: Use placeholder technique to verify - see [testing-claude.md](../../docs/code-style/testing-claude.md#verify-position-calculations)
   - Write test with `(0, 0)` placeholders first, run to see actual positions
-  - VERIFY actual positions are correct before updating expected values
+  - **⚠️ MANDATORY**: VERIFY actual positions are correct before updating expected values
   - Manual byte counting is error-prone (tabs, newlines, text block indentation)
+  - **🚨 VIOLATION**: Comments like `// From actual:` prove verification was SKIPPED - see [anti-patterns](../../docs/code-style/testing-claude.md#expected-value-anti-patterns)
 - No meaningless assertions - `assertTrue(true, ...)` always passes and tests nothing:
   ```java
   // ❌ WRONG - Useless assertion that always passes
