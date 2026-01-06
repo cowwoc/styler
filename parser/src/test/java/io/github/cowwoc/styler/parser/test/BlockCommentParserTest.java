@@ -138,4 +138,31 @@ public class BlockCommentParserTest
 			requireThat(actual, "actual").isEqualTo(expected);
 		}
 	}
+
+	/**
+	 * Verifies that block comments between member declarations are correctly parsed.
+	 */
+	@Test
+	public void shouldParseBlockCommentBetweenMemberDeclarations()
+	{
+		String source = """
+			class Test
+			{
+				int x;
+				/* separator comment */
+				int y;
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 14, 20);
+			expected.allocateNode(NodeType.BLOCK_COMMENT, 22, 45);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 47, 53);
+			expected.allocateClassDeclaration(0, 55, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 56);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
 }
