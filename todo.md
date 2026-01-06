@@ -241,38 +241,9 @@ B2-B5 have sequential dependencies.
 **Goal**: Scale to large codebases with parallel processing, build to 5 formatting rules for realistic
 benchmarking, and validate with Maven plugin integration.
 
-### 🐛 BUG FIX (High Priority)
-- [ ] **READY:** `fix-classpath-scanner-per-file-overhead` - ClasspathScanner created for each file causes 13.6ms overhead
-  - **Dependencies**: None
-  - **Blocks**: `add-cli-parallel-processing` (fix this first for accurate measurements)
-  - **Parallelizable With**: None
-  - **Estimated Effort**: 1 day
-  - **Purpose**: Fix major performance bottleneck: ClasspathScanner.create() takes 13.6ms per file
-  - **Problem** (discovered 2026-01-06):
-    - `ImportOrganizerFormattingRule.analyzeImports()` creates new `ClasspathScanner` for EACH file
-    - With `TypeResolutionConfig.EMPTY` (default), `ClasspathScanner.create()` scans the JVM system classpath
-    - Parser is fast (0.45ms/file = 2200 files/sec), but scanner adds 13.6ms/file
-    - For 1691 files, ~23 seconds wasted on redundant classpath scanning
-  - **Root Cause**: `ImportOrganizerFormattingRule.java` lines 368-380:
-    - When `expandWildcardImports=true` (default) and `removeUnusedImports=true` (default)
-    - Calls `ClasspathScanner.create(typeConfig)` even when `typeConfig` is EMPTY
-  - **Fix** (two parts):
-    1. **`ClasspathScanner.create(EMPTY)` should return `empty()`**: If no classpath configured, don't scan
-       system classpath - return empty scanner instead
-    2. **Share scanner across all files**: Create scanner once in `FileProcessingPipeline`, pass via
-       `ProcessingContext`/`TransformationContext` to rules
-  - **Implementation**:
-    - `ClasspathScanner.create()`: Check if entries empty → return `empty()` (no system classpath scan)
-    - `FileProcessingPipeline`: Create/own shared `ClasspathScanner` instance
-    - `ProcessingContext`: Add `classpathScanner()` method returning shared instance
-    - `TransformationContext`: Add `classpathScanner()` method
-    - `ImportOrganizerFormattingRule`: Use `context.classpathScanner()` instead of creating new scanner
-    - `FileProcessingPipeline`: Make `AutoCloseable` to close scanner when done
-  - **Quality**: Test that scanner is created once per execution, not per file
-
 ### CLI Parallel Processing
 - [ ] **READY:** `add-cli-parallel-processing` - Use BatchProcessor for multi-file CLI operations
-  - **Dependencies**: `implement-virtual-thread-processing` ✅, BatchProcessor ✅, `fix-classpath-scanner-per-file-overhead`
+  - **Dependencies**: `implement-virtual-thread-processing` ✅, BatchProcessor ✅, `fix-classpath-scanner-per-file-overhead` ✅
   - **Blocks**: `create-jmh-benchmarks` (throughput benchmarks require parallel CLI)
   - **Parallelizable With**: Any Phase C/D task
   - **Estimated Effort**: 1-2 days

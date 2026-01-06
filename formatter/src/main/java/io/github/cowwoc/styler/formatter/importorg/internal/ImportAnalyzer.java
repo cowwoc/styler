@@ -3,7 +3,7 @@ package io.github.cowwoc.styler.formatter.importorg.internal;
 import io.github.cowwoc.styler.formatter.AstPositionIndex;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerConfiguration;
-import io.github.cowwoc.styler.formatter.internal.ClasspathScanner;
+import io.github.cowwoc.styler.formatter.ClasspathScanner;
 
 import java.util.BitSet;
 import java.util.HashSet;

@@ -1,9 +1,8 @@
-package io.github.cowwoc.styler.formatter.internal;
+package io.github.cowwoc.styler.formatter;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ScanResult;
-import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,6 +52,9 @@ public final class ClasspathScanner implements AutoCloseable
 
 	/**
 	 * Creates a scanner for the given type resolution configuration.
+	 * <p>
+	 * When the configuration has no classpath or modulepath entries, this method returns an
+	 * {@link #empty()} scanner to avoid the overhead of scanning the system classpath.
 	 *
 	 * @param config the type resolution configuration
 	 * @return a new scanner
@@ -62,6 +64,10 @@ public final class ClasspathScanner implements AutoCloseable
 	public static ClasspathScanner create(TypeResolutionConfig config)
 	{
 		requireThat(config, "config").isNotNull();
+
+		// Short-circuit for empty config - avoid scanning system classpath
+		if (config.classpathEntries().isEmpty() && config.modulepathEntries().isEmpty())
+			return empty();
 
 		// Validate that all paths exist
 		for (Path path : config.classpathEntries())
