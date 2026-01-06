@@ -482,21 +482,51 @@ Expected: [BLOCK_COMMENT(0, 0), ...]
 Actual:   [BLOCK_COMMENT(16, 31), ...]
 ```
 
-**Step 3: Verify the actual positions make sense by checking source string**
-- Position 16 should be the `/*` in the source
-- Position 31 should be just after `*/`
-- Count manually to VERIFY the parser is correct, don't just copy
+**⚠️ MANDATORY Step 3: VERIFY actual positions are correct (DO NOT SKIP)**
 
-**Step 4: Update expected values after verification**
+This step is **MANDATORY**, not optional. You MUST verify each position before copying:
+- Position 16 should be the `/*` in the source - COUNT from position 0 to verify
+- Position 31 should be just after `*/` - COUNT to verify this is correct
+- If you cannot explain WHY the position is correct, you have not verified it
+
+**Verification technique**:
 ```java
-// Verified: "/* comment */" spans positions 16-31
+// Source string with position markers:
+// Position: 0         1         2         3
+//           0123456789012345678901234567890123456789
+// Source:   "class Foo\n{\n    /* comment */\n..."
+//                           ^              ^
+//                           16             31
+
+// Manual check: position 16 = start of "/*"? YES
+// Manual check: position 31 = after "*/"? YES (exclusive end)
+// VERIFIED ✅
+```
+
+**Step 4: Update expected values ONLY after verification**
+```java
+// Verified: "/* comment */" spans positions 16-31 (manually counted and confirmed)
 expected.allocateNode(NodeType.BLOCK_COMMENT, 16, 31);
 ```
 
-**⚠️ CRITICAL**: The goal is NOT to blindly copy actual values. The goal is to:
+**🚨 CRITICAL: Verification is MANDATORY**
+
+The goal is NOT to blindly copy actual values. The goal is to:
 1. See what the parser produces
-2. VERIFY those positions match your understanding of where tokens should be
-3. Only then update expected values
+2. **VERIFY** those positions match your understanding of where tokens should be
+3. **Only then** update expected values
+
+**If you skip verification, your test only proves consistency (parser = parser), NOT correctness.**
+
+A parser with bugs will produce wrong positions. If you copy those positions without verification,
+you enshrine the bug in your test - the test will pass forever, masking the bug.
+
+**🚨 VIOLATION INDICATORS** - These comments prove verification was skipped:
+- `// From actual output:` - **CRITICAL VIOLATION** - Proves blind copying
+- `// From actual:` - **CRITICAL VIOLATION** - Proves blind copying
+- `// Based on actual parser output` - Indicates copied values without verification
+
+**If you see "From actual" comments in test code, the test is INVALID and must be rewritten.**
 
 **Common position calculation errors:**
 - **Off-by-one on text block indentation**: Text blocks strip leading whitespace differently than expected

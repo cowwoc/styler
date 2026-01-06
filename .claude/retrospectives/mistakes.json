@@ -634,6 +634,28 @@
       "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M032",
+      "timestamp": "2026-01-06T12:45:46-05:00",
+      "category": "test_failure",
+      "pattern_id": null,
+      "description": "Parser test expected values derived from actual output without verification - From actual comments prove blind copying",
+      "root_cause": "Placeholder technique (write 0,0, run, update) was followed but VERIFICATION step was skipped. Comments like // From actual output: prove values were copied without verifying correctness.",
+      "prevention_type": "config",
+      "prevention_path": "docs/code-style/testing-claude.md#verify-position-calculations, docs/code-style/testing-claude.md#expected-value-anti-patterns",
+      "pattern_keywords": [
+        "parser",
+        "test",
+        "position",
+        "verify",
+        "From actual",
+        "blind copy",
+        "expected value"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ]
 }

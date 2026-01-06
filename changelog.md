@@ -1,6 +1,30 @@
 # Changelog
 ## 2026-01-06
 
+### Add Anonymous Inner Class Parser Tests ✅
+
+**Task**: `add-anonymous-inner-class-support`
+
+**Finding**:
+- Parser already supports anonymous inner class syntax in `parseObjectCreation()` (Parser.java:3049-3070)
+- Existing implementation checks for `LEFT_BRACE` after constructor arguments and parses class body members
+- Task scope shifted from "implement new feature" to "add comprehensive test coverage"
+
+**Deliverables**:
+- Added `AnonymousInnerClassParserTest.java` with 20 comprehensive tests
+- Tests cover: empty body, methods, fields, constructor args, generics, diamond operator, nested classes
+- All patterns verified working: `new Type() { }`, `new Type(args) { }`, `new Generic<T>() { }`
+
+**Files Added**:
+- `parser/src/test/java/.../test/AnonymousInnerClassParserTest.java` - 20 tests (+925 lines)
+
+**Quality**:
+- All 20 new tests pass
+- All existing parser tests pass
+- Zero Checkstyle/PMD violations
+
+---
+
 ### Fix Block Comment in Member Declaration ✅
 
 **Task**: `fix-block-comment-in-member-declaration`
