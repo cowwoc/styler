@@ -1,6 +1,35 @@
 # Changelog
 ## 2026-01-06
 
+### Fix Array Creation Expression Parsing ✅
+
+**Task**: `fix-array-creation-expression-parsing`
+
+**Root Cause Discovery**:
+- Task name was misleading - issue was NOT about static imports (those work correctly)
+- Actual root cause: `parseNewExpression()` called `parseType()` which consumed `[]` brackets before array dimension expressions could be parsed
+- This caused cascading errors like "Expected DOT but found IDENTIFIER" when parsing `new int[5]` or `new int[]{1,2,3}`
+
+**Solution Implemented**:
+- Created `parseTypeWithoutArrayDimensions()` helper method that parses type names without consuming array brackets
+- Modified `parseNewExpression()` to use the new helper, allowing array dimensions and initializers to be parsed correctly
+
+**Deliverables**:
+- Modified `Parser.java` with new helper method and refactored array creation parsing
+- Added `ArrayCreationParserTest.java` with 20 comprehensive tests covering all array creation patterns
+- All tests verify both successful parsing AND correct AST structure
+
+**Files Modified**:
+- `parser/src/main/java/.../Parser.java` - Added `parseTypeWithoutArrayDimensions()`, refactored `parseNewExpression()`
+- `parser/src/test/java/.../ArrayCreationParserTest.java` - 20 tests (+568 lines)
+
+**Quality**:
+- All 771 parser tests pass (751 existing + 20 new)
+- Zero Checkstyle/PMD violations
+- Enables parsing of Spring Framework 6.2.1 sources (fixes ~10 previously failing files)
+
+---
+
 ### Add Anonymous Inner Class Parser Tests ✅
 
 **Task**: `add-anonymous-inner-class-support`

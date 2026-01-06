@@ -433,16 +433,6 @@ benchmarking, and validate with Maven plugin integration.
 
 **Source**: `spring-core-6.2.1-sources.jar` test run (2026-01-06)
 
-- [ ] **READY:** `fix-static-import-identifier-parsing` - Handle static import member references
-  - **Dependencies**: None
-  - **Blocks**: Real-world codebase processing
-  - **Estimated Effort**: 1 day
-  - **Purpose**: Parse code using statically imported identifiers without qualification
-  - **Error Example**: `Expected DOT but found IDENTIFIER`
-  - **Affected Files**: ~10 files in Spring's cglib/beans, core packages
-  - **Scope**: Parser expects qualified name but finds unqualified identifier from static import
-  - **Quality**: Test with Spring Framework BulkBean, ClassesKey patterns
-
 - [ ] **READY:** `add-array-initializer-in-annotation-support` - Parse array initializers in annotations
   - **Dependencies**: None
   - **Blocks**: Real-world codebase processing
