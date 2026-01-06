@@ -450,6 +450,60 @@ expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 16);
 5. Write expected allocations in the order nodes are created
 6. Run test - if it fails, analyze WHETHER parser or your calculation is wrong
 
+#### Practical Technique: Verify Position Calculations
+
+**Manual counting is error-prone** (especially with tabs, newlines, multi-line strings). Use this technique
+to verify your calculations:
+
+**Step 1: Write test with placeholder positions first**
+```java
+@Test
+public void shouldParseBlockComment()
+{
+    String source = """
+        class Foo
+        {
+            /* comment */
+            int x;
+        }
+        """;
+
+    // First pass: use placeholder values (0, 0) to see actual positions
+    NodeArena expected = new NodeArena();
+    expected.allocateNode(NodeType.BLOCK_COMMENT, 0, 0);  // Placeholder
+    expected.allocateNode(NodeType.FIELD_DECLARATION, 0, 0);  // Placeholder
+    // ... other nodes
+}
+```
+
+**Step 2: Run the test to see actual positions in error output**
+```
+Expected: [BLOCK_COMMENT(0, 0), ...]
+Actual:   [BLOCK_COMMENT(16, 31), ...]
+```
+
+**Step 3: Verify the actual positions make sense by checking source string**
+- Position 16 should be the `/*` in the source
+- Position 31 should be just after `*/`
+- Count manually to VERIFY the parser is correct, don't just copy
+
+**Step 4: Update expected values after verification**
+```java
+// Verified: "/* comment */" spans positions 16-31
+expected.allocateNode(NodeType.BLOCK_COMMENT, 16, 31);
+```
+
+**⚠️ CRITICAL**: The goal is NOT to blindly copy actual values. The goal is to:
+1. See what the parser produces
+2. VERIFY those positions match your understanding of where tokens should be
+3. Only then update expected values
+
+**Common position calculation errors:**
+- **Off-by-one on text block indentation**: Text blocks strip leading whitespace differently than expected
+- **Newline counting**: `\n` is 1 character, `\r\n` is 2 characters
+- **Tab counting**: Tab is 1 character regardless of visual width
+- **End position semantics**: End positions are typically exclusive (point AFTER the last character)
+
 #### Parser Unit Test Requirements
 
 **Parser unit tests MUST validate AST structure**, not just parsing success:
