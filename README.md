@@ -1,7 +1,7 @@
-# Styler - Java Code Formatter
+# Styler - Your style. Their style. Same codebase.
 
-An unopinionated Java code formatter that supports 100% of JDK 25's features with multi-threaded file
-processing capabilities.
+View GitHub PRs in your preferred code style. Work locally in your format while the repo maintains team
+standards. Built for developers who think better in their own style.
 
 ## 🚀 Quick Start
 
@@ -51,14 +51,16 @@ processing capabilities.
 - [docs/code-style/common-human.md](docs/code-style/common-human.md) - Common formatting and validation
 - [docs/project/architecture.md](docs/project/architecture.md) - Technical architecture details
 
-## 🎯 Project Focus
+## 🎯 Why Styler?
 
-**Unopinionated Java Code Formatting** with:
-- 100% JDK 25 feature support (pattern matching, string templates, unnamed classes)
-- Multi-threaded file processing for large codebases
-- Plugin architecture for configurable formatting rules
-- Auto-fixers for common code style violations
-- Preservation of developer intent and comment formatting
+**End style wars forever.** Every developer sees code in their preferred format while the repository
+maintains a consistent standard.
+
+- **GitHub PR Extension** - View any PR in your preferred style with smart comment translation
+- **AI-Agent Integration** - Structured output that AI coding assistants can understand and act on
+- **100+ files/second** - Parallel processing for large codebases
+- **100% JDK 25 support** - Pattern matching, records, sealed classes, and more
+- **VCS Format Filters** *(coming soon)* - Work in your style locally, commit in repo style
 
 ## ⚡ Key Features
 
