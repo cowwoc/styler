@@ -421,7 +421,7 @@ Read /workspace/main/docs/project/task-protocol-operations.md --offset=850 --lim
       "/workspace/main/CLAUDE.md",
       "/workspace/main/docs/project/task-protocol-core.md"
     ],
-    "suggested_commit_message": "[docs] Apply documentation fixes from audit (D1-D3)\n\nFixes applied:\n- D1: Added Style Violation Fix Workflows section\n- D2: Resolved coordination vs review terminology\n- D3: Added Agent Tool Limitation Recovery Pattern"
+    "suggested_commit_message": "docs: Apply documentation fixes from audit (D1-D3)\n\nFixes applied:\n- D1: Added Style Violation Fix Workflows section\n- D2: Resolved coordination vs review terminology\n- D3: Added Agent Tool Limitation Recovery Pattern"
   }
 }
 ```

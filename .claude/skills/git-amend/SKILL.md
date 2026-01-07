@@ -166,7 +166,7 @@ git show --name-only HEAD
 
 # 1. Verify HEAD is the target commit
 git log -1 --oneline
-# Output: 55e28bf [config] Redesign shrink-doc...
+# Output: 55e28bf config: Redesign shrink-doc...
 
 # 2. Check safety
 git log -1 --format='%an %ae'

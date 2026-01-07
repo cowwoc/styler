@@ -4,63 +4,60 @@ This document outlines git workflows and best practices for the Styler project.
 
 ## Commit Message Format {#commit-message-format}
 
-**All commit messages MUST follow the `[type] description` format.**
+**All commit messages MUST follow the `type: description` format.**
 
 ### Commit Types
 
-**[feat]** - New feature or functionality
+**feature:** - New feature or functionality
 - Adding new classes, methods, or capabilities
 - Implementing new user-facing features
-- Example: `[feat] Add code formatting API`
+- Example: `feature: Add code formatting API`
 
-**[fix]** - Bug fixes
+**bugfix:** - Bug fixes
 - Correcting errors in existing code
 - Fixing broken functionality
-- Example: `[fix] Resolve NPE in FormattingRule validation`
+- Example: `bugfix: Resolve NPE in FormattingRule validation`
 
-**[docs]** - Documentation changes
+**docs:** - Documentation changes
 - README, JavaDoc, markdown files
 - Code comments (when substantial)
-- Example: `[docs] Add architecture documentation for formatter module`
+- Example: `docs: Add architecture documentation for formatter module`
 
-**[refactor]** - Code restructuring without changing behavior
+**refactor:** - Code restructuring without changing behavior
 - Improving code structure or organization
 - Renaming for clarity
 - Extracting methods or classes
-- Example: `[refactor] Extract validation logic to separate class`
+- Example: `refactor: Extract validation logic to separate class`
 
-**[test]** - Adding or modifying tests
+**test:** - Adding or modifying tests
 - New test cases
 - Test infrastructure changes
-- Example: `[test] Add integration tests for formatter API`
+- Example: `test: Add integration tests for formatter API`
 
-**[config]** - Configuration and maintenance tasks
+**config:** - Configuration, maintenance, and code style tasks
 - Build configuration updates (pom.xml, module-info.java)
 - Dependency updates
 - Tool configuration (.checkstyle, PMD rules, .claude/)
 - Project configuration (CLAUDE.md, todo.md, changelog.md)
 - IDE configuration (.idea/)
 - CI/CD pipeline changes
-- Example: `[config] Update checkstyle to version 10.12.5`
+- Code style/formatting changes (whitespace, formatting, applying style rules)
+- Example: `config: Update checkstyle to version 10.12.5`
+- Example: `config: Apply checkstyle formatting rules`
 
-**[perf]** - Performance improvements
+**perf:** - Performance improvements
 - Optimization changes
 - Performance-related refactoring
-- Example: `[perf] Optimize rule matching with indexed lookup`
+- Example: `perf: Optimize rule matching with indexed lookup`
 
-**[style]** - Code style/formatting changes
-- Whitespace, formatting, semicolons
-- Applying code style rules
-- Example: `[style] Apply checkstyle formatting rules`
-
-**[revert]** - Reverting previous commits
+**revert:** - Reverting previous commits
 - Rolling back changes
-- Example: `[revert] Revert "Add experimental caching feature"`
+- Example: `revert: Revert "Add experimental caching feature"`
 
 ### Commit Message Structure
 
 ```
-[type] Short description (50 chars or less)
+type: Short description (50 chars or less)
 
 Optional detailed explanation of what and why (not how).
 Wrap at 72 characters.
@@ -73,7 +70,7 @@ Wrap at 72 characters.
 ### Examples
 
 ```
-[feat] Implement FormattingRule interface for style checks
+feature: Implement FormattingRule interface for style checks
 
 - Created FormattingRule base interface
 - Added FormattingViolation data class
@@ -82,7 +79,7 @@ Wrap at 72 characters.
 ```
 
 ```
-[config] Update Maven build configuration
+config: Update Maven build configuration
 
 - Upgraded checkstyle-maven-plugin to 3.3.1
 - Added SpotBugs exclusion patterns
@@ -90,7 +87,7 @@ Wrap at 72 characters.
 ```
 
 ```
-[fix] Handle null values in FormattingConfiguration
+bugfix: Handle null values in FormattingConfiguration
 
 Added null checks and validation to prevent NPE when
 configuration values are missing. Falls back to defaults.
@@ -280,7 +277,7 @@ squash m0n1o2p Fix PMD violations in TransformationContext
 **Combined Commit Message Template**:
 
 ```
-[feat] Implement formatter API for code transformation
+feature: Implement formatter API for code transformation
 
 - Created core interfaces: FormattingConfiguration, TransformationContext
 - Implemented Fix abstraction with NoFixAvailable singleton
@@ -1129,7 +1126,7 @@ git restore --source=intermediate-commit-1 path/to/file/from/non-target-commit
 Create a new commit that combines the functionality of ONLY the target commits:
 
 ```bash
-git commit -m "[feat] Combined functionality: descriptive message
+git commit -m "feature: Combined functionality: descriptive message
 
 - Feature from commit mno7890
 - Enhancement from commit def5678

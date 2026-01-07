@@ -619,7 +619,7 @@ Co-Authored-By: engineer <noreply@anthropic.com>
 Implement FormattingRule interface
 
 # ❌ VIOLATION - Generic signature not specific to agent
-[feat] Add new feature
+feature: Add new feature
 ```
 
 ### For Agents in IMPLEMENTATION Mode: Merging to Task Branch {#for-implementation-agents-merging-to-task-branch}
