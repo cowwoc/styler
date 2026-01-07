@@ -2,36 +2,32 @@
 
 Version 1.0.0
 
-## Plain-Language Summary
+## Hi! Here's what you need to know:
 
-This section explains the license in simple terms. The legal language below is
-what actually governs your use of the software.
+**Free for personal use** - Tinkering on a side project? Learning to code?
+Doing research? Go for it, no strings attached.
 
-**What you CAN do for free:**
-- Use Styler for personal projects, learning, research, or hobbies
-- Read, modify, and share the code for non-commercial purposes
-- Use it at a small non-profit or organization with less than $100K annual revenue
+**Free for small organizations** - If your org makes less than $100K/year,
+you're welcome to use Styler at no cost.
 
-**What REQUIRES a paid license:**
-- Using Styler at a for-profit company
-- Using Styler in your job or for paid consulting
-- Using Styler at any organization with over $100K annual revenue
+**Commercial use needs a license** - Working at a company? Using this for
+paying clients? You'll need to purchase a license. It helps keep the project
+sustainable.
 
-**If you build a product that uses Styler:**
-- If your product runs Styler for your users (like a SaaS or hosted IDE), each
-  of your users needs their own Styler license
-- If you just use Styler internally to format your own code, and your product
-  doesn't run Styler for users, then your users don't need licenses
+**Building a product with Styler?**
+- If your product runs Styler for your users (like a code formatting SaaS),
+  each user needs their own license.
+- If you're just using Styler internally to keep your own codebase tidy,
+  your customers don't need licenses - only your team does.
 
-**If someone forks Styler:**
-- Commercial users of the fork still need to buy a license from the original
-  author (me), not from whoever made the fork
-- This prevents someone from forking the project and selling licenses themselves
+**About forks** - If someone forks Styler, commercial users still need to
+get their license from me (the original author). This keeps things fair and
+prevents someone from just repackaging the project.
 
-**Other important points:**
-- This license never automatically converts to open source
-- If you violate the terms, you lose your license
-- The software comes with no warranty
+**The fine print** - No warranty, and if you break the rules you lose your
+license. The legal details are below.
+
+Questions? Reach out through the project repository.
 
 ---
 
