@@ -502,9 +502,131 @@ validation would catch context-sensitive errors.
 
 ## IDE & Integration Ecosystem
 
+### GitHub PR Browser Extension
+- [ ] **BLOCKED:** `create-github-pr-extension` - Browser extension to view GitHub PRs in user's preferred style
+  - **Dependencies**: Core formatting rules complete, `implement-line-mapping`
+  - **Blocks**: None (standalone feature, high commercial value)
+  - **Parallelizable With**: `implement-vcs-format-filters`
+  - **Estimated Effort**: 5-6 days
+  - **Purpose**: View any GitHub PR diff in your preferred code style with smart comment translation
+  - **Commercial Value**: Unique differentiator - no competitor offers this
+  - **Supported Browsers**: Chrome, Firefox (covers ~85% of developers)
+  - **How It Works**:
+    ```
+    1. Extension detects GitHub PR diff page
+    2. Fetches raw file content via GitHub API
+    3. Reformats to user's preferred style
+    4. Replaces displayed code in DOM
+    5. Repositions comment markers using line mapping
+    6. Translates line references in comment text
+    ```
+  - **Core Components**:
+    - **PR Detection**: Identify GitHub PR diff/file view pages
+    - **Content Fetching**: GitHub API integration to get raw file content
+    - **Formatter Integration**: Call Styler formatter (via WASM or bundled JS)
+    - **DOM Replacement**: Replace code display with reformatted version
+    - **Line Number Update**: Update displayed line numbers to match reformatted code
+  - **User Configuration**:
+    ```json
+    // Extension storage
+    {
+      "userStyle": {
+        "braces": "next-line",
+        "indentation": { "useTabs": true, "size": 4 },
+        "lineLength": 120
+      },
+      "enabled": true,
+      "showOriginalLineTooltip": true
+    }
+    ```
+  - **Deliverables**: Chrome extension, Firefox extension, extension store listings
+
+- [ ] **BLOCKED:** `implement-line-mapping` - Generate bidirectional line mapping during reformatting
+  - **Dependencies**: Core formatting rules complete
+  - **Blocks**: `create-github-pr-extension`, `implement-comment-repositioning`
+  - **Parallelizable With**: Any Phase C/D task
+  - **Estimated Effort**: 2-3 days
+  - **Purpose**: Track which original lines map to which reformatted lines for comment translation
+  - **Problem**: When code is reformatted, line numbers change. Comments reference line numbers.
+  - **Scope**: Generate mapping during format operation, expose via API
+  - **Mapping Types**:
+    ```
+    One-to-one:   repo line 45 → display line 52
+    One-to-many:  repo line 45 → display lines 52-54 (brace expansion)
+    Many-to-one:  repo lines 45-47 → display line 52 (brace collapse)
+    ```
+  - **API Design**:
+    ```java
+    record LineMapping(
+        Map<Integer, IntRange> repoToDisplay,  // repo line → display line(s)
+        Map<Integer, Integer> displayToRepo    // display line → repo line
+    ) {}
+
+    interface FormattingResult {
+        String formattedCode();
+        LineMapping lineMapping();
+    }
+    ```
+  - **Integration**: Used by browser extension and VCS filters
+  - **Quality**: Tests for all mapping types, edge cases (empty lines, comments)
+
+- [ ] **BLOCKED:** `implement-comment-repositioning` - Reposition PR comments using line mapping
+  - **Dependencies**: `implement-line-mapping`, `create-github-pr-extension` (basic structure)
+  - **Blocks**: None
+  - **Parallelizable With**: `implement-comment-text-translation`
+  - **Estimated Effort**: 2 days
+  - **Purpose**: Move GitHub PR comment markers to correct display lines after reformatting
+  - **Problem**: GitHub anchors comments to repo line numbers; after reformatting, comments appear on wrong lines
+  - **Scope**: Browser extension component that repositions comment DOM elements
+  - **Behavior**:
+    ```
+    1. Parse GitHub comment anchors from DOM (line number references)
+    2. Look up display line using lineMapping.repoToDisplay(repoLine)
+    3. Move comment marker to corresponding display line
+    4. Add tooltip: "Comment on repo line X"
+    ```
+  - **Edge Cases**:
+    - One-to-many: Anchor comment to first line of expanded range
+    - Many-to-one: Show all collapsed comments on single line
+    - Deleted lines: Show comment with "line removed" indicator
+  - **Quality**: Visual regression tests, edge case coverage
+
+- [ ] **BLOCKED:** `implement-comment-text-translation` - Translate line references in comment text
+  - **Dependencies**: `implement-line-mapping`, `create-github-pr-extension` (basic structure)
+  - **Blocks**: None
+  - **Parallelizable With**: `implement-comment-repositioning`
+  - **Estimated Effort**: 2-3 days
+  - **Purpose**: Translate "see line 45" in comment text to display line numbers
+  - **Problem**: Comments saying "see line 45" refer to repo lines, but user sees different line numbers
+  - **Scope**: Detect and translate line references in comment text
+  - **Detection Patterns**:
+    ```
+    "line 45"           → line\s+(\d+)
+    "lines 45-50"       → lines?\s+(\d+)-(\d+)
+    "L45"               → L(\d+)
+    "Foo.java:45"       → :(\d+)
+    "lines 45, 67, 89"  → lines?\s+(\d+(?:,\s*\d+)*)
+    ```
+  - **Exclusions** (don't translate):
+    - Inside backtick code blocks
+    - Inside `<code>` tags
+    - Version numbers (no "line" keyword)
+  - **Translation Behavior**:
+    ```
+    Input:  "See line 45 for context"
+    Map:    repo:45 → display:52
+    Output: "See line 52 for context"
+            (with subtle styling + tooltip: "repo line 45")
+    ```
+  - **Bidirectional Translation**:
+    - Viewing comments: repo → display
+    - Posting comments: display → repo (so comment makes sense to others)
+  - **UX**: Subtle visual indicator for translated numbers, tooltip shows original
+  - **Quality**: Regex tests, edge case coverage, visual tests
+
 ### VCS Format Filters (Primary Solution)
 - [ ] **BLOCKED:** `implement-vcs-format-filters` - Auto-format on checkout (user style) and commit (project style)
-  - **Dependencies**: Core formatting rules complete, bidirectional formatting capability
+  - **Dependencies**: Core formatting rules complete, `implement-line-mapping`, `implement-original-preserving-clean`
   - **Blocks**: None (power user feature)
   - **Estimated Effort**: 4-5 days
   - **Purpose**: Let users work in their preferred style locally while maintaining project standards in repo
@@ -563,12 +685,80 @@ validation would catch context-sensitive errors.
     ```
   - **Key Features**:
     - **Smudge/decode filter**: On checkout, reformat to user's personal style
-    - **Clean/encode filter**: On commit, reformat to project standard
+    - **Clean/encode filter**: On commit, reformat to project standard (uses original-preserving)
     - **textconv**: `git diff` shows user-style diff
     - **Merge driver**: Conflict markers in user's style
     - **Merge tool wrapper**: Preserves user's preferred merge tool
     - **IDE agnostic**: Works with any editor (Vim, Emacs, Notepad++)
   - **Deliverables**: Filter commands, merge driver, mergetool wrapper, setup command, user config format
+
+- [ ] **BLOCKED:** `implement-original-preserving-clean` - Clean filter preserves formatting of unchanged code
+  - **Dependencies**: `implement-ast-diff`
+  - **Blocks**: `implement-vcs-format-filters`
+  - **Parallelizable With**: `implement-line-mapping`
+  - **Estimated Effort**: 3-4 days
+  - **Purpose**: Only reformat lines that were actually changed; preserve original formatting for untouched code
+  - **Problem**: Repos may have mixed styles or styles we don't fully support. Reformatting entire files on
+    commit would destroy existing formatting and create noisy diffs.
+  - **Solution**: Compare original (from Git) with modified, only format changed regions
+  - **Algorithm**:
+    ```
+    1. Get original file from Git (git show HEAD:path or index)
+    2. Parse both original and modified into AST
+    3. Diff ASTs to find changed nodes (semantic changes, ignoring whitespace)
+    4. For UNCHANGED nodes: preserve original formatting verbatim
+    5. For CHANGED/NEW nodes: apply repo style configuration
+    6. Merge to produce final output
+    ```
+  - **Benefits**:
+    - No need to support 100% of arbitrary styles
+    - Mixed-style files preserved (only touched code changes)
+    - Minimal diffs (commits show semantic changes only)
+    - Graceful degradation for unsupported constructs
+  - **Edge Cases**:
+    - New files: Format entirely with repo style
+    - Deleted code: No formatting needed
+    - Moved code: Treat as delete + add (format the new location)
+    - Renamed variables: Preserve surrounding formatting
+  - **Integration**: Used by `styler filter --clean`
+  - **Quality**: Tests with mixed-style files, partial modifications, edge cases
+
+- [ ] **BLOCKED:** `implement-ast-diff` - Semantic AST diff ignoring whitespace differences
+  - **Dependencies**: Parser complete
+  - **Blocks**: `implement-original-preserving-clean`
+  - **Parallelizable With**: Any Phase C/D task
+  - **Estimated Effort**: 3-4 days
+  - **Purpose**: Identify which AST nodes changed between two versions, ignoring formatting differences
+  - **Problem**: Text diff includes formatting changes; we need semantic diff only
+  - **Scope**: Compare two ASTs and identify changed, added, deleted nodes
+  - **Algorithm**:
+    ```
+    1. Parse both versions into AST
+    2. Walk both trees in parallel
+    3. Compare nodes by semantic content (ignore whitespace, comments optional)
+    4. Track: UNCHANGED, MODIFIED, ADDED, DELETED nodes
+    5. Return list of changed regions with original/new positions
+    ```
+  - **Output**:
+    ```java
+    record AstDiff(
+        List<AstChange> changes
+    ) {}
+
+    record AstChange(
+        ChangeType type,           // UNCHANGED, MODIFIED, ADDED, DELETED
+        IntRange originalRange,    // byte range in original file
+        IntRange modifiedRange,    // byte range in modified file
+        NodeType nodeType          // what kind of node changed
+    ) {}
+    ```
+  - **Comparison Rules**:
+    - Identifiers: Compare by name
+    - Literals: Compare by value
+    - Expressions: Structural comparison
+    - Blocks: Compare children recursively
+    - Comments: Configurable (include or ignore)
+  - **Quality**: Tests for each change type, complex refactoring scenarios
 
 ### Virtual Formatting IDE Plugin (Fallback for Limited VCS)
 - [ ] **BLOCKED:** `create-virtual-format-plugin` - IDE plugin for VCS systems without filter support
