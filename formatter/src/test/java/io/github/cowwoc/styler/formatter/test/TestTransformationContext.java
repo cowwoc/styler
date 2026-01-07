@@ -12,7 +12,7 @@ import io.github.cowwoc.styler.security.SecurityConfig;
 
 import java.nio.file.Path;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Test implementation of TransformationContext for formatter unit testing.

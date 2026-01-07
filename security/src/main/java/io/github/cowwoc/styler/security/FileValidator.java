@@ -1,7 +1,7 @@
 package io.github.cowwoc.styler.security;
 
 import io.github.cowwoc.styler.security.exceptions.FileSizeLimitExceededException;
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 import java.io.IOException;
 import java.nio.file.Files;

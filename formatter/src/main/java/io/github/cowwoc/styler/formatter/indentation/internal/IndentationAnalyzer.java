@@ -11,7 +11,7 @@ import io.github.cowwoc.styler.formatter.indentation.IndentationType;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.that;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.that;
 
 /**
  * Analyzes source code for indentation violations.

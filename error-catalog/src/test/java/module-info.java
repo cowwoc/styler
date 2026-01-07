@@ -5,7 +5,7 @@ module io.github.cowwoc.styler.errorcatalog.test
 {
 	requires io.github.cowwoc.styler.errorcatalog;
 	requires org.testng;
-	requires io.github.cowwoc.requirements12.java;
+	requires io.github.cowwoc.requirements13.java;
 
 	opens io.github.cowwoc.styler.errorcatalog.test to org.testng;
 }

@@ -23,7 +23,7 @@ module io.github.cowwoc.styler.pipeline
 	requires transitive io.github.cowwoc.styler.parser;
 	requires transitive io.github.cowwoc.styler.security;
 	requires transitive io.github.cowwoc.styler.formatter;
-	requires io.github.cowwoc.requirements12.java;
+	requires io.github.cowwoc.requirements13.java;
 	requires java.logging;
 	requires com.fasterxml.jackson.databind;
 

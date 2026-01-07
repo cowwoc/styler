@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import org.testng.SkipException;
 import org.testng.annotations.Test;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Unit tests for CliMain entry point and command-line processing.

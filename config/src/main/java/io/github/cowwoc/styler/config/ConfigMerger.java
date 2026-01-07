@@ -2,7 +2,7 @@ package io.github.cowwoc.styler.config;
 
 import java.util.List;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Merges multiple configuration sources with field-level precedence.

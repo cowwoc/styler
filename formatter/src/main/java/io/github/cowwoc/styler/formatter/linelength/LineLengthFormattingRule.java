@@ -11,7 +11,7 @@ import io.github.cowwoc.styler.formatter.linelength.internal.LineWrapper;
 
 import java.util.List;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Formatting rule for enforcing line length limits with context-aware wrapping.

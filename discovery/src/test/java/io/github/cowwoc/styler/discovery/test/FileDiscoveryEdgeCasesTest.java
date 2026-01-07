@@ -16,7 +16,7 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
 import java.util.Set;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 import static io.github.cowwoc.styler.discovery.test.TestUtils.deleteDirectoryRecursively;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;

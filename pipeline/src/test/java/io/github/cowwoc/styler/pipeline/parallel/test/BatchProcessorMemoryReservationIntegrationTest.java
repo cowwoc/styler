@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.pipeline.parallel.test;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 import java.io.IOException;
 import java.nio.file.Path;

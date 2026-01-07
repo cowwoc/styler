@@ -8,7 +8,7 @@ import io.github.cowwoc.styler.formatter.indentation.IndentationFormattingRule;
 import io.github.cowwoc.styler.formatter.test.TestTransformationContext;
 import org.testng.annotations.Test;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Tests for indentation of nested code structures.

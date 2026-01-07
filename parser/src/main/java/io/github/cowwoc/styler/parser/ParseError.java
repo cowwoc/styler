@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.parser;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Represents an error encountered during parsing of Java source code.

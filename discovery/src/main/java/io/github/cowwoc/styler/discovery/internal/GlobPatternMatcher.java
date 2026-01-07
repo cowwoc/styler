@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.discovery.internal;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 import io.github.cowwoc.styler.discovery.PatternMatcher;
 import java.nio.file.FileSystems;

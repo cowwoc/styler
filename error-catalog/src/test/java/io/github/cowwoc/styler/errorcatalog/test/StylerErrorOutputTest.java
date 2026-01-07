@@ -8,7 +8,7 @@ import io.github.cowwoc.styler.errorcatalog.SourceLocation;
 import io.github.cowwoc.styler.errorcatalog.StylerErrorOutput;
 import org.testng.annotations.Test;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 import static org.testng.Assert.assertTrue;
 
 /**

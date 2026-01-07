@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.pipeline.parallel;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Immutable configuration for parallel batch file processing.

@@ -7,7 +7,7 @@ import io.github.cowwoc.styler.ast.core.NodeType;
 import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 import org.testng.annotations.Test;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Tests for NodeArena attribute storage and retrieval.

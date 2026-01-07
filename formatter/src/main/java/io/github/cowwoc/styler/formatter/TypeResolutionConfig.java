@@ -3,7 +3,7 @@ package io.github.cowwoc.styler.formatter;
 import java.nio.file.Path;
 import java.util.List;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Configuration for type resolution during formatting.

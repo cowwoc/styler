@@ -4,7 +4,7 @@
 module io.github.cowwoc.styler.cli.test
 {
 	requires io.github.cowwoc.styler.cli;
-	requires io.github.cowwoc.requirements12.java;
+	requires io.github.cowwoc.requirements13.java;
 	requires org.testng;
 	requires ch.qos.logback.classic;
 

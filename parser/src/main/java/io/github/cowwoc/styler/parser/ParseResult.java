@@ -5,7 +5,7 @@ import io.github.cowwoc.styler.ast.core.NodeIndex;
 import java.nio.file.Path;
 import java.util.List;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Represents the result of parsing Java source code.

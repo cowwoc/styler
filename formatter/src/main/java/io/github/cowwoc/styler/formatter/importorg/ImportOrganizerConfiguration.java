@@ -5,7 +5,7 @@ import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import java.util.List;
 import java.util.Objects;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Configuration for import organization and unused import removal.

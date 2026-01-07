@@ -3,7 +3,7 @@ package io.github.cowwoc.styler.errorcatalog.test;
 import io.github.cowwoc.styler.errorcatalog.Audience;
 import org.testng.annotations.Test;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 import static org.testng.Assert.assertTrue;
 
 /**

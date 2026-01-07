@@ -2,7 +2,7 @@ package io.github.cowwoc.styler.formatter.brace;
 
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Configuration for brace formatting rules.

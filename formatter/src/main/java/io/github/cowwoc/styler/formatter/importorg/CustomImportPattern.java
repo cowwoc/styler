@@ -2,7 +2,7 @@ package io.github.cowwoc.styler.formatter.importorg;
 
 import java.util.regex.Pattern;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * A custom import pattern for grouping imports with user-defined regex.

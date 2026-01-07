@@ -13,7 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 import static io.github.cowwoc.styler.discovery.test.TestUtils.deleteDirectoryRecursively;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;

@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.pipeline.parallel.internal;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

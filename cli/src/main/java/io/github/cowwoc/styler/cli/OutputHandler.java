@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.cli;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 import java.util.HashMap;
 import java.util.List;

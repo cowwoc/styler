@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.errorcatalog;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Unified error output for CLI and API consumers.

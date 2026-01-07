@@ -10,7 +10,7 @@ import io.github.cowwoc.styler.formatter.whitespace.internal.WhitespaceFixer;
 
 import java.util.List;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Formatting rule for consistent whitespace around operators, keywords, and punctuation.

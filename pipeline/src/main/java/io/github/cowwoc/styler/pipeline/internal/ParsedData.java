@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.pipeline.internal;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.that;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.that;
 
 import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;

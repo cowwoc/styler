@@ -3,7 +3,7 @@ package io.github.cowwoc.styler.formatter.test;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import org.testng.annotations.Test;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Tests for JPMS module configuration.

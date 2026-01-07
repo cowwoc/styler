@@ -10,7 +10,7 @@ import org.testng.annotations.Test;
 import java.nio.file.Path;
 import java.util.Locale;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Tests for {@link ArgumentParser} command-line argument parsing.

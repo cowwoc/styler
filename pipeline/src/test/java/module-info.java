@@ -6,7 +6,7 @@ module io.github.cowwoc.styler.pipeline.test
 	requires io.github.cowwoc.styler.pipeline;
 	requires io.github.cowwoc.styler.security;
 	requires io.github.cowwoc.styler.formatter;
-	requires io.github.cowwoc.requirements12.java;
+	requires io.github.cowwoc.requirements13.java;
 	requires org.testng;
 	requires ch.qos.logback.classic;
 

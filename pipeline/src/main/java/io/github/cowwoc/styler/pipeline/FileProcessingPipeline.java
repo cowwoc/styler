@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.pipeline;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

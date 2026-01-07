@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.formatter.importorg.internal;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Represents a single import declaration extracted from source code.

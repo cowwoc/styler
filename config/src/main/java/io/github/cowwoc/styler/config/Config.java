@@ -2,7 +2,7 @@ package io.github.cowwoc.styler.config;
 
 import io.github.cowwoc.styler.config.exception.ConfigurationValidationException;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Immutable configuration for Styler formatting rules.

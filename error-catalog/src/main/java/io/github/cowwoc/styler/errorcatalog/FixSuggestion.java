@@ -2,7 +2,7 @@ package io.github.cowwoc.styler.errorcatalog;
 
 import java.util.List;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Actionable fix suggestion for an error.

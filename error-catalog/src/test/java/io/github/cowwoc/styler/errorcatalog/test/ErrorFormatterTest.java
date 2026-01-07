@@ -7,7 +7,7 @@ import io.github.cowwoc.styler.errorcatalog.FixSuggestion;
 import io.github.cowwoc.styler.errorcatalog.SourceLocation;
 import org.testng.annotations.Test;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Tests for {@link ErrorFormatter}.

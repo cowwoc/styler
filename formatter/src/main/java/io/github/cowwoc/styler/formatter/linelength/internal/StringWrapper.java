@@ -5,7 +5,7 @@ import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Handles wrapping of long string literals in source code.

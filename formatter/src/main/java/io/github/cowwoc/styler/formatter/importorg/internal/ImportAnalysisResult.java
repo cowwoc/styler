@@ -2,7 +2,7 @@ package io.github.cowwoc.styler.formatter.importorg.internal;
 
 import java.util.Set;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Result of import analysis containing unused imports and any unresolved symbols.

@@ -3,7 +3,7 @@ package io.github.cowwoc.styler.pipeline.output;
 import io.github.cowwoc.styler.pipeline.output.internal.HumanViolationRenderer;
 import io.github.cowwoc.styler.pipeline.output.internal.JsonViolationRenderer;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Renders a violation report in a specified output format.

@@ -4,7 +4,7 @@ import io.github.cowwoc.styler.config.exception.ConfigurationException;
 
 import java.io.IOException;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Formats and reports errors to stderr with appropriate exit codes.

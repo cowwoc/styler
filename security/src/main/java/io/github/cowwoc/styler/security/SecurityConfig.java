@@ -2,7 +2,7 @@ package io.github.cowwoc.styler.security;
 
 import java.time.Duration;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Immutable security configuration defining resource limits and validation thresholds.

@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.parser;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Immutable token representing a lexical element in Java source code.

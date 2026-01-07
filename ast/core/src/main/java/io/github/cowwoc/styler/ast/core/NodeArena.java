@@ -6,7 +6,7 @@ import java.lang.foreign.ValueLayout;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Arena-based storage for AST nodes using index-overlay pattern.

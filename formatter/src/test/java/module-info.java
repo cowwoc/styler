@@ -7,7 +7,7 @@ module io.github.cowwoc.styler.formatter.test
 	requires io.github.cowwoc.styler.ast.core;
 	requires io.github.cowwoc.styler.parser;
 	requires io.github.cowwoc.styler.security;
-	requires io.github.cowwoc.requirements12.java;
+	requires io.github.cowwoc.requirements13.java;
 	requires org.testng;
 
 	opens io.github.cowwoc.styler.formatter.test to org.testng;

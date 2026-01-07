@@ -1,6 +1,6 @@
 package io.github.cowwoc.styler.discovery.test;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 import static io.github.cowwoc.styler.discovery.test.TestUtils.deleteDirectoryRecursively;
 import static org.testng.Assert.assertEquals;
 
