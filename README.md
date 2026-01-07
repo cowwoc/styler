@@ -151,3 +151,7 @@ Styler uses a modular architecture with the following components:
 - **cli**: Command-line interface and main entry point
 
 For detailed technical architecture, see [docs/project/architecture.md](docs/project/architecture.md).
+
+## 📄 License
+
+See [LICENSE.md](LICENSE.md) for terms.

@@ -796,7 +796,7 @@ validation would catch context-sensitive errors.
 ## Administrative Tasks
 
 - [ ] **READY:** `create-github-pages` - Create project website with docs and commercial licensing info
-  - **Dependencies**: `add-license-file` (need license terms finalized first)
+  - **Dependencies**: None (`add-license-file` ✅ COMPLETE)
   - **Blocks**: None (but should complete before public release)
   - **Estimated Effort**: 2-3 days
   - **Purpose**: Public-facing documentation and commercial licensing portal
@@ -810,30 +810,6 @@ validation would catch context-sensitive errors.
     - Host at `https://<org>.github.io/styler/` or custom domain
     - Integrate with existing user documentation from `create-user-documentation` task
   - **Deliverables**: `docs/` folder or `gh-pages` branch with static site
-
-- [ ] **READY:** `add-license-file` - Add source-available license for commercial use requirements
-  - **Dependencies**: None
-  - **Blocks**: `create-github-pages` (license terms needed for pricing page)
-  - **Estimated Effort**: 0.5-1 day
-  - **Purpose**: Establish licensing terms that allow free personal use but require payment for commercial use
-  - **License Requirements**:
-    - Free for personal use, distribution, and extension
-    - Commercial users must pay for a license
-    - Forks used commercially must still pay the original author (not the fork maintainer)
-    - "Source available" but NOT open-source
-    - **NO automatic open-source conversion** (rules out BSL)
-  - **License Options to Evaluate**:
-    - **Functional Source License (FSL)**: Similar to BSL but with 2-year conversion - still has conversion, likely ruled out
-    - **Elastic License 2.0**: No time-based conversion, prevents competitive SaaS offerings, allows most commercial use
-    - **PolyForm Noncommercial / Small Business**: Explicit non-commercial or small business carve-outs
-    - **Custom Proprietary License**: Full control, no conversion requirement, requires legal review
-  - **Recommendation**: Custom proprietary license with source-available terms. Template approach:
-    - Grant: View, modify, use for personal/non-commercial purposes
-    - Restriction: Commercial use requires paid license from original author
-    - Fork clause: Commercial use of derivatives also requires license from original author
-    - No sunset/conversion clause
-  - **Action**: Draft custom license or adapt Elastic License 2.0, then legal review
-  - **Deliverables**: LICENSE file, README update with license summary
 
 ---
 
