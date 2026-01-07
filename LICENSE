@@ -2,6 +2,43 @@
 
 Version 1.0.0
 
+## Plain-Language Summary
+
+This section explains the license in simple terms. The legal language below is
+what actually governs your use of the software.
+
+**What you CAN do for free:**
+- Use Styler for personal projects, learning, research, or hobbies
+- Read, modify, and share the code for non-commercial purposes
+- Use it at a small non-profit or organization with less than $100K annual revenue
+
+**What REQUIRES a paid license:**
+- Using Styler at a for-profit company
+- Using Styler in your job or for paid consulting
+- Using Styler at any organization with over $100K annual revenue
+
+**If you build a product that uses Styler:**
+- If your product runs Styler for your users (like a SaaS or hosted IDE), each
+  of your users needs their own Styler license
+- If you just use Styler internally to format your own code, and your product
+  doesn't run Styler for users, then your users don't need licenses
+
+**If someone forks Styler:**
+- Commercial users of the fork still need to buy a license from the original
+  author (me), not from whoever made the fork
+- This prevents someone from forking the project and selling licenses themselves
+
+**Other important points:**
+- This license never automatically converts to open source
+- If you violate the terms, you lose your license
+- The software comes with no warranty
+
+---
+
+## Legal Terms
+
+The following sections contain the legally binding license terms.
+
 ## Acceptance
 
 To use, copy, modify, or distribute this software, you must accept these
