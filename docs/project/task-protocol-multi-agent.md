@@ -554,8 +554,8 @@ git rev-parse HEAD
 Agent Commit Format: `[agent-name] Implementation summary`
 - `[architect] Add FormattingRule interface hierarchy`
 - `[quality] Apply factory pattern to rule instantiation`
-- `[style] Implement JavaDoc requirements for public APIs`
-- `[test] Add comprehensive test suite for FormattingRule`
+- `config: Implement JavaDoc requirements for public APIs`
+- `test: Add comprehensive test suite for FormattingRule`
 
 Main Agent Final Commit: List all contributing agents:
 ```bash

@@ -104,23 +104,23 @@ added as a separate commit.
 | Commit Pattern | Where Archival Goes | Rationale |
 |----------------|---------------------|-----------|
 | Single commit | Same commit | All changes together |
-| code / docs | `[docs]` commit | Archival is documentation |
-| code / docs / config | `[docs]` commit | Archival is documentation |
+| code / docs | `docs:` commit | Archival is documentation |
+| code / docs / config | `docs:` commit | Archival is documentation |
 | implementation / config | Implementation commit | No separate docs commit |
 
 ### Common Mistake
 
 ```bash
 # ❌ WRONG - Archival as separate 4th commit
-[code] feat: Add feature implementation
-[docs] docs: Update JavaDoc
-[config] chore: Update CLAUDE.md
-[archival] docs: Update todo.md and changelog.md  # UNNECESSARY 4TH COMMIT!
+feature: Add feature implementation
+docs: Update JavaDoc
+config: Update CLAUDE.md
+docs: Update todo.md and changelog.md  # UNNECESSARY 4TH COMMIT!
 
 # ✅ CORRECT - Archival included in docs commit
-[code] feat: Add feature implementation
-[docs] docs: Update JavaDoc, todo.md, changelog.md  # ARCHIVAL INCLUDED HERE
-[config] chore: Update CLAUDE.md
+feature: Add feature implementation
+docs: Update JavaDoc, todo.md, changelog.md  # ARCHIVAL INCLUDED HERE
+config: Update CLAUDE.md
 ```
 
 ### When Hook Blocks Merge for Missing Archival
@@ -132,17 +132,17 @@ If merge is blocked because archival files are missing AFTER commits are already
 
 # ✅ CORRECT: Amend the docs commit to include archival
 git log --oneline -3
-# abc123 [config] chore: Update CLAUDE.md
-# def456 [docs] docs: Update JavaDoc       ← AMEND THIS ONE
-# ghi789 [code] feat: Add feature
+# abc123 config: Update CLAUDE.md
+# def456 docs: Update JavaDoc       ← AMEND THIS ONE
+# ghi789 feature: Add feature
 
 # Step 1: Interactive rebase to edit the docs commit
 git rebase -i ghi789^  # Parent of first commit
 
 # Step 2: Mark docs commit for edit (change 'pick' to 'edit')
-# pick ghi789 [code] feat: Add feature
-# edit def456 [docs] docs: Update JavaDoc   ← Change to 'edit'
-# pick abc123 [config] chore: Update CLAUDE.md
+# pick ghi789 feature: Add feature
+# edit def456 docs: Update JavaDoc   ← Change to 'edit'
+# pick abc123 config: Update CLAUDE.md
 
 # Step 3: When rebase stops, add archival and amend
 # (Edit todo.md and changelog.md)
@@ -1117,7 +1117,7 @@ dropped instead of squashed.
 # Used custom sed script with GIT_SEQUENCE_EDITOR
 # After rebase completed:
 git log --oneline | grep 778b26b
-# 778b26b [config] Comprehensive shrink-doc...  ← SAME HASH!
+# 778b26b config: Comprehensive shrink-doc...  ← SAME HASH!
 
 # ❌ FAILURE: Hash unchanged means content unchanged
 # The commits were DROPPED, not squashed!

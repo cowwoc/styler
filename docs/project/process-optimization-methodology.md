@@ -103,7 +103,7 @@ Detect suspicious single-commit patterns that suggest main agent implementation 
 ```bash
 # Multiple commits from different agents
 * abc1234 [architect] Implement core FormattingRule interfaces
-* abc1235 [style] Apply JavaDoc and formatting standards
+* abc1235 [formatter] Apply JavaDoc and formatting standards
 * abc1236 [quality] Add comprehensive test suite
 * abc1237 [main] Merge agent implementations to task branch
 * abc1238 [main] Fix test API mismatches
@@ -175,7 +175,7 @@ $ git log --oneline task-{task-name} --not main
 
 DIAGNOSIS:
 This pattern indicates main agent implemented code directly instead of coordinating stakeholder agents.
-Expected pattern: Multiple commits with agent signatures ([architect], [style], etc.)
+Expected pattern: Multiple commits with agent signatures ([architect], [formatter], etc.)
 
 CORRECTIVE ACTION REQUIRED:
 Option 1: Revert task branch to start of IMPLEMENTATION

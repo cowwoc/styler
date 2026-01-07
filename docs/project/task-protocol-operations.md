@@ -284,8 +284,8 @@ abc123d Implement FormattingRule system (Claude)
 **CORRECT Pattern - Multiple Agent Commits**:
 ```bash
 $ git log --oneline task-branch
-jkl012m [test] Add comprehensive test suite for FormattingRule
-ghi789j [style] Implement JavaDoc requirements for public APIs
+jkl012m test: Add comprehensive test suite for FormattingRule
+ghi789j config: Implement JavaDoc requirements for public APIs
 def456g [quality] Apply factory pattern to rule instantiation
 abc123d [architect] Add FormattingRule interface hierarchy
 ```
@@ -294,12 +294,12 @@ abc123d [architect] Add FormattingRule interface hierarchy
 **CORRECT Pattern - Detailed View with Attribution**:
 ```bash
 $ git log --format='%h %s' task-branch
-jkl012m [test] Add comprehensive test suite for FormattingRule
+jkl012m test: Add comprehensive test suite for FormattingRule
     - Unit tests for all FormattingRule implementations
     - Integration tests for rule composition
     - Test coverage: 95%+
 
-ghi789j [style] Implement JavaDoc requirements for public APIs
+ghi789j config: Implement JavaDoc requirements for public APIs
     - Added JavaDoc to all public methods
     - Fixed checkstyle violations
     - Code style compliance verified
