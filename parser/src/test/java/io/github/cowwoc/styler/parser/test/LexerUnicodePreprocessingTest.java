@@ -633,7 +633,6 @@ public class LexerUnicodePreprocessingTest
 	 * Tests tokens without Unicode escapes share the same String instance.
 	 * This is an optimization test to verify memory efficiency.
 	 */
-	@SuppressWarnings("PMD.UseEqualsToCompareStrings")
 	@Test
 	public void shouldShareStringInstanceWhenNoEscapes()
 	{

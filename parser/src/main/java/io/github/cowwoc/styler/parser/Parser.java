@@ -17,7 +17,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements13.java.DefaultJavaValidators.requireThat;
 
 /**
  * Recursive descent parser for Java source code.
