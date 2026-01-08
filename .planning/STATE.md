@@ -1,21 +1,21 @@
 # Styler Project State
 
 > **Last Updated**: 2026-01-08
-> **Current Release**: 5 (Parser Compatibility) - IN PROGRESS
-> **Timeline**: v1.0 launch by January 24, 2026 (18 days)
+> **Current Release**: 6 (CLI Polish) - IN PROGRESS
+> **Timeline**: v1.0 launch by January 24, 2026 (16 days)
 
 ## Current Status
 
 ### Milestone Progress
 - **Milestone 1 (Core Product)**: ✅ COMPLETE (41 tasks across 4 releases)
-- **Milestone 2 (v1.0 Launch)**: 🔄 IN PROGRESS (1/19 tasks complete)
+- **Milestone 2 (v1.0 Launch)**: 🔄 IN PROGRESS (5/19 tasks complete)
 - **Milestone 3-4 (v1.1+)**: DEFERRED
 
 ### Release Completion (v1.0 Launch)
 | Release | Name | Tasks | Status | Days |
 |-------|------|-------|--------|------|
 | 5 | Parser Compatibility | 2 | 🔄 Next | 1-3 |
-| 6 | CLI Polish | 4 | 🔄 In Progress (1/4) | 1-3 |
+| 6 | CLI Polish | 4 | 🔄 In Progress (2/4) | 1-3 |
 | 7 | Browser Extension | 4 | 🔲 Planned | 4-8 |
 | 8 | Extension Polish | 2 | 🔲 Planned | 9-10 |
 | 9 | Documentation & Website | 4 | 🔲 Planned | 11-13 |
@@ -34,6 +34,7 @@
 ### 2026-01-08
 - ✅ add-array-initializer-in-annotation-support - Already implemented (verified)
 - ✅ add-cli-parallel-processing - Virtual threads with --max-concurrency flag
+- ✅ add-cli-integration-tests - 21 tests for all CLI flags
 
 ### 2026-01-07
 - ✅ add-license-file - Source-available commercial license

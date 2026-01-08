@@ -84,7 +84,7 @@ Fix parser edge cases blocking ~99% Spring Framework parse success.
 #### Release 6: CLI Polish (4 tasks) — Days 1-3
 CLI integration tests and AI enhancements.
 - ✅ add-cli-parallel-processing
-- add-cli-integration-tests
+- ✅ add-cli-integration-tests
 - implement-ai-context-limiting
 - implement-rules-summary-export
 
