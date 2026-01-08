@@ -42,7 +42,7 @@
       "description": "Skill step failures not detected - git operations failing silently",
       "root_cause": "auto-learn-from-mistakes hook did not detect Skill tool failures",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/auto-learn-from-mistakes.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/auto-learn-from-mistakes.sh",
       "pattern_keywords": [
         "skill",
         "step",
@@ -61,7 +61,7 @@
       "description": "Commit order assumptions in rebase automation - squashed wrong direction",
       "root_cause": "Assumed commit order without verification, squashed newer into older",
       "prevention_type": "skill",
-      "prevention_path": ".claude/skills/git-squash/SKILL.md",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/skills/git-squash/SKILL.md",
       "pattern_keywords": [
         "git",
         "squash",
@@ -81,7 +81,7 @@
       "description": "Missing cleanup after git operations - backup branches left behind",
       "root_cause": "No enforcement of cleanup phase after successful git operations",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/auto-learn-from-mistakes.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/auto-learn-from-mistakes.sh",
       "pattern_keywords": [
         "cleanup",
         "backup",
@@ -100,7 +100,7 @@
       "description": "Critical self-acknowledgments not detected (CRITICAL DISASTER phrases)",
       "root_cause": "Hook did not monitor for phrases indicating major problems",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/auto-learn-from-mistakes.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/auto-learn-from-mistakes.sh",
       "pattern_keywords": [
         "critical",
         "disaster",
@@ -119,7 +119,7 @@
       "description": "Token policy violations - assistant giving up due to token constraints",
       "root_cause": "No detection of token-related giving up patterns",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/detect-assistant-giving-up.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/detect-assistant-giving-up.sh",
       "pattern_keywords": [
         "token",
         "budget",
@@ -138,7 +138,7 @@
       "description": "Git squash without immediate verification - data loss risk",
       "root_cause": "Verification separated from execution, allowing errors to go unnoticed",
       "prevention_type": "skill",
-      "prevention_path": ".claude/skills/git-squash/SKILL.md",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/skills/git-squash/SKILL.md",
       "pattern_keywords": [
         "git",
         "squash",
@@ -158,7 +158,7 @@
       "description": "Execution context protections removed from optimize-doc",
       "root_cause": "Fix strategies were removed during optimization",
       "prevention_type": "config",
-      "prevention_path": ".claude/commands/shrink-doc.md",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/commands/shrink-doc.md",
       "pattern_keywords": [
         "optimize",
         "doc",
@@ -178,7 +178,7 @@
       "description": "Fix strategy removal violations in documentation optimization",
       "root_cause": "Semantic content being removed instead of preserved during shrinking",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/block-retrospective-docs.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-retrospective-docs.sh",
       "pattern_keywords": [
         "fix",
         "strategy",
@@ -198,7 +198,7 @@
       "description": "Option-presenting pattern instead of implementing optimal solution",
       "root_cause": "detect-giving-up hook did not catch option presentation as giving up",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/detect-giving-up.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/detect-giving-up.sh",
       "pattern_keywords": [
         "option",
         "present",
@@ -217,7 +217,7 @@
       "description": "Squashing newer commit into older commit (wrong direction)",
       "root_cause": "Did not verify commit order before squashing",
       "prevention_type": "skill",
-      "prevention_path": ".claude/skills/git-squash/SKILL.md",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/skills/git-squash/SKILL.md",
       "pattern_keywords": [
         "git",
         "squash",
@@ -237,7 +237,7 @@
       "description": "Ineffective fixes - prevention applied but mistake still occurred",
       "root_cause": "No temporal analysis to detect when fix predates violation",
       "prevention_type": "skill",
-      "prevention_path": ".claude/skills/learn-from-mistakes/SKILL.md",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/skills/learn-from-mistakes/SKILL.md",
       "pattern_keywords": [
         "temporal",
         "analysis",
@@ -257,7 +257,7 @@
       "description": "Main agent creating source files in IMPLEMENTATION state",
       "root_cause": "No enforcement blocking main agent from creating .java files",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/implementation-guard.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/implementation-guard.sh",
       "pattern_keywords": [
         "main",
         "agent",
@@ -277,7 +277,7 @@
       "description": "Agent creating files in wrong worktree",
       "root_cause": "Agents not properly directed to their agent-specific worktrees",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/detect-worktree-violation.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/detect-worktree-violation.sh",
       "pattern_keywords": [
         "worktree",
         "agent",
@@ -296,7 +296,7 @@
       "description": "Task tool invoked without proper state transition",
       "root_cause": "Task tool used from INIT state or without requirements reports",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/task-invoke-pre.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/task-invoke-pre.sh",
       "pattern_keywords": [
         "task",
         "tool",
@@ -316,7 +316,7 @@
       "description": "Destructive operations executed without confirmation",
       "root_cause": "No verification before destructive git or file operations",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/verify-destructive-operations.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/verify-destructive-operations.sh",
       "pattern_keywords": [
         "destructive",
         "verify",
@@ -335,7 +335,7 @@
       "description": "Data loss from git filter-branch --all affecting version branches",
       "root_cause": "No protection for version branches during history rewriting",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/block-data-loss.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-data-loss.sh",
       "pattern_keywords": [
         "filter-branch",
         "all",
@@ -413,7 +413,7 @@
       "description": "Simple mistake acknowledgments not detected by auto-learn hook",
       "root_cause": "Hook only detected complex patterns, not simple 'I made a mistake'",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/auto-learn-from-mistakes.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/auto-learn-from-mistakes.sh",
       "pattern_keywords": [
         "acknowledgment",
         "simple",
@@ -499,7 +499,7 @@
       "description": "Cherry-picked files from commit based on stale main, causing 60 lines of switch-parsing code to be removed",
       "root_cause": "File extraction commands (git show/checkout) return entire file content from that commit, not just changes. If source commit was based on older main, extracted files have stale base code.",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/warn-file-extraction.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/warn-file-extraction.sh",
       "pattern_keywords": [
         "cherry-pick",
         "file extraction",
@@ -519,7 +519,7 @@
       "description": "Ran 'git reflog expire --expire=now --all && git gc --prune=now' immediately after git filter-branch, permanently destroying recovery options",
       "root_cause": "Documentation in git-rebase skill showed reflog expire and gc prune as normal cleanup step without warning about when this is dangerous. Agent followed documentation pattern without understanding implications.",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/block-reflog-destruction.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/block-reflog-destruction.sh",
       "pattern_keywords": [
         "reflog",
         "expire",
@@ -562,7 +562,7 @@
       "description": "Archival files committed as separate 4th commit instead of being included in docs commit when using code/docs/config separation pattern",
       "root_cause": "Documentation gap - no explicit guidance on archival placement in multi-commit patterns; agent added archival as new commit instead of amending existing docs commit",
       "prevention_type": "config",
-      "prevention_path": ".claude/skills/git-squash/SKILL.md",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/skills/git-squash/SKILL.md",
       "pattern_keywords": [
         "archival",
         "multi-commit",
@@ -602,7 +602,7 @@
       "description": "Added @SuppressWarnings(PMD.NcssCount) to Parser.java without attempting decomposition first",
       "root_cause": "Took easy suppression path without verifying if refactoring was actually infeasible. Rationalized that shared state made extraction hard without actually attempting it.",
       "prevention_type": "hook",
-      "prevention_path": ".claude/hooks/warn-ncsscount-suppression.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/warn-ncsscount-suppression.sh",
       "pattern_keywords": [
         "NcssCount",
         "PMD",
@@ -665,7 +665,7 @@
       "description": "git-merge-linear-optimized.sh cleanup tried to delete branch before removing worktree",
       "root_cause": "Script executed git branch -D before git worktree remove. Git prevents deleting a branch that's checked out in an active worktree, causing error message.",
       "prevention_type": "code_fix",
-      "prevention_path": ".claude/scripts/git-merge-linear-optimized.sh",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/scripts/git-merge-linear-optimized.sh",
       "pattern_keywords": [
         "worktree",
         "branch",
@@ -686,7 +686,7 @@
       "description": "Plan deviation without informing user - Changed plan (removed --parallel flag) but didn't announce until user asked",
       "root_cause": "No mandatory checkpoint requiring announcement of plan changes before implementation. Agent proceeded with deviation silently.",
       "prevention_type": "skill",
-      "prevention_path": ".claude/cat/workflows/execute-phase.md#user_initiated_plan_changes",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/workflows/execute-phase.md#user_initiated_plan_changes",
       "pattern_keywords": [
         "plan",
         "deviation",
@@ -706,7 +706,7 @@
       "description": "Merged without user review - Committed changes and marked plan complete without pausing for user review",
       "root_cause": "No mandatory user review checkpoint before committing plan implementation. Agent assumed implementation was correct.",
       "prevention_type": "skill",
-      "prevention_path": ".claude/cat/workflows/execute-phase.md#pre_commit_review",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/workflows/execute-phase.md#pre_commit_review",
       "pattern_keywords": [
         "review",
         "commit",
@@ -726,7 +726,7 @@
       "description": "Misattributed change source - Claimed change was due to user feedback when actually due to discovering existing code API",
       "root_cause": "Relied on memory/summary instead of verifying actual conversation sequence via get-history. Memory was inaccurate about cause-and-effect.",
       "prevention_type": "skill",
-      "prevention_path": ".claude/cat/workflows/execute-phase.md#implementation_discovery_changes",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/workflows/execute-phase.md#implementation_discovery_changes",
       "pattern_keywords": [
         "attribution",
         "memory",
@@ -746,7 +746,7 @@
       "description": "Did not invoke get-history when doing root cause analysis for learn-from-mistakes",
       "root_cause": "learn-from-mistakes skill did not require conversation verification step. Agent proceeded with analysis based on memory which was inaccurate.",
       "prevention_type": "skill",
-      "prevention_path": ".claude/skills/learn-from-mistakes/SKILL.md#step-0-verify-event-sequence",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/skills/learn-from-mistakes/SKILL.md#step-0-verify-event-sequence",
       "pattern_keywords": [
         "get-history",
         "verification",
@@ -766,7 +766,7 @@
       "description": "Did not update retrospectives/mistakes.json when learning from mistakes",
       "root_cause": "learn-from-mistakes skill did not require retrospectives logging step. Agent stated prevention but didn't log for cross-session tracking.",
       "prevention_type": "skill",
-      "prevention_path": ".claude/skills/learn-from-mistakes/SKILL.md#step-4-log-to-retrospectives",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/skills/learn-from-mistakes/SKILL.md#step-4-log-to-retrospectives",
       "pattern_keywords": [
         "retrospectives",
         "logging",
@@ -795,6 +795,25 @@
         "session history"
       ],
       "commit": "da85f7c",
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
+    },
+    {
+      "id": "M040",
+      "timestamp": "2026-01-08T10:30:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Used relative .claude/ paths in mistakes.json instead of ${CLAUDE_PROJECT_DIR}/.claude/",
+      "root_cause": "No guidance in learn-from-mistakes skill specifying that paths must use ${CLAUDE_PROJECT_DIR}. Followed existing pattern without considering working directory changes.",
+      "prevention_type": "skill",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/skills/learn-from-mistakes/SKILL.md#step-4-log-to-retrospectives",
+      "pattern_keywords": [
+        "relative path",
+        "CLAUDE_PROJECT_DIR",
+        "working directory",
+        "prevention_path"
+      ],
+      "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": null
     }
