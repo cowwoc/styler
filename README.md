@@ -4,7 +4,7 @@
 </h1>
 
 [![Supports JDK 25](https://img.shields.io/badge/Supports-JDK%2025-blue)](https://openjdk.org/)
-[![License](https://img.shields.io/badge/License-Source%20Available-green)](LICENSE)
+[![License](https://img.shields.io/badge/License-Source%20Available-green)](LICENSE.md)
 
 **Your style. Their style. Same codebase.**
 
@@ -61,4 +61,4 @@ Built by [Gili Tzabari](https://github.com/cowwoc), author of [requirements.java
 
 ## License
 
-Source-available. Free for personal use. [Details](LICENSE).
+Source-available. Free for personal use. [Details](LICENSE.md).
