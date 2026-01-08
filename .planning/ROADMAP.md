@@ -33,43 +33,36 @@ CLI, formatters, and AI violation output for agent integration.
 - implement-virtual-thread-processing
 - create-maven-plugin
 
-#### Phase 3: Parser Core (15 tasks) ✅
+#### Phase 3: Parser Core (11 tasks) ✅
 Core parser enhancements for JDK 14+ features.
 - add-yield-statement-support
-- add-annotation-element-defaults
-- add-multi-catch-support
+- annotation-parsing (element defaults, package annotations, nested values)
+- try-catch-enhancements (multi-catch, try-resource variable)
 - add-binary-hex-literals
 - add-labeled-statement-support
-- add-try-resource-variable
 - add-qualified-class-instantiation
 - add-explicit-type-arguments
-- add-package-annotations
-- expand-tokentype-acronyms
-- refactor-if-else-to-switch
+- code-quality-refactoring (expand tokentype acronyms, if-else to switch)
 - add-qualified-this-super
-- add-nested-annotation-values
 - add-local-type-declarations
 - add-cast-expressions
 
-#### Phase 4: Parser Advanced (19 tasks) ✅
+#### Phase 4: Parser Advanced (16 tasks) ✅
 Advanced parser features including JDK 25 support.
-- add-array-dimension-annotations
-- add-array-type-method-references
+- array-parsing-features (dimension annotations, array type method refs)
 - add-flexible-constructor-bodies
-- add-module-import-declarations
+- module-support (module imports, module-info parsing)
 - refactor-parser-depth-limiting
 - collapse-import-node-types
 - add-compact-source-files
 - migrate-parser-tests-to-nodearena
-- fix-remaining-comment-gaps
+- comment-parsing-fixes (remaining gaps, block comment in members)
 - add-compilation-check
 - add-primitive-type-patterns
 - add-unicode-escape-preprocessing
-- add-module-info-parsing
 - apply-brace-omission-style
 - fix-array-creation-expression-parsing
 - add-anonymous-inner-class-support
-- fix-block-comment-in-member-declaration
 - fix-classpath-scanner-per-file-overhead
 - add-license-file
 
@@ -81,12 +74,10 @@ Advanced parser features including JDK 25 support.
 
 Performance validation, testing infrastructure, and CI/CD pipeline.
 
-#### Phase 5: Scale & Performance (4 tasks)
+#### Phase 5: Scale & Performance (2 tasks)
 CLI parallel processing and JMH benchmarks.
 - add-cli-parallel-processing
-- create-jmh-benchmarks
-- benchmark-concurrency-models
-- benchmark-tool-comparison
+- benchmarking-suite (JMH benchmarks, concurrency models, tool comparison)
 
 #### Phase 6: Testing & Quality (2 tasks)
 Regression tests and CLI integration tests.

@@ -7,8 +7,8 @@
 ## Current Status
 
 ### Milestone Progress
-- **Milestone 1 (Core Product)**: ✅ COMPLETE (48 tasks across 4 phases)
-- **Milestone 2 (Scale & Quality)**: PLANNED (7 tasks across 3 phases)
+- **Milestone 1 (Core Product)**: ✅ COMPLETE (41 tasks across 4 phases)
+- **Milestone 2 (Scale & Quality)**: PLANNED (5 tasks across 3 phases)
 - **Milestone 3-7**: PLANNED (20 tasks across 7 phases)
 
 ### Phase Completion
@@ -16,9 +16,9 @@
 |-------|------|-------|--------|
 | 1 | Foundation | 5 | ✅ Complete |
 | 2 | AI Integration | 9 | ✅ Complete |
-| 3 | Parser Core | 15 | ✅ Complete |
-| 4 | Parser Advanced | 19 | ✅ Complete |
-| 5 | Scale & Performance | 4 | 🔲 Planned |
+| 3 | Parser Core | 11 | ✅ Complete |
+| 4 | Parser Advanced | 16 | ✅ Complete |
+| 5 | Scale & Performance | 2 | 🔲 Planned |
 | 6 | Testing & Quality | 2 | 🔲 Planned |
 | 7 | CI/CD Pipeline | 1 | 🔲 Planned |
 | 8 | Browser Extension | 4 | 🔲 Planned |
@@ -37,29 +37,28 @@
 ### 2026-01-06
 - ✅ fix-array-creation-expression-parsing - Array creation fix
 - ✅ add-anonymous-inner-class-support - Test coverage
-- ✅ fix-block-comment-in-member-declaration - Comment handling
+- ✅ comment-parsing-fixes (Part B) - Block comment in member declarations
 - ✅ fix-classpath-scanner-per-file-overhead - Performance fix (13.6ms → 0ms/file)
 
 ### 2026-01-05
 - ✅ add-compilation-check - Compilation validation
 - ✅ add-primitive-type-patterns - JEP 507 support
 - ✅ add-unicode-escape-preprocessing - JLS §3.3 compliance
-- ✅ add-module-info-parsing - JPMS support
+- ✅ module-support (Part B) - JPMS module-info parsing
 - ✅ apply-brace-omission-style - Codebase-wide style
 
 ### 2026-01-03
 - ✅ add-compact-source-files - JEP 512 implicit classes
 - ✅ migrate-parser-tests-to-nodearena - 1305 lines removed
-- ✅ fix-remaining-comment-gaps - 36 parseComments() calls added
+- ✅ comment-parsing-fixes (Part A) - 36 parseComments() calls added
 
 ## Next Actions
 
 ### Immediate (Phase 5)
 1. **add-cli-parallel-processing** - Use BatchProcessor for 100+ files/sec throughput
-2. **create-jmh-benchmarks** - Validate all performance claims
+2. **benchmarking-suite** - JMH benchmarks, concurrency models, tool comparison
 
 ### Blocked Tasks
-- benchmark-tool-comparison - Blocked by create-jmh-benchmarks
 - add-regression-test-suite - Blocked by implement-pipeline-stages
 - setup-github-actions-ci - Blocked by testing tasks
 

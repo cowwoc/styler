@@ -677,6 +677,126 @@
       "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M034",
+      "timestamp": "2026-01-08T09:00:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Plan deviation without informing user - Changed plan (removed --parallel flag) but didn't announce until user asked",
+      "root_cause": "No mandatory checkpoint requiring announcement of plan changes before implementation. Agent proceeded with deviation silently.",
+      "prevention_type": "skill",
+      "prevention_path": ".claude/cat/workflows/execute-phase.md#user_initiated_plan_changes",
+      "pattern_keywords": [
+        "plan",
+        "deviation",
+        "announce",
+        "user",
+        "change"
+      ],
+      "commit": "5e5c314",
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
+    },
+    {
+      "id": "M035",
+      "timestamp": "2026-01-08T09:00:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Merged without user review - Committed changes and marked plan complete without pausing for user review",
+      "root_cause": "No mandatory user review checkpoint before committing plan implementation. Agent assumed implementation was correct.",
+      "prevention_type": "skill",
+      "prevention_path": ".claude/cat/workflows/execute-phase.md#pre_commit_review",
+      "pattern_keywords": [
+        "review",
+        "commit",
+        "merge",
+        "user",
+        "approval"
+      ],
+      "commit": "5e5c314",
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
+    },
+    {
+      "id": "M036",
+      "timestamp": "2026-01-08T09:30:00-05:00",
+      "category": "logical_error",
+      "pattern_id": null,
+      "description": "Misattributed change source - Claimed change was due to user feedback when actually due to discovering existing code API",
+      "root_cause": "Relied on memory/summary instead of verifying actual conversation sequence via get-history. Memory was inaccurate about cause-and-effect.",
+      "prevention_type": "skill",
+      "prevention_path": ".claude/cat/workflows/execute-phase.md#implementation_discovery_changes",
+      "pattern_keywords": [
+        "attribution",
+        "memory",
+        "sequence",
+        "cause",
+        "discovery"
+      ],
+      "commit": "2813b08",
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
+    },
+    {
+      "id": "M037",
+      "timestamp": "2026-01-08T10:00:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Did not invoke get-history when doing root cause analysis for learn-from-mistakes",
+      "root_cause": "learn-from-mistakes skill did not require conversation verification step. Agent proceeded with analysis based on memory which was inaccurate.",
+      "prevention_type": "skill",
+      "prevention_path": ".claude/skills/learn-from-mistakes/SKILL.md#step-0-verify-event-sequence",
+      "pattern_keywords": [
+        "get-history",
+        "verification",
+        "sequence",
+        "root cause",
+        "memory"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
+    },
+    {
+      "id": "M038",
+      "timestamp": "2026-01-08T10:00:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Did not update retrospectives/mistakes.json when learning from mistakes",
+      "root_cause": "learn-from-mistakes skill did not require retrospectives logging step. Agent stated prevention but didn't log for cross-session tracking.",
+      "prevention_type": "skill",
+      "prevention_path": ".claude/skills/learn-from-mistakes/SKILL.md#step-4-log-to-retrospectives",
+      "pattern_keywords": [
+        "retrospectives",
+        "logging",
+        "mistakes.json",
+        "tracking",
+        "audit"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
+    },
+    {
+      "id": "M039",
+      "timestamp": "2026-01-08T10:15:00-05:00",
+      "category": "detection_gap",
+      "pattern_id": null,
+      "description": "False positive in Pattern 7 (git_operation_failure) when grepping JSON content from session history",
+      "root_cause": "Pattern 7 matched text like 'fatal:' and 'error:' inside JSON string values when grepping session history files. No filtering for JSON content.",
+      "prevention_type": "hook",
+      "prevention_path": "hooks/auto-learn-from-mistakes.sh",
+      "pattern_keywords": [
+        "false positive",
+        "JSON",
+        "pattern 7",
+        "grep",
+        "session history"
+      ],
+      "commit": "da85f7c",
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ]
 }

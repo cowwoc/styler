@@ -13,7 +13,7 @@ Automated testing and release pipeline.
 
 ## Dependencies
 - Comprehensive Testing tasks
-- create-jmh-benchmarks
+- benchmarking-suite
 - create-maven-plugin (complete)
 
 ## Verification
