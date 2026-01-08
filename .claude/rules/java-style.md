@@ -69,8 +69,14 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 - Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` or `isNotNull()` on arena - see [testing-claude.md](../../docs/code-style/testing-claude.md#parser-test-patterns)
   - `isNotEmpty()` on nodes: Tests nothing about specific node types
   - `isNotNull()` on arena: Only verifies parsing succeeded, NOT AST correctness
-- Parser test position values: Use placeholder technique to verify - see [testing-claude.md](../../docs/code-style/testing-claude.md#verify-position-calculations)
-  - Write test with `(0, 0)` placeholders first, run to see actual positions
+- **🚨 CRITICAL**: Expected values must be MANUALLY DERIVED - see [testing-claude.md](../../docs/code-style/testing-claude.md#derive-expected-values-manually)
+  - **NEVER** run test and copy actual output as expected values
+  - Manually analyze source string to determine what nodes SHOULD exist
+  - Manually determine the order and structure of expected nodes
+  - Only THEN use placeholder technique for position verification (below)
+- Parser test position values: Use placeholder technique to verify POSITIONS ONLY - see [testing-claude.md](../../docs/code-style/testing-claude.md#verify-position-calculations)
+  - After manually deriving expected node types, use `(0, 0)` placeholders for positions
+  - Run to see actual positions, then **VERIFY** each position is correct before copying
   - **⚠️ MANDATORY**: VERIFY actual positions are correct before updating expected values
   - Manual byte counting is error-prone (tabs, newlines, text block indentation)
   - **🚨 VIOLATION**: Comments like `// From actual:` prove verification was SKIPPED - see [anti-patterns](../../docs/code-style/testing-claude.md#expected-value-anti-patterns)
@@ -420,39 +426,44 @@ private final AtomicBoolean closed = new AtomicBoolean();
 ### PMD Suppression
 Only suppress with documented legitimate reason. "Too much work" is NOT valid.
 
-**NcssCount violations**: **NEVER suppress without actually attempting decomposition first.**
+**NcssCount violations**: **NEVER suppress. Always refactor.**
 
-⚠️ **CRITICAL**: Reasoning about why decomposition "would be hard" is NOT the same as attempting it.
+⚠️ **CRITICAL**: NcssCount suppressions are PROHIBITED. Always refactor the code to stay under the threshold.
 
-**MANDATORY before ANY NcssCount suppression**:
-1. **Actually extract** at least one helper method or helper class
-2. **Run the build** to verify extraction works
-3. **Compare readability** of extracted vs original code
-4. **Only if extraction genuinely harms readability**, add suppression with a comment explaining:
-   - What decomposition was attempted
-   - Why it harmed readability (be specific)
+**When NcssCount threshold is exceeded**:
+1. **Extract helper methods** - Group related logic into smaller methods
+2. **Extract helper classes** - Move cohesive functionality to dedicated classes
+3. **Continue decomposing** until NCSS count is below threshold
+4. **NEVER add `@SuppressWarnings("PMD.NcssCount")`** - this is always wrong
 
-**Valid reasons for suppression** (after attempting decomposition):
-- State machine logic where extraction breaks control flow clarity
-- Switch statements with many cases that cannot be reasonably grouped
-- Parser methods with tightly coupled position/token state
+**Common refactoring strategies**:
+- Extract parsing logic for specific constructs to helper methods
+- Create inner classes for closely related functionality
+- Use composition (helper objects) instead of monolithic classes
+- Group switch cases into separate methods when possible
 
-**INVALID reasons** (do NOT suppress):
-- "Shared state would need to be exposed" - use inner classes or pass state
-- "Would need to pass many parameters" - create parameter objects or extract to helper class
-- "Class is inherently large" - extract to multiple classes (e.g., ModuleParser helper)
+⚠️ **PRESERVE VALUABLE COMMENTS**: When refactoring for NCSS, preserve comments that explain:
+- **WHY** code does something (intent, rationale, design decisions)
+- **Edge cases** being handled (e.g., "cast disambiguation", "includes unnamed patterns")
+- **Non-obvious behavior** that readers need to understand
 
-**Example - Parser too large**:
+Only remove comments that merely restate WHAT the code does (e.g., `// return false` before `return false`)
+
+**Example - Parser exceeds NCSS**:
 ```java
-// ❌ WRONG - Suppressing without extraction
-// "Parser needs shared state so extraction is hard"
+// ❌ WRONG - Suppressing NcssCount (NEVER do this)
 @SuppressWarnings("PMD.NcssCount")
 public class Parser { /* 1600+ lines */ }
 
-// ✅ CORRECT - Extract to helper class
+// ✅ CORRECT - Extract helper methods
+public class Parser {
+    // Extract: tryConsumeArrayDimensions(), parseModuleDeclaration(), etc.
+    // Keep extracting until under threshold
+}
+
+// ✅ ALSO CORRECT - Extract helper class for cohesive functionality
 public class Parser {
     private final ModuleParser moduleParser;  // Handles module-info.java
-    // ... now under threshold
 }
 ```
 
