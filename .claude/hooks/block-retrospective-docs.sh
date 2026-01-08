@@ -166,7 +166,7 @@ Testing: Attempted to reproduce - correctly blocked
 
 ## Protocol Reference
 
-See: /workspace/main/CLAUDE.md § RETROSPECTIVE DOCUMENTATION POLICY
+See: /workspace/CLAUDE.md § RETROSPECTIVE DOCUMENTATION POLICY
 
 **WHY THIS MATTERS**:
 - Retrospectives duplicate information already in git history
@@ -399,7 +399,7 @@ $(printf '  - %s\n' "${MATCHED_CONTENT_PATTERNS[@]}")
 
 ## Protocol Reference
 
-See: /workspace/main/CLAUDE.md § RETROSPECTIVE DOCUMENTATION POLICY"
+See: /workspace/CLAUDE.md § RETROSPECTIVE DOCUMENTATION POLICY"
 
     output_hook_error "PreToolUse" "$MESSAGE"
     exit 0
