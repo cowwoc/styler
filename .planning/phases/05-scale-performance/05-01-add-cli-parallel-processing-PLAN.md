@@ -4,10 +4,9 @@
 Use BatchProcessor for multi-file CLI operations to achieve 100+ files/sec throughput.
 
 ## Tasks
-1. Modify CliMain.processFiles() to use BatchProcessor
-2. Add --parallel flag (default: true)
-3. Add --max-concurrency flag
-4. Integrate progress callback for --verbose mode
+1. Add maxConcurrency field to CLIOptions
+2. Add --max-concurrency flag to ArgumentParser (default: calculated from memory)
+3. Modify CliMain to use BatchProcessor for parallel file processing
 
 ## Dependencies
 - implement-virtual-thread-processing (complete)
@@ -16,5 +15,5 @@ Use BatchProcessor for multi-file CLI operations to achieve 100+ files/sec throu
 
 ## Verification
 - [ ] Throughput improves from 27 files/sec to 100+ files/sec
-- [ ] --parallel flag works correctly
+- [ ] --max-concurrency=1 processes files sequentially
 - [ ] CLI integration tests pass

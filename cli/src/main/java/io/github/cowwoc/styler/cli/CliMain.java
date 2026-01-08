@@ -4,8 +4,8 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import io.github.cowwoc.styler.config.Config;
 import io.github.cowwoc.styler.config.ConfigurationLoader;
@@ -21,6 +21,11 @@ import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
 import io.github.cowwoc.styler.pipeline.FileProcessingPipeline;
 import io.github.cowwoc.styler.pipeline.PipelineResult;
+import io.github.cowwoc.styler.pipeline.parallel.BatchProcessor;
+import io.github.cowwoc.styler.pipeline.parallel.BatchResult;
+import io.github.cowwoc.styler.pipeline.parallel.DefaultBatchProcessor;
+import io.github.cowwoc.styler.pipeline.parallel.ErrorStrategy;
+import io.github.cowwoc.styler.pipeline.parallel.ParallelProcessingConfig;
 import io.github.cowwoc.styler.security.SecurityConfig;
 
 /**
@@ -31,7 +36,7 @@ import io.github.cowwoc.styler.security.SecurityConfig;
  *   <li>Parse command-line arguments into CLIOptions</li>
  *   <li>Load configuration from TOML file</li>
  *   <li>Build the file processing pipeline</li>
- *   <li>Process input files sequentially</li>
+ *   <li>Process input files in parallel using virtual threads</li>
  *   <li>Output results in appropriate format</li>
  *   <li>Return exit code indicating success or error</li>
  * </ol>
@@ -97,13 +102,15 @@ public final class CliMain
 			// Step 3: Build pipeline
 			FileProcessingPipeline pipeline = buildPipeline(config, options);
 
-			// Step 4: Process files
-			List<PipelineResult> results = new ArrayList<>();
-			for (Path inputPath : options.inputPaths())
-				results.add(processFile(pipeline, inputPath));
+			// Step 4: Validate input paths exist
+			validateInputPaths(options.inputPaths());
 
-			// Step 5: Determine and return exit code
-			return determineExitCode(results, options);
+			// Step 5: Process files in parallel
+			BatchResult batchResult = processFilesInParallel(pipeline, options);
+
+			// Step 5: Report errors and determine exit code
+			reportErrors(batchResult);
+			return determineExitCode(batchResult, options);
 		}
 		catch (HelpRequestedException e)
 		{
@@ -127,6 +134,13 @@ public final class CliMain
 			// Invalid input - file not readable, directory not supported, etc.
 			System.err.println("Error: " + e.getMessage());
 			return ExitCode.USAGE_ERROR.code();
+		}
+		catch (InterruptedException e)
+		{
+			// Processing was interrupted
+			Thread.currentThread().interrupt();
+			System.err.println("Processing interrupted");
+			return ExitCode.INTERNAL_ERROR.code();
 		}
 		catch (Exception e)
 		{
@@ -222,6 +236,36 @@ public final class CliMain
 	}
 
 	/**
+	 * Validates that all input paths exist and are files (not directories).
+	 * <p>
+	 * Rejects non-existent paths and directories with clear error messages.
+	 * This catches user errors (typos, wrong paths) before processing begins.
+	 *
+	 * @param inputPaths the paths to validate
+	 * @throws IllegalArgumentException if any path does not exist or is a directory
+	 * @throws NullPointerException     if inputPaths is null
+	 */
+	private void validateInputPaths(List<Path> inputPaths)
+	{
+		requireThat(inputPaths, "inputPaths").isNotNull();
+
+		for (Path path : inputPaths)
+		{
+			if (!Files.exists(path))
+			{
+				throw new IllegalArgumentException(
+					"Path does not exist: " + path);
+			}
+			if (Files.isDirectory(path))
+			{
+				throw new IllegalArgumentException(
+					"Directory processing not yet supported: " + path +
+					". Use explicit file paths. File discovery will be implemented in a future release.");
+			}
+		}
+	}
+
+	/**
 	 * Creates formatting rules based on configuration.
 	 * <p>
 	 * Currently creates rules for line length checking and import organization.
@@ -271,70 +315,82 @@ public final class CliMain
 	}
 
 	/**
-	 * Processes a single file through the pipeline.
+	 * Processes files in parallel using the batch processor.
 	 * <p>
-	 * This method handles file-level errors and returns a PipelineResult.
-	 * Callers must use try-with-resources to ensure proper cleanup.
+	 * Configures parallel processing based on CLI options and executes the batch.
 	 *
 	 * @param pipeline the configured file processing pipeline
-	 * @param filePath the path to process
-	 * @return the pipeline result (may indicate success or failure)
-	 * @throws SecurityException if file is rejected by security validation
-	 * @throws IOException if file cannot be read
+	 * @param options  CLI options including max concurrency setting
+	 * @return the batch result containing all processing outcomes
+	 * @throws InterruptedException if processing is interrupted
 	 * @throws NullPointerException if any argument is null
 	 */
-	private PipelineResult processFile(FileProcessingPipeline pipeline, Path filePath)
+	private BatchResult processFilesInParallel(FileProcessingPipeline pipeline, CLIOptions options)
+		throws InterruptedException
 	{
 		requireThat(pipeline, "pipeline").isNotNull();
-		requireThat(filePath, "filePath").isNotNull();
+		requireThat(options, "options").isNotNull();
 
-		// Check if path is a directory - reject with clear error
-		if (Files.isDirectory(filePath))
+		int maxConcurrency = options.maxConcurrency().
+			orElseGet(ParallelProcessingConfig::calculateDefaultMaxConcurrency);
+
+		ParallelProcessingConfig parallelConfig = ParallelProcessingConfig.builder().
+			maxConcurrency(maxConcurrency).
+			errorStrategy(ErrorStrategy.CONTINUE).
+			build();
+
+		try (BatchProcessor batchProcessor = new DefaultBatchProcessor(pipeline, parallelConfig))
 		{
-			throw new IllegalArgumentException(
-				"Directory processing not yet supported: " + filePath +
-				". Use explicit file paths. File discovery will be implemented in a future release.");
+			return batchProcessor.processFiles(options.inputPaths());
 		}
-
-		// Check if file is readable
-		if (!Files.isReadable(filePath))
-			throw new IllegalArgumentException("File is not readable: " + filePath);
-
-		return pipeline.processFile(filePath);
 	}
 
 	/**
-	 * Determines the exit code based on processing results and mode.
+	 * Reports errors from batch processing to stderr.
+	 *
+	 * @param batchResult the batch result containing any errors
+	 * @throws NullPointerException if batchResult is null
+	 */
+	@SuppressWarnings("PMD.SystemPrintln")
+	private void reportErrors(BatchResult batchResult)
+	{
+		requireThat(batchResult, "batchResult").isNotNull();
+
+		for (Map.Entry<Path, String> error : batchResult.errors().entrySet())
+			System.err.println("Error processing " + error.getKey() + ": " + error.getValue());
+	}
+
+	/**
+	 * Determines the exit code based on batch processing results and mode.
 	 * <p>
 	 * Exit code determination follows these rules:
 	 * <ul>
-	 *   <li>If any file failed to process: return error code (4, 5, etc.)</li>
+	 *   <li>If any file failed to process: return IO_ERROR (4)</li>
 	 *   <li>In check mode with violations: return VIOLATIONS_FOUND (1)</li>
 	 *   <li>In fix mode or check mode without violations: return SUCCESS (0)</li>
 	 * </ul>
 	 *
-	 * @param results list of processing results
-	 * @param options CLI options specifying mode
+	 * @param batchResult the batch processing result
+	 * @param options     CLI options specifying mode
 	 * @return appropriate exit code
+	 * @throws NullPointerException if any argument is null
 	 */
-	private int determineExitCode(List<PipelineResult> results, CLIOptions options)
+	private int determineExitCode(BatchResult batchResult, CLIOptions options)
 	{
-		requireThat(results, "results").isNotNull();
+		requireThat(batchResult, "batchResult").isNotNull();
 		requireThat(options, "options").isNotNull();
 
 		// Check for processing failures
-		for (PipelineResult result : results)
-			if (!result.overallSuccess())
-				// Processing failed for at least one file
-				// Error details are in result.stageResults()
-				// For now, return IO_ERROR as a generic failure code
-				return ExitCode.IO_ERROR.code();
+		if (batchResult.hasFailed())
+			return ExitCode.IO_ERROR.code();
 
 		// Check for violations in check mode
 		if (options.checkMode())
-			for (PipelineResult result : results)
+		{
+			for (PipelineResult result : batchResult.results())
 				if (!result.violations().isEmpty())
 					return ExitCode.VIOLATIONS_FOUND.code();
+		}
 
 		// Success: no errors or all in fix mode
 		return ExitCode.SUCCESS.code();
