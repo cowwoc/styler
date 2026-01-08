@@ -15,10 +15,56 @@
     "effectiveness_monitoring_enabled": true,
     "effectiveness_check_on_new_mistake": true
   },
-  "escalations": [],
-  "last_retrospective": "2025-11-28T08:30:00-05:00",
-  "mistake_count_since_last": 7,
+  "escalations": [
+    {
+      "id": "ESCALATE-2026-01-08-001",
+      "original_action_id": "A004",
+      "original_fix_description": "Git operation skills with backup-verify-cleanup pattern",
+      "failure_analysis": {
+        "expected_result": "Prevent all git operation failures through backup-verify-cleanup",
+        "actual_result": "3 new git failures (M025, M026, M033) in period",
+        "root_cause": "Skills cover squash/rebase but not destructive commands (reflog expire, gc prune) or file extraction from stale commits",
+        "gap_identified": "Missing coverage for destructive commands and stale-base operations"
+      },
+      "proposed_solution": {
+        "approach": "defense-in-depth",
+        "description": "Add PreToolUse hook to block destructive git commands",
+        "prevention_type": "hook",
+        "layers": ["PreToolUse validation for dangerous git commands", "Warn on file extraction from non-HEAD commits"]
+      },
+      "priority": "high",
+      "status": "open"
+    }
+  ],
+  "last_retrospective": "2026-01-08T12:00:00-05:00",
+  "mistake_count_since_last": 0,
   "retrospectives": [
+    {
+      "id": "R002",
+      "timestamp": "2026-01-08T12:00:00-05:00",
+      "session_id": "e48f17a9-fe8f-4a6c-88fc-afca8a2176dd",
+      "trigger": "user_requested",
+      "period_analyzed": "2025-11-28 to 2026-01-08",
+      "mistakes_analyzed": 20,
+      "summary": "20 mistakes analyzed across 6 categories. protocol_violation (7) is the highest category indicating workflow checkpoint gaps. 3 new patterns identified. A004 (git operations) escalated due to 3 new failures.",
+      "findings": {
+        "by_category": {
+          "protocol_violation": 7,
+          "build_failure": 4,
+          "git_operation_failure": 3,
+          "test_failure": 3,
+          "logical_error": 2,
+          "detection_gap": 1
+        },
+        "action_item_effectiveness": {
+          "A001": "effective",
+          "A002": "effective",
+          "A003": "partially_effective",
+          "A004": "escalated"
+        },
+        "new_patterns_identified": ["PATTERN-004", "PATTERN-005", "PATTERN-006"]
+      }
+    },
     {
       "id": "R001",
       "timestamp": "2025-11-28T08:30:00-05:00",
@@ -120,6 +166,48 @@
         "A001"
       ],
       "note": "Pre-commit hook added 2025-11-28 - blocks commits with style violations"
+    },
+    {
+      "pattern_id": "PATTERN-004",
+      "pattern": "protocol_violation",
+      "occurrences_total": 7,
+      "occurrences_after_fix": 0,
+      "first_seen": "2026-01-05",
+      "last_seen": "2026-01-08",
+      "last_action_date": null,
+      "status": "new",
+      "effectiveness": "pending",
+      "preventions": [],
+      "related_action_items": ["A005"],
+      "note": "New pattern - workflow checkpoint gaps causing plan/commit/path issues"
+    },
+    {
+      "pattern_id": "PATTERN-005",
+      "pattern": "test_failure",
+      "occurrences_total": 3,
+      "occurrences_after_fix": 0,
+      "first_seen": "2026-01-05",
+      "last_seen": "2026-01-06",
+      "last_action_date": null,
+      "status": "new",
+      "effectiveness": "pending",
+      "preventions": [],
+      "related_action_items": ["A006"],
+      "note": "New pattern - weak test assertions and blind position copying"
+    },
+    {
+      "pattern_id": "PATTERN-006",
+      "pattern": "git_operation_failure",
+      "occurrences_total": 3,
+      "occurrences_after_fix": 0,
+      "first_seen": "2026-01-05",
+      "last_seen": "2026-01-06",
+      "last_action_date": null,
+      "status": "new",
+      "effectiveness": "pending",
+      "preventions": [],
+      "related_action_items": ["A007"],
+      "note": "Extension of PATTERN-001 - destructive commands and stale-base operations"
     }
   ],
   "action_items": [
@@ -200,10 +288,63 @@
       ],
       "effectiveness_check": {
         "mistakes_before": 4,
-        "mistakes_after": 0,
+        "mistakes_after": 3,
+        "post_fix_mistakes": ["M025", "M026", "M033"],
+        "verdict": "escalated"
+      },
+      "escalation": "ESCALATE-2026-01-08-001"
+    },
+    {
+      "id": "A005",
+      "priority": "high",
+      "description": "Add mandatory checkpoint enforcement to workflow skills for plan changes, user review, get-history, retrospectives logging, and path format validation",
+      "category": "protocol_violation",
+      "pattern_id": "PATTERN-004",
+      "status": "open",
+      "created_date": "2026-01-08T12:00:00-05:00",
+      "completed_date": null,
+      "related_mistakes": ["M028", "M034", "M035", "M037", "M038", "M040", "M041"],
+      "effectiveness_check": {
+        "mistakes_before": 7,
+        "mistakes_after": null,
         "post_fix_mistakes": [],
-        "verdict": "effective"
+        "verdict": "pending"
       }
+    },
+    {
+      "id": "A006",
+      "priority": "medium",
+      "description": "Strengthen parser test documentation: prohibit weak assertions (isNotNull on arenas), require position verification, add anti-pattern examples",
+      "category": "test_failure",
+      "pattern_id": "PATTERN-005",
+      "status": "open",
+      "created_date": "2026-01-08T12:00:00-05:00",
+      "completed_date": null,
+      "related_mistakes": ["M027", "M031", "M032"],
+      "effectiveness_check": {
+        "mistakes_before": 3,
+        "mistakes_after": null,
+        "post_fix_mistakes": [],
+        "verdict": "pending"
+      }
+    },
+    {
+      "id": "A007",
+      "priority": "high",
+      "description": "Add PreToolUse hook to block destructive git commands (reflog expire, gc --prune) and warn on file extraction from non-HEAD commits",
+      "category": "git_operation_failure",
+      "pattern_id": "PATTERN-006",
+      "status": "open",
+      "created_date": "2026-01-08T12:00:00-05:00",
+      "completed_date": null,
+      "related_mistakes": ["M025", "M026", "M033"],
+      "effectiveness_check": {
+        "mistakes_before": 3,
+        "mistakes_after": null,
+        "post_fix_mistakes": [],
+        "verdict": "pending"
+      },
+      "escalation_of": "A004"
     }
   ],
   "effectiveness_analysis_query": "jq --arg pattern_id \"PATTERN-XXX\" --arg completed_date \"YYYY-MM-DD\" '[.mistakes[] | select(.pattern_id == $pattern_id and .timestamp > $completed_date)] | length' .claude/retrospectives/mistakes.json"
