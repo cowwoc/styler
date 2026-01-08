@@ -1,33 +1,33 @@
 # Styler Project State
 
 > **Last Updated**: 2026-01-08
-> **Current Phase**: 5 (Scale & Performance) - IN PROGRESS
-> **Plan**: 1 of 5 complete
+> **Current Release**: 5 (Parser Compatibility) - IN PROGRESS
+> **Timeline**: v1.0 launch by January 24, 2026 (18 days)
 
 ## Current Status
 
 ### Milestone Progress
-- **Milestone 1 (Core Product)**: ✅ COMPLETE (41 tasks across 4 phases)
-- **Milestone 2 (Scale & Quality)**: PLANNED (8 tasks across 3 phases)
-- **Milestone 3-7**: PLANNED (20 tasks across 7 phases)
+- **Milestone 1 (Core Product)**: ✅ COMPLETE (41 tasks across 4 releases)
+- **Milestone 2 (v1.0 Launch)**: 🔄 IN PROGRESS (1/19 tasks complete)
+- **Milestone 3-4 (v1.1+)**: DEFERRED
 
-### Phase Completion
-| Phase | Name | Tasks | Status |
-|-------|------|-------|--------|
-| 1 | Foundation | 5 | ✅ Complete |
-| 2 | AI Integration | 9 | ✅ Complete |
-| 3 | Parser Core | 11 | ✅ Complete |
-| 4 | Parser Advanced | 16 | ✅ Complete |
-| 5 | Scale & Performance | 5 | 🔄 In Progress (1/5) |
-| 6 | Testing & Quality | 2 | 🔲 Planned |
-| 7 | CI/CD Pipeline | 1 | 🔲 Planned |
-| 8 | Browser Extension | 4 | 🔲 Planned |
-| 9 | VCS Integration | 3 | 🔲 Planned |
-| 10 | Documentation | 3 | 🔲 Planned |
-| 11 | Parser Refinements | 3 | 🔲 Planned |
-| 12 | AI Enhancements | 3 | 🔲 Planned |
-| 13 | Deferred Work | 3 | 🔲 Planned |
-| 14 | Commercial Launch | 1 | 🔲 Planned |
+### Release Completion (v1.0 Launch)
+| Release | Name | Tasks | Status | Days |
+|-------|------|-------|--------|------|
+| 5 | Parser Compatibility | 2 | 🔄 Next | 1-3 |
+| 6 | CLI Polish | 4 | 🔄 In Progress (1/4) | 1-3 |
+| 7 | Browser Extension | 4 | 🔲 Planned | 4-8 |
+| 8 | Extension Polish | 2 | 🔲 Planned | 9-10 |
+| 9 | Documentation & Website | 4 | 🔲 Planned | 11-13 |
+| 10 | Marketing & Launch | 3 | 🔲 Planned | 14-18 |
+
+### Deferred to v1.1
+| Release | Name | Tasks |
+|-------|------|-------|
+| 11 | Scale & Performance | 3 |
+| 12 | VCS Integration | 3 |
+| 13 | Parser Refinements | 2 |
+| 14 | AI Enhancements | 1 |
 
 ## Recent Completions (Last 7 Days)
 
@@ -57,15 +57,15 @@
 
 ## Next Actions
 
-### Immediate (Phase 5)
-1. **benchmarking-suite** - JMH benchmarks, concurrency models, tool comparison
-2. **A005-workflow-checkpoint-enforcement** - Prevent protocol violations (7 occurrences)
-3. **A006-parser-test-documentation** - Prevent test failures (3 occurrences)
-4. **A007-block-destructive-git-commands** - Prevent git operation failures (3 occurrences)
+### Immediate (Days 1-3)
+1. **add-array-initializer-in-annotation-support** - Parser edge case for `@Annotation({val1, val2})`
+2. **fix-switch-expression-case-parsing** - Complex switch expression patterns
+3. **add-cli-integration-tests** - CLI test coverage for all flags
+4. **implement-ai-context-limiting** - Smart output limiting for agent context windows
+5. **implement-rules-summary-export** - Markdown export for AI pre-guidance
 
-### Blocked Tasks
-- add-regression-test-suite - Blocked by implement-pipeline-stages
-- setup-github-actions-ci - Blocked by testing tasks
+### Target
+- ~99% Spring Framework 6.2.1 parse success (currently ~94%)
 
 ## Key Decisions
 
@@ -89,35 +89,37 @@
 ### Parser Compatibility
 - ~50 parse errors on Spring Framework 6.2.1 (~94% success rate)
 - Affected: Array initializers in annotations, complex switch expressions
-- Tracked in: Phase 11 (Parser Refinements)
+- Tracked in: Release 5 (Parser Compatibility)
 
 ### Performance
 - CLI parallel processing implemented with virtual threads
 - Target: 100+ files/sec (verification pending benchmarking suite)
-- Tracked in: Phase 5 (benchmarking-suite)
+- Tracked in: Release 11 (Scale & Performance)
 
 ## File Locations
 
 ```
 .planning/
 ├── PROJECT.md          # Project definition
-├── ROADMAP.md          # Milestone/phase roadmap
+├── ROADMAP.md          # Milestone/release roadmap
 ├── STATE.md            # This file (current state)
 ├── config.json         # CAT configuration
 ├── codebase/           # Codebase analysis documents
-└── phases/
+└── releases/
     ├── 01-foundation/
     ├── 02-ai-integration/
     ├── 03-parser-core/
     ├── 04-parser-advanced/
-    ├── 05-scale-performance/
-    ├── 06-testing-quality/
-    ├── 07-ci-cd-pipeline/
-    ├── 08-browser-extension/
-    ├── 09-vcs-integration/
-    ├── 10-documentation/
-    ├── 11-parser-refinements/
-    ├── 12-ai-enhancements/
-    ├── 13-deferred-work/
-    └── 14-commercial-launch/
+    ├── 05-parser-compatibility/
+    ├── 06-cli-polish/
+    ├── 07-browser-extension/
+    ├── 08-extension-polish/
+    ├── 09-documentation-website/
+    ├── 10-marketing-launch/
+    ├── 11-scale-performance/
+    ├── 12-vcs-integration/
+    ├── 13-parser-refinements-v11/
+    ├── 14-ai-enhancements/
+    ├── 15-deferred-work/
+    └── 16-ide-integration/
 ```

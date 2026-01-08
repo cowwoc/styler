@@ -31,7 +31,7 @@ Let perfectionist developers maintain their personal coding standards while work
 
 <!-- Current scope. Building toward these. -->
 
-**Phase 1: Core Product (Days 1-3)**
+**Release 1: Core Product (Days 1-3)**
 - [ ] CLI parallel processing (100+ files/sec via BatchProcessor integration)
 - [ ] Parser edge case: array initializers in annotations (`@Annotation({val1, val2})`)
 - [ ] Parser edge case: complex switch expression patterns
@@ -40,7 +40,7 @@ Let perfectionist developers maintain their personal coding standards while work
 - [ ] Rules summary export (markdown export for AI pre-guidance)
 - [ ] Spring Framework 6.2.1 validation (~99% parse success)
 
-**Phase 2: Browser Extension Foundation (Days 4-8)**
+**Release 2: Browser Extension Foundation (Days 4-8)**
 - [ ] Line mapping API (bidirectional repo ↔ display mapping during reformatting)
 - [ ] Chrome extension: PR detection, GitHub API integration, user config storage
 - [ ] Formatter integration for browser (WASM or hosted service — evaluate Days 4-5)
@@ -49,25 +49,25 @@ Let perfectionist developers maintain their personal coding standards while work
 - [ ] Comment text translation (detect and translate line references)
 - [ ] Firefox extension port
 
-**Phase 3: Polish (Days 9-10)**
+**Release 3: Polish (Days 9-10)**
 - [ ] Extension edge cases (dark mode, collapsed diffs, large files)
 - [ ] Performance optimization for large PRs
 - [ ] Extension store assets and submission materials
 
-**Phase 4: Documentation + Website (Days 11-13)**
+**Release 4: Documentation + Website (Days 11-13)**
 - [ ] Installation guide, configuration reference, CLI usage guide
 - [ ] Browser extension guide
 - [ ] AI integration guide
 - [ ] Jekyll/Hugo website with landing, features, comparison pages
 - [ ] Pricing page and API documentation
 
-**Phase 5: Marketing + Payment (Days 14-15)**
+**Release 5: Marketing + Payment (Days 14-15)**
 - [ ] Content marketing (blog posts, demo video, demo GIF)
 - [ ] Payment processor setup and license delivery automation
 - [ ] Launch post drafts (HN, Reddit, Twitter)
 - [ ] Distribution strategy research and experimentation
 
-**Phase 6: Launch (Days 16-18)**
+**Release 6: Launch (Days 16-18)**
 - [ ] GitHub release v1.0.0
 - [ ] Browser extension store submissions
 - [ ] Public launch across channels
@@ -94,9 +94,9 @@ preferences honed on solo projects, but work on team projects (employment or ope
 They experience friction between "how I like it" and "how the repo wants it."
 
 **Prior Work**: Extensive existing codebase with 10-module Maven structure:
-- Phase A (Foundation): COMPLETE — parser, config, security, Arena-based AST
-- Phase B (AI Integration): COMPLETE — CLI, formatters, AI violation output
-- Phase C (Scale & Testing): In progress — benchmarks, parallel CLI pending
+- Release A (Foundation): COMPLETE — parser, config, security, Arena-based AST
+- Release B (AI Integration): COMPLETE — CLI, formatters, AI violation output
+- Release C (Scale & Testing): In progress — benchmarks, parallel CLI pending
 
 **Competition**: Developers currently suffer through inconsistent code styles. Checkstyle is check-only without
 auto-fix. Spotless/google-java-format are opinionated. IDE formatters are IDE-specific and not portable.

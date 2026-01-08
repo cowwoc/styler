@@ -5,15 +5,17 @@
 Styler is an unopinionated Java code formatter designed for AI agent integration and personal code style
 preferences. This roadmap tracks the path from foundation to commercial launch.
 
+**Timeline**: 18 days (January 7-24, 2026) for v1.0 launch.
+
 ## Milestones
 
 ### Milestone 1: Core Product (COMPLETE)
-**Status**: Complete (Phases 1-4)
+**Status**: Complete (Releases 1-4)
 **Completed**: 2026-01-07
 
 Foundation through parser advanced features, establishing the core product capabilities.
 
-#### Phase 1: Foundation (5 tasks) ✅
+#### Release 1: Foundation (5 tasks) ✅
 Core parsing, configuration, and security infrastructure.
 - implement-core-parser
 - implement-index-overlay-ast
@@ -21,7 +23,7 @@ Core parsing, configuration, and security infrastructure.
 - implement-security-framework
 - implement-file-discovery
 
-#### Phase 2: AI Integration (9 tasks) ✅
+#### Release 2: AI Integration (9 tasks) ✅
 CLI, formatters, and AI violation output for agent integration.
 - implement-cli-application
 - implement-line-length-formatter
@@ -33,7 +35,7 @@ CLI, formatters, and AI violation output for agent integration.
 - implement-virtual-thread-processing
 - create-maven-plugin
 
-#### Phase 3: Parser Core (11 tasks) ✅
+#### Release 3: Parser Core (11 tasks) ✅
 Core parser enhancements for JDK 14+ features.
 - add-yield-statement-support
 - annotation-parsing (element defaults, package annotations, nested values)
@@ -47,7 +49,7 @@ Core parser enhancements for JDK 14+ features.
 - add-local-type-declarations
 - add-cast-expressions
 
-#### Phase 4: Parser Advanced (16 tasks) ✅
+#### Release 4: Parser Advanced (16 tasks) ✅
 Advanced parser features including JDK 25 support.
 - array-parsing-features (dimension annotations, array type method refs)
 - add-flexible-constructor-bodies
@@ -68,102 +70,92 @@ Advanced parser features including JDK 25 support.
 
 ---
 
-### Milestone 2: Scale & Quality (IN PROGRESS)
-**Status**: Planned
-**Target**: Next
+### Milestone 2: v1.0 Launch (IN PROGRESS)
+**Status**: In Progress
+**Target**: January 24, 2026
 
-Performance validation, testing infrastructure, and CI/CD pipeline.
+Parser compatibility, CLI polish, browser extension, and commercial launch.
 
-#### Phase 5: Scale & Performance (5 tasks)
-CLI parallel processing, JMH benchmarks, and retrospective action items.
+#### Release 5: Parser Compatibility (2 tasks) — Days 1-3
+Fix parser edge cases blocking ~99% Spring Framework parse success.
+- add-array-initializer-in-annotation-support
+- fix-switch-expression-case-parsing
+
+#### Release 6: CLI Polish (4 tasks) — Days 1-3
+CLI integration tests and AI enhancements.
 - ✅ add-cli-parallel-processing
-- benchmarking-suite (JMH benchmarks, concurrency models, tool comparison)
-- A005-workflow-checkpoint-enforcement (RETRO: protocol_violation prevention)
-- A006-parser-test-documentation (RETRO: test_failure prevention)
-- A007-block-destructive-git-commands (RETRO: git_operation_failure prevention)
-
-#### Phase 6: Testing & Quality (2 tasks)
-Regression tests and CLI integration tests.
-- add-regression-test-suite
 - add-cli-integration-tests
+- implement-ai-context-limiting
+- implement-rules-summary-export
 
-#### Phase 7: CI/CD Pipeline (1 task)
-GitHub Actions for automated testing and releases.
-- setup-github-actions-ci
-
----
-
-### Milestone 3: Browser Extension (PLANNED)
-**Status**: Planned
-
-GitHub PR browser extension - the key commercial differentiator.
-
-#### Phase 8: Browser Extension (4 tasks)
-Line mapping, PR extension, and comment features.
+#### Release 7: Browser Extension (4 tasks) — Days 4-8
+Line mapping, PR extension, and comment features — the key commercial differentiator.
 - implement-line-mapping
 - create-github-pr-extension
 - implement-comment-repositioning
 - implement-comment-text-translation
 
+#### Release 8: Extension Polish (2 tasks) — Days 9-10
+Edge cases and performance optimization.
+- handle-extension-edge-cases (dark mode, collapsed diffs, large files)
+- optimize-large-pr-performance
+
+#### Release 9: Documentation & Website (4 tasks) — Days 11-13
+User docs, API docs, and GitHub Pages website.
+- create-user-documentation
+- create-browser-extension-guide
+- create-ai-integration-guide
+- create-github-pages
+
+#### Release 10: Marketing & Launch (3 tasks) — Days 14-18
+Content marketing, payment setup, and public launch.
+- create-marketing-content (blog posts, demo video, demo GIF)
+- setup-payment-processing
+- execute-public-launch (GitHub release, extension store, HN/Reddit/Twitter)
+
 ---
 
-### Milestone 4: VCS Integration (PLANNED)
-**Status**: Planned
+### Milestone 3: v1.1 Enhancements (DEFERRED)
+**Status**: Deferred until after v1.0 launch
 
-VCS format filters for working in user style while maintaining project standards.
+Performance validation, VCS integration, and additional refinements.
 
-#### Phase 9: VCS Integration (3 tasks)
+#### Release 11: Scale & Performance (3 tasks)
+JMH benchmarks and retrospective action items.
+- benchmarking-suite (JMH benchmarks, concurrency models, tool comparison)
+- A005-workflow-checkpoint-enforcement (RETRO: protocol_violation prevention)
+- A006-parser-test-documentation (RETRO: test_failure prevention)
+
+#### Release 12: VCS Integration (3 tasks)
 AST diff and format filters for Git/Mercurial.
 - implement-ast-diff
 - implement-original-preserving-clean
 - implement-vcs-format-filters
 
----
-
-### Milestone 5: Documentation & Launch (PLANNED)
-**Status**: Planned
-
-Documentation, website, and commercial launch preparation.
-
-#### Phase 10: Documentation (3 tasks)
-User docs, API docs, and GitHub Pages website.
-- create-user-documentation
-- create-api-documentation
-- create-github-pages
-
----
-
-### Milestone 6: Refinements (PLANNED)
-**Status**: Planned
-
-Parser refinements and AI enhancements.
-
-#### Phase 11: Parser Refinements (3 tasks)
+#### Release 13: Parser Refinements (2 tasks)
 Remaining parser compatibility issues.
-- add-array-initializer-in-annotation-support
-- fix-switch-expression-case-parsing
 - add-semantic-validation
+- add-regression-test-suite
 
-#### Phase 12: AI Enhancements (3 tasks)
-AI context optimization and config inference.
-- implement-ai-context-limiting
-- implement-rules-summary-export
+#### Release 14: AI Enhancements (1 task)
+Config inference from sample code.
 - implement-config-inference
 
 ---
 
-### Milestone 7: Deferred & Commercial (PLANNED)
-**Status**: Deferred
+### Milestone 4: Future Work (PLANNED)
+**Status**: Planned for v1.2+
 
 Optional enhancements and IDE plugins.
 
-#### Phase 13: Deferred Work (3 tasks)
-Wildcard imports, community registry, README update.
+#### Release 15: Deferred Work (4 tasks)
+Wildcard imports, community registry, CI/CD, README update.
 - resolve-wildcard-imports
 - create-community-config-registry
+- setup-github-actions-ci
 - update-readme-value-proposition
 
-#### Phase 14: Commercial Launch (1 task)
+#### Release 16: IDE Integration (1 task)
 IDE plugins for legacy VCS systems.
 - create-virtual-format-plugin
 
