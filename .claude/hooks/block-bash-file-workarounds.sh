@@ -59,9 +59,9 @@ fi
 # Define path patterns to protect
 # These are paths where file creation should go through Write/Edit tools
 PROTECTED_PATTERNS=(
-	"/workspace/main/.*\\.java"
-	"/workspace/main/.*\\.ts"
-	"/workspace/main/.*\\.py"
+	"/workspace/.*\\.java"
+	"/workspace/.*\\.ts"
+	"/workspace/.*\\.py"
 )
 
 # Check for file creation commands with redirection to protected paths
@@ -99,10 +99,10 @@ done
 
 # Also check for explicit path patterns in the command with any redirection
 if [ "$FILE_CREATION_DETECTED" = "false" ]; then
-	# Look for any > to /workspace/main/...java|ts|py
-	if echo "$COMMAND" | grep -qE ">[[:space:]]*['\"]?/workspace/main/.*\\.(java|ts|py)"; then
+	# Look for any > to /workspace/...java|ts|py
+	if echo "$COMMAND" | grep -qE ">[[:space:]]*['\"]?/workspace/.*\\.(java|ts|py)"; then
 		FILE_CREATION_DETECTED=true
-		DETECTED_PATH=$(echo "$COMMAND" | grep -oE "/workspace/main/[^[:space:]'\"]*\\.(java|ts|py)" | head -1)
+		DETECTED_PATH=$(echo "$COMMAND" | grep -oE "/workspace/[^[:space:]'\"]*\\.(java|ts|py)" | head -1)
 	fi
 fi
 
