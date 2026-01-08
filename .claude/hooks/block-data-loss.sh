@@ -39,7 +39,7 @@ mkdir -p /tmp 2>/dev/null || true
 echo "$(date): Consolidated hook received: $JSON_INPUT" >> /tmp/consolidated-debug.log 2>/dev/null || true
 
 # Source JSON parsing library
-source "$CLAUDE_PROJECT_DIR/.claude/hooks/lib/json-parser.sh"
+source "${CLAUDE_PROJECT_DIR}/.claude/hooks/lib/json-parser.sh"
 
 # Source helper for proper hook blocking
 source /workspace/.claude/scripts/json-output.sh
