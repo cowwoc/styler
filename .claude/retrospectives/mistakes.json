@@ -98,7 +98,7 @@
     "description": "Downloaded external Spring Framework files to test parser instead of creating minimal reproducing test cases",
     "root_cause": "Skipped Bug Discovery Protocol: should analyze error, hypothesize cause, create minimal test BEFORE fetching external codebases",
     "prevention_type": "documentation",
-    "prevention_path": "${CLAUDE_PROJECT_DIR}/docs/project/quality-guide.md#bug-discovery-protocol",
+    "prevention_path": "${CLAUDE_PROJECT_DIR}/.planning/codebase/QUALITY.md#bug-discovery-protocol",
     "pattern_keywords": ["test", "minimal", "reproduce", "bug", "external-files"],
     "commit": null,
     "recurrence_count": 0,

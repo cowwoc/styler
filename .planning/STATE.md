@@ -105,6 +105,19 @@
 ├── STATE.md            # This file (current state)
 ├── config.json         # CAT configuration
 ├── codebase/           # Codebase analysis documents
+│   ├── ARCHITECTURE.md # Technical architecture
+│   ├── SCOPE.md        # Project scope & requirements
+│   ├── OUT-OF-SCOPE.md # Explicit boundaries
+│   ├── BUILD.md        # Build configuration
+│   ├── STYLE.md        # Style validation rules
+│   ├── QUALITY.md      # Testing standards
+│   ├── CONVENTIONS.md  # Coding conventions index
+│   ├── TESTING.md      # Testing patterns
+│   └── conventions/    # Detailed convention rules
+│       ├── java.md     # Java-specific rules
+│       ├── common.md   # Universal rules
+│       ├── maven.md    # Maven rules
+│       └── policies.md # Code policies (comments, TODOs)
 └── releases/
     ├── 01-foundation/
     ├── 02-ai-integration/

@@ -404,6 +404,5 @@ with proper verification.**
 ---
 
 **Related Documentation:**
-- `testing-human.md` - Human-readable testing explanations
-- `java-claude.md` - Java-specific Claude patterns
-- `common-claude.md` - Universal code style patterns
+- `conventions/java.md` - Java-specific Claude patterns
+- `conventions/common.md` - Universal code style patterns

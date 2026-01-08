@@ -9,6 +9,6 @@ Document and apply brace omission style for single-line control statements.
 3. Restore braces for multi-line statements
 
 ## Verification
-- [ ] Style documented in java-style.md, java-claude.md, java-human.md
+- [ ] Style documented in java-style.md, conventions/java.md
 - [ ] Single-line bodies have braces removed
 - [ ] Multi-line bodies retain braces

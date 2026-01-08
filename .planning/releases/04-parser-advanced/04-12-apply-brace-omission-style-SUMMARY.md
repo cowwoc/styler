@@ -11,8 +11,7 @@
 
 ## Files Modified
 - `.claude/rules/java-style.md` - Quick reference with examples
-- `docs/code-style/java-claude.md` - Detection patterns for violations
-- `docs/code-style/java-human.md` - Rationale and practical examples
+- `.planning/codebase/conventions/java.md` - Detection patterns for violations
 - 68 Java source files across all modules (brace removal for single-line bodies)
 - 5 Java files (brace restoration for multi-line throw statements)
 

@@ -87,7 +87,6 @@ if [[ -n "$DELETIONS" ]]; then
   echo "  4. Retry the operation" >&2
   echo "" >&2
   echo "COMMON CAUSE: File extraction from commits based on stale main." >&2
-  echo "See: docs/project/git-workflow.md § File Extraction from Commits" >&2
   echo "============================================================" >&2
   echo "" >&2
 fi

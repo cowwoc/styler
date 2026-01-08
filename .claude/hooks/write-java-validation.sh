@@ -32,7 +32,7 @@ if grep -q "import static io.github.cowwoc.requirements.java.internal.implementa
   echo "Found: import static io.github.cowwoc.requirements.java.internal.implementation.*" >&2
   echo "Should be: import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;" >&2
   echo "" >&2
-  echo "See: docs/project/quality-guide.md § Parameter Validation" >&2
+  echo "See: .planning/codebase/QUALITY.md § Parameter Validation" >&2
   # Don't fail - just warn
 fi
 
@@ -45,7 +45,7 @@ if grep -E 'requireThat\s*\(\s*"[^"]+"\s*,' "$FILE_PATH" 2>/dev/null | head -1; 
   echo "Correct pattern: requireThat(value, \"name\")" >&2
   echo "" >&2
   echo "First parameter should be the VALUE, second parameter should be the NAME" >&2
-  echo "See: docs/project/quality-guide.md § Parameter Validation" >&2
+  echo "See: .planning/codebase/QUALITY.md § Parameter Validation" >&2
   echo "" >&2
   grep -n -E 'requireThat\s*\(\s*"[^"]+"\s*,' "$FILE_PATH" | head -5 >&2
   # Don't fail - just warn

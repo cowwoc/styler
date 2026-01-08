@@ -26,7 +26,7 @@ Checking only checkstyle when PMD/manual violations exist is a CRITICAL ERROR.
    - Complexity metrics
    - Best practice enforcement
 
-3. **Manual Rules** (documented in code-style-human.md):
+3. **Manual Rules** (documented in this file):
    - TIER1 violations: Critical style issues
    - TIER2 violations: Important style issues
    - TIER3 violations: Minor style issues
@@ -41,8 +41,7 @@ Checking only checkstyle when PMD/manual violations exist is a CRITICAL ERROR.
 ./mvnw checkstyle:check
 ./mvnw pmd:check
 
-# Review manual rules
-cat docs/code-style-human.md
+# Review manual rules in this file
 ```
 
 ### Complete Validation Checklist {#complete-validation-checklist}
@@ -51,7 +50,7 @@ Before declaring style validation complete:
 
 - [ ] Checkstyle passes: `./mvnw checkstyle:check`
 - [ ] PMD passes: `./mvnw pmd:check`
-- [ ] Manual rules reviewed from code-style-human.md
+- [ ] Manual rules reviewed
 - [ ] All TIER1 violations fixed
 - [ ] All TIER2 violations fixed
 - [ ] All TIER3 violations fixed or documented
@@ -964,5 +963,4 @@ When all factory methods would just be `create(...)` with simple `new` calls, us
 
 ## References {#references}
 
-- **Complete style rules**: [docs/code-style-human.md](../code-style-human.md) - Human-readable explanations
-- **Automated patterns**: [docs/code-style/*.md](../code-style/) - Detection patterns for reviewers
+- **Code style rules**: [conventions/](conventions/) - Detection patterns for Claude

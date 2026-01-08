@@ -5,7 +5,7 @@ paths:
 
 # Java Code Style (Quick Reference)
 
-**Full guide**: [docs/project/style-guide.md](../../docs/project/style-guide.md)
+**Full guide**: [STYLE.md](../../.planning/codebase/STYLE.md)
 **Validation API**: [requirements-api.md](requirements-api.md) - requireThat/assert patterns
 
 ## Validation Requirements
@@ -14,7 +14,6 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 
 ```bash
 ./mvnw checkstyle:check pmd:check   # Automated tools
-# + Manual review of docs/code-style-human.md (TIER1/TIER2/TIER3 rules)
 ```
 
 ## Critical Rules
@@ -66,20 +65,20 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
    */
   public class ClassParserTest { }
   ```
-- Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` or `isNotNull()` on arena - see [testing-claude.md](../../docs/code-style/testing-claude.md#parser-test-patterns)
+- Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` or `isNotNull()` on arena - see [testing-claude.md](../../.planning/codebase/TESTING.md#parser-test-patterns)
   - `isNotEmpty()` on nodes: Tests nothing about specific node types
   - `isNotNull()` on arena: Only verifies parsing succeeded, NOT AST correctness
-- **🚨 CRITICAL**: Expected values must be MANUALLY DERIVED - see [testing-claude.md](../../docs/code-style/testing-claude.md#derive-expected-values-manually)
+- **🚨 CRITICAL**: Expected values must be MANUALLY DERIVED - see [testing-claude.md](../../.planning/codebase/TESTING.md#derive-expected-values-manually)
   - **NEVER** run test and copy actual output as expected values
   - Manually analyze source string to determine what nodes SHOULD exist
   - Manually determine the order and structure of expected nodes
   - Only THEN use placeholder technique for position verification (below)
-- Parser test position values: Use placeholder technique to verify POSITIONS ONLY - see [testing-claude.md](../../docs/code-style/testing-claude.md#verify-position-calculations)
+- Parser test position values: Use placeholder technique to verify POSITIONS ONLY - see [testing-claude.md](../../.planning/codebase/TESTING.md#verify-position-calculations)
   - After manually deriving expected node types, use `(0, 0)` placeholders for positions
   - Run to see actual positions, then **VERIFY** each position is correct before copying
   - **⚠️ MANDATORY**: VERIFY actual positions are correct before updating expected values
   - Manual byte counting is error-prone (tabs, newlines, text block indentation)
-  - **🚨 VIOLATION**: Comments like `// From actual:` prove verification was SKIPPED - see [anti-patterns](../../docs/code-style/testing-claude.md#expected-value-anti-patterns)
+  - **🚨 VIOLATION**: Comments like `// From actual:` prove verification was SKIPPED - see [anti-patterns](../../.planning/codebase/TESTING.md#expected-value-anti-patterns)
 - No meaningless assertions - `assertTrue(true, ...)` always passes and tests nothing:
   ```java
   // ❌ WRONG - Useless assertion that always passes
@@ -375,10 +374,10 @@ if (Files.isDirectory(filePath))
   ```
   **⚠️ CRITICAL**: Before extracting, trace execution paths - if index variable can change between accesses
   (e.g., `position` modified in conditional block), the accesses may refer to DIFFERENT elements. See
-  [style-guide.md § Trace Execution Paths](../../docs/project/style-guide.md#extract-trace-execution-paths).
+  [style-guide.md § Trace Execution Paths](../../.planning/codebase/STYLE.md#extract-trace-execution-paths).
 - **Check for existing helper methods first**: Before extracting to local variable, search for existing
   helper methods (e.g., if `currentToken()` exists, create `previousToken()` for `tokens.get(position - 1)`).
-  See [style-guide.md § Check Existing Helper Methods](../../docs/project/style-guide.md#check-existing-helper-methods).
+  See [style-guide.md § Check Existing Helper Methods](../../.planning/codebase/STYLE.md#check-existing-helper-methods).
   - 2-3 occurrences in same method → Local variable
   - 3+ occurrences across multiple methods → Helper method
   - Existing helper pattern → Follow the pattern

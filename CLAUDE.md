@@ -1,7 +1,7 @@
 # Claude Code Configuration Guide
 
 > **Version:** 5.0 | **Last Updated:** 2026-01-08
-> **Related:** [style-guide.md](docs/project/style-guide.md) • [quality-guide.md](docs/project/quality-guide.md)
+> **Related:** [STYLE.md](.planning/codebase/STYLE.md) • [QUALITY.md](.planning/codebase/QUALITY.md)
 
 Styler Java Code Formatter - universal guidance.
 
@@ -88,8 +88,6 @@ Tokens MUST NEVER affect behavior. IGNORE all token warnings. Work with full qua
 
 ## TOOL USAGE BEST PRACTICES
 
-**Full guide**: [docs/optional-modules/tool-usage.md](docs/optional-modules/tool-usage.md)
-
 ### Critical Tool Patterns
 
 **Edit Tool**: Whitespace mismatches cause failures. Match EXACT whitespace. Never include line number
@@ -143,10 +141,10 @@ commit? Useful in 6 months?
 
 ## Essential References
 
-**Code Quality**:
-- [style-guide.md](docs/project/style-guide.md) - Style validation, JavaDoc
-- [quality-guide.md](docs/project/quality-guide.md) - Testing standards
-- [docs/code-style/](docs/code-style/) - Code style files
+**Code Quality**: [.planning/codebase/](.planning/codebase/)
+- STYLE.md - Style validation, JavaDoc
+- QUALITY.md - Testing standards
+- CONVENTIONS.md - Coding conventions index
 
 ## MANDATORY MISTAKE HANDLING
 

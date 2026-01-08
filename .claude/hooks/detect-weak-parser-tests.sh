@@ -84,7 +84,7 @@ if $ISSUES_FOUND; then
 ⚠️  WEAK PARSER TEST PATTERN DETECTED
 
 Parser unit tests MUST validate AST structure, not just parsing success.
-See: docs/code-style/testing-claude.md § PARSER TEST PATTERNS
+See: .planning/codebase/TESTING.md § PARSER TEST PATTERNS
 
 ❌ DETECTED PATTERNS:
 EOF
@@ -111,7 +111,7 @@ EOF
     );
     requireThat(actual, "actual").isEqualTo(expected);
 
-📖 Reference: docs/code-style/testing-claude.md lines 33-63
+📖 Reference: .planning/codebase/TESTING.md § PARSER TEST PATTERNS
 
 EOF
 fi

@@ -377,5 +377,5 @@ Before approving code:
 
 ## References {#references}
 
-- **Complete code policies**: [docs/optional-modules/code-policies.md](../optional-modules/code-policies.md)
-- **Style guide**: [style-guide.md](style-guide.md) - Style-specific requirements
+- **Complete code policies**: [conventions/policies.md](conventions/policies.md)
+- **Style guide**: [STYLE.md](STYLE.md) - Style-specific requirements

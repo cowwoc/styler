@@ -326,7 +326,5 @@ resolving wildcard imports and determining actual class usage.
 5. **Performance Focus**: Optimize for large codebase processing efficiency
 
 **📋 Additional details documented in:**
-- [build-system.md](build-system.md) - Maven configuration and build
-- [../code-style-human.md](../code-style-human.md) - Java coding conventions
-- [critical-rules.md](critical-rules.md) - Safety protocols and build integrity
-- [architecture.md](architecture.md) - Technical architecture
+- [BUILD.md](BUILD.md) - Maven configuration and build
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Technical architecture

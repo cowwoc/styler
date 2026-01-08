@@ -14,10 +14,6 @@
           {
             "type": "command",
             "command": "\"${CLAUDE_PROJECT_DIR}\"/claude-code-cat/hooks/restore-todowrite.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"${CLAUDE_PROJECT_DIR}\"/claude-code-cat/hooks/echo-session-id.sh"
           }
         ]
       }
@@ -77,10 +73,6 @@
           {
             "type": "command",
             "command": "\"${CLAUDE_PROJECT_DIR}\"/claude-code-cat/hooks/block-reflog-destruction.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"${CLAUDE_PROJECT_DIR}\"/claude-code-cat/hooks/validate-commit-type.sh"
           }
         ]
       },
@@ -101,15 +93,6 @@
             "command": "\"${CLAUDE_PROJECT_DIR}\"/claude-code-cat/hooks/predict-batch-opportunity.sh"
           }
         ]
-      },
-      {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"${CLAUDE_PROJECT_DIR}\"/claude-code-cat/hooks/validate-execution-lock.sh"
-          }
-        ]
       }
     ],
     "PostToolUse": [
@@ -119,10 +102,6 @@
           {
             "type": "command",
             "command": "\"${CLAUDE_PROJECT_DIR}\"/.claude/hooks/write-java-validation.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"${CLAUDE_PROJECT_DIR}\"/.claude/hooks/verify-doc-sync.sh"
           },
           {
             "type": "command",

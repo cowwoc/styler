@@ -54,7 +54,7 @@ if [[ -n "$VIOLATIONS" ]]; then
     echo "Issues found:" >&2
     echo -e "$VIOLATIONS" >&2
     echo "" >&2
-    echo "📚 GUIDANCE (from quality-guide.md):" >&2
+    echo "📚 GUIDANCE (from QUALITY.md):" >&2
     echo "   'Focus on meaningful behavior, not test counts or code coverage percentages.'" >&2
     echo "" >&2
     echo "✅ CORRECT APPROACH:" >&2
