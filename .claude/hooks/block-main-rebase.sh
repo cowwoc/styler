@@ -13,13 +13,11 @@ trap 'echo "ERROR in block-main-rebase.sh at line $LINENO: Command failed: $BASH
 # 1. git rebase (any form) when on main branch
 #
 # RATIONALE:
-# After merging task branches to main, rebasing main rewrites history,
-# making merged commits appear as direct commits on main. This breaks
-# the audit trail and violates task protocol.
+# Rebasing main rewrites history, making merged commits appear as direct
+# commits on main. This breaks the audit trail and disrupts collaboration.
 #
 # ALLOWED:
-# - Rebasing on task branches (for squashing before merge)
-# - Rebasing on agent branches
+# - Rebasing on feature branches (for squashing before merge)
 # - Any non-rebase git operations on main
 
 # Read JSON from stdin with timeout to prevent hanging
@@ -31,7 +29,7 @@ else
 fi
 
 # Source JSON parsing library
-source "/workspace/.claude/hooks/lib/json-parser.sh"
+source "$CLAUDE_PROJECT_DIR/.claude/hooks/lib/json-parser.sh"
 
 # Source helper for proper hook blocking
 source /workspace/.claude/scripts/json-output.sh
@@ -92,16 +90,6 @@ if [ -z "$CURRENT_BRANCH" ]; then
 	fi
 fi
 
-# Method 3: Check if we're in a task worktree (not main)
-if [ -z "$CURRENT_BRANCH" ]; then
-	# Look for task.json to identify if in task context
-	if ls /workspace/tasks/*/task.json 2>/dev/null | head -1 | grep -q .; then
-		# In task context, likely not main
-		echo '{}'
-		exit 0
-	fi
-fi
-
 # If on main branch, block the rebase
 if [ "$CURRENT_BRANCH" = "main" ]; then
 	cat << EOF >&2
@@ -114,19 +102,18 @@ if [ "$CURRENT_BRANCH" = "main" ]; then
 
 WHY THIS IS BLOCKED:
 • Rebasing main rewrites commit history
-• Merged task commits get recreated as direct commits
-• This breaks the audit trail (commits appear on main, not task branch)
-• Violates task protocol's linear history requirement
+• Merged commits get recreated as direct commits
+• This breaks the audit trail and disrupts collaboration
 
 WHAT TO DO INSTEAD:
-• If you need to fix a commit message: Use git commit --amend on the task
+• If you need to fix a commit message: Use git commit --amend on a feature
   branch BEFORE merging to main
 • If already merged: The history is final. Accept it or create a new commit
-• For commit reordering: Do this on task branches, not main
+• For commit reordering: Do this on feature branches, not main
 
 CORRECT WORKFLOW:
-1. All changes on task branch
-2. Squash/rebase on task branch (before merge)
+1. All changes on feature branch
+2. Squash/rebase on feature branch (before merge)
 3. Merge to main with --ff-only
 4. Never rebase main
 

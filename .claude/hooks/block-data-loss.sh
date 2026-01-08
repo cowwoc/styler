@@ -10,17 +10,15 @@ trap 'echo "ERROR in block-data-loss.sh at line $LINENO: Command failed: $BASH_C
 # TRIGGER: PreToolUse (Bash), UserPromptSubmit
 #
 # BLOCKED OPERATIONS:
-# 1. git init - Repository creation at workspace root (worktree isolation conflict)
+# 1. git init - Repository creation at workspace root
 # 2. rm -rf /workspace/main - Code directory deletion
-# 3. rm -rf /workspace/tasks/main - Main workspace directory deletion
-# 4. rm -rf /workspace/main/.git - Git repository corruption
-# 5. mv /workspace/main - Moving protected directories
-# 6. ln -s to protected directories - Symlink attacks that bypass path checks
+# 3. rm -rf /workspace/main/.git - Git repository corruption
+# 4. mv /workspace/main - Moving protected directories
+# 5. ln -s to protected directories - Symlink attacks that bypass path checks
 #
 # PROTECTED DIRECTORIES:
 # - /workspace/main/ - Primary code repository
 # - /workspace/main/.git - Version control data
-# - /workspace/tasks/main (legacy) - Main workspace
 #
 # See: CLAUDE.md § Repository Structure
 
@@ -41,7 +39,7 @@ mkdir -p /tmp 2>/dev/null || true
 echo "$(date): Consolidated hook received: $JSON_INPUT" >> /tmp/consolidated-debug.log 2>/dev/null || true
 
 # Source JSON parsing library
-source "/workspace/.claude/hooks/lib/json-parser.sh"
+source "$CLAUDE_PROJECT_DIR/.claude/hooks/lib/json-parser.sh"
 
 # Source helper for proper hook blocking
 source /workspace/.claude/scripts/json-output.sh
@@ -80,7 +78,7 @@ handle_pre_tool_use()
 	        ;;
 	    *"git init"*|*"git-init"*)
 	        echo "⛔ BLOCKED: git init not allowed at workspace root (see CLAUDE.md § Repository Structure)" >&2
-	        echo "🚨 REPOSITORY CREATION BLOCKED: Per task-protocol.md, NEVER create new git repositories at workspace root" >&2
+	        echo "🚨 REPOSITORY CREATION BLOCKED: NEVER create new git repositories at workspace root" >&2
 	        echo "📍 EXISTING REPOSITORY: Use 'cd /workspace/main' for git operations" >&2
 	        echo "📋 FOR COMMITS: Use the existing repository in /workspace/main/" >&2
 	        echo "" >&2
@@ -93,14 +91,6 @@ handle_pre_tool_use()
 	        echo "❌ **VIOLATION** - Workspace directory MUST remain non-git to prevent worktree isolation conflicts" >&2
 	        # Use proper permission system
 	        output_hook_block "Blocked: git init not allowed. Use existing repository in /workspace/main/"
-	        exit 0
-	        ;;
-	    *"rm -rf /workspace/tasks/main"*|*"rm /workspace/tasks/main"*|*"rmdir /workspace/tasks/main"*)
-	        echo "⛔ BLOCKED: Deletion of /workspace/tasks/main is not allowed to prevent data loss" >&2
-	        echo "🚨 DATA PROTECTION: The main workspace directory must not be deleted" >&2
-	        echo "❌ **VIOLATION** - This operation would destroy the entire workspace" >&2
-	        # Use proper permission system
-	        output_hook_block "Blocked: Deletion of /workspace/tasks/main not allowed to prevent data loss."
 	        exit 0
 	        ;;
 	    *"rm -rf /workspace/main"|*"rm -rf /workspace/main "*|*"rm -rf /workspace/main/ "*|*"rm -rf /workspace/main/&&"*|*"rm -rf /workspace/main/;"*|*"rm /workspace/main"|*"rm /workspace/main "*)
@@ -122,14 +112,6 @@ handle_pre_tool_use()
 	        output_hook_block "Blocked: Deletion of /workspace/main not allowed to prevent data loss."
 	        exit 0
 	        ;;
-	    *"rm -rf /workspace/tasks/main/.git"|*"rm /workspace/tasks/main/.git"|*"rmdir /workspace/tasks/main/.git"*)
-	        echo "⛔ BLOCKED: Deletion of .git directory or its contents is not allowed to prevent data loss" >&2
-	        echo "🚨 REPOSITORY PROTECTION: The .git directory must not be modified or deleted" >&2
-	        echo "❌ **VIOLATION** - This operation would destroy version control history" >&2
-	        # Use proper permission system
-	        output_hook_block "Blocked: Deletion of .git directory not allowed to prevent data loss."
-	        exit 0
-	        ;;
 	    *"rm -rf /workspace/main/.git"|*"rm /workspace/main/.git"|*"rmdir /workspace/main/.git"*)
 	        echo "⛔ BLOCKED: Deletion of .git directory or its contents is not allowed to prevent data loss" >&2
 	        echo "🚨 REPOSITORY PROTECTION: The .git directory must not be modified or deleted" >&2
@@ -138,7 +120,7 @@ handle_pre_tool_use()
 	        output_hook_block "Blocked: Deletion of /workspace/main/.git not allowed to prevent data loss."
 	        exit 0
 	        ;;
-	    *"mv /workspace/tasks/main "*|*"mv /workspace/tasks/main/.git "*)
+	    *"mv /workspace/main "*|*"mv /workspace/main/.git "*)
 	        echo "⛔ BLOCKED: Moving/renaming protected directories is not allowed to prevent data loss" >&2
 	        echo "🚨 DATA PROTECTION: The main workspace and .git directories must not be moved" >&2
 	        echo "❌ **VIOLATION** - This operation could break the workspace structure" >&2
@@ -146,7 +128,7 @@ handle_pre_tool_use()
 	        output_hook_block "Blocked: Moving protected directories not allowed to prevent data loss."
 	        exit 0
 	        ;;
-	    *"ln -s /workspace/tasks/main"*|*"ln -s /workspace/tasks/main/.git"*)
+	    *"ln -s /workspace/main"*|*"ln -s /workspace/main/.git"*)
 	        echo "⛔ BLOCKED: Creating symlinks to protected directories is not allowed to prevent data loss" >&2
 	        echo "🚨 SYMLINK ATTACK PREVENTION: Symlinks could be used to bypass directory protection" >&2
 	        echo "❌ **VIOLATION** - This operation could enable indirect deletion of protected directories" >&2
@@ -188,7 +170,7 @@ handle_user_prompt_submit()
 	# Check for prohibited operations - git init and data loss operations
 	if echo "$USER_PROMPT_LOWER" | grep -q "git init\|initialize git\|create git repository\|create new repository\|create repository\|new git repo\|git-init"; then
 	    echo "⛔ PROMPT WARNING: git repository creation not allowed at workspace root (see CLAUDE.md § Repository Structure)" >&2
-	    echo "🚨 REPOSITORY CREATION BLOCKED: Per task-protocol.md, NEVER create new git repositories at workspace root" >&2
+	    echo "🚨 REPOSITORY CREATION BLOCKED: NEVER create new git repositories at workspace root" >&2
 	    echo "📍 EXISTING REPOSITORY: Use 'cd /workspace/main' for git operations" >&2
 	    echo "📋 FOR COMMITS: Use the existing repository in /workspace/main/" >&2
 	    echo "" >&2
@@ -206,8 +188,8 @@ handle_user_prompt_submit()
 	fi
 
 	# Check for dangerous deletion operations
-	if echo "$USER_PROMPT_LOWER" | grep -q "delete.*workspace/branches/main\|remove.*workspace/branches/main\|rm.*workspace/branches/main"; then
-	    echo "⛔ PROMPT WARNING: Deletion of /workspace/tasks/main is not allowed to prevent data loss" >&2
+	if echo "$USER_PROMPT_LOWER" | grep -q "delete.*workspace/main\|remove.*workspace/main\|rm.*workspace/main"; then
+	    echo "⛔ PROMPT WARNING: Deletion of /workspace/main is not allowed to prevent data loss" >&2
 	    echo "🚨 DATA PROTECTION: The main workspace directory must not be deleted" >&2
 	    echo "❌ **VIOLATION** - This operation would destroy the entire workspace" >&2
 	    exit 0
@@ -226,7 +208,7 @@ handle_user_prompt_submit()
 	        echo "📍 GIT OPERATIONS GUIDE:" >&2
 	        echo "   Repository location: /workspace/main/" >&2
 	        echo "   Command: cd /workspace/main && git status" >&2
-	        echo "🚨 REMINDER: Never use 'git init' - violates task-protocol.md" >&2
+	        echo "🚨 REMINDER: Never use 'git init' at workspace root" >&2
 	    fi
 	fi
 

@@ -104,7 +104,7 @@ json_cache_set "my_data" "$json_string"
 value=$(json_cache_get "my_data" ".field.nested" "default_value")
 
 # Load file directly to cache
-json_cache_load_file "task_json" "/workspace/tasks/my-task/task.json"
+json_cache_load_file "config_json" "/path/to/config.json"
 
 # Check if cached
 if json_cache_exists "my_data"; then
@@ -123,39 +123,22 @@ json_cache_clear_all
 # Parse and cache hook input automatically
 json_cache_parse_hook_input "$INPUT"
 
-# Load and cache task.json with common queries
-json_cache_load_task "/workspace/tasks/my-task/task.json"
-STATE=$(json_cache_get "task_json" ".state")
+# Load and cache config with common queries
+json_cache_load_file "config_json" "/path/to/config.json"
+STATE=$(json_cache_get "config_json" ".state")
 ```
 
-### 3. Hook Optimization Utilities (`lib/hook-optimize.sh`)
+### 3. Hook Optimization Utilities
 
-**Purpose**: Optimized common operations for task context detection and file operations.
+**Purpose**: Optimized common operations for file operations and batch checks.
 
 **Features**:
-- Task context detection with caching
 - Reduced subshell usage
 - Batch file operations
 - Pattern matching optimizations
 
 **Usage**:
 ```bash
-source "$(dirname "$0")/lib/hook-optimize.sh"
-
-# Find task from current directory (cached)
-task=$(find_task_from_pwd)
-
-# Find task by session ID (cached, 5-second TTL)
-task=$(find_task_by_session "$SESSION_ID")
-
-# Get task state (uses JSON cache)
-state=$(get_task_state "$task_name")
-
-# Check if in task context
-if is_task_context; then
-    # Task-specific logic
-fi
-
 # Batch file existence checks
 if all_files_exist "file1.txt" "file2.txt" "file3.txt"; then
     # All files exist
@@ -172,12 +155,12 @@ fi
 
 **Before** (creates subshell):
 ```bash
-task_name=$(basename "$task_dir")
+dir_name=$(basename "$dir_path")
 ```
 
 **After** (uses bash built-in):
 ```bash
-task_name="${task_dir##*/}"
+dir_name="${dir_path##*/}"
 ```
 
 **Impact**: 2-5ms saved per operation.
@@ -186,12 +169,12 @@ task_name="${task_dir##*/}"
 
 **Before** (spawns grep process):
 ```bash
-if echo "$path" | grep -q "/workspace/tasks/"; then
+if echo "$path" | grep -q "/some/pattern/"; then
 ```
 
 **After** (bash regex):
 ```bash
-if [[ "$path" =~ /workspace/tasks/ ]]; then
+if [[ "$path" =~ /some/pattern/ ]]; then
 ```
 
 **Impact**: 3-8ms saved per check.
@@ -200,15 +183,15 @@ if [[ "$path" =~ /workspace/tasks/ ]]; then
 
 **Before** (multiple operations):
 ```bash
-if echo "$path" | grep -q "/workspace/tasks/"; then
-    task=$(echo "$path" | sed 's|/workspace/tasks/\([^/]*\)/.*|\1|')
+if echo "$path" | grep -q "/projects/"; then
+    project=$(echo "$path" | sed 's|/projects/\([^/]*\)/.*|\1|')
 fi
 ```
 
 **After** (single regex with capture):
 ```bash
-if [[ "$path" =~ /workspace/tasks/([^/]+) ]]; then
-    task="${BASH_REMATCH[1]}"
+if [[ "$path" =~ /projects/([^/]+) ]]; then
+    project="${BASH_REMATCH[1]}"
 fi
 ```
 
@@ -434,9 +417,9 @@ grep "expensive-operation" /workspace/.metrics/hook-timings.log
 
 ### Issue 2: Repeated File System Scans
 
-**Symptom**: Hook searches `/workspace/tasks` multiple times.
+**Symptom**: Hook scans the same directory multiple times.
 
-**Solution**: Use `find_task_by_session` with caching.
+**Solution**: Cache directory scan results.
 
 **Before**: 3 directory scans = ~45ms
 **After**: 1 scan + cache (5s TTL) = ~15ms (67% improvement)

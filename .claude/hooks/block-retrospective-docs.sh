@@ -24,19 +24,14 @@ trap 'echo "ERROR in block-retrospective-docs.sh at line $LINENO: Command failed
 # 1. README.md, changelog.md, todo.md (allowed files)
 # 2. .claude/retrospectives/*.json (structured skill output)
 # 3. .claude/skills/retrospective/ and learn-from-mistakes/ (skill files)
-# 4. /workspace/tasks/{task}/temp/ (TEMPORARY analysis during debugging)
-#    - ⚠️ CLEANUP REQUIRED: Must delete before task completion
-#    - Hook check-retrospective-due.sh enforces cleanup
-# 5. User explicitly requests documentation creation
+# 4. User explicitly requests documentation creation
 #
 # BLOCKED PATTERNS:
 # - mistakes/, lessons-learned/, postmortem/, decision-log/ directories
 # - Filenames: summary, analysis, retrospective, postmortem, lessons-learned
 # - Content: "What Was Implemented", "Lessons Learned", "Root Cause Analysis"
 
-# Source libraries
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/hook-logger.sh"
+# Source JSON output helper
 source /workspace/.claude/scripts/json-output.sh
 
 # Read input from stdin
@@ -50,19 +45,15 @@ if [[ "$TOOL_NAME" != "Write" && "$TOOL_NAME" != "Edit" ]]; then
     exit 0
 fi
 
-log_hook_start "block-retrospective-docs" "PreToolUse"
-
 # Extract file path - try multiple possible JSON keys
 FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // .file_path // .path // .parameters.file_path // ""' 2>/dev/null || echo "")
 
 if [[ -z "$FILE_PATH" ]]; then
-    log_hook_success "block-retrospective-docs" "PreToolUse" "No file path, skipping"
     exit 0
 fi
 
 # Only check markdown files
 if [[ ! "$FILE_PATH" =~ \.md$ ]]; then
-    log_hook_success "block-retrospective-docs" "PreToolUse" "Not markdown file, skipping"
     exit 0
 fi
 
@@ -71,7 +62,6 @@ if [[ "$FILE_PATH" =~ README\.md$ ]] || \
    [[ "$FILE_PATH" =~ changelog\.md$ ]] || \
    [[ "$FILE_PATH" =~ CHANGELOG\.md$ ]] || \
    [[ "$FILE_PATH" =~ todo\.md$ ]]; then
-    log_hook_success "block-retrospective-docs" "PreToolUse" "Allowed file type, skipping"
     exit 0
 fi
 
@@ -87,32 +77,12 @@ fi
 # - ALLOW: Structured machine-readable tracking from retrospective workflow
 
 if [[ "$FILE_PATH" =~ \.claude/retrospectives/.*\.json$ ]]; then
-    log_hook_success "block-retrospective-docs" "PreToolUse" "Retrospective skill JSON output allowed"
     exit 0
 fi
 
 # Allow retrospective skill to update its own skill file
 if [[ "$FILE_PATH" =~ \.claude/skills/retrospective/ ]] || \
    [[ "$FILE_PATH" =~ \.claude/skills/learn-from-mistakes/ ]]; then
-    log_hook_success "block-retrospective-docs" "PreToolUse" "Retrospective/learn-from-mistakes skill file allowed"
-    exit 0
-fi
-
-# =============================================================================
-# TEMPORARY ANALYSIS EXCEPTION
-# =============================================================================
-# Allow temporary retrospective documentation in task temp directories
-# for analysis and debugging purposes. CLEANUP REQUIRED before task completion.
-#
-# Location: /workspace/tasks/{task}/temp/
-# Lifecycle: Must be deleted during AWAITING_USER_APPROVAL → COMPLETE transition
-# Enforcement: check-retrospective-due.sh validates cleanup
-
-if [[ "$FILE_PATH" =~ /workspace/tasks/[^/]+/temp/ ]]; then
-    log_hook_success "block-retrospective-docs" "PreToolUse" "Temporary task analysis file allowed (cleanup required)"
-    # Output warning to stderr so user knows cleanup is required
-    echo "⚠️ TEMPORARY ANALYSIS FILE: $FILE_PATH" >&2
-    echo "   CLEANUP REQUIRED: Delete before task completion" >&2
     exit 0
 fi
 
@@ -140,8 +110,6 @@ PROHIBITED_PATHS=(
 
 for pattern in "${PROHIBITED_PATHS[@]}"; do
     if [[ "$FILE_PATH" =~ $pattern ]]; then
-        log_hook_blocked "block-retrospective-docs" "PreToolUse" "Blocked prohibited path: $pattern in $FILE_PATH"
-
         MESSAGE="## 🚨 RETROSPECTIVE DOCUMENTATION VIOLATION DETECTED AND BLOCKED
 
 **File**: \`$FILE_PATH\`
@@ -299,8 +267,6 @@ done
 
 # BLOCK: Filename AND content both match retrospective patterns
 if [[ -n "$MATCHED_FILENAME_PATTERN" ]] && [[ ${#MATCHED_CONTENT_PATTERNS[@]} -gt 0 ]]; then
-    log_hook_blocked "block-retrospective-docs" "PreToolUse" "Blocked retrospective: filename=$MATCHED_FILENAME_PATTERN, content patterns=${#MATCHED_CONTENT_PATTERNS[@]}"
-
     MESSAGE="## 🚨 RETROSPECTIVE DOCUMENT CREATION BLOCKED
 
 **File**: \`$FILENAME\`
@@ -392,8 +358,6 @@ fi
 
 # BLOCK: Content matches retrospective patterns strongly (even without suspicious filename)
 if [[ ${#MATCHED_CONTENT_PATTERNS[@]} -ge 3 ]]; then
-    log_hook_blocked "block-retrospective-docs" "PreToolUse" "Blocked retrospective content: ${#MATCHED_CONTENT_PATTERNS[@]} strong indicators"
-
     MESSAGE="## 🚨 RETROSPECTIVE CONTENT DETECTED AND BLOCKED
 
 **File**: \`$FILE_PATH\`
@@ -443,8 +407,6 @@ fi
 
 # WARN: Filename suggests retrospective but content is unclear
 if [[ -n "$MATCHED_FILENAME_PATTERN" ]]; then
-    log_hook_warning "block-retrospective-docs" "PreToolUse" "Filename suggests retrospective: $FILENAME (but content unclear)"
-
     MESSAGE="## ⚠️ WARNING: Filename Suggests Retrospective Document
 
 **File**: \`$FILENAME\`
@@ -466,5 +428,4 @@ See: CLAUDE.md § RETROSPECTIVE DOCUMENTATION POLICY"
 fi
 
 # ALLOW: No violations detected
-log_hook_success "block-retrospective-docs" "PreToolUse" "File creation allowed"
 exit 0

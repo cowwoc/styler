@@ -8,15 +8,8 @@ export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
 
-# Extract task name from current working directory path
-# Structure: /workspace/tasks/{task-name}/*
-CURRENT_PATH=$(pwd)
-if [[ "$CURRENT_PATH" =~ /workspace/tasks/([^/]+) ]]; then
-	GIT_BRANCH="${BASH_REMATCH[1]}"
-else
-	# If not in expected structure, show N/A
-	GIT_BRANCH="N/A"
-fi
+# Extract git branch name
+GIT_BRANCH=$(git branch --show-current 2>/dev/null || echo "N/A")
 
 # Read JSON input from stdin and extract needed values with simple parsing
 input=$(cat)

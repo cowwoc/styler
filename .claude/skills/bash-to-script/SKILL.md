@@ -173,24 +173,24 @@ bash /tmp/extract-agent-id.sh
 
 **❌ Fails with parse error**:
 ```bash
-TASK="implement-api"
-AGENT="architect"
-WORKTREE="/workspace/tasks/${TASK}/agents/${AGENT}/code"
-mkdir -p "$WORKTREE"
-cd "$WORKTREE" && git status
+PROJECT="my-project"
+SUBDIR="src/main"
+TARGET="/workspace/${PROJECT}/${SUBDIR}/code"
+mkdir -p "$TARGET"
+cd "$TARGET" && git status
 ```
 
 **✅ Correct (converted)**:
 ```bash
-cat > /tmp/setup-worktree.sh << 'EOF'
+cat > /tmp/setup-dir.sh << 'EOF'
 #!/bin/bash
-TASK="implement-api"
-AGENT="architect"
-WORKTREE="/workspace/tasks/${TASK}/agents/${AGENT}/code"
-mkdir -p "$WORKTREE"
-cd "$WORKTREE" && git status
+PROJECT="my-project"
+SUBDIR="src/main"
+TARGET="/workspace/${PROJECT}/${SUBDIR}/code"
+mkdir -p "$TARGET"
+cd "$TARGET" && git status
 EOF
-bash /tmp/setup-worktree.sh
+bash /tmp/setup-dir.sh
 ```
 
 ## When NOT to Use Script File

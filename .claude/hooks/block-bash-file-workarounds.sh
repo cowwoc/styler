@@ -21,7 +21,7 @@ trap 'echo "ERROR in block-bash-file-workarounds.sh at line $LINENO: Command fai
 # Workarounds mask protocol violations and bypass safety checks.
 #
 # ADDED: 2025-12-28 after discovering agents used Bash to create files
-# when Write tool was blocked due to missing SYNTHESIS transition.
+# when Write tool was blocked.
 
 # Read JSON from stdin with timeout to prevent hanging
 JSON_INPUT=""
@@ -32,7 +32,7 @@ else
 fi
 
 # Source JSON parsing library
-source "/workspace/.claude/hooks/lib/json-parser.sh"
+source "$CLAUDE_PROJECT_DIR/.claude/hooks/lib/json-parser.sh"
 
 # Source helper for proper hook blocking
 source /workspace/.claude/scripts/json-output.sh
@@ -56,15 +56,12 @@ if [ "$TOOL_NAME" != "Bash" ] && [ "$TOOL_NAME" != "bash" ]; then
 	exit 0
 fi
 
-# Define task/agent path patterns to protect
+# Define path patterns to protect
 # These are paths where file creation should go through Write/Edit tools
 PROTECTED_PATTERNS=(
-	"/workspace/tasks/.*/code/.*\\.java"
-	"/workspace/tasks/.*/code/.*\\.ts"
-	"/workspace/tasks/.*/code/.*\\.py"
-	"/workspace/tasks/.*/agents/.*/code/.*\\.java"
-	"/workspace/tasks/.*/agents/.*/code/.*\\.ts"
-	"/workspace/tasks/.*/agents/.*/code/.*\\.py"
+	"/workspace/main/.*\\.java"
+	"/workspace/main/.*\\.ts"
+	"/workspace/main/.*\\.py"
 )
 
 # Check for file creation commands with redirection to protected paths
@@ -102,10 +99,10 @@ done
 
 # Also check for explicit path patterns in the command with any redirection
 if [ "$FILE_CREATION_DETECTED" = "false" ]; then
-	# Look for any > to /workspace/tasks/.../code/...java|ts|py
-	if echo "$COMMAND" | grep -qE ">[[:space:]]*['\"]?/workspace/tasks/[^/]+/(code|agents/[^/]+/code)/.*\\.(java|ts|py)"; then
+	# Look for any > to /workspace/main/...java|ts|py
+	if echo "$COMMAND" | grep -qE ">[[:space:]]*['\"]?/workspace/main/.*\\.(java|ts|py)"; then
 		FILE_CREATION_DETECTED=true
-		DETECTED_PATH=$(echo "$COMMAND" | grep -oE "/workspace/tasks/[^/]+/(code|agents/[^/]+/code)/[^[:space:]'\"]*\\.(java|ts|py)" | head -1)
+		DETECTED_PATH=$(echo "$COMMAND" | grep -oE "/workspace/main/[^[:space:]'\"]*\\.(java|ts|py)" | head -1)
 	fi
 fi
 
@@ -141,7 +138,7 @@ CORRECT RESPONSE TO HOOK BLOCKING:
   "updated_at": "..."
 }
 
-📖 See: task-protocol-agents.md § Hook Blocking: Return Errors, Never Workaround
+📖 See: CLAUDE.md § Tool Usage Best Practices
 
 ═══════════════════════════════════════════════════════════════
 ❌ COMMAND BLOCKED - Use Write/Edit tools, fix protocol issues

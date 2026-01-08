@@ -966,5 +966,3 @@ When all factory methods would just be `create(...)` with simple `new` calls, us
 
 - **Complete style rules**: [docs/code-style-human.md](../code-style-human.md) - Human-readable explanations
 - **Automated patterns**: [docs/code-style/*.md](../code-style/) - Detection patterns for reviewers
-- **Task protocol**: [task-protocol-agents.md](task-protocol-agents.md) - Agent coordination
-- **Main agent guide**: [main-agent-coordination.md](main-agent-coordination.md) - Coordination patterns

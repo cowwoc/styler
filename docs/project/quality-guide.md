@@ -379,5 +379,3 @@ Before approving code:
 
 - **Complete code policies**: [docs/optional-modules/code-policies.md](../optional-modules/code-policies.md)
 - **Style guide**: [style-guide.md](style-guide.md) - Style-specific requirements
-- **Task protocol**: [task-protocol-agents.md](task-protocol-agents.md) - Agent coordination
-- **Main agent guide**: [main-agent-coordination.md](main-agent-coordination.md) - Coordination patterns
