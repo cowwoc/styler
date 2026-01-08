@@ -35,10 +35,10 @@ fi
 if [[ ! -d "$DOCS_DIR" ]]; then
     echo "❌ ERROR: Documentation directory not found: $DOCS_DIR"
     echo "   Script location: $SCRIPT_DIR"
-    echo "   Expected structure: /workspace/main/docs/"
+    echo "   Expected structure: /workspace/docs/"
     echo ""
     echo "💡 FIX: Run this script from the correct location:"
-    echo "   cd /workspace/main"
+    echo "   cd /workspace"
     echo "   ./.claude/hooks/verify-doc-sync.sh"
     echo ""
     exit 1

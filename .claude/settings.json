@@ -13,11 +13,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/todo-context-reminder.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/restore-todowrite.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/restore-todowrite.sh"
           }
         ]
       }
@@ -27,11 +23,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify-destructive-operations.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/verify-destructive-operations.sh"
           },
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-user-reported-issue.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/detect-user-reported-issue.sh"
           }
         ]
       }
@@ -41,7 +37,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/backup-todowrite.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/save-todowrite.sh"
           }
         ]
       }
@@ -56,19 +52,15 @@
           },
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-git-filter-branch.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/validate-git-filter-branch.sh"
           },
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tdd-bash-guard.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/block-main-rebase.sh"
           },
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-main-rebase.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/remind-git-squash-skill.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/remind-git-squash-skill.sh"
           },
           {
             "type": "command",
@@ -80,7 +72,7 @@
           },
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-reflog-destruction.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/block-reflog-destruction.sh"
           }
         ]
       },
@@ -90,10 +82,6 @@
           {
             "type": "command",
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/block-retrospective-docs.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/tdd-skill-gate.sh"
           }
         ]
       },
@@ -102,16 +90,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/predict-batch-opportunity.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "TodoWrite",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/load-todo.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/predict-batch-opportunity.sh"
           }
         ]
       }
@@ -134,7 +113,7 @@
           },
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/remind-restart-after-skill-modification.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/remind-restart-after-skill-modification.sh"
           },
           {
             "type": "command",
@@ -155,11 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-concatenated-commit-message.sh"
-          },
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/throttle-agent-bash-calls.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/detect-concatenated-commit-message.sh"
           },
           {
             "type": "command",
@@ -167,7 +142,7 @@
           },
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/validate-rebase-target.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/validate-rebase-target.sh"
           }
         ]
       },
@@ -176,7 +151,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-sequential-tools.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/detect-sequential-tools.sh"
           }
         ]
       },
@@ -184,7 +159,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/detect-assistant-giving-up.sh"
+            "command": "\"$CLAUDE_PROJECT_DIR\"/claude-code-cat/hooks/detect-assistant-giving-up.sh"
           }
         ]
       }
