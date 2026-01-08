@@ -1515,4 +1515,47 @@ public class SwitchExpressionParserTest
 			requireThat(actual, "actual").isEqualTo(expected);
 		}
 	}
+
+	/**
+	 * Validates parsing of switch expression with array type pattern.
+	 * Tests that primitive and reference array type patterns parse correctly.
+	 */
+	@Test
+	public void testSwitchWithArrayTypePattern()
+	{
+		String source = """
+			public class Test
+			{
+				public int foo(Object obj)
+				{
+					return switch (obj)
+					{
+						case int[] arr -> arr.length;
+						case String[] arr -> arr.length;
+						default -> 0;
+					};
+				}
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 36, 42);
+			expected.allocateParameterDeclaration(36, 46, new ParameterAttribute("obj", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 68, 71);
+			expected.allocateNode(NodeType.IDENTIFIER, 98, 101);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 98, 108);
+			expected.allocateNode(NodeType.IDENTIFIER, 134, 137);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 134, 144);
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 160, 161);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 60, 166);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 53, 167);
+			expected.allocateNode(NodeType.BLOCK, 49, 170);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 21, 170);
+			expected.allocateClassDeclaration(7, 172, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 173);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
 }

@@ -14,5 +14,5 @@ Real-world compatibility issue discovered when running on Spring Framework 6.2.1
 Affected files: CodeEmitter.java, ConcurrentReferenceHashMap.java
 
 ## Verification
-- [ ] Complex switch expressions parse correctly
-- [ ] All JDK 21+ patterns supported
+- [x] Complex switch expressions parse correctly
+- [x] All JDK 21+ patterns supported
