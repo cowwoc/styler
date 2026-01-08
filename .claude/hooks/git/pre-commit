@@ -1,0 +1,132 @@
+#!/bin/bash
+set -euo pipefail
+
+# Pre-commit hook: Check code quality and prevent problematic commits
+
+# Error handler - output helpful message to stderr on failure
+trap 'echo "ERROR in pre-commit hook at line $LINENO: Command failed: $BASH_COMMAND" >&2; exit 1' ERR
+
+# Check for hard-coded line number references (warning only)
+if [ -f ".claude/hooks/detect-hardcoded-references.sh" ]; then
+    ./.claude/hooks/detect-hardcoded-references.sh || true
+fi
+
+# Check for retrospective documentation (warning only)
+if [ -f ".claude/hooks/detect-retrospective-creation.sh" ]; then
+    ./.claude/hooks/detect-retrospective-creation.sh || true
+fi
+
+# Check for gutted hooks (BLOCKING)
+# PATTERN HISTORY: Added 2025-11-07 after accidentally gutting 40 hooks during
+# timing code removal. Validates that hook files have sufficient functional code.
+echo "Checking for gutted hooks..." >&2
+
+GUTTED_HOOKS=()
+MIN_LINES=10
+INTENTIONALLY_MINIMAL=("make-hook-executable.sh")
+
+# Check staged .claude/hooks/*.sh files
+for hook_file in $(git diff --cached --name-only --diff-filter=ACM | grep '\.claude/hooks/.*\.sh$' || true); do
+  if [ -f "$hook_file" ]; then
+    hook_name=$(basename "$hook_file")
+
+    # Skip intentionally minimal hooks
+    is_minimal=false
+    for minimal in "${INTENTIONALLY_MINIMAL[@]}"; do
+      if [ "$hook_name" = "$minimal" ]; then
+        is_minimal=true
+        break
+      fi
+    done
+
+    if [ "$is_minimal" = true ]; then
+      continue
+    fi
+
+    # Count functional lines (non-comment, non-empty)
+    functional_lines=$(awk '!/^\s*(#|$)/' "$hook_file" | wc -l)
+
+    if [ "$functional_lines" -lt "$MIN_LINES" ]; then
+      GUTTED_HOOKS+=("$hook_file (only $functional_lines functional lines)")
+    fi
+  fi
+done
+
+if [ ${#GUTTED_HOOKS[@]} -gt 0 ]; then
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+  echo "🚨 COMMIT BLOCKED: Gutted Hook Files Detected" >&2
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+  echo "" >&2
+  echo "❌ ERROR: The following hooks appear to have been gutted:" >&2
+  echo "" >&2
+
+  for hook in "${GUTTED_HOOKS[@]}"; do
+    echo "  - $hook" >&2
+  done
+
+  echo "" >&2
+  echo "REASON: These hooks have fewer than $MIN_LINES functional lines," >&2
+  echo "        suggesting functional code was accidentally removed." >&2
+  echo "" >&2
+  echo "SOLUTION:" >&2
+  echo "  1. Restore from git: git show HEAD:<path> > <path>" >&2
+  echo "  2. Or restore from backup if available" >&2
+  echo "" >&2
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+  exit 1
+fi
+
+echo "✅ No gutted hooks detected" >&2
+
+# Check for checkstyle/PMD violations on staged Java files (BLOCKING)
+# PATTERN HISTORY: Added 2025-11-28 after retrospective analysis showed
+# M017 (Checkstyle violations, 4x recurrence) and M018 (PMD violations, 3x recurrence)
+# as highest-recurrence build failures. This hook catches style violations before commit.
+staged_java_files=$(git diff --cached --name-only --diff-filter=ACM | grep '\.java$' || true)
+
+if [ -n "$staged_java_files" ]; then
+  echo "Java files changed, checking style compliance..." >&2
+
+  # Check if we're in a Maven project
+  if [ -f "pom.xml" ]; then
+    # Run Checkstyle validation (non-blocking warning for now, can be made blocking later)
+    echo "Running Checkstyle validation..." >&2
+    if mvn checkstyle:check -q 2>/dev/null; then
+      echo "✅ Checkstyle: No violations" >&2
+    else
+      echo "" >&2
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+      echo "⚠️  CHECKSTYLE VIOLATIONS DETECTED" >&2
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+      echo "" >&2
+      echo "Run 'mvn checkstyle:check' to see violations." >&2
+      echo "Fix violations before committing to maintain code quality." >&2
+      echo "" >&2
+      echo "REFERENCE: See .planning/codebase/STYLE.md" >&2
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+      exit 1
+    fi
+
+    # Run PMD validation
+    echo "Running PMD validation..." >&2
+    if mvn pmd:check -q 2>/dev/null; then
+      echo "✅ PMD: No violations" >&2
+    else
+      echo "" >&2
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+      echo "⚠️  PMD VIOLATIONS DETECTED" >&2
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+      echo "" >&2
+      echo "Run 'mvn pmd:check' to see violations." >&2
+      echo "Fix violations before committing to maintain code quality." >&2
+      echo "" >&2
+      echo "REFERENCE: See .planning/codebase/QUALITY.md" >&2
+      echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" >&2
+      exit 1
+    fi
+
+    echo "✅ Style validation passed" >&2
+  fi
+fi
+
+exit 0
