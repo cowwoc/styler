@@ -835,6 +835,26 @@
       "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": "R002"
+    },
+    {
+      "id": "M042",
+      "timestamp": "2026-01-08T04:30:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": "PATTERN-006",
+      "description": "Used git rebase directly instead of git-rebase skill",
+      "root_cause": "No PreToolUse hook to remind about git-rebase skill for non-interactive rebase",
+      "prevention_type": "hook",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/remind-git-squash-skill.sh",
+      "pattern_keywords": [
+        "git",
+        "rebase",
+        "skill",
+        "backup-verify-cleanup"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
-  ]
+  ],
+  "mistake_count_since_last": 1
 }
