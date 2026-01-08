@@ -3,8 +3,9 @@
   Styler
 </h1>
 
-[![Supports JDK 25](https://img.shields.io/badge/Supports-JDK%2025-blue)](https://openjdk.org/)
-[![License](https://img.shields.io/badge/License-Source%20Available-green)](LICENSE.md)
+[![Supports JDK 25](https://img.shields.io/badge/Supports-JDK%2025-blue?style=for-the-badge)](https://openjdk.org/)
+[![License](https://img.shields.io/badge/License-Source%20Available-green?style=for-the-badge)](LICENSE.md)
+[![GitHub stars](https://img.shields.io/github/stars/cowwoc/styler?style=for-the-badge)](https://github.com/cowwoc/styler/stargazers)
 
 **Your style. Their style. Same codebase.**
 
@@ -39,10 +40,10 @@ See [docs/configuration.md](docs/configuration.md) for all options.
 
 ## Features
 
-- **See code your way** - Personal style locally, team style in the repo
-- **400 files/second** - Virtual threads for large codebases
-- **JDK 25 ready** - Pattern matching, records, sealed classes, switch expressions
-- **AI-friendly** - Structured output for GitHub Copilot, Claude Code, and others
+- 🎯 **See code your way** - Personal style locally, team style in the repo
+- ⚡ **400 files/second** - Virtual threads for large codebases
+- ☕ **JDK 25 ready** - Pattern matching, records, sealed classes, switch expressions
+- 🤖 **AI-friendly** - Structured output for GitHub Copilot, Claude Code, and others
 
 ## Roadmap
 
