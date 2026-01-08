@@ -103,6 +103,11 @@ public final class ArgumentParser
 			description("Module path entries for type resolution (separator: " + File.pathSeparator + ")").
 			build());
 
+		spec.addOption(OptionSpec.builder("--max-concurrency").
+			type(Integer.class).
+			description("Maximum files to process concurrently (default: based on available memory)").
+			build());
+
 		spec.addPositional(PositionalParamSpec.builder().
 			index("0..*").
 			type(String.class).
@@ -166,6 +171,7 @@ public final class ArgumentParser
 		addModeFlags(parseResult, builder);
 		addClasspathEntries(parseResult, builder);
 		addModulepathEntries(parseResult, builder);
+		addMaxConcurrency(parseResult, builder);
 
 		try
 		{
@@ -248,6 +254,27 @@ public final class ArgumentParser
 			builder.setModulepathEntries(parsePathList(parseResult.matchedOptionValue("--module-path", "")));
 		else
 			builder.setModulepathEntries(List.of());
+	}
+
+	/**
+	 * Adds max concurrency if specified.
+	 *
+	 * @param parseResult the parse result
+	 * @param builder     the options builder
+	 * @throws UsageException if the value is not a positive integer
+	 */
+	private void addMaxConcurrency(ParseResult parseResult, CLIOptions.Builder builder) throws UsageException
+	{
+		if (parseResult.hasMatchedOption("--max-concurrency"))
+		{
+			Integer value = parseResult.matchedOptionValue("--max-concurrency", null);
+			if (value == null || value <= 0)
+			{
+				throw new UsageException(
+					"--max-concurrency requires a positive integer value");
+			}
+			builder.setMaxConcurrency(value);
+		}
 	}
 
 	/**

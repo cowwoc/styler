@@ -16,13 +16,14 @@ public final class HelpFormatter
 		An unopinionated Java code formatter that preserves your code style choices.
 
 		OPTIONS:
-		  --config <file>    Configuration file path override
-		  --check            Validation-only mode (exit code 1 if changes needed)
-		  --fix              Auto-fix mode (modify files in-place)
-		  --classpath, -cp   Classpath entries for type resolution (platform separator)
-		  --module-path, -p  Module path entries for type resolution (platform separator)
-		  --help             Display this help message
-		  --version          Display version information
+		  --config <file>       Configuration file path override
+		  --check               Validation-only mode (exit code 1 if changes needed)
+		  --fix                 Auto-fix mode (modify files in-place)
+		  --classpath, -cp      Classpath entries for type resolution (platform separator)
+		  --module-path, -p     Module path entries for type resolution (platform separator)
+		  --max-concurrency <n> Maximum files to process concurrently (default: auto)
+		  --help                Display this help message
+		  --version             Display version information
 
 		ARGUMENTS:
 		  <file-or-directory>...    One or more files or directories to process
@@ -30,9 +31,10 @@ public final class HelpFormatter
 		EXAMPLES:
 		  styler src/main/java                  # Format all files in directory
 		  styler --check src/                   # Check formatting without changes
-		  styler --fix MyClass.java            # Fix formatting in file
-		  styler --config custom.xml src/      # Use custom configuration
-		  styler --classpath lib/a.jar src/    # Use classpath for type resolution
+		  styler --fix MyClass.java             # Fix formatting in file
+		  styler --config custom.xml src/       # Use custom configuration
+		  styler --classpath lib/a.jar src/     # Use classpath for type resolution
+		  styler --max-concurrency 1 src/       # Process files sequentially
 
 		EXIT CODES:
 		  0    Success (no formatting issues or all fixed)
