@@ -74,10 +74,13 @@ Advanced parser features including JDK 25 support.
 
 Performance validation, testing infrastructure, and CI/CD pipeline.
 
-#### Phase 5: Scale & Performance (2 tasks)
-CLI parallel processing and JMH benchmarks.
-- add-cli-parallel-processing
+#### Phase 5: Scale & Performance (5 tasks)
+CLI parallel processing, JMH benchmarks, and retrospective action items.
+- ✅ add-cli-parallel-processing
 - benchmarking-suite (JMH benchmarks, concurrency models, tool comparison)
+- A005-workflow-checkpoint-enforcement (RETRO: protocol_violation prevention)
+- A006-parser-test-documentation (RETRO: test_failure prevention)
+- A007-block-destructive-git-commands (RETRO: git_operation_failure prevention)
 
 #### Phase 6: Testing & Quality (2 tasks)
 Regression tests and CLI integration tests.
