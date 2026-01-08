@@ -32,6 +32,7 @@
 ## Recent Completions (Last 7 Days)
 
 ### 2026-01-08
+- ✅ add-array-initializer-in-annotation-support - Already implemented (verified)
 - ✅ add-cli-parallel-processing - Virtual threads with --max-concurrency flag
 
 ### 2026-01-07
@@ -58,11 +59,10 @@
 ## Next Actions
 
 ### Immediate (Days 1-3)
-1. **add-array-initializer-in-annotation-support** - Parser edge case for `@Annotation({val1, val2})`
-2. **fix-switch-expression-case-parsing** - Complex switch expression patterns
-3. **add-cli-integration-tests** - CLI test coverage for all flags
-4. **implement-ai-context-limiting** - Smart output limiting for agent context windows
-5. **implement-rules-summary-export** - Markdown export for AI pre-guidance
+1. **fix-switch-expression-case-parsing** - Complex switch expression patterns
+2. **add-cli-integration-tests** - CLI test coverage for all flags
+3. **implement-ai-context-limiting** - Smart output limiting for agent context windows
+4. **implement-rules-summary-export** - Markdown export for AI pre-guidance
 
 ### Target
 - ~99% Spring Framework 6.2.1 parse success (currently ~94%)

@@ -854,7 +854,47 @@
       "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M043",
+      "timestamp": "2026-01-08T10:55:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Lock file ownership not verified - proceeded with execution despite lock warning because lock used timestamp-based ID instead of actual session ID",
+      "root_cause": "Lock acquisition script in execute-release.md generates LOCK_SESSION_ID as 'execution-{epoch}' instead of using actual Claude session ID. Cannot distinguish own lock from another session's lock.",
+      "prevention_type": "hook",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/validate-execution-lock.sh",
+      "pattern_keywords": [
+        "lock",
+        "session ID",
+        "ownership",
+        "concurrent execution",
+        "execute-change"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
+    },
+    {
+      "id": "M044",
+      "timestamp": "2026-01-08T11:10:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Offered to continue with original task before completing prevention implementation in learn-from-mistakes",
+      "root_cause": "learn-from-mistakes skill does not enforce that prevention must be fully verified before returning to original work. Agent attempted to resume original task while prevention was unverified.",
+      "prevention_type": "skill",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/claude-code-cat/skills/learn-from-mistakes/SKILL.md",
+      "pattern_keywords": [
+        "learn-from-mistakes",
+        "prevention",
+        "order",
+        "sequence",
+        "verify"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ],
-  "mistake_count_since_last": 1
+  "mistake_count_since_last": 3
 }
