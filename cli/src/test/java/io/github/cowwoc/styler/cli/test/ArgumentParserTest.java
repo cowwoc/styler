@@ -451,4 +451,224 @@ public class ArgumentParserTest
 		requireThat(options2.inputPaths().getFirst(), "options2.inputPaths.getFirst()").
 			isEqualTo(Path.of("file2.java"));
 	}
+
+	// ========== Max Concurrency Tests ==========
+
+	/**
+	 * Validates that the {@code --max-concurrency} flag sets max concurrency value.
+	 */
+	@Test
+	public void parseWithMaxConcurrencySetsValue() throws CLIException
+	{
+		// Arrange
+		ArgumentParser parser = new ArgumentParser();
+		String[] args = {"--max-concurrency", "4", "test.java"};
+
+		// Act
+		CLIOptions options = parser.parse(args);
+
+		// Assert
+		requireThat(options.maxConcurrency().isPresent(), "maxConcurrency.isPresent()").isTrue();
+		requireThat(options.maxConcurrency().getAsInt(), "maxConcurrency.value").isEqualTo(4);
+	}
+
+	/**
+	 * Validates that parsing without {@code --max-concurrency} returns empty optional.
+	 */
+	@Test
+	public void parseWithoutMaxConcurrencyReturnsEmpty() throws CLIException
+	{
+		// Arrange
+		ArgumentParser parser = new ArgumentParser();
+		String[] args = {"test.java"};
+
+		// Act
+		CLIOptions options = parser.parse(args);
+
+		// Assert
+		requireThat(options.maxConcurrency().isEmpty(), "maxConcurrency.isEmpty()").isTrue();
+	}
+
+	/**
+	 * Validates that {@code --max-concurrency} with zero value throws UsageException.
+	 */
+	@Test(expectedExceptions = UsageException.class)
+	public void parseWithMaxConcurrencyZeroThrowsUsageException() throws CLIException
+	{
+		// Arrange
+		ArgumentParser parser = new ArgumentParser();
+		String[] args = {"--max-concurrency", "0", "test.java"};
+
+		// Act & Assert
+		parser.parse(args);
+	}
+
+	/**
+	 * Validates that {@code --max-concurrency} with negative value throws UsageException.
+	 */
+	@Test(expectedExceptions = UsageException.class)
+	public void parseWithMaxConcurrencyNegativeThrowsUsageException() throws CLIException
+	{
+		// Arrange
+		ArgumentParser parser = new ArgumentParser();
+		String[] args = {"--max-concurrency", "-1", "test.java"};
+
+		// Act & Assert
+		parser.parse(args);
+	}
+
+	// ========== Classpath Tests ==========
+
+	/**
+	 * Validates that the {@code --classpath} flag parses single entry correctly.
+	 */
+	@Test
+	public void parseWithClasspathSingleEntry() throws CLIException
+	{
+		// Arrange
+		ArgumentParser parser = new ArgumentParser();
+		String[] args = {"--classpath", "lib/foo.jar", "test.java"};
+
+		// Act
+		CLIOptions options = parser.parse(args);
+
+		// Assert
+		requireThat(options.classpathEntries().size(), "classpathEntries.size()").isEqualTo(1);
+		requireThat(options.classpathEntries().getFirst(), "classpathEntries[0]").
+			isEqualTo(Path.of("lib/foo.jar"));
+	}
+
+	/**
+	 * Validates that the {@code -cp} short form parses correctly.
+	 */
+	@Test
+	public void parseWithCpShortForm() throws CLIException
+	{
+		// Arrange
+		ArgumentParser parser = new ArgumentParser();
+		String[] args = {"-cp", "lib/bar.jar", "test.java"};
+
+		// Act
+		CLIOptions options = parser.parse(args);
+
+		// Assert
+		requireThat(options.classpathEntries().size(), "classpathEntries.size()").isEqualTo(1);
+		requireThat(options.classpathEntries().getFirst(), "classpathEntries[0]").
+			isEqualTo(Path.of("lib/bar.jar"));
+	}
+
+	/**
+	 * Validates that multiple classpath entries separated by path separator are parsed correctly.
+	 */
+	@Test
+	public void parseWithClasspathMultipleEntries() throws CLIException
+	{
+		// Arrange
+		ArgumentParser parser = new ArgumentParser();
+		String separator = java.io.File.pathSeparator;
+		String[] args = {"--classpath", "lib/a.jar" + separator + "lib/b.jar", "test.java"};
+
+		// Act
+		CLIOptions options = parser.parse(args);
+
+		// Assert
+		requireThat(options.classpathEntries().size(), "classpathEntries.size()").isEqualTo(2);
+		requireThat(options.classpathEntries().get(0), "classpathEntries[0]").
+			isEqualTo(Path.of("lib/a.jar"));
+		requireThat(options.classpathEntries().get(1), "classpathEntries[1]").
+			isEqualTo(Path.of("lib/b.jar"));
+	}
+
+	// ========== Module Path Tests ==========
+
+	/**
+	 * Validates that the {@code --module-path} flag parses single entry correctly.
+	 */
+	@Test
+	public void parseWithModulePathSingleEntry() throws CLIException
+	{
+		// Arrange
+		ArgumentParser parser = new ArgumentParser();
+		String[] args = {"--module-path", "mods/foo.jar", "test.java"};
+
+		// Act
+		CLIOptions options = parser.parse(args);
+
+		// Assert
+		requireThat(options.modulepathEntries().size(), "modulepathEntries.size()").isEqualTo(1);
+		requireThat(options.modulepathEntries().getFirst(), "modulepathEntries[0]").
+			isEqualTo(Path.of("mods/foo.jar"));
+	}
+
+	/**
+	 * Validates that the {@code -p} short form parses correctly.
+	 */
+	@Test
+	public void parseWithModulePathShortForm() throws CLIException
+	{
+		// Arrange
+		ArgumentParser parser = new ArgumentParser();
+		String[] args = {"-p", "mods/bar.jar", "test.java"};
+
+		// Act
+		CLIOptions options = parser.parse(args);
+
+		// Assert
+		requireThat(options.modulepathEntries().size(), "modulepathEntries.size()").isEqualTo(1);
+		requireThat(options.modulepathEntries().getFirst(), "modulepathEntries[0]").
+			isEqualTo(Path.of("mods/bar.jar"));
+	}
+
+	/**
+	 * Validates that multiple module path entries separated by path separator are parsed correctly.
+	 */
+	@Test
+	public void parseWithModulePathMultipleEntries() throws CLIException
+	{
+		// Arrange
+		ArgumentParser parser = new ArgumentParser();
+		String separator = java.io.File.pathSeparator;
+		String[] args = {"--module-path", "mods/a.jar" + separator + "mods/b.jar", "test.java"};
+
+		// Act
+		CLIOptions options = parser.parse(args);
+
+		// Assert
+		requireThat(options.modulepathEntries().size(), "modulepathEntries.size()").isEqualTo(2);
+		requireThat(options.modulepathEntries().get(0), "modulepathEntries[0]").
+			isEqualTo(Path.of("mods/a.jar"));
+		requireThat(options.modulepathEntries().get(1), "modulepathEntries[1]").
+			isEqualTo(Path.of("mods/b.jar"));
+	}
+
+	/**
+	 * Validates that combining all CLI options works correctly.
+	 */
+	@Test
+	public void parseWithAllOptionsSetsCombinedOptions() throws CLIException
+	{
+		// Arrange
+		ArgumentParser parser = new ArgumentParser();
+		String[] args = {
+			"--config", "custom.toml",
+			"--check",
+			"--classpath", "lib/dep.jar",
+			"--module-path", "mods/mod.jar",
+			"--max-concurrency", "8",
+			"file1.java", "file2.java"
+		};
+
+		// Act
+		CLIOptions options = parser.parse(args);
+
+		// Assert
+		requireThat(options.configPath().isPresent(), "configPath.isPresent()").isTrue();
+		requireThat(options.configPath().get(), "configPath").isEqualTo(Path.of("custom.toml"));
+		requireThat(options.checkMode(), "checkMode").isTrue();
+		requireThat(options.fixMode(), "fixMode").isFalse();
+		requireThat(options.classpathEntries().size(), "classpathEntries.size()").isEqualTo(1);
+		requireThat(options.modulepathEntries().size(), "modulepathEntries.size()").isEqualTo(1);
+		requireThat(options.maxConcurrency().getAsInt(), "maxConcurrency").isEqualTo(8);
+		requireThat(options.inputPaths().size(), "inputPaths.size()").isEqualTo(2);
+	}
 }

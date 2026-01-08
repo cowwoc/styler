@@ -577,4 +577,287 @@ public class CliMainTest
 					});
 		}
 	}
+
+	/**
+	 * Tests that --max-concurrency flag is accepted and processing succeeds.
+	 */
+	@Test
+	public void maxConcurrencyFlagIsAccepted() throws IOException
+	{
+		Path tempDir = Files.createTempDirectory("cli-test-");
+		try
+		{
+			Path tempFile = Files.createTempFile(tempDir, "Test", ".java");
+			Files.writeString(tempFile, "public class Test {}");
+
+			String[] args = {"--max-concurrency", "2", tempFile.toString()};
+			CliMain cliMain = new CliMain();
+
+			int exitCode = cliMain.run(args);
+			requireThat(exitCode, "exitCode").isEqualTo(0);
+		}
+		finally
+		{
+			if (tempDir != null && Files.exists(tempDir))
+				Files.walk(tempDir).
+					sorted((p1, p2) -> p2.compareTo(p1)).
+					forEach(path ->
+					{
+						try
+						{
+							Files.delete(path);
+						}
+						catch (IOException e)
+						{
+							// Best effort cleanup
+							assert e != null;
+						}
+					});
+		}
+	}
+
+	/**
+	 * Tests that invalid --max-concurrency value (zero) returns exit code 2.
+	 */
+	@Test
+	public void maxConcurrencyZeroReturnsExitCode2()
+	{
+		String[] args = {"--max-concurrency", "0", "test.java"};
+		CliMain cliMain = new CliMain();
+
+		int exitCode = cliMain.run(args);
+		requireThat(exitCode, "exitCode").isEqualTo(2);
+	}
+
+	/**
+	 * Tests that invalid --max-concurrency value (negative) returns exit code 2.
+	 */
+	@Test
+	public void maxConcurrencyNegativeReturnsExitCode2()
+	{
+		String[] args = {"--max-concurrency", "-1", "test.java"};
+		CliMain cliMain = new CliMain();
+
+		int exitCode = cliMain.run(args);
+		requireThat(exitCode, "exitCode").isEqualTo(2);
+	}
+
+	/**
+	 * Tests that check mode with line length violations returns exit code 1.
+	 */
+	@Test
+	public void checkModeWithLineLengthViolationReturnsExitCode1() throws IOException
+	{
+		Path tempDir = Files.createTempDirectory("cli-test-");
+		try
+		{
+			// Create config with short max line length (must be named .styler.toml for discovery)
+			Path configFile = tempDir.resolve(".styler.toml");
+			Files.writeString(configFile, "maxLineLength = 40\n");
+
+			// Create file with a line exceeding 40 characters
+			Path javaFile = tempDir.resolve("LongLine.java");
+			Files.writeString(javaFile,
+				"public class LongLine { private String veryLongVariableNameHere; }");
+
+			String[] args = {"--check", javaFile.toString()};
+			CliMain cliMain = new CliMain();
+
+			int exitCode = cliMain.run(args);
+			requireThat(exitCode, "exitCode").isEqualTo(1);
+		}
+		finally
+		{
+			if (tempDir != null && Files.exists(tempDir))
+				Files.walk(tempDir).
+					sorted((p1, p2) -> p2.compareTo(p1)).
+					forEach(path ->
+					{
+						try
+						{
+							Files.delete(path);
+						}
+						catch (IOException e)
+						{
+							// Best effort cleanup
+							assert e != null;
+						}
+					});
+		}
+	}
+
+	/**
+	 * Tests that check mode with no violations returns exit code 0.
+	 */
+	@Test
+	public void checkModeWithNoViolationsReturnsExitCode0() throws IOException
+	{
+		Path tempDir = Files.createTempDirectory("cli-test-");
+		try
+		{
+			// Create config with generous max line length (must be named .styler.toml)
+			Path configFile = tempDir.resolve(".styler.toml");
+			Files.writeString(configFile, "maxLineLength = 200\n");
+
+			// Create file with short lines
+			Path javaFile = tempDir.resolve("ShortLine.java");
+			Files.writeString(javaFile, "public class ShortLine {}");
+
+			String[] args = {"--check", javaFile.toString()};
+			CliMain cliMain = new CliMain();
+
+			int exitCode = cliMain.run(args);
+			requireThat(exitCode, "exitCode").isEqualTo(0);
+		}
+		finally
+		{
+			if (tempDir != null && Files.exists(tempDir))
+				Files.walk(tempDir).
+					sorted((p1, p2) -> p2.compareTo(p1)).
+					forEach(path ->
+					{
+						try
+						{
+							Files.delete(path);
+						}
+						catch (IOException e)
+						{
+							// Best effort cleanup
+							assert e != null;
+						}
+					});
+		}
+	}
+
+	/**
+	 * Tests that malformed TOML config returns exit code 3.
+	 */
+	@Test
+	public void malformedConfigReturnsExitCode3() throws IOException
+	{
+		Path tempDir = Files.createTempDirectory("cli-test-");
+		try
+		{
+			// Create malformed TOML config (must be named .styler.toml)
+			Path configFile = tempDir.resolve(".styler.toml");
+			Files.writeString(configFile, "[format\nmaxLineLength = invalid");
+
+			Path javaFile = tempDir.resolve("Test.java");
+			Files.writeString(javaFile, "public class Test {}");
+
+			String[] args = {javaFile.toString()};
+			CliMain cliMain = new CliMain();
+
+			int exitCode = cliMain.run(args);
+			requireThat(exitCode, "exitCode").isEqualTo(3);
+		}
+		finally
+		{
+			if (tempDir != null && Files.exists(tempDir))
+				Files.walk(tempDir).
+					sorted((p1, p2) -> p2.compareTo(p1)).
+					forEach(path ->
+					{
+						try
+						{
+							Files.delete(path);
+						}
+						catch (IOException e)
+						{
+							// Best effort cleanup
+							assert e != null;
+						}
+					});
+		}
+	}
+
+	/**
+	 * Tests that multiple files with --max-concurrency processes all files.
+	 */
+	@Test
+	public void maxConcurrencyWithMultipleFilesProcessesAll() throws IOException
+	{
+		Path tempDir = Files.createTempDirectory("cli-test-");
+		try
+		{
+			Path file1 = Files.createTempFile(tempDir, "File1", ".java");
+			Path file2 = Files.createTempFile(tempDir, "File2", ".java");
+			Path file3 = Files.createTempFile(tempDir, "File3", ".java");
+
+			Files.writeString(file1, "public class File1 {}");
+			Files.writeString(file2, "public class File2 {}");
+			Files.writeString(file3, "public class File3 {}");
+
+			String[] args = {
+				"--max-concurrency", "4",
+				file1.toString(), file2.toString(), file3.toString()
+			};
+			CliMain cliMain = new CliMain();
+
+			int exitCode = cliMain.run(args);
+			requireThat(exitCode, "exitCode").isEqualTo(0);
+		}
+		finally
+		{
+			if (tempDir != null && Files.exists(tempDir))
+				Files.walk(tempDir).
+					sorted((p1, p2) -> p2.compareTo(p1)).
+					forEach(path ->
+					{
+						try
+						{
+							Files.delete(path);
+						}
+						catch (IOException e)
+						{
+							// Best effort cleanup
+							assert e != null;
+						}
+					});
+		}
+	}
+
+	/**
+	 * Tests that single concurrency (--max-concurrency 1) processes files serially.
+	 */
+	@Test
+	public void singleConcurrencyProcessesSerially() throws IOException
+	{
+		Path tempDir = Files.createTempDirectory("cli-test-");
+		try
+		{
+			Path file1 = tempDir.resolve("File1.java");
+			Path file2 = tempDir.resolve("File2.java");
+
+			Files.writeString(file1, "public class File1 {}");
+			Files.writeString(file2, "public class File2 {}");
+
+			String[] args = {
+				"--max-concurrency", "1",
+				file1.toString(), file2.toString()
+			};
+			CliMain cliMain = new CliMain();
+
+			int exitCode = cliMain.run(args);
+			requireThat(exitCode, "exitCode").isEqualTo(0);
+		}
+		finally
+		{
+			if (tempDir != null && Files.exists(tempDir))
+				Files.walk(tempDir).
+					sorted((p1, p2) -> p2.compareTo(p1)).
+					forEach(path ->
+					{
+						try
+						{
+							Files.delete(path);
+						}
+						catch (IOException e)
+						{
+							// Best effort cleanup
+							assert e != null;
+						}
+					});
+		}
+	}
 }
