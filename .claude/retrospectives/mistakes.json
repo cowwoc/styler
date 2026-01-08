@@ -816,6 +816,25 @@
       "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M041",
+      "timestamp": "2026-01-08T11:00:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Edited plugin cache (~/.config/claude/plugins/cache/) instead of source (/workspace/claude-code-cat/)",
+      "root_cause": "Skill files are invoked from cache directory. When fixing bugs, edited the deployed cache instead of the source repository. Changes would be lost on next plugin update.",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/retrospectives/mistakes.json",
+      "pattern_keywords": [
+        "plugin cache",
+        "source directory",
+        "wrong location",
+        "edit"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ]
 }
