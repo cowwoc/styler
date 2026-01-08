@@ -147,3 +147,17 @@ commit? Useful in 6 months?
 - [style-guide.md](docs/project/style-guide.md) - Style validation, JavaDoc
 - [quality-guide.md](docs/project/quality-guide.md) - Testing standards
 - [docs/code-style/](docs/code-style/) - Code style files
+
+## MANDATORY MISTAKE HANDLING
+
+**CRITICAL**: Invoke `learn-from-mistakes` skill for ANY mistake.
+
+**Mistakes include**: Protocol violations, rework, build failures, tool misuse, logical errors
+
+**Invocation patterns** (any of these work):
+- `/learn-from-mistakes`
+- "Learn from mistakes: <description>"
+- "run the learn-from-mistakes skill"
+
+**What the skill does**: Analyzes root cause using 5-Whys, implements prevention at the appropriate
+level (code fix > validation > hook > test > documentation), and verifies the fix works.

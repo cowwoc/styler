@@ -1,15 +1,15 @@
 #!/bin/bash
 
 # Claude Code statusline script
-# Displays git branch, model name, and session duration
+# Displays git worktree, model name, and session duration
 
 # Ensure UTF-8 encoding for proper emoji rendering
 export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
 
-# Extract git branch name
-GIT_BRANCH=$(git branch --show-current 2>/dev/null || echo "N/A")
+# Extract git worktree name (directory name of the worktree root)
+GIT_WORKTREE=$(basename "$(git rev-parse --show-toplevel 2>/dev/null)" 2>/dev/null || echo "N/A")
 
 # Read JSON input from stdin and extract needed values with simple parsing
 input=$(cat)
@@ -37,24 +37,24 @@ fi
 
 
 # Colors for statusline components
-BRANCH_COLOR="\033[38;2;255;255;255m"  # Bright White (excellent readability)
+WORKTREE_COLOR="\033[38;2;255;255;255m"  # Bright White (excellent readability)
 MODEL_COLOR="\033[38;2;220;150;9m"     # Warm Gold
 TIME_COLOR="\033[38;2;255;127;80m"     # Coral
 SESSION_COLOR="\033[38;2;147;112;219m" # Medium Purple
 RESET="\033[0m"
 
-# Set Windows Terminal tab title to git branch name
-# Set custom title if we have a valid git branch, otherwise reset to default
-if [[ "$GIT_BRANCH" != "N/A" && -n "$GIT_BRANCH" ]]; then
-	printf "\033]0;%s\007" "$GIT_BRANCH"
+# Set Windows Terminal tab title to git worktree name
+# Set custom title if we have a valid git worktree, otherwise reset to default
+if [[ "$GIT_WORKTREE" != "N/A" && -n "$GIT_WORKTREE" ]]; then
+	printf "\033]0;%s\007" "$GIT_WORKTREE"
 else
-	# Reset tab title to empty/default when no valid git branch
+	# Reset tab title to empty/default when no valid git worktree
 	printf "\033]0;\007"
 fi
 
 # Generate and output the statusline
 printf '🌿 %b%s%b 🤖 %b%s%b ⏰ %b%02d:%02d%b 🆔 %b%s%b\n' \
-    "$BRANCH_COLOR" "$GIT_BRANCH" "$RESET" \
+    "$WORKTREE_COLOR" "$GIT_WORKTREE" "$RESET" \
     "$MODEL_COLOR" "$MODEL_NAME" "$RESET" \
     "$TIME_COLOR" "$HOURS" "$MINUTES" "$RESET" \
     "$SESSION_COLOR" "$SESSION_ID" "$RESET"
