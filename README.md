@@ -3,7 +3,7 @@
   Styler
 </h1>
 
-[![Requires JDK 25](https://img.shields.io/badge/Requires-JDK%2025-blue)](https://openjdk.org/)
+[![Supports JDK 25](https://img.shields.io/badge/Supports-JDK%2025-blue)](https://openjdk.org/)
 [![License](https://img.shields.io/badge/License-Source%20Available-green)](LICENSE)
 
 **Your style. Their style. Same codebase.**
