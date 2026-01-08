@@ -311,30 +311,22 @@ public final class Parser implements AutoCloseable
 				tokens.get(lookahead + 1).type() == TokenType.INTERFACE)
 				return true;
 			// Skip modifiers to continue looking
-			if (isModifierToken(type))
+			if (type == TokenType.PUBLIC || type == TokenType.PRIVATE || type == TokenType.PROTECTED ||
+				type == TokenType.STATIC || type == TokenType.FINAL || type == TokenType.ABSTRACT ||
+				type == TokenType.SEALED || type == TokenType.NON_SEALED || type == TokenType.STRICTFP)
 			{
 				++lookahead;
 				continue;
 			}
-			// Skip annotations (@ followed by identifier and optional arguments)
+			// Skip annotations
 			if (type == TokenType.AT_SIGN)
 			{
 				lookahead = skipAnnotationAt(lookahead);
 				continue;
 			}
-			// Found a non-modifier, non-type-keyword token - not a type declaration
 			return false;
 		}
 		return false;
-	}
-
-	private boolean isModifierToken(TokenType type)
-	{
-		return switch (type)
-		{
-			case PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, ABSTRACT, SEALED, NON_SEALED, STRICTFP -> true;
-			default -> false;
-		};
 	}
 
 	/**
@@ -553,13 +545,10 @@ public final class Parser implements AutoCloseable
 		TokenType type = currentToken().type();
 		return switch (type)
 		{
-			// Return type or field type (could be void for methods)
-			case IDENTIFIER, VOID -> true;
-			// Member modifiers
-			case PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, ABSTRACT, SYNCHRONIZED, NATIVE,
-				TRANSIENT, VOLATILE, DEFAULT -> true;
-			// Primitive types (for fields or method return types)
-			case BOOLEAN, BYTE, SHORT, INT, LONG, CHAR, FLOAT, DOUBLE -> true;
+			// Return type/field type (IDENTIFIER, VOID), member modifiers, primitive types
+			case IDENTIFIER, VOID, PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, ABSTRACT, SYNCHRONIZED,
+				NATIVE, TRANSIENT, VOLATILE, DEFAULT, BOOLEAN, BYTE, SHORT, INT, LONG, CHAR, FLOAT,
+				DOUBLE -> true;
 			// Annotation on member (but not @interface which is a type declaration)
 			case AT_SIGN -> !isAnnotationTypeDeclaration();
 			default -> false;
@@ -898,20 +887,6 @@ public final class Parser implements AutoCloseable
 	}
 
 	/**
-	 * Checks whether the given token type can start any unary expression.
-	 * <p>
-	 * Used for cast disambiguation: primitive type casts {@code (int) expr} can be followed by any unary
-	 * operand including {@code +} and {@code -}.
-	 *
-	 * @param type the token type to check
-	 * @return {@code true} if the token can start any unary expression
-	 */
-	private boolean canStartUnaryExpression(TokenType type)
-	{
-		return canStartUnaryExpressionNotPlusMinus(type) || type == TokenType.PLUS || type == TokenType.MINUS;
-	}
-
-	/**
 	 * Attempts to parse a cast expression after the opening parenthesis has been consumed.
 	 * <p>
 	 * Cast expressions have the form {@code (Type) operand}. This method handles:
@@ -1025,15 +1000,17 @@ public final class Parser implements AutoCloseable
 		}
 		consume(); // Consume ')'
 
-		// Check disambiguation rules based on next token
+		// Cast disambiguation: determine if this is actually a cast or a parenthesized expression
+		// Primitive casts like (int)x can be followed by +/- (unambiguous)
+		// Reference casts like (Foo)x cannot be followed by +/- to avoid ambiguity with (a)+b
 		TokenType nextTokenType = currentToken().type();
 		boolean validCast;
 		if (isPrimitive && !isIntersectionType)
-			// Primitive type cast: can be followed by any unary operand
-			validCast = canStartUnaryExpression(nextTokenType);
+			// Primitive type cast: can be followed by any unary operand including + and -
+			validCast = canStartUnaryExpressionNotPlusMinus(nextTokenType) ||
+				nextTokenType == TokenType.PLUS || nextTokenType == TokenType.MINUS;
 		else
-			// Reference type cast (or intersection type): cannot be followed by + or -
-			// to avoid ambiguity with binary expressions like (a) + b
+			// Reference type cast: cannot be followed by + or - to avoid ambiguity with (a)+b
 			validCast = canStartUnaryExpressionNotPlusMinus(nextTokenType);
 
 		if (!validCast)
@@ -1949,16 +1926,25 @@ public final class Parser implements AutoCloseable
 		int checkpoint = position;
 		consume(); // primitive type keyword
 
+		// Consume array dimensions: int[] arr, double[][] arr
+		while (currentToken().type() == TokenType.LEFT_BRACKET)
+		{
+			consume();
+			if (!match(TokenType.RIGHT_BRACKET))
+			{
+				position = checkpoint;
+				return false;
+			}
+		}
+
 		// Check if followed by identifier (pattern variable)
 		if (currentToken().type() != TokenType.IDENTIFIER)
 		{
-			// Not a type pattern, restore position
 			position = checkpoint;
 			return false;
 		}
 
 		consume(); // pattern variable
-
 		// Check for optional guard: "when" expression
 		if (isContextualKeyword("when"))
 			parseGuardExpression();
@@ -1989,11 +1975,21 @@ public final class Parser implements AutoCloseable
 		{
 			if (currentToken().type() != TokenType.IDENTIFIER)
 			{
-				// Not a qualified name, restore position
 				position = checkpoint;
 				return false;
 			}
 			consume();
+		}
+
+		// Consume array dimensions: String[] arr, Foo.Bar[][] arr
+		while (currentToken().type() == TokenType.LEFT_BRACKET)
+		{
+			consume();
+			if (!match(TokenType.RIGHT_BRACKET))
+			{
+				position = checkpoint;
+				return false;
+			}
 		}
 
 		// Check if this is a record pattern: Type(components...)
@@ -2004,7 +2000,7 @@ public final class Parser implements AutoCloseable
 		}
 
 		// Check if next token is an identifier (pattern variable)
-		// This includes both named variables (s, bar) and unnamed pattern (_)
+		// This includes both named variables (String s) and unnamed pattern (String _)
 		if (currentToken().type() == TokenType.IDENTIFIER)
 		{
 			consume();
@@ -2014,7 +2010,6 @@ public final class Parser implements AutoCloseable
 			return true;
 		}
 
-		// Not a type pattern, restore position
 		position = checkpoint;
 		return false;
 	}
@@ -3170,34 +3165,18 @@ public final class Parser implements AutoCloseable
 			Token token = currentToken();
 			int start = token.start();
 			int end = token.end();
-
-			switch (token.type())
+			NodeType nodeType = switch (token.type())
 			{
-				case JAVADOC_COMMENT ->
-				{
-					consume();
-					arena.allocateNode(NodeType.JAVADOC_COMMENT, start, end);
-				}
-				case BLOCK_COMMENT ->
-				{
-					consume();
-					arena.allocateNode(NodeType.BLOCK_COMMENT, start, end);
-				}
-				case MARKDOWN_DOC_COMMENT ->
-				{
-					consume();
-					arena.allocateNode(NodeType.MARKDOWN_DOC_COMMENT, start, end);
-				}
-				case LINE_COMMENT ->
-				{
-					consume();
-					arena.allocateNode(NodeType.LINE_COMMENT, start, end);
-				}
-				default ->
-				{
-					return;
-				}
-			}
+				case JAVADOC_COMMENT -> NodeType.JAVADOC_COMMENT;
+				case BLOCK_COMMENT -> NodeType.BLOCK_COMMENT;
+				case MARKDOWN_DOC_COMMENT -> NodeType.MARKDOWN_DOC_COMMENT;
+				case LINE_COMMENT -> NodeType.LINE_COMMENT;
+				default -> null;
+			};
+			if (nodeType == null)
+				return;
+			consume();
+			arena.allocateNode(nodeType, start, end);
 		}
 	}
 
