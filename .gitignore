@@ -72,18 +72,3 @@ __pycache__/
 
 ### User-specific files ###
 /.claude/settings.local.json
-
-### Task Protocol Coordination Files ###
-# PATTERN HISTORY: Added 2025-11-04 after status.json and ENGINEER-IMPLEMENTATION-PLAN.md
-# were accidentally committed to main in d95f8a2. These files are task coordination
-# artifacts that belong in /workspace/tasks/{task}/ NOT in /workspace/main/
-status.json
-*-IMPLEMENTATION-PLAN.md
-*-requirements.md
-*-review.md
-task.json
-*.flag
-.phase-visits
-.last-notified-state
-.last-validated-state
-hook-execution.log

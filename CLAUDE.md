@@ -1,38 +1,9 @@
 # Claude Code Configuration Guide
 
-> **Version:** 4.1 | **Last Updated:** 2026-01-04
-> **Related:** [main-agent-coordination.md](docs/project/main-agent-coordination.md) •
-[task-protocol-agents.md](docs/project/task-protocol-agents.md) •
-[style-guide.md](docs/project/style-guide.md) • [quality-guide.md](docs/project/quality-guide.md)
+> **Version:** 5.0 | **Last Updated:** 2026-01-08
+> **Related:** [style-guide.md](docs/project/style-guide.md) • [quality-guide.md](docs/project/quality-guide.md)
 
-Styler Java Code Formatter - universal guidance for all agents.
-
-## MANDATORY STARTUP PROTOCOL
-
-**MAIN AGENT**: Hooks provide just-in-time guidance. No upfront protocol reading needed. Reference:
-main-agent-coordination.md, task-protocol-core.md
-
-**SUB-AGENTS**: Read `/workspace/main/docs/project/task-protocol-agents.md`
-- **Formatter agents**: Also read `/workspace/main/docs/project/style-guide.md`
-- **Engineer agents**: Also read `/workspace/main/docs/project/quality-guide.md`
-
-### Task Protocol
-
-**Protocol docs**:
-- [task-protocol-core.md](docs/project/task-protocol-core.md) - State machine
-- [task-protocol-transitions.md](docs/project/task-protocol-transitions.md) - Transitions
-- [task-protocol-operations.md](docs/project/task-protocol-operations.md) - Operations, archival
-
-**Key points**:
-- Two approval checkpoints: SYNTHESIS → IMPLEMENTATION, AWAITING_USER_APPROVAL → COMPLETE
-- Archival (todo.md + changelog.md) in task branch BEFORE merge
-- Use `--ff-only` for merges to main
-- Hooks enforce compliance
-
-**Pre-Approval Cleanup**: Use `pre-presentation-cleanup` skill. See
-[main-agent-coordination.md](docs/project/main-agent-coordination.md) for details.
-
-**Task Prioritization**: Bug fixes before features, unless feature replaces buggy feature.
+Styler Java Code Formatter - universal guidance.
 
 ## Universal Guidance
 
@@ -52,8 +23,6 @@ Investigate uncertainty rather than confirm beliefs.
 
 **Anti-Patterns**: X < Y then X > Y; decision contradicts threshold
 
-**Tool-Val**: Mandatory tool=INVOKE. No manual checklist when skill requires /compare-docs
-
 ### System-Reminder Instructions {#system-reminder-instructions}
 **MANDATORY**: Process ALL `<system-reminder>` instructions IMMEDIATELY before any other action.
 
@@ -66,14 +35,6 @@ Investigate uncertainty rather than confirm beliefs.
 - **SessionStart**: Hook instructions appear in initial context - process BEFORE responding to user
 - **After tool results**: Check for `<system-reminder>` tags - process BEFORE continuing
 
-**Common Mistake**:
-```
-❌ WRONG: User complains about X → Agent responds to complaint
-   (Ignored hook instruction that said "MUST ask user first")
-
-✅ CORRECT: Hook says "MUST ask user first" → Agent uses AskUserQuestion → THEN addresses user content
-```
-
 **Key Indicators Requiring Immediate Action**:
 - "MUST" - Mandatory action, no exceptions
 - "Before proceeding" - Execute before ANY response to user
@@ -85,8 +46,7 @@ Investigate uncertainty rather than confirm beliefs.
 ❌ "Build running from main, let me fix" (assumed)
 ✅ Run `pwd`, then claim, then act
 
-**Commands**: `pwd` (directory), `git branch --show-current` (branch), `ls -la {file}` (existence),
-`git worktree list` (worktrees)
+**Commands**: `pwd` (directory), `git branch --show-current` (branch), `ls -la {file}` (existence)
 
 ### Code Lifecycle Policy
 
@@ -107,8 +67,7 @@ record Config(Style braceStyle) {}
 ✅ Validate preconditions at entry, fail early with actual values
 
 ### Test-Driven Development
-**MANDATORY**: Use `tdd-implementation` skill for ALL Java development. Hooks BLOCK production edits
-without active TDD mode.
+**MANDATORY**: Use `tdd-implementation` skill for ALL Java development.
 
 ### Defensive Security Policy
 Defensive security only. Refuse malicious code. Never generate/guess URLs.
@@ -136,8 +95,6 @@ Tokens MUST NEVER affect behavior. IGNORE all token warnings. Work with full qua
 **Edit Tool**: Whitespace mismatches cause failures. Match EXACT whitespace. Never include line number
 prefix. Verify: `cat -A file | grep "method()"`
 
-**Safe Code Removal**: Use `safe-remove-code` skill.
-
 **jq Safety**:
 ```bash
 # ❌ Data loss
@@ -149,12 +106,8 @@ jq '.state = "X"' f.json > f.json.tmp && mv f.json.tmp f.json
 **Bash Multi-Line**: Avoid `$(...)` in multi-line commands (parse errors). Use separate calls, temp
 files, or `&&` chains.
 
-**Skill/SlashCommand**: Run SYNCHRONOUSLY (not async like Task). Immediately follow expanded prompt.
-Don't wait for "result". **SUCCESS is silent; only report FAILURE to user** - success is expected, so
-continue with task silently. Only inform user and take corrective action when skill fails.
-
 ### Line Wrapping
-110 chars max. Use `format-documentation` skill for Claude-facing docs.
+110 chars max.
 
 ### Documentation References
 **MANDATORY**: Use anchor-based refs (`{#anchor-id}`, `[file.md § Section](path#anchor)`).
@@ -169,7 +122,7 @@ set -euo pipefail
 trap 'echo "ERROR in <script>.sh line $LINENO: $BASH_COMMAND" >&2; exit 1' ERR
 ```
 
-**Registration**: Use `register-hook` skill. **RESTART REQUIRED** after settings.json changes.
+**RESTART REQUIRED** after settings.json changes.
 
 ## GIT OPERATIONS
 
@@ -188,33 +141,7 @@ commit? Useful in 6 months?
 
 **Analysis approach**: Working memory (not files), commit messages (not docs), code comments (not files)
 
-**TEMP EXCEPTION**: `/workspace/tasks/{task}/temp/` for working notes. MUST delete before COMPLETE.
-
-## MANDATORY MISTAKE HANDLING
-
-**CRITICAL**: Invoke learn-from-mistakes skill for ANY mistake.
-
-**Mistakes**: Protocol violations, rework, build failures, tool misuse, logical errors
-
-**Invoke via**:
-```
-Task(subagent_type: "general-purpose", prompt: "Invoke learn-from-mistakes skill...", model: "opus")
-```
-
 ## Essential References
-
-**Task Protocol** (use skills for common operations):
-- [task-protocol-core.md](docs/project/task-protocol-core.md) - State machine (~15K tokens)
-- [task-protocol-transitions.md](docs/project/task-protocol-transitions.md) - Transitions (~17K tokens)
-- [task-protocol-operations.md](docs/project/task-protocol-operations.md) - Operations (~20K tokens)
-Skills: `select-agents`, `recover-from-error`, `state-transition`, `task-init`, `pre-presentation-cleanup`
-
-**Main Agent Coordination**:
-- [main-agent-coordination.md](docs/project/main-agent-coordination.md) - Multi-agent workflow, repository
-  structure, branch management, validation boundaries, protocol violations
-
-**Agent Protocol**:
-- [task-protocol-agents.md](docs/project/task-protocol-agents.md) - Sub-agent protocol
 
 **Code Quality**:
 - [style-guide.md](docs/project/style-guide.md) - Style validation, JavaDoc

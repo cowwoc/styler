@@ -37,31 +37,41 @@ TRACKER_FILE="/tmp/batch_tracker_${SESSION_ID}.json"
 WINDOW_SECONDS=30  # Track operations within 30-second windows
 THRESHOLD=3        # Warn after 3 sequential operations
 
-# Initialize tracker if needed
+# Initialize tracker if needed (with atomic creation to prevent race conditions)
 if [[ ! -f "$TRACKER_FILE" ]]; then
-    echo '{"operations": [], "warnings_shown": 0, "last_warning": 0}' > "$TRACKER_FILE"
+    # Use atomic write to prevent race condition with concurrent hooks
+    echo '{"operations": [], "warnings_shown": 0, "last_warning": 0}' > "${TRACKER_FILE}.init.$$" 2>/dev/null
+    mv "${TRACKER_FILE}.init.$$" "$TRACKER_FILE" 2>/dev/null || rm -f "${TRACKER_FILE}.init.$$"
+fi
+
+# Verify tracker file exists and is readable before proceeding
+if [[ ! -f "$TRACKER_FILE" ]] || [[ ! -r "$TRACKER_FILE" ]]; then
+    exit 0  # Silently exit if file not accessible - advisory hook shouldn't block
 fi
 
 # Add this operation (with safe temp file handling)
+# Use unique temp file per process to avoid conflicts
+TEMP_FILE="${TRACKER_FILE}.tmp.$$"
 if jq --arg tool "$TOOL_NAME" \
       --arg path "$FILE_PATH" \
       --arg ts "$TIMESTAMP" \
       '.operations += [{"tool": $tool, "path": $path, "timestamp": ($ts | tonumber)}]' \
-      "$TRACKER_FILE" > "${TRACKER_FILE}.tmp" 2>/dev/null && [[ -s "${TRACKER_FILE}.tmp" ]]; then
-    mv "${TRACKER_FILE}.tmp" "$TRACKER_FILE"
+      "$TRACKER_FILE" > "$TEMP_FILE" 2>/dev/null && [[ -s "$TEMP_FILE" ]]; then
+    mv "$TEMP_FILE" "$TRACKER_FILE" 2>/dev/null || rm -f "$TEMP_FILE"
 else
-    rm -f "${TRACKER_FILE}.tmp"
+    rm -f "$TEMP_FILE"
     exit 0  # Silently exit on jq failure - advisory hook shouldn't block
 fi
 
 # Clean old operations (outside window)
 CUTOFF=$((TIMESTAMP - WINDOW_SECONDS))
+TEMP_FILE="${TRACKER_FILE}.tmp.$$"
 if jq --arg cutoff "$CUTOFF" \
       '.operations = [.operations[] | select(.timestamp > ($cutoff | tonumber))]' \
-      "$TRACKER_FILE" > "${TRACKER_FILE}.tmp" 2>/dev/null && [[ -s "${TRACKER_FILE}.tmp" ]]; then
-    mv "${TRACKER_FILE}.tmp" "$TRACKER_FILE"
+      "$TRACKER_FILE" > "$TEMP_FILE" 2>/dev/null && [[ -s "$TEMP_FILE" ]]; then
+    mv "$TEMP_FILE" "$TRACKER_FILE" 2>/dev/null || rm -f "$TEMP_FILE"
 else
-    rm -f "${TRACKER_FILE}.tmp"
+    rm -f "$TEMP_FILE"
     exit 0
 fi
 
@@ -76,11 +86,12 @@ if [[ $RECENT_COUNT -ge $THRESHOLD ]]; then
 
     if [[ $TIME_SINCE_WARNING -gt $WARNING_COOLDOWN ]]; then
         # Update last warning time (with safe temp file handling)
+        TEMP_FILE="${TRACKER_FILE}.tmp.$$"
         if jq --arg ts "$TIMESTAMP" '.last_warning = ($ts | tonumber) | .warnings_shown += 1' \
-              "$TRACKER_FILE" > "${TRACKER_FILE}.tmp" 2>/dev/null && [[ -s "${TRACKER_FILE}.tmp" ]]; then
-            mv "${TRACKER_FILE}.tmp" "$TRACKER_FILE"
+              "$TRACKER_FILE" > "$TEMP_FILE" 2>/dev/null && [[ -s "$TEMP_FILE" ]]; then
+            mv "$TEMP_FILE" "$TRACKER_FILE" 2>/dev/null || rm -f "$TEMP_FILE"
         else
-            rm -f "${TRACKER_FILE}.tmp"
+            rm -f "$TEMP_FILE"
         fi
 
         # Get list of recent paths
