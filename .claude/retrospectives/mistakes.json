@@ -195,5 +195,23 @@
     "prevention_verified": true,
     "prevention_details": "1) Added commit type conventions to CONVENTIONS.md#git-conventions, 2) Created PreToolUse hook to validate commit types before git commit",
     "correct_behavior": "Valid commit types: feature, bugfix, test, refactor, performance, config, docs. 'chore' should be 'config' for tooling/configuration changes."
+  },
+  {
+    "id": "M012",
+    "timestamp": "2026-01-09T12:45:00-05:00",
+    "category": "protocol_violation",
+    "pattern_id": null,
+    "description": "execute-change jumped to Release 6 based on STATE.md 'In Progress' marker without verifying all prior releases had complete SUMMARYs",
+    "root_cause": "execute-release.md identify_plan step says 'Check roadmap for In progress release' - relies on STATUS markers which can be out of sync with actual file state",
+    "prevention_type": "script",
+    "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/scripts/find-next-change.sh",
+    "pattern_keywords": ["execute-change", "release", "STATE.md", "SUMMARY", "sequential", "out-of-sync"],
+    "commit": null,
+    "recurrence_count": 0,
+    "processed_in_retrospective": null,
+    "prevention_implemented": true,
+    "prevention_verified": true,
+    "prevention_details": "1) Created find-next-change.sh script that scans releases in numerical order and finds first CHANGE without SUMMARY, 2) Fixed STATE.md to mark Release 5 as Complete",
+    "correct_behavior": "ALWAYS verify release completion by checking actual files (CHANGE vs SUMMARY), not STATUS markers. Use .claude/scripts/find-next-change.sh or scan releases sequentially: for each release in order, find first CHANGE.md without matching SUMMARY.md"
   }
 ]
