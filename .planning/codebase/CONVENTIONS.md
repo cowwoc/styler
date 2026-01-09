@@ -15,6 +15,7 @@
 | Policies | Comments, TODOs, code lifecycle | conventions/policies.md |
 | Common | Language-agnostic patterns | conventions/common.md |
 | Maven | Build configuration rules | conventions/maven.md |
+| Git | Commit types, branching | [below](#git-conventions) |
 
 ## Naming Patterns
 
@@ -45,6 +46,39 @@
 - PMD: `./mvnw pmd:check`
 
 **Manual Rules:** See conventions/ subdirectory for TIER1-3 violations
+
+## Git Conventions {#git-conventions}
+
+### Commit Types (MANDATORY)
+
+| Type | When to Use | Example |
+|------|-------------|---------|
+| `feature` | New functionality, endpoint, component | `feature: add user registration` |
+| `bugfix` | Bug fix, error correction | `bugfix: correct email validation` |
+| `test` | Test-only changes | `test: add failing test for hashing` |
+| `refactor` | Code cleanup, no behavior change | `refactor: extract validation helper` |
+| `performance` | Performance improvement | `performance: add database index` |
+| `config` | Dependencies, config, tooling | `config: update Maven plugins` |
+| `docs` | User-facing documentation | `docs: add API documentation` |
+
+**NOT valid:** `chore`, `build`, `ci`, `style` (use appropriate types above)
+
+### Commit Message Format
+
+```
+{type}: {concise description}
+
+- [Key change 1]
+- [Key change 2]
+```
+
+### Git Hooks
+
+Git hooks are located in `.claude/hooks/git/`. After cloning:
+
+```bash
+git config --local core.hooksPath .claude/hooks/git
+```
 
 ---
 

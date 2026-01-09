@@ -177,5 +177,23 @@
     "prevention_verified": true,
     "prevention_details": "Added PRESERVE VALUABLE COMMENTS section to java-style.md NCSS guidance: preserve comments explaining WHY, edge cases, non-obvious behavior",
     "correct_behavior": "When refactoring for NCSS: 1) Preserve comments explaining WHY/intent, 2) Preserve comments about edge cases and disambiguation, 3) Only remove comments that merely restate WHAT code does"
+  },
+  {
+    "id": "M011",
+    "timestamp": "2026-01-08T18:40:00-05:00",
+    "category": "protocol_violation",
+    "pattern_id": null,
+    "description": "Used 'chore:' commit type for ef09b06 which is not a valid type per CAT conventions",
+    "root_cause": "Project lacked local commit type conventions; defaulted to conventional commits standard",
+    "prevention_type": "hook",
+    "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/validate-commit-type.sh",
+    "pattern_keywords": ["commit", "type", "chore", "config", "convention"],
+    "commit": "ef09b06",
+    "recurrence_count": 0,
+    "processed_in_retrospective": null,
+    "prevention_implemented": true,
+    "prevention_verified": true,
+    "prevention_details": "1) Added commit type conventions to CONVENTIONS.md#git-conventions, 2) Created PreToolUse hook to validate commit types before git commit",
+    "correct_behavior": "Valid commit types: feature, bugfix, test, refactor, performance, config, docs. 'chore' should be 'config' for tooling/configuration changes."
   }
 ]
