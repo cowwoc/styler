@@ -213,5 +213,23 @@
     "prevention_verified": true,
     "prevention_details": "1) Created find-next-change.sh script that scans releases in numerical order and finds first CHANGE without SUMMARY, 2) Fixed STATE.md to mark Release 5 as Complete",
     "correct_behavior": "ALWAYS verify release completion by checking actual files (CHANGE vs SUMMARY), not STATUS markers. Use .claude/scripts/find-next-change.sh or scan releases sequentially: for each release in order, find first CHANGE.md without matching SUMMARY.md"
+  },
+  {
+    "id": "M013",
+    "timestamp": "2026-01-09T13:00:00-05:00",
+    "category": "protocol_violation",
+    "pattern_id": null,
+    "description": "When discovering parsing issues after Release 5 was complete, noted them in STATE.md Known Issues instead of adding CHANGE files and re-opening the release",
+    "root_cause": "No protocol for 'adding tasks to completed release' scenario - workflow assumes linear progress",
+    "prevention_type": "script",
+    "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/scripts/add-change-to-release.sh",
+    "pattern_keywords": ["release", "complete", "re-open", "CHANGE", "STATE.md", "add-task"],
+    "commit": null,
+    "recurrence_count": 0,
+    "processed_in_retrospective": null,
+    "prevention_implemented": true,
+    "prevention_verified": true,
+    "prevention_details": "1) Created add-change-to-release.sh script that warns if release is complete, 2) Added Planning Conventions section to CONVENTIONS.md documenting the protocol",
+    "correct_behavior": "Before adding CHANGE to release: run .claude/scripts/add-change-to-release.sh <release-num>. If release is complete: (1) re-open in STATE.md, (2) update task count in ROADMAP.md, (3) then add new CHANGE file"
   }
 ]
