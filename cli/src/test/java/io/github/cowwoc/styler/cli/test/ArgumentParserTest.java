@@ -28,14 +28,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithSingleFileReturnsOptionsWithSingleInputPath() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.inputPaths().size(), "inputPaths.size()").isEqualTo(1);
 		requireThat(options.inputPaths().getFirst(), "inputPaths.getFirst()").
 			isEqualTo(Path.of("test.java"));
@@ -50,14 +47,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithMultipleFilesReturnsOptionsWithAllPaths() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"File1.java", "File2.java", "src/"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.inputPaths().size(), "inputPaths.size()").isEqualTo(3);
 		requireThat(options.inputPaths().get(0), "inputPaths[0]").
 			isEqualTo(Path.of("File1.java"));
@@ -72,14 +66,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithCheckFlagSetsCheckModeTrue() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--check", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.checkMode(), "checkMode").isTrue();
 		requireThat(options.fixMode(), "fixMode").isFalse();
 	}
@@ -90,14 +81,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithFixFlagSetsFixModeTrue() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--fix", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.fixMode(), "fixMode").isTrue();
 		requireThat(options.checkMode(), "checkMode").isFalse();
 	}
@@ -108,14 +96,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithConfigFlagSetsConfigPath() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--config", "custom.xml", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.configPath().isPresent(), "configPath.isPresent()").isTrue();
 		requireThat(options.configPath().get(), "configPath.get()").
 			isEqualTo(Path.of("custom.xml"));
@@ -127,14 +112,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithAllFlagsSetsAllOptions() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--config", "config.xml", "--check", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.checkMode(), "checkMode").isTrue();
 		requireThat(options.configPath().get(), "configPath.get()").
 			isEqualTo(Path.of("config.xml"));
@@ -147,14 +129,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithFlagsAfterFilesParsesCorrectly() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"test.java", "--check"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.checkMode(), "checkMode").isTrue();
 		requireThat(options.inputPaths().getFirst(), "inputPaths.getFirst()").
 			isEqualTo(Path.of("test.java"));
@@ -168,11 +147,9 @@ public class ArgumentParserTest
 	@Test(expectedExceptions = HelpRequestedException.class)
 	public void parseWithHelpFlagThrowsHelpRequestedException() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--help"};
 
-		// Act & Assert
 		parser.parse(args);
 	}
 
@@ -182,11 +159,9 @@ public class ArgumentParserTest
 	@Test(expectedExceptions = HelpRequestedException.class)
 	public void parseWithVersionFlagThrowsHelpRequestedException() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--version"};
 
-		// Act & Assert
 		parser.parse(args);
 	}
 
@@ -196,11 +171,9 @@ public class ArgumentParserTest
 	@Test(expectedExceptions = HelpRequestedException.class)
 	public void parseWithEmptyArgsThrowsHelpRequestedException() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {};
 
-		// Act & Assert
 		parser.parse(args);
 	}
 
@@ -211,11 +184,9 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithHelpFlagExceptionContainsUsageText() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--help"};
 
-		// Act
 		try
 		{
 			parser.parse(args);
@@ -223,7 +194,6 @@ public class ArgumentParserTest
 		}
 		catch (HelpRequestedException e)
 		{
-			// Assert
 			String message = e.getMessage();
 			requireThat(message, "message").contains("Usage:");
 			requireThat(message, "message").contains("styler");
@@ -238,11 +208,9 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithVersionFlagExceptionContainsVersionInfo() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--version"};
 
-		// Act
 		try
 		{
 			parser.parse(args);
@@ -250,7 +218,6 @@ public class ArgumentParserTest
 		}
 		catch (HelpRequestedException e)
 		{
-			// Assert
 			String message = e.getMessage();
 			requireThat(message, "message").contains("Styler");
 			requireThat(message, "message").contains("Java");
@@ -266,11 +233,9 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithBothCheckAndFixThrowsUsageException() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--check", "--fix", "test.java"};
 
-		// Act & Assert
 		try
 		{
 			parser.parse(args);
@@ -290,11 +255,9 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithNoFilesThrowsUsageException() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--check"};
 
-		// Act & Assert
 		try
 		{
 			parser.parse(args);
@@ -314,10 +277,8 @@ public class ArgumentParserTest
 	@Test(expectedExceptions = NullPointerException.class)
 	public void parseWithNullArgsThrowsNullPointerException() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 
-		// Act & Assert
 		parser.parse(null);
 	}
 
@@ -327,11 +288,9 @@ public class ArgumentParserTest
 	@Test(expectedExceptions = UsageException.class)
 	public void parseWithUnknownFlagThrowsUsageException() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--unknown", "test.java"};
 
-		// Act & Assert
 		parser.parse(args);
 	}
 
@@ -341,11 +300,9 @@ public class ArgumentParserTest
 	@Test(expectedExceptions = UsageException.class)
 	public void parseWithConfigFlagButNoValueThrowsUsageException() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--config", "test.java"};
 
-		// Act & Assert
 		parser.parse(args);
 	}
 
@@ -357,14 +314,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithRelativePathPreservesPath() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"../test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.inputPaths().getFirst(), "inputPaths.getFirst()").
 			isEqualTo(Path.of("../test.java"));
 	}
@@ -375,14 +329,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithAbsolutePathPreservesPath() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"/home/user/test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.inputPaths().getFirst(), "inputPaths.getFirst()").
 			isEqualTo(Path.of("/home/user/test.java"));
 	}
@@ -393,14 +344,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithSpacesInPathParsesCorrectly() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"test file.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.inputPaths().getFirst(), "inputPaths.getFirst()").
 			isEqualTo(Path.of("test file.java"));
 	}
@@ -411,14 +359,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithMultipleInstancesOfSameFlagUsesLast() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--config", "first.xml", "--config", "second.xml", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.configPath().get(), "configPath.get()").
 			isEqualTo(Path.of("second.xml"));
 	}
@@ -431,16 +376,13 @@ public class ArgumentParserTest
 	@Test
 	public void parseCalledConcurrentlyProducesCorrectResults() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args1 = {"--check", "file1.java"};
 		String[] args2 = {"--fix", "file2.java"};
 
-		// Act
 		CLIOptions options1 = parser.parse(args1);
 		CLIOptions options2 = parser.parse(args2);
 
-		// Assert
 		requireThat(options1.checkMode(), "options1.checkMode()").isTrue();
 		requireThat(options1.fixMode(), "options1.fixMode()").isFalse();
 		requireThat(options1.inputPaths().getFirst(), "options1.inputPaths.getFirst()").
@@ -460,14 +402,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithMaxConcurrencySetsValue() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--max-concurrency", "4", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.maxConcurrency().isPresent(), "maxConcurrency.isPresent()").isTrue();
 		requireThat(options.maxConcurrency().getAsInt(), "maxConcurrency.value").isEqualTo(4);
 	}
@@ -478,14 +417,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithoutMaxConcurrencyReturnsEmpty() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.maxConcurrency().isEmpty(), "maxConcurrency.isEmpty()").isTrue();
 	}
 
@@ -495,11 +431,9 @@ public class ArgumentParserTest
 	@Test(expectedExceptions = UsageException.class)
 	public void parseWithMaxConcurrencyZeroThrowsUsageException() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--max-concurrency", "0", "test.java"};
 
-		// Act & Assert
 		parser.parse(args);
 	}
 
@@ -509,11 +443,9 @@ public class ArgumentParserTest
 	@Test(expectedExceptions = UsageException.class)
 	public void parseWithMaxConcurrencyNegativeThrowsUsageException() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--max-concurrency", "-1", "test.java"};
 
-		// Act & Assert
 		parser.parse(args);
 	}
 
@@ -525,14 +457,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithClasspathSingleEntry() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--classpath", "lib/foo.jar", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.classpathEntries().size(), "classpathEntries.size()").isEqualTo(1);
 		requireThat(options.classpathEntries().getFirst(), "classpathEntries[0]").
 			isEqualTo(Path.of("lib/foo.jar"));
@@ -544,14 +473,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithCpShortForm() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"-cp", "lib/bar.jar", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.classpathEntries().size(), "classpathEntries.size()").isEqualTo(1);
 		requireThat(options.classpathEntries().getFirst(), "classpathEntries[0]").
 			isEqualTo(Path.of("lib/bar.jar"));
@@ -563,15 +489,12 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithClasspathMultipleEntries() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String separator = java.io.File.pathSeparator;
 		String[] args = {"--classpath", "lib/a.jar" + separator + "lib/b.jar", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.classpathEntries().size(), "classpathEntries.size()").isEqualTo(2);
 		requireThat(options.classpathEntries().get(0), "classpathEntries[0]").
 			isEqualTo(Path.of("lib/a.jar"));
@@ -587,14 +510,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithModulePathSingleEntry() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"--module-path", "mods/foo.jar", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.modulepathEntries().size(), "modulepathEntries.size()").isEqualTo(1);
 		requireThat(options.modulepathEntries().getFirst(), "modulepathEntries[0]").
 			isEqualTo(Path.of("mods/foo.jar"));
@@ -606,14 +526,11 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithModulePathShortForm() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {"-p", "mods/bar.jar", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.modulepathEntries().size(), "modulepathEntries.size()").isEqualTo(1);
 		requireThat(options.modulepathEntries().getFirst(), "modulepathEntries[0]").
 			isEqualTo(Path.of("mods/bar.jar"));
@@ -625,15 +542,12 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithModulePathMultipleEntries() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String separator = java.io.File.pathSeparator;
 		String[] args = {"--module-path", "mods/a.jar" + separator + "mods/b.jar", "test.java"};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.modulepathEntries().size(), "modulepathEntries.size()").isEqualTo(2);
 		requireThat(options.modulepathEntries().get(0), "modulepathEntries[0]").
 			isEqualTo(Path.of("mods/a.jar"));
@@ -647,7 +561,6 @@ public class ArgumentParserTest
 	@Test
 	public void parseWithAllOptionsSetsCombinedOptions() throws CLIException
 	{
-		// Arrange
 		ArgumentParser parser = new ArgumentParser();
 		String[] args = {
 			"--config", "custom.toml",
@@ -658,10 +571,8 @@ public class ArgumentParserTest
 			"file1.java", "file2.java"
 		};
 
-		// Act
 		CLIOptions options = parser.parse(args);
 
-		// Assert
 		requireThat(options.configPath().isPresent(), "configPath.isPresent()").isTrue();
 		requireThat(options.configPath().get(), "configPath").isEqualTo(Path.of("custom.toml"));
 		requireThat(options.checkMode(), "checkMode").isTrue();

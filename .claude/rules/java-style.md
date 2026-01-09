@@ -65,6 +65,36 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
    */
   public class ClassParserTest { }
   ```
+- Do not use `// Arrange`, `// Act`, `// Assert` comments in test methods. Blank lines can separate these
+  sections if needed, but comments are unnecessary noise:
+  ```java
+  // ❌ WRONG - Unnecessary AAA comments
+  @Test
+  public void shouldParseValidInput()
+  {
+      // Arrange
+      Parser parser = new Parser();
+      String input = "test";
+
+      // Act
+      Result result = parser.parse(input);
+
+      // Assert
+      requireThat(result.isSuccess(), "result.isSuccess()").isTrue();
+  }
+
+  // ✅ CORRECT - Blank lines separate sections without comments
+  @Test
+  public void shouldParseValidInput()
+  {
+      Parser parser = new Parser();
+      String input = "test";
+
+      Result result = parser.parse(input);
+
+      requireThat(result.isSuccess(), "result.isSuccess()").isTrue();
+  }
+  ```
 - Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` or `isNotNull()` on arena - see [testing-claude.md](../../.planning/codebase/TESTING.md#parser-test-patterns)
   - `isNotEmpty()` on nodes: Tests nothing about specific node types
   - `isNotNull()` on arena: Only verifies parsing succeeded, NOT AST correctness
@@ -149,9 +179,9 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   - NEVER use escape sequences (`\n`, `\t`) for source code
   - NEVER add comments that duplicate the source content (text blocks are self-documenting)
   - Format code naturally with one statement per line
-- File cleanup: Use `TestFileFactory.deleteFilesQuietly()` instead of duplicating cleanup code:
+- Test cleanup: Use `TestFileFactory` methods instead of duplicating cleanup code:
   ```java
-  // ❌ WRONG - Duplicate cleanup pattern
+  // ❌ WRONG - Duplicate file cleanup pattern
   finally
   {
       for (Path file : files)
@@ -167,12 +197,34 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
       }
   }
 
-  // ✅ CORRECT - Use shared utility
+  // ✅ CORRECT - Use shared utility for file lists
   finally
   {
       TestFileFactory.deleteFilesQuietly(files);
   }
+
+  // ❌ WRONG - Duplicate directory cleanup pattern
+  finally
+  {
+      if (tempDir != null && Files.exists(tempDir))
+          Files.walk(tempDir).
+              sorted((p1, p2) -> p2.compareTo(p1)).
+              forEach(path -> { /* delete */ });
+  }
+
+  // ✅ CORRECT - Use shared utility for directories
+  finally
+  {
+      TestFileFactory.deleteDirectoryQuietly(tempDir);
+  }
   ```
+  **Available methods** (in `TestFileFactory` or module-local helper):
+  - `deleteFilesQuietly(List<Path>)` - for lists of individual files
+  - `deleteDirectoryQuietly(Path)` - for temp directories and their contents
+
+  **Note:** Test utilities are module-local (test classes aren't shared across Maven modules). Each module
+  needing cleanup helpers should have its own utility class or private helper method. The key principle is
+  to avoid duplicating the cleanup logic within a module.
 
 ### Brace Omission for Single-Line Statements
 Omit braces for `if`, `else`, `for`, `while`, and `do-while` when the body is a single line:

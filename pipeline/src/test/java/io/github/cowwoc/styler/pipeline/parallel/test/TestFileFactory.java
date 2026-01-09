@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Factory for creating test Java files.
@@ -93,6 +94,37 @@ public final class TestFileFactory
 			{
 				// Intentionally ignored during cleanup
 			}
+		}
+	}
+
+	/**
+	 * Deletes a directory and all its contents silently, ignoring any errors.
+	 *
+	 * @param directory the directory to delete
+	 */
+	public static void deleteDirectoryQuietly(Path directory)
+	{
+		if (directory == null || !Files.exists(directory))
+			return;
+		try (Stream<Path> paths = Files.walk(directory))
+		{
+			// Delete in reverse order (files before directories)
+			paths.sorted((p1, p2) -> p2.compareTo(p1)).
+				forEach(path ->
+				{
+					try
+					{
+						Files.delete(path);
+					}
+					catch (IOException _)
+					{
+						// Intentionally ignored during cleanup
+					}
+				});
+		}
+		catch (IOException _)
+		{
+			// Intentionally ignored during cleanup
 		}
 	}
 }

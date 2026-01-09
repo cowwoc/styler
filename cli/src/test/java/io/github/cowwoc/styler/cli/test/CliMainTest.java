@@ -4,6 +4,7 @@ import io.github.cowwoc.styler.cli.CliMain;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.stream.Stream;
 
 import org.testng.SkipException;
 import org.testng.annotations.Test;
@@ -125,21 +126,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -164,21 +151,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -207,21 +180,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -261,21 +220,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -317,21 +262,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -361,21 +292,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -398,21 +315,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -436,21 +339,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -474,21 +363,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -521,21 +396,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -560,21 +421,37 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
+			deleteDirectoryQuietly(tempDir);
+		}
+	}
+
+	/**
+	 * Deletes a directory and all its contents silently, ignoring any errors.
+	 *
+	 * @param directory the directory to delete
+	 */
+	private static void deleteDirectoryQuietly(Path directory)
+	{
+		if (directory == null || !Files.exists(directory))
+			return;
+		try (Stream<Path> paths = Files.walk(directory))
+		{
+			paths.sorted((p1, p2) -> p2.compareTo(p1)).
+				forEach(path ->
+				{
+					try
 					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+						Files.delete(path);
+					}
+					catch (IOException _)
+					{
+						// Intentionally ignored during cleanup
+					}
+				});
+		}
+		catch (IOException _)
+		{
+			// Intentionally ignored during cleanup
 		}
 	}
 
@@ -598,21 +475,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -668,21 +531,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -711,21 +560,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -753,21 +588,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -799,21 +620,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 
@@ -843,21 +650,7 @@ public class CliMainTest
 		}
 		finally
 		{
-			if (tempDir != null && Files.exists(tempDir))
-				Files.walk(tempDir).
-					sorted((p1, p2) -> p2.compareTo(p1)).
-					forEach(path ->
-					{
-						try
-						{
-							Files.delete(path);
-						}
-						catch (IOException e)
-						{
-							// Best effort cleanup
-							assert e != null;
-						}
-					});
+			deleteDirectoryQuietly(tempDir);
 		}
 	}
 }
