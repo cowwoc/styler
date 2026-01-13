@@ -1044,6 +1044,25 @@
         "catches_variations": true
       },
       "correct_behavior": "Use git-filter-repo with --partial flag instead of git filter-branch"
+    },
+    {
+      "id": "M051",
+      "timestamp": "2026-01-13T04:45:00Z",
+      "category": "protocol_violation",
+      "description": "Subagent created separate commits for test and bugfix when they should be single commit",
+      "root_cause": "commit-types.md did not explicitly state that bugfix tests belong with bugfix in same commit",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/cat/.claude/cat/references/commit-types.md",
+      "pattern_keywords": [
+        "commit",
+        "test",
+        "bugfix",
+        "separate",
+        "squash"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "correct_behavior": "Tests for a bugfix are part of the implementation and belong in the same commit"
     }
   ],
   "mistake_count_since_last": 4
