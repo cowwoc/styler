@@ -399,6 +399,32 @@ requireThat(elapsed, "elapsed").isLessThan(Duration.ofSeconds(5));
 - Use `requireThat()` for Duration comparisons (better error messages)
 - Use `Duration.ofSeconds()`, `Duration.ofMillis()` etc. for thresholds
 
+### Exception Handling
+Never swallow exceptions silently, even for "impossible" cases:
+```java
+// ❌ WRONG - Silent swallow hides bugs
+catch (SomeException e)
+{
+    // Should never happen
+}
+
+// ❌ WRONG - Logging is not handling
+catch (SomeException e)
+{
+    log.debug("Unexpected", e);  // Still swallowed!
+}
+
+// ✅ CORRECT - Rethrow as AssertionError
+catch (SomeException e)
+{
+    throw new AssertionError("Failed to do X", e);
+}
+```
+
+**Why:** "Should never happen" comments are often wrong. When the impossible happens, silent
+swallowing makes debugging extremely difficult. AssertionError preserves the stack trace and
+makes the failure visible immediately.
+
 ### Thread-Safety
 If JavaDoc claims thread-safety, implementation MUST match:
 - Use `AtomicBoolean` for boolean state (not `volatile boolean`)

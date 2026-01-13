@@ -1464,6 +1464,26 @@
       "recurrence_count": 0,
       "processed_in_retrospective": null,
       "correct_behavior": "When execute-task detects lock held by different session: 1) Report task is locked, 2) Offer to execute a DIFFERENT task, 3) NEVER wait for lock to expire or force cleanup"
+    },
+    {
+      "id": "M066",
+      "timestamp": "2026-01-13T18:30:00Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Silently swallowed exception with comment \"Should never happen\" - violates fail-fast",
+      "root_cause": "Assumed impossible exception does not need handling, but silent failures hide bugs",
+      "prevention_type": "code_fix",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/rules/java-style.md",
+      "pattern_keywords": [
+        "exception",
+        "swallow",
+        "silent",
+        "fail-fast",
+        "AssertionError"
+      ],
+      "correct_behavior": "Always rethrow \"impossible\" exceptions as AssertionError with cause - never swallow silently",
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ],
   "mistake_count_since_last": 0
