@@ -1241,7 +1241,40 @@
       "recurrence_count": 0,
       "processed_in_retrospective": null,
       "correct_behavior": "Use config: for version bumps, dependency changes, and tooling. chore: is NOT a valid CAT commit type.",
-      "prevention_implemented": true
+      "prevention_implemented": true,
+      "prevention_quality": {
+        "verification_type": "negative",
+        "fragility": "high",
+        "catches_variations": false
+      },
+      "notes": "Documentation-only prevention is weak (Level 6). A PreToolUse hook validating git commit message types would be Level 3 prevention with positive verification."
+    },
+    {
+      "id": "M060",
+      "timestamp": "2026-01-13T16:15:12Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Manually added to mistakes.json instead of invoking /cat:learn-from-mistakes skill",
+      "root_cause": "Took shortcut by directly editing mistakes.json instead of following the skill workflow which includes 5-whys analysis, prevention quality evaluation, and proper counter synchronization",
+      "prevention_type": "documentation",
+      "prevention_path": "/home/node/.config/claude/plugins/cache/claude-code-cat/cat/2.0.2/skills/learn-from-mistakes/SKILL.md",
+      "pattern_keywords": [
+        "learn-from-mistakes",
+        "skill",
+        "shortcut",
+        "workflow"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "correct_behavior": "Always invoke /cat:learn-from-mistakes skill when a mistake is identified. The skill workflow ensures proper analysis, prevention quality evaluation, and counter synchronization.",
+      "prevention_implemented": true,
+      "prevention_quality": {
+        "verification_type": "negative",
+        "fragility": "high",
+        "catches_variations": false
+      },
+      "notes": "Could add a hook that detects direct edits to mistakes.json without skill invocation, but overhead may not be worth it."
     }
   ],
   "mistake_count_since_last": 0
