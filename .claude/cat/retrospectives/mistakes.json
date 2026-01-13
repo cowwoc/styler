@@ -1503,6 +1503,26 @@
       "correct_behavior": "When a skill is invoked, follow every step in its documented workflow completely",
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M068",
+      "timestamp": "2026-01-13T19:15:00Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Used docs: commit type for Claude-facing documents instead of config:",
+      "root_cause": "Did not distinguish between user-facing docs (README) and Claude-facing docs (CLAUDE.md, hooks, skills)",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/.claude/cat/references/commit-types.md",
+      "pattern_keywords": [
+        "commit",
+        "type",
+        "docs",
+        "config",
+        "claude-facing"
+      ],
+      "correct_behavior": "Use docs: for user-facing (README, API docs), config: for Claude-facing (CLAUDE.md, hooks, skills)",
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ],
   "mistake_count_since_last": 0
