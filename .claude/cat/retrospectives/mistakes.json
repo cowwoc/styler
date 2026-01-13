@@ -1484,6 +1484,25 @@
       "correct_behavior": "Always rethrow \"impossible\" exceptions as AssertionError with cause - never swallow silently",
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M067",
+      "timestamp": "2026-01-13T18:45:00Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Invoked learn-from-mistakes skill but skipped workflow steps - manually added entry without proper analysis",
+      "root_cause": "Treated skill invocation as a formality rather than following documented workflow",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/hooks/inject-session-instructions.sh",
+      "pattern_keywords": [
+        "skill",
+        "workflow",
+        "shortcut",
+        "protocol"
+      ],
+      "correct_behavior": "When a skill is invoked, follow every step in its documented workflow completely",
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ],
   "mistake_count_since_last": 0
