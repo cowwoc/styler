@@ -70,6 +70,8 @@ __pycache__/
 /.claude/metrics/
 /.claude/experiments/
 /.claude/locks/
+/.worktrees/
+/.claude/cat/locks/
 
 ### User-specific files ###
 /.claude/settings.local.json
