@@ -1021,7 +1021,30 @@
         "catches_variations": true
       },
       "correct_behavior": "Never delete .git/refs/original unless user explicitly requests it"
+    },
+    {
+      "id": "M050",
+      "timestamp": "2026-01-13T00:20:00-05:00",
+      "category": "protocol_violation",
+      "description": "Used git filter-branch instead of git-filter-repo despite skill saying never use filter-branch",
+      "root_cause": "No enforcement warning about deprecated filter-branch; skill guidance not checked before operation",
+      "prevention_type": "hook",
+      "prevention_path": "/workspace/cat/hooks/validate-git-filter-branch.sh",
+      "pattern_keywords": [
+        "filter-branch",
+        "filter-repo",
+        "deprecated",
+        "history-rewrite"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use git-filter-repo with --partial flag instead of git filter-branch"
     }
   ],
-  "mistake_count_since_last": 3
+  "mistake_count_since_last": 4
 }
