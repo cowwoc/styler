@@ -1566,6 +1566,29 @@
         "catches_variations": true
       },
       "correct_behavior": "Update task STATE.md to completed in task branch BEFORE squashing, then amend to include in implementation commit"
+    },
+    {
+      "id": "M071",
+      "timestamp": "2026-01-13T23:55:00Z",
+      "category": "protocol_violation",
+      "description": "Printed retrospective trigger message without using AskUserQuestion to give user choice",
+      "root_cause": "learn-from-mistakes skill step 10 did not explicitly require AskUserQuestion before triggering retrospective",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/learn-from-mistakes/SKILL.md",
+      "pattern_keywords": [
+        "retrospective",
+        "AskUserQuestion",
+        "trigger",
+        "prompt"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "When retrospective threshold is exceeded, use AskUserQuestion with Run now/Later/Skip options"
     }
   ],
   "mistake_count_since_last": 0
