@@ -1,7 +1,7 @@
 {
   "yoloMode": false,
   "contextLimit": 200000,
-  "targetContextUsage": 0.7,
+  "targetContextUsage": 0.4,
   "autoCleanupWorktrees": true,
   "initialized": "2026-01-12",
   "source": "existing"
