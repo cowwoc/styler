@@ -1,4 +1,4 @@
-package io.github.cowwoc.styler.parser;
+package io.github.cowwoc.styler.parser.internal;
 
 import io.github.cowwoc.styler.ast.core.ExportsDirectiveAttribute;
 import io.github.cowwoc.styler.ast.core.ModuleDeclarationAttribute;
@@ -8,6 +8,9 @@ import io.github.cowwoc.styler.ast.core.OpensDirectiveAttribute;
 import io.github.cowwoc.styler.ast.core.ProvidesDirectiveAttribute;
 import io.github.cowwoc.styler.ast.core.RequiresDirectiveAttribute;
 import io.github.cowwoc.styler.ast.core.UsesDirectiveAttribute;
+import io.github.cowwoc.styler.parser.Parser;
+import io.github.cowwoc.styler.parser.Token;
+import io.github.cowwoc.styler.parser.TokenType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +19,8 @@ import java.util.List;
  * Helper class for parsing module-info.java files (JPMS module declarations).
  * <p>
  * Extracted from {@link Parser} to reduce class size while maintaining cohesive parsing logic.
- * This class handles all module-related parsing including module declarations and directives.
  */
-final class ModuleParser
+public final class ModuleParser
 {
 	private final Parser parser;
 
@@ -27,7 +29,7 @@ final class ModuleParser
 	 *
 	 * @param parser the parent parser providing token access and helper methods
 	 */
-	ModuleParser(Parser parser)
+	public ModuleParser(Parser parser)
 	{
 		this.parser = parser;
 	}
@@ -40,7 +42,7 @@ final class ModuleParser
 	 *
 	 * @return {@code true} if a module declaration starts at the current position
 	 */
-	boolean isModuleDeclarationStart()
+	public boolean isModuleDeclarationStart()
 	{
 		List<Token> tokens = parser.getTokens();
 		int lookahead = parser.getPosition();
@@ -107,7 +109,7 @@ final class ModuleParser
 	 * @return the module declaration node index (serves as root for module-info.java files)
 	 * @throws Parser.ParserException if unexpected tokens appear after the module declaration
 	 */
-	NodeIndex parseModuleCompilationUnit()
+	public NodeIndex parseModuleCompilationUnit()
 	{
 		// Parse module declaration (includes all directives)
 		NodeIndex moduleDecl = parseModuleDeclaration();
@@ -440,7 +442,7 @@ final class ModuleParser
 	 * @param start the start position of the import keyword
 	 * @return the node index of the created module import declaration
 	 */
-	NodeIndex parseModuleImport(int start)
+	public NodeIndex parseModuleImport(int start)
 	{
 		// Build the module name from tokens
 		StringBuilder moduleName = new StringBuilder();
