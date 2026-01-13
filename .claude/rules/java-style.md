@@ -399,6 +399,32 @@ requireThat(elapsed, "elapsed").isLessThan(Duration.ofSeconds(5));
 - Use `requireThat()` for Duration comparisons (better error messages)
 - Use `Duration.ofSeconds()`, `Duration.ofMillis()` etc. for thresholds
 
+### Internal Implementation Classes
+Use non-exported internal packages for implementation details, not package-private in same package:
+```java
+// ❌ WRONG - Package-private in same package
+package io.example.parser;
+final class StatementParser { }  // Hard to test, no module enforcement
+
+// ✅ CORRECT - Public in non-exported internal package
+package io.example.parser.internal;
+public final class StatementParser { }  // Testable, module prevents external access
+```
+
+**In module-info.java:**
+```java
+module io.example.parser {
+    exports io.example.parser;        // Public API
+    // io.example.parser.internal NOT exported - module system enforces
+}
+```
+
+**Benefits:**
+- Public classes/methods are directly testable
+- Module system prevents external access (stronger than package-private)
+- Cleaner internal API design
+- IDE autocomplete works within module
+
 ### Exception Handling
 Never swallow exceptions silently, even for "impossible" cases:
 ```java

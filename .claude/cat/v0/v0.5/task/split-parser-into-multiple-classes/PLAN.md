@@ -12,40 +12,49 @@ Parser.java split into multiple focused classes, each under 1000 lines:
 - StatementParser.java - Statement parsing, blocks, control flow (NEW)
 - ExpressionParser.java - Expression parsing (NEW)
 
-## Architecture Pattern (Follow Existing ModuleParser)
+## Architecture Pattern (Internal Package)
 
-**DO NOT use SharedSecrets.** Follow the existing ModuleParser pattern:
+**Use non-exported internal package**, not package-private in same package:
 
 ```java
-// Helper class takes Parser reference
-final class TypeParser
+// In io.github.cowwoc.styler.parser.internal package
+package io.github.cowwoc.styler.parser.internal;
+
+public final class TypeParser
 {
     private final Parser parser;
 
-    TypeParser(Parser parser)
+    public TypeParser(Parser parser)
     {
         this.parser = parser;
     }
 
-    // Methods access parser state via package-private accessors
-    NodeIndex parseClassDeclaration()
+    public NodeIndex parseClassDeclaration()
     {
-        List<Token> tokens = parser.getTokens();
-        int position = parser.getPosition();
-        // ...
+        // Public methods - cleaner API, directly testable
     }
 }
 ```
 
-Parser exposes these package-private accessors (already exist):
+**In module-info.java:**
+```java
+module io.github.cowwoc.styler.parser {
+    exports io.github.cowwoc.styler.parser;
+    // io.github.cowwoc.styler.parser.internal NOT exported
+}
+```
+
+**Benefits over package-private:**
+- Public classes/methods are directly testable
+- Module system prevents external access (stronger than package-private)
+- Cleaner internal API design
+- IDE autocomplete works within module
+
+Parser exposes public accessors for internal package use:
 - `getTokens()` - returns token list
-- `getPosition()` - returns current position
-- `setPosition(int)` - sets position (may need to add)
-- `currentToken()` - returns token at current position
-- `previousToken()` - returns previous token
-- `consume()` - advances and returns consumed token
-- `match(TokenType)` - matches and consumes if matches
-- `expect(TokenType)` - expects token or throws
+- `getPosition()` / `setPosition(int)` - position management
+- `currentToken()` / `previousToken()` - token access
+- `consume()` / `match(TokenType)` / `expect(TokenType)` - token consumption
 - `getArena()` - returns NodeArena
 
 ## Dependencies
@@ -55,7 +64,7 @@ None - can be executed independently.
 
 ### Step 1: Extract ExpressionParser (largest group ~800 lines)
 **Files:**
-- parser/src/main/java/io/github/cowwoc/styler/parser/ExpressionParser.java (NEW)
+- parser/src/main/java/io/github/cowwoc/styler/parser/internal/ExpressionParser.java (NEW)
 - parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java (modify)
 
 **Methods to move:**
@@ -81,7 +90,7 @@ None - can be executed independently.
 
 ### Step 2: Extract StatementParser (~500 lines)
 **Files:**
-- parser/src/main/java/io/github/cowwoc/styler/parser/StatementParser.java (NEW)
+- parser/src/main/java/io/github/cowwoc/styler/parser/internal/StatementParser.java (NEW)
 - parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java (modify)
 
 **Methods to move:**
@@ -100,7 +109,7 @@ None - can be executed independently.
 
 ### Step 3: Extract TypeParser (~400 lines)
 **Files:**
-- parser/src/main/java/io/github/cowwoc/styler/parser/TypeParser.java (NEW)
+- parser/src/main/java/io/github/cowwoc/styler/parser/internal/TypeParser.java (NEW)
 - parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java (modify)
 
 **Methods to move:**
@@ -118,27 +127,42 @@ None - can be executed independently.
 ### Step 4: Add any missing accessors to Parser
 **Files:** parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java
 
-**Action:** If any helper class needs an accessor not currently exposed, add it as package-private.
+**Action:** Make accessors public for use by internal package classes.
 Likely needed:
 - `setPosition(int)` for backtracking
 - `enterDepth()` / `exitDepth()` for depth tracking
 
 **Verify:** All tests pass
-**Done when:** All accessors needed by helper classes are exposed
+**Done when:** All accessors needed by internal classes are public
 
-### Step 5: Verify size constraints and PMD
+### Step 5: Update module-info.java
+**Files:** parser/src/main/java/module-info.java
+
+**Action:** Ensure internal package is NOT exported:
+```java
+module io.github.cowwoc.styler.parser {
+    exports io.github.cowwoc.styler.parser;
+    // io.github.cowwoc.styler.parser.internal NOT exported
+}
+```
+
+**Verify:** External code cannot access internal classes
+**Done when:** Module properly configured
+
+### Step 6: Verify size constraints and PMD
 **Action:** Check each class size and run PMD
 **Verify:**
 ```bash
 wc -l parser/src/main/java/io/github/cowwoc/styler/parser/*.java
+wc -l parser/src/main/java/io/github/cowwoc/styler/parser/internal/*.java
 ./mvnw pmd:check -pl parser
 ```
 **Done when:** All classes under threshold, PMD passes
 
 ## Acceptance Criteria
 - [ ] Parser.java under 1500 NCSS lines (PMD threshold)
-- [ ] All helper classes under 1500 NCSS lines
+- [ ] All internal classes under 1500 NCSS lines
 - [ ] PMD check passes (no NcssCount violations)
 - [ ] All existing tests pass
 - [ ] No public API changes
-- [ ] Follows existing ModuleParser pattern (no SharedSecrets)
+- [ ] Internal classes in non-exported internal package (not package-private)
