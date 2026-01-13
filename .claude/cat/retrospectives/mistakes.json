@@ -1355,6 +1355,33 @@
         "catches_variations": true
       },
       "notes": "Added explicit anti-pattern section to spawn-subagent skill documenting M062."
+    },
+    {
+      "id": "M063",
+      "timestamp": "2026-01-13T17:05:00Z",
+      "category": "protocol_violation",
+      "description": "Main agent directly implemented test fixes instead of delegating to subagent",
+      "root_cause": "Main agent violated orchestration-only role when making corrections after user feedback",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/.claude/cat/workflows/execute-task.md",
+      "pattern_id": null,
+      "pattern_keywords": [
+        "main-agent",
+        "orchestration",
+        "subagent-delegation",
+        "implementation"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "correct_behavior": "When user provides feedback requiring code changes, delegate to a new subagent. Main agent orchestrates, subagent implements.",
+      "prevention_implemented": true,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "medium",
+        "catches_variations": true
+      },
+      "notes": "Added explicit guidance to execute-task approval gate: DELEGATE fixes to subagent, main agent does NOT implement directly."
     }
   ],
   "mistake_count_since_last": 0
