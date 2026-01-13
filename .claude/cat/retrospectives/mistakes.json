@@ -1275,6 +1275,33 @@
         "catches_variations": false
       },
       "notes": "Could add a hook that detects direct edits to mistakes.json without skill invocation, but overhead may not be worth it."
+    },
+    {
+      "id": "M061",
+      "timestamp": "2026-01-13T16:18:30Z",
+      "category": "protocol_violation",
+      "description": "Claimed lock was '20 minutes old' when actually ~27 seconds old, and called non-existent 'task-lock.sh status' command",
+      "root_cause": "Violated environment state verification rule - claimed state without measurement; assumed tool capability without verification",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "pattern_id": null,
+      "pattern_keywords": [
+        "environment-state",
+        "verification",
+        "assumption",
+        "tool-misuse"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "correct_behavior": "Always verify state claims with actual measurements (e.g., calculate lock age with date arithmetic). Check available commands before invoking (--help or read script).",
+      "prevention_implemented": true,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "notes": "CLAUDE.md already has Environment State Verification rule. This was a compliance failure, not a missing rule."
     }
   ],
   "mistake_count_since_last": 0
