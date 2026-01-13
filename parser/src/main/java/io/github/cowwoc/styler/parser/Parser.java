@@ -1791,6 +1791,8 @@ public final class Parser implements AutoCloseable
 		// Handle comments after condition
 		parseComments();
 		parseStatement();
+		// Handle comments between statement and else
+		parseComments();
 		if (match(TokenType.ELSE))
 		{
 			// Handle comments after 'else' keyword
