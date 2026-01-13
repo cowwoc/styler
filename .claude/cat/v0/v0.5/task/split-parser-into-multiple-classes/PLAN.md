@@ -1,138 +1,144 @@
 # Plan: split-parser-into-multiple-classes
 
 ## Current State
-Parser.java has grown to 1519 NCSS lines, exceeding PMD's 1500 line threshold. This causes PMD
-violations and indicates the class has too many responsibilities.
+Parser.java has grown to 1525 NCSS lines, exceeding PMD's 1500 line threshold. ModuleParser already
+exists and demonstrates the extraction pattern (takes Parser reference, uses package-private accessors).
 
 ## Target State
 Parser.java split into multiple focused classes, each under 1000 lines:
 - Parser.java - Core parsing orchestration and state management
-- ModuleParser.java - Module declaration parsing (module-info.java)
-- TypeParser.java - Class/interface/enum/record declarations
-- StatementParser.java - Statement parsing (blocks, control flow)
-- ExpressionParser.java - Expression parsing
+- ModuleParser.java - Module declaration parsing (ALREADY EXISTS)
+- TypeParser.java - Class/interface/enum/record declarations (NEW)
+- StatementParser.java - Statement parsing, blocks, control flow (NEW)
+- ExpressionParser.java - Expression parsing (NEW)
 
-## Rationale
-- PMD NcssCount violation blocks clean builds
-- Large class is difficult to maintain and understand
-- Logical groupings already exist within the code
-- SharedSecrets pattern allows helper classes to access package-private state
+## Architecture Pattern (Follow Existing ModuleParser)
 
-## Risk Assessment
-- **Risk Level:** MEDIUM
-- **Breaking Changes:** None - public API unchanged, internal restructure only
-- **Mitigation:** Incremental extraction with tests after each step
-
-## SharedSecrets Pattern
-
-Use JDK's SharedSecrets pattern for cross-package access to parser internals:
+**DO NOT use SharedSecrets.** Follow the existing ModuleParser pattern:
 
 ```java
-// In parser package
-public final class ParserAccess {
-    private static volatile ParserAccessor accessor;
+// Helper class takes Parser reference
+final class TypeParser
+{
+    private final Parser parser;
 
-    public interface ParserAccessor {
-        NodeArena getArena(Parser parser);
-        List<Token> getTokens(Parser parser);
-        int getPosition(Parser parser);
-        void setPosition(Parser parser, int position);
-        // ... other accessors as needed
+    TypeParser(Parser parser)
+    {
+        this.parser = parser;
     }
 
-    public static void setAccessor(ParserAccessor acc) {
-        accessor = acc;
-    }
-
-    public static ParserAccessor getAccessor() {
-        return accessor;
-    }
-}
-
-// Parser registers its accessor in static initializer
-public class Parser {
-    static {
-        ParserAccess.setAccessor(new ParserAccess.ParserAccessor() {
-            @Override
-            public NodeArena getArena(Parser p) { return p.arena; }
-            // ... implement other methods
-        });
+    // Methods access parser state via package-private accessors
+    NodeIndex parseClassDeclaration()
+    {
+        List<Token> tokens = parser.getTokens();
+        int position = parser.getPosition();
+        // ...
     }
 }
 ```
+
+Parser exposes these package-private accessors (already exist):
+- `getTokens()` - returns token list
+- `getPosition()` - returns current position
+- `setPosition(int)` - sets position (may need to add)
+- `currentToken()` - returns token at current position
+- `previousToken()` - returns previous token
+- `consume()` - advances and returns consumed token
+- `match(TokenType)` - matches and consumes if matches
+- `expect(TokenType)` - expects token or throws
+- `getArena()` - returns NodeArena
 
 ## Dependencies
 None - can be executed independently.
 
 ## Execution Steps
 
-### Step 1: Create ParserAccess infrastructure
-**Files:** parser/src/main/java/io/github/cowwoc/styler/parser/ParserAccess.java
-**Action:** Create SharedSecrets accessor interface and registration mechanism
-**Verify:** Build compiles: `./mvnw compile -pl parser`
-**Done:** ParserAccess class exists with accessor interface
-
-### Step 2: Register accessor in Parser
-**Files:** parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java
-**Action:** Add static initializer that registers ParserAccessor implementation
-**Verify:** Build compiles, tests pass
-**Done:** Parser registers its accessor
-
-### Step 3: Extract ModuleParser
+### Step 1: Extract ExpressionParser (largest group ~800 lines)
 **Files:**
-- parser/src/main/java/io/github/cowwoc/styler/parser/internal/ModuleParser.java
-- parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java
+- parser/src/main/java/io/github/cowwoc/styler/parser/ExpressionParser.java (NEW)
+- parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java (modify)
+
+**Methods to move:**
+- parseExpression, parseLambdaBody, parseParenthesizedOrLambda
+- parseAssignment, parseTernary, parseBinaryExpression
+- parseLogicalOr/And, parseBitwiseOr/Xor/And
+- parseEquality, parseRelational, parseShift
+- parseAdditive, parseMultiplicative
+- parseUnary, parsePostfix, parseDotExpression
+- parseArrayAccessOrClassLiteral, parsePrimary
+- parseLiteralExpression, parsePrimitiveClassLiteral
+- parseNewExpression, parseArrayCreation, parseObjectCreation
+- parseArrayInitializer, tryCastExpression, parseCastOperand
+
 **Action:**
-- Create ModuleParser class in internal package
-- Move module-related parsing methods
-- Use ParserAccess to access Parser state
-- Delegate from Parser to ModuleParser
+1. Create ExpressionParser class following ModuleParser pattern
+2. Move expression parsing methods
+3. Add field `private final ExpressionParser expressionParser` to Parser
+4. Delegate from Parser to ExpressionParser
+
 **Verify:** `./mvnw test -pl parser` - all tests pass
-**Done:** Module parsing delegated to ModuleParser
+**Done when:** Expression parsing delegated, tests pass
 
-### Step 4: Extract TypeParser
+### Step 2: Extract StatementParser (~500 lines)
 **Files:**
-- parser/src/main/java/io/github/cowwoc/styler/parser/internal/TypeParser.java
-- parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java
-**Action:**
-- Create TypeParser for class/interface/enum/record declarations
-- Move type declaration parsing methods
-- Delegate from Parser
-**Verify:** All tests pass
-**Done:** Type parsing delegated to TypeParser
+- parser/src/main/java/io/github/cowwoc/styler/parser/StatementParser.java (NEW)
+- parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java (modify)
 
-### Step 5: Extract StatementParser
+**Methods to move:**
+- parseBlock, parseStatement, parseLabeledStatement
+- parseLocalTypeDeclaration, parseBreakStatement, parseContinueStatement
+- parseIfStatement, parseForStatement, parseWhileStatement, parseDoWhileStatement
+- parseSwitchStatement, parseSwitchExpression, parseCaseLabelElement
+- tryParsePrimitiveTypePattern, tryParseTypePattern, parseRecordPattern
+- parseReturnStatement, parseThrowStatement, parseYieldStatement
+- parseTryStatement, parseCatchClause, parseFinallyClause
+- parseResource, parseSynchronizedStatement, parseAssertStatement
+- tryParseVariableDeclaration, parseExpressionOrVariableStatement
+
+**Verify:** `./mvnw test -pl parser` - all tests pass
+**Done when:** Statement parsing delegated, tests pass
+
+### Step 3: Extract TypeParser (~400 lines)
 **Files:**
-- parser/src/main/java/io/github/cowwoc/styler/parser/internal/StatementParser.java
-- parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java
-**Action:**
-- Create StatementParser for block and control flow statements
-- Move statement parsing methods
-- Delegate from Parser
-**Verify:** All tests pass
-**Done:** Statement parsing delegated to StatementParser
+- parser/src/main/java/io/github/cowwoc/styler/parser/TypeParser.java (NEW)
+- parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java (modify)
 
-### Step 6: Extract ExpressionParser
-**Files:**
-- parser/src/main/java/io/github/cowwoc/styler/parser/internal/ExpressionParser.java
-- parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java
-**Action:**
-- Create ExpressionParser for expression parsing
-- Move expression-related methods
-- Delegate from Parser
-**Verify:** All tests pass
-**Done:** Expression parsing delegated to ExpressionParser
+**Methods to move:**
+- parseClassDeclaration, parseInterfaceDeclaration, parseEnumDeclaration
+- parseAnnotationDeclaration, parseRecordDeclaration, parseImplicitClassDeclaration
+- parseTypeParameters, parseTypeParameter
+- parseClassBody, parseEnumBody, parseEnumConstant
+- parseMemberDeclaration, parseNestedTypeDeclaration, parseMemberBody
+- parseIdentifierMember, parsePrimitiveTypedMember
+- parseMethodRest, parseParameter, parseCatchParameter, parseFieldRest
 
-### Step 7: Verify size constraints
-**Files:** All parser files
-**Action:** Verify each class is under 1000 lines
-**Verify:** `./mvnw pmd:check -pl parser` - no NcssCount violations
-**Done:** All classes under size threshold, PMD passes
+**Verify:** `./mvnw test -pl parser` - all tests pass
+**Done when:** Type parsing delegated, tests pass
+
+### Step 4: Add any missing accessors to Parser
+**Files:** parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java
+
+**Action:** If any helper class needs an accessor not currently exposed, add it as package-private.
+Likely needed:
+- `setPosition(int)` for backtracking
+- `enterDepth()` / `exitDepth()` for depth tracking
+
+**Verify:** All tests pass
+**Done when:** All accessors needed by helper classes are exposed
+
+### Step 5: Verify size constraints and PMD
+**Action:** Check each class size and run PMD
+**Verify:**
+```bash
+wc -l parser/src/main/java/io/github/cowwoc/styler/parser/*.java
+./mvnw pmd:check -pl parser
+```
+**Done when:** All classes under threshold, PMD passes
 
 ## Acceptance Criteria
-- [ ] Parser.java under 1000 NCSS lines
-- [ ] All helper classes under 1000 NCSS lines
+- [ ] Parser.java under 1500 NCSS lines (PMD threshold)
+- [ ] All helper classes under 1500 NCSS lines
 - [ ] PMD check passes (no NcssCount violations)
 - [ ] All existing tests pass
 - [ ] No public API changes
-- [ ] SharedSecrets pattern correctly implemented
+- [ ] Follows existing ModuleParser pattern (no SharedSecrets)
