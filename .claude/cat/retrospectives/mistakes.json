@@ -1198,6 +1198,28 @@
       "processed_in_retrospective": null,
       "correct_behavior": "When SESSION_ID is not set, STOP execution immediately and instruct user to register echo-session-id.sh hook. Never proceed to worktree creation without acquiring task lock first.",
       "prevention_implemented": true
+    },
+    {
+      "id": "M058",
+      "timestamp": "2026-01-13T15:40:55Z",
+      "category": "documentation_violation",
+      "pattern_id": null,
+      "description": "execute-task.md tested SESSION_ID as shell env var but hook injects to conversation context",
+      "root_cause": "Design mismatch: echo-session-id.sh outputs to hookSpecificOutput.additionalContext (conversation context) but execute-task.md used ${SESSION_ID:-NOT SET} expecting shell environment variable",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/commands/execute-task.md",
+      "pattern_keywords": [
+        "SESSION_ID",
+        "hook",
+        "context",
+        "environment",
+        "execute-task"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "correct_behavior": "Skills should instruct agents to read SESSION_ID from SessionStart system-reminder in conversation context and substitute the UUID value into bash commands, not expect it as a shell environment variable.",
+      "prevention_implemented": true
     }
   ],
   "mistake_count_since_last": 0
