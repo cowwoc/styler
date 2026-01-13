@@ -1125,6 +1125,30 @@
         "catches_variations": true
       },
       "correct_behavior": "Use alternative variable names like 'st', 'task_status', or 'state' instead of 'status' in bash scripts that may run under zsh"
+    },
+    {
+      "id": "M055",
+      "timestamp": "2026-01-13T05:24:26Z",
+      "category": "protocol_violation",
+      "description": "cat:status output missing checkbox markers for task completion status",
+      "root_cause": "Did not follow skill template that clearly showed [x]/[ ] markers for every task",
+      "prevention_type": "skill",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/cat/commands/status.md",
+      "pattern_keywords": [
+        "status",
+        "checkbox",
+        "render",
+        "output",
+        "template"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Always include [x] for completed tasks and [ ] for pending tasks - template shows this explicitly"
     }
   ],
   "mistake_count_since_last": 4
