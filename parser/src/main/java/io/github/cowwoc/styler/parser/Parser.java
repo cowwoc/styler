@@ -448,7 +448,7 @@ public final class Parser implements AutoCloseable
 
 		// Build the qualified name from tokens
 		StringBuilder qualifiedName = new StringBuilder();
-		expect(TokenType.IDENTIFIER);
+		expectIdentifierOrContextualKeyword();
 		qualifiedName.append(previousToken().decodedText());
 
 		while (currentToken().type() == TokenType.DOT)
@@ -464,7 +464,7 @@ public final class Parser implements AutoCloseable
 				ImportAttribute attribute = new ImportAttribute(qualifiedName.toString(), isStatic);
 				return arena.allocateImportDeclaration(start, end, attribute);
 			}
-			expect(TokenType.IDENTIFIER);
+			expectIdentifierOrContextualKeyword();
 			qualifiedName.append(previousToken().decodedText());
 		}
 		expect(TokenType.SEMICOLON);
@@ -476,10 +476,10 @@ public final class Parser implements AutoCloseable
 	NodeIndex parseQualifiedName()
 	{
 		int start = currentToken().start();
-		expect(TokenType.IDENTIFIER);
+		expectIdentifierOrContextualKeyword();
 		while (match(TokenType.DOT))
 		{
-			if (currentToken().type() == TokenType.IDENTIFIER)
+			if (isIdentifierOrContextualKeyword())
 				consume();
 			else
 				break;
@@ -853,6 +853,57 @@ public final class Parser implements AutoCloseable
 	}
 
 	/**
+	 * Checks if the given token type is a contextual keyword that can be used as an identifier.
+	 * <p>
+	 * Contextual keywords are reserved only in specific syntactic contexts but are valid
+	 * identifiers elsewhere. For example, {@code var} is a keyword only for local variable
+	 * type inference, and {@code module} is a keyword only in module-info.java.
+	 *
+	 * @param type the token type to check
+	 * @return {@code true} if the token is a contextual keyword usable as an identifier
+	 */
+	private boolean isContextualKeyword(TokenType type)
+	{
+		return switch (type)
+		{
+			case VAR, YIELD, MODULE, OPEN, TO, REQUIRES, EXPORTS, OPENS, USES, PROVIDES, WITH, TRANSITIVE -> true;
+			default -> false;
+		};
+	}
+
+	/**
+	 * Expects an identifier or contextual keyword token and consumes it.
+	 * <p>
+	 * Contextual keywords like {@code var}, {@code module}, and {@code with} are valid
+	 * identifiers outside their special syntactic contexts.
+	 *
+	 * @throws ParserException if current token is neither an identifier nor a contextual keyword
+	 */
+	private void expectIdentifierOrContextualKeyword()
+	{
+		TokenType type = currentToken().type();
+		if (type == TokenType.IDENTIFIER || isContextualKeyword(type))
+			consume();
+		else
+		{
+			throw new ParserException(
+				"Expected identifier but found " + type + " at position " + currentToken().start(),
+				currentToken().start());
+		}
+	}
+
+	/**
+	 * Checks if the current token is an identifier or a contextual keyword.
+	 *
+	 * @return {@code true} if current token can be used as an identifier
+	 */
+	private boolean isIdentifierOrContextualKeyword()
+	{
+		TokenType type = currentToken().type();
+		return type == TokenType.IDENTIFIER || isContextualKeyword(type);
+	}
+
+	/**
 	 * Parses optional array dimensions with JSR 308 type annotations.
 	 * <p>
 	 * Handles syntax like {@code @NonNull []} or {@code @A [] @B []}.
@@ -954,13 +1005,13 @@ public final class Parser implements AutoCloseable
 
 			if (isPrimitive)
 				consume();
-			else if (currentToken().type() == TokenType.IDENTIFIER)
+			else if (isIdentifierOrContextualKeyword())
 			{
 				// Parse qualified name (e.g., java.lang.String)
 				consume();
 				while (match(TokenType.DOT))
 				{
-					if (currentToken().type() != TokenType.IDENTIFIER)
+					if (!isIdentifierOrContextualKeyword())
 					{
 						// Not a valid qualified name, restore and return null
 						position = checkpoint;
@@ -980,7 +1031,7 @@ public final class Parser implements AutoCloseable
 					// Parse annotations before intersection type component
 					while (currentToken().type() == TokenType.AT_SIGN)
 						parseAnnotation();
-					if (currentToken().type() != TokenType.IDENTIFIER)
+					if (!isIdentifierOrContextualKeyword())
 					{
 						// Not a valid intersection type, restore and return null
 						position = checkpoint;
@@ -989,7 +1040,7 @@ public final class Parser implements AutoCloseable
 					consume();
 					while (match(TokenType.DOT))
 					{
-						if (currentToken().type() != TokenType.IDENTIFIER)
+						if (!isIdentifierOrContextualKeyword())
 						{
 							position = checkpoint;
 							return null;
@@ -1275,7 +1326,7 @@ public final class Parser implements AutoCloseable
 
 	private void parseMemberBody(int start)
 	{
-		if (currentToken().type() == TokenType.IDENTIFIER)
+		if (isIdentifierOrContextualKeyword())
 			parseIdentifierMember(start);
 		else if (isPrimitiveType(currentToken().type()) || currentToken().type() == TokenType.VOID)
 			parsePrimitiveTypedMember(start);
@@ -1298,7 +1349,7 @@ public final class Parser implements AutoCloseable
 		// Handle qualified type names: Outer.Inner, ValueLayout.OfInt, etc.
 		while (match(TokenType.DOT))
 		{
-			if (currentToken().type() != TokenType.IDENTIFIER)
+			if (!isIdentifierOrContextualKeyword())
 				break;
 			consume();
 		}
@@ -1324,7 +1375,7 @@ public final class Parser implements AutoCloseable
 
 		parseArrayDimensionsWithAnnotations();
 
-		if (currentToken().type() == TokenType.IDENTIFIER)
+		if (isIdentifierOrContextualKeyword())
 		{
 			// Method with non-primitive return type: ReturnType methodName(...)
 			// First identifier was return type, now consume method name
@@ -1350,7 +1401,7 @@ public final class Parser implements AutoCloseable
 	{
 		consume();
 		parseArrayDimensionsWithAnnotations();
-		expect(TokenType.IDENTIFIER);
+		expectIdentifierOrContextualKeyword();
 		if (match(TokenType.LEFT_PARENTHESIS))
 			parseMethodRest(memberStart, false);
 		else
@@ -1452,7 +1503,7 @@ public final class Parser implements AutoCloseable
 		else
 		{
 			Token nameToken = currentToken();
-			expect(TokenType.IDENTIFIER);
+			expectIdentifierOrContextualKeyword();
 			parameterName = nameToken.decodedText();
 		}
 
@@ -1507,7 +1558,7 @@ public final class Parser implements AutoCloseable
 
 		// Parameter name
 		Token nameToken = currentToken();
-		expect(TokenType.IDENTIFIER);
+		expectIdentifierOrContextualKeyword();
 		String parameterName = nameToken.decodedText();
 
 		int end = previousToken().end();
@@ -1525,7 +1576,7 @@ public final class Parser implements AutoCloseable
 
 		while (match(TokenType.COMMA))
 		{
-			expect(TokenType.IDENTIFIER);
+			expectIdentifierOrContextualKeyword();
 			parseArrayDimensionsWithAnnotations();
 			if (match(TokenType.ASSIGN))
 				parseExpression();
@@ -1744,7 +1795,7 @@ public final class Parser implements AutoCloseable
 			if (currentToken().type() == TokenType.FINAL)
 				consume();
 			parseType();
-			if (currentToken().type() != TokenType.IDENTIFIER)
+			if (!isIdentifierOrContextualKeyword())
 				return false;
 			consume();
 			return match(TokenType.COLON);
@@ -1765,7 +1816,7 @@ public final class Parser implements AutoCloseable
 	{
 		TokenType type = currentToken().type();
 		return type == TokenType.AT_SIGN || type == TokenType.FINAL || isPrimitiveType(type) ||
-			type == TokenType.IDENTIFIER;
+			type == TokenType.IDENTIFIER || isContextualKeyword(type);
 	}
 
 	private NodeIndex parseForStatement()
@@ -2150,12 +2201,12 @@ public final class Parser implements AutoCloseable
 		else if (currentToken().type() == TokenType.VAR)
 			// Type inference with 'var' keyword
 			consume();
-		else if (currentToken().type() == TokenType.IDENTIFIER)
+		else if (isIdentifierOrContextualKeyword())
 		{
 			consume();
 			while (match(TokenType.DOT))
 			{
-				if (currentToken().type() != TokenType.IDENTIFIER)
+				if (!isIdentifierOrContextualKeyword())
 				{
 					throw new ParserException(
 						"Expected identifier after '.' in type", currentToken().start());
@@ -2177,7 +2228,7 @@ public final class Parser implements AutoCloseable
 		if (currentToken().type() == TokenType.LEFT_PARENTHESIS)
 			// Nested record pattern
 			parseRecordPattern(componentTypeStart);
-		else if (currentToken().type() == TokenType.IDENTIFIER)
+		else if (isIdentifierOrContextualKeyword())
 			// Type pattern: consume the variable name
 			consume();
 		// else: just a type without variable (could happen in some edge cases)
@@ -2394,7 +2445,7 @@ public final class Parser implements AutoCloseable
 		if (currentToken().type() == TokenType.FINAL)
 			consume();
 		parseType();
-		expect(TokenType.IDENTIFIER);
+		expectIdentifierOrContextualKeyword();
 		expect(TokenType.ASSIGN);
 		parseExpression();
 	}
@@ -2440,7 +2491,7 @@ public final class Parser implements AutoCloseable
 			if (currentToken().type() == TokenType.FINAL)
 				consume();
 			parseType();
-			if (currentToken().type() != TokenType.IDENTIFIER)
+			if (!isIdentifierOrContextualKeyword())
 			{
 				position = checkpoint;
 				return false;
@@ -2475,7 +2526,7 @@ public final class Parser implements AutoCloseable
 	{
 		while (match(TokenType.COMMA))
 		{
-			expect(TokenType.IDENTIFIER);
+			expectIdentifierOrContextualKeyword();
 			parseOptionalArrayBrackets();
 			if (match(TokenType.ASSIGN))
 				parseExpression();
@@ -2819,7 +2870,7 @@ public final class Parser implements AutoCloseable
 					// Constructor reference
 					end = previousToken().end();
 				}
-				else if (currentToken().type() == TokenType.IDENTIFIER)
+				else if (isIdentifierOrContextualKeyword())
 				{
 					// Method reference
 					end = currentToken().end();
