@@ -950,6 +950,29 @@
         "catches_variations": true
       },
       "correct_behavior": "Never add @SuppressWarnings(PMD.NcssCount). Instead refactor to reduce complexity."
+    },
+    {
+      "id": "M047",
+      "timestamp": "2026-01-12T23:08:40-05:00",
+      "category": "protocol_violation",
+      "description": "Used git merge --no-ff creating merge commit instead of ff-merge for linear history",
+      "root_cause": "Manually ran merge command instead of using cat:git-merge-linear skill",
+      "prevention_type": "skill",
+      "prevention_path": "cat:git-merge-linear",
+      "pattern_keywords": [
+        "merge",
+        "no-ff",
+        "linear-history",
+        "git"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use /cat:git-merge-linear skill for all task branch merges to maintain linear history"
     }
   ],
   "mistake_count_since_last": 1
