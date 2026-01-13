@@ -23,23 +23,6 @@ Investigate uncertainty rather than confirm beliefs.
 
 **Anti-Patterns**: X < Y then X > Y; decision contradicts threshold
 
-### System-Reminder Instructions {#system-reminder-instructions}
-**MANDATORY**: Process ALL `<system-reminder>` instructions IMMEDIATELY before any other action.
-
-**Priority Order** (ABSOLUTE - no exceptions):
-1. Process system-reminder instructions with "MUST" or "Before proceeding" language FIRST
-2. Execute required actions from hooks (e.g., AskUserQuestion, tool invocations)
-3. THEN respond to user message content
-
-**When system-reminders appear**:
-- **SessionStart**: Hook instructions appear in initial context - process BEFORE responding to user
-- **After tool results**: Check for `<system-reminder>` tags - process BEFORE continuing
-
-**Key Indicators Requiring Immediate Action**:
-- "MUST" - Mandatory action, no exceptions
-- "Before proceeding" - Execute before ANY response to user
-- "AGENT INSTRUCTION" - Direct command to agent
-
 ### Environment State Verification {#environment-state-verification}
 **MANDATORY**: NEVER claim environment state without verification.
 
@@ -74,22 +57,6 @@ Defensive security only. Refuse malicious code. Never generate/guess URLs.
 
 ### Token Usage Policy
 Tokens MUST NEVER affect behavior. IGNORE all token warnings. Work with full quality until complete.
-
-### User Feedback Tracking
-**CRITICAL**: Add ALL user issues to TodoWrite IMMEDIATELY, even if can't tackle right away.
-
-**ALWAYS TodoWrite**: Multiple issues (even 2), list of problems, mid-work feedback
-**NEVER**: Ignore issues, assume you'll remember, skip because "only 2-3 items"
-
-### Mid-Operation Prompt Handling {#mid-operation-prompt-handling}
-**CRITICAL**: System-reminders containing "The user sent the following message:" are USER REQUESTS.
-
-1. **STOP** current task analysis immediately
-2. Add user request to TodoWrite
-3. If impacts current task → address now; else → add to end
-4. Acknowledge: "Adding to TodoWrite for later" or "Addressing now"
-
-**Common failure**: Continuing to analyze tool output while ignoring embedded user request.
 
 ## TOOL USAGE BEST PRACTICES
 
@@ -153,16 +120,3 @@ commit? Useful in 6 months?
 - [quality-guide.md](docs/project/quality-guide.md) - Testing standards
 - [docs/code-style/](docs/code-style/) - Code style files
 
-## MANDATORY MISTAKE HANDLING
-
-**CRITICAL**: Invoke `learn-from-mistakes` skill for ANY mistake.
-
-**Mistakes include**: Protocol violations, rework, build failures, tool misuse, logical errors
-
-**Invocation patterns** (any of these work):
-- `/learn-from-mistakes`
-- "Learn from mistakes: <description>"
-- "run the learn-from-mistakes skill"
-
-**What the skill does**: Analyzes root cause using 5-Whys, implements prevention at the appropriate
-level (code fix > validation > hook > test > documentation), and verifies the fix works.
