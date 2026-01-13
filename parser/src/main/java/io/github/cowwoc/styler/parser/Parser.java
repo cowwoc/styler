@@ -1213,7 +1213,20 @@ public final class Parser implements AutoCloseable
 			currentToken().type() == TokenType.NON_SEALED)
 		{
 			if (currentToken().type() == TokenType.AT_SIGN)
+			{
+				// Check if this is @interface (annotation type declaration) or regular annotation
+				int checkpoint = position;
+				consume();
+				if (currentToken().type() == TokenType.INTERFACE)
+				{
+					// This is @interface, backtrack and let parseNestedTypeDeclaration handle it
+					position = checkpoint;
+					break;
+				}
+				// Regular annotation - backtrack and parse it
+				position = checkpoint;
 				parseAnnotation();
+			}
 			else
 				consume();
 			// Handle comments between modifiers/annotations
@@ -1247,6 +1260,13 @@ public final class Parser implements AutoCloseable
 			{
 				consume();
 				parseRecordDeclaration();
+				yield true;
+			}
+			case AT_SIGN ->
+			{
+				consume();
+				expect(TokenType.INTERFACE);
+				parseAnnotationDeclaration();
 				yield true;
 			}
 			default -> false;
