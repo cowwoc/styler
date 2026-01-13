@@ -1063,6 +1063,25 @@
       "prevention_implemented": true,
       "prevention_verified": false,
       "correct_behavior": "Tests for a bugfix are part of the implementation and belong in the same commit"
+    },
+    {
+      "id": "M052",
+      "timestamp": "2026-01-13T05:00:00Z",
+      "category": "protocol_violation",
+      "description": "Merged to main without explicit approval - interpreted feedback as approval",
+      "root_cause": "User responded to approval gate with feedback about commit structure; agent incorrectly interpreted fixing the issue as implicit approval to proceed",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/cat/.claude/cat/workflows/execute-task.md",
+      "pattern_keywords": [
+        "approval",
+        "merge",
+        "permission",
+        "yoloMode",
+        "gate"
+      ],
+      "prevention_implemented": false,
+      "prevention_verified": false,
+      "correct_behavior": "After addressing approval gate feedback, re-present the approval gate and wait for explicit Approve response"
     }
   ],
   "mistake_count_since_last": 4
