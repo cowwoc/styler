@@ -1185,7 +1185,7 @@
       "description": "Two Claude instances started working on same task - lock acquisition step skipped when SESSION_ID was not set",
       "root_cause": "Agent proceeded with task execution after SESSION_ID check showed not set, instead of stopping and requiring hook registration",
       "prevention_type": "documentation",
-      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/retrospectives/mistakes.json",
+      "prevention_path": "/workspace/cat/commands/execute-task.md",
       "pattern_keywords": [
         "concurrent",
         "lock",
@@ -1196,7 +1196,8 @@
       "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": null,
-      "correct_behavior": "When SESSION_ID is not set, STOP execution immediately and instruct user to register echo-session-id.sh hook. Never proceed to worktree creation without acquiring task lock first."
+      "correct_behavior": "When SESSION_ID is not set, STOP execution immediately and instruct user to register echo-session-id.sh hook. Never proceed to worktree creation without acquiring task lock first.",
+      "prevention_implemented": true
     }
   ],
   "mistake_count_since_last": 5
