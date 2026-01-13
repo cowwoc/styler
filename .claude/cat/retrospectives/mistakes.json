@@ -1543,6 +1543,29 @@
       "correct_behavior": "Use public classes in non-exported internal package (e.g., parser.internal) for better testability and module enforcement",
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M070",
+      "timestamp": "2026-01-13T23:45:00Z",
+      "category": "protocol_violation",
+      "description": "Committed STATE.md update as separate planning: commit instead of including in implementation commit",
+      "root_cause": "execute-task and merge-and-cleanup workflows did not specify that task STATE.md must be updated BEFORE squash/merge to be included in implementation commit",
+      "prevention_type": "process",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/cat/.claude/cat/workflows/execute-task.md, ${CLAUDE_PROJECT_DIR}/cat/.claude/cat/workflows/merge-and-cleanup.md",
+      "pattern_keywords": [
+        "STATE.md",
+        "commit",
+        "squash",
+        "implementation"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Update task STATE.md to completed in task branch BEFORE squashing, then amend to include in implementation commit"
     }
   ],
   "mistake_count_since_last": 0
