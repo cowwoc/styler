@@ -1,8 +1,10 @@
 # Task State: fix-else-if-chain-parsing
 
 ## Status
-status: pending
-progress: 0%
+status: completed
+progress: 100%
+started: 2026-01-13
+completed: 2026-01-13
 
 ## Dependencies
 None
@@ -15,13 +17,18 @@ Error: `Unexpected token in expression: ELSE`
 
 ## Root Cause
 
-Parser fails on certain `else if` chain patterns. The specific construct needs
-investigation - may relate to braceless if-else or expression parsing context.
+Parser failed when comments appeared between the closing brace `}` of an if-block
+and the `else` keyword. The `parseIfStatement()` method checked for ELSE immediately
+after parsing the statement, without first consuming any intervening comments.
 
-Example files:
-- TestContextResourceUtils.java
-- TestContextFailureHandler.java
-- ResourceHintsPredicates.java
+## Solution
+
+Added `parseComments()` call before checking for ELSE token in `parseIfStatement()`.
+
+## Files Changed
+
+- `parser/src/main/java/io/github/cowwoc/styler/parser/Parser.java` (+2 lines)
+- `parser/src/test/java/io/github/cowwoc/styler/parser/test/ElseIfCommentParserTest.java` (new, +182 lines)
 
 ---
-*Pending task - see PLAN.md*
+*Completed 2026-01-13*
