@@ -1175,7 +1175,7 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "Use unicode symbols (✓ ○ ▶ !) instead of markdown checkboxes [x]/[ ] for status output that survives CLI rendering"
+      "correct_behavior": "Remove list dash prefix - use '[x] task' instead of '- [x] task'. The dash triggers markdown list rendering which strips checkbox syntax."
     }
   ],
   "mistake_count_since_last": 5
