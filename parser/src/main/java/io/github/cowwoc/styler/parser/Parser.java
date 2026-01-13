@@ -1216,6 +1216,8 @@ public final class Parser implements AutoCloseable
 				parseAnnotation();
 			else
 				consume();
+			// Handle comments between modifiers/annotations
+			parseComments();
 		}
 	}
 
