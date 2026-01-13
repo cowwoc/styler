@@ -1382,6 +1382,47 @@
         "catches_variations": true
       },
       "notes": "Added explicit guidance to execute-task approval gate: DELEGATE fixes to subagent, main agent does NOT implement directly."
+    },
+    {
+      "id": "M064",
+      "timestamp": "2026-01-13T17:38:58Z",
+      "category": "tool_misuse",
+      "description": "Used hardcoded version 2.0.2 path from stale skill template instead of current 2.0.4, and invoked nonexistent status command without checking --help",
+      "root_cause": "Skill template (execute-task.md) contains hardcoded version paths that become stale when plugin is updated. Also failed to verify available commands before invocation.",
+      "five_whys": [
+        {
+          "why": "Why use wrong version path?",
+          "answer": "Skill template hardcoded /home/node/.../2.0.2/scripts/task-lock.sh"
+        },
+        {
+          "why": "Why is path hardcoded?",
+          "answer": "Template not updated when new versions released"
+        },
+        {
+          "why": "Why invoke status command?",
+          "answer": "Assumed it existed without checking --help"
+        },
+        {
+          "why": "Why not check --help?",
+          "answer": "Skipped verification step before invoking unfamiliar command"
+        },
+        {
+          "why": "Why skip verification?",
+          "answer": "Overconfidence in memory of available commands"
+        }
+      ],
+      "prevention_type": "code",
+      "prevention_path": "/workspace/cat/commands/execute-task.md",
+      "pattern_keywords": [
+        "version-mismatch",
+        "hardcoded-path",
+        "unknown-command",
+        "help-verification"
+      ],
+      "prevention_implemented": true,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "correct_behavior": "1) Verify script version path matches installed plugin version. 2) Run script --help to check available commands before invoking."
     }
   ],
   "mistake_count_since_last": 0
