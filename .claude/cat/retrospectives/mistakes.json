@@ -1523,6 +1523,26 @@
       "correct_behavior": "Use docs: for user-facing (README, API docs), config: for Claude-facing (CLAUDE.md, hooks, skills)",
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M069",
+      "timestamp": "2026-01-13T19:40:00Z",
+      "category": "architecture_issue",
+      "pattern_id": null,
+      "description": "Used package-private classes in same package instead of public classes in non-exported internal package",
+      "root_cause": "Followed existing ModuleParser pattern without considering module system capabilities",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/rules/java-style.md",
+      "pattern_keywords": [
+        "internal",
+        "package-private",
+        "module",
+        "architecture",
+        "testability"
+      ],
+      "correct_behavior": "Use public classes in non-exported internal package (e.g., parser.internal) for better testability and module enforcement",
+      "recurrence_count": 0,
+      "processed_in_retrospective": null
     }
   ],
   "mistake_count_since_last": 0
