@@ -1302,6 +1302,31 @@
         "catches_variations": true
       },
       "notes": "CLAUDE.md already has Environment State Verification rule. This was a compliance failure, not a missing rule."
+    },
+    {
+      "id": "M062",
+      "timestamp": "2026-01-13T16:26:00Z",
+      "category": "context_degradation",
+      "pattern_id": null,
+      "description": "Subagent compaction despite task being estimated within threshold - estimation formula ignores input tokens",
+      "root_cause": "Task estimation formula counts only output (files to create/modify) but ignores input context from tool calls, file reads, and test output parsing",
+      "prevention_type": "config",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/cat-config.json",
+      "pattern_keywords": [
+        "compaction",
+        "estimation",
+        "subagent",
+        "context",
+        "threshold"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use lower targetContextUsage (40% instead of 70%) to account for input tokens which are ~2x output tokens"
     }
   ],
   "mistake_count_since_last": 0
