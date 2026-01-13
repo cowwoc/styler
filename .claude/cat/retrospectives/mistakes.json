@@ -956,9 +956,9 @@
       "timestamp": "2026-01-12T23:08:40-05:00",
       "category": "protocol_violation",
       "description": "Used git merge --no-ff creating merge commit instead of ff-merge for linear history",
-      "root_cause": "Manually ran merge command instead of using cat:git-merge-linear skill",
-      "prevention_type": "skill",
-      "prevention_path": "cat:git-merge-linear",
+      "root_cause": "No enforcement blocking --no-ff flag in merge commands",
+      "prevention_type": "hook",
+      "prevention_path": "/workspace/cat/hooks/block-merge-commits.sh",
       "pattern_keywords": [
         "merge",
         "no-ff",
@@ -972,7 +972,7 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "Use /cat:git-merge-linear skill for all task branch merges to maintain linear history"
+      "correct_behavior": "Use --ff-only for merges or /cat:git-merge-linear skill to maintain linear history"
     }
   ],
   "mistake_count_since_last": 1
