@@ -6,6 +6,7 @@ standards. Built for developers who think better in their own style.
 ## 🚀 Quick Start
 
 - **Build & Run**: See [docs/project/build-system.md](docs/project/build-system.md)
+- **Development Workflow**: See [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md)
 - **Code Style**: See [docs/code-style-human.md](docs/code-style-human.md)
 
 ## 📁 Repository Structure
@@ -14,10 +15,13 @@ standards. Built for developers who think better in their own style.
 .
 ├── README.md                     # This file
 ├── CLAUDE.md                     # Claude Code configuration
+├── todo.md                       # Active task list
 ├── docs/                         # All documentation
 │   ├── code-style-human.md       # Master human style guide
 │   ├── project/                  # Core project documentation
 │   │   ├── scope.md              # Project scope & architecture
+│   │   ├── task-protocol-core.md # Development workflow (states & agents)
+│   │   ├── task-protocol-operations.md # Protocol procedures
 │   │   ├── build-system.md       # Build configuration
 │   │   └── architecture.md       # Technical architecture
 │   └── code-style/               # Code style documentation
@@ -40,6 +44,7 @@ standards. Built for developers who think better in their own style.
 ### Essential Reading
 - [docs/project/scope.md](docs/project/scope.md) - Project objectives and architecture
 - [docs/code-style-human.md](docs/code-style-human.md) - Coding standards and best practices
+- [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md) - Development process
 
 ### Development Guides
 - [docs/code-style/java-human.md](docs/code-style/java-human.md) - Java best practices
@@ -123,8 +128,14 @@ config file that specifies it.
 ## 🚀 Getting Started
 
 1. **Read the scope**: [docs/project/scope.md](docs/project/scope.md)
-2. **Setup your environment**: [docs/project/build-system.md](docs/project/build-system.md)
-3. **Review coding standards**: [docs/code-style-human.md](docs/code-style-human.md)
+2. **Follow the workflow**: [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md)
+3. **Setup your environment**: [docs/project/build-system.md](docs/project/build-system.md)
+4. **Review coding standards**: [docs/code-style-human.md](docs/code-style-human.md)
+
+## 📋 Active Development
+
+Current tasks are tracked in [todo.md](todo.md). Development follows a strict 7-phase workflow process
+documented in [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md).
 
 ## 🏗️ Architecture
 
@@ -143,4 +154,19 @@ For detailed technical architecture, see [docs/project/architecture.md](docs/pro
 
 ## 📄 License
 
-See [LICENSE.md](LICENSE.md) for terms.
+Styler is source-available software under a custom commercial license.
+
+**Personal Use**: Free for personal, educational, research, and hobby projects.
+
+**Commercial Use**: Requires a paid license. This includes use by for-profit companies, use in commercial
+products/services, and use by organizations with annual revenue exceeding $100,000 USD.
+
+**Runtime Redistribution**: If your product or service invokes Styler at runtime for end users (e.g., a
+SaaS formatting service, hosted IDE), each end user needs their own license. Internal tooling that doesn't
+expose Styler to end users does not require licenses for your end users.
+
+**Derivative Works**: Commercial use of forks or derivatives also requires a license from the original
+author (not the fork maintainer).
+
+See [LICENSE](LICENSE) for complete terms. For commercial licensing inquiries, contact the project
+maintainers.
