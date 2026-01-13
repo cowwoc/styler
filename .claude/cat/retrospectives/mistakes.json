@@ -1148,8 +1148,35 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "Always include [x] for completed tasks and [ ] for pending tasks - template shows this explicitly"
+      "correct_behavior": "Always include [x] for completed tasks and [ ] for pending tasks - template shows this explicitly",
+      "superseded_by": "M056",
+      "notes": "Root cause was incorrect - checkboxes WERE being output but CLI strips them"
+    },
+    {
+      "id": "M056",
+      "timestamp": "2026-01-13T16:45:00Z",
+      "category": "tool_misuse",
+      "description": "Claude Code CLI strips markdown checkbox syntax [x]/[ ] from list items during terminal rendering",
+      "root_cause": "Markdown checkbox syntax (- [x] item) is converted to plain list (- item) by CLI renderer. M055 incorrectly assumed checkboxes weren't being output when they were being stripped post-output.",
+      "prevention_type": "skill",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/cat/commands/status.md",
+      "pattern_keywords": [
+        "status",
+        "checkbox",
+        "CLI",
+        "rendering",
+        "markdown",
+        "unicode"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use unicode symbols (✓ ○ ▶ !) instead of markdown checkboxes [x]/[ ] for status output that survives CLI rendering"
     }
   ],
-  "mistake_count_since_last": 4
+  "mistake_count_since_last": 5
 }
