@@ -997,7 +997,31 @@
         "catches_variations": true
       },
       "correct_behavior": "Use bugfix: prefix for all retrospective action item implementations"
+    },
+    {
+      "id": "M049",
+      "timestamp": "2026-01-13T00:05:00-05:00",
+      "category": "protocol_violation",
+      "description": "Deleted .git/refs/original/ without user explicitly requesting it",
+      "root_cause": "Automatically cleaned up filter-branch backup as part of 'cleanup' without asking",
+      "prevention_type": "hook",
+      "prevention_path": "/workspace/cat/hooks/block-reflog-destruction.sh",
+      "pattern_keywords": [
+        "refs/original",
+        "filter-branch",
+        "backup",
+        "cleanup",
+        "delete"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Never delete .git/refs/original unless user explicitly requests it"
     }
   ],
-  "mistake_count_since_last": 2
+  "mistake_count_since_last": 3
 }
