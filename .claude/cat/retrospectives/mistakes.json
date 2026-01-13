@@ -1082,6 +1082,25 @@
       "prevention_implemented": true,
       "prevention_verified": false,
       "correct_behavior": "After addressing approval gate feedback, re-present the approval gate and wait for explicit Approve response"
+    },
+    {
+      "id": "M053",
+      "timestamp": "2026-01-13T05:15:00Z",
+      "category": "protocol_violation",
+      "description": "Presented approval gate without first cleaning up subagent worktree and branch",
+      "root_cause": "Workflow did not explicitly state that subagent cleanup happens BEFORE approval gate",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/cat/.claude/cat/workflows/execute-task.md",
+      "pattern_keywords": [
+        "subagent",
+        "cleanup",
+        "worktree",
+        "approval",
+        "gate"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "correct_behavior": "Clean up subagent worktree and branch after merging to task branch, BEFORE presenting approval gate"
     }
   ],
   "mistake_count_since_last": 4
