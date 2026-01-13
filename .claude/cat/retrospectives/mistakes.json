@@ -878,6 +878,30 @@
         "catches_variations": true
       },
       "correct_behavior": "STOP current analysis, add user request to TodoWrite, acknowledge"
+    },
+    {
+      "id": "M044",
+      "timestamp": "2026-01-12T22:30:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": "PATTERN-004",
+      "description": "Retrospective files written to .claude/retrospectives/ instead of .claude/cat/retrospectives/",
+      "root_cause": "Followed existing files at wrong location instead of skill documentation path",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/skills/learn-from-mistakes/SKILL.md",
+      "pattern_keywords": [
+        "retrospectives",
+        "directory",
+        "path",
+        "migration"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Always use .claude/cat/retrospectives/ and migrate files if found at wrong location"
     }
   ],
   "mistake_count_since_last": 1
