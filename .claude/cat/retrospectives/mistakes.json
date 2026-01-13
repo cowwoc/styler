@@ -902,6 +902,30 @@
         "catches_variations": true
       },
       "correct_behavior": "Always use .claude/cat/retrospectives/ and migrate files if found at wrong location"
+    },
+    {
+      "id": "M045",
+      "timestamp": "2026-01-12T22:45:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": "PATTERN-004",
+      "description": "Retrospective counter showed 1-2 when actual mistakes since last retrospective was 11",
+      "root_cause": "Mistake recording and counter increment not atomic - mistakes added without incrementing counter",
+      "prevention_type": "validation",
+      "prevention_path": "/workspace/cat/skills/learn-from-mistakes/SKILL.md",
+      "pattern_keywords": [
+        "counter",
+        "retrospective",
+        "validation",
+        "atomic"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Validate counter matches actual mistake count before incrementing, auto-fix if mismatch"
     }
   ],
   "mistake_count_since_last": 1
