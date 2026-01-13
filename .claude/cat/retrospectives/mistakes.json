@@ -1176,6 +1176,27 @@
         "catches_variations": true
       },
       "correct_behavior": "Remove list dash prefix - use '[x] task' instead of '- [x] task'. The dash triggers markdown list rendering which strips checkbox syntax."
+    },
+    {
+      "id": "M057",
+      "timestamp": "2026-01-13T10:15:00Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Two Claude instances started working on same task - lock acquisition step skipped when SESSION_ID was not set",
+      "root_cause": "Agent proceeded with task execution after SESSION_ID check showed not set, instead of stopping and requiring hook registration",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/retrospectives/mistakes.json",
+      "pattern_keywords": [
+        "concurrent",
+        "lock",
+        "SESSION_ID",
+        "task-lock",
+        "worktree"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "correct_behavior": "When SESSION_ID is not set, STOP execution immediately and instruct user to register echo-session-id.sh hook. Never proceed to worktree creation without acquiring task lock first."
     }
   ],
   "mistake_count_since_last": 5
