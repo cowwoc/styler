@@ -17,6 +17,9 @@ import java.time.Instant;
 import java.util.List;
 import java.util.function.Supplier;
 
+import io.github.cowwoc.styler.parser.internal.ModuleParser;
+import io.github.cowwoc.styler.parser.internal.StatementParser;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
@@ -57,6 +60,11 @@ public final class Parser implements AutoCloseable
 	 * Helper for parsing module-info.java files (JPMS module declarations).
 	 */
 	private final ModuleParser moduleParser;
+
+	/**
+	 * Helper for parsing try-catch-finally statements and resources.
+	 */
+	private final StatementParser statementParser;
 
 	/**
 	 * Creates a parser by reading a file with UTF-8 encoding.
@@ -119,6 +127,7 @@ public final class Parser implements AutoCloseable
 
 		this.arena = new NodeArena();
 		this.moduleParser = new ModuleParser(this);
+		this.statementParser = new StatementParser(this);
 
 		// SEC-006: Set parsing deadline for timeout enforcement
 		this.parsingDeadline = Instant.now().plusMillis(SecurityConfig.PARSING_TIMEOUT_MS);
@@ -139,7 +148,7 @@ public final class Parser implements AutoCloseable
 	 *
 	 * @return the source code
 	 */
-	String getSourceCode()
+	public String getSourceCode()
 	{
 		return sourceCode;
 	}
@@ -149,7 +158,7 @@ public final class Parser implements AutoCloseable
 	 *
 	 * @return the tokens
 	 */
-	List<Token> getTokens()
+	public List<Token> getTokens()
 	{
 		return tokens;
 	}
@@ -159,7 +168,7 @@ public final class Parser implements AutoCloseable
 	 *
 	 * @return the position
 	 */
-	int getPosition()
+	public int getPosition()
 	{
 		return position;
 	}
@@ -169,7 +178,7 @@ public final class Parser implements AutoCloseable
 	 *
 	 * @param position the new position
 	 */
-	void setPosition(int position)
+	public void setPosition(int position)
 	{
 		this.position = position;
 	}
@@ -473,7 +482,12 @@ public final class Parser implements AutoCloseable
 		return arena.allocateImportDeclaration(start, end, attribute);
 	}
 
-	NodeIndex parseQualifiedName()
+	/**
+	 * Parses a qualified name (e.g., {@code java.lang.String}).
+	 *
+	 * @return the qualified name node index
+	 */
+	public NodeIndex parseQualifiedName()
 	{
 		int start = currentToken().start();
 		expectIdentifierOrContextualKeyword();
@@ -805,7 +819,7 @@ public final class Parser implements AutoCloseable
 	 * dimensions. For array creation expressions where dimension brackets contain expressions or
 	 * initializers, use {@link #parseTypeWithoutArrayDimensions()} instead.
 	 */
-	private void parseType()
+	public void parseType()
 	{
 		parseTypeWithoutArrayDimensions();
 		parseArrayDimensionsWithAnnotations();
@@ -879,7 +893,7 @@ public final class Parser implements AutoCloseable
 	 *
 	 * @throws ParserException if current token is neither an identifier nor a contextual keyword
 	 */
-	private void expectIdentifierOrContextualKeyword()
+	public void expectIdentifierOrContextualKeyword()
 	{
 		TokenType type = currentToken().type();
 		if (type == TokenType.IDENTIFIER || isContextualKeyword(type))
@@ -1408,7 +1422,12 @@ public final class Parser implements AutoCloseable
 			parseFieldRest(memberStart);
 	}
 
-	NodeIndex parseAnnotation()
+	/**
+	 * Parses an annotation.
+	 *
+	 * @return the annotation node index
+	 */
+	public NodeIndex parseAnnotation()
 	{
 		int start = currentToken().start();
 		expect(TokenType.AT_SIGN);
@@ -1523,7 +1542,7 @@ public final class Parser implements AutoCloseable
 	 *
 	 * @return a {@link NodeIndex} pointing to the allocated parameter node
 	 */
-	private NodeIndex parseCatchParameter()
+	public NodeIndex parseCatchParameter()
 	{
 		int start = currentToken().start();
 		boolean isFinal = false;
@@ -1588,7 +1607,12 @@ public final class Parser implements AutoCloseable
 		return arena.allocateNode(NodeType.FIELD_DECLARATION, start, end);
 	}
 
-	private NodeIndex parseBlock()
+	/**
+	 * Parses a block statement.
+	 *
+	 * @return the block node index
+	 */
+	public NodeIndex parseBlock()
 	{
 		int start = currentToken().start();
 		expect(TokenType.LEFT_BRACE);
@@ -2306,148 +2330,7 @@ public final class Parser implements AutoCloseable
 
 	private NodeIndex parseTryStatement()
 	{
-		int start = currentToken().start();
-		expect(TokenType.TRY);
-
-		// Try-with-resources
-		if (match(TokenType.LEFT_PARENTHESIS))
-		{
-			parseResource();
-			while (match(TokenType.SEMICOLON))
-				if (currentToken().type() != TokenType.RIGHT_PARENTHESIS)
-					parseResource();
-			expect(TokenType.RIGHT_PARENTHESIS);
-		}
-
-		parseBlock();
-
-		// Handle comments before catch clauses
-		parseComments();
-		// Catch clauses
-		while (currentToken().type() == TokenType.CATCH)
-		{
-			parseCatchClause();
-			// Handle comments between catch/finally clauses
-			parseComments();
-		}
-
-		// Finally clause
-		if (currentToken().type() == TokenType.FINALLY)
-			parseFinallyClause();
-
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.TRY_STATEMENT, start, end);
-	}
-
-	private NodeIndex parseCatchClause()
-	{
-		int start = currentToken().start();
-		expect(TokenType.CATCH);
-		expect(TokenType.LEFT_PARENTHESIS);
-		// Handle comments before catch parameter
-		parseComments();
-		parseCatchParameter();
-		// Handle comments after catch parameter
-		parseComments();
-		expect(TokenType.RIGHT_PARENTHESIS);
-		parseBlock();
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.CATCH_CLAUSE, start, end);
-	}
-
-	private NodeIndex parseFinallyClause()
-	{
-		int start = currentToken().start();
-		expect(TokenType.FINALLY);
-		parseBlock();
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.FINALLY_CLAUSE, start, end);
-	}
-
-	/**
-	 * Parses a resource in a try-with-resources statement.
-	 * <p>
-	 * Supports two forms per JLS 14.20.3:
-	 * <ul>
-	 *   <li><b>Resource declaration (JDK 7+)</b>: {@code [final] Type name = expression}
-	 *       <br>Example: {@code final var reader = new FileReader(file)}</li>
-	 *   <li><b>Variable reference (JDK 9+)</b>: An effectively-final variable or field access
-	 *       <br>Examples: {@code reader}, {@code this.resource}, {@code Outer.this.resource}</li>
-	 * </ul>
-	 * <p>
-	 * Annotations may precede either form.
-	 */
-	private void parseResource()
-	{
-		// Consume declaration annotations (e.g., @Cleanup)
-		while (currentToken().type() == TokenType.AT_SIGN)
-			parseAnnotation();
-
-		if (isResourceVariableReference())
-			parseResourceVariableReference();
-		else
-			parseResourceDeclaration();
-	}
-
-	/**
-	 * Determines if the current position represents a variable reference in try-with-resources
-	 * rather than a full declaration.
-	 * <p>
-	 * Variable references are effectively-final variables or field accesses used directly
-	 * as resources (JDK 9+ feature). They are distinguished from declarations by:
-	 * <ul>
-	 *   <li>Simple identifier followed by {@code ;} or {@code )}</li>
-	 *   <li>Field access starting with {@code this}</li>
-	 * </ul>
-	 *
-	 * @return {@code true} if current position is a variable reference
-	 */
-	private boolean isResourceVariableReference()
-	{
-		// Field access: this.resource or Outer.this.resource
-		if (currentToken().type() == TokenType.THIS)
-			return true;
-
-		// Simple identifier followed by ; or ) indicates variable reference
-		// Note: qualified names like java.io.Reader would be followed by IDENTIFIER (variable name)
-		if (currentToken().type() == TokenType.IDENTIFIER)
-		{
-			int checkpoint = position;
-			consume();
-			TokenType nextType = currentToken().type();
-			position = checkpoint;
-			return nextType == TokenType.SEMICOLON || nextType == TokenType.RIGHT_PARENTHESIS;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Parses a variable reference in try-with-resources (JDK 9+).
-	 * <p>
-	 * Handles simple identifiers ({@code reader}) and field access expressions
-	 * ({@code this.resource}, {@code Outer.this.resource}).
-	 */
-	private void parseResourceVariableReference()
-	{
-		// Parse as expression - will naturally produce IDENTIFIER or FIELD_ACCESS node
-		parseExpression();
-	}
-
-	/**
-	 * Parses a resource declaration in try-with-resources (JDK 7+ traditional syntax).
-	 * <p>
-	 * Syntax: {@code [final] Type variableName = expression}
-	 */
-	private void parseResourceDeclaration()
-	{
-		// Optional FINAL modifier
-		if (currentToken().type() == TokenType.FINAL)
-			consume();
-		parseType();
-		expectIdentifierOrContextualKeyword();
-		expect(TokenType.ASSIGN);
-		parseExpression();
+		return statementParser.parseTryStatement();
 	}
 
 	private NodeIndex parseSynchronizedStatement()
@@ -2553,7 +2436,12 @@ public final class Parser implements AutoCloseable
 
 	// Expression parsing with operator precedence
 
-	private NodeIndex parseExpression()
+	/**
+	 * Parses an expression.
+	 *
+	 * @return the expression node index
+	 */
+	public NodeIndex parseExpression()
 	{
 		// Check for lambda expression: identifier -> expr
 		if (currentToken().type() == TokenType.IDENTIFIER)
@@ -3274,7 +3162,7 @@ public final class Parser implements AutoCloseable
 	 * Parses comment tokens and creates AST nodes for them.
 	 * Comments are preserved in the AST to support pure AST-based position checking.
 	 */
-	void parseComments()
+	public void parseComments()
 	{
 		while (true)
 		{
@@ -3312,7 +3200,12 @@ public final class Parser implements AutoCloseable
 		}
 	}
 
-	Token currentToken()
+	/**
+	 * Returns the current token at the current position.
+	 *
+	 * @return the current token
+	 */
+	public Token currentToken()
 	{
 		if (position < tokens.size())
 			return tokens.get(position);
@@ -3324,12 +3217,17 @@ public final class Parser implements AutoCloseable
 	 *
 	 * @return the previous token
 	 */
-	Token previousToken()
+	public Token previousToken()
 	{
 		return tokens.get(position - 1);
 	}
 
-	Token consume()
+	/**
+	 * Consumes the current token and advances the position.
+	 *
+	 * @return the consumed token
+	 */
+	public Token consume()
 	{
 		// SEC-006: Periodic timeout checking to detect hung parsers
 		++tokenCheckCounter;
@@ -3349,7 +3247,13 @@ public final class Parser implements AutoCloseable
 		return current;
 	}
 
-	boolean match(TokenType type)
+	/**
+	 * Matches and consumes a token if it has the given type.
+	 *
+	 * @param type the expected token type
+	 * @return {@code true} if the token matched and was consumed
+	 */
+	public boolean match(TokenType type)
 	{
 		if (currentToken().type() == type)
 		{
@@ -3359,7 +3263,13 @@ public final class Parser implements AutoCloseable
 		return false;
 	}
 
-	void expect(TokenType type)
+	/**
+	 * Expects and consumes a token of the given type.
+	 *
+	 * @param type the expected token type
+	 * @throws ParserException if the current token is not of the expected type
+	 */
+	public void expect(TokenType type)
 	{
 		if (currentToken().type() != type)
 		{
