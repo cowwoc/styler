@@ -973,7 +973,31 @@
         "catches_variations": true
       },
       "correct_behavior": "Use --ff-only for merges or /cat:git-merge-linear skill to maintain linear history"
+    },
+    {
+      "id": "M048",
+      "timestamp": "2026-01-12T23:20:19-05:00",
+      "category": "protocol_violation",
+      "description": "Used feature: prefix for retrospective action item implementation instead of bugfix:",
+      "root_cause": "Did not recognize that action items are corrective fixes for identified problems, not new functionality",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/.claude/cat/references/commit-types.md",
+      "pattern_keywords": [
+        "commit-type",
+        "feature",
+        "bugfix",
+        "action-item",
+        "retrospective"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use bugfix: prefix for all retrospective action item implementations"
     }
   ],
-  "mistake_count_since_last": 1
+  "mistake_count_since_last": 2
 }
