@@ -30,14 +30,17 @@
         "approach": "defense-in-depth",
         "description": "Add PreToolUse hook to block destructive git commands",
         "prevention_type": "hook",
-        "layers": ["PreToolUse validation for dangerous git commands", "Warn on file extraction from non-HEAD commits"]
+        "layers": [
+          "PreToolUse validation for dangerous git commands",
+          "Warn on file extraction from non-HEAD commits"
+        ]
       },
       "priority": "high",
       "status": "open"
     }
   ],
   "last_retrospective": "2026-01-08T12:00:00-05:00",
-  "mistake_count_since_last": 0,
+  "mistake_count_since_last": 1,
   "retrospectives": [
     {
       "id": "R002",
@@ -62,7 +65,11 @@
           "A003": "partially_effective",
           "A004": "escalated"
         },
-        "new_patterns_identified": ["PATTERN-004", "PATTERN-005", "PATTERN-006"]
+        "new_patterns_identified": [
+          "PATTERN-004",
+          "PATTERN-005",
+          "PATTERN-006"
+        ]
       }
     },
     {
@@ -178,7 +185,9 @@
       "status": "new",
       "effectiveness": "pending",
       "preventions": [],
-      "related_action_items": ["A005"],
+      "related_action_items": [
+        "A005"
+      ],
       "note": "New pattern - workflow checkpoint gaps causing plan/commit/path issues"
     },
     {
@@ -192,7 +201,9 @@
       "status": "new",
       "effectiveness": "pending",
       "preventions": [],
-      "related_action_items": ["A006"],
+      "related_action_items": [
+        "A006"
+      ],
       "note": "New pattern - weak test assertions and blind position copying"
     },
     {
@@ -206,7 +217,9 @@
       "status": "new",
       "effectiveness": "pending",
       "preventions": [],
-      "related_action_items": ["A007"],
+      "related_action_items": [
+        "A007"
+      ],
       "note": "Extension of PATTERN-001 - destructive commands and stale-base operations"
     }
   ],
@@ -289,7 +302,11 @@
       "effectiveness_check": {
         "mistakes_before": 4,
         "mistakes_after": 3,
-        "post_fix_mistakes": ["M025", "M026", "M033"],
+        "post_fix_mistakes": [
+          "M025",
+          "M026",
+          "M033"
+        ],
         "verdict": "escalated"
       },
       "escalation": "ESCALATE-2026-01-08-001"
@@ -303,7 +320,15 @@
       "status": "open",
       "created_date": "2026-01-08T12:00:00-05:00",
       "completed_date": null,
-      "related_mistakes": ["M028", "M034", "M035", "M037", "M038", "M040", "M041"],
+      "related_mistakes": [
+        "M028",
+        "M034",
+        "M035",
+        "M037",
+        "M038",
+        "M040",
+        "M041"
+      ],
       "effectiveness_check": {
         "mistakes_before": 7,
         "mistakes_after": null,
@@ -320,7 +345,11 @@
       "status": "open",
       "created_date": "2026-01-08T12:00:00-05:00",
       "completed_date": null,
-      "related_mistakes": ["M027", "M031", "M032"],
+      "related_mistakes": [
+        "M027",
+        "M031",
+        "M032"
+      ],
       "effectiveness_check": {
         "mistakes_before": 3,
         "mistakes_after": null,
@@ -337,7 +366,11 @@
       "status": "open",
       "created_date": "2026-01-08T12:00:00-05:00",
       "completed_date": null,
-      "related_mistakes": ["M025", "M026", "M033"],
+      "related_mistakes": [
+        "M025",
+        "M026",
+        "M033"
+      ],
       "effectiveness_check": {
         "mistakes_before": 3,
         "mistakes_after": null,
