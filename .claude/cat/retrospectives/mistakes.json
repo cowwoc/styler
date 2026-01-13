@@ -1327,6 +1327,34 @@
         "catches_variations": true
       },
       "correct_behavior": "Use lower targetContextUsage (40% instead of 70%) to account for input tokens which are ~2x output tokens"
+    },
+    {
+      "id": "M062",
+      "timestamp": "2026-01-13T16:35:00Z",
+      "category": "prompt_engineering",
+      "description": "Subagent created parser tests that only check isSuccess() instead of comparing expected vs actual AST tree",
+      "root_cause": "Main agent prompt provided inadequate test examples without AST verification",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/spawn-subagent/SKILL.md",
+      "pattern_id": null,
+      "pattern_keywords": [
+        "parser-tests",
+        "isSuccess",
+        "isEqualTo",
+        "ast-verification",
+        "subagent"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "correct_behavior": "Parser tests MUST use isEqualTo(expected) pattern to verify AST structure. Main agent prompts must include explicit test examples with AST comparison.",
+      "prevention_implemented": true,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "notes": "Added explicit anti-pattern section to spawn-subagent skill documenting M062."
     }
   ],
   "mistake_count_since_last": 0
