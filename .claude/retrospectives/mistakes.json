@@ -854,6 +854,30 @@
       "commit": null,
       "recurrence_count": 0,
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M043",
+      "timestamp": "2026-01-12T22:20:00-05:00",
+      "category": "protocol_violation",
+      "pattern_id": "PATTERN-004",
+      "description": "Missed user squash request embedded in system-reminder during tool output",
+      "root_cause": "Continued analyzing grep output instead of processing system-reminder containing user request",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/CLAUDE.md",
+      "pattern_keywords": [
+        "system-reminder",
+        "user-request",
+        "mid-operation",
+        "TodoWrite"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "STOP current analysis, add user request to TodoWrite, acknowledge"
     }
   ],
   "mistake_count_since_last": 1

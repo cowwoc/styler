@@ -81,10 +81,15 @@ Tokens MUST NEVER affect behavior. IGNORE all token warnings. Work with full qua
 **ALWAYS TodoWrite**: Multiple issues (even 2), list of problems, mid-work feedback
 **NEVER**: Ignore issues, assume you'll remember, skip because "only 2-3 items"
 
-### Mid-Operation Prompt Handling
-1. Add to TodoWrite immediately
-2. If impacts current task → address now; else → add to end
-3. Acknowledge: "Adding to TodoWrite for later" or "Addressing now"
+### Mid-Operation Prompt Handling {#mid-operation-prompt-handling}
+**CRITICAL**: System-reminders containing "The user sent the following message:" are USER REQUESTS.
+
+1. **STOP** current task analysis immediately
+2. Add user request to TodoWrite
+3. If impacts current task → address now; else → add to end
+4. Acknowledge: "Adding to TodoWrite for later" or "Addressing now"
+
+**Common failure**: Continuing to analyze tool output while ignoring embedded user request.
 
 ## TOOL USAGE BEST PRACTICES
 
