@@ -1044,9 +1044,47 @@ public final class Parser implements AutoCloseable
 		}
 
 		// This is a valid cast - parse the operand
-		NodeIndex operand = parseUnary();
+		NodeIndex operand = parseCastOperand(nextTokenType);
 		int end = arena.getEnd(operand);
 		return arena.allocateNode(NodeType.CAST_EXPRESSION, start, end);
+	}
+
+	/**
+	 * Parses the operand of a cast expression.
+	 * <p>
+	 * Handles the special case where the operand is a single-parameter lambda expression
+	 * ({@code identifier -> body}). Without this handling, the parser would fail on expressions like
+	 * {@code (FunctionalInterface) x -> body} because it would parse {@code x} as the operand and then
+	 * fail when encountering the arrow.
+	 *
+	 * @param nextTokenType the type of the token following the cast's closing parenthesis
+	 * @return the parsed operand node
+	 */
+	private NodeIndex parseCastOperand(TokenType nextTokenType)
+	{
+		// Check for lambda expression: identifier -> body
+		// When a cast is followed by identifier + arrow, the operand is a lambda expression
+		if (nextTokenType == TokenType.IDENTIFIER && lookaheadIsArrow())
+		{
+			int lambdaStart = currentToken().start();
+			consume();
+			expect(TokenType.ARROW);
+			return parseLambdaBody(lambdaStart);
+		}
+		// Regular cast operand: not an identifier, or identifier not followed by arrow
+		// Examples: (String) obj, (int) getValue(), (Type) x + y
+		return parseUnary();
+	}
+
+	/**
+	 * Checks if the token after the current position is an arrow ({@code ->}).
+	 * Used for disambiguating lambda expressions from other expressions.
+	 *
+	 * @return {@code true} if the next token is {@code ->}
+	 */
+	private boolean lookaheadIsArrow()
+	{
+		return position + 1 < tokens.size() && tokens.get(position + 1).type() == TokenType.ARROW;
 	}
 
 	private void parseTypeArguments()
