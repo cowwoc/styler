@@ -1220,6 +1220,28 @@
       "processed_in_retrospective": null,
       "correct_behavior": "Skills should instruct agents to read SESSION_ID from SessionStart system-reminder in conversation context and substitute the UUID value into bash commands, not expect it as a shell environment variable.",
       "prevention_implemented": true
+    },
+    {
+      "id": "M059",
+      "timestamp": "2026-01-13T15:53:15Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Used chore: commit type instead of config: for version bumps",
+      "root_cause": "Used conventional commit chore: type out of habit instead of CAT-specific config: type",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/.claude/cat/references/commit-types.md",
+      "pattern_keywords": [
+        "commit",
+        "chore",
+        "config",
+        "version",
+        "bump"
+      ],
+      "commit": null,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "correct_behavior": "Use config: for version bumps, dependency changes, and tooling. chore: is NOT a valid CAT commit type.",
+      "prevention_implemented": true
     }
   ],
   "mistake_count_since_last": 0
