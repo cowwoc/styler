@@ -1101,6 +1101,30 @@
       "prevention_implemented": true,
       "prevention_verified": false,
       "correct_behavior": "Clean up subagent worktree and branch after merging to task branch, BEFORE presenting approval gate"
+    },
+    {
+      "id": "M054",
+      "timestamp": "2026-01-13T10:30:00Z",
+      "category": "tool_misuse",
+      "description": "Bash script failed with 'read-only variable: status' in zsh",
+      "root_cause": "Used 'status' as variable name in bash script, but zsh reserves it as read-only (contains last command exit code)",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/cat/commands/status.md",
+      "pattern_keywords": [
+        "bash",
+        "zsh",
+        "status",
+        "read-only",
+        "variable"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use alternative variable names like 'st', 'task_status', or 'state' instead of 'status' in bash scripts that may run under zsh"
     }
   ],
   "mistake_count_since_last": 4
