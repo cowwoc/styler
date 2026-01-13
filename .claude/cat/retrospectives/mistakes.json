@@ -1423,6 +1423,47 @@
       "recurrence_count": 0,
       "processed_in_retrospective": null,
       "correct_behavior": "1) Verify script version path matches installed plugin version. 2) Run script --help to check available commands before invoking."
+    },
+    {
+      "id": "M065",
+      "timestamp": "2026-01-13T17:57:50Z",
+      "category": "protocol_violation",
+      "description": "Waited for another sessions task lock to become stale instead of stopping when lock was detected",
+      "root_cause": "Misunderstood stale lock cleanup - it is for crashed sessions, not for waiting out active workers",
+      "five_whys": [
+        {
+          "why": "Why did I interfere with another instance?",
+          "answer": "I cleaned up their lock and acquired my own"
+        },
+        {
+          "why": "Why did I clean up their lock?",
+          "answer": "I waited until it became stale (>5 minutes)"
+        },
+        {
+          "why": "Why did I wait for it to become stale?",
+          "answer": "I thought stale meant abandoned"
+        },
+        {
+          "why": "Why did I think it was abandoned?",
+          "answer": "Misunderstood stale lock purpose - its for crashes, not timeouts"
+        },
+        {
+          "why": "Why proceed at all when lock detected?",
+          "answer": "Should have stopped immediately when another session held lock"
+        }
+      ],
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/commands/execute-task.md",
+      "pattern_keywords": [
+        "task-lock",
+        "concurrent-execution",
+        "stale-lock",
+        "coordination"
+      ],
+      "prevention_implemented": true,
+      "recurrence_count": 0,
+      "processed_in_retrospective": null,
+      "correct_behavior": "When execute-task detects lock held by different session: 1) Report task is locked, 2) Offer to execute a DIFFERENT task, 3) NEVER wait for lock to expire or force cleanup"
     }
   ],
   "mistake_count_since_last": 0
