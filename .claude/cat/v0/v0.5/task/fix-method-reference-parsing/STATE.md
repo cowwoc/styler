@@ -7,20 +7,27 @@ progress: 0%
 ## Dependencies
 None
 
-## Error Pattern
+## Error Pattern (UPDATED 2026-01-14)
 
-**54 occurrences** in Spring Framework 6.2.1
+Investigation confirmed real parsing bugs exist:
 
-Error: `Expected SEMICOLON but found IDENTIFIER`
+**Bug 1: Generic constructor references**
+```java
+Supplier<List<String>> s = ArrayList<String>::new;
+// Error: "Unexpected token in expression: DOUBLE_COLON"
+```
+
+**Bug 2: Method references on parameterized types**
+```java
+Function<List<String>, Integer> f = List<String>::size;
+// Error: "Unexpected token in expression: COMMA"
+```
 
 ## Root Cause
 
-Parser may have issues with method references (`Class::method`) or complex type
-argument contexts. Needs investigation to confirm exact pattern.
-
-Example contexts:
-- `MethodReference.of(Class.class, "method")` patterns
-- Generic type arguments in complex expressions
+Parser does not handle method references (`::`) when the target type has type arguments.
+Works: `String::length`, `String[]::new`
+Fails: `ArrayList<String>::new`, `List<String>::size`
 
 ---
 *Pending task - see PLAN.md*
