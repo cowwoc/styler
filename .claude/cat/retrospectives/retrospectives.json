@@ -76,9 +76,30 @@
       "implementation_note": "Implemented via A007 hooks: block-reflog-destruction.sh, validate-git-filter-branch.sh, block-merge-commits.sh, warn-file-extraction.sh"
     }
   ],
-  "last_retrospective": "2026-01-14T00:00:00-05:00",
-  "mistake_count_since_last": 10,
+  "last_retrospective": "2026-01-14T06:09:37Z",
+  "mistake_count_since_last": 0,
   "retrospectives": [
+    {
+      "id": "R005",
+      "timestamp": "2026-01-14T06:09:37Z",
+      "trigger": "count_threshold",
+      "period_analyzed": "2026-01-14T00:00:00-05:00 to 2026-01-14T06:09:37Z",
+      "mistakes_analyzed": 10,
+      "summary": "10 mistakes analyzed. Dominant category: protocol_violation (8). Key pattern: subagent prompt incompleteness (3 mistakes). A006 still open with 2 related mistakes.",
+      "findings": {
+        "categories": {
+          "protocol_violation": 8,
+          "prompt_engineering": 2
+        },
+        "new_patterns": [
+          "PATTERN-012: Subagent prompt incompleteness"
+        ],
+        "action_items_reviewed": [
+          "A006 - still open, 2 related mistakes"
+        ],
+        "escalations": []
+      }
+    },
     {
       "id": "R004",
       "timestamp": "2026-01-14T00:00:00-05:00",
@@ -734,7 +755,44 @@
         "verdict": "pending"
       },
       "implementation_note": "Already implemented in CAT hooks/validate-commit-type.sh. Will be active after plugin update to v2.0.5+."
+    },
+    {
+      "id": "A013",
+      "priority": "high",
+      "description": "Add mandatory subagent prompt checklist to spawn-subagent skill that cross-references recent learnings (M076-M082) and verifies all prohibition instructions are included",
+      "category": "prompt_engineering",
+      "pattern_id": "PATTERN-012",
+      "status": "open",
+      "created_date": "2026-01-14T06:09:37Z",
+      "completed_date": null,
+      "related_mistakes": [
+        "M077",
+        "M079",
+        "M080"
+      ],
+      "effectiveness_check": {
+        "mistakes_before": 3,
+        "mistakes_after": null,
+        "post_fix_mistakes": [],
+        "verdict": "pending"
+      }
     }
   ],
-  "effectiveness_analysis_query": "jq --arg pattern_id \"PATTERN-XXX\" --arg completed_date \"YYYY-MM-DD\" '[.mistakes[] | select(.pattern_id == $pattern_id and .timestamp > $completed_date)] | length' .claude/retrospectives/mistakes.json"
+  "effectiveness_analysis_query": "jq --arg pattern_id \"PATTERN-XXX\" --arg completed_date \"YYYY-MM-DD\" '[.mistakes[] | select(.pattern_id == $pattern_id and .timestamp > $completed_date)] | length' .claude/retrospectives/mistakes.json",
+  "patterns": [
+    {
+      "pattern_id": "PATTERN-012",
+      "pattern": "subagent_prompt_incompleteness",
+      "occurrences_total": 3,
+      "occurrences_after_fix": 0,
+      "first_seen": "2026-01-14T00:00:00Z",
+      "last_seen": "2026-01-14T06:00:00Z",
+      "last_action_date": null,
+      "status": "new",
+      "effectiveness": "pending",
+      "preventions": [],
+      "related_action_items": [],
+      "note": "Subagent prompts missing critical instructions from skill docs (STATE.md updates, test style prohibitions)"
+    }
+  ]
 }
