@@ -2621,7 +2621,7 @@ public final class Parser implements AutoCloseable
 		if (isAssignmentOperator(currentToken().type()))
 		{
 			consume();
-			NodeIndex right = parseAssignment(); // Right associative
+			NodeIndex right = parseExpression(); // Right associative - must check for lambda
 
 			int start = arena.getStart(left);
 			int end = arena.getEnd(right);
