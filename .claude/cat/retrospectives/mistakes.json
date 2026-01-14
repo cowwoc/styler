@@ -1589,7 +1589,102 @@
         "catches_variations": true
       },
       "correct_behavior": "When retrospective threshold is exceeded, use AskUserQuestion with Run now/Later/Skip options"
+    },
+    {
+      "id": "M072",
+      "timestamp": "2026-01-14T00:10:00Z",
+      "category": "protocol_violation",
+      "description": "Presented approval gate with uncommitted changes; then fixed immediate problem instead of invoking learn-from-mistakes skill",
+      "root_cause": "Workflow lacked enforceable checkpoint to verify commit before approval gate",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/cat/commands/execute-task.md",
+      "pattern_keywords": [
+        "approval_gate",
+        "commit",
+        "uncommitted"
+      ],
+      "prevention_implemented": true,
+      "correct_behavior": "Always verify commits exist before approval gate"
+    },
+    {
+      "id": "M073",
+      "timestamp": "2026-01-14T00:15:00Z",
+      "category": "protocol_violation",
+      "description": "Added comments like // Position 2 = 22 in parser tests showing manual calculation",
+      "root_cause": "No explicit prohibition against calculation comments in tests",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/docs/code-style/testing-claude.md",
+      "pattern_keywords": [
+        "parser",
+        "test",
+        "comment",
+        "position",
+        "calculation"
+      ],
+      "prevention_implemented": true,
+      "correct_behavior": "No comments explaining position calculations - either verify programmatically or trust the test"
+    },
+    {
+      "id": "M074",
+      "timestamp": "2026-01-14T00:00:00Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Investigated in-progress task instead of immediately skipping to next pending task",
+      "root_cause": "Did not treat in-progress status as skip signal - read STATE.md, PLAN.md, checked commits, ran tests",
+      "prevention_type": "documentation",
+      "prevention_path": "/home/node/.config/claude/plugins/cache/claude-code-cat/cat/2.0.5/.claude/cat/skills/execute-task/SKILL.md",
+      "pattern_keywords": [
+        "in-progress",
+        "skip",
+        "locked",
+        "next-task"
+      ],
+      "prevention_implemented": false,
+      "prevention_verified": false,
+      "correct_behavior": "When task status is in-progress or locked, immediately skip to find next pending task without reading details"
+    },
+    {
+      "id": "M075",
+      "timestamp": "2026-01-14T00:05:00Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Did not invoke learn-from-mistakes skill when user said Learn from mistakes - dismissed with I already recorded this",
+      "root_cause": "Treated Learn from mistakes as conceptual instruction rather than skill invocation trigger",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/learn-from-mistakes/SKILL.md",
+      "pattern_keywords": [
+        "learn-from-mistakes",
+        "skill",
+        "invoke",
+        "trigger"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "correct_behavior": "When user says Learn from mistakes, ALWAYS invoke the skill - it is a trigger phrase, not a conceptual instruction"
+    },
+    {
+      "id": "M076",
+      "timestamp": "2026-01-14T00:54:33Z",
+      "category": "protocol_violation",
+      "description": "STATE.md committed separately from implementation instead of in same commit",
+      "root_cause": "execute-task.md workflow committed STATE.md as separate docs commit after merge instead of with implementation",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/commands/execute-task.md",
+      "pattern_keywords": [
+        "STATE.md",
+        "commit",
+        "implementation",
+        "atomic"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Update and commit task STATE.md in the same commit as the implementation code, not as a separate docs commit"
     }
   ],
-  "mistake_count_since_last": 0
+  "mistake_count_since_last": 2
 }
