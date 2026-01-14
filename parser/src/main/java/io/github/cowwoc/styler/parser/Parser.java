@@ -1286,6 +1286,12 @@ public final class Parser implements AutoCloseable
 	{
 		parseComments();
 		int start = currentToken().start();
+		// Parse annotations before the constant identifier
+		while (currentToken().type() == TokenType.AT_SIGN)
+		{
+			parseAnnotation();
+			parseComments();
+		}
 		expect(TokenType.IDENTIFIER);
 		if (match(TokenType.LEFT_PARENTHESIS) && !match(TokenType.RIGHT_PARENTHESIS))
 		{
