@@ -1684,6 +1684,30 @@
         "catches_variations": true
       },
       "correct_behavior": "Update and commit task STATE.md in the same commit as the implementation code, not as a separate docs commit"
+    },
+    {
+      "id": "M077",
+      "timestamp": "2026-01-14T01:15:00Z",
+      "category": "prompt_engineering",
+      "description": "Subagent prompt omitted STATE.md update instructions - M076 specifies STATE.md must be in same commit as implementation",
+      "root_cause": "spawn-subagent skill lacks mandatory section for task STATE.md updates; main agent constructed prompt without including STATE.md",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/spawn-subagent/SKILL.md",
+      "pattern_keywords": [
+        "STATE.md",
+        "subagent",
+        "prompt",
+        "implementation",
+        "atomic"
+      ],
+      "prevention_implemented": false,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Subagent prompts MUST include: Update STATE.md to status: completed in the SAME commit as implementation"
     }
   ],
   "mistake_count_since_last": 2
