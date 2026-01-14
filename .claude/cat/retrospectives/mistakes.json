@@ -1864,8 +1864,8 @@
       "pattern_id": null,
       "description": "Attempted to force-release task lock instead of moving to next available task as required by protocol",
       "root_cause": "Completion bias overrode explicit MANDATORY instruction. Rationalized ignoring protocol by assuming lock was stale without evidence.",
-      "prevention_type": "documentation",
-      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/workflows/execute-task.md",
+      "prevention_type": "code_fix",
+      "prevention_path": "/workspace/cat/scripts/task-lock.sh",
       "pattern_keywords": [
         "lock",
         "protocol",
@@ -1873,12 +1873,14 @@
         "completion_bias",
         "assumption"
       ],
-      "prevention_implemented": false,
+      "prevention_implemented": true,
       "prevention_verified": false,
       "context_related": false,
       "tokens_at_error": 15000,
       "compaction_events": 0,
-      "correct_behavior": "When lock acquisition fails, IMMEDIATELY search for another executable task. Do NOT investigate, question, or attempt to remove the lock. The lock exists therefore it is valid."
+      "correct_behavior": "When lock acquisition fails, IMMEDIATELY search for another executable task. Do NOT investigate, question, or attempt to remove the lock. The lock exists therefore it is valid.",
+      "escalated_from": "documentation",
+      "escalation_reason": "Documentation already existed (execute-task.md says MANDATORY) but was ignored. Escalated to code fix that embeds guidance directly in lock output."
     }
   ],
   "mistake_count_since_last": 4
