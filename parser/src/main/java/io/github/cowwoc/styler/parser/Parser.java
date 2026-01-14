@@ -2947,7 +2947,7 @@ public final class Parser implements AutoCloseable
 		// Explicit type arguments: obj.<String>method()
 		if (match(TokenType.LESS_THAN))
 			parseTypeArguments();
-		if (currentToken().type() == TokenType.IDENTIFIER)
+		if (isIdentifierOrContextualKeyword())
 		{
 			// Field access: obj.field
 			int end = currentToken().end();

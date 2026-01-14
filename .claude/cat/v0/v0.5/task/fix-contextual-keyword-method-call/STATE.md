@@ -1,25 +1,22 @@
 # State
 
-- **Status:** pending
-- **Progress:** 0%
+- **Status:** completed
+- **Progress:** 100%
 - **Dependencies:** [fix-contextual-keywords-as-identifiers]
+- **Resolution:** implemented
+- **Completed:** 2026-01-14
 - **Last Updated:** 2026-01-14
 
-## Error Pattern
+## Solution
 
-**19 occurrences** in Spring Framework 6.2.1
+Changed `parseDotExpression()` to use `isIdentifierOrContextualKeyword()` instead of direct
+`TokenType.IDENTIFIER` check. This allows contextual keywords like `with`, `to`, `requires` to be
+used as method names after the dot operator.
 
-Error: `Expected identifier, 'class', 'this', 'super', or 'new' after '.' but found WITH`
+## Tests Added
 
-## Root Cause
-
-Parser fails when contextual keywords (with, to, requires, etc.) are used as
-method names in method invocations:
-
-```java
-TestCompiler.forSystem().with(CompilerFiles.from(generatedFiles))
-//                       ^^^^ 'with' is a contextual keyword
-```
-
-The fix-contextual-keywords-as-identifiers task addressed variable/field names
-but did not extend to method call contexts after `.` operator.
+`ContextualKeywordMethodCallTest` with 4 test cases:
+- `testWithMethodCall` - `.with()` method call
+- `testToMethodCall` - `.to()` method call
+- `testRequiresMethodCall` - `.requires()` method call
+- `testChainedContextualKeywordMethods` - chained contextual keyword methods
