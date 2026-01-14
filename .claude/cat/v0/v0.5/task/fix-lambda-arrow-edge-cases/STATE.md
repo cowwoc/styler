@@ -1,9 +1,10 @@
 # State
 
-- **Status:** pending
-- **Progress:** 0%
+- **Status:** completed
+- **Progress:** 100%
 - **Dependencies:** [fix-lambda-parameter-parsing, fix-cast-lambda-expression]
 - **Last Updated:** 2026-01-14
+- **Completed:** 2026-01-14
 
 ## Error Pattern
 
@@ -13,13 +14,18 @@ Error: `Expected SEMICOLON but found ARROW`
 
 ## Root Cause
 
-Parser fails on certain lambda expression patterns where the arrow (`->`) appears
-in an unexpected context. This may relate to:
-- Lambda expressions in complex initializers
-- Nested lambdas
-- Lambdas in method chains
+When `parseAssignment()` is called recursively for the right-hand side of an assignment,
+it calls `parseTernary()` directly, skipping the lambda expression check that exists in
+`parseExpression()`. This causes the parser to fail when a lambda appears as the RHS of
+an assignment like `this.sessionManager = exchange -> Mono.just(session)`.
 
-Example files:
-- MockServerWebExchange.java
-- MockClientHttpRequest.java
-- MockServerHttpResponse.java
+## Solution
+
+Changed line 2624 in Parser.java from `parseAssignment()` to `parseExpression()` so the
+RHS of assignments goes through the lambda lookahead check.
+
+## Tests Added
+
+- `shouldParseLambdaAsAssignmentRhs` - single-param lambda as field assignment RHS
+- `shouldParseNoParamLambdaAsAssignmentRhs` - no-param lambda as field assignment RHS
+- `shouldParseLambdaInNestedAssignment` - lambda in nested assignment (a = b = x -> expr)

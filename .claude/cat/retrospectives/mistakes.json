@@ -1756,7 +1756,8 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "Subagent prompts for parser tests must include: STYLE: Do NOT add comments that describe expected node positions. Text blocks are self-documenting."
+      "correct_behavior": "Subagent prompts for parser tests must include: STYLE: Do NOT add comments that describe expected node positions. Text blocks are self-documenting.",
+      "processed_in_retrospective": null
     }
   ],
   "mistake_count_since_last": 3
