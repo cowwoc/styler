@@ -163,6 +163,10 @@ public final class Lexer
 		if (Character.isDigit(ch))
 			return scanNumber(start);
 
+		// Floating-point literals starting with decimal point (e.g., .5, .0025)
+		if (ch == '.' && Character.isDigit(peek()))
+			return scanFloatingPointStartingWithDot(start);
+
 		// String literals
 		if (ch == '"')
 			return scanStringLiteral(start);
@@ -384,6 +388,64 @@ public final class Lexer
 			type = TokenType.INTEGER_LITERAL;
 
 		return new Token(type, start, position, text);
+	}
+
+	/**
+	 * Scans a floating-point literal that starts with a decimal point (e.g., {@code .5}, {@code .0025}).
+	 * Per JLS §3.10.2, floating-point literals may omit the integer part when starting with a decimal point.
+	 *
+	 * @param start the starting position of the literal (at the decimal point)
+	 * @return the token for the scanned floating-point literal
+	 */
+	private Token scanFloatingPointStartingWithDot(int start)
+	{
+		// Skip the decimal point
+		++position;
+
+		// Consume digits and underscores after decimal point
+		consumeDigitsAndUnderscores();
+
+		// Check for exponent (e/E)
+		if (position < source.length() && (source.charAt(position) == 'e' || source.charAt(position) == 'E'))
+		{
+			++position;
+			consumeOptionalExponentSign();
+			consumeDigitsAndUnderscores();
+		}
+
+		// Check for type suffix (f/F/d/D)
+		TokenType type = TokenType.DOUBLE_LITERAL;
+		if (position < source.length())
+		{
+			char ch = source.charAt(position);
+			if (ch == 'f' || ch == 'F')
+			{
+				type = TokenType.FLOAT_LITERAL;
+				++position;
+			}
+			else if (ch == 'd' || ch == 'D')
+			{
+				++position;
+			}
+		}
+
+		String text = source.substring(start, position);
+		return new Token(type, start, position, text);
+	}
+
+	/**
+	 * Consumes consecutive digits and underscores starting at the current position.
+	 */
+	private void consumeDigitsAndUnderscores()
+	{
+		while (position < source.length())
+		{
+			char ch = source.charAt(position);
+			if (Character.isDigit(ch) || ch == '_')
+				++position;
+			else
+				break;
+		}
 	}
 
 	/**
