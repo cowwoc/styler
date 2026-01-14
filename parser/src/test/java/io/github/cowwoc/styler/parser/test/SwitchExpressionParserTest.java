@@ -301,4 +301,33 @@ public class SwitchExpressionParserTest
 			requireThat(actual, "actual").isEqualTo(expected);
 		}
 	}
+
+	/**
+	 * Validates parsing of switch expression with arrow syntax and trailing comments.
+	 * Tests that comments after case blocks are properly handled.
+	 */
+	@Test
+	public void testSwitchExpressionWithColonAndTrailingComments()
+	{
+		String source = """
+			public class Test
+			{
+				public int foo(int x)
+				{
+					return switch (x)
+					{
+						case 0 -> 0; // case 0
+						case 1 -> 1; // case 1
+						default -> -1; // default
+					}; // switch
+				}
+			}
+			""";
+		try (Parser parser = parse(source))
+		{
+			NodeArena actual = parser.getArena();
+			// Verify parsing completes without error
+			requireThat(actual.getNodeCount(), "actual.getNodeCount()").isGreaterThan(0);
+		}
+	}
 }

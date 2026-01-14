@@ -2039,6 +2039,8 @@ public final class Parser implements AutoCloseable
 		parseExpression();
 		expect(TokenType.RIGHT_PARENTHESIS);
 		expect(TokenType.LEFT_BRACE);
+		// Handle comments after opening brace
+		parseComments();
 
 		while (currentToken().type() == TokenType.CASE || currentToken().type() == TokenType.DEFAULT)
 		{
@@ -2077,17 +2079,21 @@ public final class Parser implements AutoCloseable
 			{
 				// Colon case (traditional): case 1:
 				expect(TokenType.COLON);
+				// Handle comments after colon
+				parseComments();
 				while (currentToken().type() != TokenType.CASE &&
 					currentToken().type() != TokenType.DEFAULT &&
 					currentToken().type() != TokenType.RIGHT_BRACE)
 					parseStatement();
 			}
-		}
-
-		expect(TokenType.RIGHT_BRACE);
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.SWITCH_EXPRESSION, start, end);
+		// Handle comments between case/default labels
+		parseComments();
 	}
+
+	expect(TokenType.RIGHT_BRACE);
+	int end = previousToken().end();
+	return arena.allocateNode(NodeType.SWITCH_EXPRESSION, start, end);
+}
 
 	/**
 	 * Parses a single case label element in a switch statement or expression.
