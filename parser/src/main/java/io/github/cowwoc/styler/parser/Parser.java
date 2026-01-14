@@ -624,6 +624,11 @@ public final class Parser implements AutoCloseable
 		if (match(TokenType.EXTENDS))
 			parseType();
 
+		// Skip comments between extends and implements
+		while (currentToken().type() == TokenType.LINE_COMMENT ||
+			currentToken().type() == TokenType.BLOCK_COMMENT)
+			consume();
+
 		// Implements clause
 		if (match(TokenType.IMPLEMENTS))
 		{
