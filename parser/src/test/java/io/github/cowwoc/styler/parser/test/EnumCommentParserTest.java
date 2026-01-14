@@ -450,4 +450,43 @@ public class EnumCommentParserTest
 			requireThat(actual, "actual").isEqualTo(expected);
 		}
 	}
+
+	/**
+	 * Verifies that annotations on enum constants are correctly parsed.
+	 */
+	@Test
+	public void shouldParseEnumWithAnnotationOnConstant()
+	{
+		String source = """
+			public enum Status
+			{
+				@Deprecated
+				OLD_VALUE,
+				@SuppressWarnings("test")
+				NEW_VALUE
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// @Deprecated annotation - qualified name "Deprecated"
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 23, 33);
+			// @Deprecated annotation
+			expected.allocateNode(NodeType.ANNOTATION, 22, 33);
+			// OLD_VALUE constant (includes annotation span from position 22)
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 22, 44);
+			// @SuppressWarnings annotation - qualified name "SuppressWarnings"
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 48, 64);
+			// String literal "test" inside @SuppressWarnings("test")
+			expected.allocateNode(NodeType.STRING_LITERAL, 65, 71);
+			// @SuppressWarnings("test") annotation
+			expected.allocateNode(NodeType.ANNOTATION, 47, 72);
+			// NEW_VALUE constant (includes annotation span from position 47)
+			expected.allocateNode(NodeType.ENUM_CONSTANT, 47, 83);
+			expected.allocateEnumDeclaration(7, 85, new TypeDeclarationAttribute("Status"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 86);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
 }
