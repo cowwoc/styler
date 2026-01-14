@@ -1,32 +1,33 @@
 # Task State: fix-switch-default-case-parsing
 
 ## Status
-status: pending
-progress: 0%
+status: completed
+progress: 100%
+started: 2026-01-14
+completed: 2026-01-14
 
 ## Dependencies
 - fix-switch-expression-case-parsing (related - may share code)
 
-## Error Pattern
+## Error Pattern (VALIDATED)
 
-**40 occurrences** in Spring Framework 6.2.1
+**90 occurrences** in Spring Framework 6.2.1 - now parsing correctly.
 
 Error: `Expected COLON but found SEMICOLON`
 
-## Root Cause
+## Root Cause (CORRECTED)
 
-Parser fails on switch expression default case with arrow and semicolon:
+Lambda expression lookahead in `parseExpression()` incorrectly matches `IDENTIFIER ARROW`
+in switch case labels. When parsing `case STATE_COMMITTED ->`, the lambda lookahead consumes
+the arrow, breaking switch parsing.
 
-```java
-return switch (database) {
-    case DB2 -> DB2Dialect.class;
-    case DERBY -> DerbyDialect.class;
-    default -> null;  // <-- Parser expects : but finds ;
-};
-```
+**Location:** Parser.java lines 2494-2508
 
-The arrow-style switch expressions are handled, but termination with null or
-simple expressions followed by semicolon is not.
+## Fix Applied
+
+Added `parseCaseLabelExpression()` method that skips lambda lookahead - goes directly to
+`parseAssignment()`. Modified `parseCaseLabelElement()` to call this method instead of
+`parseExpression()`.
 
 ---
-*Pending task - see PLAN.md*
+*Completed task*

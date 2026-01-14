@@ -2107,8 +2107,21 @@ public final class Parser implements AutoCloseable
 		if (currentToken().type() == TokenType.IDENTIFIER && tryParseTypePattern())
 			return;
 
-		// Parse as regular expression
-		parseExpression();
+		// Parse as case label expression (no lambda lookahead)
+		parseCaseLabelExpression();
+	}
+
+	/**
+	 * Parses an expression in the context of a case label.
+	 * <p>
+	 * This method is similar to {@link #parseExpression()} but does NOT apply lambda lookahead.
+	 * In case labels, the pattern {@code identifier ->} always represents a constant reference
+	 * followed by the case arrow, never a lambda expression.
+	 */
+	private void parseCaseLabelExpression()
+	{
+		// Skip lambda lookahead - go directly to assignment parsing
+		parseAssignment();
 	}
 
 	/**
