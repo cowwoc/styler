@@ -1152,6 +1152,52 @@ public final class Parser implements AutoCloseable
 		return position + 1 < tokens.size() && tokens.get(position + 1).type() == TokenType.ARROW;
 	}
 
+	/**
+	 * Checks if the current position starts a multi-parameter lambda expression.
+	 * <p>
+	 * Looks for the pattern: {@code IDENTIFIER COMMA ... ) ARROW}
+	 * <p>
+	 * Called after the opening {@code (} has been consumed.
+	 *
+	 * @return {@code true} if this is a multi-parameter lambda
+	 */
+	private boolean isMultiParamLambda()
+	{
+		if (!isIdentifierOrContextualKeyword())
+			return false;
+
+		int savedPosition = position;
+		try
+		{
+			// Skip first identifier
+			consume();
+
+			// Must see comma after first identifier to be multi-param
+			if (currentToken().type() != TokenType.COMMA)
+				return false;
+
+			// Scan forward to find ) ARROW pattern
+			while (position < tokens.size())
+			{
+				if (currentToken().type() == TokenType.RIGHT_PARENTHESIS)
+				{
+					// Check if next token is ARROW
+					return position + 1 < tokens.size() &&
+						tokens.get(position + 1).type() == TokenType.ARROW;
+				}
+				// Skip IDENTIFIER, COMMA, and contextual keywords as identifiers
+				if (!isIdentifierOrContextualKeyword() && currentToken().type() != TokenType.COMMA)
+					return false;
+				consume();
+			}
+			return false;
+		}
+		finally
+		{
+			position = savedPosition;
+		}
+	}
+
 	private void parseTypeArguments()
 	{
 		// Handle diamond operator: <> with no type arguments
@@ -2486,12 +2532,37 @@ public final class Parser implements AutoCloseable
 	}
 
 	/**
+	 * Parses a multi-parameter lambda expression.
+	 * <p>
+	 * Called after opening {@code (} is consumed and lookahead confirms multi-param lambda pattern.
+	 * Parses the parameter list (identifiers separated by commas), expects {@code )} and {@code ->},
+	 * then delegates to {@link #parseLambdaBody(int)}.
+	 *
+	 * @param start the start position (opening parenthesis position)
+	 * @return the lambda expression node
+	 */
+	private NodeIndex parseMultiParamLambda(int start)
+	{
+		// Parse first parameter
+		expectIdentifierOrContextualKeyword();
+
+		// Parse remaining parameters
+		while (match(TokenType.COMMA))
+			expectIdentifierOrContextualKeyword();
+
+		expect(TokenType.RIGHT_PARENTHESIS);
+		expect(TokenType.ARROW);
+		return parseLambdaBody(start);
+	}
+
+	/**
 	 * Parses parenthesized expression, cast expression, or lambda expression.
 	 * <p>
 	 * Handles:
 	 * <ul>
 	 *   <li>Empty parens lambda: {@code () -> expr}</li>
 	 *   <li>Cast expression: {@code (Type) operand}</li>
+	 *   <li>Multi-parameter lambda: {@code (a, b) -> expr}</li>
 	 *   <li>Parenthesized lambda: {@code (params) -> expr}</li>
 	 *   <li>Parenthesized expression: {@code (expr)}</li>
 	 * </ul>
@@ -2512,6 +2583,10 @@ public final class Parser implements AutoCloseable
 		NodeIndex castExpr = tryCastExpression(start);
 		if (castExpr != null)
 			return castExpr;
+
+		// Check for multi-parameter lambda: (a, b) -> expr
+		if (isMultiParamLambda())
+			return parseMultiParamLambda(start);
 
 		// Parse the content inside parens
 		NodeIndex expr = parseExpression();
