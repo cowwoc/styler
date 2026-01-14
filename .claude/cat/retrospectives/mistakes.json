@@ -1829,6 +1829,33 @@
       },
       "correct_behavior": "After lock acquire, verify by reading actual file at .claude/cat/locks/{task-id}.lock. Check session_id matches current session.",
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M083",
+      "timestamp": "2026-01-14T06:20:00Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Claimed lock file did not exist based on stale ls output from before session restart",
+      "root_cause": "Failed to re-verify environment state after session restart. Relied on cached observation instead of fresh check.",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/skills/spawn-subagent/SKILL.md",
+      "pattern_keywords": [
+        "lock",
+        "verification",
+        "session",
+        "restart",
+        "stale",
+        "environment"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "After session restart, re-run all environment verification commands (ls, cat, git status) before making claims about filesystem state.",
+      "processed_in_retrospective": null
     }
   ],
   "mistake_count_since_last": 4
