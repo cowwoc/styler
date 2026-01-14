@@ -54,6 +54,19 @@ Project roadmap with version summaries. Minor versions group related tasks (2-8 
   - add-nested-annotation-type-support
   - fix-contextual-keywords-as-identifiers
   - fix-cast-lambda-expression
+  - fix-floating-point-literal-without-zero
+  - fix-contextual-keywords-in-expressions
+  - fix-comments-in-switch-arms
+  - fix-old-style-switch-case-label
+  - fix-lambda-typed-parameters-in-args
+  - fix-wildcard-array-method-reference
+  - fix-final-in-pattern-matching
+  - fix-comments-before-implements
+  - fix-octal-escape-in-char-literal
+  - fix-annotation-on-enum-constant
+  - fix-break-throw-in-switch-statement
+  - fix-misc-parsing-edge-cases
+  - validate-spring-framework-parsing
 
 - **0.6:** CLI enhancements and AI integration improvements (PARTIAL)
   - add-cli-parallel-processing
