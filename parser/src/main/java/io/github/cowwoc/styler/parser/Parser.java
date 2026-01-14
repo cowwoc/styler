@@ -2862,6 +2862,62 @@ public final class Parser implements AutoCloseable
 				}
 				left = arena.allocateNode(NodeType.METHOD_REFERENCE, start, end);
 			}
+			else if (currentToken().type() == TokenType.LESS_THAN)
+			{
+				// Attempt to parse type arguments followed by method reference
+				// Pattern: Type<Args>::method or Type<Args>::new
+				int checkpoint = position;
+				try
+				{
+					consume();
+					parseTypeArguments();
+
+					// Check if followed by ::
+					if (currentToken().type() == TokenType.DOUBLE_COLON)
+					{
+						// This is a parameterized type method reference
+						consume();
+						parseComments();
+
+						// Explicit type arguments after :: : Type<A>::<B>method
+						if (match(TokenType.LESS_THAN))
+							parseTypeArguments();
+
+						// Method reference: Type<Args>::method or Type<Args>::new
+						int end;
+						if (match(TokenType.NEW))
+						{
+							// Constructor reference
+							end = previousToken().end();
+						}
+						else if (isIdentifierOrContextualKeyword())
+						{
+							// Method reference
+							end = currentToken().end();
+							consume();
+						}
+						else
+						{
+							throw new ParserException(
+								"Expected method name or 'new' after '::' but found " + currentToken().type(),
+								currentToken().start());
+						}
+						left = arena.allocateNode(NodeType.METHOD_REFERENCE, start, end);
+					}
+					else
+					{
+						// Not a method reference, backtrack
+						position = checkpoint;
+						break;
+					}
+				}
+				catch (ParserException e)
+				{
+					// Type argument parsing failed, backtrack and exit loop
+					position = checkpoint;
+					break;
+				}
+			}
 			else if (currentToken().type() == TokenType.INCREMENT || currentToken().type() == TokenType.DECREMENT)
 			{
 				// Postfix increment/decrement
