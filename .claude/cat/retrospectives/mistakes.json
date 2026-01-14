@@ -1881,6 +1881,28 @@
       "correct_behavior": "When lock acquisition fails, IMMEDIATELY search for another executable task. Do NOT investigate, question, or attempt to remove the lock. The lock exists therefore it is valid.",
       "escalated_from": "documentation",
       "escalation_reason": "Documentation already existed (execute-task.md says MANDATORY) but was ignored. Escalated to code fix that embeds guidance directly in lock output."
+    },
+    {
+      "id": "M085",
+      "timestamp": "2026-01-14T16:55:48Z",
+      "category": "prompt_engineering",
+      "pattern_id": null,
+      "description": "Implementation commit did not include STATE.md update (M076 violation)",
+      "root_cause": "Subagent prompt lacked STATE.md instruction. Main agent did not verify STATE.md in commit before approval gate.",
+      "prevention_type": "validation",
+      "prevention_path": "/workspace/cat/commands/execute-task.md",
+      "pattern_keywords": [
+        "STATE.md",
+        "commit",
+        "M076",
+        "approval_gate"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "context_related": false,
+      "escalated_from": "documentation",
+      "escalation_reason": "spawn-subagent skill already had checklist item but was ignored. Added verification step.",
+      "correct_behavior": "Include STATE.md update in subagent prompt AND verify in commit before approval gate."
     }
   ],
   "mistake_count_since_last": 4
