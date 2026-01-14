@@ -1,12 +1,6 @@
-# Task State: migrate-parser-tests-to-nodearena
+# State
 
-## Status
-status: completed
-progress: 100%
-completed: 2026-01-03
-
-## Key Files
-modified:
-- `parser/src/test/java/.../parser/test/ParserTestUtils.java`
-- 38 test files migrated to NodeArena pattern
-
+- **Status:** completed
+- **Progress:** 100%
+- **Resolution:** implemented
+- **Completed:** 2026-01-03

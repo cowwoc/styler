@@ -1,14 +1,6 @@
-# Task State: add-qualified-this-super
+# State
 
-## Status
-status: completed
-progress: 100%
-completed: 2025-12-30
-
-## Key Files
-modified:
-- `parser/src/main/java/.../parser/Parser.java`
-
-created:
-- `parser/src/test/java/.../parser/test/QualifiedThisSuperParserTest.java`
-
+- **Status:** completed
+- **Progress:** 100%
+- **Resolution:** implemented
+- **Completed:** 2025-12-30

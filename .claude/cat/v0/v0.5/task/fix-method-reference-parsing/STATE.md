@@ -1,11 +1,9 @@
-# Task State: fix-method-reference-parsing
+# State
 
-## Status
-status: pending
-progress: 0%
-
-## Dependencies
-None
+- **Status:** pending
+- **Progress:** 0%
+- **Dependencies:** []
+- **Last Updated:** 2026-01-14
 
 ## Error Pattern (UPDATED 2026-01-14)
 
@@ -28,6 +26,3 @@ Function<List<String>, Integer> f = List<String>::size;
 Parser does not handle method references (`::`) when the target type has type arguments.
 Works: `String::length`, `String[]::new`
 Fails: `ArrayList<String>::new`, `List<String>::size`
-
----
-*Pending task - see PLAN.md*

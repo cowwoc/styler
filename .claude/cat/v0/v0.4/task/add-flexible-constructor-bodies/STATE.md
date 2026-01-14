@@ -1,11 +1,6 @@
-# Task State: add-flexible-constructor-bodies
+# State
 
-## Status
-status: completed
-progress: 100%
-completed: 2026-01-01
-
-## Key Files
-created:
-- `parser/src/test/java/.../parser/test/FlexibleConstructorBodyParserTest.java`
-
+- **Status:** completed
+- **Progress:** 100%
+- **Resolution:** implemented
+- **Completed:** 2026-01-01

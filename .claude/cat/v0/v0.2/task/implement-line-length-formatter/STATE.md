@@ -1,12 +1,6 @@
-# Task State: implement-line-length-formatter
+# State
 
-## Status
-status: completed
-progress: 100%
-completed: 2025-12-28
-
-## Key Files
-modified:
-- `formatter/src/main/java/.../formatter/linelength/LineLengthFormattingRule.java`
-- `formatter/src/main/java/.../formatter/linelength/internal/ContextDetector.java`
-
+- **Status:** completed
+- **Progress:** 100%
+- **Resolution:** implemented
+- **Completed:** 2025-12-28

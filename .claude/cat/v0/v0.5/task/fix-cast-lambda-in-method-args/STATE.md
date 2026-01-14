@@ -1,15 +1,11 @@
-# Task State: fix-cast-lambda-in-method-args
+# State
 
-## Status
 - **Status:** completed
 - **Progress:** 100%
 - **Resolution:** duplicate
 - **Duplicate Of:** v0.5-fix-multi-param-lambda
-- **Started:** 2026-01-14
+- **Dependencies:** [fix-cast-lambda-expression]
 - **Completed:** 2026-01-14
-
-## Dependencies
-- fix-cast-lambda-expression (must complete first - addresses simpler case)
 
 ## Resolution Details
 
@@ -26,6 +22,3 @@ All scenarios from PLAN.md pass:
 - `Arguments.of((Runnable) () -> { block }, secondArg)` ✓
 - Cast of single-param lambda in multi-arg call ✓
 - Nested method calls with cast lambdas ✓
-
----
-*To find resolving commit: `git log --grep="Task ID: v0.5-fix-multi-param-lambda"`*
