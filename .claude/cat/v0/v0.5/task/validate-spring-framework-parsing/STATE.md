@@ -8,11 +8,11 @@ progress: 0%
 
 All of the following tasks must complete before this validation can pass:
 
-- fix-cast-lambda-in-method-args (344 errors)
-- fix-method-reference-parsing (54 errors)
+- ~~fix-cast-lambda-in-method-args~~ (duplicate - fixed by fix-multi-param-lambda)
+- fix-method-reference-parsing (54 errors) - parameterized type method references
 - fix-switch-default-case-parsing (40 errors)
 - fix-contextual-keyword-method-call (19 errors)
-- fix-else-if-chain-parsing (18 errors)
+- ~~fix-else-if-chain-parsing~~ (completed - commit df3b3d0)
 - fix-lambda-arrow-edge-cases (16 errors)
 - fix-comment-identifier-context (13 errors)
 
