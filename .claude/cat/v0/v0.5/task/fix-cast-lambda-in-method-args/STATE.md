@@ -1,29 +1,31 @@
 # Task State: fix-cast-lambda-in-method-args
 
 ## Status
-status: completed
-progress: 100%
-started: 2026-01-14
-completed: 2026-01-14
+- **Status:** completed
+- **Progress:** 100%
+- **Resolution:** duplicate
+- **Duplicate Of:** v0.5-fix-multi-param-lambda
+- **Started:** 2026-01-14
+- **Completed:** 2026-01-14
 
-## Resolution
+## Dependencies
+- fix-cast-lambda-expression (must complete first - addresses simpler case)
 
-**DUPLICATE TASK** - This functionality was already fixed by `fix-multi-param-lambda` (commit 8567e4c).
+## Resolution Details
 
-The 344 "Expected RIGHT_PARENTHESIS but found COMMA" errors were caused by multi-parameter lambdas
-`(a, b) -> expr`, not by cast lambdas in method arguments as originally thought.
+The 344 "Expected RIGHT_PARENTHESIS but found COMMA" errors were caused by multi-parameter
+lambdas `(a, b) -> expr`, not by cast lambdas in method arguments as originally thought.
 
-Both task descriptions claimed the same 344 errors, but `fix-multi-param-lambda` correctly identified
-the root cause and implemented the fix. Verification confirms all scenarios from this task's PLAN.md
-now parse correctly.
+Both task descriptions claimed the same 344 errors, but `fix-multi-param-lambda` correctly
+identified the root cause and implemented the fix (commit 34ba56e).
 
 ## Verification
 
-All scenarios pass:
+All scenarios from PLAN.md pass:
 - `Arguments.of((Runnable) () -> doSomething(), secondArg)` ✓
 - `Arguments.of((Runnable) () -> { block }, secondArg)` ✓
 - Cast of single-param lambda in multi-arg call ✓
 - Nested method calls with cast lambdas ✓
 
 ---
-*Task closed as duplicate of fix-multi-param-lambda*
+*To find resolving commit: `git log --grep="Task ID: v0.5-fix-multi-param-lambda"`*
