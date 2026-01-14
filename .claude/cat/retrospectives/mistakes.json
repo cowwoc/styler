@@ -1856,6 +1856,29 @@
       },
       "correct_behavior": "After session restart, re-run all environment verification commands (ls, cat, git status) before making claims about filesystem state.",
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M084",
+      "timestamp": "2026-01-14T16:24:42Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Attempted to force-release task lock instead of moving to next available task as required by protocol",
+      "root_cause": "Completion bias overrode explicit MANDATORY instruction. Rationalized ignoring protocol by assuming lock was stale without evidence.",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/workflows/execute-task.md",
+      "pattern_keywords": [
+        "lock",
+        "protocol",
+        "mandatory",
+        "completion_bias",
+        "assumption"
+      ],
+      "prevention_implemented": false,
+      "prevention_verified": false,
+      "context_related": false,
+      "tokens_at_error": 15000,
+      "compaction_events": 0,
+      "correct_behavior": "When lock acquisition fails, IMMEDIATELY search for another executable task. Do NOT investigate, question, or attempt to remove the lock. The lock exists therefore it is valid."
     }
   ],
   "mistake_count_since_last": 4
