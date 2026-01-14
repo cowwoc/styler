@@ -1734,7 +1734,30 @@
       },
       "correct_behavior": "Use alternative variable names like st, task_status, or result instead of status in shell commands",
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M079",
+      "timestamp": "2026-01-14T22:55:00Z",
+      "category": "prompt_engineering",
+      "description": "Subagent prompt did not prohibit expected value derivation comments in parser tests",
+      "root_cause": "spawn-subagent skill lacked explicit prohibition of test derivation comments",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/spawn-subagent/SKILL.md",
+      "pattern_keywords": [
+        "subagent",
+        "parser-test",
+        "comments",
+        "derivation"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Subagent prompts for parser tests must include: STYLE: Do NOT add comments that describe expected node positions. Text blocks are self-documenting."
     }
   ],
-  "mistake_count_since_last": 2
+  "mistake_count_since_last": 3
 }
