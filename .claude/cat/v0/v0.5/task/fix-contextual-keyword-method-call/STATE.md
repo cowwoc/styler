@@ -1,11 +1,9 @@
-# Task State: fix-contextual-keyword-method-call
+# State
 
-## Status
-status: pending
-progress: 0%
-
-## Dependencies
-- fix-contextual-keywords-as-identifiers (related - extends that fix)
+- **Status:** pending
+- **Progress:** 0%
+- **Dependencies:** [fix-contextual-keywords-as-identifiers]
+- **Last Updated:** 2026-01-14
 
 ## Error Pattern
 
@@ -25,6 +23,3 @@ TestCompiler.forSystem().with(CompilerFiles.from(generatedFiles))
 
 The fix-contextual-keywords-as-identifiers task addressed variable/field names
 but did not extend to method call contexts after `.` operator.
-
----
-*Pending task - see PLAN.md*

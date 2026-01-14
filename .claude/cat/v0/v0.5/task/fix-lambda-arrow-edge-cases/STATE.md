@@ -1,12 +1,9 @@
-# Task State: fix-lambda-arrow-edge-cases
+# State
 
-## Status
-status: pending
-progress: 0%
-
-## Dependencies
-- fix-lambda-parameter-parsing (related - may share code)
-- fix-cast-lambda-expression (related - may share code)
+- **Status:** pending
+- **Progress:** 0%
+- **Dependencies:** [fix-lambda-parameter-parsing, fix-cast-lambda-expression]
+- **Last Updated:** 2026-01-14
 
 ## Error Pattern
 
@@ -26,6 +23,3 @@ Example files:
 - MockServerWebExchange.java
 - MockClientHttpRequest.java
 - MockServerHttpResponse.java
-
----
-*Pending task - see PLAN.md*

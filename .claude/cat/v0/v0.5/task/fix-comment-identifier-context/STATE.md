@@ -1,11 +1,9 @@
-# Task State: fix-comment-identifier-context
+# State
 
-## Status
-status: pending
-progress: 0%
-
-## Dependencies
-- fix-comment-in-member-declaration (related - may share code)
+- **Status:** pending
+- **Progress:** 0%
+- **Dependencies:** [fix-comment-in-member-declaration]
+- **Last Updated:** 2026-01-14
 
 ## Error Pattern
 
@@ -27,6 +25,3 @@ May relate to:
 - Comments in type parameter lists
 - Comments in extends/implements clauses
 - Comments in method signatures
-
----
-*Pending task - see PLAN.md*

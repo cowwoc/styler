@@ -1,8 +1,6 @@
-# Task State: implement-rules-summary-export
+# State
 
-## Status
-status: pending
-progress: 0%
-
----
-*Pending task - see PLAN.md*
+- **Status:** pending
+- **Progress:** 0%
+- **Dependencies:** []
+- **Last Updated:** 2026-01-14
