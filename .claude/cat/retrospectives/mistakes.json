@@ -1779,7 +1779,26 @@
       "prevention_verified": false,
       "correct_behavior": "When spawning subagent for parser tests, include: STYLE: Do NOT add comments that describe expected node positions. Text blocks are self-documenting.",
       "recurrence_of": "M079"
+    },
+    {
+      "id": "M081",
+      "timestamp": "2026-01-14T05:45:00Z",
+      "category": "protocol_violation",
+      "description": "Used merge commit instead of linear rebase when main had diverged from task branch",
+      "root_cause": "When --ff-only failed due to diverged branches, merged main INTO task branch creating non-linear history instead of using git-rebase skill",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/workflows/execute-task.md",
+      "pattern_keywords": [
+        "merge",
+        "rebase",
+        "linear-history",
+        "ff-only",
+        "diverged"
+      ],
+      "prevention_implemented": false,
+      "prevention_verified": false,
+      "correct_behavior": "When --ff-only fails because main has diverged: (1) Use /cat:git-rebase to rebase task branch onto main, (2) Then merge with --ff-only to maintain linear history"
     }
   ],
-  "mistake_count_since_last": 3
+  "mistake_count_since_last": 4
 }
