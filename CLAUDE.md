@@ -78,6 +78,9 @@ jq '.state = "X"' f.json > f.json.tmp && mv f.json.tmp f.json
 **Bash Multi-Line**: Avoid `$(...)` in multi-line commands (parse errors). Use separate calls, temp
 files, or `&&` chains.
 
+**Zsh Reserved Variables**: Never use `status` as variable name (read-only in zsh). Use `st`, `result`,
+or `task_status` instead.
+
 ### Line Wrapping
 110 chars max.
 

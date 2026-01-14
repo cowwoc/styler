@@ -1708,6 +1708,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Subagent prompts MUST include: Update STATE.md to status: completed in the SAME commit as implementation. Hook enforces this at commit time."
+    },
+    {
+      "id": "M078",
+      "timestamp": "2026-01-13T22:18:56-05:00",
+      "category": "bash_error",
+      "pattern_id": null,
+      "description": "Used read-only variable name status in zsh shell command",
+      "root_cause": "In zsh, status is a read-only special variable containing exit status array. Using status=$(cmd) fails.",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "pattern_keywords": [
+        "zsh",
+        "read-only",
+        "status",
+        "variable",
+        "bash"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use alternative variable names like st, task_status, or result instead of status in shell commands",
+      "processed_in_retrospective": null
     }
   ],
   "mistake_count_since_last": 2
