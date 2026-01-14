@@ -1786,8 +1786,8 @@
       "category": "protocol_violation",
       "description": "Used merge commit instead of linear rebase when main had diverged from task branch",
       "root_cause": "When --ff-only failed due to diverged branches, merged main INTO task branch creating non-linear history instead of using git-rebase skill",
-      "prevention_type": "documentation",
-      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/workflows/execute-task.md",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/.claude/cat/workflows/execute-task.md",
       "pattern_keywords": [
         "merge",
         "rebase",
@@ -1795,9 +1795,40 @@
         "ff-only",
         "diverged"
       ],
-      "prevention_implemented": false,
+      "prevention_implemented": true,
       "prevention_verified": false,
-      "correct_behavior": "When --ff-only fails because main has diverged: (1) Use /cat:git-rebase to rebase task branch onto main, (2) Then merge with --ff-only to maintain linear history"
+      "correct_behavior": "When --ff-only fails because main has diverged: (1) Use /cat:git-rebase to rebase task branch onto main, (2) Then merge with --ff-only to maintain linear history",
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      }
+    },
+    {
+      "id": "M082",
+      "timestamp": "2026-01-14T06:00:00Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Checked for task locks in wrong directory (/tmp/cat-locks/) instead of project-local .claude/cat/locks/",
+      "root_cause": "Assumed lock path without verifying script source. CLAUDE_PROJECT_DIR/.claude/cat/locks is correct path.",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/skills/spawn-subagent/SKILL.md",
+      "pattern_keywords": [
+        "lock",
+        "directory",
+        "path",
+        "verification",
+        "environment"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "After lock acquire, verify by reading actual file at .claude/cat/locks/{task-id}.lock. Check session_id matches current session.",
+      "processed_in_retrospective": null
     }
   ],
   "mistake_count_since_last": 4
