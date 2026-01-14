@@ -835,6 +835,7 @@ public final class Parser implements AutoCloseable
 	 */
 	private void parseTypeWithoutArrayDimensions()
 	{
+		parseComments();
 		// Parse type annotations (e.g., @Nullable, @NonNull)
 		while (currentToken().type() == TokenType.AT_SIGN)
 			parseAnnotation();
