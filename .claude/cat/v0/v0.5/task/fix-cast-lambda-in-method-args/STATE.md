@@ -1,28 +1,29 @@
 # Task State: fix-cast-lambda-in-method-args
 
 ## Status
-status: pending
-progress: 0%
+status: completed
+progress: 100%
+started: 2026-01-14
+completed: 2026-01-14
 
-## Dependencies
-- fix-cast-lambda-expression (must complete first - addresses simpler case)
+## Resolution
 
-## Error Pattern
+**DUPLICATE TASK** - This functionality was already fixed by `fix-multi-param-lambda` (commit 8567e4c).
 
-**344 occurrences** in Spring Framework 6.2.1
+The 344 "Expected RIGHT_PARENTHESIS but found COMMA" errors were caused by multi-parameter lambdas
+`(a, b) -> expr`, not by cast lambdas in method arguments as originally thought.
 
-Error: `Expected RIGHT_PARENTHESIS but found COMMA`
+Both task descriptions claimed the same 344 errors, but `fix-multi-param-lambda` correctly identified
+the root cause and implemented the fix. Verification confirms all scenarios from this task's PLAN.md
+now parse correctly.
 
-## Root Cause
+## Verification
 
-Parser fails when cast lambda appears as argument in method calls with multiple args:
-
-```java
-Arguments.of((Runnable) () -> { ... }, secondArg)
-```
-
-The existing `fix-cast-lambda-expression` handles simple cast+lambda, but not when
-the result is passed as a method argument followed by more arguments.
+All scenarios pass:
+- `Arguments.of((Runnable) () -> doSomething(), secondArg)` ✓
+- `Arguments.of((Runnable) () -> { block }, secondArg)` ✓
+- Cast of single-param lambda in multi-arg call ✓
+- Nested method calls with cast lambdas ✓
 
 ---
-*Pending task - see PLAN.md*
+*Task closed as duplicate of fix-multi-param-lambda*
