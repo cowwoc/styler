@@ -1758,6 +1758,27 @@
       },
       "correct_behavior": "Subagent prompts for parser tests must include: STYLE: Do NOT add comments that describe expected node positions. Text blocks are self-documenting.",
       "processed_in_retrospective": null
+    },
+    {
+      "id": "M080",
+      "timestamp": "2026-01-14T04:35:00Z",
+      "category": "protocol_violation",
+      "description": "Subagent prompt for parser test did not include M079 instruction prohibiting derivation comments",
+      "root_cause": "Main agent did not review existing learnings before spawning subagent for parser test task",
+      "prevention_type": "process",
+      "prevention_path": "N/A - recurrence of M079, no new prevention needed",
+      "pattern_keywords": [
+        "derivation",
+        "comment",
+        "parser",
+        "test",
+        "subagent",
+        "M079"
+      ],
+      "prevention_implemented": false,
+      "prevention_verified": false,
+      "correct_behavior": "When spawning subagent for parser tests, include: STYLE: Do NOT add comments that describe expected node positions. Text blocks are self-documenting.",
+      "recurrence_of": "M079"
     }
   ],
   "mistake_count_since_last": 3
