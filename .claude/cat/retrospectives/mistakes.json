@@ -1691,8 +1691,8 @@
       "category": "prompt_engineering",
       "description": "Subagent prompt omitted STATE.md update instructions - M076 specifies STATE.md must be in same commit as implementation",
       "root_cause": "spawn-subagent skill lacks mandatory section for task STATE.md updates; main agent constructed prompt without including STATE.md",
-      "prevention_type": "skill",
-      "prevention_path": "/workspace/cat/skills/spawn-subagent/SKILL.md",
+      "prevention_type": "hook",
+      "prevention_path": "/workspace/cat/hooks/verify-state-in-commit.sh",
       "pattern_keywords": [
         "STATE.md",
         "subagent",
@@ -1707,7 +1707,7 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "Subagent prompts MUST include: Update STATE.md to status: completed in the SAME commit as implementation"
+      "correct_behavior": "Subagent prompts MUST include: Update STATE.md to status: completed in the SAME commit as implementation. Hook enforces this at commit time."
     }
   ],
   "mistake_count_since_last": 2
