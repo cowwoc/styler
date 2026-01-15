@@ -2,25 +2,27 @@ package io.github.cowwoc.styler.parser.internal;
 
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.ast.core.NodeType;
-import io.github.cowwoc.styler.parser.Parser;
 import io.github.cowwoc.styler.parser.TokenType;
+
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.that;
 
 /**
  * Helper class for parsing try-catch-finally statements and resources.
  * <p>
- * Extracted from {@link Parser} to reduce class size while maintaining cohesive parsing logic.
+ * Extracted from Parser to reduce class size while maintaining cohesive parsing logic.
  */
 public final class StatementParser
 {
-	private final Parser parser;
+	private final ParserAccess parser;
 
 	/**
 	 * Creates a new statement parser that delegates to the given parser.
 	 *
 	 * @param parser the parent parser providing token access and helper methods
 	 */
-	public StatementParser(Parser parser)
+	public StatementParser(ParserAccess parser)
 	{
+		assert that(parser, "parser").isNotNull().elseThrow();
 		this.parser = parser;
 	}
 

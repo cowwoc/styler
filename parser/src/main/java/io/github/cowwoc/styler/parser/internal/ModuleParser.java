@@ -8,29 +8,32 @@ import io.github.cowwoc.styler.ast.core.OpensDirectiveAttribute;
 import io.github.cowwoc.styler.ast.core.ProvidesDirectiveAttribute;
 import io.github.cowwoc.styler.ast.core.RequiresDirectiveAttribute;
 import io.github.cowwoc.styler.ast.core.UsesDirectiveAttribute;
-import io.github.cowwoc.styler.parser.Parser;
+import io.github.cowwoc.styler.parser.Parser.ParserException;
 import io.github.cowwoc.styler.parser.Token;
 import io.github.cowwoc.styler.parser.TokenType;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.that;
+
 /**
  * Helper class for parsing module-info.java files (JPMS module declarations).
  * <p>
- * Extracted from {@link Parser} to reduce class size while maintaining cohesive parsing logic.
+ * Extracted from Parser to reduce class size while maintaining cohesive parsing logic.
  */
 public final class ModuleParser
 {
-	private final Parser parser;
+	private final ParserAccess parser;
 
 	/**
 	 * Creates a new module parser that delegates to the given parser.
 	 *
 	 * @param parser the parent parser providing token access and helper methods
 	 */
-	public ModuleParser(Parser parser)
+	public ModuleParser(ParserAccess parser)
 	{
+		assert that(parser, "parser").isNotNull().elseThrow();
 		this.parser = parser;
 	}
 
@@ -107,7 +110,7 @@ public final class ModuleParser
 	 * or type declarations. The module declaration serves as the root node.
 	 *
 	 * @return the module declaration node index (serves as root for module-info.java files)
-	 * @throws Parser.ParserException if unexpected tokens appear after the module declaration
+	 * @throws ParserException if unexpected tokens appear after the module declaration
 	 */
 	public NodeIndex parseModuleCompilationUnit()
 	{
@@ -119,7 +122,7 @@ public final class ModuleParser
 		parser.parseComments();
 		if (parser.currentToken().type() != TokenType.END_OF_FILE)
 		{
-			throw new Parser.ParserException(
+			throw new ParserException(
 				"Unexpected token after module declaration: " + parser.currentToken().type() +
 				" (module-info.java can only contain module declaration)",
 				parser.currentToken().start());
@@ -140,7 +143,7 @@ public final class ModuleParser
 	 * </pre>
 	 *
 	 * @return the module declaration node index
-	 * @throws Parser.ParserException if module syntax is invalid
+	 * @throws ParserException if module syntax is invalid
 	 */
 	private NodeIndex parseModuleDeclaration()
 	{
@@ -189,7 +192,7 @@ public final class ModuleParser
 	 * Routes to the appropriate directive parser based on the current keyword.
 	 *
 	 * @return the directive node index
-	 * @throws Parser.ParserException if an invalid directive keyword is encountered
+	 * @throws ParserException if an invalid directive keyword is encountered
 	 */
 	private NodeIndex parseModuleDirective()
 	{
@@ -201,7 +204,7 @@ public final class ModuleParser
 			case OPENS -> parseOpensDirective();
 			case USES -> parseUsesDirective();
 			case PROVIDES -> parseProvidesDirective();
-			default -> throw new Parser.ParserException(
+			default -> throw new ParserException(
 				"Expected module directive (requires/exports/opens/uses/provides), found: " + type,
 				parser.currentToken().start());
 		};
