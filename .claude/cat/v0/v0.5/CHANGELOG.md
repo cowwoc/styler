@@ -12,11 +12,13 @@ Parser edge cases for real-world Java codebases.
 |------|------|------------|-------------|
 | fix-floating-point-literal-without-zero | bugfix | implemented | Fix parsing of floating-point literals without leading zero (.5, .0025) |
 | fix-contextual-keywords-in-expressions | bugfix | implemented | Recognize contextual keywords as expression starters (var, module, with, etc.) |
+| fix-final-in-pattern-matching | bugfix | implemented | Support final modifier in instanceof pattern matching (Java 16+) |
 
 ## Key Changes
 
 - Added support for floating-point literals starting with decimal point
 - Contextual keywords (var, module, with, to, etc.) now work as expression starters
+- `instanceof final Type var` pattern matching now supported
 
 ## Files Changed
 
