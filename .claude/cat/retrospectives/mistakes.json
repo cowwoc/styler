@@ -2088,6 +2088,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Before amending commits, verify only intended files are staged. Use git add with specific paths, not -A or broad patterns. Check git diff --staged before commit."
+    },
+    {
+      "id": "M092",
+      "timestamp": "2026-01-15T17:37:31-05:00",
+      "category": "protocol_violation",
+      "description": "Failed to cleanup subagent branch before presenting approval gate",
+      "root_cause": "Skipped execute-task step 11 (cleanup) and went directly to step 13 (approval). Documentation existed but compliance was not enforced.",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "validation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/validate-pre-approval.sh",
+      "pattern_keywords": [
+        "subagent",
+        "cleanup",
+        "approval",
+        "branch",
+        "worktree"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "After merging subagent branch to task branch, cleanup worktree and branch BEFORE presenting approval gate to user"
     }
   ],
   "mistake_count_since_last": 4
