@@ -2991,10 +2991,19 @@ public final class Parser implements AutoCloseable
 					consume();
 					parseTypeArguments();
 
+					// Parse optional array dimensions: Type<Args>[]::new
+					boolean hasArrayDimensions = parseArrayDimensionsWithAnnotations();
+
 					// Check if followed by ::
 					if (currentToken().type() == TokenType.DOUBLE_COLON)
 					{
 						// This is a parameterized type method reference
+						// Wrap in ARRAY_TYPE if array dimensions were parsed
+						if (hasArrayDimensions)
+						{
+							int arrayTypeEnd = previousToken().end();
+							left = arena.allocateNode(NodeType.ARRAY_TYPE, start, arrayTypeEnd);
+						}
 						consume();
 						parseComments();
 
