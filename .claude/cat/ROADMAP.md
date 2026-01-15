@@ -68,23 +68,31 @@ Project roadmap with version summaries. Minor versions group related tasks (2-8 
   - fix-misc-parsing-edge-cases
   - validate-spring-framework-parsing
 
-- **0.6:** CLI enhancements and AI integration improvements (PARTIAL)
+- **0.6:** Test consolidation and code quality improvements (PENDING)
+  - consolidate-instanceof-tests
+  - consolidate-cast-tests
+  - consolidate-lambda-tests
+  - consolidate-lexer-tests
+  - consolidate-comment-tests
+  - consolidate-contextual-keyword-tests
+
+- **0.7:** CLI enhancements and AI integration improvements (PARTIAL)
   - add-cli-parallel-processing
   - add-cli-integration-tests
   - implement-ai-context-limiting
   - implement-rules-summary-export
 
-- **0.7:** Core browser extension functionality for GitHub PRs (PENDING)
+- **0.8:** Core browser extension functionality for GitHub PRs (PENDING)
   - implement-line-mapping
   - create-github-pr-extension
   - implement-comment-repositioning
   - implement-comment-text-translation
 
-- **0.8:** Browser extension edge cases and performance (PENDING)
+- **0.9:** Browser extension edge cases and performance (PENDING)
   - handle-extension-edge-cases
   - optimize-large-pr-performance
 
-- **0.9:** User documentation and website (PENDING)
+- **0.10:** User documentation and website (PENDING)
   - create-user-documentation
   - create-browser-extension-guide
   - create-ai-integration-guide
