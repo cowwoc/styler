@@ -365,15 +365,15 @@ public final class Parser implements AutoCloseable
 		if (lookahead >= tokens.size() || tokens.get(lookahead).type() != TokenType.LEFT_PARENTHESIS)
 			return lookahead;
 		// Skip annotation arguments
-		int parenDepth = 1;
+		int parenthesisDepth = 1;
 		++lookahead;
-		while (lookahead < tokens.size() && parenDepth > 0)
+		while (lookahead < tokens.size() && parenthesisDepth > 0)
 		{
 			TokenType type = tokens.get(lookahead).type();
 			if (type == TokenType.LEFT_PARENTHESIS)
-				++parenDepth;
+				++parenthesisDepth;
 			else if (type == TokenType.RIGHT_PARENTHESIS)
-				--parenDepth;
+				--parenthesisDepth;
 			++lookahead;
 		}
 		return lookahead;
@@ -1159,43 +1159,69 @@ public final class Parser implements AutoCloseable
 	}
 
 	/**
-	 * Checks if the current position starts a multi-parameter lambda expression.
-	 * <p>
-	 * Looks for the pattern: {@code IDENTIFIER COMMA ... ) ARROW}
-	 * <p>
+	 * Checks if the current position starts a lambda expression by scanning for the {@code ) ->} pattern.
+	 * Handles nested parentheses, generic type arguments, and array types.
 	 * Called after the opening {@code (} has been consumed.
 	 *
-	 * @return {@code true} if this is a multi-parameter lambda
+	 * @return {@code true} if a {@code ) ->} pattern is found with balanced parentheses and generics
 	 */
-	private boolean isMultiParamLambda()
+	private boolean isLambdaExpression()
 	{
-		if (!isIdentifierOrContextualKeyword())
-			return false;
-
 		int savedPosition = position;
 		try
 		{
-			// Skip first identifier
-			consume();
+			int parenthesisDepth = 1;
+			int angleBracketDepth = 0;
 
-			// Must see comma after first identifier to be multi-param
-			if (currentToken().type() != TokenType.COMMA)
-				return false;
-
-			// Scan forward to find ) ARROW pattern
-			while (position < tokens.size())
+			while (position < tokens.size() && parenthesisDepth > 0)
 			{
-				if (currentToken().type() == TokenType.RIGHT_PARENTHESIS)
+				TokenType type = currentToken().type();
+
+				switch (type)
 				{
-					// Check if next token is ARROW
-					return position + 1 < tokens.size() &&
-						tokens.get(position + 1).type() == TokenType.ARROW;
+					case LEFT_PARENTHESIS -> ++parenthesisDepth;
+					case RIGHT_PARENTHESIS ->
+					{
+						if (angleBracketDepth == 0)
+							--parenthesisDepth;
+					}
+					case LESS_THAN -> ++angleBracketDepth;
+					case GREATER_THAN ->
+					{
+						if (angleBracketDepth > 0)
+							--angleBracketDepth;
+					}
+					case RIGHT_SHIFT ->
+					{
+						if (angleBracketDepth >= 2)
+							angleBracketDepth -= 2;
+						else if (angleBracketDepth == 1)
+							angleBracketDepth = 0;
+					}
+					case UNSIGNED_RIGHT_SHIFT ->
+					{
+						if (angleBracketDepth >= 3)
+							angleBracketDepth -= 3;
+						else
+							angleBracketDepth = 0;
+					}
+					case SEMICOLON, LEFT_BRACE, RIGHT_BRACE ->
+					{
+						return false;
+					}
+					default ->
+					{
+						// Continue scanning
+					}
 				}
-				// Skip IDENTIFIER, COMMA, and contextual keywords as identifiers
-				if (!isIdentifierOrContextualKeyword() && currentToken().type() != TokenType.COMMA)
-					return false;
-				consume();
+
+				if (parenthesisDepth > 0)
+					consume();
 			}
+
+			if (parenthesisDepth == 0 && position + 1 < tokens.size())
+				return tokens.get(position + 1).type() == TokenType.ARROW;
+
 			return false;
 		}
 		finally
@@ -2563,24 +2589,98 @@ public final class Parser implements AutoCloseable
 	}
 
 	/**
-	 * Parses a multi-parameter lambda expression.
-	 * <p>
-	 * Called after opening {@code (} is consumed and lookahead confirms multi-param lambda pattern.
-	 * Parses the parameter list (identifiers separated by commas), expects {@code )} and {@code ->},
-	 * then delegates to {@link #parseLambdaBody(int)}.
+	 * Parses a lambda expression's parameter list after lookahead confirmed {@code ) ->} pattern.
 	 *
 	 * @param start the start position (opening parenthesis position)
 	 * @return the lambda expression node
 	 */
-	private NodeIndex parseMultiParamLambda(int start)
+	private NodeIndex parseLambdaParameters(int start)
 	{
-		// Parse first parameter
-		expectIdentifierOrContextualKeyword();
+		if (isTypedLambdaParameters())
+			return parseTypedLambdaParameters(start);
+		return parseUntypedLambdaParameters(start);
+	}
 
-		// Parse remaining parameters
+	/**
+	 * Checks if the lambda parameters are typed (have explicit type declarations).
+	 *
+	 * @return {@code true} if the parameters have explicit types
+	 */
+	private boolean isTypedLambdaParameters()
+	{
+		int savedPosition = position;
+		try
+		{
+			while (currentToken().type() == TokenType.FINAL || currentToken().type() == TokenType.AT_SIGN)
+			{
+				if (currentToken().type() == TokenType.AT_SIGN)
+				{
+					consume();
+					if (isIdentifierOrContextualKeyword())
+						consume();
+					while (currentToken().type() == TokenType.DOT)
+					{
+						consume();
+						if (isIdentifierOrContextualKeyword())
+							consume();
+					}
+					if (currentToken().type() == TokenType.LEFT_PARENTHESIS)
+						skipBalancedParens();
+				}
+				else
+					consume();
+			}
+
+			if (isPrimitiveType(currentToken().type()))
+				return true;
+
+			if (!isIdentifierOrContextualKeyword())
+				return false;
+
+			consume();
+
+			return switch (currentToken().type())
+			{
+				case LESS_THAN, LEFT_BRACKET, DOT -> true;
+				default -> isIdentifierOrContextualKeyword();
+			};
+		}
+		finally
+		{
+			position = savedPosition;
+		}
+	}
+
+	private NodeIndex parseTypedLambdaParameters(int start)
+	{
+		parseTypedLambdaParameter();
+		while (match(TokenType.COMMA))
+			parseTypedLambdaParameter();
+		expect(TokenType.RIGHT_PARENTHESIS);
+		expect(TokenType.ARROW);
+		return parseLambdaBody(start);
+	}
+
+	private void parseTypedLambdaParameter()
+	{
+		while (currentToken().type() == TokenType.FINAL || currentToken().type() == TokenType.AT_SIGN)
+		{
+			if (currentToken().type() == TokenType.AT_SIGN)
+				parseAnnotation();
+			else
+				consume();
+		}
+		parseType();
+		match(TokenType.ELLIPSIS);
+		expectIdentifierOrContextualKeyword();
+		parseArrayDimensionsWithAnnotations();
+	}
+
+	private NodeIndex parseUntypedLambdaParameters(int start)
+	{
+		expectIdentifierOrContextualKeyword();
 		while (match(TokenType.COMMA))
 			expectIdentifierOrContextualKeyword();
-
 		expect(TokenType.RIGHT_PARENTHESIS);
 		expect(TokenType.ARROW);
 		return parseLambdaBody(start);
@@ -2610,20 +2710,17 @@ public final class Parser implements AutoCloseable
 			return parseLambdaBody(start);
 		}
 
-		// Try to parse as a cast expression
+		// Detect ALL lambda forms by scanning for ) -> pattern BEFORE trying cast
+		if (isLambdaExpression())
+			return parseLambdaParameters(start);
+
 		NodeIndex castExpr = tryCastExpression(start);
 		if (castExpr != null)
 			return castExpr;
 
-		// Check for multi-parameter lambda: (a, b) -> expr
-		if (isMultiParamLambda())
-			return parseMultiParamLambda(start);
-
-		// Parse the content inside parens
 		NodeIndex expr = parseExpression();
 		expect(TokenType.RIGHT_PARENTHESIS);
 
-		// Check if this is a lambda: (params) -> expr
 		if (match(TokenType.ARROW))
 			return parseLambdaBody(start);
 
