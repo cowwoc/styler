@@ -219,6 +219,27 @@ if (Files.isDirectory(filePath))
 ```
 
 ### Code Patterns
+- Full variable names: Use complete words, not abbreviations:
+  ```java
+  // ❌ WRONG - Abbreviated variable names
+  int parenDepth = 1;
+  int angleDepth = 0;
+
+  // ✅ CORRECT - Full descriptive names
+  int parenthesisDepth = 1;
+  int angleBracketDepth = 0;
+  ```
+  **Common expansions:**
+  - `paren` → `parenthesis`
+  - `arg` → `argument`
+  - `param` → `parameter`
+  - `expr` → `expression`
+  - `stmt` → `statement`
+  - `decl` → `declaration`
+  - `idx` → `index`
+  - `pos` → `position`
+  - `len` → `length`
+  - `num` → `number` or `count`
 - `strip()` over `trim()` (Unicode whitespace)
 - `List.of()`/`Set.of()`/`Map.of()` over array literals for constants (truly immutable)
 - `List.copyOf()` over `Collections.unmodifiableList()` (true immutable)
