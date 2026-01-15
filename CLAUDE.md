@@ -121,6 +121,13 @@ All enforce **Backup-Verify-Cleanup**: Create backup → Execute → **Verify im
 
 **CRITICAL**: Always use `git-squash` skill for squashing (produces unified messages, not concatenated).
 
+**Commit Type Separation**: Group changes by commit type. Separate commits for:
+- `refactor:` / `feat:` / `bugfix:` - code changes
+- `config:` / `docs:` - configuration and documentation changes
+- `test:` - test-only changes
+
+Example: If fixing an import in `.claude/rules/*.md` while implementing a feature, create two commits.
+
 ## RETROSPECTIVE DOCUMENTATION POLICY
 
 **PROHIBITED**: Analysis docs, lessons learned, debugging chronicles, comparison studies, "why we chose X".

@@ -11,8 +11,8 @@ validation. This guide covers correct API usage patterns.
 ## Entry Points: requireThat vs assert that
 
 ```java
-import static com.github.cowwoc.requirements.java.DefaultJavaValidators.requireThat;
-import static com.github.cowwoc.requirements.java.DefaultJavaValidators.that;
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
+import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.that;
 ```
 
 ### When to Use Which
