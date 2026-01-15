@@ -714,15 +714,17 @@ public final class Lexer
 
 	/**
 	 * Consumes an escape sequence starting after the backslash.
-	 * Handles standard escapes ({@code \n}, {@code \t}, etc.) and Unicode escapes (backslash-u plus 4 hex
-	 * digits). The backslash has already been consumed when this method is called.
+	 * Handles standard escapes ({@code \n}, {@code \t}, etc.), octal escapes ({@code \0} through
+	 * {@code \377}), and Unicode escapes (backslash-u plus 4 hex digits).
+	 * The backslash has already been consumed when this method is called.
 	 */
 	private void consumeEscapeSequence()
 	{
 		if (position >= source.length())
 			return;
 
-		if (source.charAt(position) == 'u')
+		char ch = source.charAt(position);
+		if (ch == 'u')
 		{
 			// Unicode escape: skip all 'u' chars (JLS allows multiple 'u' chars before hex digits)
 			while (position < source.length() && source.charAt(position) == 'u')
@@ -735,14 +737,55 @@ public final class Lexer
 				++hexCount;
 			}
 		}
+		else if (isOctalDigit(ch))
+		{
+			// Octal escape: \0 through \377
+			++position;
+			consumeOctalEscape(ch);
+		}
 		else
-			// Standard escape: skip single character
+			// Standard escape: skip single character (\n, \t, \r, \', \", \\, etc.)
 			++position;
 	}
 
 	private boolean isHexDigit(char ch)
 	{
 		return (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F');
+	}
+
+	private boolean isOctalDigit(char ch)
+	{
+		return ch >= '0' && ch <= '7';
+	}
+
+	/**
+	 * Consumes an octal escape sequence starting at the first octal digit.
+	 * Per JLS 3.10.6, octal escapes are:
+	 * <ul>
+	 *   <li>{@code \0} through {@code \7} (single digit)</li>
+	 *   <li>{@code \00} through {@code \77} (two digits)</li>
+	 *   <li>{@code \000} through {@code \377} (three digits, max value 255)</li>
+	 * </ul>
+	 * The backslash and first octal digit have already been consumed when this method is called.
+	 *
+	 * @param firstDigit the first octal digit (0-7) already consumed
+	 */
+	private void consumeOctalEscape(char firstDigit)
+	{
+		// First digit already consumed by caller
+		// Check for second digit
+		if (position >= source.length() || !isOctalDigit(source.charAt(position)))
+			return;
+
+		char secondDigit = source.charAt(position);
+		++position;
+
+		// Check for third digit (only valid if first digit is 0-3 to keep value <= 377 octal = 255 decimal)
+		if (position >= source.length() || !isOctalDigit(source.charAt(position)))
+			return;
+
+		if (firstDigit <= '3')
+			++position;
 	}
 
 	/**
