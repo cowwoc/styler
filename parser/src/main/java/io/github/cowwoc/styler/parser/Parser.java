@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import io.github.cowwoc.styler.parser.internal.ModuleParser;
+import io.github.cowwoc.styler.parser.internal.ParserAccess;
 import io.github.cowwoc.styler.parser.internal.StatementParser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
@@ -66,6 +67,12 @@ public final class Parser implements AutoCloseable
 	 * Helper for parsing try-catch-finally statements and resources.
 	 */
 	private final StatementParser statementParser;
+
+	/**
+	 * Accessor providing controlled access to parser internals for helper classes.
+	 * This allows helper classes to call private methods without exposing them publicly.
+	 */
+	private final ParserAccess parserAccess;
 
 	/**
 	 * Creates a parser by reading a file with UTF-8 encoding.
@@ -127,8 +134,9 @@ public final class Parser implements AutoCloseable
 		}
 
 		this.arena = new NodeArena();
-		this.moduleParser = new ModuleParser(this);
-		this.statementParser = new StatementParser(this);
+		this.parserAccess = createParserAccess();
+		this.moduleParser = new ModuleParser(parserAccess);
+		this.statementParser = new StatementParser(parserAccess);
 
 		// SEC-006: Set parsing deadline for timeout enforcement
 		this.parsingDeadline = Instant.now().plusMillis(SecurityConfig.PARSING_TIMEOUT_MS);
@@ -3636,6 +3644,174 @@ public final class Parser implements AutoCloseable
 	private void exitDepth()
 	{
 		--depth;
+	}
+
+	/**
+	 * Creates a ParserAccess implementation that delegates to this parser's methods.
+	 * This allows helper classes to access parser internals without exposing them publicly.
+	 *
+	 * @return the parser accessor
+	 */
+	private ParserAccess createParserAccess()
+	{
+		return new ParserAccess()
+		{
+			@Override
+			public List<Token> getTokens()
+			{
+				return tokens;
+			}
+
+			@Override
+			public int getPosition()
+			{
+				return position;
+			}
+
+			@Override
+			public void setPosition(int newPosition)
+			{
+				position = newPosition;
+			}
+
+			@Override
+			public Token currentToken()
+			{
+				return Parser.this.currentToken();
+			}
+
+			@Override
+			public Token previousToken()
+			{
+				return Parser.this.previousToken();
+			}
+
+			@Override
+			public Token consume()
+			{
+				return Parser.this.consume();
+			}
+
+			@Override
+			public boolean match(TokenType type)
+			{
+				return Parser.this.match(type);
+			}
+
+			@Override
+			public void expect(TokenType type)
+			{
+				Parser.this.expect(type);
+			}
+
+			@Override
+			public void expectIdentifierOrContextualKeyword()
+			{
+				Parser.this.expectIdentifierOrContextualKeyword();
+			}
+
+			@Override
+			public void expectGTInGeneric()
+			{
+				Parser.this.expectGTInGeneric();
+			}
+
+			@Override
+			public NodeArena getArena()
+			{
+				return arena;
+			}
+
+			@Override
+			public void enterDepth()
+			{
+				Parser.this.enterDepth();
+			}
+
+			@Override
+			public void exitDepth()
+			{
+				Parser.this.exitDepth();
+			}
+
+			@Override
+			public void parseComments()
+			{
+				Parser.this.parseComments();
+			}
+
+			@Override
+			public void parseType()
+			{
+				Parser.this.parseType();
+			}
+
+			@Override
+			public void parseTypeWithoutArrayDimensions()
+			{
+				Parser.this.parseTypeWithoutArrayDimensions();
+			}
+
+			@Override
+			public boolean parseArrayDimensionsWithAnnotations()
+			{
+				return Parser.this.parseArrayDimensionsWithAnnotations();
+			}
+
+			@Override
+			public boolean isPrimitiveType(TokenType type)
+			{
+				return Parser.this.isPrimitiveType(type);
+			}
+
+			@Override
+			public boolean isIdentifierOrContextualKeyword()
+			{
+				return Parser.this.isIdentifierOrContextualKeyword();
+			}
+
+			@Override
+			public boolean isContextualKeyword(TokenType type)
+			{
+				return Parser.this.isContextualKeyword(type);
+			}
+
+			@Override
+			public NodeIndex parseAnnotation()
+			{
+				return Parser.this.parseAnnotation();
+			}
+
+			@Override
+			public NodeIndex parseQualifiedName()
+			{
+				return Parser.this.parseQualifiedName();
+			}
+
+			@Override
+			public NodeIndex parseBlock()
+			{
+				return Parser.this.parseBlock();
+			}
+
+			@Override
+			public NodeIndex parseExpression()
+			{
+				return Parser.this.parseExpression();
+			}
+
+			@Override
+			public NodeIndex parseCatchParameter()
+			{
+				return Parser.this.parseCatchParameter();
+			}
+
+			@Override
+			public String getSourceCode()
+			{
+				return sourceCode;
+			}
+		};
 	}
 
 	@Override
