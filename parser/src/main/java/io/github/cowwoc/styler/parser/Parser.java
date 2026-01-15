@@ -3054,7 +3054,7 @@ public final class Parser implements AutoCloseable
 				return parseLiteralExpression(token, start, end);
 			}
 
-			if (token.type() == TokenType.IDENTIFIER)
+			if (isIdentifierOrContextualKeyword())
 			{
 				consume();
 				return arena.allocateNode(NodeType.IDENTIFIER, start, end);

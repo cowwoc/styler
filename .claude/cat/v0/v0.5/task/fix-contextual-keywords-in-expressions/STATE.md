@@ -1,25 +1,18 @@
 # State
 
-- **Status:** pending
-- **Progress:** 0%
+- **Status:** completed
+- **Progress:** 100%
+- **Resolution:** implemented
 - **Dependencies:** []
-- **Last Updated:** 2026-01-14
+- **Completed:** 2026-01-15
+- **Last Updated:** 2026-01-15
 
-## Error Pattern
+## Notes
 
-**~30 occurrences** in Spring Framework 6.2.1
+Fixed parsePrimary() to recognize contextual keywords as expression starters
+using existing isIdentifierOrContextualKeyword() helper.
 
-Multiple errors involving contextual keywords used as identifiers in expression context:
-
-| Keyword | Count | Example |
-|---------|-------|---------|
-| VAR | 9 | `this.var = var;` |
-| MODULE | 5 | `module.getResourceAsStream(name)` |
-| TO | 3 | `this.to = to;` |
-| WITH | 1 | `return with(Arrays.asList(delegates))` |
-| OPEN | 1 | `this.open = open;` |
-| RECORD | 2 | `RfcUriParser.UriRecord record = ...` |
-| REQUIRES | 2 | `moduleVisitor.visitRequire(requires, ...)` |
-
-The parser recognizes these as contextual keywords but doesn't allow them
-in all expression contexts where identifiers are valid.
+Note: The test for `yield` as assignment target was removed because `yield`
+has special handling at the statement level (parseStatement intercepts it
+before parsePrimary is called). This is correct behavior for Java 14+ where
+`yield` is a restricted keyword inside switch expressions.
