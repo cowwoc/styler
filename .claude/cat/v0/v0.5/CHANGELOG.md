@@ -15,6 +15,7 @@ Parser edge cases for real-world Java codebases.
 | fix-final-in-pattern-matching | bugfix | implemented | Support final modifier in instanceof pattern matching (Java 16+) |
 | fix-lambda-typed-parameters-in-args | bugfix | implemented | Parse typed lambda parameters like (Type param) -> body |
 | fix-octal-escape-in-char-literal | bugfix | implemented | Handle JLS 3.10.6 octal escape sequences in character/string literals |
+| add-serial-annotations | config | implemented | Add @Serial annotation to all serialVersionUID fields |
 
 ## Key Changes
 
