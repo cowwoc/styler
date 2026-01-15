@@ -2035,6 +2035,59 @@
         "catches_variations": true
       },
       "correct_behavior": "Check commit-types.md before committing. Use bugfix: not fix:, feature: not feat:, performance: not perf:"
+    },
+    {
+      "id": "M090",
+      "timestamp": "2026-01-15T21:45:00Z",
+      "category": "protocol_violation",
+      "description": "When user said \"Learn from mistakes: you should summarize...\", agent provided summary but did not invoke learn-from-mistakes skill",
+      "root_cause": "Documentation existed for trigger phrase recognition (M072) but agent did not follow it - documentation alone insufficient",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/hooks/inject-session-instructions.sh",
+      "pattern_keywords": [
+        "learn-from-mistakes",
+        "trigger-phrase",
+        "skill-invocation",
+        "protocol"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": "M072",
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "When user says \"Learn from mistakes: [description]\", INVOKE the skill first, complete RCA, THEN fix the immediate problem"
+    },
+    {
+      "id": "M091",
+      "timestamp": "2026-01-15T22:00:00Z",
+      "category": "protocol_violation",
+      "description": "Commit a00d9aa contained both config changes (retrospectives files) and bugfix code - should be separate commits per commit-types.md",
+      "root_cause": "When amending commit to include STATE.md, retrospectives files were inadvertently included because they had been modified in the worktree from earlier operations",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "process",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/workflows/execute-task.md",
+      "pattern_keywords": [
+        "commit",
+        "mixed-types",
+        "retrospectives",
+        "amend",
+        "staging"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Before amending commits, verify only intended files are staged. Use git add with specific paths, not -A or broad patterns. Check git diff --staged before commit."
     }
   ],
   "mistake_count_since_last": 4
