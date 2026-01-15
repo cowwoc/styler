@@ -13,12 +13,14 @@ Parser edge cases for real-world Java codebases.
 | fix-floating-point-literal-without-zero | bugfix | implemented | Fix parsing of floating-point literals without leading zero (.5, .0025) |
 | fix-contextual-keywords-in-expressions | bugfix | implemented | Recognize contextual keywords as expression starters (var, module, with, etc.) |
 | fix-final-in-pattern-matching | bugfix | implemented | Support final modifier in instanceof pattern matching (Java 16+) |
+| fix-lambda-typed-parameters-in-args | bugfix | implemented | Parse typed lambda parameters like (Type param) -> body |
 
 ## Key Changes
 
 - Added support for floating-point literals starting with decimal point
 - Contextual keywords (var, module, with, to, etc.) now work as expression starters
 - `instanceof final Type var` pattern matching now supported
+- Typed lambda parameters `(Type param) -> body` now parsed correctly (was misinterpreted as cast)
 
 ## Files Changed
 
@@ -37,4 +39,13 @@ Parser edge cases for real-world Java codebases.
 
 - 9 tests added for decimal-first floating-point literals
 - 14 tests added for contextual keyword expression handling
-- All 848 parser tests passing
+- 9 tests added for typed lambda parameter parsing
+- All 857 parser tests passing
+
+## Gates
+
+### Entry
+- Previous version (v0.4) complete
+
+### Exit
+- All tasks complete
