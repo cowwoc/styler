@@ -2765,6 +2765,9 @@ public final class Parser implements AutoCloseable
 		if (match(TokenType.INSTANCEOF))
 		{
 			int start = arena.getStart(left);
+			// Consume optional FINAL modifier (Java 16+ pattern matching with final)
+			if (currentToken().type() == TokenType.FINAL)
+				consume();
 			parseType();
 
 			int end = previousToken().end();
