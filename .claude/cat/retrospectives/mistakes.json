@@ -1903,6 +1903,34 @@
       "escalated_from": "documentation",
       "escalation_reason": "spawn-subagent skill already had checklist item but was ignored. Added verification step.",
       "correct_behavior": "Include STATE.md update in subagent prompt AND verify in commit before approval gate."
+    },
+    {
+      "id": "M086",
+      "timestamp": "2026-01-15T05:40:00Z",
+      "category": "prompt_engineering",
+      "description": "Parser tests only verified parsing success, not AST correctness - violated isEqualTo requirement",
+      "root_cause": "Subagent prompts did not include project-specific testing standards requiring AST comparison",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "pattern_keywords": [
+        "parser",
+        "test",
+        "isEqualTo",
+        "AST",
+        "subagent",
+        "prompt"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Include parser testing standards in subagent prompts: tests MUST use isEqualTo(expected) to compare actual AST to expected AST"
     }
   ],
   "mistake_count_since_last": 4

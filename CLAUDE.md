@@ -52,6 +52,20 @@ record Config(Style braceStyle) {}
 ### Test-Driven Development
 **MANDATORY**: Use `tdd-implementation` skill for ALL Java development.
 
+### Subagent Prompts for Test Code {#subagent-test-prompts}
+When spawning subagents to write parser tests, include testing standards from `.claude/rules/java-style.md`:
+
+**Parser tests MUST compare actual AST to expected AST:**
+```java
+// ❌ Only verifies parsing succeeded
+requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+
+// ✅ Compares full AST structure
+requireThat(actual, "actual").isEqualTo(expected);
+```
+
+Include this requirement explicitly in subagent prompts for parser-related tasks.
+
 ### Defensive Security Policy
 Defensive security only. Refuse malicious code. Never generate/guess URLs.
 
