@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.parser;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -1193,6 +1194,7 @@ public final class Lexer
 	 */
 	public static final class LexerException extends RuntimeException
 	{
+		@Serial
 		private static final long serialVersionUID = 1L;
 		private final int position;
 

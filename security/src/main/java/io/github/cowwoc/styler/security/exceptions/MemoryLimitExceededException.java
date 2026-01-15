@@ -1,5 +1,7 @@
 package io.github.cowwoc.styler.security.exceptions;
 
+import java.io.Serial;
+
 /**
  * Exception thrown when heap memory usage exceeds the configured limit.
  * <p>
@@ -8,6 +10,7 @@ package io.github.cowwoc.styler.security.exceptions;
  */
 public class MemoryLimitExceededException extends SecurityException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**

@@ -10,6 +10,7 @@ import io.github.cowwoc.styler.ast.core.SecurityConfig;
 import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -3639,6 +3640,7 @@ public final class Parser implements AutoCloseable
 	 */
 	public static final class ParserException extends RuntimeException
 	{
+		@Serial
 		private static final long serialVersionUID = 1L;
 		private final int position;
 
