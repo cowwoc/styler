@@ -1956,6 +1956,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Include duplicate detection in exploration subagent to avoid spawning unnecessary planning/implementation subagents for pre-existing functionality"
+    },
+    {
+      "id": "M088",
+      "timestamp": "2026-01-15T12:00:00Z",
+      "category": "protocol_violation",
+      "description": "Main agent directly edited Parser.java (variable renaming) and java-style.md instead of delegating to subagent",
+      "root_cause": "Completion bias - perceived variable renaming as too simple to warrant subagent delegation",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "skill",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/cat/commands/execute-task.md",
+      "pattern_keywords": [
+        "main-agent",
+        "edit-tool",
+        "delegation",
+        "completion-bias",
+        "simple-changes"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": "M063",
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "medium",
+        "catches_variations": true
+      },
+      "correct_behavior": "When user provides feedback requiring any code changes (even simple renaming), spawn a subagent to implement the changes."
     }
   ],
   "mistake_count_since_last": 4
