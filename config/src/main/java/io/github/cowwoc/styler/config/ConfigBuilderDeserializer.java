@@ -7,6 +7,7 @@ import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.deser.std.StdDeserializer;
 
 import java.io.IOException;
+import java.io.Serial;
 
 /**
  * Custom Jackson deserializer for {@link ConfigBuilder} that tracks line numbers.
@@ -16,6 +17,7 @@ import java.io.IOException;
  */
 final class ConfigBuilderDeserializer extends StdDeserializer<ConfigBuilder>
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**

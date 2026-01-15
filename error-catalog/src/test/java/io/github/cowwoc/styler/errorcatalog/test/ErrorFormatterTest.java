@@ -7,6 +7,8 @@ import io.github.cowwoc.styler.errorcatalog.FixSuggestion;
 import io.github.cowwoc.styler.errorcatalog.SourceLocation;
 import org.testng.annotations.Test;
 
+import java.io.Serial;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
 /**
@@ -145,6 +147,7 @@ public final class ErrorFormatterTest
 	 */
 	private static final class TestException extends RuntimeException implements ContextualException
 	{
+		@Serial
 		private static final long serialVersionUID = 1L;
 		private final transient ErrorContext context;
 
@@ -171,6 +174,7 @@ public final class ErrorFormatterTest
 	 */
 	private static final class TestExceptionNoFix extends RuntimeException implements ContextualException
 	{
+		@Serial
 		private static final long serialVersionUID = 1L;
 		private final transient ErrorContext context;
 
@@ -198,6 +202,7 @@ public final class ErrorFormatterTest
 	private static final class TestExceptionWithSpecialChars extends RuntimeException
 		implements ContextualException
 	{
+		@Serial
 		private static final long serialVersionUID = 1L;
 		private final transient ErrorContext context;
 

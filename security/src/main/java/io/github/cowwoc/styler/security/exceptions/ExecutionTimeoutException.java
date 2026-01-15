@@ -2,6 +2,7 @@ package io.github.cowwoc.styler.security.exceptions;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
+import java.io.Serial;
 import java.nio.file.Path;
 import java.time.Duration;
 
@@ -13,6 +14,7 @@ import java.time.Duration;
  */
 public class ExecutionTimeoutException extends SecurityException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**

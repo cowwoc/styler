@@ -8,6 +8,8 @@ import io.github.cowwoc.styler.errorcatalog.SourceLocation;
 import io.github.cowwoc.styler.errorcatalog.StylerErrorOutput;
 import org.testng.annotations.Test;
 
+import java.io.Serial;
+
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 import static org.testng.Assert.assertTrue;
 
@@ -178,6 +180,7 @@ public final class StylerErrorOutputTest
 	 */
 	private static final class TestException extends RuntimeException implements ContextualException
 	{
+		@Serial
 		private static final long serialVersionUID = 1L;
 		private final transient ErrorContext context;
 
@@ -204,6 +207,7 @@ public final class StylerErrorOutputTest
 	 */
 	private static final class TestExceptionNoFix extends RuntimeException implements ContextualException
 	{
+		@Serial
 		private static final long serialVersionUID = 1L;
 		private final transient ErrorContext context;
 

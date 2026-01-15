@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.security.exceptions;
 
+import java.io.Serial;
 import java.nio.file.Path;
 
 /**
@@ -10,6 +11,7 @@ import java.nio.file.Path;
  */
 public class PathTraversalException extends SecurityException
 {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**
