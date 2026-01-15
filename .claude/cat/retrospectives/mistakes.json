@@ -2010,6 +2010,31 @@
         "catches_variations": true
       },
       "correct_behavior": "After creating worktree, immediately cd to it and verify with pwd before any file operations"
+    },
+    {
+      "id": "M090",
+      "timestamp": "2026-01-15T22:16:28Z",
+      "category": "assumption_without_verification",
+      "description": "Used invalid commit type fix: instead of bugfix:",
+      "root_cause": "Assumed conventional commits standard applies without checking project-specific commit-types.md",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "hook",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/validate-commit-type.sh",
+      "pattern_keywords": [
+        "commit",
+        "conventional-commits",
+        "commit-type"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "negative",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Check commit-types.md before committing. Use bugfix: not fix:, feature: not feat:, performance: not perf:"
     }
   ],
   "mistake_count_since_last": 4
