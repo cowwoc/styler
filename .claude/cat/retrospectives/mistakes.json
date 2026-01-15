@@ -1983,6 +1983,33 @@
         "catches_variations": true
       },
       "correct_behavior": "When user provides feedback requiring any code changes (even simple renaming), spawn a subagent to implement the changes."
+    },
+    {
+      "id": "M089",
+      "timestamp": "2026-01-15T12:00:00Z",
+      "category": "worktree_violation",
+      "description": "Main agent edited STATE.md from main workspace instead of task worktree, causing merge conflict",
+      "root_cause": "After creating task worktree, agent did not cd to it before editing STATE.md - compliance failure with documented MANDATORY step",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "skill",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/workflows/execute-task.md",
+      "pattern_keywords": [
+        "worktree",
+        "cd",
+        "STATE.md",
+        "merge_conflict",
+        "working_directory"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "After creating worktree, immediately cd to it and verify with pwd before any file operations"
     }
   ],
   "mistake_count_since_last": 4
