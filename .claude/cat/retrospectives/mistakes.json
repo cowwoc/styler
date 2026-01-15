@@ -2115,6 +2115,33 @@
         "catches_variations": true
       },
       "correct_behavior": "After merging subagent branch to task branch, cleanup worktree and branch BEFORE presenting approval gate to user"
+    },
+    {
+      "id": "M093",
+      "timestamp": "2026-01-15T23:04:47Z",
+      "category": "protocol_violation",
+      "description": "Ran 6+ additional bash commands to investigate task status instead of rendering from status-data.sh output",
+      "root_cause": "Completion bias - prioritized 'better' output over following explicit skill workflow",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/commands/status.md",
+      "pattern_keywords": [
+        "status",
+        "workflow",
+        "bash",
+        "script",
+        "completion-bias"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use ONLY data from status-data.sh and gate collection; report script bugs after rendering"
     }
   ],
   "mistake_count_since_last": 4

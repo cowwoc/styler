@@ -76,9 +76,36 @@
       "implementation_note": "Implemented via A007 hooks: block-reflog-destruction.sh, validate-git-filter-branch.sh, block-merge-commits.sh, warn-file-extraction.sh"
     }
   ],
-  "last_retrospective": "2026-01-14T06:09:37Z",
-  "mistake_count_since_last": 11,
+  "last_retrospective": "2026-01-15T17:39:20-05:00",
+  "mistake_count_since_last": 1,
   "retrospectives": [
+    {
+      "id": "R006",
+      "timestamp": "2026-01-15T17:39:20-05:00",
+      "trigger": "count_threshold",
+      "period_analyzed": "2026-01-14T06:09:37Z to 2026-01-15T17:39:20-05:00",
+      "mistakes_analyzed": 12,
+      "summary": "50% protocol violations (6), 25% prompt engineering (3). Key patterns: completion bias overriding mandatory steps, subagent prompts missing requirements.",
+      "findings": {
+        "top_category": "protocol_violation",
+        "top_category_count": 6,
+        "patterns_identified": [
+          "completion_bias",
+          "prompt_checklist_gaps",
+          "worktree_compliance"
+        ],
+        "action_items_effective": [
+          "A002",
+          "A003",
+          "A010",
+          "A011"
+        ],
+        "action_items_escalated": [],
+        "new_action_items": [
+          "A014"
+        ]
+      }
+    },
     {
       "id": "R005",
       "timestamp": "2026-01-14T06:09:37Z",
@@ -607,7 +634,7 @@
     },
     {
       "id": "A006",
-      "priority": "medium",
+      "priority": "high",
       "description": "Strengthen parser test documentation: prohibit weak assertions (isNotNull on arenas), require position verification, add anti-pattern examples",
       "category": "test_failure",
       "pattern_id": "PATTERN-005",
@@ -776,6 +803,27 @@
         "post_fix_mistakes": [],
         "verdict": "pending"
       }
+    },
+    {
+      "id": "A014",
+      "priority": "high",
+      "description": "Add main agent orchestration boundary enforcement - main agent must delegate ALL code edits to subagents",
+      "category": "protocol_violation",
+      "pattern_id": "PATTERN-008",
+      "status": "open",
+      "created_date": "2026-01-15T17:39:20-05:00",
+      "completed_date": null,
+      "related_mistakes": [
+        "M088",
+        "M089",
+        "M092"
+      ],
+      "effectiveness_check": {
+        "mistakes_before": 6,
+        "mistakes_after": null,
+        "post_fix_mistakes": [],
+        "verdict": "pending"
+      }
     }
   ],
   "effectiveness_analysis_query": "jq --arg pattern_id \"PATTERN-XXX\" --arg completed_date \"YYYY-MM-DD\" '[.mistakes[] | select(.pattern_id == $pattern_id and .timestamp > $completed_date)] | length' .claude/retrospectives/mistakes.json",
@@ -793,6 +841,22 @@
       "preventions": [],
       "related_action_items": [],
       "note": "Subagent prompts missing critical instructions from skill docs (STATE.md updates, test style prohibitions)"
+    },
+    {
+      "pattern_id": "PATTERN-008",
+      "pattern": "protocol_violation - completion bias",
+      "occurrences_total": 6,
+      "occurrences_after_fix": 0,
+      "first_seen": "2026-01-14",
+      "last_seen": "2026-01-15",
+      "last_action_date": null,
+      "status": "new",
+      "effectiveness": "pending",
+      "preventions": [],
+      "related_action_items": [
+        "A014"
+      ],
+      "note": "Main agent bypassing delegation requirements due to completion bias"
     }
   ]
 }
