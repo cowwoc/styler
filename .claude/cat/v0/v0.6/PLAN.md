@@ -20,3 +20,11 @@ Refactoring - Merge related test classes to reduce file count and improve mainta
 - Improve test organization and discoverability
 - Ensure no test coverage is lost during consolidation
 - Maintain all existing test assertions
+
+## Gates
+
+### Entry
+- Previous version (v0.5) complete
+
+### Exit
+- All tasks complete
