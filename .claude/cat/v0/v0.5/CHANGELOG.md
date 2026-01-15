@@ -14,6 +14,7 @@ Parser edge cases for real-world Java codebases.
 | fix-contextual-keywords-in-expressions | bugfix | implemented | Recognize contextual keywords as expression starters (var, module, with, etc.) |
 | fix-final-in-pattern-matching | bugfix | implemented | Support final modifier in instanceof pattern matching (Java 16+) |
 | fix-lambda-typed-parameters-in-args | bugfix | implemented | Parse typed lambda parameters like (Type param) -> body |
+| fix-octal-escape-in-char-literal | bugfix | implemented | Handle JLS 3.10.6 octal escape sequences in character/string literals |
 
 ## Key Changes
 
@@ -40,7 +41,8 @@ Parser edge cases for real-world Java codebases.
 - 9 tests added for decimal-first floating-point literals
 - 14 tests added for contextual keyword expression handling
 - 9 tests added for typed lambda parameter parsing
-- All 857 parser tests passing
+- 9 tests added for octal escape sequences in character/string literals
+- All parser tests passing
 
 ## Gates
 
