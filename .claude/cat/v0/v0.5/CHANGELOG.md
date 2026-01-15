@@ -11,10 +11,12 @@ Parser edge cases for real-world Java codebases.
 | Task | Type | Resolution | Description |
 |------|------|------------|-------------|
 | fix-floating-point-literal-without-zero | bugfix | implemented | Fix parsing of floating-point literals without leading zero (.5, .0025) |
+| fix-contextual-keywords-in-expressions | bugfix | implemented | Recognize contextual keywords as expression starters (var, module, with, etc.) |
 
 ## Key Changes
 
 - Added support for floating-point literals starting with decimal point
+- Contextual keywords (var, module, with, to, etc.) now work as expression starters
 
 ## Files Changed
 
@@ -32,4 +34,5 @@ Parser edge cases for real-world Java codebases.
 ## Quality
 
 - 9 tests added for decimal-first floating-point literals
-- All parser tests passing
+- 14 tests added for contextual keyword expression handling
+- All 848 parser tests passing
