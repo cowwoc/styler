@@ -20,6 +20,8 @@ Parser edge cases for real-world Java codebases.
 | extend-statement-parser | refactor | implemented | Move 30 statement parsing methods to StatementParser |
 | fix-misc-parsing-edge-cases | bugfix | implemented | Fix comment handling in type declarations and enum bodies |
 | extract-expr-cast-lambda-detection | refactor | implemented | Extract cast/lambda detection methods to ExpressionParser |
+| extract-expr-binary-operators | refactor | implemented | Extract binary expression parsing to ExpressionParser |
+| extract-expr-unary-postfix-primary | refactor | implemented | Extract unary/postfix/primary expression parsing to ExpressionParser |
 
 ## Key Changes
 
