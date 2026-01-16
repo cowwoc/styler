@@ -2355,6 +2355,31 @@
         "catches_variations": true
       },
       "correct_behavior": "Verify worktree location with pwd before any edits during CAT task; all implementation work happens in /workspace/.worktrees/<task-name>"
+    },
+    {
+      "id": "M098",
+      "timestamp": "2026-01-16T02:25:17-05:00",
+      "category": "detection_gap",
+      "description": "Used invalid commit type ui: which was not in valid types list",
+      "root_cause": "Commit type validation hook used negative verification (blocking known-bad types) instead of positive verification (requiring known-good types)",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "hook",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/validate-commit-type.sh",
+      "pattern_keywords": [
+        "commit-type",
+        "positive-verification",
+        "validation-gap"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use only valid commit types: feature, bugfix, test, refactor, performance, docs, style, config, planning"
     }
   ],
   "mistake_count_since_last": 6

@@ -30,17 +30,20 @@ else
     exit 0
 fi
 
-# Check if it's an explicitly invalid type
-if [[ "$COMMIT_TYPE" =~ ^($INVALID_TYPES)$ ]]; then
+# POSITIVE VERIFICATION: Type MUST be in valid list (M098)
+# This catches ALL invalid types, not just known-bad ones
+if [[ ! "$COMMIT_TYPE" =~ ^($VALID_TYPES)$ ]]; then
     echo "BLOCKED: Invalid commit type '$COMMIT_TYPE:'" >&2
     echo "" >&2
-    echo "Per commit-types.md, these abbreviated forms are NOT valid:" >&2
-    echo "  feat, fix, chore, build, ci, perf" >&2
-    echo "" >&2
-    echo "Use the full standard types instead:" >&2
+    echo "Valid commit types (per git-commit skill):" >&2
     echo "  feature, bugfix, test, refactor, performance, docs, style, config, planning" >&2
     echo "" >&2
-    echo "Example: Use 'bugfix:' instead of 'fix:'" >&2
+    if [[ "$COMMIT_TYPE" =~ ^($INVALID_TYPES)$ ]]; then
+        echo "Note: '$COMMIT_TYPE' is a common conventional commit type but not valid here." >&2
+        echo "Use the full name instead (e.g., 'bugfix:' not 'fix:', 'feature:' not 'feat:')" >&2
+    else
+        echo "Type '$COMMIT_TYPE' is not recognized. Check git-commit skill for guidance." >&2
+    fi
     exit 1
 fi
 
