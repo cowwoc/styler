@@ -28,8 +28,10 @@ From Parser.java lines 2794-2907:
 | parseMultiplicative | 2904-2907 | Multiplication, division, modulo |
 
 ### Prerequisites
-- extract-expr-cast-lambda-detection completed
-- ExpressionParser has cast/lambda methods
+- create-parser-access-interface completed (ParserAccess interface exists)
+- ExpressionParser skeleton exists
+
+**Note:** This task can run in parallel with other extract-expr-* subtasks.
 
 ### Implementation Steps
 

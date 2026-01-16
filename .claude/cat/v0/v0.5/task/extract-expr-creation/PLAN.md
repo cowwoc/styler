@@ -26,8 +26,10 @@ Decomposed from: extract-expression-parser (sequence 5 of 6)
 | parseSwitchExpression | 2070-2145 | Switch expressions |
 
 ### Prerequisites
-- extract-expr-lambda-parsing completed
-- parsePrimary calls these creation methods
+- create-parser-access-interface completed (ParserAccess interface exists)
+- ExpressionParser skeleton exists
+
+**Note:** This task can run in parallel with other extract-expr-* subtasks.
 
 ### Implementation Steps
 
