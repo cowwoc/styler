@@ -2287,7 +2287,7 @@
       "rca_method": "A",
       "rca_method_name": "5-whys",
       "prevention_type": "skill",
-      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "prevention_path": "/workspace/cat/.claude/cat/workflows/execute-task.md, /workspace/cat/skills/spawn-subagent/SKILL.md",
       "pattern_keywords": [
         "token_measurement",
         "subagent",
@@ -2303,6 +2303,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Subagent measures own tokens from session JSONL before completion. Main agent reports ONLY measured values from subagent output, never fabricates."
+    },
+    {
+      "id": "M100",
+      "timestamp": "2026-01-16T03:31:38Z",
+      "category": "detection_gap",
+      "description": "PostToolUse hook falsely flagged jq stderr parse error text as requiring investigation when task completed successfully",
+      "root_cause": "Hook pattern matched benign stderr output from jq commands checking already-locked tasks - no actual failure occurred",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/retrospectives/mistakes.json",
+      "pattern_keywords": [
+        "parse_error",
+        "false_positive",
+        "hook",
+        "jq"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "When hook detects parse_error but task completed successfully, verify whether actual failure occurred before triggering mistake analysis. Consider ignoring parse errors that appear in stderr when the command succeeded."
     }
   ],
   "mistake_count_since_last": 6
