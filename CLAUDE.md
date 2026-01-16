@@ -69,25 +69,27 @@ Include this requirement explicitly in subagent prompts for parser-related tasks
 ### Subagent Token Measurement {#subagent-token-measurement}
 **MANDATORY**: Subagents measure their own token usage and return it to main agent (M099/M102).
 
-**Subagent responsibility**: Before completion, find and measure tokens from own session file:
+**Subagent responsibility**: Before completion, use the session ID from CAT session instructions to
+measure tokens. The session ID is echoed at startup and available in the CAT session instructions
+injected at the beginning of each session.
 ```bash
-# Find the most recently modified session file (the subagent's own session)
-SESSION_DIR="/home/node/.config/claude/projects/-workspace"
-SESSION_FILE=$(ls -t "${SESSION_DIR}"/*.jsonl 2>/dev/null | head -1)
+# Use the session ID from CAT session instructions (echoed at startup)
+SESSION_ID="<session-id-from-instructions>"
+SESSION_FILE="/home/node/.config/claude/projects/-workspace/${SESSION_ID}.jsonl"
 
-if [ -n "$SESSION_FILE" ] && [ -f "$SESSION_FILE" ]; then
+if [ -f "$SESSION_FILE" ]; then
   TOKENS=$(jq -s '[.[] | select(.type == "assistant") | .message.usage | select(. != null) |
     (.input_tokens + .output_tokens)] | add // 0' "$SESSION_FILE")
   COMPACTIONS=$(jq -s '[.[] | select(.type == "summary")] | length' "$SESSION_FILE")
   echo "Tokens used: $TOKENS"
   echo "Compaction events: $COMPACTIONS"
 else
-  echo "Tokens used: UNAVAILABLE (no session file)"
+  echo "Tokens used: UNAVAILABLE (session file not found)"
 fi
 ```
 
-**Key insight (M102)**: Subagents do NOT inherit parent's session ID. They must find their own
-session file by looking for the most recently modified .jsonl file in the sessions directory.
+**Key insight (M102)**: Each subagent has its own session ID echoed in the CAT session instructions
+at the start of its session. Use that ID, not the parent's session ID.
 
 **Main agent responsibility**: Report ONLY measured values from subagent output. Never fabricate estimates.
 
