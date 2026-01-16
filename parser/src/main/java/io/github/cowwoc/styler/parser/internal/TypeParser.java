@@ -617,10 +617,12 @@ public final class TypeParser
 		}
 
 		// Handle generic type arguments: List<String>, Map<K, V>, etc.
+		this.parser.parseComments();
 		if (this.parser.match(TokenType.LESS_THAN))
 			parseTypeArguments();
 
 		this.parser.parseArrayDimensionsWithAnnotations();
+		this.parser.parseComments();
 
 		if (this.parser.isIdentifierOrContextualKeyword())
 		{
