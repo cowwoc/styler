@@ -220,4 +220,33 @@ public interface ParserAccess
 	 * @return the source code string
 	 */
 	String getSourceCode();
+
+	// ========== Statement Parsing Support ==========
+
+	/**
+	 * Checks if the given token type is a modifier keyword.
+	 *
+	 * @param type the token type to check
+	 * @return {@code true} if the token is a modifier
+	 */
+	boolean isModifier(TokenType type);
+
+	/**
+	 * Skips member modifiers and annotations until reaching a type keyword or member start.
+	 */
+	void skipMemberModifiers();
+
+	/**
+	 * Parses a nested type declaration if the current token starts one.
+	 *
+	 * @return {@code true} if a type declaration was parsed
+	 */
+	boolean parseNestedTypeDeclaration();
+
+	/**
+	 * Parses an assignment expression (without lambda lookahead).
+	 *
+	 * @return the expression node index
+	 */
+	NodeIndex parseAssignment();
 }

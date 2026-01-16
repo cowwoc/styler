@@ -1725,346 +1725,72 @@ public final class Parser implements AutoCloseable
 
 	private void parseStatement()
 	{
-		// Check for labeled statement: IDENTIFIER COLON
-		int checkpoint = position;
-		if (match(TokenType.IDENTIFIER) && match(TokenType.COLON))
-		{
-			parseLabeledStatement(checkpoint);
-			return;
-		}
-		position = checkpoint;
-
-		TokenType type = currentToken().type();
-
-		switch (type)
-		{
-			case IF -> parseIfStatement();
-			case FOR -> parseForStatement();
-			case WHILE -> parseWhileStatement();
-			case DO -> parseDoWhileStatement();
-			case SWITCH -> parseSwitchStatement();
-			case RETURN -> parseReturnStatement();
-			case THROW -> parseThrowStatement();
-			case YIELD -> parseYieldStatement();
-			case TRY -> parseTryStatement();
-			case SYNCHRONIZED -> parseSynchronizedStatement();
-			case BREAK -> parseBreakStatement();
-			case CONTINUE -> parseContinueStatement();
-			case ASSERT -> parseAssertStatement();
-			case SEMICOLON -> consume();
-			case LEFT_BRACE -> parseBlock();
-			case CLASS, INTERFACE, ENUM, RECORD -> parseLocalTypeDeclaration();
-			default ->
-			{
-				if (isLocalTypeDeclarationStart())
-					parseLocalTypeDeclaration();
-				else
-					parseExpressionOrVariableStatement();
-			}
-		}
+		statementParser.parseStatement();
 	}
 
-	/**
-	 * Parses a labeled statement.
-	 * A labeled statement has the form: {@code label: statement}
-	 *
-	 * @param labelStart the position where the label starts
-	 * @return the node index for the labeled statement
-	 */
 	private NodeIndex parseLabeledStatement(int labelStart)
 	{
-		parseStatement();
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.LABELED_STATEMENT, labelStart, end);
+		return statementParser.parseLabeledStatement(labelStart);
 	}
 
-	/**
-	 * Checks if the current position starts a local type declaration.
-	 * <p>
-	 * Uses lookahead to detect modifiers/annotations followed by type keywords
-	 * ({@code class}, {@code interface}, {@code enum}, {@code record}).
-	 * This method performs lookahead without permanently consuming tokens.
-	 *
-	 * @return {@code true} if a local type declaration starts at the current position
-	 */
 	private boolean isLocalTypeDeclarationStart()
 	{
-		int checkpoint = position;
-		// Skip modifiers and annotations
-		while (isModifier(currentToken().type()) ||
-			currentToken().type() == TokenType.AT_SIGN ||
-			currentToken().type() == TokenType.SEALED ||
-			currentToken().type() == TokenType.NON_SEALED)
-		{
-			if (currentToken().type() == TokenType.AT_SIGN)
-			{
-				consume();
-				parseQualifiedName();
-				if (match(TokenType.LEFT_PARENTHESIS))
-					skipBalancedParens();
-			}
-			else
-				consume();
-		}
-		boolean result = switch (currentToken().type())
-		{
-			case CLASS, INTERFACE, ENUM, RECORD -> true;
-			default -> false;
-		};
-		position = checkpoint;
-		return result;
+		return statementParser.isLocalTypeDeclarationStart();
 	}
 
-	/**
-	 * Parses a local type declaration (class, interface, enum, or record).
-	 * <p>
-	 * Local types are type declarations that appear inside method bodies, constructors,
-	 * or initializer blocks. This method handles modifiers (such as {@code final},
-	 * {@code abstract}, {@code sealed}, and annotations) that may precede the type keyword,
-	 * then delegates to {@link #parseNestedTypeDeclaration()}.
-	 */
 	private void parseLocalTypeDeclaration()
 	{
-		skipMemberModifiers();
-		parseNestedTypeDeclaration();
+		statementParser.parseLocalTypeDeclaration();
 	}
 
-	/**
-	 * Skips tokens until matching closing parenthesis is found.
-	 * <p>
-	 * Used for lookahead when skipping annotation arguments. Assumes the opening
-	 * parenthesis has already been consumed. Counts parenthesis depth and consumes
-	 * tokens until the depth returns to zero.
-	 */
 	private void skipBalancedParens()
 	{
-		int depth = 1;
-		while (depth > 0 && currentToken().type() != TokenType.END_OF_FILE)
-		{
-			if (match(TokenType.LEFT_PARENTHESIS))
-				++depth;
-			else if (match(TokenType.RIGHT_PARENTHESIS))
-				--depth;
-			else
-				consume();
-		}
+		statementParser.skipBalancedParens();
 	}
 
 	private NodeIndex parseBreakStatement()
 	{
-		int start = currentToken().start();
-		consume();
-		if (currentToken().type() == TokenType.IDENTIFIER)
-			consume();
-		expect(TokenType.SEMICOLON);
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.BREAK_STATEMENT, start, end);
+		return statementParser.parseBreakStatement();
 	}
 
 	private NodeIndex parseContinueStatement()
 	{
-		int start = currentToken().start();
-		consume();
-		if (currentToken().type() == TokenType.IDENTIFIER)
-			consume();
-		expect(TokenType.SEMICOLON);
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.CONTINUE_STATEMENT, start, end);
+		return statementParser.parseContinueStatement();
 	}
 
 	private NodeIndex parseIfStatement()
 	{
-		int start = currentToken().start();
-		expect(TokenType.IF);
-		// Handle comments after 'if' keyword
-		parseComments();
-		expect(TokenType.LEFT_PARENTHESIS);
-		parseExpression();
-		expect(TokenType.RIGHT_PARENTHESIS);
-		// Handle comments after condition
-		parseComments();
-		parseStatement();
-		// Handle comments between statement and else
-		parseComments();
-		if (match(TokenType.ELSE))
-		{
-			// Handle comments after 'else' keyword
-			parseComments();
-			parseStatement();
-		}
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.IF_STATEMENT, start, end);
+		return statementParser.parseIfStatement();
 	}
 
-	/**
-	 * Attempts to parse an enhanced for-loop header (type identifier : expression).
-	 *
-	 * @return {@code true} if enhanced for-loop header was successfully parsed
-	 */
 	private boolean tryParseEnhancedForHeader()
 	{
-		try
-		{
-			if (!looksLikeTypeStart())
-				return false;
-			// Consume declaration annotations (before FINAL)
-			while (currentToken().type() == TokenType.AT_SIGN)
-				parseAnnotation();
-			// Consume FINAL modifier if present
-			if (currentToken().type() == TokenType.FINAL)
-				consume();
-			parseType();
-			if (!isIdentifierOrContextualKeyword())
-				return false;
-			consume();
-			return match(TokenType.COLON);
-		}
-		catch (ParserException e)
-		{
-			// Not enhanced for - parsing failed
-			return false;
-		}
+		return statementParser.tryParseEnhancedForHeader();
 	}
 
-	/**
-	 * Checks if the current token could be the start of a type declaration.
-	 *
-	 * @return {@code true} if current token is FINAL, a primitive type, or an identifier
-	 */
 	private boolean looksLikeTypeStart()
 	{
-		TokenType type = currentToken().type();
-		return type == TokenType.AT_SIGN || type == TokenType.FINAL || isPrimitiveType(type) ||
-			type == TokenType.IDENTIFIER || isContextualKeyword(type);
+		return statementParser.looksLikeTypeStart();
 	}
 
 	private NodeIndex parseForStatement()
 	{
-		int start = currentToken().start();
-		expect(TokenType.FOR);
-		// Handle comments after 'for' keyword
-		parseComments();
-		expect(TokenType.LEFT_PARENTHESIS);
-		// Handle comments after opening parenthesis
-		parseComments();
-
-		// Enhanced for or regular for
-		int checkpoint = position;
-		boolean isEnhanced = tryParseEnhancedForHeader();
-
-		if (isEnhanced)
-		{
-			parseExpression();
-			expect(TokenType.RIGHT_PARENTHESIS);
-			parseStatement();
-			int end = previousToken().end();
-			return arena.allocateNode(NodeType.ENHANCED_FOR_STATEMENT, start, end);
-		}
-		position = checkpoint;
-		// Regular for
-		if (!match(TokenType.SEMICOLON))
-			parseExpressionOrVariableStatement();
-		if (!match(TokenType.SEMICOLON))
-		{
-			parseExpression();
-			expect(TokenType.SEMICOLON);
-		}
-		if (currentToken().type() != TokenType.RIGHT_PARENTHESIS)
-		{
-			parseExpression();
-			while (match(TokenType.COMMA))
-				parseExpression();
-		}
-		expect(TokenType.RIGHT_PARENTHESIS);
-		parseStatement();
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.FOR_STATEMENT, start, end);
+		return statementParser.parseForStatement();
 	}
 
 	private NodeIndex parseWhileStatement()
 	{
-		int start = currentToken().start();
-		expect(TokenType.WHILE);
-		// Handle comments after 'while' keyword
-		parseComments();
-		expect(TokenType.LEFT_PARENTHESIS);
-		parseExpression();
-		expect(TokenType.RIGHT_PARENTHESIS);
-		// Handle comments after condition
-		parseComments();
-		parseStatement();
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.WHILE_STATEMENT, start, end);
+		return statementParser.parseWhileStatement();
 	}
 
 	private NodeIndex parseDoWhileStatement()
 	{
-		int start = currentToken().start();
-		expect(TokenType.DO);
-		parseStatement();
-		expect(TokenType.WHILE);
-		expect(TokenType.LEFT_PARENTHESIS);
-		parseExpression();
-		expect(TokenType.RIGHT_PARENTHESIS);
-		expect(TokenType.SEMICOLON);
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.DO_WHILE_STATEMENT, start, end);
+		return statementParser.parseDoWhileStatement();
 	}
 
 	private NodeIndex parseSwitchStatement()
 	{
-		int start = currentToken().start();
-		expect(TokenType.SWITCH);
-		expect(TokenType.LEFT_PARENTHESIS);
-		parseExpression();
-		expect(TokenType.RIGHT_PARENTHESIS);
-		expect(TokenType.LEFT_BRACE);
-		// Handle comments after opening brace
-		parseComments();
-		while (currentToken().type() == TokenType.CASE || currentToken().type() == TokenType.DEFAULT)
-		{
-			if (match(TokenType.CASE))
-			{
-				// Parse first case label element
-				parseCaseLabelElement();
-				// Handle multiple case labels: case 1, 2, 3 -> or case 'L', 'l':
-				while (match(TokenType.COMMA))
-					parseCaseLabelElement();
-			}
-			else
-				consume(); // DEFAULT
-
-			if (match(TokenType.ARROW))
-			{
-				// Arrow case: case 1 -> expr; or case 1 -> { ... }
-				if (currentToken().type() == TokenType.LEFT_BRACE)
-					parseBlock();
-				else if (currentToken().type() == TokenType.THROW)
-				{
-					consume();
-					parseExpression();
-					expect(TokenType.SEMICOLON);
-				}
-				else
-					parseStatement();
-			}
-			else
-			{
-				// Colon case (traditional): case 1:
-				expect(TokenType.COLON);
-				// Handle comments after colon
-				parseComments();
-				while (currentToken().type() != TokenType.CASE &&
-					currentToken().type() != TokenType.DEFAULT &&
-					currentToken().type() != TokenType.RIGHT_BRACE)
-					parseStatement();
-			}
-			// Handle comments between case/default labels
-			parseComments();
-		}
-		expect(TokenType.RIGHT_BRACE);
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.SWITCH_STATEMENT, start, end);
+		return statementParser.parseSwitchStatement();
 	}
 
 	private NodeIndex parseSwitchExpression(int start)
@@ -2130,316 +1856,59 @@ public final class Parser implements AutoCloseable
 	return arena.allocateNode(NodeType.SWITCH_EXPRESSION, start, end);
 }
 
-	/**
-	 * Parses a single case label element in a switch statement or expression.
-	 * Handles:
-	 * <ul>
-	 *   <li>Constant expressions: {@code case 1}, {@code case 'L'}, {@code case FOO}</li>
-	 *   <li>Type patterns: {@code case String s}, {@code case Foo.Bar bar}, {@code case Type _}</li>
-	 *   <li>Primitive type patterns (JEP 507): {@code case int i}, {@code case double d}</li>
-	 *   <li>{@code null} keyword: {@code case null}</li>
-	 *   <li>{@code default} keyword: {@code case null, default}</li>
-	 * </ul>
-	 * Type patterns are distinguished from constant expressions by checking if an identifier
-	 * (potentially qualified) is followed by another identifier or underscore.
-	 */
 	private void parseCaseLabelElement()
 	{
-		// Handle special keywords that can appear as case labels
-		if (match(TokenType.NULL_LITERAL))
-			return;
-		if (match(TokenType.DEFAULT))
-			return;
-
-		// Try to detect primitive type pattern (JEP 507): int i, double d, etc.
-		if (tryParsePrimitiveTypePattern())
-			return;
-
-		// Try to detect reference type pattern: Type identifier or Type _
-		// Type patterns look like: String s, Foo.Bar bar, Integer _, etc.
-		if (currentToken().type() == TokenType.IDENTIFIER && tryParseTypePattern())
-			return;
-
-		// Parse as case label expression (no lambda lookahead)
-		parseCaseLabelExpression();
+		statementParser.parseCaseLabelElement();
 	}
 
-	/**
-	 * Parses an expression in the context of a case label.
-	 * <p>
-	 * This method is similar to {@link #parseExpression()} but does NOT apply lambda lookahead.
-	 * In case labels, the pattern {@code identifier ->} always represents a constant reference
-	 * followed by the case arrow, never a lambda expression.
-	 */
 	private void parseCaseLabelExpression()
 	{
-		// Skip lambda lookahead - go directly to assignment parsing
-		parseAssignment();
+		statementParser.parseCaseLabelExpression();
 	}
 
-	/**
-	 * Attempts to parse a primitive type pattern in a case label.
-	 * Primitive type patterns have the form: {@code primitiveType patternVariable}
-	 * <p>
-	 * Examples:
-	 * <ul>
-	 *   <li>{@code case int i ->}</li>
-	 *   <li>{@code case double d when d > 0 ->}</li>
-	 *   <li>{@code case long _}</li>
-	 * </ul>
-	 *
-	 * @return {@code true} if a primitive type pattern was parsed, {@code false} otherwise
-	 */
 	private boolean tryParsePrimitiveTypePattern()
 	{
-		if (!isPrimitiveType(currentToken().type()))
-			return false;
-
-		int checkpoint = position;
-		consume(); // primitive type keyword
-
-		// Check if followed by identifier (pattern variable)
-		if (currentToken().type() != TokenType.IDENTIFIER)
-		{
-			// Not a type pattern, restore position
-			position = checkpoint;
-			return false;
-		}
-
-		consume(); // pattern variable
-
-		// Check for optional guard: "when" expression
-		if (isContextualKeyword("when"))
-			parseGuardExpression();
-		return true;
+		return statementParser.tryParsePrimitiveTypePattern();
 	}
 
-	/**
-	 * Attempts to parse a type pattern or record pattern in a case label.
-	 * <ul>
-	 *   <li>Type pattern: {@code Type patternVariable} (e.g., {@code String s}, {@code Foo.Bar bar},
-	 *       {@code Integer _})</li>
-	 *   <li>Record pattern: {@code Type(componentPatterns...)} (e.g., {@code Point(int x, int y)},
-	 *       {@code Box(String _)})</li>
-	 * </ul>
-	 * Both may be followed by a guard expression: {@code when guardExpr}
-	 *
-	 * @return {@code true} if a pattern was successfully parsed, {@code false} if the current
-	 *         position should be treated as a regular expression
-	 */
 	private boolean tryParseTypePattern()
 	{
-		int checkpoint = position;
-		int typeStart = currentToken().start();
-
-		// Parse potential type (may be qualified like Foo.Bar.Baz)
-		consume(); // First identifier
-		while (match(TokenType.DOT))
-		{
-			if (currentToken().type() != TokenType.IDENTIFIER)
-			{
-				// Not a qualified name, restore position
-				position = checkpoint;
-				return false;
-			}
-			consume();
-		}
-
-		// Check if this is a record pattern: Type(components...)
-		if (currentToken().type() == TokenType.LEFT_PARENTHESIS)
-		{
-			parseRecordPattern(typeStart);
-			return true;
-		}
-
-		// Check if next token is an identifier (pattern variable)
-		// This includes both named variables (s, bar) and unnamed pattern (_)
-		if (currentToken().type() == TokenType.IDENTIFIER)
-		{
-			consume();
-			// Check for optional guard: "when" expression
-			if (isContextualKeyword("when"))
-				parseGuardExpression();
-			return true;
-		}
-
-		// Not a type pattern, restore position
-		position = checkpoint;
-		return false;
+		return statementParser.tryParseTypePattern();
 	}
 
-	/**
-	 * Parses a record pattern after the type name has been consumed.
-	 * Record patterns have the form: {@code Type(componentPattern, componentPattern, ...)}
-	 * <p>
-	 * Examples:
-	 * <ul>
-	 *   <li>{@code Point(int x, int y)}</li>
-	 *   <li>{@code Empty()}</li>
-	 *   <li>{@code Box(Point(int x, int y))}</li>
-	 *   <li>{@code Point(int x, int y) when x > 0}</li>
-	 * </ul>
-	 *
-	 * @param typeStart the start position of the type name
-	 * @return the node index of the record pattern
-	 */
 	private NodeIndex parseRecordPattern(int typeStart)
 	{
-		expect(TokenType.LEFT_PARENTHESIS);
-		parseRecordPatternComponents();
-		expect(TokenType.RIGHT_PARENTHESIS);
-
-		// Check for optional guard: "when" expression
-		if (isContextualKeyword("when"))
-			parseGuardExpression();
-
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.RECORD_PATTERN, typeStart, end);
+		return statementParser.parseRecordPattern(typeStart);
 	}
 
-	/**
-	 * Parses the component patterns inside a record pattern's parentheses.
-	 * Handles empty component lists and comma-separated component patterns.
-	 */
 	private void parseRecordPatternComponents()
 	{
-		// Handle empty component list: Empty()
-		if (currentToken().type() == TokenType.RIGHT_PARENTHESIS)
-			return;
-
-		parseComponentPattern();
-		while (match(TokenType.COMMA))
-			parseComponentPattern();
+		statementParser.parseRecordPatternComponents();
 	}
 
-	/**
-	 * Parses a single component pattern within a record pattern.
-	 * Component patterns can be:
-	 * <ul>
-	 *   <li>Unnamed pattern: {@code _}</li>
-	 *   <li>Type pattern: {@code Type variable} (e.g., {@code int x}, {@code String s},
-	 *       {@code var x}, {@code String[] items})</li>
-	 *   <li>Nested record pattern: {@code Type(components...)} (e.g., {@code Point(int x, int y)})</li>
-	 * </ul>
-	 */
 	private void parseComponentPattern()
 	{
-		// Check for unnamed pattern: _
-		if (currentToken().type() == TokenType.IDENTIFIER &&
-			"_".equals(currentToken().decodedText()))
-		{
-			consume();
-			return;
-		}
-
-		// Parse type (may be primitive, var, or qualified reference type)
-		int componentTypeStart = currentToken().start();
-		if (isPrimitiveType(currentToken().type()))
-			consume();
-		else if (currentToken().type() == TokenType.VAR)
-			// Type inference with 'var' keyword
-			consume();
-		else if (isIdentifierOrContextualKeyword())
-		{
-			consume();
-			while (match(TokenType.DOT))
-			{
-				if (!isIdentifierOrContextualKeyword())
-				{
-					throw new ParserException(
-						"Expected identifier after '.' in type", currentToken().start());
-				}
-				consume();
-			}
-		}
-		else
-		{
-			throw new ParserException(
-				"Expected type in component pattern", currentToken().start());
-		}
-
-		parseArrayDimensionsWithAnnotations();
-
-		// Determine what follows the type:
-		// - LEFT_PARENTHESIS -> nested record pattern
-		// - IDENTIFIER -> type pattern with variable name
-		if (currentToken().type() == TokenType.LEFT_PARENTHESIS)
-			// Nested record pattern
-			parseRecordPattern(componentTypeStart);
-		else if (isIdentifierOrContextualKeyword())
-			// Type pattern: consume the variable name
-			consume();
-		// else: just a type without variable (could happen in some edge cases)
+		statementParser.parseComponentPattern();
 	}
 
-	/**
-	 * Checks if the current token is an identifier that matches a contextual keyword.
-	 * Contextual keywords like "when" are only treated as keywords in specific contexts,
-	 * not as reserved words throughout the language.
-	 *
-	 * @param keyword the contextual keyword to check for
-	 * @return {@code true} if the current token is an identifier matching the keyword
-	 */
-	private boolean isContextualKeyword(String keyword)
-	{
-		return currentToken().type() == TokenType.IDENTIFIER &&
-			currentToken().decodedText().equals(keyword);
-	}
-
-	/**
-	 * Parses a guard expression following the "when" contextual keyword in a guarded pattern.
-	 * The "when" keyword must have already been detected via {@link #isContextualKeyword(String)}.
-	 * <p>
-	 * Example: {@code case String s when s.length() > 5 -> ...}
-	 */
 	private void parseGuardExpression()
 	{
-		// Consume the "when" contextual keyword
-		consume();
-		// Parse the guard condition expression
-		parseExpression();
+		statementParser.parseGuardExpression();
 	}
 
 	private NodeIndex parseReturnStatement()
 	{
-		int start = currentToken().start();
-		expect(TokenType.RETURN);
-		if (currentToken().type() != TokenType.SEMICOLON)
-			parseExpression();
-		expect(TokenType.SEMICOLON);
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.RETURN_STATEMENT, start, end);
+		return statementParser.parseReturnStatement();
 	}
 
 	private NodeIndex parseThrowStatement()
 	{
-		int start = currentToken().start();
-		expect(TokenType.THROW);
-		parseExpression();
-		expect(TokenType.SEMICOLON);
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.THROW_STATEMENT, start, end);
+		return statementParser.parseThrowStatement();
 	}
 
-	/**
-	 * Parses a yield statement within a switch expression block.
-	 * <p>
-	 * The yield statement (JDK 14+) returns a value from a switch expression block.
-	 * It differs from return in that it yields a value to the enclosing switch expression,
-	 * not from the enclosing method.
-	 * <p>
-	 * Syntax: {@code yield expression;}
-	 *
-	 * @return a {@link NodeIndex} pointing to the allocated {@link NodeType#YIELD_STATEMENT} node
-	 */
 	private NodeIndex parseYieldStatement()
 	{
-		int start = currentToken().start();
-		expect(TokenType.YIELD);
-		parseExpression();
-		expect(TokenType.SEMICOLON);
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.YIELD_STATEMENT, start, end);
+		return statementParser.parseYieldStatement();
 	}
 
 	private NodeIndex parseTryStatement()
@@ -2449,103 +1918,27 @@ public final class Parser implements AutoCloseable
 
 	private NodeIndex parseSynchronizedStatement()
 	{
-		int start = currentToken().start();
-		expect(TokenType.SYNCHRONIZED);
-		expect(TokenType.LEFT_PARENTHESIS);
-		parseExpression();
-		expect(TokenType.RIGHT_PARENTHESIS);
-		parseBlock();
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.SYNCHRONIZED_STATEMENT, start, end);
+		return statementParser.parseSynchronizedStatement();
 	}
 
 	private NodeIndex parseAssertStatement()
 	{
-		int start = currentToken().start();
-		expect(TokenType.ASSERT);
-		parseExpression();
-		if (match(TokenType.COLON))
-			parseExpression();
-		expect(TokenType.SEMICOLON);
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.ASSERT_STATEMENT, start, end);
+		return statementParser.parseAssertStatement();
 	}
 
-	/**
-	 * Attempts to parse a variable declaration. Backtracks to checkpoint on failure.
-	 *
-	 * @param checkpoint the position to backtrack to on failure
-	 * @return {@code true} if successfully parsed a variable declaration
-	 */
 	private boolean tryParseVariableDeclaration(int checkpoint)
 	{
-		try
-		{
-			// Consume declaration annotations (before FINAL modifier)
-			while (currentToken().type() == TokenType.AT_SIGN)
-				parseAnnotation();
-			// Consume optional FINAL modifier
-			if (currentToken().type() == TokenType.FINAL)
-				consume();
-			parseType();
-			if (!isIdentifierOrContextualKeyword())
-			{
-				position = checkpoint;
-				return false;
-			}
-			consume();
-			parseOptionalArrayBrackets();
-			if (match(TokenType.ASSIGN))
-				parseExpression();
-			parseAdditionalDeclarators();
-			expect(TokenType.SEMICOLON);
-			return true;
-		}
-		catch (ParserException e)
-		{
-			position = checkpoint;
-			return false;
-		}
+		return statementParser.tryParseVariableDeclaration(checkpoint);
 	}
 
-	/**
-	 * Parses optional array brackets after a variable name.
-	 */
-	private void parseOptionalArrayBrackets()
-	{
-		parseArrayDimensionsWithAnnotations();
-	}
-
-	/**
-	 * Parses additional variable declarators after the first one (comma-separated).
-	 */
 	private void parseAdditionalDeclarators()
 	{
-		while (match(TokenType.COMMA))
-		{
-			expectIdentifierOrContextualKeyword();
-			parseOptionalArrayBrackets();
-			if (match(TokenType.ASSIGN))
-				parseExpression();
-		}
+		statementParser.parseAdditionalDeclarators();
 	}
 
 	private void parseExpressionOrVariableStatement()
 	{
-		int checkpoint = position;
-
-		// Try to parse as variable declaration
-		if ((currentToken().type() == TokenType.AT_SIGN ||
-			currentToken().type() == TokenType.FINAL ||
-			currentToken().type() == TokenType.VAR ||
-			isPrimitiveType(currentToken().type()) ||
-			currentToken().type() == TokenType.IDENTIFIER) &&
-			tryParseVariableDeclaration(checkpoint))
-			return;
-
-		// Parse as expression statement
-		parseExpression();
-		expect(TokenType.SEMICOLON);
+		statementParser.parseExpressionOrVariableStatement();
 	}
 
 	// Expression parsing with operator precedence
@@ -3810,6 +3203,30 @@ public final class Parser implements AutoCloseable
 			public String getSourceCode()
 			{
 				return sourceCode;
+			}
+
+			@Override
+			public boolean isModifier(TokenType type)
+			{
+				return Parser.this.isModifier(type);
+			}
+
+			@Override
+			public void skipMemberModifiers()
+			{
+				Parser.this.skipMemberModifiers();
+			}
+
+			@Override
+			public boolean parseNestedTypeDeclaration()
+			{
+				return Parser.this.parseNestedTypeDeclaration();
+			}
+
+			@Override
+			public NodeIndex parseAssignment()
+			{
+				return Parser.this.parseAssignment();
 			}
 		};
 	}

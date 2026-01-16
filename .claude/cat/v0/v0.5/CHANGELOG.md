@@ -16,6 +16,8 @@ Parser edge cases for real-world Java codebases.
 | fix-lambda-typed-parameters-in-args | bugfix | implemented | Parse typed lambda parameters like (Type param) -> body |
 | fix-octal-escape-in-char-literal | bugfix | implemented | Handle JLS 3.10.6 octal escape sequences in character/string literals |
 | add-serial-annotations | config | implemented | Add @Serial annotation to all serialVersionUID fields |
+| create-parser-access-interface | refactor | implemented | Create ParserAccess interface for parser decomposition |
+| extend-statement-parser | refactor | implemented | Move 30 statement parsing methods to StatementParser |
 
 ## Key Changes
 
