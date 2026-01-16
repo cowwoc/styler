@@ -334,6 +334,12 @@ public final class Parser implements AutoCloseable
 				++lookahead;
 				continue;
 			}
+			// Skip comments to continue looking
+			if (isCommentToken(type))
+			{
+				++lookahead;
+				continue;
+			}
 			// Skip annotations (@ followed by identifier and optional arguments)
 			if (type == TokenType.AT_SIGN)
 			{
@@ -901,6 +907,21 @@ public final class Parser implements AutoCloseable
 	}
 
 	/**
+	 * Checks if the given token type is a comment token.
+	 *
+	 * @param type the token type to check
+	 * @return {@code true} if the token is any type of comment
+	 */
+	private boolean isCommentToken(TokenType type)
+	{
+		return switch (type)
+		{
+			case LINE_COMMENT, BLOCK_COMMENT, JAVADOC_COMMENT, MARKDOWN_DOC_COMMENT -> true;
+			default -> false;
+		};
+	}
+
+	/**
 	 * Expects an identifier or contextual keyword token and consumes it.
 	 * <p>
 	 * Contextual keywords like {@code var}, {@code module}, and {@code with} are valid
@@ -1341,8 +1362,21 @@ public final class Parser implements AutoCloseable
 			expect(TokenType.RIGHT_PARENTHESIS);
 		}
 		if (match(TokenType.LEFT_BRACE))
+		{
 			while (!match(TokenType.RIGHT_BRACE))
+			{
+				parseComments();
+				if (currentToken().type() == TokenType.RIGHT_BRACE)
+					continue;
+				if (currentToken().type() == TokenType.END_OF_FILE)
+				{
+					throw new ParserException(
+						"Unexpected END_OF_FILE in enum constant body",
+						currentToken().start());
+				}
 				parseMemberDeclaration();
+			}
+		}
 		int end = previousToken().end();
 		arena.allocateNode(NodeType.ENUM_CONSTANT, start, end);
 	}
