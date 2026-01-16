@@ -5,5 +5,9 @@
   "autoCleanupWorktrees": true,
   "initialized": "2026-01-12",
   "source": "existing",
-  "version": "2.0.9"
+  "version": "2.0.9",
+  "leash": "medium",
+  "caution": "moderate",
+  "curiosity": "low",
+  "patience": "high"
 }
