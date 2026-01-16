@@ -2572,6 +2572,58 @@
         "catches_variations": true
       },
       "correct_behavior": "Use st, result, or task_status instead of status as variable name"
+    },
+    {
+      "id": "M109",
+      "timestamp": "2026-01-16T16:15:00Z",
+      "category": "prompt_engineering",
+      "description": "Subagent could not measure token usage - session ID not accessible in Task tool context",
+      "root_cause": "CLAUDE.md instruction assumed subagents receive CAT session instructions with session ID, but they do not. Main agent must include session file discovery in prompt.",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "pattern_keywords": [
+        "token",
+        "session",
+        "subagent",
+        "measurement"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Main agent includes session file discovery commands in subagent prompt so subagent can find and measure its own session file"
+    },
+    {
+      "id": "M110",
+      "timestamp": "2026-01-16T16:25:00Z",
+      "category": "process",
+      "description": "Verification ran on validation-only task that did not modify source files",
+      "root_cause": "execute-task.md verify_changes step checks verify config setting but not whether any source files actually changed",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/commands/execute-task.md",
+      "pattern_keywords": [
+        "verify",
+        "validation",
+        "source",
+        "unchanged"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Check if source files changed before running verification; skip verification for validation-only tasks"
     }
   ],
   "mistake_count_since_last": 6
