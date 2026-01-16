@@ -399,9 +399,9 @@
       "occurrences_after_fix": 0,
       "first_seen": "2026-01-05",
       "last_seen": "2026-01-06",
-      "last_action_date": null,
-      "status": "new",
-      "effectiveness": "pending",
+      "last_action_date": "2026-01-16",
+      "status": "addressed",
+      "effectiveness": "pending_verification",
       "preventions": [],
       "related_action_items": [
         "A006"
@@ -675,9 +675,9 @@
       "description": "Strengthen parser test documentation: prohibit weak assertions (isNotNull on arenas), require position verification, add anti-pattern examples",
       "category": "test_failure",
       "pattern_id": "PATTERN-005",
-      "status": "open",
+      "status": "implemented",
       "created_date": "2026-01-08T12:00:00-05:00",
-      "completed_date": null,
+      "completed_date": "2026-01-16T10:31:49-05:00",
       "related_mistakes": [
         "M027",
         "M031",
@@ -688,7 +688,8 @@
         "mistakes_after": null,
         "post_fix_mistakes": [],
         "verdict": "pending"
-      }
+      },
+      "implementation_note": "Added Parser Test Requirements section to quality-guide.md with anti-patterns, weak assertion prohibitions, and manual derivation requirements. Updated CLAUDE.md reference."
     },
     {
       "id": "A007",
@@ -826,9 +827,9 @@
       "description": "Add mandatory subagent prompt checklist to spawn-subagent skill that cross-references recent learnings (M076-M082) and verifies all prohibition instructions are included",
       "category": "prompt_engineering",
       "pattern_id": "PATTERN-012",
-      "status": "open",
+      "status": "implemented",
       "created_date": "2026-01-14T06:09:37Z",
-      "completed_date": null,
+      "completed_date": "2026-01-14T06:30:00Z",
       "related_mistakes": [
         "M077",
         "M079",
@@ -839,7 +840,8 @@
         "mistakes_after": null,
         "post_fix_mistakes": [],
         "verdict": "pending"
-      }
+      },
+      "implementation_note": "Already implemented in spawn-subagent/SKILL.md lines 191-330 as Mandatory Subagent Prompt Checklist (A013). Cross-references M076-M092 learnings with verification table."
     },
     {
       "id": "A014",
@@ -847,9 +849,9 @@
       "description": "Add main agent orchestration boundary enforcement - main agent must delegate ALL code edits to subagents",
       "category": "protocol_violation",
       "pattern_id": "PATTERN-008",
-      "status": "open",
+      "status": "implemented",
       "created_date": "2026-01-15T17:39:20-05:00",
-      "completed_date": null,
+      "completed_date": "2026-01-15T18:00:00-05:00",
       "related_mistakes": [
         "M088",
         "M089",
@@ -860,7 +862,8 @@
         "mistakes_after": null,
         "post_fix_mistakes": [],
         "verdict": "pending"
-      }
+      },
+      "implementation_note": "Already implemented in execute-task.md lines 1410-1523 as main_agent_boundaries section with pre_edit_checkpoint. Includes delegation table and orchestration enforcement."
     },
     {
       "id": "A015",
@@ -893,11 +896,13 @@
       "occurrences_after_fix": 0,
       "first_seen": "2026-01-14T00:00:00Z",
       "last_seen": "2026-01-14T06:00:00Z",
-      "last_action_date": null,
-      "status": "new",
+      "last_action_date": "2026-01-14",
+      "status": "addressed",
       "effectiveness": "pending",
       "preventions": [],
-      "related_action_items": [],
+      "related_action_items": [
+        "A013"
+      ],
       "note": "Subagent prompts missing critical instructions from skill docs (STATE.md updates, test style prohibitions)"
     },
     {
@@ -907,11 +912,12 @@
       "occurrences_after_fix": 0,
       "first_seen": "2026-01-14",
       "last_seen": "2026-01-15",
-      "last_action_date": null,
-      "status": "new",
+      "last_action_date": "2026-01-15",
+      "status": "addressed",
       "effectiveness": "pending",
       "preventions": [],
       "related_action_items": [
+        "A009",
         "A014"
       ],
       "note": "Main agent bypassing delegation requirements due to completion bias"
