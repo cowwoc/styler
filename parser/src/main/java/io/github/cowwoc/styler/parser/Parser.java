@@ -7,7 +7,6 @@ import io.github.cowwoc.styler.ast.core.NodeType;
 import io.github.cowwoc.styler.ast.core.PackageAttribute;
 import io.github.cowwoc.styler.ast.core.ParameterAttribute;
 import io.github.cowwoc.styler.ast.core.SecurityConfig;
-import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
 
 import java.io.IOException;
 import java.io.Serial;
@@ -21,6 +20,7 @@ import java.util.function.Supplier;
 import io.github.cowwoc.styler.parser.internal.ModuleParser;
 import io.github.cowwoc.styler.parser.internal.ParserAccess;
 import io.github.cowwoc.styler.parser.internal.StatementParser;
+import io.github.cowwoc.styler.parser.internal.TypeParser;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
 
@@ -67,6 +67,11 @@ public final class Parser implements AutoCloseable
 	 * Helper for parsing try-catch-finally statements and resources.
 	 */
 	private final StatementParser statementParser;
+
+	/**
+	 * Helper for parsing type declarations (class, interface, enum, record, annotation).
+	 */
+	private final TypeParser typeParser;
 
 	/**
 	 * Accessor providing controlled access to parser internals for helper classes.
@@ -137,6 +142,7 @@ public final class Parser implements AutoCloseable
 		this.parserAccess = createParserAccess();
 		this.moduleParser = new ModuleParser(parserAccess);
 		this.statementParser = new StatementParser(parserAccess);
+		this.typeParser = new TypeParser(parserAccess);
 
 		// SEC-006: Set parsing deadline for timeout enforcement
 		this.parsingDeadline = Instant.now().plusMillis(SecurityConfig.PARSING_TIMEOUT_MS);
@@ -519,54 +525,7 @@ public final class Parser implements AutoCloseable
 
 	private void parseTypeDeclaration()
 	{
-		// Annotations and modifiers (including sealed/non-sealed)
-		while (isModifier(currentToken().type()) ||
-			currentToken().type() == TokenType.SEALED ||
-			currentToken().type() == TokenType.NON_SEALED ||
-			currentToken().type() == TokenType.AT_SIGN)
-		{
-			if (currentToken().type() == TokenType.AT_SIGN)
-			{
-				// Check if this is @interface (annotation type declaration) or regular annotation
-				int checkpoint = position;
-				consume(); // @
-				if (currentToken().type() == TokenType.INTERFACE)
-				{
-					// This is @interface, backtrack and let the normal flow handle it
-					position = checkpoint;
-					break;
-				}
-				// Regular annotation - parse it and continue
-				position = checkpoint;
-				parseAnnotation();
-			}
-			else
-				consume();
-		}
-
-		if (match(TokenType.CLASS))
-			parseClassDeclaration();
-		else if (match(TokenType.INTERFACE))
-			parseInterfaceDeclaration();
-		else if (match(TokenType.ENUM))
-			parseEnumDeclaration();
-		else if (match(TokenType.RECORD))
-			parseRecordDeclaration();
-		else if (match(TokenType.AT_SIGN))
-		{
-			expect(TokenType.INTERFACE);
-			parseAnnotationDeclaration();
-		}
-	}
-
-	private boolean isModifier(TokenType type)
-	{
-		return switch (type)
-		{
-			case PUBLIC, PRIVATE, PROTECTED, STATIC, FINAL, ABSTRACT, STRICTFP, SYNCHRONIZED, NATIVE,
-				TRANSIENT, VOLATILE, DEFAULT -> true;
-			default -> false;
-		};
+		typeParser.parseTypeDeclaration();
 	}
 
 	/**
@@ -595,241 +554,9 @@ public final class Parser implements AutoCloseable
 		};
 	}
 
-	/**
-	 * Parses an implicit class declaration (JEP 512).
-	 * <p>
-	 * An implicit class contains top-level members (fields and methods) without an explicit class declaration.
-	 * This is used for simple "Hello World" style programs.
-	 *
-	 * @return a {@link NodeIndex} pointing to the allocated {@link NodeType#IMPLICIT_CLASS_DECLARATION} node
-	 */
 	private NodeIndex parseImplicitClassDeclaration()
 	{
-		int implicitStart = currentToken().start();
-
-		while (currentToken().type() != TokenType.END_OF_FILE)
-		{
-			parseComments();
-			if (currentToken().type() == TokenType.END_OF_FILE)
-			{
-				break;
-			}
-			parseMemberDeclaration();
-		}
-
-		int implicitEnd = previousToken().end();
-		return arena.allocateImplicitClassDeclaration(implicitStart, implicitEnd);
-	}
-
-	private NodeIndex parseClassDeclaration()
-	{
-		// CLASS keyword already consumed, capture its position
-		int start = previousToken().start();
-
-		// Capture type name and position before consuming
-		Token nameToken = currentToken();
-		expect(TokenType.IDENTIFIER);
-		String typeName = nameToken.decodedText();
-
-		// Type parameters
-		if (match(TokenType.LESS_THAN))
-			parseTypeParameters();
-
-		// Extends clause
-		if (match(TokenType.EXTENDS))
-			parseType();
-
-		// Skip comments between extends and implements
-		while (currentToken().type() == TokenType.LINE_COMMENT ||
-			currentToken().type() == TokenType.BLOCK_COMMENT)
-			consume();
-
-		// Implements clause
-		if (match(TokenType.IMPLEMENTS))
-		{
-			parseType();
-			while (match(TokenType.COMMA))
-				parseType();
-		}
-
-		// Permits clause (for sealed classes)
-		if (match(TokenType.PERMITS))
-		{
-			parseType();
-			while (match(TokenType.COMMA))
-				parseType();
-		}
-
-		// Class body
-		parseClassBody();
-
-		int end = previousToken().end();
-		TypeDeclarationAttribute attribute = new TypeDeclarationAttribute(typeName);
-		return arena.allocateClassDeclaration(start, end, attribute);
-	}
-
-	private NodeIndex parseInterfaceDeclaration()
-	{
-		// INTERFACE keyword already consumed, capture its position
-		int start = previousToken().start();
-
-		// Capture type name and position before consuming
-		Token nameToken = currentToken();
-		expect(TokenType.IDENTIFIER);
-		String typeName = nameToken.decodedText();
-
-		if (match(TokenType.LESS_THAN))
-			parseTypeParameters();
-
-		if (match(TokenType.EXTENDS))
-		{
-			parseType();
-			while (match(TokenType.COMMA))
-				parseType();
-		}
-
-		// Permits clause (for sealed interfaces)
-		if (match(TokenType.PERMITS))
-		{
-			parseType();
-			while (match(TokenType.COMMA))
-				parseType();
-		}
-
-		parseClassBody();
-
-		int end = previousToken().end();
-		TypeDeclarationAttribute attribute = new TypeDeclarationAttribute(typeName);
-		return arena.allocateInterfaceDeclaration(start, end, attribute);
-	}
-
-	private NodeIndex parseEnumDeclaration()
-	{
-		// ENUM keyword already consumed, capture its position
-		int start = previousToken().start();
-
-		// Capture type name and position before consuming
-		Token nameToken = currentToken();
-		expect(TokenType.IDENTIFIER);
-		String typeName = nameToken.decodedText();
-
-		if (match(TokenType.IMPLEMENTS))
-		{
-			parseType();
-			while (match(TokenType.COMMA))
-				parseType();
-		}
-
-		expect(TokenType.LEFT_BRACE);
-		parseEnumBody();
-		expect(TokenType.RIGHT_BRACE);
-
-		int end = previousToken().end();
-		TypeDeclarationAttribute attribute = new TypeDeclarationAttribute(typeName);
-		return arena.allocateEnumDeclaration(start, end, attribute);
-	}
-
-	/**
-	 * Parses an annotation type declaration ({@code @interface Name { }}).
-	 * <p>
-	 * Expects the caller to have already consumed the {@code @} and {@code interface} tokens.
-	 *
-	 * @return a {@link NodeIndex} pointing to the allocated {@link NodeType#ANNOTATION_DECLARATION} node
-	 */
-	private NodeIndex parseAnnotationDeclaration()
-	{
-		// position - 2 points to '@' because caller consumed both '@' and 'interface' tokens
-		int start = tokens.get(position - 2).start();
-
-		// Capture type name and position before consuming
-		Token nameToken = currentToken();
-		expect(TokenType.IDENTIFIER);
-		String typeName = nameToken.decodedText();
-
-		parseClassBody();
-		int end = previousToken().end();
-		TypeDeclarationAttribute attribute = new TypeDeclarationAttribute(typeName);
-		return arena.allocateAnnotationTypeDeclaration(start, end, attribute);
-	}
-
-	/**
-	 * Parses a record declaration ({@code record Name(components) { }}).
-	 * <p>
-	 * Expects the caller to have already consumed the {@code record} keyword.
-	 *
-	 * @return a {@link NodeIndex} pointing to the allocated {@link NodeType#RECORD_DECLARATION} node
-	 */
-	private NodeIndex parseRecordDeclaration()
-	{
-		// position - 1 points to 'record' because caller consumed that keyword
-		int start = previousToken().start();
-
-		// Capture type name and position before consuming
-		Token nameToken = currentToken();
-		expect(TokenType.IDENTIFIER);
-		String typeName = nameToken.decodedText();
-
-		// Type parameters (optional)
-		if (match(TokenType.LESS_THAN))
-			parseTypeParameters();
-
-		// Record components (mandatory)
-		expect(TokenType.LEFT_PARENTHESIS);
-		if (currentToken().type() != TokenType.RIGHT_PARENTHESIS)
-		{
-			// Handle comments before first component
-			parseComments();
-			parseParameter();
-			while (match(TokenType.COMMA))
-			{
-				// Handle comments between components
-				parseComments();
-				parseParameter();
-			}
-			// Handle comments before closing parenthesis
-			parseComments();
-		}
-		expect(TokenType.RIGHT_PARENTHESIS);
-
-		// Implements clause (optional)
-		if (match(TokenType.IMPLEMENTS))
-		{
-			parseType();
-			while (match(TokenType.COMMA))
-				parseType();
-		}
-
-		// Record body (optional - can be empty)
-		parseClassBody();
-
-		int end = previousToken().end();
-		TypeDeclarationAttribute attribute = new TypeDeclarationAttribute(typeName);
-		return arena.allocateRecordDeclaration(start, end, attribute);
-	}
-
-	private void parseTypeParameters()
-	{
-		// Handle comments before first type parameter
-		parseComments();
-		parseTypeParameter();
-		while (match(TokenType.COMMA))
-		{
-			// Handle comments between type parameters
-			parseComments();
-			parseTypeParameter();
-		}
-		expectGTInGeneric();
-	}
-
-	private void parseTypeParameter()
-	{
-		expect(TokenType.IDENTIFIER);
-		if (match(TokenType.EXTENDS))
-		{
-			parseType();
-			while (match(TokenType.BITWISE_AND))
-				parseType();
-		}
+		return typeParser.parseImplicitClassDeclaration();
 	}
 
 	/**
@@ -1262,291 +989,7 @@ public final class Parser implements AutoCloseable
 
 	private void parseTypeArguments()
 	{
-		// Handle diamond operator: <> with no type arguments
-		if (currentToken().type() == TokenType.GREATER_THAN)
-		{
-			expectGTInGeneric();
-			return;
-		}
-		// Handle comments before first type argument
-		parseComments();
-		// Parse type arguments and allocate nodes (return value is the allocated NodeIndex)
-		parseTypeArgument();
-		while (match(TokenType.COMMA))
-		{
-			// Handle comments between type arguments
-			parseComments();
-			parseTypeArgument();
-		}
-		expectGTInGeneric();
-	}
-
-	private NodeIndex parseTypeArgument()
-	{
-		if (match(TokenType.QUESTION_MARK))
-		{
-			Token wildcardToken = previousToken();
-			int start = wildcardToken.start();
-
-			if (match(TokenType.EXTENDS) || match(TokenType.SUPER))
-			{
-				parseType();
-				return arena.allocateNode(NodeType.WILDCARD_TYPE, start, previousToken().end());
-			}
-			// Unbounded wildcard: reuse wildcardToken for end position
-			return arena.allocateNode(NodeType.WILDCARD_TYPE, start, wildcardToken.end());
-		}
-
-		int start = currentToken().start();
-		parseType();
-		return arena.allocateNode(NodeType.QUALIFIED_NAME, start, previousToken().end());
-	}
-
-	private void parseClassBody()
-	{
-		// Skip any comments before opening brace
-		parseComments();
-		expect(TokenType.LEFT_BRACE);
-		while (!match(TokenType.RIGHT_BRACE))
-		{
-			parseComments();
-			if (currentToken().type() == TokenType.RIGHT_BRACE)
-				// Let match() in while condition consume the RIGHT_BRACE
-				continue;
-			if (currentToken().type() == TokenType.END_OF_FILE)
-				throw new ParserException("Unexpected END_OF_FILE in class body", currentToken().start());
-			parseMemberDeclaration();
-		}
-	}
-
-	private void parseEnumBody()
-	{
-		// Handle comments before the first constant (or before SEMICOLON/RIGHT_BRACE if no constants)
-		parseComments();
-		if (currentToken().type() != TokenType.SEMICOLON && currentToken().type() != TokenType.RIGHT_BRACE)
-		{
-			parseEnumConstant();
-			while (match(TokenType.COMMA))
-			{
-				// Handle comments after comma (e.g., trailing comma with comment before semicolon)
-				parseComments();
-				if (currentToken().type() == TokenType.SEMICOLON || currentToken().type() == TokenType.RIGHT_BRACE)
-					break;
-				parseEnumConstant();
-			}
-		}
-		// Handle comments after the last constant (before semicolon or rbrace)
-		parseComments();
-
-		if (match(TokenType.SEMICOLON))
-			while (currentToken().type() != TokenType.RIGHT_BRACE)
-				parseMemberDeclaration();
-	}
-
-	private void parseEnumConstant()
-	{
-		parseComments();
-		int start = currentToken().start();
-		// Parse annotations before the constant identifier
-		while (currentToken().type() == TokenType.AT_SIGN)
-		{
-			parseAnnotation();
-			parseComments();
-		}
-		expect(TokenType.IDENTIFIER);
-		if (match(TokenType.LEFT_PARENTHESIS) && !match(TokenType.RIGHT_PARENTHESIS))
-		{
-			parseExpression();
-			while (match(TokenType.COMMA))
-				parseExpression();
-			expect(TokenType.RIGHT_PARENTHESIS);
-		}
-		if (match(TokenType.LEFT_BRACE))
-		{
-			while (!match(TokenType.RIGHT_BRACE))
-			{
-				parseComments();
-				if (currentToken().type() == TokenType.RIGHT_BRACE)
-					continue;
-				if (currentToken().type() == TokenType.END_OF_FILE)
-				{
-					throw new ParserException(
-						"Unexpected END_OF_FILE in enum constant body",
-						currentToken().start());
-				}
-				parseMemberDeclaration();
-			}
-		}
-		int end = previousToken().end();
-		arena.allocateNode(NodeType.ENUM_CONSTANT, start, end);
-	}
-
-	private void parseMemberDeclaration()
-	{
-		parseComments();
-		int start = currentToken().start();
-		skipMemberModifiers();
-
-		if (parseNestedTypeDeclaration())
-			return;
-
-		// Type parameters (for methods)
-		if (match(TokenType.LESS_THAN))
-			parseTypeParameters();
-
-		parseMemberBody(start);
-	}
-
-	private void skipMemberModifiers()
-	{
-		while (isModifier(currentToken().type()) ||
-			currentToken().type() == TokenType.AT_SIGN ||
-			currentToken().type() == TokenType.SEALED ||
-			currentToken().type() == TokenType.NON_SEALED)
-		{
-			if (currentToken().type() == TokenType.AT_SIGN)
-			{
-				// Check if this is @interface (annotation type declaration) or regular annotation
-				int checkpoint = position;
-				consume();
-				if (currentToken().type() == TokenType.INTERFACE)
-				{
-					// This is @interface, backtrack and let parseNestedTypeDeclaration handle it
-					position = checkpoint;
-					break;
-				}
-				// Regular annotation - backtrack and parse it
-				position = checkpoint;
-				parseAnnotation();
-			}
-			else
-				consume();
-			// Handle comments between modifiers/annotations
-			parseComments();
-		}
-	}
-
-	private boolean parseNestedTypeDeclaration()
-	{
-		return switch (currentToken().type())
-		{
-			case CLASS ->
-			{
-				consume();
-				parseClassDeclaration();
-				yield true;
-			}
-			case INTERFACE ->
-			{
-				consume();
-				parseInterfaceDeclaration();
-				yield true;
-			}
-			case ENUM ->
-			{
-				consume();
-				parseEnumDeclaration();
-				yield true;
-			}
-			case RECORD ->
-			{
-				consume();
-				parseRecordDeclaration();
-				yield true;
-			}
-			case AT_SIGN ->
-			{
-				consume();
-				expect(TokenType.INTERFACE);
-				parseAnnotationDeclaration();
-				yield true;
-			}
-			default -> false;
-		};
-	}
-
-	private void parseMemberBody(int start)
-	{
-		if (isIdentifierOrContextualKeyword())
-			parseIdentifierMember(start);
-		else if (isPrimitiveType(currentToken().type()) || currentToken().type() == TokenType.VOID)
-			parsePrimitiveTypedMember(start);
-		else if (currentToken().type() == TokenType.LEFT_BRACE)
-			// Instance or static initializer (parseBlock expects the LEFT_BRACE)
-			parseBlock();
-		else if (match(TokenType.SEMICOLON))
-		{
-			// Empty declaration
-		}
-		else
-			throw new ParserException("Unexpected token in member declaration: " + currentToken().type(), start);
-	}
-
-	private void parseIdentifierMember(int memberStart)
-	{
-		int checkpoint = position;
-		consume(); // Consume first identifier (could be type, constructor name, or field name)
-
-		// Handle qualified type names: Outer.Inner, ValueLayout.OfInt, etc.
-		while (match(TokenType.DOT))
-		{
-			if (!isIdentifierOrContextualKeyword())
-				break;
-			consume();
-		}
-
-		if (match(TokenType.LEFT_PARENTHESIS))
-		{
-			// Constructor (no return type, identifier is constructor name)
-			parseMethodRest(memberStart, true);
-			return;
-		}
-
-		if (currentToken().type() == TokenType.LEFT_BRACE)
-		{
-			// Compact constructor (Java 16+): record component validation without parameter list
-			// Example: public record Point(int x, int y) { public Point { validateInputs(); } }
-			parseBlock();
-			return;
-		}
-
-		// Handle generic type arguments: List<String>, Map<K, V>, etc.
-		if (match(TokenType.LESS_THAN))
-			parseTypeArguments();
-
-		parseArrayDimensionsWithAnnotations();
-
-		if (isIdentifierOrContextualKeyword())
-		{
-			// Method with non-primitive return type: ReturnType methodName(...)
-			// First identifier was return type, now consume method name
-			consume();
-			if (match(TokenType.LEFT_PARENTHESIS))
-			{
-				parseMethodRest(memberStart, false);
-				return;
-			}
-
-			// This is a field declaration: Type fieldName = ...
-			parseFieldRest(memberStart);
-			return;
-		}
-
-		// Field with identifier type (no name found, restore and try as expression)
-		position = checkpoint;
-		consume(); // Re-consume type
-		parseFieldRest(memberStart);
-	}
-
-	private void parsePrimitiveTypedMember(int memberStart)
-	{
-		consume();
-		parseArrayDimensionsWithAnnotations();
-		expectIdentifierOrContextualKeyword();
-		if (match(TokenType.LEFT_PARENTHESIS))
-			parseMethodRest(memberStart, false);
-		else
-			parseFieldRest(memberStart);
+		typeParser.parseTypeArguments();
 	}
 
 	/**
@@ -1568,97 +1011,6 @@ public final class Parser implements AutoCloseable
 		}
 		int end = previousToken().end();
 		return arena.allocateNode(NodeType.ANNOTATION, start, end);
-	}
-
-	private NodeIndex parseMethodRest(int start, boolean isConstructor)
-	{
-		// Parameters already consumed opening paren
-		if (!match(TokenType.RIGHT_PARENTHESIS))
-		{
-			// Handle comments before first parameter
-			parseComments();
-			parseParameter();
-			while (match(TokenType.COMMA))
-			{
-				// Handle comments between parameters
-				parseComments();
-				parseParameter();
-			}
-			// Handle comments before closing parenthesis
-			parseComments();
-			expect(TokenType.RIGHT_PARENTHESIS);
-		}
-
-		// Throws clause
-		if (match(TokenType.THROWS))
-		{
-			parseQualifiedName();
-			while (match(TokenType.COMMA))
-				parseQualifiedName();
-		}
-
-		// Annotation element default value (for @interface methods)
-		if (match(TokenType.DEFAULT))
-			parseExpression();
-
-		// Method body or semicolon
-		if (match(TokenType.SEMICOLON))
-		{
-			// Abstract method
-		}
-		else
-			parseBlock();
-
-		int end = previousToken().end();
-		NodeType nodeType;
-		if (isConstructor)
-			nodeType = NodeType.CONSTRUCTOR_DECLARATION;
-		else
-			nodeType = NodeType.METHOD_DECLARATION;
-		return arena.allocateNode(nodeType, start, end);
-	}
-
-	private NodeIndex parseParameter()
-	{
-		int start = currentToken().start();
-		boolean isFinal = false;
-
-		// Modifiers (annotations and final)
-		while (currentToken().type() == TokenType.FINAL || currentToken().type() == TokenType.AT_SIGN)
-		{
-			if (currentToken().type() == TokenType.AT_SIGN)
-				parseAnnotation();
-			else
-			{
-				consume();
-				isFinal = true;
-			}
-		}
-
-		parseType();
-		boolean isVarargs = match(TokenType.ELLIPSIS);
-
-		// Check for receiver parameter (ClassName this)
-		boolean isReceiver = currentToken().type() == TokenType.THIS;
-		String parameterName;
-		if (isReceiver)
-		{
-			parameterName = "this";
-			consume();
-		}
-		else
-		{
-			Token nameToken = currentToken();
-			expectIdentifierOrContextualKeyword();
-			parameterName = nameToken.decodedText();
-		}
-
-		// Handle C-style array syntax: String args[]
-		parseArrayDimensionsWithAnnotations();
-
-		int end = previousToken().end();
-		ParameterAttribute attribute = new ParameterAttribute(parameterName, isVarargs, isFinal, isReceiver);
-		return arena.allocateParameterDeclaration(start, end, attribute);
 	}
 
 	/**
@@ -1712,28 +1064,6 @@ public final class Parser implements AutoCloseable
 		return arena.allocateParameterDeclaration(start, end, attribute);
 	}
 
-	private NodeIndex parseFieldRest(int start)
-	{
-		// Array dimensions or initializer
-		parseArrayDimensionsWithAnnotations();
-
-		if (match(TokenType.ASSIGN))
-			parseExpression();
-
-		while (match(TokenType.COMMA))
-		{
-			expectIdentifierOrContextualKeyword();
-			parseArrayDimensionsWithAnnotations();
-			if (match(TokenType.ASSIGN))
-				parseExpression();
-		}
-
-		expect(TokenType.SEMICOLON);
-
-		int end = previousToken().end();
-		return arena.allocateNode(NodeType.FIELD_DECLARATION, start, end);
-	}
-
 	/**
 	 * Parses a block statement.
 	 *
@@ -1775,6 +1105,21 @@ public final class Parser implements AutoCloseable
 	private void parseLocalTypeDeclaration()
 	{
 		statementParser.parseLocalTypeDeclaration();
+	}
+
+	private boolean isModifier(TokenType type)
+	{
+		return typeParser.isModifier(type);
+	}
+
+	private void skipMemberModifiers()
+	{
+		typeParser.skipMemberModifiers();
+	}
+
+	private boolean parseNestedTypeDeclaration()
+	{
+		return typeParser.parseNestedTypeDeclaration();
 	}
 
 	private void skipBalancedParens()
@@ -2818,7 +2163,7 @@ public final class Parser implements AutoCloseable
 		if (match(TokenType.LEFT_BRACE))
 		{
 			while (currentToken().type() != TokenType.RIGHT_BRACE && currentToken().type() != TokenType.END_OF_FILE)
-				parseMemberDeclaration();
+				typeParser.parseMemberDeclaration();
 			expect(TokenType.RIGHT_BRACE);
 		}
 
