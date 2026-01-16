@@ -1,4 +1,4 @@
-# Plan: Minor Version 0.7
+# Plan: Version 0.7
 
 ## Focus
 CLI enhancements and AI integration improvements

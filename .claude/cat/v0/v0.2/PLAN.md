@@ -1,4 +1,4 @@
-# Plan: Minor Version 0.2
+# Plan: Version 0.2
 
 ## Focus
 CLI and formatters for AI agent integration

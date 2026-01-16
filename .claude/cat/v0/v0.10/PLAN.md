@@ -1,4 +1,4 @@
-# Plan: Minor Version 0.10
+# Plan: Version 0.10
 
 ## Focus
 User documentation and website

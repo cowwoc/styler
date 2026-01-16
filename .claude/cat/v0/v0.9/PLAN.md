@@ -1,4 +1,4 @@
-# Plan: Minor Version 0.9
+# Plan: Version 0.9
 
 ## Focus
 Browser extension edge cases and performance

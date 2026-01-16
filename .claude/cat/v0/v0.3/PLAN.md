@@ -1,4 +1,4 @@
-# Plan: Minor Version 0.3
+# Plan: Version 0.3
 
 ## Focus
 Essential parser features: yield, annotations, try-catch, labeled statements

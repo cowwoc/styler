@@ -1,4 +1,4 @@
-# Plan: Major Version 0
+# Plan: Version 0
 
 ## Vision
 Pre-release development: build core functionality, parser, CLI, browser extension, and documentation.

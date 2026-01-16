@@ -1,4 +1,4 @@
-# Plan: Minor Version 0.4
+# Plan: Version 0.4
 
 ## Focus
 Advanced parser features: arrays, constructors, modules, implicit classes
