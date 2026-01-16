@@ -27,6 +27,7 @@ Parser edge cases for real-world Java codebases.
 | integrate-expression-parser | - | duplicate | Integration completed incrementally during extract-expr-* tasks |
 | fix-switch-case-in-expression-context | bugfix | implemented | Fix CASE/DEFAULT/BREAK/THROW/WHILE incorrectly parsed as expressions in old-style switch |
 | fix-contextual-keyword-declarations | bugfix | implemented | Add RECORD as contextual keyword for variable declarations |
+| fix-lambda-arrow-in-parenthesized-context | bugfix | implemented | Fix lambda detection with annotated generic type parameters |
 
 ## Key Changes
 
