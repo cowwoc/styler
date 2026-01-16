@@ -2406,6 +2406,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Subagents find their own session file by looking for the most recently modified .jsonl file in the sessions directory, rather than relying on inherited environment variables"
+    },
+    {
+      "id": "M103",
+      "timestamp": "2026-01-16T10:15:00Z",
+      "category": "documentation_violation",
+      "description": "Put bold markdown inside code fence in status display (renders literally, not bold)",
+      "root_cause": "Documentation contradiction - instructions say put bold outside code fences, but example template showed bold inside code fence",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/commands/status.md",
+      "pattern_keywords": [
+        "markdown",
+        "code-fence",
+        "bold",
+        "rendering"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Put bold markers (**text**) outside code fences; remove decorative bold from ASCII boxes"
     }
   ],
   "mistake_count_since_last": 6
