@@ -2329,6 +2329,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Parse error patterns now check exit code before triggering. Only flag parse errors when the command actually failed (non-zero exit code)."
+    },
+    {
+      "id": "M101",
+      "timestamp": "2026-01-16T14:30:00Z",
+      "category": "protocol_violation",
+      "description": "Main agent edited files in /workspace main worktree instead of task worktree during binary operators extraction",
+      "root_cause": "No enforcement preventing edits to main worktree during CAT task execution; lost track of location after merge conflict resolution",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/.claude/cat/workflows/execute-task.md",
+      "pattern_keywords": [
+        "worktree",
+        "main",
+        "isolation",
+        "merge_conflict"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Verify worktree location with pwd before any edits during CAT task; all implementation work happens in /workspace/.worktrees/<task-name>"
     }
   ],
   "mistake_count_since_last": 6
