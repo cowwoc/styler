@@ -187,6 +187,11 @@ public interface ParserAccess
 	 */
 	NodeIndex parseQualifiedName();
 
+	/**
+	 * Parses type arguments for generic types (e.g., {@code <String, Integer>}).
+	 */
+	void parseTypeArguments();
+
 	// ========== Block & Expression ==========
 
 	/**
