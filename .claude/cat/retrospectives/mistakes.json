@@ -2891,6 +2891,32 @@
         "catches_variations": true
       },
       "correct_behavior": "After cleanup, ALWAYS continue to next_task step and show user their available options (next task to execute, or completion message with available commands)"
+    },
+    {
+      "id": "M121",
+      "timestamp": "2026-01-16T14:45:11Z",
+      "category": "detection_gap",
+      "description": "Hook failed to detect reserved zsh variable because JSON extraction truncated command at embedded quotes",
+      "root_cause": "extract_json_value regex extracts from root .command but Claude Code sends at .tool_input.command; also truncates at embedded quotes in multi-line commands",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "code_fix",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/warn-zsh-reserved-vars.sh",
+      "pattern_keywords": [
+        "json-extraction",
+        "tool_input",
+        "hook-bypass",
+        "zsh-reserved"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "recurrence_of": "M108",
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use jq with .tool_input.command path instead of extract_json_value for command extraction in Bash hooks"
     }
   ],
   "mistake_count_since_last": 6

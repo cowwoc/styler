@@ -38,16 +38,18 @@ source "${CLAUDE_PROJECT_DIR}/.claude/hooks/lib/json-parser.sh"
 source /workspace/.claude/scripts/json-output.sh
 
 # Extract tool name and command from JSON
-TOOL_NAME=$(extract_json_value "$JSON_INPUT" "tool_name")
-COMMAND=$(extract_json_value "$JSON_INPUT" "command")
+# CRITICAL: Claude Code sends command at .tool_input.command, NOT at root .command
+# Using jq with correct path - extract_json_value only handles root-level keys (M121)
+TOOL_NAME=$(echo "$JSON_INPUT" | jq -r '.tool_name // empty' 2>/dev/null) || TOOL_NAME=""
+COMMAND=$(echo "$JSON_INPUT" | jq -r '.tool_input.command // empty' 2>/dev/null) || COMMAND=""
 
-# Fallback extraction if primary method fails
+# Fallback extraction if jq fails
 if [ -z "$TOOL_NAME" ]; then
-	TOOL_NAME=$(echo "$JSON_INPUT" | sed -n 's/.*"tool_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+	TOOL_NAME=$(extract_json_value "$JSON_INPUT" "tool_name")
 fi
 
 if [ -z "$COMMAND" ]; then
-	COMMAND=$(echo "$JSON_INPUT" | sed -n 's/.*"command"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+	COMMAND=$(extract_json_value "$JSON_INPUT" "command")
 fi
 
 # Only process Bash tool calls
