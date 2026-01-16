@@ -2517,6 +2517,34 @@
         "catches_variations": true
       },
       "correct_behavior": "Always use full git commands: git status, git checkout, git branch, git commit, git diff"
+    },
+    {
+      "id": "M107",
+      "timestamp": "2026-01-16T11:30:00Z",
+      "category": "detection_gap",
+      "description": "zsh reserved variable hook (M105) failed to detect status= in multi-line commands due to JSON newline encoding",
+      "root_cause": "Hook grep pattern didn't match because JSON encodes newlines as literal \\n, not actual newlines. The sed normalization step was needed before pattern matching.",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "code_fix",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/warn-zsh-reserved-vars.sh",
+      "pattern_keywords": [
+        "hook",
+        "json",
+        "newline",
+        "escape",
+        "grep",
+        "pattern-matching"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "recurrence_of": "M105",
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Normalize JSON-escaped newlines (\\n -> actual newline) before running grep pattern matching in hooks"
     }
   ],
   "mistake_count_since_last": 6
