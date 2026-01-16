@@ -2251,7 +2251,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Report lock exists, find another task, inform user they can run /cat:cleanup if THEY believe it is stale. Never investigate, label, or offer to remove locks."
+    },
+    {
+      "id": "M098",
+      "timestamp": "2026-01-16T14:30:00Z",
+      "category": "logical_error",
+      "description": "Token estimate underestimated implementation phase by 29% (66,000 estimated vs 85,100 actual)",
+      "root_cause": "Estimation factors in execute-task.md underweight implementation subagent token usage by ~4x. Formula predicted 21,000 for implementation phase but actual was 85,100.",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "config",
+      "prevention_path": "${CLAUDE_PLUGIN_ROOT}/.claude/cat/workflows/execute-task.md",
+      "pattern_keywords": [
+        "token_estimation",
+        "implementation_subagent",
+        "factor_calibration"
+      ],
+      "prevention_implemented": false,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Multiply implementation phase factors by 4x: files_to_create 20000, files_to_modify 12000, plan_steps 8000. Or add base implementation overhead of 50,000 tokens.",
+      "notes": "CAT plugin source needs update. Implementation subagent has significant overhead beyond code generation including context loading, verification commands, and git operations."
     }
   ],
-  "mistake_count_since_last": 4
+  "mistake_count_since_last": 5
 }
