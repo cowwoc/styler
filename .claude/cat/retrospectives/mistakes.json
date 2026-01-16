@@ -2741,7 +2741,7 @@
       "rca_method": "A",
       "rca_method_name": "5-whys",
       "prevention_type": "documentation",
-      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/rules/java-style.md",
       "pattern_keywords": [
         "test",
         "comments",
@@ -2769,7 +2769,7 @@
       "rca_method": "B",
       "rca_method_name": "taxonomy",
       "prevention_type": "skill",
-      "prevention_path": "/workspace/cat/commands/execute-task.md",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/rules/java-style.md",
       "pattern_keywords": [
         "relative path",
         "worktree",
@@ -2785,6 +2785,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Use absolute paths with ${CLAUDE_PROJECT_DIR} for worktree operations"
+    },
+    {
+      "id": "M116",
+      "timestamp": "2026-01-16T13:15:00Z",
+      "category": "protocol_violation",
+      "description": "Main agent directly edited RecordContextualKeywordTest.java to remove temporary comments instead of delegating to subagent",
+      "root_cause": "Completion bias - rationalized small fix exception despite M097/M063 explicitly prohibiting this pattern",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/retrospectives/mistakes.json",
+      "pattern_keywords": [
+        "delegation",
+        "main_agent",
+        "direct_edit",
+        "small_fix",
+        "completion_bias"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": "M063",
+      "prevention_quality": {
+        "verification_type": "negative",
+        "fragility": "high",
+        "catches_variations": false
+      },
+      "correct_behavior": "Spawn subagent for ALL source file edits, including trivial comment removal. Main agent only edits orchestration files (STATE.md, PLAN.md, CHANGELOG.md)."
     }
   ],
   "mistake_count_since_last": 6
