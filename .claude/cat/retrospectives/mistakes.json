@@ -2624,6 +2624,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Check if source files changed before running verification; skip verification for validation-only tasks"
+    },
+    {
+      "id": "M111",
+      "timestamp": "2026-01-16T11:45:00Z",
+      "category": "detection_gap",
+      "description": "Used invalid commit type feat: instead of feature:",
+      "root_cause": "validate-commit-type.sh hook failed to extract message from HEREDOC pattern",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "hook",
+      "prevention_path": "/workspace/cat/hooks/validate-commit-type.sh",
+      "pattern_keywords": [
+        "commit",
+        "feat",
+        "feature",
+        "heredoc",
+        "hook"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use feature: instead of feat: for new functionality commits"
     }
   ],
   "mistake_count_since_last": 6
