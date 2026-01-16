@@ -146,10 +146,10 @@ public final class Parser implements AutoCloseable
 
 		this.arena = new NodeArena();
 		this.parserAccess = createParserAccess();
+		this.expressionParser = new ExpressionParser(parserAccess);
 		this.moduleParser = new ModuleParser(parserAccess);
 		this.statementParser = new StatementParser(parserAccess);
 		this.typeParser = new TypeParser(parserAccess);
-		this.expressionParser = new ExpressionParser(parserAccess);
 
 		// SEC-006: Set parsing deadline for timeout enforcement
 		this.parsingDeadline = Instant.now().plusMillis(SecurityConfig.PARSING_TIMEOUT_MS);
@@ -1073,239 +1073,19 @@ public final class Parser implements AutoCloseable
 		statementParser.parseExpressionOrVariableStatement();
 	}
 
-	// Expression parsing with operator precedence
-
-	/**
-	 * Parses an expression.
-	 *
-	 * @return the expression node index
-	 */
-	public NodeIndex parseExpression()
+	private NodeIndex parseExpression()
 	{
-		// Check for lambda expression: identifier -> expr
-		if (currentToken().type() == TokenType.IDENTIFIER)
-		{
-			// Look ahead to see if this is a lambda
-			int checkpoint = position;
-			int start = currentToken().start();
-			consume(); // consume identifier
-
-			if (match(TokenType.ARROW))
-				// This is a lambda expression: x -> body
-				return parseLambdaBody(start);
-
-			// Not a lambda, restore position
-			position = checkpoint;
-		}
-
-		return parseAssignment();
+		return expressionParser.parseExpression();
 	}
 
 	private NodeIndex parseLambdaBody(int start)
 	{
-		// Handle comments between arrow and body
-		parseComments();
-		int end;
-		if (currentToken().type() == TokenType.LEFT_BRACE)
-		{
-			// Block lambda: x -> { statements }
-			// parseBlock() creates the BLOCK node; we just need the end position
-			parseBlock();
-			end = previousToken().end();
-		}
-		else
-		{
-			// Expression lambda: x -> expr
-			NodeIndex body = parseExpression();
-			end = arena.getEnd(body);
-		}
-		return arena.allocateNode(NodeType.LAMBDA_EXPRESSION, start, end);
+		return expressionParser.parseLambdaBody(start);
 	}
 
-	/**
-	 * Parses a lambda expression's parameter list after lookahead confirmed {@code ) ->} pattern.
-	 *
-	 * @param start the start position (opening parenthesis position)
-	 * @return the lambda expression node
-	 */
-	private NodeIndex parseLambdaParameters(int start)
-	{
-		if (isTypedLambdaParameters())
-			return parseTypedLambdaParameters(start);
-		return parseUntypedLambdaParameters(start);
-	}
-
-	/**
-	 * Checks if the lambda parameters are typed (have explicit type declarations).
-	 *
-	 * @return {@code true} if the parameters have explicit types
-	 */
-	private boolean isTypedLambdaParameters()
-	{
-		int savedPosition = position;
-		try
-		{
-			while (currentToken().type() == TokenType.FINAL || currentToken().type() == TokenType.AT_SIGN)
-			{
-				if (currentToken().type() == TokenType.AT_SIGN)
-				{
-					consume();
-					if (isIdentifierOrContextualKeyword())
-						consume();
-					while (currentToken().type() == TokenType.DOT)
-					{
-						consume();
-						if (isIdentifierOrContextualKeyword())
-							consume();
-					}
-					if (currentToken().type() == TokenType.LEFT_PARENTHESIS)
-						skipBalancedParens();
-				}
-				else
-					consume();
-			}
-
-			if (isPrimitiveType(currentToken().type()))
-				return true;
-
-			if (!isIdentifierOrContextualKeyword())
-				return false;
-
-			consume();
-
-			return switch (currentToken().type())
-			{
-				case LESS_THAN, LEFT_BRACKET, DOT -> true;
-				default -> isIdentifierOrContextualKeyword();
-			};
-		}
-		finally
-		{
-			position = savedPosition;
-		}
-	}
-
-	private NodeIndex parseTypedLambdaParameters(int start)
-	{
-		parseTypedLambdaParameter();
-		while (match(TokenType.COMMA))
-			parseTypedLambdaParameter();
-		expect(TokenType.RIGHT_PARENTHESIS);
-		expect(TokenType.ARROW);
-		return parseLambdaBody(start);
-	}
-
-	private void parseTypedLambdaParameter()
-	{
-		while (currentToken().type() == TokenType.FINAL || currentToken().type() == TokenType.AT_SIGN)
-		{
-			if (currentToken().type() == TokenType.AT_SIGN)
-				parseAnnotation();
-			else
-				consume();
-		}
-		parseType();
-		match(TokenType.ELLIPSIS);
-		expectIdentifierOrContextualKeyword();
-		parseArrayDimensionsWithAnnotations();
-	}
-
-	private NodeIndex parseUntypedLambdaParameters(int start)
-	{
-		expectIdentifierOrContextualKeyword();
-		while (match(TokenType.COMMA))
-			expectIdentifierOrContextualKeyword();
-		expect(TokenType.RIGHT_PARENTHESIS);
-		expect(TokenType.ARROW);
-		return parseLambdaBody(start);
-	}
-
-	/**
-	 * Parses parenthesized expression, cast expression, or lambda expression.
-	 * <p>
-	 * Handles:
-	 * <ul>
-	 *   <li>Empty parens lambda: {@code () -> expr}</li>
-	 *   <li>Cast expression: {@code (Type) operand}</li>
-	 *   <li>Multi-parameter lambda: {@code (a, b) -> expr}</li>
-	 *   <li>Parenthesized lambda: {@code (params) -> expr}</li>
-	 *   <li>Parenthesized expression: {@code (expr)}</li>
-	 * </ul>
-	 *
-	 * @param start the start position of the opening paren
-	 * @return the parsed node
-	 */
 	private NodeIndex parseParenthesizedOrLambda(int start)
 	{
-		// Check for empty parens lambda: () -> expr
-		if (match(TokenType.RIGHT_PARENTHESIS))
-		{
-			expect(TokenType.ARROW);
-			return parseLambdaBody(start);
-		}
-
-		// Detect ALL lambda forms by scanning for ) -> pattern BEFORE trying cast
-		if (isLambdaExpression())
-			return parseLambdaParameters(start);
-
-		NodeIndex castExpr = tryCastExpression(start);
-		if (castExpr != null)
-			return castExpr;
-
-		NodeIndex expr = parseExpression();
-		expect(TokenType.RIGHT_PARENTHESIS);
-
-		if (match(TokenType.ARROW))
-			return parseLambdaBody(start);
-
-		// Regular parenthesized expression
-		return expr;
-	}
-
-	private NodeIndex parseAssignment()
-	{
-		NodeIndex left = parseTernary();
-
-		if (isAssignmentOperator(currentToken().type()))
-		{
-			consume();
-			NodeIndex right = parseExpression(); // Right associative - must check for lambda
-
-			int start = arena.getStart(left);
-			int end = arena.getEnd(right);
-			return arena.allocateNode(NodeType.ASSIGNMENT_EXPRESSION, start, end);
-		}
-
-		return left;
-	}
-
-	private boolean isAssignmentOperator(TokenType type)
-	{
-		return switch (type)
-		{
-			case ASSIGN, PLUS_ASSIGN, MINUS_ASSIGN, STAR_ASSIGN, DIVIDE_ASSIGN, MODULO_ASSIGN,
-				BITWISE_AND_ASSIGN, BITWISE_OR_ASSIGN, CARET_ASSIGN, LEFT_SHIFT_ASSIGN,
-				RIGHT_SHIFT_ASSIGN, UNSIGNED_RIGHT_SHIFT_ASSIGN -> true;
-			default -> false;
-		};
-	}
-
-	private NodeIndex parseTernary()
-	{
-		NodeIndex condition = parseLogicalOr();
-
-		if (match(TokenType.QUESTION_MARK))
-		{
-			parseExpression();
-			expect(TokenType.COLON);
-			NodeIndex elseExpr = parseTernary(); // Right associative
-
-			int start = arena.getStart(condition);
-			int end = arena.getEnd(elseExpr);
-			return arena.allocateNode(NodeType.CONDITIONAL_EXPRESSION, start, end);
-		}
-
-		return condition;
+		return expressionParser.parseParenthesizedOrLambda(start);
 	}
 
 	/**
@@ -2328,7 +2108,7 @@ public final class Parser implements AutoCloseable
 			@Override
 			public NodeIndex parseExpression()
 			{
-				return Parser.this.parseExpression();
+				return expressionParser.parseExpression();
 			}
 
 			@Override
@@ -2364,7 +2144,31 @@ public final class Parser implements AutoCloseable
 			@Override
 			public NodeIndex parseAssignment()
 			{
-				return Parser.this.parseAssignment();
+				return expressionParser.parseAssignment();
+			}
+
+			@Override
+			public void skipBalancedParentheses()
+			{
+				Parser.this.skipBalancedParens();
+			}
+
+			@Override
+			public NodeIndex parseLogicalOr()
+			{
+				return Parser.this.parseLogicalOr();
+			}
+
+			@Override
+			public boolean isLambdaExpression()
+			{
+				return Parser.this.isLambdaExpression();
+			}
+
+			@Override
+			public NodeIndex tryCastExpression(int start)
+			{
+				return Parser.this.tryCastExpression(start);
 			}
 		};
 	}
