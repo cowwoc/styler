@@ -1,4 +1,4 @@
-# Plan: Minor Version 0.6
+# Plan: Version 0.6
 
 ## Focus
 Test consolidation and code quality improvements

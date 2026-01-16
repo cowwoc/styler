@@ -1,4 +1,4 @@
-# Plan: Minor Version 0.8
+# Plan: Version 0.8
 
 ## Focus
 Core browser extension functionality for GitHub PRs
