@@ -755,6 +755,392 @@ public final class ExpressionParser
 	 */
 	private NodeIndex parseMultiplicative()
 	{
-		return parseBinaryExpression(parser::parseUnary, TokenType.STAR, TokenType.DIVIDE, TokenType.MODULO);
+		return parseBinaryExpression(this::parseUnary, TokenType.STAR, TokenType.DIVIDE, TokenType.MODULO);
+	}
+
+	/**
+	 * Parses a unary expression (prefix operators).
+	 *
+	 * @return the expression node index
+	 */
+	public NodeIndex parseUnary()
+	{
+		int start = parser.currentToken().start();
+
+		TokenType type = parser.currentToken().type();
+		boolean isUnaryOperator = switch (type)
+		{
+			case MINUS, PLUS, NOT, TILDE, INCREMENT, DECREMENT -> true;
+			default -> false;
+		};
+
+		if (isUnaryOperator)
+		{
+			parser.consume();
+			parser.enterDepth();
+			NodeIndex operand = parseUnary();
+			parser.exitDepth();
+			int end = parser.getArena().getEnd(operand);
+			return parser.getArena().allocateNode(NodeType.UNARY_EXPRESSION, start, end);
+		}
+
+		return parsePostfix();
+	}
+
+	private NodeIndex parsePostfix()
+	{
+		NodeIndex left = parsePrimary();
+
+		while (true)
+		{
+			parser.parseComments();
+			int start = parser.getArena().getStart(left);
+
+			if (parser.match(TokenType.LEFT_PARENTHESIS))
+			{
+				// Method call
+				while (!parser.match(TokenType.RIGHT_PARENTHESIS))
+				{
+					parser.parseExpression();
+					if (!parser.match(TokenType.COMMA))
+					{
+						parser.expect(TokenType.RIGHT_PARENTHESIS);
+						break;
+					}
+				}
+				int end = parser.previousToken().end();
+				left = parser.getArena().allocateNode(NodeType.METHOD_INVOCATION, start, end);
+			}
+			else if (parser.match(TokenType.DOT))
+				left = parseDotExpression(start);
+			else if (parser.match(TokenType.LEFT_BRACKET))
+				left = parseArrayAccessOrClassLiteral(start);
+			else if (parser.match(TokenType.DOUBLE_COLON))
+			{
+				parser.parseComments();
+				// Explicit type arguments: Type::<String>method
+				if (parser.match(TokenType.LESS_THAN))
+					parser.parseTypeArguments();
+				// Method reference: Type::method or Type::new
+				int end;
+				if (parser.match(TokenType.NEW))
+					// Constructor reference
+					end = parser.previousToken().end();
+				else if (parser.isIdentifierOrContextualKeyword())
+				{
+					// Method reference
+					end = parser.currentToken().end();
+					parser.consume();
+				}
+				else
+				{
+					throw new ParserException(
+						"Expected method name or 'new' after '::' but found " + parser.currentToken().type(),
+						parser.currentToken().start());
+				}
+				left = parser.getArena().allocateNode(NodeType.METHOD_REFERENCE, start, end);
+			}
+			else if (parser.currentToken().type() == TokenType.LESS_THAN)
+			{
+				// Attempt to parse type arguments followed by method reference
+				// Pattern: Type<Args>::method or Type<Args>::new
+				int checkpoint = parser.getPosition();
+				try
+				{
+					parser.consume();
+					parser.parseTypeArguments();
+
+					// Parse optional array dimensions: Type<Args>[]::new
+					boolean hasArrayDimensions = parser.parseArrayDimensionsWithAnnotations();
+
+					// Check if followed by ::
+					if (parser.currentToken().type() == TokenType.DOUBLE_COLON)
+					{
+						// This is a parameterized type method reference
+						// Wrap in ARRAY_TYPE if array dimensions were parsed
+						if (hasArrayDimensions)
+						{
+							int arrayTypeEnd = parser.previousToken().end();
+							left = parser.getArena().allocateNode(NodeType.ARRAY_TYPE, start, arrayTypeEnd);
+						}
+						parser.consume();
+						parser.parseComments();
+
+						// Explicit type arguments after :: : Type<A>::<B>method
+						if (parser.match(TokenType.LESS_THAN))
+							parser.parseTypeArguments();
+
+						// Method reference: Type<Args>::method or Type<Args>::new
+						int end;
+						if (parser.match(TokenType.NEW))
+							// Constructor reference
+							end = parser.previousToken().end();
+						else if (parser.isIdentifierOrContextualKeyword())
+						{
+							// Method reference
+							end = parser.currentToken().end();
+							parser.consume();
+						}
+						else
+						{
+							throw new ParserException(
+								"Expected method name or 'new' after '::' but found " + parser.currentToken().type(),
+								parser.currentToken().start());
+						}
+						left = parser.getArena().allocateNode(NodeType.METHOD_REFERENCE, start, end);
+					}
+					else
+					{
+						// Not a method reference, backtrack
+						parser.setPosition(checkpoint);
+						break;
+					}
+				}
+				catch (ParserException e)
+				{
+					// Type argument parsing failed, backtrack and exit loop
+					parser.setPosition(checkpoint);
+					break;
+				}
+			}
+			else if (parser.currentToken().type() == TokenType.INCREMENT ||
+				parser.currentToken().type() == TokenType.DECREMENT)
+			{
+				// Postfix increment/decrement
+				int end = parser.currentToken().end();
+				parser.consume();
+				left = parser.getArena().allocateNode(NodeType.POSTFIX_EXPRESSION, start, end);
+			}
+			else
+				break;
+		}
+
+		return left;
+	}
+
+	/**
+	 * Parses expression after DOT token (field access, class literal, qualified this/super, qualified new).
+	 *
+	 * @param start the start position of the expression
+	 * @return the parsed node
+	 */
+	private NodeIndex parseDotExpression(int start)
+	{
+		parser.parseComments();
+		// Explicit type arguments: obj.<String>method()
+		if (parser.match(TokenType.LESS_THAN))
+			parser.parseTypeArguments();
+		if (parser.isIdentifierOrContextualKeyword())
+		{
+			// Field access: obj.field
+			int end = parser.currentToken().end();
+			parser.consume();
+			return parser.getArena().allocateNode(NodeType.FIELD_ACCESS, start, end);
+		}
+		if (parser.match(TokenType.CLASS))
+		{
+			// Class literal: Type.class, Type[].class
+			int end = parser.previousToken().end();
+			return parser.getArena().allocateNode(NodeType.CLASS_LITERAL, start, end);
+		}
+		if (parser.match(TokenType.THIS))
+		{
+			// Qualified this: Outer.this
+			int end = parser.previousToken().end();
+			return parser.getArena().allocateNode(NodeType.THIS_EXPRESSION, start, end);
+		}
+		if (parser.match(TokenType.SUPER))
+		{
+			// Qualified super: Outer.super
+			int end = parser.previousToken().end();
+			return parser.getArena().allocateNode(NodeType.SUPER_EXPRESSION, start, end);
+		}
+		if (parser.match(TokenType.NEW))
+			// Qualified class instantiation: outer.new Inner()
+			return parser.parseNewExpression(start);
+		throw new ParserException(
+			"Expected identifier, 'class', 'this', 'super', or 'new' after '.' but found " +
+				parser.currentToken().type(),
+			parser.currentToken().start());
+	}
+
+	/**
+	 * Parses array access, array type class literal, or array constructor reference after LEFT_BRACKET consumed.
+	 * Handles {@code array[index]} for array access, {@code Type[].class} for class literals,
+	 * and {@code Type[]::new} for array constructor references.
+	 *
+	 * @param start the start position of the expression
+	 * @return the parsed node (ARRAY_ACCESS, CLASS_LITERAL, or ARRAY_TYPE for method reference)
+	 */
+	private NodeIndex parseArrayAccessOrClassLiteral(int start)
+	{
+		// Check for array type: Type[].class or Type[]::new or Type[][].class
+		if (parser.match(TokenType.RIGHT_BRACKET))
+		{
+			// Parse additional dimensions with JSR 308 annotations
+			parser.parseArrayDimensionsWithAnnotations();
+
+			// Check for array constructor reference: Type[]::new
+			if (parser.currentToken().type() == TokenType.DOUBLE_COLON)
+			{
+				// Return ARRAY_TYPE node; parsePostfix will handle ::new
+				int end = parser.previousToken().end();
+				return parser.getArena().allocateNode(NodeType.ARRAY_TYPE, start, end);
+			}
+
+			// Class literal: Type[].class
+			parser.expect(TokenType.DOT);
+			parser.expect(TokenType.CLASS);
+			int end = parser.previousToken().end();
+			return parser.getArena().allocateNode(NodeType.CLASS_LITERAL, start, end);
+		}
+		// Array access with expression
+		parser.parseExpression();
+		parser.expect(TokenType.RIGHT_BRACKET);
+		int end = parser.previousToken().end();
+		return parser.getArena().allocateNode(NodeType.ARRAY_ACCESS, start, end);
+	}
+
+	private NodeIndex parsePrimary()
+	{
+		parser.enterDepth();
+
+		try
+		{
+			parser.parseComments();
+			Token token = parser.currentToken();
+			int start = token.start();
+			int end = token.end();
+
+			if (token.isLiteral())
+			{
+				parser.consume();
+				return parseLiteralExpression(token, start, end);
+			}
+
+			if (parser.isIdentifierOrContextualKeyword())
+			{
+				parser.consume();
+				return parser.getArena().allocateNode(NodeType.IDENTIFIER, start, end);
+			}
+
+			if (parser.match(TokenType.LEFT_PARENTHESIS))
+				return parseParenthesizedOrLambda(start);
+
+			if (parser.match(TokenType.NEW))
+				return parser.parseNewExpression(start);
+
+			if (parser.match(TokenType.THIS))
+				return parser.getArena().allocateNode(NodeType.THIS_EXPRESSION, start, end);
+
+			if (parser.match(TokenType.SUPER))
+				return parser.getArena().allocateNode(NodeType.SUPER_EXPRESSION, start, end);
+
+			if (parser.match(TokenType.LEFT_BRACE))
+				// Array initializer: {1, 2, 3}
+				return parser.parseArrayInitializer(start);
+
+			if (token.type() == TokenType.AT_SIGN)
+				return parser.parseAnnotation();
+
+			if (parser.isPrimitiveType(token.type()))
+			{
+				parser.consume();
+				return parsePrimitiveClassLiteral(start);
+			}
+
+			if (parser.match(TokenType.SWITCH))
+				// Switch expression: switch (x) { case 1 -> 10; default -> 0; }
+				return parser.parseSwitchExpression(start);
+
+			if (token.type() == TokenType.ARROW)
+			{
+				// Lambda with inferred parameter (handled by caller)
+				// For now, just consume and create a placeholder
+				parser.consume();
+				NodeIndex body = parseExpression();
+				return parser.getArena().allocateNode(NodeType.LAMBDA_EXPRESSION, start, parser.getArena().getEnd(body));
+			}
+
+			// Handle unary operators that appear after comments (e.g., /* comment */ -5)
+			TokenType type = token.type();
+			boolean isUnaryOperator = switch (type)
+			{
+				case MINUS, PLUS, NOT, TILDE, INCREMENT, DECREMENT -> true;
+				default -> false;
+			};
+			if (isUnaryOperator)
+			{
+				parser.consume();
+				NodeIndex operand = parsePrimary();
+				int operandEnd = parser.getArena().getEnd(operand);
+				return parser.getArena().allocateNode(NodeType.UNARY_EXPRESSION, start, operandEnd);
+			}
+
+			throw new ParserException(
+				"Unexpected token in expression: " + token.type() + " at position " + start,
+				start);
+		}
+		finally
+		{
+			parser.exitDepth();
+		}
+	}
+
+	/**
+	 * Parses a literal expression (integer, long, float, double, boolean, char, string, null).
+	 *
+	 * @param token the literal token
+	 * @param start the start position
+	 * @param end   the end position
+	 * @return the node index for the literal
+	 */
+	private NodeIndex parseLiteralExpression(Token token, int start, int end)
+	{
+		NodeType nodeType = switch (token.type())
+		{
+			case INTEGER_LITERAL -> NodeType.INTEGER_LITERAL;
+			case LONG_LITERAL -> NodeType.LONG_LITERAL;
+			case FLOAT_LITERAL -> NodeType.FLOAT_LITERAL;
+			case DOUBLE_LITERAL -> NodeType.DOUBLE_LITERAL;
+			case BOOLEAN_LITERAL -> NodeType.BOOLEAN_LITERAL;
+			case CHAR_LITERAL -> NodeType.CHAR_LITERAL;
+			case STRING_LITERAL -> NodeType.STRING_LITERAL;
+			case NULL_LITERAL -> NodeType.NULL_LITERAL;
+			default -> throw new ParserException("Unexpected literal type: " + token.type(), start);
+		};
+		return parser.getArena().allocateNode(nodeType, start, end);
+	}
+
+	/**
+	 * Parses a primitive type class literal or array constructor reference.
+	 * Handles {@code int.class}, {@code void.class}, {@code int[].class}, and {@code int[]::new}.
+	 *
+	 * @param start the start position
+	 * @return the node index for the class literal or array type (for method reference)
+	 */
+	private NodeIndex parsePrimitiveClassLiteral(int start)
+	{
+		boolean hasArrayDimensions = parser.parseArrayDimensionsWithAnnotations();
+
+		// Check for array constructor reference: int[]::new
+		if (parser.currentToken().type() == TokenType.DOUBLE_COLON)
+		{
+			if (!hasArrayDimensions)
+			{
+				throw new ParserException(
+					"Primitive type constructor reference requires array dimensions (e.g., int[]::new)",
+					parser.currentToken().start());
+			}
+			// Return ARRAY_TYPE node; parsePostfix will handle ::new
+			int end = parser.previousToken().end();
+			return parser.getArena().allocateNode(NodeType.ARRAY_TYPE, start, end);
+		}
+
+		// Class literal: int.class, int[].class
+		parser.expect(TokenType.DOT);
+		parser.expect(TokenType.CLASS);
+		int classEnd = parser.previousToken().end();
+		return parser.getArena().allocateNode(NodeType.CLASS_LITERAL, start, classEnd);
 	}
 }
