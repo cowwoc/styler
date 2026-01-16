@@ -202,6 +202,23 @@ public interface ParserAccess
 	NodeIndex parseBlock();
 
 	/**
+	 * Parses a statement.
+	 */
+	void parseStatement();
+
+	/**
+	 * Parses a member declaration within a class body.
+	 * Used for anonymous class bodies in object creation expressions.
+	 */
+	void parseMemberDeclaration();
+
+	/**
+	 * Parses a single case label element in a switch statement or expression.
+	 * Handles constant expressions, type patterns, and null/default keywords.
+	 */
+	void parseCaseLabelElement();
+
+	/**
 	 * Parses an expression.
 	 *
 	 * @return the expression node index

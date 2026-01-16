@@ -1143,4 +1143,232 @@ public final class ExpressionParser
 		int classEnd = parser.previousToken().end();
 		return parser.getArena().allocateNode(NodeType.CLASS_LITERAL, start, classEnd);
 	}
+
+	/**
+	 * Parses a switch expression.
+	 * <p>
+	 * Handles both arrow-style ({@code case 1 -> value;}) and colon-style ({@code case 1: ...}) cases.
+	 *
+	 * @param start the start position of the {@code switch} keyword
+	 * @return the node index for the switch expression
+	 */
+	public NodeIndex parseSwitchExpression(int start)
+	{
+		// SWITCH already consumed
+		parser.expect(TokenType.LEFT_PARENTHESIS);
+		parseExpression();
+		parser.expect(TokenType.RIGHT_PARENTHESIS);
+		parser.expect(TokenType.LEFT_BRACE);
+		// Handle comments after opening brace
+		parser.parseComments();
+
+		while (parser.currentToken().type() == TokenType.CASE || parser.currentToken().type() == TokenType.DEFAULT)
+		{
+			if (parser.match(TokenType.CASE))
+			{
+				// Parse first case label element (may be expression or type pattern)
+				parser.parseCaseLabelElement();
+				// Handle multiple case labels: case 1, 2, 3 ->
+				while (parser.match(TokenType.COMMA))
+					parser.parseCaseLabelElement();
+			}
+			else
+				parser.consume(); // DEFAULT
+
+			if (parser.match(TokenType.ARROW))
+			{
+				// Arrow case: case 1 -> expr;
+				if (parser.currentToken().type() == TokenType.LEFT_BRACE)
+					// Block body: case 1 -> { ... }
+					parser.parseBlock();
+				else if (parser.currentToken().type() == TokenType.THROW)
+				{
+					// Throw expression: case 1 -> throw new Exception();
+					parser.consume();
+					parseExpression();
+					parser.expect(TokenType.SEMICOLON);
+				}
+				else
+				{
+					// Expression body: case 1 -> value;
+					parseExpression();
+					parser.expect(TokenType.SEMICOLON);
+				}
+			}
+			else
+			{
+				// Colon case (traditional): case 1:
+				parser.expect(TokenType.COLON);
+				// Handle comments after colon
+				parser.parseComments();
+				while (parser.currentToken().type() != TokenType.CASE &&
+					parser.currentToken().type() != TokenType.DEFAULT &&
+					parser.currentToken().type() != TokenType.RIGHT_BRACE)
+					parser.parseStatement();
+			}
+			// Handle comments between case/default labels
+			parser.parseComments();
+		}
+
+		parser.expect(TokenType.RIGHT_BRACE);
+		int end = parser.previousToken().end();
+		return parser.getArena().allocateNode(NodeType.SWITCH_EXPRESSION, start, end);
+	}
+
+	/**
+	 * Parses a new expression for object instantiation or array creation.
+	 * <p>
+	 * Handles both object creation ({@code new Type()}) and array creation with dimension
+	 * expressions ({@code new int[5]}) or initializers ({@code new int[]{1, 2, 3}}).
+	 * <p>
+	 * Array creation uses {@link ParserAccess#parseTypeWithoutArrayDimensions()} because the array brackets
+	 * must be parsed separately to capture dimension expressions or initializers, rather than
+	 * being consumed as part of the type.
+	 *
+	 * @param start the start position of the {@code new} keyword
+	 * @return the node index for the parsed expression
+	 */
+	public NodeIndex parseNewExpression(int start)
+	{
+		// Explicit type arguments: new <String>Constructor()
+		if (parser.match(TokenType.LESS_THAN))
+			parser.parseTypeArguments();
+
+		// Parse type without array brackets - brackets must be handled separately
+		// to capture dimension expressions (new int[5]) or initializers (new int[]{1, 2})
+		parser.parseTypeWithoutArrayDimensions();
+
+		if (parser.match(TokenType.LEFT_BRACKET))
+			return parseArrayCreation(start);
+		if (parser.match(TokenType.LEFT_PARENTHESIS))
+			return parseObjectCreation(start);
+
+		throw new ParserException(
+			"Expected '(' or '[' after 'new' but found " + parser.currentToken().type(),
+			parser.currentToken().start());
+	}
+
+	/**
+	 * Parses array creation after the opening bracket has been consumed.
+	 * <p>
+	 * Handles three forms of array creation:
+	 * <ul>
+	 *   <li>Dimension expressions: {@code new int[5]} or {@code new int[2][3]}</li>
+	 *   <li>Partially specified dimensions: {@code new int[2][]} (expression followed by empty)</li>
+	 *   <li>Array initializers: {@code new int[]{1, 2, 3}}</li>
+	 * </ul>
+	 *
+	 * @param start the start position of the {@code new} keyword
+	 * @return the node index for the {@link NodeType#ARRAY_CREATION} node
+	 */
+	public NodeIndex parseArrayCreation(int start)
+	{
+		// Parse dimension expression if present (e.g., new int[5])
+		if (parser.currentToken().type() != TokenType.RIGHT_BRACKET)
+			parseExpression();
+		parser.expect(TokenType.RIGHT_BRACKET);
+
+		// Handle multi-dimensional arrays: new int[2][3] or mixed new int[2][]
+		while (parser.match(TokenType.LEFT_BRACKET))
+		{
+			if (parser.currentToken().type() != TokenType.RIGHT_BRACKET)
+				parseExpression();
+			parser.expect(TokenType.RIGHT_BRACKET);
+		}
+
+		// Array initializer: new int[]{1, 2, 3}
+		if (parser.match(TokenType.LEFT_BRACE) && !parser.match(TokenType.RIGHT_BRACE))
+		{
+			parseExpression();
+			while (parser.match(TokenType.COMMA))
+			{
+				if (parser.currentToken().type() == TokenType.RIGHT_BRACE)
+					break;
+				parseExpression();
+			}
+			parser.expect(TokenType.RIGHT_BRACE);
+		}
+
+		int arrayEnd = parser.previousToken().end();
+		return parser.getArena().allocateNode(NodeType.ARRAY_CREATION, start, arrayEnd);
+	}
+
+	/**
+	 * Parses object creation after the opening parenthesis has been consumed.
+	 * <p>
+	 * Handles constructor arguments and optional anonymous class body.
+	 *
+	 * @param start the start position of the {@code new} keyword
+	 * @return the node index for the {@link NodeType#OBJECT_CREATION} node
+	 */
+	public NodeIndex parseObjectCreation(int start)
+	{
+		// Constructor call arguments
+		if (!parser.match(TokenType.RIGHT_PARENTHESIS))
+		{
+			parseExpression();
+			while (parser.match(TokenType.COMMA))
+				parseExpression();
+			parser.expect(TokenType.RIGHT_PARENTHESIS);
+		}
+
+		// Anonymous class body
+		if (parser.match(TokenType.LEFT_BRACE))
+		{
+			while (parser.currentToken().type() != TokenType.RIGHT_BRACE &&
+				parser.currentToken().type() != TokenType.END_OF_FILE)
+				parser.parseMemberDeclaration();
+			parser.expect(TokenType.RIGHT_BRACE);
+		}
+
+		int objEnd = parser.previousToken().end();
+		return parser.getArena().allocateNode(NodeType.OBJECT_CREATION, start, objEnd);
+	}
+
+	/**
+	 * Parses an array initializer after the opening brace has been consumed.
+	 * <p>
+	 * Handles nested array initializers and trailing commas.
+	 *
+	 * @param start the start position of the opening brace
+	 * @return the node index for the {@link NodeType#ARRAY_INITIALIZER} node
+	 */
+	public NodeIndex parseArrayInitializer(int start)
+	{
+		// LEFT_BRACE already consumed
+		// Handle comments after opening brace
+		parser.parseComments();
+		if (!parser.match(TokenType.RIGHT_BRACE))
+		{
+			// Handle nested array initializers or expressions
+			if (parser.currentToken().type() == TokenType.LEFT_BRACE)
+			{
+				int nestedStart = parser.currentToken().start();
+				parser.consume();
+				parseArrayInitializer(nestedStart);
+			}
+			else
+				parseExpression();
+			while (parser.match(TokenType.COMMA))
+			{
+				// Handle comments after comma
+				parser.parseComments();
+				if (parser.currentToken().type() == TokenType.RIGHT_BRACE)
+					break;
+				if (parser.currentToken().type() == TokenType.LEFT_BRACE)
+				{
+					int nestedStart = parser.currentToken().start();
+					parser.consume();
+					parseArrayInitializer(nestedStart);
+				}
+				else
+					parseExpression();
+			}
+			// Handle comments before closing brace
+			parser.parseComments();
+			parser.expect(TokenType.RIGHT_BRACE);
+		}
+		int end = parser.previousToken().end();
+		return parser.getArena().allocateNode(NodeType.ARRAY_INITIALIZER, start, end);
+	}
 }
