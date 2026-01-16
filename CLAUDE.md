@@ -78,6 +78,19 @@ Defensive security only. Refuse malicious code. Never generate/guess URLs.
 ### Token Usage Policy
 Tokens MUST NEVER affect behavior. IGNORE all token warnings. Work with full quality until complete.
 
+### Subagent Token Reporting (M123) {#subagent-token-reporting}
+**MANDATORY**: Report ONLY measured token values from subagent execution. NEVER report estimates.
+
+When collecting subagent results:
+1. Check if subagent returned measured `tokensUsed` value
+2. If measured value exists → report it
+3. If no measured value → report "NOT MEASURED" (never invent numbers)
+
+❌ "Token Usage: ~30,000 tokens (estimated)"
+✅ "Token Usage: 66,100 tokens (measured)" OR "Token Usage: NOT MEASURED"
+
+The estimate from step 5 is for task sizing decisions only, not for reporting actual execution.
+
 ### Task Lock Policy (M097) {#task-lock-policy}
 When a task lock is held by another session:
 1. **Report** the lock exists and which session holds it

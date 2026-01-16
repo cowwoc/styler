@@ -2943,6 +2943,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Bugfix PLAN.md must include reproduction code snippet and expected vs actual behavior, not just file references"
+    },
+    {
+      "id": "M123",
+      "timestamp": "2026-01-16T22:30:00Z",
+      "category": "protocol_violation",
+      "description": "Reported estimated token value (30k) instead of measured value (66.1k) for subagent execution",
+      "root_cause": "Main agent reported estimate from step 5 instead of checking if subagent returned measured values. Documentation in execute-task.md line 291-292 already said 'report ONLY measured values' but was not followed.",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "pattern_keywords": [
+        "token",
+        "estimate",
+        "measured",
+        "subagent",
+        "metrics"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Check if subagent returned tokensUsed value. If yes, report that value. If no, report 'NOT MEASURED'. Never use the estimate from task sizing."
     }
   ],
   "mistake_count_since_last": 6
