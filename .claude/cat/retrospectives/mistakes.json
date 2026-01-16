@@ -2838,6 +2838,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Always verify next ID by checking max ID from mistakes array AND ensuring no duplicate exists before insertion"
+    },
+    {
+      "id": "M119",
+      "timestamp": "2026-01-16T15:30:00Z",
+      "category": "prompt_engineering",
+      "description": "STATE.md committed separately (f54dde4) instead of in implementation commit (1f90e3b)",
+      "root_cause": "Subagent prompt did not include STATE.md atomic commit requirement despite spawn-subagent skill documenting it",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "hook",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/check-state-md-in-commit.sh",
+      "pattern_keywords": [
+        "STATE.md",
+        "commit",
+        "atomic",
+        "subagent",
+        "prompt"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": "M076",
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Include STATE.md update instruction in subagent prompt; hook now warns when implementation commits miss STATE.md"
     }
   ],
   "mistake_count_since_last": 6
