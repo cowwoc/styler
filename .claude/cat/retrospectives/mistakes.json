@@ -2761,7 +2761,7 @@
       "correct_behavior": "Remove all position/source calculation comments from test files before commit. Text blocks are self-documenting."
     },
     {
-      "id": "M115",
+      "id": "M117",
       "timestamp": "2026-01-16T14:30:00Z",
       "category": "bash_error",
       "description": "Used relative path ../.worktrees/ instead of absolute path for git worktree creation",
@@ -2769,7 +2769,7 @@
       "rca_method": "B",
       "rca_method_name": "taxonomy",
       "prevention_type": "skill",
-      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/rules/java-style.md",
+      "prevention_path": "/workspace/cat/commands/execute-task.md",
       "pattern_keywords": [
         "relative path",
         "worktree",
@@ -2812,6 +2812,32 @@
         "catches_variations": false
       },
       "correct_behavior": "Spawn subagent for ALL source file edits, including trivial comment removal. Main agent only edits orchestration files (STATE.md, PLAN.md, CHANGELOG.md)."
+    },
+    {
+      "id": "M118",
+      "timestamp": "2026-01-16T15:00:00Z",
+      "category": "logical_error",
+      "description": "Assigned duplicate mistake ID M115 when recording new mistake - failed to verify max ID before assignment",
+      "root_cause": "Used hardcoded NEXT_ID calculation based on LAST_ID from jq without verifying the result was unique",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "skill",
+      "prevention_path": "/home/node/.config/claude/plugins/cache/claude-code-cat/cat/2.0.9/skills/learn-from-mistakes/SKILL.md",
+      "pattern_keywords": [
+        "duplicate ID",
+        "M115",
+        "mistake ID",
+        "assignment"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Always verify next ID by checking max ID from mistakes array AND ensuring no duplicate exists before insertion"
     }
   ],
   "mistake_count_since_last": 6
