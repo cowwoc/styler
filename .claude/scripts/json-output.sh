@@ -23,20 +23,30 @@ output_hook_message() {
 		}'
 }
 
-# Output hook warning message
+# Output hook warning message (does NOT block)
 # Args: event_name message_content
+# Note: Outputs to stderr for user visibility, JSON to stdout
 output_hook_warning() {
 	local event="$1"
 	local message="$2"
-	output_hook_message "$event" "$message"
+
+	# Output message to stderr for user visibility
+	echo "$message" >&2
+
+	# Output JSON context
+	jq -n --arg event "$event" --arg msg "$message" '{
+		"hookSpecificOutput": {
+			"hookEventName": $event,
+			"additionalContext": $msg
+		}
+	}'
 }
 
 # Output hook error message (does NOT block - use output_hook_block to block)
 # Args: event_name message_content
+# Note: Alias for output_hook_warning - both output to stderr and JSON
 output_hook_error() {
-	local event="$1"
-	local message="$2"
-	output_hook_message "$event" "$message"
+	output_hook_warning "$1" "$2"
 }
 
 # Output hook block message and deny permission (PreToolUse hooks ONLY)
