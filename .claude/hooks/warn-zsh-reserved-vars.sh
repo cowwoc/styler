@@ -79,37 +79,21 @@ for var in "${ZSH_READONLY_VARS[@]}"; do
 	fi
 done
 
-# If reserved variables found, warn
+# If reserved variables found, BLOCK the command
 if [ ${#FOUND_VARS[@]} -gt 0 ]; then
 	VARS_LIST=$(printf ", %s" "${FOUND_VARS[@]}")
 	VARS_LIST=${VARS_LIST:2}  # Remove leading ", "
 
-	cat << EOF >&2
-
-⚠️  ZSH RESERVED VARIABLE WARNING
-═══════════════════════════════════════════════════════════════
-
-⚠️  Found assignment to zsh read-only variable(s): ${VARS_LIST}
-
-This command may fail with: "(eval):1: read-only variable: ${FOUND_VARS[0]}"
-
-RECOMMENDED ALTERNATIVES:
-• status → st, result, task_status, exit_code
-• pipestatus → pipe_results
-• ERRNO → err_num
-• UID/GID/EUID/EGID → use different names
-
-EXAMPLE FIX:
-  ❌ status=\$(command)
-  ✅ st=\$(command)
-
-📖 See: CLAUDE.md § Zsh Reserved Variables
-
-═══════════════════════════════════════════════════════════════
-⚠️  WARNING - Command will proceed but may fail in zsh
+	# Output blocking JSON to stdout (what Claude Code reads)
+	cat << EOF
+{
+  "decision": "block",
+  "reason": "Command uses zsh read-only variable(s): ${VARS_LIST}. Use alternatives: status→st, pipestatus→pipe_results, ERRNO→err_num. See CLAUDE.md § Zsh Reserved Variables."
+}
 EOF
+	exit 0
 fi
 
-# Allow command to proceed (warning only, not blocking)
+# Allow command to proceed if no reserved variables found
 echo '{}'
 exit 0
