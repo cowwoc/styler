@@ -2142,6 +2142,59 @@
         "catches_variations": true
       },
       "correct_behavior": "Use ONLY data from status-data.sh and gate collection; report script bugs after rendering"
+    },
+    {
+      "id": "M094",
+      "timestamp": "2026-01-16T10:00:00Z",
+      "category": "prompt_engineering",
+      "description": "Task size underestimation - PLAN.md estimated ~800 lines but exploration found ~2470 lines (48 methods)",
+      "root_cause": "PLAN.md estimate not verified against actual codebase exploration. Token estimate of 26K based on inaccurate scope led to subagent exhausting context.",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/spawn-subagent/SKILL.md",
+      "pattern_keywords": [
+        "underestimation",
+        "token",
+        "scope",
+        "exploration"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "After exploration reveals actual scope differs from PLAN.md estimate, update token estimate before spawning subagent"
+    },
+    {
+      "id": "M095",
+      "timestamp": "2026-01-16T10:30:00Z",
+      "category": "logical_error",
+      "description": "Created sequential dependencies for extraction tasks that could run in parallel - confused runtime method calls with task execution order",
+      "root_cause": "Mistakenly assumed that because extracted methods call each other at runtime, the extraction tasks must run sequentially. Runtime dependencies are irrelevant for code extraction - only file section conflicts matter.",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/decompose-task/SKILL.md",
+      "pattern_keywords": [
+        "parallel",
+        "dependencies",
+        "extraction",
+        "runtime",
+        "decomposition"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "For code extraction tasks, ask whether tasks write to the same file section, not whether extracted methods call each other"
     }
   ],
   "mistake_count_since_last": 4
