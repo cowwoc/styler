@@ -75,29 +75,10 @@ Include these requirements explicitly in subagent prompts for parser-related tas
 ### Subagent Token Measurement {#subagent-token-measurement}
 **MANDATORY**: Subagents measure their own token usage and return it to main agent (M099/M102).
 
-**Subagent responsibility**: Before completion, use the session ID from CAT session instructions to
-measure tokens. The session ID is echoed at startup and available in the CAT session instructions
-injected at the beginning of each session.
-```bash
-# Use the session ID from CAT session instructions (echoed at startup)
-SESSION_ID="<session-id-from-instructions>"
-SESSION_FILE="/home/node/.config/claude/projects/-workspace/${SESSION_ID}.jsonl"
+Token measurement instructions are injected via CAT session hook (`inject-session-instructions.sh`).
+Subagents receive their session ID automatically via `${CLAUDE_SESSION_ID}` substitution.
 
-if [ -f "$SESSION_FILE" ]; then
-  TOKENS=$(jq -s '[.[] | select(.type == "assistant") | .message.usage | select(. != null) |
-    (.input_tokens + .output_tokens)] | add // 0' "$SESSION_FILE")
-  COMPACTIONS=$(jq -s '[.[] | select(.type == "summary")] | length' "$SESSION_FILE")
-  echo "Tokens used: $TOKENS"
-  echo "Compaction events: $COMPACTIONS"
-else
-  echo "Tokens used: UNAVAILABLE (session file not found)"
-fi
-```
-
-**Key insight (M102)**: Each subagent has its own session ID echoed in the CAT session instructions
-at the start of its session. Use that ID, not the parent's session ID.
-
-**Main agent responsibility**: Report ONLY measured values from subagent output. Never fabricate estimates.
+**Main agent responsibility**: Report ONLY measured values from subagent output. Never fabricate.
 
 ### Defensive Security Policy
 Defensive security only. Refuse malicious code. Never generate/guess URLs.
