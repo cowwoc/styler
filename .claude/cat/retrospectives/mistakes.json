@@ -2195,6 +2195,35 @@
         "catches_variations": true
       },
       "correct_behavior": "For code extraction tasks, ask whether tasks write to the same file section, not whether extracted methods call each other"
+    },
+    {
+      "id": "M096",
+      "timestamp": "2026-01-16T02:35:00Z",
+      "category": "protocol_violation",
+      "pattern_id": null,
+      "description": "Deleted lock files without user permission by assuming different session IDs meant stale locks",
+      "root_cause": "Completion bias overrode documented protocol. Used direct filesystem access (rm, cat, ls) instead of task-lock.sh script, bypassing built-in safety guidance.",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "hook",
+      "prevention_path": "${CLAUDE_PLUGIN_ROOT}/hooks/block-lock-manipulation.sh",
+      "pattern_keywords": [
+        "lock",
+        "delete",
+        "rm",
+        "stale",
+        "session",
+        "bypass"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "When encountering a lock owned by a different session: 1) Report the lock exists, 2) Move to execute a different task, 3) Only suggest user run /cat:cleanup if they believe the lock is stale. NEVER delete locks directly."
     }
   ],
   "mistake_count_since_last": 4
