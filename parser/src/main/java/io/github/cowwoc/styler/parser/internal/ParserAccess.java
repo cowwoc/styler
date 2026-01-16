@@ -285,4 +285,28 @@ public interface ParserAccess
 	 * @return the cast expression node if successfully parsed, {@code null} otherwise
 	 */
 	NodeIndex tryCastExpression(int start);
+
+	/**
+	 * Parses a new expression for object instantiation or array creation.
+	 *
+	 * @param start the start position of the {@code new} keyword
+	 * @return the parsed expression node
+	 */
+	NodeIndex parseNewExpression(int start);
+
+	/**
+	 * Parses a switch expression.
+	 *
+	 * @param start the start position
+	 * @return the switch expression node
+	 */
+	NodeIndex parseSwitchExpression(int start);
+
+	/**
+	 * Parses an array initializer after the opening brace has been consumed.
+	 *
+	 * @param start the start position of the opening brace
+	 * @return the array initializer node
+	 */
+	NodeIndex parseArrayInitializer(int start);
 }
