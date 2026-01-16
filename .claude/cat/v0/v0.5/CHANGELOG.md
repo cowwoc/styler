@@ -18,6 +18,7 @@ Parser edge cases for real-world Java codebases.
 | add-serial-annotations | config | implemented | Add @Serial annotation to all serialVersionUID fields |
 | create-parser-access-interface | refactor | implemented | Create ParserAccess interface for parser decomposition |
 | extend-statement-parser | refactor | implemented | Move 30 statement parsing methods to StatementParser |
+| fix-misc-parsing-edge-cases | bugfix | implemented | Fix comment handling in type declarations and enum bodies |
 
 ## Key Changes
 
