@@ -2,7 +2,7 @@
 
 - **Status:** pending
 - **Progress:** 0%
-- **Dependencies:** [fix-floating-point-literal-without-zero, fix-contextual-keywords-in-expressions, fix-comments-in-switch-arms, fix-old-style-switch-case-label, fix-lambda-typed-parameters-in-args, fix-wildcard-array-method-reference, fix-final-in-pattern-matching, fix-comments-before-implements, fix-octal-escape-in-char-literal, fix-annotation-on-enum-constant, fix-break-throw-in-switch-statement, fix-misc-parsing-edge-cases]
+- **Dependencies:** [fix-floating-point-literal-without-zero, fix-contextual-keywords-in-expressions, fix-comments-in-switch-arms, fix-old-style-switch-case-label, fix-lambda-typed-parameters-in-args, fix-wildcard-array-method-reference, fix-final-in-pattern-matching, fix-comments-before-implements, fix-octal-escape-in-char-literal, fix-annotation-on-enum-constant, fix-break-throw-in-switch-statement, fix-misc-parsing-edge-cases, extract-expr-cast-lambda-detection, extract-expr-binary-operators, extract-expr-unary-postfix-primary, extract-expr-lambda-parsing, extract-expr-creation]
 - **Last Updated:** 2026-01-14
 
 ## Current Run (2026-01-14)
