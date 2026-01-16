@@ -2731,6 +2731,60 @@
         "catches_variations": true
       },
       "correct_behavior": "For internal codebase investigation, use Task tool with Explore subagent and document findings directly in PLAN.md. Reserve /cat:research for external technology research where Claude lacks training data."
+    },
+    {
+      "id": "M115",
+      "timestamp": "2026-01-16T13:05:00Z",
+      "category": "prompt_engineering",
+      "description": "Test code committed with temporary position/source calculation comments that should have been removed before commit",
+      "root_cause": "Subagent prompts for test code did not explicitly prohibit temporary position comments. Documentation existed in java-style.md but was not included in subagent prompt.",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "pattern_keywords": [
+        "test",
+        "comments",
+        "position",
+        "temporary",
+        "subagent",
+        "prompt"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Remove all position/source calculation comments from test files before commit. Text blocks are self-documenting."
+    },
+    {
+      "id": "M115",
+      "timestamp": "2026-01-16T14:30:00Z",
+      "category": "bash_error",
+      "description": "Used relative path ../.worktrees/ instead of absolute path for git worktree creation",
+      "root_cause": "execute-task.md skill used relative path pattern that depends on current directory",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/commands/execute-task.md",
+      "pattern_keywords": [
+        "relative path",
+        "worktree",
+        "cd",
+        "no such file"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use absolute paths with ${CLAUDE_PROJECT_DIR} for worktree operations"
     }
   ],
   "mistake_count_since_last": 6
