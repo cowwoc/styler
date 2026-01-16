@@ -2917,6 +2917,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Use jq with .tool_input.command path instead of extract_json_value for command extraction in Bash hooks"
+    },
+    {
+      "id": "M122",
+      "timestamp": "2026-01-16T15:10:00Z",
+      "category": "architecture_issue",
+      "description": "Bugfix task referenced external Spring Framework files without including reproduction code - task not self-contained",
+      "root_cause": "Task template for bugfixes doesn't require reproduction code section; task was created with only file names, not actual code snippets",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/.claude/cat/templates/plan.md",
+      "pattern_keywords": [
+        "self-contained",
+        "reproduction-code",
+        "bugfix-task",
+        "external-dependency"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "medium",
+        "catches_variations": true
+      },
+      "correct_behavior": "Bugfix PLAN.md must include reproduction code snippet and expected vs actual behavior, not just file references"
     }
   ],
   "mistake_count_since_last": 6
