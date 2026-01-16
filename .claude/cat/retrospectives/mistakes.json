@@ -2463,6 +2463,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Check actual file structure before writing jq queries; skill now documents that mistakes.json is object with .mistakes array"
+    },
+    {
+      "id": "M105",
+      "timestamp": "2026-01-16T10:58:00Z",
+      "category": "bash_error",
+      "description": "Used status as variable name in bash loop - zsh read-only variable causes failure",
+      "root_cause": "Reliance on memory instead of documentation, with no enforcement mechanism. CLAUDE.md documents this rule but was not referenced before writing command.",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "hook",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/warn-zsh-reserved-vars.sh",
+      "pattern_keywords": [
+        "zsh",
+        "status",
+        "reserved-variable",
+        "bash",
+        "read-only"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use alternative variable names: st, result, task_status, exit_code instead of status"
     }
   ],
   "mistake_count_since_last": 6
