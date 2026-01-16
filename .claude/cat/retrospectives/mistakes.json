@@ -2141,7 +2141,8 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "Use ONLY data from status-data.sh and gate collection; report script bugs after rendering"
+      "correct_behavior": "Use ONLY data from status-data.sh and gate collection; report script bugs after rendering",
+      "pattern_id": "PATTERN-008"
     },
     {
       "id": "M094",
@@ -2200,7 +2201,7 @@
       "id": "M096",
       "timestamp": "2026-01-16T02:35:00Z",
       "category": "protocol_violation",
-      "pattern_id": null,
+      "pattern_id": "PATTERN-013",
       "description": "Deleted lock files without user permission by assuming different session IDs meant stale locks",
       "root_cause": "Completion bias overrode documented protocol. Used direct filesystem access (rm, cat, ls) instead of task-lock.sh script, bypassing built-in safety guidance.",
       "rca_method": "A",
@@ -2250,7 +2251,8 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "Report lock exists, find another task, inform user they can run /cat:cleanup if THEY believe it is stale. Never investigate, label, or offer to remove locks."
+      "correct_behavior": "Report lock exists, find another task, inform user they can run /cat:cleanup if THEY believe it is stale. Never investigate, label, or offer to remove locks.",
+      "pattern_id": "PATTERN-013"
     },
     {
       "id": "M098",
@@ -2302,7 +2304,8 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "Subagent measures own tokens from session JSONL before completion. Main agent reports ONLY measured values from subagent output, never fabricates."
+      "correct_behavior": "Subagent measures own tokens from session JSONL before completion. Main agent reports ONLY measured values from subagent output, never fabricates.",
+      "pattern_id": "PATTERN-014"
     },
     {
       "id": "M100",
@@ -2354,7 +2357,8 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "Verify worktree location with pwd before any edits during CAT task; all implementation work happens in /workspace/.worktrees/<task-name>"
+      "correct_behavior": "Verify worktree location with pwd before any edits during CAT task; all implementation work happens in /workspace/.worktrees/<task-name>",
+      "pattern_id": "PATTERN-008"
     },
     {
       "id": "M098",
@@ -2405,7 +2409,8 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "Subagents find their own session file by looking for the most recently modified .jsonl file in the sessions directory, rather than relying on inherited environment variables"
+      "correct_behavior": "Subagents find their own session file by looking for the most recently modified .jsonl file in the sessions directory, rather than relying on inherited environment variables",
+      "pattern_id": "PATTERN-014"
     },
     {
       "id": "M103",
@@ -2432,6 +2437,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Put bold markers (**text**) outside code fences; remove decorative bold from ASCII boxes"
+    },
+    {
+      "id": "M104",
+      "timestamp": "2026-01-16T10:30:00Z",
+      "category": "assumption_without_verification",
+      "description": "Assumed mistakes.json was flat array, but it is object with .mistakes key - jq query failed",
+      "root_cause": "Skill documentation internally inconsistent - some jq examples assumed flat array, others correctly used .mistakes[]",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/learn-from-mistakes/SKILL.md",
+      "pattern_keywords": [
+        "jq",
+        "json-structure",
+        "array",
+        "object"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Check actual file structure before writing jq queries; skill now documents that mistakes.json is object with .mistakes array"
     }
   ],
   "mistake_count_since_last": 6
