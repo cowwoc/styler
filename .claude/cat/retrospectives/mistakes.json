@@ -2678,6 +2678,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Use config: for Claude-facing files (CLAUDE.md, hooks, skills, retrospectives)"
+    },
+    {
+      "id": "M113",
+      "timestamp": "2026-01-16T17:15:00Z",
+      "category": "documentation_violation",
+      "description": "Used **bold** markdown syntax in CLI output which shows raw asterisks instead of bold text",
+      "root_cause": "display-standards.md did not explicitly prohibit **bold** markdown in CLI output",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "documentation",
+      "prevention_path": "/workspace/cat/.claude/cat/references/display-standards.md",
+      "pattern_keywords": [
+        "bold",
+        "markdown",
+        "CLI",
+        "asterisks",
+        "formatting"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use plain text labels or UPPERCASE for emphasis in CLI output instead of **bold** markdown"
     }
   ],
   "mistake_count_since_last": 6
