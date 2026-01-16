@@ -67,11 +67,11 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
-/.claude/metrics/
-/.claude/experiments/
 /.claude/locks/
-/.worktrees/
 /.claude/cat/locks/
+/.claude/cat/backups/
+/.worktrees/
 
 ### User-specific files ###
 /.claude/settings.local.json
+.worktrees/
