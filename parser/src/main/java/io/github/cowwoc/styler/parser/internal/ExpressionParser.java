@@ -1,5 +1,6 @@
 package io.github.cowwoc.styler.parser.internal;
 
+import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeIndex;
 import io.github.cowwoc.styler.ast.core.NodeType;
 import io.github.cowwoc.styler.parser.Parser.ParserException;
@@ -1059,7 +1060,8 @@ public final class ExpressionParser
 				// For now, just consume and create a placeholder
 				parser.consume();
 				NodeIndex body = parseExpression();
-				return parser.getArena().allocateNode(NodeType.LAMBDA_EXPRESSION, start, parser.getArena().getEnd(body));
+				NodeArena arena = parser.getArena();
+				return arena.allocateNode(NodeType.LAMBDA_EXPRESSION, start, arena.getEnd(body));
 			}
 
 			// Handle unary operators that appear after comments (e.g., /* comment */ -5)
