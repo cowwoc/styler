@@ -15,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
-import java.util.function.Supplier;
 
 import io.github.cowwoc.styler.parser.internal.ExpressionParser;
 import io.github.cowwoc.styler.parser.internal.ModuleParser;
@@ -1088,129 +1087,6 @@ public final class Parser implements AutoCloseable
 		return expressionParser.parseParenthesizedOrLambda(start);
 	}
 
-	/**
-	 * Generic helper method for parsing binary expressions with operator precedence.
-	 * Eliminates duplication across all binary operator parsing methods.
-	 *
-	 * @param nextLevel supplier for next precedence level parser
-	 * @param operators variable number of operator token types to match
-	 * @return the parsed binary expression node or next level node if no operators match
-	 */
-	private NodeIndex parseBinaryExpression(Supplier<NodeIndex> nextLevel, TokenType... operators)
-	{
-		NodeIndex left = nextLevel.get();
-
-		while (matchesAny(operators))
-		{
-			NodeIndex right = nextLevel.get();
-			int start = arena.getStart(left);
-			int end = arena.getEnd(right);
-			left = arena.allocateNode(NodeType.BINARY_EXPRESSION, start, end);
-		}
-
-		return left;
-	}
-
-	/**
-	 * Checks if current token matches any of the provided token types and consumes if found.
-	 *
-	 * @param types variable number of token types to check
-	 * @return true if current token matches any type (and was consumed), false otherwise
-	 */
-	private boolean matchesAny(TokenType... types)
-	{
-		TokenType current = currentToken().type();
-		for (TokenType type : types)
-			if (current == type)
-			{
-				consume();
-				return true;
-			}
-		return false;
-	}
-
-	private NodeIndex parseLogicalOr()
-	{
-		return parseBinaryExpression(this::parseLogicalAnd, TokenType.LOGICAL_OR);
-	}
-
-	private NodeIndex parseLogicalAnd()
-	{
-		return parseBinaryExpression(this::parseBitwiseOr, TokenType.LOGICAL_AND);
-	}
-
-	private NodeIndex parseBitwiseOr()
-	{
-		return parseBinaryExpression(this::parseBitwiseXor, TokenType.BITWISE_OR);
-	}
-
-	private NodeIndex parseBitwiseXor()
-	{
-		return parseBinaryExpression(this::parseBitwiseAnd, TokenType.CARET);
-	}
-
-	private NodeIndex parseBitwiseAnd()
-	{
-		return parseBinaryExpression(this::parseEquality, TokenType.BITWISE_AND);
-	}
-
-	private NodeIndex parseEquality()
-	{
-		return parseBinaryExpression(this::parseRelational, TokenType.EQUAL, TokenType.NOT_EQUAL);
-	}
-
-	private NodeIndex parseRelational()
-	{
-		NodeIndex left = parseShift();
-
-		while (matchesAny(TokenType.LESS_THAN, TokenType.GREATER_THAN, TokenType.LESS_THAN_OR_EQUAL,
-			TokenType.GREATER_THAN_OR_EQUAL))
-		{
-			NodeIndex right = parseShift();
-			int start = arena.getStart(left);
-			int end = arena.getEnd(right);
-			left = arena.allocateNode(NodeType.BINARY_EXPRESSION, start, end);
-		}
-
-		// Handle instanceof specially - requires type reference, optionally followed by pattern variable
-		if (match(TokenType.INSTANCEOF))
-		{
-			int start = arena.getStart(left);
-			// Consume optional FINAL modifier (Java 16+ pattern matching with final)
-			if (currentToken().type() == TokenType.FINAL)
-				consume();
-			parseType();
-
-			int end = previousToken().end();
-			// Check for optional pattern variable (Java 16+ pattern matching)
-			if (currentToken().type() == TokenType.IDENTIFIER)
-			{
-				consume();
-				end = previousToken().end();
-			}
-
-			return arena.allocateNode(NodeType.BINARY_EXPRESSION, start, end);
-		}
-
-		return left;
-	}
-
-	private NodeIndex parseShift()
-	{
-		return parseBinaryExpression(this::parseAdditive,
-			TokenType.LEFT_SHIFT, TokenType.RIGHT_SHIFT, TokenType.UNSIGNED_RIGHT_SHIFT);
-	}
-
-	private NodeIndex parseAdditive()
-	{
-		return parseBinaryExpression(this::parseMultiplicative, TokenType.PLUS, TokenType.MINUS);
-	}
-
-	private NodeIndex parseMultiplicative()
-	{
-		return parseBinaryExpression(this::parseUnary, TokenType.STAR, TokenType.DIVIDE, TokenType.MODULO);
-	}
-
 	private NodeIndex parseUnary()
 	{
 		int start = currentToken().start();
@@ -2154,9 +2030,9 @@ public final class Parser implements AutoCloseable
 			}
 
 			@Override
-			public NodeIndex parseLogicalOr()
+			public NodeIndex parseUnary()
 			{
-				return Parser.this.parseLogicalOr();
+				return Parser.this.parseUnary();
 			}
 
 			@Override

@@ -263,11 +263,11 @@ public interface ParserAccess
 	void skipBalancedParentheses();
 
 	/**
-	 * Parses a logical OR expression.
+	 * Parses a unary expression.
 	 *
 	 * @return the expression node index
 	 */
-	NodeIndex parseLogicalOr();
+	NodeIndex parseUnary();
 
 	/**
 	 * Checks if the current position starts a lambda expression.

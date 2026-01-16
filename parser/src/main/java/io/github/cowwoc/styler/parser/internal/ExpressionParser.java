@@ -7,14 +7,19 @@ import io.github.cowwoc.styler.parser.Token;
 import io.github.cowwoc.styler.parser.TokenType;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.that;
 
 /**
- * Helper class for expression parsing, specifically cast and lambda disambiguation.
+ * Helper class for expression parsing.
  * <p>
  * Extracted from Parser to reduce class size while maintaining cohesive parsing logic.
- * Contains methods for detecting and parsing cast expressions and lambda expressions.
+ * Contains methods for:
+ * <ul>
+ *   <li>Binary expression parsing with operator precedence</li>
+ *   <li>Cast and lambda expression disambiguation</li>
+ * </ul>
  */
 public final class ExpressionParser
 {
@@ -581,17 +586,175 @@ public final class ExpressionParser
 	}
 
 	/**
-	 * Placeholder for logical OR expression parsing.
-	 * <p>
-	 * This will be replaced by a proper implementation after the binary-operators task
-	 * extracts that method to this class.
+	 * Generic helper method for parsing binary expressions with operator precedence.
+	 * Eliminates duplication across all binary operator parsing methods.
+	 *
+	 * @param nextLevel supplier for next precedence level parser
+	 * @param operators variable number of operator token types to match
+	 * @return the parsed binary expression node or next level node if no operators match
+	 */
+	private NodeIndex parseBinaryExpression(Supplier<NodeIndex> nextLevel, TokenType... operators)
+	{
+		NodeIndex left = nextLevel.get();
+
+		while (matchesAny(operators))
+		{
+			NodeIndex right = nextLevel.get();
+			int start = parser.getArena().getStart(left);
+			int end = parser.getArena().getEnd(right);
+			left = parser.getArena().allocateNode(NodeType.BINARY_EXPRESSION, start, end);
+		}
+
+		return left;
+	}
+
+	/**
+	 * Checks if current token matches any of the provided token types and consumes if found.
+	 *
+	 * @param types variable number of token types to check
+	 * @return true if current token matches any type (and was consumed), false otherwise
+	 */
+	private boolean matchesAny(TokenType... types)
+	{
+		TokenType current = parser.currentToken().type();
+		for (TokenType type : types)
+			if (current == type)
+			{
+				parser.consume();
+				return true;
+			}
+		return false;
+	}
+
+	/**
+	 * Parses a logical OR expression ({@code ||}).
 	 *
 	 * @return the expression node index
 	 */
 	private NodeIndex parseLogicalOr()
 	{
-		// Temporary implementation: delegate back to Parser
-		// This will be replaced when binary-operators task completes
-		return parser.parseLogicalOr();
+		return parseBinaryExpression(this::parseLogicalAnd, TokenType.LOGICAL_OR);
+	}
+
+	/**
+	 * Parses a logical AND expression ({@code &&}).
+	 *
+	 * @return the expression node index
+	 */
+	private NodeIndex parseLogicalAnd()
+	{
+		return parseBinaryExpression(this::parseBitwiseOr, TokenType.LOGICAL_AND);
+	}
+
+	/**
+	 * Parses a bitwise OR expression ({@code |}).
+	 *
+	 * @return the expression node index
+	 */
+	private NodeIndex parseBitwiseOr()
+	{
+		return parseBinaryExpression(this::parseBitwiseXor, TokenType.BITWISE_OR);
+	}
+
+	/**
+	 * Parses a bitwise XOR expression ({@code ^}).
+	 *
+	 * @return the expression node index
+	 */
+	private NodeIndex parseBitwiseXor()
+	{
+		return parseBinaryExpression(this::parseBitwiseAnd, TokenType.CARET);
+	}
+
+	/**
+	 * Parses a bitwise AND expression ({@code &}).
+	 *
+	 * @return the expression node index
+	 */
+	private NodeIndex parseBitwiseAnd()
+	{
+		return parseBinaryExpression(this::parseEquality, TokenType.BITWISE_AND);
+	}
+
+	/**
+	 * Parses an equality expression ({@code ==} or {@code !=}).
+	 *
+	 * @return the expression node index
+	 */
+	private NodeIndex parseEquality()
+	{
+		return parseBinaryExpression(this::parseRelational, TokenType.EQUAL, TokenType.NOT_EQUAL);
+	}
+
+	/**
+	 * Parses a relational expression ({@code <}, {@code >}, {@code <=}, {@code >=}, {@code instanceof}).
+	 *
+	 * @return the expression node index
+	 */
+	private NodeIndex parseRelational()
+	{
+		NodeIndex left = parseShift();
+
+		while (matchesAny(TokenType.LESS_THAN, TokenType.GREATER_THAN, TokenType.LESS_THAN_OR_EQUAL,
+			TokenType.GREATER_THAN_OR_EQUAL))
+		{
+			NodeIndex right = parseShift();
+			int start = parser.getArena().getStart(left);
+			int end = parser.getArena().getEnd(right);
+			left = parser.getArena().allocateNode(NodeType.BINARY_EXPRESSION, start, end);
+		}
+
+		// Handle instanceof specially - requires type reference, optionally followed by pattern variable
+		if (parser.match(TokenType.INSTANCEOF))
+		{
+			int start = parser.getArena().getStart(left);
+			// Consume optional FINAL modifier (Java 16+ pattern matching with final)
+			if (parser.currentToken().type() == TokenType.FINAL)
+				parser.consume();
+			parser.parseType();
+
+			int end = parser.previousToken().end();
+			// Check for optional pattern variable (Java 16+ pattern matching)
+			if (parser.currentToken().type() == TokenType.IDENTIFIER)
+			{
+				parser.consume();
+				end = parser.previousToken().end();
+			}
+
+			return parser.getArena().allocateNode(NodeType.BINARY_EXPRESSION, start, end);
+		}
+
+		return left;
+	}
+
+	/**
+	 * Parses a shift expression ({@code <<}, {@code >>}, {@code >>>}).
+	 *
+	 * @return the expression node index
+	 */
+	private NodeIndex parseShift()
+	{
+		return parseBinaryExpression(this::parseAdditive,
+			TokenType.LEFT_SHIFT, TokenType.RIGHT_SHIFT, TokenType.UNSIGNED_RIGHT_SHIFT);
+	}
+
+	/**
+	 * Parses an additive expression ({@code +} or {@code -}).
+	 *
+	 * @return the expression node index
+	 */
+	private NodeIndex parseAdditive()
+	{
+		return parseBinaryExpression(this::parseMultiplicative, TokenType.PLUS, TokenType.MINUS);
+	}
+
+	/**
+	 * Parses a multiplicative expression ({@code *}, {@code /}, or {@code %}).
+	 *
+	 * @return the expression node index
+	 */
+	private NodeIndex parseMultiplicative()
+	{
+		return parseBinaryExpression(parser::parseUnary, TokenType.STAR, TokenType.DIVIDE, TokenType.MODULO);
 	}
 }
