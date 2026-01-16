@@ -4,5 +4,6 @@
   "targetContextUsage": 0.4,
   "autoCleanupWorktrees": true,
   "initialized": "2026-01-12",
-  "source": "existing"
+  "source": "existing",
+  "version": "2.0.9"
 }
