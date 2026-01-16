@@ -25,6 +25,7 @@ Parser edge cases for real-world Java codebases.
 | extract-expr-creation | refactor | implemented | Extract object/array creation and switch expression parsing to ExpressionParser |
 | extract-expr-lambda-parsing | refactor | implemented | Extract lambda parsing methods to ExpressionParser |
 | integrate-expression-parser | - | duplicate | Integration completed incrementally during extract-expr-* tasks |
+| fix-switch-case-in-expression-context | bugfix | implemented | Fix CASE/DEFAULT/BREAK/THROW/WHILE incorrectly parsed as expressions in old-style switch |
 
 ## Key Changes
 
@@ -52,6 +53,7 @@ Parser edge cases for real-world Java codebases.
 - 14 tests added for contextual keyword expression handling
 - 9 tests added for typed lambda parameter parsing
 - 9 tests added for octal escape sequences in character/string literals
+- 7 tests added for old-style switch case patterns
 - All parser tests passing
 
 ## Gates
