@@ -2490,6 +2490,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Use alternative variable names: st, result, task_status, exit_code instead of status"
+    },
+    {
+      "id": "M106",
+      "timestamp": "2026-01-16T11:15:00Z",
+      "category": "bash_error",
+      "description": "Used git st alias instead of git status - aliases are user-specific, not standard",
+      "root_cause": "Assumed git alias exists without verification. Git aliases are user configurations, not built-in commands.",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "hook",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/warn-git-aliases.sh",
+      "pattern_keywords": [
+        "git",
+        "alias",
+        "st",
+        "status",
+        "user-config"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Always use full git commands: git status, git checkout, git branch, git commit, git diff"
     }
   ],
   "mistake_count_since_last": 6
