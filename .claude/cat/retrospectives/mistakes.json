@@ -2970,6 +2970,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Check if subagent returned tokensUsed value. If yes, report that value. If no, report 'NOT MEASURED'. Never use the estimate from task sizing."
+    },
+    {
+      "id": "M124",
+      "timestamp": "2026-01-16T10:30:00Z",
+      "category": "logical_error",
+      "description": "Status rendering used 🔳 for gate-blocked versions v0.7-v0.10 instead of 🚧",
+      "root_cause": "Applied entry gate blocking logic only to immediate successor (v0.6) rather than all versions with unsatisfied entry gates",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/commands/status.md",
+      "pattern_keywords": [
+        "status",
+        "rendering",
+        "gate",
+        "blocked",
+        "emoji"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Apply 🚧 symbol to ALL versions whose entry gates are not satisfied, not just the immediate next version after current"
     }
   ],
   "mistake_count_since_last": 6
