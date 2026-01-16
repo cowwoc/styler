@@ -53,7 +53,8 @@ record Config(Style braceStyle) {}
 **MANDATORY**: Use `tdd-implementation` skill for ALL Java development.
 
 ### Subagent Prompts for Test Code {#subagent-test-prompts}
-When spawning subagents to write parser tests, include testing standards from `.claude/rules/java-style.md`:
+When spawning subagents to write parser tests, include testing standards from
+[quality-guide.md § Parser Test Requirements](docs/project/quality-guide.md#parser-test-requirements).
 
 **Parser tests MUST compare actual AST to expected AST:**
 ```java
@@ -64,7 +65,12 @@ requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
 requireThat(actual, "actual").isEqualTo(expected);
 ```
 
-Include this requirement explicitly in subagent prompts for parser-related tasks.
+**Additional requirements (A006):**
+- Prohibit weak assertions (`isNotNull()`, `isSuccess()`, `isNotEmpty()` alone)
+- Require manual derivation of expected values (never copy from actual output)
+- Verify positions by character counting before committing test
+
+Include these requirements explicitly in subagent prompts for parser-related tasks.
 
 ### Subagent Token Measurement {#subagent-token-measurement}
 **MANDATORY**: Subagents measure their own token usage and return it to main agent (M099/M102).

@@ -178,6 +178,134 @@ public class OrderProcessor {
 }
 ```
 
+## Parser Test Requirements (A006) {#parser-test-requirements}
+
+Parser tests require special attention because they validate AST structure, not just parsing success.
+Weak assertions can hide bugs by verifying parsing succeeded without checking correctness.
+
+### AST Structure Verification (MANDATORY) {#ast-structure-verification}
+
+Parser tests MUST compare actual AST to expected AST. Never verify only that parsing succeeded.
+
+**✅ CORRECT** (verifies AST structure):
+```java
+@Test
+public void testLambdaExpression()
+{
+    String source = "(a, b) -> a + b";
+    try (Parser parser = parse(source);
+         NodeArena expected = new NodeArena())
+    {
+        NodeArena actual = parser.getArena();
+        // Build expected AST with exact node types and positions
+        expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 0, 15);
+        expected.allocateNode(NodeType.IDENTIFIER, 1, 2);  // a
+        expected.allocateNode(NodeType.IDENTIFIER, 4, 5);  // b
+        expected.allocateNode(NodeType.BINARY_EXPRESSION, 10, 15);
+        requireThat(actual, "actual").isEqualTo(expected);
+    }
+}
+```
+
+**❌ WRONG** (only checks parsing succeeded):
+```java
+@Test
+public void testLambdaExpression()
+{
+    String source = "(a, b) -> a + b";
+    try (Parser _ = parse(source))
+    {
+        // INADEQUATE - only checks parsing didn't throw
+        // Parser could produce completely wrong AST and this would pass
+    }
+}
+```
+
+### Prohibited Weak Assertions {#prohibited-weak-assertions}
+
+These assertions provide false confidence - parsing can succeed but produce incorrect AST:
+
+| Assertion | Problem | Replace With |
+|-----------|---------|--------------|
+| `isNotNull()` on arena | Arena is never null if parsing succeeds | `isEqualTo(expected)` |
+| `isSuccess()` | Only checks no exception | `isEqualTo(expected)` |
+| `isNotEmpty()` | Only checks nodes exist | `isEqualTo(expected)` |
+| `hasSize(N)` alone | Doesn't verify node types/positions | `isEqualTo(expected)` |
+
+**Anti-pattern (M027, M031, M032):**
+```java
+// ❌ These assertions pass even with wrong AST structure
+requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+requireThat(arena, "arena").isNotNull();
+requireThat(nodes, "nodes").isNotEmpty();
+```
+
+### Manual Derivation of Expected Values {#manual-derivation}
+
+Expected values MUST be manually derived from the source string, NOT copied from actual output.
+
+**Process:**
+1. Analyze source string character by character
+2. Determine expected node types from Java grammar
+3. Calculate expected positions by counting characters
+4. Build expected arena with derived values
+5. Run test and compare
+
+**❌ WRONG** (copy-paste from actual output):
+```java
+// Ran test, copied actual output as expected - doesn't validate correctness!
+expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 0, 15);  // copied, not verified
+```
+
+**✅ CORRECT** (manual derivation):
+```java
+// Source: "(a, b) -> a + b"
+//          0123456789...
+// Positions derived by character counting:
+// - '(' at 0, ')' at 5, lambda ends at 15
+// - 'a' at 1-2, 'b' at 4-5
+// - "a + b" at 10-15
+expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 0, 15);  // verified: paren to end
+expected.allocateNode(NodeType.IDENTIFIER, 1, 2);          // verified: 'a'
+```
+
+### Position Verification {#position-verification}
+
+When using placeholder positions during test development:
+
+1. **Initial**: Use `(0, 0)` placeholders for all positions
+2. **Verify**: After test passes structure checks, verify each position:
+   - Count characters in source string
+   - Confirm start position points to first character of construct
+   - Confirm end position points to character after last character
+3. **Update**: Replace placeholders with verified positions
+4. **Document**: No need to add comments - text blocks are self-documenting
+
+**Do NOT** copy actual output positions without verification. The actual output may be wrong.
+
+### Text Blocks Are Self-Documenting {#text-blocks-self-documenting}
+
+When using text blocks in tests, do NOT add comments describing expected positions:
+
+**❌ WRONG** (redundant comments):
+```java
+String source = """
+    class Foo {  // class at 0-12
+        int x;   // field at 17-23
+    }            // close at 25
+    """;
+```
+
+**✅ CORRECT** (self-documenting):
+```java
+String source = """
+    class Foo {
+        int x;
+    }
+    """;
+// Character positions are derivable from the text block itself
+```
+
 ## Test Strategy Requirements {#test-strategy-requirements}
 
 ### REQUIREMENTS Phase: Business Rule Focus {#requirements-phase-business-rule-focus}
