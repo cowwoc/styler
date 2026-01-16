@@ -254,4 +254,35 @@ public interface ParserAccess
 	 * @return the expression node index
 	 */
 	NodeIndex parseAssignment();
+
+	/**
+	 * Skips over balanced parentheses, consuming tokens until the matching closing parenthesis.
+	 * <p>
+	 * Assumes the opening parenthesis has already been consumed.
+	 */
+	void skipBalancedParentheses();
+
+	/**
+	 * Parses a logical OR expression.
+	 *
+	 * @return the expression node index
+	 */
+	NodeIndex parseLogicalOr();
+
+	/**
+	 * Checks if the current position starts a lambda expression.
+	 * <p>
+	 * Scans ahead for the {@code ) ->} pattern to distinguish lambda from parenthesized expressions.
+	 *
+	 * @return {@code true} if the current position starts a lambda expression
+	 */
+	boolean isLambdaExpression();
+
+	/**
+	 * Attempts to parse a cast expression.
+	 *
+	 * @param start the start position of the opening parenthesis
+	 * @return the cast expression node if successfully parsed, {@code null} otherwise
+	 */
+	NodeIndex tryCastExpression(int start);
 }

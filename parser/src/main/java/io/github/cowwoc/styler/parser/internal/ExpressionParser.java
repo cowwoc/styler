@@ -325,4 +325,273 @@ public final class ExpressionParser
 		}
 	}
 
+	/**
+	 * Parses an expression.
+	 *
+	 * @return the expression node index
+	 */
+	public NodeIndex parseExpression()
+	{
+		// Check for lambda expression: identifier -> expr
+		if (parser.currentToken().type() == TokenType.IDENTIFIER)
+		{
+			// Look ahead to see if this is a lambda
+			int checkpoint = parser.getPosition();
+			int start = parser.currentToken().start();
+			parser.consume();
+
+			if (parser.match(TokenType.ARROW))
+				// This is a lambda expression: x -> body
+				return parseLambdaBody(start);
+
+			// Not a lambda, restore position
+			parser.setPosition(checkpoint);
+		}
+
+		return parseAssignment();
+	}
+
+	/**
+	 * Parses the body of a lambda expression after the arrow has been consumed.
+	 *
+	 * @param start the start position of the lambda expression
+	 * @return the lambda expression node index
+	 */
+	public NodeIndex parseLambdaBody(int start)
+	{
+		// Handle comments between arrow and body
+		parser.parseComments();
+		int end;
+		if (parser.currentToken().type() == TokenType.LEFT_BRACE)
+		{
+			// Block lambda: x -> { statements }
+			// parseBlock() creates the BLOCK node; we just need the end position
+			parser.parseBlock();
+			end = parser.previousToken().end();
+		}
+		else
+		{
+			// Expression lambda: x -> expr
+			NodeIndex body = parseExpression();
+			end = parser.getArena().getEnd(body);
+		}
+		return parser.getArena().allocateNode(NodeType.LAMBDA_EXPRESSION, start, end);
+	}
+
+	/**
+	 * Parses a lambda expression's parameter list after lookahead confirmed {@code ) ->} pattern.
+	 *
+	 * @param start the start position (opening parenthesis position)
+	 * @return the lambda expression node
+	 */
+	NodeIndex parseLambdaParameters(int start)
+	{
+		if (isTypedLambdaParameters())
+			return parseTypedLambdaParameters(start);
+		return parseUntypedLambdaParameters(start);
+	}
+
+	/**
+	 * Checks if the lambda parameters are typed (have explicit type declarations).
+	 *
+	 * @return {@code true} if the parameters have explicit types
+	 */
+	private boolean isTypedLambdaParameters()
+	{
+		int savedPosition = parser.getPosition();
+		try
+		{
+			while (parser.currentToken().type() == TokenType.FINAL ||
+				parser.currentToken().type() == TokenType.AT_SIGN)
+			{
+				if (parser.currentToken().type() == TokenType.AT_SIGN)
+				{
+					parser.consume();
+					if (parser.isIdentifierOrContextualKeyword())
+						parser.consume();
+					while (parser.currentToken().type() == TokenType.DOT)
+					{
+						parser.consume();
+						if (parser.isIdentifierOrContextualKeyword())
+							parser.consume();
+					}
+					if (parser.currentToken().type() == TokenType.LEFT_PARENTHESIS)
+						parser.skipBalancedParentheses();
+				}
+				else
+					parser.consume();
+			}
+
+			if (parser.isPrimitiveType(parser.currentToken().type()))
+				return true;
+
+			if (!parser.isIdentifierOrContextualKeyword())
+				return false;
+
+			parser.consume();
+
+			return switch (parser.currentToken().type())
+			{
+				case LESS_THAN, LEFT_BRACKET, DOT -> true;
+				default -> parser.isIdentifierOrContextualKeyword();
+			};
+		}
+		finally
+		{
+			parser.setPosition(savedPosition);
+		}
+	}
+
+	private NodeIndex parseTypedLambdaParameters(int start)
+	{
+		parseTypedLambdaParameter();
+		while (parser.match(TokenType.COMMA))
+			parseTypedLambdaParameter();
+		parser.expect(TokenType.RIGHT_PARENTHESIS);
+		parser.expect(TokenType.ARROW);
+		return parseLambdaBody(start);
+	}
+
+	private void parseTypedLambdaParameter()
+	{
+		while (parser.currentToken().type() == TokenType.FINAL ||
+			parser.currentToken().type() == TokenType.AT_SIGN)
+		{
+			if (parser.currentToken().type() == TokenType.AT_SIGN)
+				parser.parseAnnotation();
+			else
+				parser.consume();
+		}
+		parser.parseType();
+		parser.match(TokenType.ELLIPSIS);
+		parser.expectIdentifierOrContextualKeyword();
+		parser.parseArrayDimensionsWithAnnotations();
+	}
+
+	private NodeIndex parseUntypedLambdaParameters(int start)
+	{
+		parser.expectIdentifierOrContextualKeyword();
+		while (parser.match(TokenType.COMMA))
+			parser.expectIdentifierOrContextualKeyword();
+		parser.expect(TokenType.RIGHT_PARENTHESIS);
+		parser.expect(TokenType.ARROW);
+		return parseLambdaBody(start);
+	}
+
+	/**
+	 * Parses parenthesized expression, cast expression, or lambda expression.
+	 * <p>
+	 * Handles:
+	 * <ul>
+	 *   <li>Empty parens lambda: {@code () -> expr}</li>
+	 *   <li>Cast expression: {@code (Type) operand}</li>
+	 *   <li>Multi-parameter lambda: {@code (a, b) -> expr}</li>
+	 *   <li>Parenthesized lambda: {@code (params) -> expr}</li>
+	 *   <li>Parenthesized expression: {@code (expr)}</li>
+	 * </ul>
+	 *
+	 * @param start the start position of the opening paren
+	 * @return the parsed node
+	 */
+	public NodeIndex parseParenthesizedOrLambda(int start)
+	{
+		// Check for empty parens lambda: () -> expr
+		if (parser.match(TokenType.RIGHT_PARENTHESIS))
+		{
+			parser.expect(TokenType.ARROW);
+			return parseLambdaBody(start);
+		}
+
+		// Detect ALL lambda forms by scanning for ) -> pattern BEFORE trying cast
+		if (isLambdaExpression())
+			return parseLambdaParameters(start);
+
+		// Try cast expression with proper delegation
+		NodeIndex castExpression = tryCastExpression(start, parser::parseUnary, this::parseLambdaBody);
+		if (castExpression != null)
+			return castExpression;
+
+		NodeIndex expression = parseExpression();
+		parser.expect(TokenType.RIGHT_PARENTHESIS);
+
+		if (parser.match(TokenType.ARROW))
+			return parseLambdaBody(start);
+
+		// Regular parenthesized expression
+		return expression;
+	}
+
+	/**
+	 * Parses an assignment expression.
+	 *
+	 * @return the expression node index
+	 */
+	public NodeIndex parseAssignment()
+	{
+		NodeIndex left = parseTernary();
+
+		if (isAssignmentOperator(parser.currentToken().type()))
+		{
+			parser.consume();
+			// Right associative - must check for lambda
+			NodeIndex right = parseExpression();
+
+			int start = parser.getArena().getStart(left);
+			int end = parser.getArena().getEnd(right);
+			return parser.getArena().allocateNode(NodeType.ASSIGNMENT_EXPRESSION, start, end);
+		}
+
+		return left;
+	}
+
+	private boolean isAssignmentOperator(TokenType type)
+	{
+		return switch (type)
+		{
+			case ASSIGN, PLUS_ASSIGN, MINUS_ASSIGN, STAR_ASSIGN, DIVIDE_ASSIGN, MODULO_ASSIGN,
+				BITWISE_AND_ASSIGN, BITWISE_OR_ASSIGN, CARET_ASSIGN, LEFT_SHIFT_ASSIGN,
+				RIGHT_SHIFT_ASSIGN, UNSIGNED_RIGHT_SHIFT_ASSIGN -> true;
+			default -> false;
+		};
+	}
+
+	/**
+	 * Parses a ternary (conditional) expression.
+	 *
+	 * @return the expression node index
+	 */
+	public NodeIndex parseTernary()
+	{
+		// Pending: Replace with parseLogicalOr() after binary-operators task
+		NodeIndex condition = parseLogicalOr();
+
+		if (parser.match(TokenType.QUESTION_MARK))
+		{
+			parseExpression();
+			parser.expect(TokenType.COLON);
+			// Right associative
+			NodeIndex elseExpression = parseTernary();
+
+			int start = parser.getArena().getStart(condition);
+			int end = parser.getArena().getEnd(elseExpression);
+			return parser.getArena().allocateNode(NodeType.CONDITIONAL_EXPRESSION, start, end);
+		}
+
+		return condition;
+	}
+
+	/**
+	 * Placeholder for logical OR expression parsing.
+	 * <p>
+	 * This will be replaced by a proper implementation after the binary-operators task
+	 * extracts that method to this class.
+	 *
+	 * @return the expression node index
+	 */
+	private NodeIndex parseLogicalOr()
+	{
+		// Temporary implementation: delegate back to Parser
+		// This will be replaced when binary-operators task completes
+		return parser.parseLogicalOr();
+	}
 }
