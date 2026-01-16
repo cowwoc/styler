@@ -2865,6 +2865,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Include STATE.md update instruction in subagent prompt; hook now warns when implementation commits miss STATE.md"
+    },
+    {
+      "id": "M120",
+      "timestamp": "2026-01-16T18:15:00Z",
+      "category": "protocol_violation",
+      "description": "Skipped next_task step after task completion - user left without guidance on available options",
+      "root_cause": "After cleanup step, agent stopped following workflow instead of continuing to next_task step",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/commands/execute-task.md",
+      "pattern_keywords": [
+        "next_task",
+        "completion",
+        "user_guidance",
+        "workflow_step"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "medium",
+        "catches_variations": true
+      },
+      "correct_behavior": "After cleanup, ALWAYS continue to next_task step and show user their available options (next task to execute, or completion message with available commands)"
     }
   ],
   "mistake_count_since_last": 6
