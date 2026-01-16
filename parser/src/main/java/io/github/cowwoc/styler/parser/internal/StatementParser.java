@@ -64,7 +64,8 @@ public final class StatementParser
 			case ASSERT -> parseAssertStatement();
 			case SEMICOLON -> parser.consume();
 			case LEFT_BRACE -> parser.parseBlock();
-			case CLASS, INTERFACE, ENUM, RECORD -> parseLocalTypeDeclaration();
+			case CLASS, INTERFACE, ENUM -> parseLocalTypeDeclaration();
+			case RECORD -> parseRecordOrVariableDeclaration();
 			default ->
 			{
 				if (isLocalTypeDeclarationStart())
@@ -138,6 +139,37 @@ public final class StatementParser
 	{
 		parser.skipMemberModifiers();
 		parser.parseNestedTypeDeclaration();
+	}
+
+	/**
+	 * Disambiguates between a record type declaration and a variable declaration using
+	 * {@code record} as the type name.
+	 * <p>
+	 * A record type declaration has the form: {@code record Name(components...) {...}}
+	 * A variable declaration has the form: {@code record name = value;} or {@code record a, b;}
+	 * <p>
+	 * Uses lookahead to check if the identifier following {@code record} is followed by
+	 * {@code (} (record type declaration) or {@code =}, {@code ,}, or {@code ;} (variable declaration).
+	 */
+	public void parseRecordOrVariableDeclaration()
+	{
+		int checkpoint = parser.getPosition();
+		parser.consume(); // RECORD keyword
+		if (parser.isIdentifierOrContextualKeyword())
+		{
+			parser.consume(); // identifier
+			TokenType next = parser.currentToken().type();
+			parser.setPosition(checkpoint);
+			if (next == TokenType.LEFT_PARENTHESIS)
+				parseLocalTypeDeclaration();
+			else
+				parseExpressionOrVariableStatement();
+		}
+		else
+		{
+			parser.setPosition(checkpoint);
+			parseLocalTypeDeclaration();
+		}
 	}
 
 	/**
@@ -882,6 +914,7 @@ public final class StatementParser
 		if ((parser.currentToken().type() == TokenType.AT_SIGN ||
 			parser.currentToken().type() == TokenType.FINAL ||
 			parser.currentToken().type() == TokenType.VAR ||
+			parser.currentToken().type() == TokenType.RECORD ||
 			parser.isPrimitiveType(parser.currentToken().type()) ||
 			parser.currentToken().type() == TokenType.IDENTIFIER) &&
 			tryParseVariableDeclaration(checkpoint))
