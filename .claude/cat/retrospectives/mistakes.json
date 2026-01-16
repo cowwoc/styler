@@ -2705,6 +2705,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Use plain text labels or UPPERCASE for emphasis in CLI output instead of **bold** markdown"
+    },
+    {
+      "id": "M114",
+      "timestamp": "2026-01-16T12:45:00Z",
+      "category": "protocol_violation",
+      "description": "Invoked /cat:research skill and created RESEARCH.md for internal codebase investigation. The skill is designed for external technology research (libraries, frameworks), not parser bug fixes.",
+      "root_cause": "Invoked skill without reading its <when_to_use> section which explicitly lists external technologies and says to skip for well-documented integrations",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/v0/v0.5/task/fix-lambda-arrow-in-parenthesized-context/PLAN.md",
+      "pattern_keywords": [
+        "research",
+        "skill",
+        "when_to_use",
+        "internal_investigation"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "medium",
+        "catches_variations": true
+      },
+      "correct_behavior": "For internal codebase investigation, use Task tool with Explore subagent and document findings directly in PLAN.md. Reserve /cat:research for external technology research where Claude lacks training data."
     }
   ],
   "mistake_count_since_last": 6
