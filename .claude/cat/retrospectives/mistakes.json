@@ -2312,8 +2312,8 @@
       "root_cause": "Hook pattern matched benign stderr output from jq commands checking already-locked tasks - no actual failure occurred",
       "rca_method": "B",
       "rca_method_name": "taxonomy",
-      "prevention_type": "documentation",
-      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/retrospectives/mistakes.json",
+      "prevention_type": "hook",
+      "prevention_path": "/workspace/cat/hooks/auto-learn-from-mistakes.sh",
       "pattern_keywords": [
         "parse_error",
         "false_positive",
@@ -2328,7 +2328,7 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "When hook detects parse_error but task completed successfully, verify whether actual failure occurred before triggering mistake analysis. Consider ignoring parse errors that appear in stderr when the command succeeded."
+      "correct_behavior": "Parse error patterns now check exit code before triggering. Only flag parse errors when the command actually failed (non-zero exit code)."
     }
   ],
   "mistake_count_since_last": 6
