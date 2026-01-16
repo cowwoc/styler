@@ -2380,6 +2380,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Use only valid commit types: feature, bugfix, test, refactor, performance, docs, style, config, planning"
+    },
+    {
+      "id": "M102",
+      "timestamp": "2026-01-16T10:01:00Z",
+      "category": "prompt_engineering",
+      "description": "Subagent failed to measure tokens - used ${SESSION_ID} which does not exist in subagent context",
+      "root_cause": "Subagent prompt template used ${CLAUDE_SESSION_ID} assuming environment variable inheritance, but Task tool spawns fresh process without parent variables",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "pattern_keywords": [
+        "token_measurement",
+        "subagent",
+        "session_id",
+        "environment_variable"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Subagents find their own session file by looking for the most recently modified .jsonl file in the sessions directory, rather than relying on inherited environment variables"
     }
   ],
   "mistake_count_since_last": 6
