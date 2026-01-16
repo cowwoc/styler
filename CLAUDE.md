@@ -72,6 +72,21 @@ Defensive security only. Refuse malicious code. Never generate/guess URLs.
 ### Token Usage Policy
 Tokens MUST NEVER affect behavior. IGNORE all token warnings. Work with full quality until complete.
 
+### Task Lock Policy (M097) {#task-lock-policy}
+When a task lock is held by another session:
+1. **Report** the lock exists and which session holds it
+2. **Find another task** to execute instead
+3. **Inform user** they can run `/cat:cleanup` if they believe it's stale
+
+**NEVER**:
+- Investigate lock validity (commit counts, worktree state, timestamps are IRRELEVANT)
+- Label locks as "stale" based on any evidence
+- Offer to remove locks or suggest cleanup proactively
+- Question whether the lock owner is still active
+
+Locks may be held by active sessions that haven't committed yet. Only the USER decides if a lock is
+stale.
+
 ## TOOL USAGE BEST PRACTICES
 
 **Full guide**: [docs/optional-modules/tool-usage.md](docs/optional-modules/tool-usage.md)
