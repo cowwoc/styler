@@ -632,7 +632,7 @@ public final class ExpressionParser
 	 *
 	 * @return the expression node index
 	 */
-	private NodeIndex parseLogicalOr()
+	public NodeIndex parseLogicalOr()
 	{
 		return parseBinaryExpression(this::parseLogicalAnd, TokenType.LOGICAL_OR);
 	}

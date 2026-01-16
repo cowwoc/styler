@@ -457,8 +457,10 @@ public final class StatementParser
 	 */
 	public void parseCaseLabelExpression()
 	{
-		// Skip lambda lookahead - go directly to assignment parsing
-		parser.parseAssignment();
+		// Use parseLogicalOr() to avoid treating COLON as ternary operator.
+		// Ternary expressions are invalid in case labels anyway (would need second COLON
+		// that conflicts with the case label terminator).
+		parser.parseLogicalOr();
 	}
 
 	/**

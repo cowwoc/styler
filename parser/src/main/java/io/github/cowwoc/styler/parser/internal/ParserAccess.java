@@ -273,6 +273,15 @@ public interface ParserAccess
 	NodeIndex parseAssignment();
 
 	/**
+	 * Parses a logical OR expression (stops at QUESTION_MARK for ternary).
+	 * <p>
+	 * Used by case label parsing to avoid interpreting COLON as ternary operator.
+	 *
+	 * @return the expression node index
+	 */
+	NodeIndex parseLogicalOr();
+
+	/**
 	 * Skips over balanced parentheses, consuming tokens until the matching closing parenthesis.
 	 * <p>
 	 * Assumes the opening parenthesis has already been consumed.

@@ -1472,6 +1472,12 @@ public final class Parser implements AutoCloseable
 			}
 
 			@Override
+			public NodeIndex parseLogicalOr()
+			{
+				return expressionParser.parseLogicalOr();
+			}
+
+			@Override
 			public void skipBalancedParentheses()
 			{
 				Parser.this.skipBalancedParens();
