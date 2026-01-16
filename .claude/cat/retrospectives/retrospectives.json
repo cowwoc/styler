@@ -76,9 +76,37 @@
       "implementation_note": "Implemented via A007 hooks: block-reflog-destruction.sh, validate-git-filter-branch.sh, block-merge-commits.sh, warn-file-extraction.sh"
     }
   ],
-  "last_retrospective": "2026-01-16T10:27:04-05:00",
-  "mistake_count_since_last": 13,
+  "last_retrospective": "2026-01-16T13:33:36-05:00",
+  "mistake_count_since_last": 0,
   "retrospectives": [
+    {
+      "id": "R008",
+      "timestamp": "2026-01-16T13:33:36-05:00",
+      "trigger": "count_threshold",
+      "period_analyzed": "2026-01-16T10:27:04-05:00 to 2026-01-16T13:33:36-05:00",
+      "mistakes_analyzed": 14,
+      "summary": "14 mistakes (M104-M116, duplicate M115). bash_error dominates (4, 29%). Key finding: M108 is unmarked recurrence of M105 (zsh status variable). Action items all effective (0 post-fix). New pattern PATTERN-015 (bash_shell_compatibility) and action A016 created.",
+      "findings": {
+        "categories": {
+          "bash_error": 4,
+          "detection_gap": 2,
+          "documentation_violation": 2,
+          "prompt_engineering": 2,
+          "protocol_violation": 2,
+          "assumption_without_verification": 1,
+          "process": 1
+        },
+        "action_item_effectiveness": "all effective (0 post-fix)",
+        "recurrence_detected": "M108 is recurrence of M105",
+        "new_patterns": [
+          "PATTERN-015: bash_shell_compatibility"
+        ],
+        "new_action_items": [
+          "A016: Strengthen shell compatibility hook"
+        ],
+        "data_quality_issue": "Duplicate M115 ID"
+      }
+    },
     {
       "id": "R007",
       "timestamp": "2026-01-16T10:27:04-05:00",
@@ -885,6 +913,28 @@
         "verdict": "pending_verification"
       },
       "implementation_note": "Already documented in CLAUDE.md Task Lock Policy (M097). Policy is explicit: NEVER investigate lock validity, NEVER label locks as stale, NEVER offer to remove locks."
+    },
+    {
+      "id": "A016",
+      "priority": "high",
+      "description": "Strengthen shell compatibility hook - expand zsh reserved variable patterns and add absolute path verification",
+      "category": "bash_error",
+      "pattern_id": "PATTERN-015",
+      "status": "open",
+      "created_date": "2026-01-16T13:33:36-05:00",
+      "completed_date": null,
+      "related_mistakes": [
+        "M105",
+        "M106",
+        "M108",
+        "M115"
+      ],
+      "effectiveness_check": {
+        "mistakes_before": 4,
+        "mistakes_after": null,
+        "post_fix_mistakes": [],
+        "verdict": "pending"
+      }
     }
   ],
   "effectiveness_analysis_query": "jq --arg pattern_id \"PATTERN-XXX\" --arg completed_date \"YYYY-MM-DD\" '[.mistakes[] | select(.pattern_id == $pattern_id and .timestamp > $completed_date)] | length' .claude/retrospectives/mistakes.json",
@@ -954,6 +1004,20 @@
       ],
       "related_action_items": [],
       "note": "Subagent token measurement failures due to session ID unavailability (M099, M102). Fixed via M102 learning."
+    },
+    {
+      "pattern_id": "PATTERN-015",
+      "pattern": "bash_shell_compatibility",
+      "occurrences_total": 4,
+      "occurrences_after_fix": 0,
+      "first_seen": "2026-01-16",
+      "last_seen": "2026-01-16",
+      "last_action_date": null,
+      "status": "new",
+      "effectiveness": "pending",
+      "preventions": [],
+      "related_action_items": [],
+      "note": "Shell compatibility issues: zsh reserved vars (M105,M108), relative paths (M115)"
     }
   ]
 }
