@@ -66,6 +66,22 @@ requireThat(actual, "actual").isEqualTo(expected);
 
 Include this requirement explicitly in subagent prompts for parser-related tasks.
 
+### Subagent Token Measurement {#subagent-token-measurement}
+**MANDATORY**: Subagents measure their own token usage and return it to main agent (M099).
+
+**Subagent responsibility**: Before completion, measure tokens from own session file and include in output:
+```bash
+SESSION_FILE="/home/node/.config/claude/projects/-workspace/${SESSION_ID}.jsonl"
+cat > /tmp/token_count.jq << 'EOF'
+[.[] | select(.type == "assistant") | .message.usage | select(. != null) |
+  (.input_tokens + .output_tokens)] | add // 0
+EOF
+TOKENS=$(jq -s -f /tmp/token_count.jq "$SESSION_FILE")
+echo "Tokens used: $TOKENS"
+```
+
+**Main agent responsibility**: Report ONLY measured values from subagent output. Never fabricate estimates.
+
 ### Defensive Security Policy
 Defensive security only. Refuse malicious code. Never generate/guess URLs.
 

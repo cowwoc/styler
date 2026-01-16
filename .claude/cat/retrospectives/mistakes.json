@@ -2277,7 +2277,33 @@
       },
       "correct_behavior": "Multiply implementation phase factors by 4x: files_to_create 20000, files_to_modify 12000, plan_steps 8000. Or add base implementation overhead of 50,000 tokens.",
       "notes": "CAT plugin source needs update. Implementation subagent has significant overhead beyond code generation including context loading, verification commands, and git operations."
+    },
+    {
+      "id": "M099",
+      "timestamp": "2026-01-16T15:00:00Z",
+      "category": "protocol_violation",
+      "description": "Main agent fabricated token estimates instead of having subagent measure and return actual usage",
+      "root_cause": "execute-task workflow says 'report metrics' but doesn't mandate measurement. spawn-subagent and collect-results skills exist but weren't used.",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "skill",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "pattern_keywords": [
+        "token_measurement",
+        "subagent",
+        "fabrication",
+        "estimation"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Subagent measures own tokens from session JSONL before completion. Main agent reports ONLY measured values from subagent output, never fabricates."
     }
   ],
-  "mistake_count_since_last": 5
+  "mistake_count_since_last": 6
 }
