@@ -86,6 +86,11 @@ if [[ "$FILE_PATH" =~ \.claude/skills/retrospective/ ]] || \
     exit 0
 fi
 
+# Allow CAT plugin source edits (M104: fixing skill jq commands)
+if [[ "$FILE_PATH" =~ /workspace/cat/skills/ ]]; then
+    exit 0
+fi
+
 # Extract filename and content
 FILENAME=$(basename "$FILE_PATH")
 CONTENT=$(echo "$INPUT" | jq -r '.tool_input.content // .content // .parameters.content // ""' 2>/dev/null || echo "")
