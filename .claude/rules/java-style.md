@@ -143,6 +143,21 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   - ALWAYS use text blocks (`"""`) for multi-line source strings
   - NEVER use escape sequences (`\n`, `\t`) for source code
   - NEVER add comments that duplicate the source content (text blocks are self-documenting)
+  - NEVER leave temporary position calculation comments (M115):
+    ```java
+    // ❌ WRONG - Temporary development comments
+    // Position: 0         1         2         3
+    // Position: 0123456789012345678901234567890
+    // Source:   class Test\n{\n\tvoid...
+    String source = """
+        class Test { }
+        """;
+
+    // ✅ CORRECT - Text block only, no position comments
+    String source = """
+        class Test { }
+        """;
+    ```
   - Format code naturally with one statement per line
 - File cleanup: Use `TestFileFactory.deleteFilesQuietly()` instead of duplicating cleanup code:
   ```java
