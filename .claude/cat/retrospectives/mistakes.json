@@ -2651,6 +2651,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Use feature: instead of feat: for new functionality commits"
+    },
+    {
+      "id": "M112",
+      "timestamp": "2026-01-16T11:50:00Z",
+      "category": "documentation_violation",
+      "description": "Used docs: instead of config: for Claude-facing retrospectives file",
+      "root_cause": "M089 rule not consulted - docs vs config distinction not enforced by hook",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "hook",
+      "prevention_path": "/workspace/cat/hooks/validate-commit-type.sh",
+      "pattern_keywords": [
+        "commit",
+        "docs",
+        "config",
+        "claude-facing",
+        "M089"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use config: for Claude-facing files (CLAUDE.md, hooks, skills, retrospectives)"
     }
   ],
   "mistake_count_since_last": 6
