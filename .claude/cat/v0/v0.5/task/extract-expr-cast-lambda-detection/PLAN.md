@@ -22,8 +22,10 @@ From Parser.java lines 969-1240:
 | isLambdaExpression | 1177-1240 | Detects lambda by scanning for `) ->` |
 
 ### Prerequisites
-- ExpressionParser skeleton exists (created by previous failed attempt)
-- ParserAccess interface has required methods
+- create-parser-access-interface completed (ParserAccess interface exists)
+- ExpressionParser skeleton exists
+
+**Note:** This task can run in parallel with other extract-expr-* subtasks.
 
 ### Implementation Steps
 

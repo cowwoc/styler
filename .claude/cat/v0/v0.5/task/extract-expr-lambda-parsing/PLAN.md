@@ -32,8 +32,10 @@ From Parser.java lines 2558-2738:
 | parseTernary | 2768-2784 | Parses conditional operator |
 
 ### Prerequisites
-- extract-expr-unary-postfix-primary completed
-- Lambda body calls parseExpression recursively
+- create-parser-access-interface completed (ParserAccess interface exists)
+- ExpressionParser skeleton exists
+
+**Note:** This task can run in parallel with other extract-expr-* subtasks.
 
 ### Implementation Steps
 

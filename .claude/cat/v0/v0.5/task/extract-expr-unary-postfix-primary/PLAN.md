@@ -28,8 +28,10 @@ Decomposed from: extract-expression-parser (sequence 3 of 6)
 | parsePrimitiveClassLiteral | 3276-3299 | Primitive class literals |
 
 ### Prerequisites
-- extract-expr-binary-operators completed
-- Binary operators call parseUnary at bottom of chain
+- create-parser-access-interface completed (ParserAccess interface exists)
+- ExpressionParser skeleton exists
+
+**Note:** This task can run in parallel with other extract-expr-* subtasks.
 
 ### Implementation Steps
 
