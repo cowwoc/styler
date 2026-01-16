@@ -1,7 +1,7 @@
 # State
 
-- **Status:** pending
-- **Progress:** 0%
+- **Status:** completed
+- **Progress:** 100%
 - **Dependencies:** integrate-expression-parser
 - **Estimated Tokens:** 25000
 - **Created:** 2026-01-16
@@ -23,8 +23,20 @@ The parser expects a closing parenthesis but encounters a lambda arrow. This lik
 The existing `fix-lambda-arrow-edge-cases` and `fix-lambda-typed-parameters-in-args` tasks resolved
 most cases, but these 4 files contain edge cases not covered.
 
+## Solution
+
+The root cause was asymmetric parenthesis tracking in `isLambdaExpression()`:
+- `LEFT_PARENTHESIS` always incremented `parenthesisDepth`
+- `RIGHT_PARENTHESIS` only decremented when `angleBracketDepth == 0`
+
+This caused false negatives for lambdas with annotations containing element-value pairs inside generic
+type parameters (e.g., `List<@NonNull(when=MAYBE) String>`). The parentheses inside the annotation
+were counted on open but not on close, leading to incorrect depth tracking.
+
+Fix: Make both `LEFT_PARENTHESIS` and `RIGHT_PARENTHESIS` only track when `angleBracketDepth == 0`.
+
 ## Acceptance Criteria
 
-- [ ] All 4 affected Spring Framework files parse successfully
-- [ ] No regression in other Spring Framework files
-- [ ] Tests added for the specific lambda patterns
+- [x] All 4 affected Spring Framework files parse successfully
+- [x] No regression in other Spring Framework files
+- [x] Tests added for the specific lambda patterns

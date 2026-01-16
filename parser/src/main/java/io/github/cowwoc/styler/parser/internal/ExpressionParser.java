@@ -280,7 +280,11 @@ public final class ExpressionParser
 
 				switch (type)
 				{
-					case LEFT_PARENTHESIS -> ++parenthesisDepth;
+					case LEFT_PARENTHESIS ->
+					{
+						if (angleBracketDepth == 0)
+							++parenthesisDepth;
+					}
 					case RIGHT_PARENTHESIS ->
 					{
 						if (angleBracketDepth == 0)
