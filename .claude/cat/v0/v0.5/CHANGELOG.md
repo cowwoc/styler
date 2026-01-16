@@ -22,6 +22,7 @@ Parser edge cases for real-world Java codebases.
 | extract-expr-cast-lambda-detection | refactor | implemented | Extract cast/lambda detection methods to ExpressionParser |
 | extract-expr-binary-operators | refactor | implemented | Extract binary expression parsing to ExpressionParser |
 | extract-expr-unary-postfix-primary | refactor | implemented | Extract unary/postfix/primary expression parsing to ExpressionParser |
+| extract-expr-creation | refactor | implemented | Extract object/array creation and switch expression parsing to ExpressionParser |
 
 ## Key Changes
 
