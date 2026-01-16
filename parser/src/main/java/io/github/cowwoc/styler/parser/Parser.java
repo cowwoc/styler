@@ -634,7 +634,8 @@ public final class Parser implements AutoCloseable
 	{
 		return switch (type)
 		{
-			case VAR, YIELD, MODULE, OPEN, TO, REQUIRES, EXPORTS, OPENS, USES, PROVIDES, WITH, TRANSITIVE -> true;
+			case VAR, YIELD, RECORD, MODULE, OPEN, TO, REQUIRES, EXPORTS, OPENS, USES, PROVIDES, WITH,
+				TRANSITIVE -> true;
 			default -> false;
 		};
 	}
