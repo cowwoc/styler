@@ -1,10 +1,10 @@
 # State
 
-- **Status:** pending
-- **Progress:** 0%
+- **Status:** completed
+- **Progress:** 100%
+- **Resolution:** implemented
 - **Dependencies:** integrate-expression-parser
-- **Estimated Tokens:** 30000
-- **Created:** 2026-01-16
+- **Completed:** 2026-01-16
 
 ## Description
 
@@ -31,6 +31,6 @@ switch blocks.
 
 ## Acceptance Criteria
 
-- [ ] All 14 affected Spring Framework files parse successfully
-- [ ] No regression in other Spring Framework files
-- [ ] Tests added for old-style switch case patterns
+- [x] All 14 affected Spring Framework files parse successfully
+- [x] No regression in other Spring Framework files
+- [x] Tests added for old-style switch case patterns
