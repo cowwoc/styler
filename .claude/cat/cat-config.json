@@ -2,12 +2,10 @@
   "yoloMode": false,
   "contextLimit": 200000,
   "targetContextUsage": 0.4,
-  "autoCleanupWorktrees": true,
-  "initialized": "2026-01-12",
-  "source": "existing",
+  "autoRemoveWorktrees": true,
   "version": "2.0.9",
-  "leash": "medium",
-  "caution": "vigilant",
-  "curiosity": "medium",
+  "trust": "medium",
+  "verify": "all",
+  "curiosity": "high",
   "patience": "medium"
 }
