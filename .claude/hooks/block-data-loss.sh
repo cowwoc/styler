@@ -77,6 +77,11 @@ handle_pre_tool_use()
 	        # Allow syntax checking commands
 	        ;;
 	    *"git init"*|*"git-init"*)
+	        # Allow git init in /tmp directories (for tests)
+	        if echo "$COMMAND" | grep -qE "cd /tmp|/tmp/"; then
+	            echo '{}'
+	            exit 0
+	        fi
 	        echo "⛔ BLOCKED: git init not allowed at workspace root (see CLAUDE.md § Repository Structure)" >&2
 	        echo "🚨 REPOSITORY CREATION BLOCKED: NEVER create new git repositories at workspace root" >&2
 	        echo "📍 EXISTING REPOSITORY: Use 'cd /workspace' for git operations" >&2
