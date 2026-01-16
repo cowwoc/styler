@@ -28,6 +28,7 @@ Parser edge cases for real-world Java codebases.
 | fix-switch-case-in-expression-context | bugfix | implemented | Fix CASE/DEFAULT/BREAK/THROW/WHILE incorrectly parsed as expressions in old-style switch |
 | fix-contextual-keyword-declarations | bugfix | implemented | Add RECORD as contextual keyword for variable declarations |
 | fix-lambda-arrow-in-parenthesized-context | bugfix | implemented | Fix lambda detection with annotated generic type parameters |
+| fix-spring-parsing-edge-cases | bugfix | implemented | Fix block comments in type declarations and generic type arguments |
 
 ## Key Changes
 
@@ -35,6 +36,8 @@ Parser edge cases for real-world Java codebases.
 - Contextual keywords (var, module, with, to, etc.) now work as expression starters
 - `instanceof final Type var` pattern matching now supported
 - Typed lambda parameters `(Type param) -> body` now parsed correctly (was misinterpreted as cast)
+- Block comments between type and identifier now handled (`Map/* comment */field`)
+- Block comments before generic type arguments now handled (`Map/* */<K,V>`)
 
 ## Files Changed
 
@@ -56,7 +59,8 @@ Parser edge cases for real-world Java codebases.
 - 9 tests added for typed lambda parameter parsing
 - 9 tests added for octal escape sequences in character/string literals
 - 7 tests added for old-style switch case patterns
-- All parser tests passing
+- 5 tests added for block comments in field/method declarations
+- All parser tests passing (900 total)
 
 ## Gates
 
