@@ -72,15 +72,6 @@ requireThat(actual, "actual").isEqualTo(expected);
 
 Include these requirements explicitly in subagent prompts for parser-related tasks.
 
-### Subagent Token Measurement {#subagent-token-measurement}
-**MANDATORY**: Subagents measure their own token usage and return it to main agent (M099/M102).
-
-**Main agent responsibility**: When spawning subagents via Task tool, include token measurement
-instructions from `spawn-subagent/SKILL.md`. The skill uses `${CLAUDE_SESSION_ID}` which gets
-substituted when the skill is invoked (not in raw Task tool prompts).
-
-**Report ONLY measured values** from subagent output. Never fabricate.
-
 ### Defensive Security Policy
 Defensive security only. Refuse malicious code. Never generate/guess URLs.
 
