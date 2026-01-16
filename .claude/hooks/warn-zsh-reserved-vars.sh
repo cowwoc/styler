@@ -66,11 +66,15 @@ ZSH_READONLY_VARS=(
 
 FOUND_VARS=()
 
+# Convert JSON-escaped newlines to actual newlines for pattern matching
+# JSON encodes newlines as \n (literal backslash-n), which grep won't match as whitespace
+COMMAND_NORMALIZED=$(echo "$COMMAND" | sed 's/\\n/\n/g')
+
 # Check for assignment patterns: var= or var=value
 for var in "${ZSH_READONLY_VARS[@]}"; do
 	# Match: var=, var="...", var='...', var=$(...), etc.
 	# But NOT: $var, ${var}, some_other_var=
-	if echo "$COMMAND" | grep -qE "(^|[;&|[:space:]])${var}="; then
+	if echo "$COMMAND_NORMALIZED" | grep -qE "(^|[;&|[:space:]])${var}="; then
 		FOUND_VARS+=("$var")
 	fi
 done
