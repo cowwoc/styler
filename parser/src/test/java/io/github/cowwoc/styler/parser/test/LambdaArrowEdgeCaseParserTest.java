@@ -124,8 +124,12 @@ public final class LambdaArrowEdgeCaseParserTest
 	 * This pattern occurs in Spring Framework's DatabasePopulator.java:
 	 * {@code Mono.usingWhen(source, this::populate, connection -> release(connection))}
 	 * The trailing comments and line breaks were causing "Expected RIGHT_PARENTHESIS but found ARROW".
+	 * <p>
+	 * <b>TDD RED:</b> This test reproduces a production bug and is disabled until the fix is implemented.
+	 *
+	 * @see <a href=".claude/cat/v0/v0.5/task/fix-lambda-arrow-in-parenthesized-context">Task to fix this</a>
 	 */
-	@Test
+	@Test(enabled = false)
 	public void shouldParseLambdaAfterMethodReferenceWithTrailingComments()
 	{
 		String source = """

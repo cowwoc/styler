@@ -1,10 +1,10 @@
 # State
 
-- **Status:** completed
-- **Progress:** 100%
+- **Status:** pending
+- **Progress:** 0%
 - **Dependencies:** integrate-expression-parser
-- **Estimated Tokens:** 25000
-- **Created:** 2026-01-16
+- **Last Updated:** 2026-01-17
+- **Note:** Reopened - previous fix didn't address lambda after method reference with trailing comments
 
 ## Description
 
@@ -37,6 +37,6 @@ Fix: Make both `LEFT_PARENTHESIS` and `RIGHT_PARENTHESIS` only track when `angle
 
 ## Acceptance Criteria
 
-- [x] All 4 affected Spring Framework files parse successfully
-- [x] No regression in other Spring Framework files
-- [x] Tests added for the specific lambda patterns
+- [ ] Failing test `shouldParseLambdaAfterMethodReferenceWithTrailingComments` passes
+- [ ] DatabasePopulator.java and Jackson2ObjectMapperBuilder.java parse successfully
+- [ ] No regression in other Spring Framework files
