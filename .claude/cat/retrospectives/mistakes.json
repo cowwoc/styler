@@ -3003,7 +3003,7 @@
       "timestamp": "2026-01-17T10:30:00Z",
       "category": "documentation_violation",
       "description": "Status display used markdown bold (**text**) which shows as literal asterisks in terminal with emojis",
-      "root_cause": "cat:status skill template uses markdown bold which contradicts display-standards.md guidance to use UPPERCASE in emoji-mixed displays",
+      "root_cause": "Status display was wrapped in code blocks (triple backticks) which prevents markdown rendering - bold shows as literal asterisks inside code blocks",
       "rca_method": "C",
       "rca_method_name": "causal-barrier",
       "prevention_type": "skill",
@@ -3024,7 +3024,7 @@
         "fragility": "low",
         "catches_variations": true
       },
-      "correct_behavior": "Use UPPERCASE for emphasis in status displays instead of markdown bold. Keep version info and metrics on same line."
+      "correct_behavior": "Output status displays directly as plain text WITHOUT wrapping in code blocks. Markdown **bold** renders correctly when not inside ``` blocks."
     }
   ],
   "mistake_count_since_last": 6
