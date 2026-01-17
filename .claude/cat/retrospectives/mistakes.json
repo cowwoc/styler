@@ -3035,7 +3035,7 @@
       "rca_method": "A",
       "rca_method_name": "5-whys",
       "prevention_type": "documentation",
-      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "prevention_path": "/workspace/cat/.claude/cat/references/task-resolution.md",
       "pattern_keywords": [
         "validation",
         "completion_bias",

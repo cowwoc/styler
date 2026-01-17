@@ -66,6 +66,9 @@ Project roadmap with version summaries. Minor versions group related tasks (2-8 
   - fix-annotation-on-enum-constant
   - fix-break-throw-in-switch-statement
   - fix-misc-parsing-edge-cases
+  - fix-old-style-switch-fallthrough
+  - fix-lambda-in-ternary-expression
+  - fix-misc-expression-edge-cases
   - validate-spring-framework-parsing
 
 - **0.6:** Test consolidation and code quality improvements (PENDING)
