@@ -143,7 +143,7 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
   - ALWAYS use text blocks (`"""`) for multi-line source strings
   - NEVER use escape sequences (`\n`, `\t`) for source code
   - NEVER add comments that duplicate the source content (text blocks are self-documenting)
-  - NEVER leave temporary position calculation comments (M115):
+  - NEVER leave temporary position calculation comments (M115/M128):
     ```java
     // ❌ WRONG - Temporary development comments
     // Position: 0         1         2         3
