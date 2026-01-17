@@ -1,13 +1,12 @@
 # State
 
-- **Status:** completed
-- **Progress:** 100%
-- **Resolution:** implemented
-- **Dependencies:** (all completed)
+- **Status:** pending
+- **Progress:** 0%
+- **Dependencies:** fix-old-style-switch-fallthrough, fix-lambda-in-ternary-expression, fix-misc-expression-edge-cases
 - **Last Updated:** 2026-01-17
-- **Completed:** 2026-01-17
+- **Note:** Blocked until all 3 new tasks complete, then re-run validation
 
-## Final Validation Run (2026-01-17)
+## Validation Run (2026-01-17)
 
 **Result:** 99.76% success rate (8,796/8,817 files)
 
@@ -21,45 +20,35 @@
 
 **Improvement from start of v0.5:** 93.2% → 99.76% (+577 files now parse correctly)
 
-## Remaining Errors (21 files) - Documented Limitations
+## Remaining Errors (21 files) - New Tasks Required
 
-| Error Type | Count | Root Cause |
-|------------|-------|------------|
-| Unexpected CASE in expression | 5 | Vendored cglib/ASM with old-style switch |
-| Expected RIGHT_PARENTHESIS but found ARROW | 4 | Lambda in ternary expression |
-| Unexpected DEFAULT in expression | 3 | Generated protobuf code |
-| Unexpected BREAK in expression | 3 | Vendored SpEL tokenizer/ASM |
-| Unexpected THROW in expression | 2 | Old-style switch with throw |
-| Unexpected RIGHT_BRACE in expression | 1 | Unusual test pattern |
-| Unexpected WHILE in expression | 1 | Vendored ASM ClassReader |
-| Expected SEMICOLON but found ARROW | 1 | Lambda edge case |
-| Expected IDENTIFIER but found DOT | 1 | Complex generic pattern |
+| Error Type | Count | New Task |
+|------------|-------|----------|
+| Unexpected CASE in expression | 5 | fix-old-style-switch-fallthrough |
+| Unexpected DEFAULT in expression | 3 | fix-old-style-switch-fallthrough |
+| Unexpected BREAK in expression | 3 | fix-old-style-switch-fallthrough |
+| Unexpected THROW in expression | 2 | fix-old-style-switch-fallthrough |
+| Unexpected WHILE in expression | 1 | fix-old-style-switch-fallthrough |
+| Expected RIGHT_PARENTHESIS but found ARROW | 4 | fix-lambda-in-ternary-expression |
+| Expected SEMICOLON but found ARROW | 1 | fix-lambda-in-ternary-expression |
+| Unexpected RIGHT_BRACE in expression | 1 | fix-misc-expression-edge-cases |
+| Expected IDENTIFIER but found DOT | 1 | fix-misc-expression-edge-cases |
 
-### Analysis of Remaining Failures
+### Error Categories Analysis
 
-**Vendored/Embedded Library Code (14 files):**
-- Spring embeds cglib and ASM libraries unchanged
-- These use `@SuppressWarnings("fallthrough")` and old-style switch patterns
-- Files: CodeEmitter.java, EmitUtils.java, ClassReader.java, Tokenizer.java, Operator.java, etc.
+**Old-Style Switch Fall-Through (14 files):**
+- `case LABEL: statement; break;` without braces
+- Vendored cglib/ASM and SpEL code uses this pattern
+- Files: CodeEmitter.java, EmitUtils.java, ClassReader.java, Tokenizer.java, etc.
 
-**Generated Protobuf Code (5 files):**
-- Machine-generated code with unusual patterns
-- Files: Msg.java, SecondMsg.java (3 copies across modules)
-
-**Lambda in Ternary Expressions (4 files):**
+**Lambda in Ternary Expression (5 files):**
 - Pattern: `condition ? value : param -> body`
-- Valid Java but complex parsing edge case
+- Valid Java but complex parsing requiring lookahead
 - Files: PersistenceManagedTypesScanner.java, DatabasePopulator.java, etc.
 
-### Decision: Accept as Known Limitations
-
-These 21 files represent:
-1. **Third-party vendored code** that Spring maintains unchanged
-2. **Machine-generated code** with non-idiomatic patterns
-3. **Rare edge cases** (lambda in ternary) that affect <0.05% of real-world code
-
-Creating additional parser complexity for 0.24% of files (mostly non-hand-written code) provides
-diminishing returns. These are documented as known limitations.
+**Miscellaneous Edge Cases (2 files):**
+- Unusual patterns in test code
+- Files: SpringJUnit4ConcurrencyTests.java, SpelCompilationCoverageTests.java
 
 ## Previous Run (2026-01-14)
 
