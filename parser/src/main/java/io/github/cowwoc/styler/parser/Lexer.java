@@ -778,7 +778,7 @@ public final class Lexer
 		if (position >= source.length() || !isOctalDigit(source.charAt(position)))
 			return;
 
-		char secondDigit = source.charAt(position);
+		// Second digit already validated by isOctalDigit check above
 		++position;
 
 		// Check for third digit (only valid if first digit is 0-3 to keep value <= 377 octal = 255 decimal)
