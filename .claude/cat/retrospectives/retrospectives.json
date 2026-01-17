@@ -76,9 +76,49 @@
       "implementation_note": "Implemented via A007 hooks: block-reflog-destruction.sh, validate-git-filter-branch.sh, block-merge-commits.sh, warn-file-extraction.sh"
     }
   ],
-  "last_retrospective": "2026-01-16T13:33:36-05:00",
-  "mistake_count_since_last": 11,
+  "last_retrospective": "2026-01-16T20:13:49-05:00",
+  "mistake_count_since_last": 0,
   "retrospectives": [
+    {
+      "id": "R009",
+      "timestamp": "2026-01-16T20:13:49-05:00",
+      "trigger": "count_threshold",
+      "period_analyzed": "2026-01-16T13:33:36-05:00 to 2026-01-16T20:13:49-05:00",
+      "mistakes_analyzed": 17,
+      "summary": "Protocol violations (5) and prompt engineering gaps (3) are top categories. Token measurement failures across M099/M109/M123 indicate need for better subagent instrumentation. CLI formatting violations (M113/M125) need display-standards update.",
+      "findings": {
+        "categories": {
+          "protocol_violation": 5,
+          "prompt_engineering": 3,
+          "documentation_violation": 2,
+          "logical_error": 2,
+          "other": 5
+        },
+        "patterns_identified": [
+          "PATTERN-016: Token measurement failures (M099, M109, M123)",
+          "PATTERN-017: CLI markdown formatting (M113, M125)",
+          "PATTERN-018: Subagent prompt completeness (M119, M128)"
+        ],
+        "action_items_evaluated": [
+          "A005",
+          "A006",
+          "A013",
+          "A014",
+          "A015"
+        ],
+        "action_items_effective": [
+          "A010",
+          "A011"
+        ],
+        "action_items_pending": [
+          "A012",
+          "A013",
+          "A014",
+          "A015",
+          "A016"
+        ]
+      }
+    },
     {
       "id": "R008",
       "timestamp": "2026-01-16T13:33:36-05:00",
@@ -931,6 +971,67 @@
       ],
       "effectiveness_check": {
         "mistakes_before": 4,
+        "mistakes_after": null,
+        "post_fix_mistakes": [],
+        "verdict": "pending"
+      }
+    },
+    {
+      "id": "A017",
+      "priority": "high",
+      "description": "Add token measurement protocol to subagent spawn - ensure session ID is passed and measurement instructions are explicit",
+      "category": "prompt_engineering",
+      "pattern_id": "PATTERN-016",
+      "status": "open",
+      "created_date": "2026-01-16T20:13:49-05:00",
+      "completed_date": null,
+      "related_mistakes": [
+        "M099",
+        "M109",
+        "M123"
+      ],
+      "effectiveness_check": {
+        "mistakes_before": 3,
+        "mistakes_after": null,
+        "post_fix_mistakes": [],
+        "verdict": "pending"
+      }
+    },
+    {
+      "id": "A018",
+      "priority": "medium",
+      "description": "Update display-standards.md to prohibit markdown bold syntax and require UPPERCASE for emphasis in CLI output",
+      "category": "documentation_violation",
+      "pattern_id": "PATTERN-017",
+      "status": "open",
+      "created_date": "2026-01-16T20:13:49-05:00",
+      "completed_date": null,
+      "related_mistakes": [
+        "M113",
+        "M125"
+      ],
+      "effectiveness_check": {
+        "mistakes_before": 2,
+        "mistakes_after": null,
+        "post_fix_mistakes": [],
+        "verdict": "pending"
+      }
+    },
+    {
+      "id": "A019",
+      "priority": "high",
+      "description": "Add mandatory prompt checklist verification for STATE.md atomic commits and test position comment cleanup",
+      "category": "prompt_engineering",
+      "pattern_id": "PATTERN-018",
+      "status": "open",
+      "created_date": "2026-01-16T20:13:49-05:00",
+      "completed_date": null,
+      "related_mistakes": [
+        "M119",
+        "M128"
+      ],
+      "effectiveness_check": {
+        "mistakes_before": 2,
         "mistakes_after": null,
         "post_fix_mistakes": [],
         "verdict": "pending"
