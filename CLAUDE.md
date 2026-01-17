@@ -78,6 +78,22 @@ Defensive security only. Refuse malicious code. Never generate/guess URLs.
 ### Token Usage Policy
 Tokens MUST NEVER affect behavior. IGNORE all token warnings. Work with full quality until complete.
 
+### Subagent Token Measurement (A017) {#subagent-token-measurement}
+**MANDATORY**: Include token measurement capability in ALL subagent prompts.
+
+When spawning subagents, include in the prompt:
+```
+TOKEN MEASUREMENT (required):
+Session ID: ${CLAUDE_SESSION_ID}
+Session file: /home/node/.config/claude/projects/-workspace/${CLAUDE_SESSION_ID}.jsonl
+
+On completion, measure and report tokens:
+TOKENS=$(jq -s '[.[] | select(.type == "assistant") | .message.usage |
+  select(. != null) | (.input_tokens + .output_tokens)] | add // 0' "$SESSION_FILE")
+```
+
+**Why**: Without session ID, subagents cannot measure their token usage, leading to "NOT MEASURED" reports.
+
 ### Subagent Token Reporting (M123) {#subagent-token-reporting}
 **MANDATORY**: Report ONLY measured token values from subagent execution. NEVER report estimates.
 

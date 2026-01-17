@@ -960,9 +960,9 @@
       "description": "Strengthen shell compatibility hook - expand zsh reserved variable patterns and add absolute path verification",
       "category": "bash_error",
       "pattern_id": "PATTERN-015",
-      "status": "open",
+      "status": "implemented",
       "created_date": "2026-01-16T13:33:36-05:00",
-      "completed_date": null,
+      "completed_date": "2026-01-16T22:30:51-05:00",
       "related_mistakes": [
         "M105",
         "M106",
@@ -974,7 +974,8 @@
         "mistakes_after": null,
         "post_fix_mistakes": [],
         "verdict": "pending"
-      }
+      },
+      "implementation_note": "All related mistakes already have preventions: M105/M108 → warn-zsh-reserved-vars.sh, M106 → warn-git-aliases.sh, M115 → java-style.md position comments rule"
     },
     {
       "id": "A017",
@@ -982,9 +983,9 @@
       "description": "Add token measurement protocol to subagent spawn - ensure session ID is passed and measurement instructions are explicit",
       "category": "prompt_engineering",
       "pattern_id": "PATTERN-016",
-      "status": "open",
+      "status": "implemented",
       "created_date": "2026-01-16T20:13:49-05:00",
-      "completed_date": null,
+      "completed_date": "2026-01-16T22:30:51-05:00",
       "related_mistakes": [
         "M099",
         "M109",
@@ -995,7 +996,8 @@
         "mistakes_after": null,
         "post_fix_mistakes": [],
         "verdict": "pending"
-      }
+      },
+      "implementation_note": "Added Subagent Token Measurement section to CLAUDE.md (A017) with explicit session ID and measurement instructions template."
     },
     {
       "id": "A018",
@@ -1003,9 +1005,9 @@
       "description": "Update display-standards.md to prohibit markdown bold syntax and require UPPERCASE for emphasis in CLI output",
       "category": "documentation_violation",
       "pattern_id": "PATTERN-017",
-      "status": "open",
+      "status": "implemented",
       "created_date": "2026-01-16T20:13:49-05:00",
-      "completed_date": null,
+      "completed_date": "2026-01-16T22:30:51-05:00",
       "related_mistakes": [
         "M113",
         "M125"
@@ -1015,7 +1017,8 @@
         "mistakes_after": null,
         "post_fix_mistakes": [],
         "verdict": "pending"
-      }
+      },
+      "implementation_note": "Updated display-standards.md Bold Text Rules section (M113/M125): markdown bold unreliable in mixed emoji/terminal contexts, use UPPERCASE for emphasis."
     },
     {
       "id": "A019",
@@ -1023,9 +1026,9 @@
       "description": "Add mandatory prompt checklist verification for STATE.md atomic commits and test position comment cleanup",
       "category": "prompt_engineering",
       "pattern_id": "PATTERN-018",
-      "status": "open",
+      "status": "implemented",
       "created_date": "2026-01-16T20:13:49-05:00",
-      "completed_date": null,
+      "completed_date": "2026-01-16T22:30:51-05:00",
       "related_mistakes": [
         "M119",
         "M128"
@@ -1035,7 +1038,8 @@
         "mistakes_after": null,
         "post_fix_mistakes": [],
         "verdict": "pending"
-      }
+      },
+      "implementation_note": "STATE.md atomic commit addressed by check-state-md-in-commit.sh hook. Position comments addressed by java-style.md M115/M128 rule."
     }
   ],
   "effectiveness_analysis_query": "jq --arg pattern_id \"PATTERN-XXX\" --arg completed_date \"YYYY-MM-DD\" '[.mistakes[] | select(.pattern_id == $pattern_id and .timestamp > $completed_date)] | length' .claude/retrospectives/mistakes.json",
