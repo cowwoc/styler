@@ -579,8 +579,8 @@ public final class ExpressionParser
 		{
 			parseExpression();
 			parser.expect(TokenType.COLON);
-			// Right associative
-			NodeIndex elseExpression = parseTernary();
+			// Right associative - lambda has lower precedence than ternary
+			NodeIndex elseExpression = parseExpression();
 
 			int start = parser.getArena().getStart(condition);
 			int end = parser.getArena().getEnd(elseExpression);
