@@ -1,10 +1,10 @@
 # State
 
-- **Status:** completed
-- **Progress:** 100%
-- **Resolution:** implemented
+- **Status:** pending
+- **Progress:** 0%
 - **Dependencies:** integrate-expression-parser
-- **Completed:** 2026-01-16
+- **Last Updated:** 2026-01-17
+- **Note:** Reopened - previous fix didn't address the actual failing pattern (nested switch with fall-through comments)
 
 ## Description
 
@@ -31,6 +31,6 @@ switch blocks.
 
 ## Acceptance Criteria
 
-- [x] All 14 affected Spring Framework files parse successfully
-- [x] No regression in other Spring Framework files
-- [x] Tests added for old-style switch case patterns
+- [ ] Failing test `shouldParseNestedSwitchWithFallthroughComments` passes
+- [ ] All 14 affected Spring Framework files parse successfully
+- [ ] No regression in other Spring Framework files
