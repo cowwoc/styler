@@ -3051,6 +3051,33 @@
         "catches_variations": true
       },
       "correct_behavior": "When validation task has non-zero errors, create new tasks for each error category before marking complete"
+    },
+    {
+      "id": "M127",
+      "timestamp": "2026-01-17T00:45:00Z",
+      "category": "assumption_without_verification",
+      "description": "Attempted cd to worktree without verifying it was actually created",
+      "root_cause": "Trusted git worktree add output without verifying directory existence. The command appeared to succeed but worktree was not created.",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "prevention_note": "Existing guidance at Environment State Verification section covers this - use ls/test to verify path exists before cd. Gap: CAT workflow execute-task.md should add explicit verification after git worktree add.",
+      "pattern_keywords": [
+        "worktree",
+        "cd",
+        "verify",
+        "exists"
+      ],
+      "prevention_implemented": false,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "After git worktree add, verify path exists with ls or test -d before cd"
     }
   ],
   "mistake_count_since_last": 6
