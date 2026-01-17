@@ -106,17 +106,6 @@ When a task lock is held by another session:
 Locks may be held by active sessions that haven't committed yet. Only the USER decides if a lock is
 stale.
 
-### Validation Task Completion (M126) {#validation-task-completion}
-**MANDATORY**: Validation tasks with non-zero errors are NOT complete until either:
-1. **All errors are resolved** (0 errors), OR
-2. **New tasks are created** for each remaining error category
-
-❌ Document failures as "known limitations" and mark complete
-✅ Create new tasks for remaining error categories, THEN mark complete (still blocked by new tasks)
-
-**User decides** what constitutes acceptable limitations. Never unilaterally close a validation task
-with errors remaining - create the tasks and let user prioritize or close them as won't-fix.
-
 ## TOOL USAGE BEST PRACTICES
 
 **Full guide**: [docs/optional-modules/tool-usage.md](docs/optional-modules/tool-usage.md)
