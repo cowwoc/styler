@@ -710,29 +710,9 @@ public final class Parser implements AutoCloseable
 		return hasArrayDimensions;
 	}
 
-	private boolean canStartUnaryExpressionNotPlusMinus(TokenType type)
-	{
-		return expressionParser.canStartUnaryExpressionNotPlusMinus(type);
-	}
-
-	private boolean canStartUnaryExpression(TokenType type)
-	{
-		return expressionParser.canStartUnaryExpression(type);
-	}
-
 	private NodeIndex tryCastExpression(int start)
 	{
 		return expressionParser.tryCastExpression(start, expressionParser::parseUnary, this::parseLambdaBody);
-	}
-
-	private NodeIndex parseCastOperand(TokenType nextTokenType)
-	{
-		return expressionParser.parseCastOperand(nextTokenType, expressionParser::parseUnary, this::parseLambdaBody);
-	}
-
-	private boolean lookaheadIsArrow()
-	{
-		return expressionParser.lookaheadIsArrow();
 	}
 
 	private boolean isLambdaExpression()
@@ -845,21 +825,6 @@ public final class Parser implements AutoCloseable
 		statementParser.parseStatement();
 	}
 
-	private NodeIndex parseLabeledStatement(int labelStart)
-	{
-		return statementParser.parseLabeledStatement(labelStart);
-	}
-
-	private boolean isLocalTypeDeclarationStart()
-	{
-		return statementParser.isLocalTypeDeclarationStart();
-	}
-
-	private void parseLocalTypeDeclaration()
-	{
-		statementParser.parseLocalTypeDeclaration();
-	}
-
 	private boolean isModifier(TokenType type)
 	{
 		return typeParser.isModifier(type);
@@ -880,139 +845,9 @@ public final class Parser implements AutoCloseable
 		statementParser.skipBalancedParens();
 	}
 
-	private NodeIndex parseBreakStatement()
-	{
-		return statementParser.parseBreakStatement();
-	}
-
-	private NodeIndex parseContinueStatement()
-	{
-		return statementParser.parseContinueStatement();
-	}
-
-	private NodeIndex parseIfStatement()
-	{
-		return statementParser.parseIfStatement();
-	}
-
-	private boolean tryParseEnhancedForHeader()
-	{
-		return statementParser.tryParseEnhancedForHeader();
-	}
-
-	private boolean looksLikeTypeStart()
-	{
-		return statementParser.looksLikeTypeStart();
-	}
-
-	private NodeIndex parseForStatement()
-	{
-		return statementParser.parseForStatement();
-	}
-
-	private NodeIndex parseWhileStatement()
-	{
-		return statementParser.parseWhileStatement();
-	}
-
-	private NodeIndex parseDoWhileStatement()
-	{
-		return statementParser.parseDoWhileStatement();
-	}
-
-	private NodeIndex parseSwitchStatement()
-	{
-		return statementParser.parseSwitchStatement();
-	}
-
 	private NodeIndex parseSwitchExpression(int start)
 	{
 		return expressionParser.parseSwitchExpression(start);
-	}
-
-	private void parseCaseLabelElement()
-	{
-		statementParser.parseCaseLabelElement();
-	}
-
-	private void parseCaseLabelExpression()
-	{
-		statementParser.parseCaseLabelExpression();
-	}
-
-	private boolean tryParsePrimitiveTypePattern()
-	{
-		return statementParser.tryParsePrimitiveTypePattern();
-	}
-
-	private boolean tryParseTypePattern()
-	{
-		return statementParser.tryParseTypePattern();
-	}
-
-	private NodeIndex parseRecordPattern(int typeStart)
-	{
-		return statementParser.parseRecordPattern(typeStart);
-	}
-
-	private void parseRecordPatternComponents()
-	{
-		statementParser.parseRecordPatternComponents();
-	}
-
-	private void parseComponentPattern()
-	{
-		statementParser.parseComponentPattern();
-	}
-
-	private void parseGuardExpression()
-	{
-		statementParser.parseGuardExpression();
-	}
-
-	private NodeIndex parseReturnStatement()
-	{
-		return statementParser.parseReturnStatement();
-	}
-
-	private NodeIndex parseThrowStatement()
-	{
-		return statementParser.parseThrowStatement();
-	}
-
-	private NodeIndex parseYieldStatement()
-	{
-		return statementParser.parseYieldStatement();
-	}
-
-	private NodeIndex parseTryStatement()
-	{
-		return statementParser.parseTryStatement();
-	}
-
-	private NodeIndex parseSynchronizedStatement()
-	{
-		return statementParser.parseSynchronizedStatement();
-	}
-
-	private NodeIndex parseAssertStatement()
-	{
-		return statementParser.parseAssertStatement();
-	}
-
-	private boolean tryParseVariableDeclaration(int checkpoint)
-	{
-		return statementParser.tryParseVariableDeclaration(checkpoint);
-	}
-
-	private void parseAdditionalDeclarators()
-	{
-		statementParser.parseAdditionalDeclarators();
-	}
-
-	private void parseExpressionOrVariableStatement()
-	{
-		statementParser.parseExpressionOrVariableStatement();
 	}
 
 	private NodeIndex parseExpression()
@@ -1025,24 +860,9 @@ public final class Parser implements AutoCloseable
 		return expressionParser.parseLambdaBody(start);
 	}
 
-	private NodeIndex parseParenthesizedOrLambda(int start)
-	{
-		return expressionParser.parseParenthesizedOrLambda(start);
-	}
-
 	private NodeIndex parseNewExpression(int start)
 	{
 		return expressionParser.parseNewExpression(start);
-	}
-
-	private NodeIndex parseArrayCreation(int start)
-	{
-		return expressionParser.parseArrayCreation(start);
-	}
-
-	private NodeIndex parseObjectCreation(int start)
-	{
-		return expressionParser.parseObjectCreation(start);
 	}
 
 	private NodeIndex parseArrayInitializer(int start)
