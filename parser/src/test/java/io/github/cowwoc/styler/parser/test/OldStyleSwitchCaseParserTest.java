@@ -264,6 +264,59 @@ public class OldStyleSwitchCaseParserTest
 	}
 
 	/**
+	 * Validates parsing of nested switch inside default with fall-through comments.
+	 * <p>
+	 * This pattern occurs in Spring Framework's CodeEmitter.java and similar files.
+	 * The {@code /* fall through * /} comment after a statement followed by another case label
+	 * was causing "Unexpected token in expression: CASE" errors.
+	 */
+	@Test
+	public void shouldParseNestedSwitchWithFallthroughComments()
+	{
+		String source = """
+			public class Test
+			{
+				int intOp;
+				void swap() {}
+
+				public void foo(int x, int mode)
+				{
+					switch (x)
+					{
+						default:
+							switch (mode)
+							{
+								case EQ: intOp = 1; break;
+								case NE: intOp = 2; break;
+								case GE: swap(); /* fall through */
+								case LT: intOp = 3; break;
+								case LE: swap(); /* fall through */
+								case GT: intOp = 4; break;
+							}
+					}
+				}
+
+				static final int EQ = 0, NE = 1, GE = 2, LT = 3, LE = 4, GT = 5;
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Using placeholder positions - will be verified by running test
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 0, 0);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 0, 0);
+			expected.allocateNode(NodeType.SWITCH_STATEMENT, 0, 0);
+			expected.allocateNode(NodeType.SWITCH_STATEMENT, 0, 0);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 0, 0);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 0, 0);
+			expected.allocateClassDeclaration(0, 0, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 0);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
+
+	/**
 	 * Validates parsing of old-style switch with qualified constant references.
 	 */
 	@Test

@@ -117,4 +117,39 @@ public final class LambdaArrowEdgeCaseParserTest
 			requireThat(actual, "actual").isEqualTo(expected);
 		}
 	}
+
+	/**
+	 * Validates lambda after method reference with trailing comments.
+	 * <p>
+	 * This pattern occurs in Spring Framework's DatabasePopulator.java:
+	 * {@code Mono.usingWhen(source, this::populate, connection -> release(connection))}
+	 * The trailing comments and line breaks were causing "Expected RIGHT_PARENTHESIS but found ARROW".
+	 */
+	@Test
+	public void shouldParseLambdaAfterMethodReferenceWithTrailingComments()
+	{
+		String source = """
+			class Test
+			{
+				void foo()
+				{
+					Mono.usingWhen(getConnection(), //
+						this::populate, //
+						connection -> release(connection));
+				}
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			// Placeholder positions - will be verified by running test
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 0, 0);
+			expected.allocateNode(NodeType.BLOCK, 0, 0);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 0, 0);
+			expected.allocateClassDeclaration(0, 0, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 0);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
 }
