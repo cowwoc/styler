@@ -652,4 +652,42 @@ public final class ArrayCreationParserTest
 			requireThat(actual, "actual").isEqualTo(expected);
 		}
 	}
+
+	/**
+	 * Verifies that array creation with trailing comma and comment before closing brace parses correctly.
+	 * Tests real-world Spring Framework pattern with comment after trailing comma.
+	 */
+	@Test
+	public void shouldParseArrayCreationWithTrailingCommaAndComment()
+	{
+		String source = """
+			class Test
+			{
+				Class<?>[] arr = new Class<?>[] {
+					String.class,
+					Integer.class,
+					// More types
+				};
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 20, 21);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 35, 40);
+			expected.allocateNode(NodeType.WILDCARD_TYPE, 41, 42);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 35, 43);
+			expected.allocateNode(NodeType.IDENTIFIER, 50, 56);
+			expected.allocateNode(NodeType.CLASS_LITERAL, 50, 62);
+			expected.allocateNode(NodeType.IDENTIFIER, 66, 73);
+			expected.allocateNode(NodeType.CLASS_LITERAL, 66, 79);
+			expected.allocateNode(NodeType.LINE_COMMENT, 83, 96);
+			expected.allocateNode(NodeType.ARRAY_CREATION, 31, 99);
+			expected.allocateNode(NodeType.FIELD_DECLARATION, 14, 100);
+			expected.allocateClassDeclaration(0, 102, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 103);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
 }
