@@ -14,6 +14,9 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  */
 public final class LexerOctalEscapeTest
 {
+	/**
+	 * Validates lexing of a character literal with single-digit octal escape for NUL character.
+	 */
 	@Test
 	public void shouldLexCharLiteralWithSingleDigitOctalNul()
 	{
@@ -30,6 +33,9 @@ public final class LexerOctalEscapeTest
 		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
+	/**
+	 * Validates lexing of a character literal with single-digit octal escape at max value (7).
+	 */
 	@Test
 	public void shouldLexCharLiteralWithSingleDigitOctalMax()
 	{
@@ -46,6 +52,9 @@ public final class LexerOctalEscapeTest
 		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
+	/**
+	 * Validates lexing of a character literal with two-digit octal escape.
+	 */
 	@Test
 	public void shouldLexCharLiteralWithTwoDigitOctal()
 	{
@@ -62,6 +71,9 @@ public final class LexerOctalEscapeTest
 		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
+	/**
+	 * Validates lexing of a character literal with three-digit octal escape starting with 0.
+	 */
 	@Test
 	public void shouldLexCharLiteralWithThreeDigitOctal()
 	{
@@ -78,6 +90,9 @@ public final class LexerOctalEscapeTest
 		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
+	/**
+	 * Validates lexing of a character literal with maximum octal value (377 = 255 decimal).
+	 */
 	@Test
 	public void shouldLexCharLiteralWithMaxOctalValue()
 	{
@@ -94,6 +109,9 @@ public final class LexerOctalEscapeTest
 		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
+	/**
+	 * Validates lexing of a character literal with high first digit (4-7) limiting to two digits.
+	 */
 	@Test
 	public void shouldLexCharLiteralWithHighFirstDigitOctal()
 	{
@@ -110,6 +128,9 @@ public final class LexerOctalEscapeTest
 		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
+	/**
+	 * Validates lexing of a string literal containing an octal escape sequence.
+	 */
 	@Test
 	public void shouldLexStringLiteralWithOctalEscape()
 	{
@@ -124,6 +145,9 @@ public final class LexerOctalEscapeTest
 		requireThat(tokens.get(1).type(), "tokens.get(1).type()").isEqualTo(TokenType.END_OF_FILE);
 	}
 
+	/**
+	 * Validates lexing of a pattern found in Spring Framework source code.
+	 */
 	@Test
 	public void shouldLexSpringFrameworkOctalPattern()
 	{
@@ -138,6 +162,9 @@ public final class LexerOctalEscapeTest
 		requireThat(tokens.get(5).type(), "tokens.get(5).type()").isEqualTo(TokenType.RIGHT_PARENTHESIS);
 	}
 
+	/**
+	 * Validates that octal escape correctly stops at non-octal digit (8 or 9).
+	 */
 	@Test
 	public void shouldLexOctalEscapeFollowedByNonOctalDigit()
 	{
