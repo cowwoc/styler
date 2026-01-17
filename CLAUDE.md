@@ -69,7 +69,6 @@ requireThat(actual, "actual").isEqualTo(expected);
 - Prohibit weak assertions (`isNotNull()`, `isSuccess()`, `isNotEmpty()` alone)
 - Require manual derivation of expected values (never copy from actual output)
 - Verify positions by character counting before committing test
-- **Do NOT add position comments** - text blocks are self-documenting (M115/M128)
 
 Include these requirements explicitly in subagent prompts for parser-related tasks.
 
