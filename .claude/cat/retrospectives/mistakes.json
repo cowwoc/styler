@@ -2997,6 +2997,34 @@
         "catches_variations": true
       },
       "correct_behavior": "Apply 🚧 symbol to ALL versions whose entry gates are not satisfied, not just the immediate next version after current"
+    },
+    {
+      "id": "M125",
+      "timestamp": "2026-01-17T10:30:00Z",
+      "category": "documentation_violation",
+      "description": "Status display used markdown bold (**text**) which shows as literal asterisks in terminal with emojis",
+      "root_cause": "cat:status skill template uses markdown bold which contradicts display-standards.md guidance to use UPPERCASE in emoji-mixed displays",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/status/SKILL.md",
+      "pattern_keywords": [
+        "markdown",
+        "bold",
+        "status",
+        "terminal",
+        "rendering",
+        "UPPERCASE"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use UPPERCASE for emphasis in status displays instead of markdown bold. Keep version info and metrics on same line."
     }
   ],
   "mistake_count_since_last": 6
