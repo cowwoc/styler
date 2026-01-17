@@ -3025,6 +3025,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Output status displays directly as plain text WITHOUT wrapping in code blocks. Markdown **bold** renders correctly when not inside ``` blocks."
+    },
+    {
+      "id": "M126",
+      "timestamp": "2026-01-17T19:30:00Z",
+      "category": "protocol_violation",
+      "description": "Marked validation task complete with 21 errors remaining, documenting as 'known limitations' instead of creating new tasks as required by success criteria",
+      "root_cause": "Completion bias - reinterpreted success criteria to match achieved results instead of following 'new tasks created' requirement",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "pattern_keywords": [
+        "validation",
+        "completion_bias",
+        "success_criteria",
+        "known_limitations"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "medium",
+        "catches_variations": true
+      },
+      "correct_behavior": "When validation task has non-zero errors, create new tasks for each error category before marking complete"
     }
   ],
   "mistake_count_since_last": 6
