@@ -8,6 +8,7 @@ import io.github.cowwoc.styler.parser.Token;
 import io.github.cowwoc.styler.parser.TokenType;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.that;
@@ -98,8 +99,8 @@ public final class ExpressionParser
 	 * @return the {@link NodeIndex} of the cast expression if successful, or {@code null} if this
 	 *         is not a cast expression (caller should continue with parenthesized/lambda parsing)
 	 */
-	public NodeIndex tryCastExpression(int start, java.util.function.Supplier<NodeIndex> parseUnaryFunction,
-		java.util.function.Function<Integer, NodeIndex> parseCastOperandHelper)
+	public NodeIndex tryCastExpression(int start, Supplier<NodeIndex> parseUnaryFunction,
+		Function<Integer, NodeIndex> parseCastOperandHelper)
 	{
 		// Save checkpoint after '(' is consumed
 		int checkpoint = parser.getPosition();
@@ -228,8 +229,8 @@ public final class ExpressionParser
 	 * @return the parsed operand node
 	 */
 	public NodeIndex parseCastOperand(TokenType nextTokenType,
-		java.util.function.Supplier<NodeIndex> parseUnaryFunction,
-		java.util.function.Function<Integer, NodeIndex> parseCastOperandHelper)
+		Supplier<NodeIndex> parseUnaryFunction,
+		Function<Integer, NodeIndex> parseCastOperandHelper)
 	{
 		// Check for lambda expression: identifier -> body
 		// When a cast is followed by identifier + arrow, the operand is a lambda expression
@@ -826,87 +827,15 @@ public final class ExpressionParser
 				// Explicit type arguments: Type::<String>method
 				if (parser.match(TokenType.LESS_THAN))
 					parser.parseTypeArguments();
-				// Method reference: Type::method or Type::new
-				int end;
-				if (parser.match(TokenType.NEW))
-					// Constructor reference
-					end = parser.previousToken().end();
-				else if (parser.isIdentifierOrContextualKeyword())
-				{
-					// Method reference
-					end = parser.currentToken().end();
-					parser.consume();
-				}
-				else
-				{
-					throw new ParserException(
-						"Expected method name or 'new' after '::' but found " + parser.currentToken().type(),
-						parser.currentToken().start());
-				}
+				int end = parseMethodReferenceTarget();
 				left = parser.getArena().allocateNode(NodeType.METHOD_REFERENCE, start, end);
 			}
 			else if (parser.currentToken().type() == TokenType.LESS_THAN)
 			{
-				// Attempt to parse type arguments followed by method reference
-				// Pattern: Type<Args>::method or Type<Args>::new
-				int checkpoint = parser.getPosition();
-				try
-				{
-					parser.consume();
-					parser.parseTypeArguments();
-
-					// Parse optional array dimensions: Type<Args>[]::new
-					boolean hasArrayDimensions = parser.parseArrayDimensionsWithAnnotations();
-
-					// Check if followed by ::
-					if (parser.currentToken().type() == TokenType.DOUBLE_COLON)
-					{
-						// This is a parameterized type method reference
-						// Wrap in ARRAY_TYPE if array dimensions were parsed
-						if (hasArrayDimensions)
-						{
-							int arrayTypeEnd = parser.previousToken().end();
-							left = parser.getArena().allocateNode(NodeType.ARRAY_TYPE, start, arrayTypeEnd);
-						}
-						parser.consume();
-						parser.parseComments();
-
-						// Explicit type arguments after :: : Type<A>::<B>method
-						if (parser.match(TokenType.LESS_THAN))
-							parser.parseTypeArguments();
-
-						// Method reference: Type<Args>::method or Type<Args>::new
-						int end;
-						if (parser.match(TokenType.NEW))
-							// Constructor reference
-							end = parser.previousToken().end();
-						else if (parser.isIdentifierOrContextualKeyword())
-						{
-							// Method reference
-							end = parser.currentToken().end();
-							parser.consume();
-						}
-						else
-						{
-							throw new ParserException(
-								"Expected method name or 'new' after '::' but found " + parser.currentToken().type(),
-								parser.currentToken().start());
-						}
-						left = parser.getArena().allocateNode(NodeType.METHOD_REFERENCE, start, end);
-					}
-					else
-					{
-						// Not a method reference, backtrack
-						parser.setPosition(checkpoint);
-						break;
-					}
-				}
-				catch (ParserException e)
-				{
-					// Type argument parsing failed, backtrack and exit loop
-					parser.setPosition(checkpoint);
+				NodeIndex result = tryParseParameterizedMethodReference(start);
+				if (result == null)
 					break;
-				}
+				left = result;
 			}
 			else if (parser.currentToken().type() == TokenType.INCREMENT ||
 				parser.currentToken().type() == TokenType.DECREMENT)
@@ -1004,6 +933,80 @@ public final class ExpressionParser
 		parser.expect(TokenType.RIGHT_BRACKET);
 		int end = parser.previousToken().end();
 		return parser.getArena().allocateNode(NodeType.ARRAY_ACCESS, start, end);
+	}
+
+	/**
+	 * Parses the target of a method reference after the {@code ::} token.
+	 * Handles both method names and constructor references ({@code new}).
+	 *
+	 * @return the end position of the parsed reference target
+	 * @throws ParserException if neither method name nor {@code new} is found
+	 */
+	private int parseMethodReferenceTarget()
+	{
+		if (parser.match(TokenType.NEW))
+			return parser.previousToken().end();
+		if (parser.isIdentifierOrContextualKeyword())
+		{
+			int end = parser.currentToken().end();
+			parser.consume();
+			return end;
+		}
+		throw new ParserException(
+			"Expected method name or 'new' after '::' but found " + parser.currentToken().type(),
+			parser.currentToken().start());
+	}
+
+	/**
+	 * Attempts to parse a parameterized type method reference.
+	 * Handles patterns like {@code Type<Args>::method} or {@code Type<Args>[]::new}.
+	 *
+	 * @param start the start position of the expression
+	 * @return the parsed method reference node, or {@code null} if not a method reference (caller should
+	 * 	break the loop)
+	 * @throws ParserException if type arguments are malformed
+	 */
+	private NodeIndex tryParseParameterizedMethodReference(int start)
+	{
+		int checkpoint = parser.getPosition();
+		try
+		{
+			parser.consume();
+			parser.parseTypeArguments();
+
+			// Parse optional array dimensions: Type<Args>[]::new
+			boolean hasArrayDimensions = parser.parseArrayDimensionsWithAnnotations();
+
+			// Check if followed by ::
+			if (parser.currentToken().type() != TokenType.DOUBLE_COLON)
+			{
+				// Not a method reference, backtrack
+				parser.setPosition(checkpoint);
+				return null;
+			}
+
+			// This is a parameterized type method reference
+			// Wrap in ARRAY_TYPE if array dimensions were parsed
+			if (hasArrayDimensions)
+			{
+				int arrayTypeEnd = parser.previousToken().end();
+				parser.getArena().allocateNode(NodeType.ARRAY_TYPE, start, arrayTypeEnd);
+			}
+			parser.consume();
+			parser.parseComments();
+
+			// Explicit type arguments after :: : Type<A>::<B>method
+			if (parser.match(TokenType.LESS_THAN))
+				parser.parseTypeArguments();
+			int end = parseMethodReferenceTarget();
+			return parser.getArena().allocateNode(NodeType.METHOD_REFERENCE, start, end);
+		}
+		catch (ParserException e)
+		{
+			// Type argument parsing failed, backtrack
+			parser.setPosition(checkpoint);
+			return null;
+		}
 	}
 
 	private NodeIndex parsePrimary()
