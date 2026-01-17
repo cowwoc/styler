@@ -167,8 +167,17 @@ public final class StatementParser
 		}
 		else
 		{
+			// `record` not followed by identifier - could be:
+			// 1. Expression using `record` as variable: record.method() or record[i]
+			// 2. Malformed record declaration (will produce an error from parseExpressionOrVariableStatement)
+			TokenType next = parser.currentToken().type();
 			parser.setPosition(checkpoint);
-			parseLocalTypeDeclaration();
+			if (next == TokenType.DOT || next == TokenType.LEFT_BRACKET ||
+				next == TokenType.LEFT_PARENTHESIS)
+				// Treat `record` as a variable name in an expression
+				parseExpressionOrVariableStatement();
+			else
+				parseLocalTypeDeclaration();
 		}
 	}
 

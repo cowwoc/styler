@@ -1288,6 +1288,8 @@ public final class ExpressionParser
 			parseExpression();
 			while (parser.match(TokenType.COMMA))
 			{
+				// Handle comments after comma (e.g., trailing comma followed by comment)
+				parser.parseComments();
 				if (parser.currentToken().type() == TokenType.RIGHT_BRACE)
 					break;
 				parseExpression();
