@@ -3078,6 +3078,35 @@
         "catches_variations": true
       },
       "correct_behavior": "After git worktree add, verify path exists with ls or test -d before cd"
+    },
+    {
+      "id": "M128",
+      "timestamp": "2026-01-17T01:00:00Z",
+      "category": "prompt_engineering",
+      "description": "Test code committed with position calculation comments that should have been removed - subagent added 'Manual derivation of expected nodes' comment blocks",
+      "root_cause": "Subagent prompt did not explicitly prohibit position comments. M115 prevention (java-style.md documentation) was not effective because subagent prompts don't automatically reference all rules files.",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "skill",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "pattern_keywords": [
+        "test",
+        "comments",
+        "position",
+        "derivation",
+        "subagent",
+        "prompt",
+        "recurrence"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": "M115",
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Subagent prompts for parser tests must explicitly include prohibition: 'Do NOT add position comments - text blocks are self-documenting'"
     }
   ],
   "mistake_count_since_last": 6
