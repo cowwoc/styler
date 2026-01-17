@@ -16,14 +16,17 @@ classes (ExpressionParser, StatementParser, TypeParser, ModuleParser).
 ## Acceptance Criteria
 
 - [x] All unused private methods removed from Parser.java
-- [x] UnusedPrivateMethod/UnusedLocalVariable PMD violations fixed (36 methods + 1 variable)
-- [ ] PMD check passes: `./mvnw pmd:check -pl parser` - 15 pre-existing violations remain in other files
-- [ ] Full build passes: `./mvnw verify` - blocked by above
+- [x] PMD check passes: `./mvnw pmd:check -pl parser`
+- [x] Full build passes: `./mvnw verify`
+- [x] No regression in parser functionality
 
-## Notes
+## Summary
 
-The 15 remaining PMD violations are pre-existing issues in different files:
-- ExpressionParser: 2 UnnecessaryFullyQualifiedName, 1 NcssCount, 3 AvoidDeeplyNestedIfStmts
-- LexerOctalEscapeTest: 9 CommentRequired (missing test JavaDoc)
+Fixed all PMD violations:
+1. Removed 36 unused private methods from Parser.java (181 lines)
+2. Removed 1 unused local variable from Lexer.java
+3. Fixed 2 UnnecessaryFullyQualifiedName in ExpressionParser.java
+4. Fixed NcssCount and 3 AvoidDeeplyNestedIfStmts by refactoring parsePostfix()
+5. Added JavaDoc to 9 test methods in LexerOctalEscapeTest.java
 
-These are separate issues that should be addressed in a new task.
+Main branch now builds successfully with `./mvnw verify`.
