@@ -6,50 +6,8 @@ standards. Built for developers who think better in their own style.
 ## 🚀 Quick Start
 
 - **Build & Run**: See [docs/project/build-system.md](docs/project/build-system.md)
-- **Development Workflow**: See [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md)
+- **Development Workflow**: See [docs/project/scope.md](docs/project/scope.md)
 - **Code Style**: See [docs/code-style-human.md](docs/code-style-human.md)
-
-## 📁 Repository Structure
-
-```
-.
-├── README.md                     # This file
-├── CLAUDE.md                     # Claude Code configuration
-├── todo.md                       # Active task list
-├── docs/                         # All documentation
-│   ├── code-style-human.md       # Master human style guide
-│   ├── project/                  # Core project documentation
-│   │   ├── scope.md              # Project scope & architecture
-│   │   ├── task-protocol-core.md # Development workflow (states & agents)
-│   │   ├── task-protocol-operations.md # Protocol procedures
-│   │   ├── build-system.md       # Build configuration
-│   │   └── architecture.md       # Technical architecture
-│   └── code-style/               # Code style documentation
-│       ├── common-claude.md      # Universal rules - Claude patterns
-│       ├── common-human.md       # Universal explanations
-│       ├── java-claude.md        # Java-specific - Claude patterns
-│       └── java-human.md         # Java explanations & context
-├── styler-ast-core/       # AST node hierarchy and visitor pattern
-├── styler-parser/         # Custom recursive descent parser for JDK 25
-├── styler-formatter-api/  # Formatter plugin interfaces
-├── styler-formatter-impl/ # Built-in formatter implementations
-├── config/                # TOML configuration system
-├── styler-engine/         # Parallel processing engine
-├── styler-security/       # Security controls and validation
-└── cli/                   # Command-line interface
-```
-
-## 📖 Documentation
-
-### Essential Reading
-- [docs/project/scope.md](docs/project/scope.md) - Project objectives and architecture
-- [docs/code-style-human.md](docs/code-style-human.md) - Coding standards and best practices
-- [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md) - Development process
-
-### Development Guides
-- [docs/code-style/java-human.md](docs/code-style/java-human.md) - Java best practices
-- [docs/code-style/common-human.md](docs/code-style/common-human.md) - Common formatting and validation
-- [docs/project/architecture.md](docs/project/architecture.md) - Technical architecture details
 
 ## 🎯 Why Styler?
 
@@ -128,14 +86,13 @@ config file that specifies it.
 ## 🚀 Getting Started
 
 1. **Read the scope**: [docs/project/scope.md](docs/project/scope.md)
-2. **Follow the workflow**: [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md)
-3. **Setup your environment**: [docs/project/build-system.md](docs/project/build-system.md)
-4. **Review coding standards**: [docs/code-style-human.md](docs/code-style-human.md)
+2. **Setup your environment**: [docs/project/build-system.md](docs/project/build-system.md)
+3. **Review coding standards**: [docs/code-style-human.md](docs/code-style-human.md)
 
 ## 📋 Active Development
 
-Current tasks are tracked in [todo.md](todo.md). Development follows a strict 7-phase workflow process
-documented in [docs/project/task-protocol-core.md](docs/project/task-protocol-core.md).
+Development progress is tracked in the [.claude/cat](.claude/cat) directory using the CAT (Claude
+Agentic Tasks) planning framework.
 
 ## 🏗️ Architecture
 
@@ -168,5 +125,5 @@ expose Styler to end users does not require licenses for your end users.
 **Derivative Works**: Commercial use of forks or derivatives also requires a license from the original
 author (not the fork maintainer).
 
-See [LICENSE](LICENSE) for complete terms. For commercial licensing inquiries, contact the project
+See [LICENSE.md](LICENSE.md) for complete terms. For commercial licensing inquiries, contact the project
 maintainers.
