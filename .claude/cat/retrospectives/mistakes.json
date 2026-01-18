@@ -3160,6 +3160,31 @@
         "catches_variations": true
       },
       "correct_behavior": "Before outputting boxes, verify all lines have identical display width by counting characters explicitly"
+    },
+    {
+      "id": "M130",
+      "timestamp": "2026-01-18T17:47:28Z",
+      "category": "protocol_violation",
+      "description": "Skipped display-settings step in cat:config, went directly to AskUserQuestion without showing settings box",
+      "root_cause": "Failed to follow sequential workflow steps - jumped to interactive prompt without required display output",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/commands/config.md",
+      "pattern_keywords": [
+        "display-before-prompt",
+        "step-ordering",
+        "config-wizard"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "medium",
+        "catches_variations": true
+      },
+      "correct_behavior": "Output visual settings box (step 3) BEFORE calling AskUserQuestion (step 4)"
     }
   ],
   "mistake_count_since_last": 6
