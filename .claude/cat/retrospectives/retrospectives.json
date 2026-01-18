@@ -1086,9 +1086,9 @@
       "description": "Add mandatory box rendering verification - count display width of each line before outputting, verify all lines match target width",
       "category": "logical_error",
       "pattern_id": "PATTERN-019",
-      "status": "open",
+      "status": "implemented",
       "created_date": "2026-01-18T15:11:46-05:00",
-      "completed_date": null,
+      "completed_date": "2026-01-18T15:14:23-05:00",
       "related_mistakes": [
         "M129",
         "M131",
@@ -1100,7 +1100,8 @@
         "mistakes_after": null,
         "post_fix_mistakes": [],
         "verdict": "pending"
-      }
+      },
+      "implementation_note": "Added Box Rendering Verification Protocol to config.md with character width lookup, line-by-line verification, pre-output checklist, and M136 anti-pattern reference."
     },
     {
       "id": "A021",
@@ -1108,9 +1109,9 @@
       "description": "Add checkpoint to config.md requiring display output BEFORE AskUserQuestion calls - enforce display-before-prompt ordering",
       "category": "protocol_violation",
       "pattern_id": "PATTERN-020",
-      "status": "open",
+      "status": "implemented",
       "created_date": "2026-01-18T15:11:46-05:00",
-      "completed_date": null,
+      "completed_date": "2026-01-18T15:14:23-05:00",
       "related_mistakes": [
         "M130",
         "M132"
@@ -1120,7 +1121,8 @@
         "mistakes_after": null,
         "post_fix_mistakes": [],
         "verdict": "pending"
-      }
+      },
+      "implementation_note": "Added Display-Before-Prompt Protocol to config.md with BLOCKING requirement and verification sequence."
     },
     {
       "id": "A022",
@@ -1128,9 +1130,9 @@
       "description": "Add mandatory file edit verification in learn-from-mistakes workflow - prevention_path must match an actually edited file, block recording if no file edited",
       "category": "protocol_violation",
       "pattern_id": "PATTERN-021",
-      "status": "open",
+      "status": "implemented",
       "created_date": "2026-01-18T15:11:46-05:00",
-      "completed_date": null,
+      "completed_date": "2026-01-18T15:14:23-05:00",
       "related_mistakes": [
         "M134",
         "M135"
@@ -1140,7 +1142,8 @@
         "mistakes_after": null,
         "post_fix_mistakes": [],
         "verdict": "pending"
-      }
+      },
+      "implementation_note": "Strengthened BLOCKING GATE in learn-from-mistakes SKILL.md with explicit file edit verification checklist and A022 reference in prevention_path validation."
     }
   ],
   "effectiveness_analysis_query": "jq --arg pattern_id \"PATTERN-XXX\" --arg completed_date \"YYYY-MM-DD\" '[.mistakes[] | select(.pattern_id == $pattern_id and .timestamp > $completed_date)] | length' .claude/retrospectives/mistakes.json",
@@ -1232,8 +1235,8 @@
       "occurrences_after_fix": 0,
       "first_seen": "2026-01-18",
       "last_seen": "2026-01-18",
-      "last_action_date": null,
-      "status": "new",
+      "last_action_date": "2026-01-18",
+      "status": "addressed",
       "effectiveness": "pending",
       "preventions": [],
       "related_action_items": [
@@ -1248,8 +1251,8 @@
       "occurrences_after_fix": 0,
       "first_seen": "2026-01-18",
       "last_seen": "2026-01-18",
-      "last_action_date": null,
-      "status": "new",
+      "last_action_date": "2026-01-18",
+      "status": "addressed",
       "effectiveness": "pending",
       "preventions": [],
       "related_action_items": [
@@ -1264,8 +1267,8 @@
       "occurrences_after_fix": 0,
       "first_seen": "2026-01-18",
       "last_seen": "2026-01-18",
-      "last_action_date": null,
-      "status": "new",
+      "last_action_date": "2026-01-18",
+      "status": "addressed",
       "effectiveness": "pending",
       "preventions": [],
       "related_action_items": [
