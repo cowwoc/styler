@@ -76,9 +76,48 @@
       "implementation_note": "Implemented via A007 hooks: block-reflog-destruction.sh, validate-git-filter-branch.sh, block-merge-commits.sh, warn-file-extraction.sh"
     }
   ],
-  "last_retrospective": "2026-01-16T20:13:49-05:00",
-  "mistake_count_since_last": 14,
+  "last_retrospective": "2026-01-18T15:11:46-05:00",
+  "mistake_count_since_last": 0,
   "retrospectives": [
+    {
+      "id": "R010",
+      "timestamp": "2026-01-18T15:11:46-05:00",
+      "trigger": "count_threshold",
+      "period_analyzed": "2026-01-16T20:13:49-05:00 to 2026-01-18T15:11:46-05:00",
+      "mistakes_analyzed": 14,
+      "summary": "14 mistakes analyzed. protocol_violation (5) remains top category. New patterns: box rendering alignment (4 mistakes M129-M136), config wizard step skipping (2 mistakes M130/M132), prevention recording errors (2 mistakes M134/M135). Key recurrences: M128 recurs M115 (prompt comments), M131/M133 recur M129 (box rendering), M132 recurs M130 (config step skip).",
+      "findings": {
+        "categories": {
+          "protocol_violation": 5,
+          "logical_error": 3,
+          "assumption_without_verification": 2,
+          "documentation_violation": 2,
+          "detection_gap": 1,
+          "prompt_engineering": 1
+        },
+        "recurrences_identified": [
+          "M128 recurs M115 (test position comments)",
+          "M131, M133 recur M129 (box rendering width)",
+          "M132 recurs M130 (config wizard step skip)"
+        ],
+        "new_patterns": [
+          "PATTERN-019: box_rendering_alignment",
+          "PATTERN-020: config_wizard_step_ordering",
+          "PATTERN-021: prevention_path_validation"
+        ],
+        "action_items_created": [
+          "A020: Box rendering width verification",
+          "A021: Config wizard display-before-prompt checkpoint",
+          "A022: Prevention file edit verification"
+        ],
+        "action_items_effective": [
+          "A016",
+          "A017",
+          "A018",
+          "A019"
+        ]
+      }
+    },
     {
       "id": "R009",
       "timestamp": "2026-01-16T20:13:49-05:00",
@@ -1040,6 +1079,68 @@
         "verdict": "pending"
       },
       "implementation_note": "STATE.md atomic commit addressed by check-state-md-in-commit.sh hook. Position comments addressed by java-style.md M115/M128 rule."
+    },
+    {
+      "id": "A020",
+      "priority": "high",
+      "description": "Add mandatory box rendering verification - count display width of each line before outputting, verify all lines match target width",
+      "category": "logical_error",
+      "pattern_id": "PATTERN-019",
+      "status": "open",
+      "created_date": "2026-01-18T15:11:46-05:00",
+      "completed_date": null,
+      "related_mistakes": [
+        "M129",
+        "M131",
+        "M133",
+        "M136"
+      ],
+      "effectiveness_check": {
+        "mistakes_before": 4,
+        "mistakes_after": null,
+        "post_fix_mistakes": [],
+        "verdict": "pending"
+      }
+    },
+    {
+      "id": "A021",
+      "priority": "medium",
+      "description": "Add checkpoint to config.md requiring display output BEFORE AskUserQuestion calls - enforce display-before-prompt ordering",
+      "category": "protocol_violation",
+      "pattern_id": "PATTERN-020",
+      "status": "open",
+      "created_date": "2026-01-18T15:11:46-05:00",
+      "completed_date": null,
+      "related_mistakes": [
+        "M130",
+        "M132"
+      ],
+      "effectiveness_check": {
+        "mistakes_before": 2,
+        "mistakes_after": null,
+        "post_fix_mistakes": [],
+        "verdict": "pending"
+      }
+    },
+    {
+      "id": "A022",
+      "priority": "high",
+      "description": "Add mandatory file edit verification in learn-from-mistakes workflow - prevention_path must match an actually edited file, block recording if no file edited",
+      "category": "protocol_violation",
+      "pattern_id": "PATTERN-021",
+      "status": "open",
+      "created_date": "2026-01-18T15:11:46-05:00",
+      "completed_date": null,
+      "related_mistakes": [
+        "M134",
+        "M135"
+      ],
+      "effectiveness_check": {
+        "mistakes_before": 2,
+        "mistakes_after": null,
+        "post_fix_mistakes": [],
+        "verdict": "pending"
+      }
     }
   ],
   "effectiveness_analysis_query": "jq --arg pattern_id \"PATTERN-XXX\" --arg completed_date \"YYYY-MM-DD\" '[.mistakes[] | select(.pattern_id == $pattern_id and .timestamp > $completed_date)] | length' .claude/retrospectives/mistakes.json",
@@ -1123,6 +1224,54 @@
       "preventions": [],
       "related_action_items": [],
       "note": "Shell compatibility issues: zsh reserved vars (M105,M108), relative paths (M115)"
+    },
+    {
+      "pattern_id": "PATTERN-019",
+      "pattern": "box_rendering_alignment",
+      "occurrences_total": 4,
+      "occurrences_after_fix": 0,
+      "first_seen": "2026-01-18",
+      "last_seen": "2026-01-18",
+      "last_action_date": null,
+      "status": "new",
+      "effectiveness": "pending",
+      "preventions": [],
+      "related_action_items": [
+        "A020"
+      ],
+      "note": "Box borders misaligned due to manual rendering without explicit width verification (M129, M131, M133, M136). Root causes: missing characters in emoji-widths.json, unverified padding calculations."
+    },
+    {
+      "pattern_id": "PATTERN-020",
+      "pattern": "config_wizard_step_ordering",
+      "occurrences_total": 2,
+      "occurrences_after_fix": 0,
+      "first_seen": "2026-01-18",
+      "last_seen": "2026-01-18",
+      "last_action_date": null,
+      "status": "new",
+      "effectiveness": "pending",
+      "preventions": [],
+      "related_action_items": [
+        "A021"
+      ],
+      "note": "Config wizard skipping display step before AskUserQuestion (M130, M132). Skill steps are advisory without enforcement."
+    },
+    {
+      "pattern_id": "PATTERN-021",
+      "pattern": "prevention_path_validation",
+      "occurrences_total": 2,
+      "occurrences_after_fix": 0,
+      "first_seen": "2026-01-18",
+      "last_seen": "2026-01-18",
+      "last_action_date": null,
+      "status": "new",
+      "effectiveness": "pending",
+      "preventions": [],
+      "related_action_items": [
+        "A022"
+      ],
+      "note": "Prevention path recorded without actual file edit (M134, M135). Undermines learning system when prevention_implemented: true but no file was changed."
     }
   ]
 }
