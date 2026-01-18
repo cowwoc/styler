@@ -3343,6 +3343,33 @@
         "catches_variations": true
       },
       "correct_behavior": "All special characters used in CAT skills must be defined in emoji-widths.json with correct terminal-specific display widths"
+    },
+    {
+      "id": "M137",
+      "timestamp": "2026-01-18T15:50:00Z",
+      "category": "protocol_violation",
+      "description": "Did not display CAT Behavior settings box before prompting user for selection",
+      "root_cause": "The cat-behavior step in config.md lacked a display requirement - unlike display-settings step which has M130/A021, cat-behavior went directly to AskUserQuestion without a preceding box",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/commands/config.md",
+      "pattern_keywords": [
+        "display-before-prompt",
+        "config-wizard",
+        "cat-behavior",
+        "M130",
+        "A021"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Display behavior summary box showing current trust/verify/curiosity/patience values BEFORE calling AskUserQuestion in cat-behavior step"
     }
   ],
   "mistake_count_since_last": 6
