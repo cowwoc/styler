@@ -3316,6 +3316,33 @@
         "catches_variations": true
       },
       "correct_behavior": "prevention_path must be the actual file that was edited to implement prevention"
+    },
+    {
+      "id": "M136",
+      "timestamp": "2026-01-18T11:15:00Z",
+      "category": "logical_error",
+      "description": "Box lines with ✦ character had closing border 1 char too far left - ✦ not defined in emoji-widths.json",
+      "root_cause": "The ✦ character (U+2726 FOUR POINTED BLACK STAR) was used in skill documentation but not defined in emoji-widths.json, causing incorrect width calculation (assumed width 1, actual width 2)",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "config",
+      "prevention_path": "/workspace/cat/emoji-widths.json",
+      "pattern_keywords": [
+        "emoji-width",
+        "box-rendering",
+        "character-width",
+        "display-alignment",
+        "four-pointed-star"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": true,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "All special characters used in CAT skills must be defined in emoji-widths.json with correct terminal-specific display widths"
     }
   ],
   "mistake_count_since_last": 6
