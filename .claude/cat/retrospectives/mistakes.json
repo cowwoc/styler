@@ -3266,6 +3266,56 @@
         "catches_variations": true
       },
       "correct_behavior": "Count display width of EVERY line explicitly before outputting any box"
+    },
+    {
+      "id": "M134",
+      "timestamp": "2026-01-18T11:00:00Z",
+      "category": "protocol_violation",
+      "description": "Claimed prevention_implemented: true without actually editing any file",
+      "root_cause": "Rushed through learn-from-mistakes workflow - skipped step 9 (Implement Prevention) while marking it complete",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/learn-from-mistakes/SKILL.md",
+      "pattern_keywords": [
+        "prevention_implemented",
+        "false claim",
+        "skipped step"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Only set prevention_implemented: true AFTER editing a file"
+    },
+    {
+      "id": "M135",
+      "timestamp": "2026-01-18T11:01:00Z",
+      "category": "logical_error",
+      "description": "Set prevention_path to unrelated file (cat-config.json) for box rendering mistake",
+      "root_cause": "Did not verify prevention_path matches the actual prevention action - used placeholder path",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/learn-from-mistakes/SKILL.md",
+      "pattern_keywords": [
+        "prevention_path",
+        "wrong file",
+        "placeholder"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "prevention_path must be the actual file that was edited to implement prevention"
     }
   ],
   "mistake_count_since_last": 6
