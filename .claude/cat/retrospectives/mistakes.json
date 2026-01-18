@@ -3211,6 +3211,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Verify all box lines have identical display width before committing template changes"
+    },
+    {
+      "id": "M132",
+      "timestamp": "2026-01-18T10:30:00Z",
+      "category": "protocol_violation",
+      "description": "Skipped displaying settings box before AskUserQuestion in cat:config wizard",
+      "root_cause": "Skill steps are advisory only - no enforcement prevents skipping mandatory display steps",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/config/SKILL.md",
+      "pattern_keywords": [
+        "display",
+        "AskUserQuestion",
+        "mandatory",
+        "visual",
+        "skip"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": "M130",
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "medium",
+        "catches_variations": true
+      },
+      "correct_behavior": "Always output the visual settings box BEFORE calling AskUserQuestion in config wizard"
     }
   ],
   "mistake_count_since_last": 6
