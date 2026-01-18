@@ -3185,6 +3185,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Output visual settings box (step 3) BEFORE calling AskUserQuestion (step 4)"
+    },
+    {
+      "id": "M131",
+      "timestamp": "2026-01-18T17:51:48Z",
+      "category": "documentation_violation",
+      "description": "Box rendering header line was 1 dash short (61 vs 62 display width) due to incorrect template in config.md",
+      "root_cause": "Template in skill doc had wrong number of trailing dashes (39 instead of 40)",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "code_fix",
+      "prevention_path": "/workspace/cat/commands/config.md",
+      "pattern_keywords": [
+        "box-rendering",
+        "display-width",
+        "emoji-width",
+        "template"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": "M129",
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Verify all box lines have identical display width before committing template changes"
     }
   ],
   "mistake_count_since_last": 6
