@@ -3134,6 +3134,32 @@
         "catches_variations": true
       },
       "correct_behavior": "Use init_bash_hook() from json-parser.sh to read hook input from stdin and extract HOOK_COMMAND"
+    },
+    {
+      "id": "M129",
+      "timestamp": "2026-01-18T12:20:00Z",
+      "category": "assumption_without_verification",
+      "description": "Box border lines in CAT BEHAVIOR display had inconsistent lengths (60, 61, 62 chars)",
+      "root_cause": "Manually typed box without counting characters - relied on visual approximation instead of explicit verification",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "skill",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/cat/commands/config.md",
+      "pattern_keywords": [
+        "box-rendering",
+        "padding",
+        "visual-alignment",
+        "manual-typing"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Before outputting boxes, verify all lines have identical display width by counting characters explicitly"
     }
   ],
   "mistake_count_since_last": 6
