@@ -3107,6 +3107,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Subagent prompts for parser tests must explicitly include prohibition: 'Do NOT add position comments - text blocks are self-documenting'"
+    },
+    {
+      "id": "M101",
+      "timestamp": "2026-01-18T08:08:10Z",
+      "category": "detection_gap",
+      "description": "Hook used outdated TOOL_INPUT env var instead of stdin JSON parsing",
+      "root_cause": "validate-commit-type.sh used TOOL_INPUT environment variable but Claude Code passes hook input via stdin JSON. Hook was never receiving the command.",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "code_fix",
+      "prevention_path": "/workspace/cat/hooks/validate-commit-type.sh",
+      "pattern_keywords": [
+        "hook",
+        "TOOL_INPUT",
+        "stdin",
+        "json-parser",
+        "init_bash_hook"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use init_bash_hook() from json-parser.sh to read hook input from stdin and extract HOOK_COMMAND"
     }
   ],
   "mistake_count_since_last": 6
