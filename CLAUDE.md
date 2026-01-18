@@ -176,5 +176,5 @@ commit? Useful in 6 months?
 **Code Quality**:
 - [style-guide.md](docs/project/style-guide.md) - Style validation, JavaDoc
 - [quality-guide.md](docs/project/quality-guide.md) - Testing standards
-- [docs/code-style/](docs/code-style/) - Code style files
+- [.claude/cat/conventions/](.claude/cat/conventions/) - Code conventions
 

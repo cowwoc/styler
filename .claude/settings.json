@@ -68,10 +68,6 @@
           },
           {
             "type": "command",
-            "command": "\"${CLAUDE_PROJECT_DIR}\"/.claude/hooks/verify-doc-sync.sh"
-          },
-          {
-            "type": "command",
             "command": "\"${CLAUDE_PROJECT_DIR}\"/.claude/hooks/detect-meta-commentary.sh"
           },
           {

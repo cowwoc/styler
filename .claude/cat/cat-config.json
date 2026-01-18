@@ -1,9 +1,8 @@
 {
-  "yoloMode": false,
   "contextLimit": 200000,
   "targetContextUsage": 0.4,
   "autoRemoveWorktrees": true,
-  "version": "2.0.9",
+  "version": "2.0.10",
   "trust": "medium",
   "verify": "all",
   "curiosity": "high",

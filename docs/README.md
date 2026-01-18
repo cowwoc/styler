@@ -1,49 +1,27 @@
 # Documentation Directory Structure
 
-This directory contains all project documentation organized hierarchically for efficient navigation.
+This directory contains project documentation for humans.
 
 ## 📁 Directory Structure
 
 ```
 .
-├── code-style-human.md                    # Master human style guide
 ├── README.md                              # This file
-├── project/                               # Core project documentation
-│   ├── scope.md                           # Project scope & constraints
-│   ├── build-system.md                    # Build configuration
-│   ├── architecture.md                    # Application architecture
-│   └── scope/out-of-scope.md              # Prohibited technologies
-└── code-style/                            # Code style documentation (flatter structure)
-    ├── common-claude.md                   # Universal rules - Claude detection patterns
-    ├── common-human.md                    # Universal explanations - Human context
-    ├── java-claude.md                     # Java-specific rules - Claude detection patterns
-    ├── java-human.md                      # Java explanations & parser context
-    ├── typescript-claude.md               # TypeScript-specific rules - Claude detection
-    └── typescript-human.md                # TypeScript explanations & type safety
+├── configuration.md                       # Configuration reference
+└── project/                               # Core project documentation
+    ├── scope.md                           # Project scope & constraints
+    ├── build-system.md                    # Build configuration
+    ├── style-guide.md                     # Style validation guide
+    ├── quality-guide.md                   # Testing standards
+    └── architecture.md                    # Application architecture
 ```
 
 ## 🎯 Navigation Guide
 
-### Start Here
-- **[code-style-human.md](code-style-human.md)** - Main human-readable style guide with navigation
-
-### By Category
--  **Common Rules**: [code-style/common-human.md](code-style/common-human.md) (human) /
-  [code-style/common-claude.md](code-style/common-claude.md) (Claude)
--  **Java**: [code-style/java-human.md](code-style/java-human.md) (human) /
-  [code-style/java-claude.md](code-style/java-claude.md) (Claude)
--  **TypeScript**: [code-style/typescript-human.md](code-style/typescript-human.md) (human) /
-  [code-style/typescript-claude.md](code-style/typescript-claude.md) (Claude)
-
-### By Task
--  **TypeScript development** → [code-style/typescript-human.md](code-style/typescript-human.md) (human) /
-  [code-style/typescript-claude.md](code-style/typescript-claude.md) (Claude)
--  **Java development** → [code-style/java-human.md](code-style/java-human.md) (human) /
-  [code-style/java-claude.md](code-style/java-claude.md) (Claude)
--  **Common formatting & validation** → [code-style/common-human.md](code-style/common-human.md) (human) /
-  [code-style/common-claude.md](code-style/common-claude.md) (Claude)
+- **[project/scope.md](project/scope.md)** - Project scope & constraints
+- **[project/build-system.md](project/build-system.md)** - Build and run instructions
+- **[project/style-guide.md](project/style-guide.md)** - Code style validation
 
 ## 🔗 Cross-References
 
-All documents contain "See also" sections linking to related guidelines using relative paths within this
-hierarchy.
+All documents contain "See also" sections linking to related guidelines using relative paths.

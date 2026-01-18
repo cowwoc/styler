@@ -7,7 +7,7 @@ standards. Built for developers who think better in their own style.
 
 - **Build & Run**: See [docs/project/build-system.md](docs/project/build-system.md)
 - **Development Workflow**: See [docs/project/scope.md](docs/project/scope.md)
-- **Code Style**: See [docs/code-style-human.md](docs/code-style-human.md)
+- **Code Style**: See [docs/project/style-guide.md](docs/project/style-guide.md)
 
 ## 🎯 Why Styler?
 
@@ -87,7 +87,7 @@ config file that specifies it.
 
 1. **Read the scope**: [docs/project/scope.md](docs/project/scope.md)
 2. **Setup your environment**: [docs/project/build-system.md](docs/project/build-system.md)
-3. **Review coding standards**: [docs/code-style-human.md](docs/code-style-human.md)
+3. **Review coding standards**: [docs/project/style-guide.md](docs/project/style-guide.md)
 
 ## 📋 Active Development
 

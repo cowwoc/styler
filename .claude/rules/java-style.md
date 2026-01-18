@@ -14,7 +14,7 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
 
 ```bash
 ./mvnw checkstyle:check pmd:check   # Automated tools
-# + Manual review of docs/code-style-human.md (TIER1/TIER2/TIER3 rules)
+# + Manual review of .claude/cat/conventions/ (TIER1/TIER2/TIER3 rules)
 ```
 
 ## Critical Rules
@@ -66,14 +66,14 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
    */
   public class ClassParserTest { }
   ```
-- Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` or `isNotNull()` on arena - see [testing-claude.md](../../docs/code-style/testing-claude.md#parser-test-patterns)
+- Parser tests MUST use `isEqualTo(expected)` NOT `isNotEmpty()` or `isNotNull()` on arena - see [testing.md](../cat/conventions/testing.md#parser-test-patterns)
   - `isNotEmpty()` on nodes: Tests nothing about specific node types
   - `isNotNull()` on arena: Only verifies parsing succeeded, NOT AST correctness
-- Parser test position values: Use placeholder technique to verify - see [testing-claude.md](../../docs/code-style/testing-claude.md#verify-position-calculations)
+- Parser test position values: Use placeholder technique to verify - see [testing.md](../cat/conventions/testing.md#verify-position-calculations)
   - Write test with `(0, 0)` placeholders first, run to see actual positions
   - **⚠️ MANDATORY**: VERIFY actual positions are correct before updating expected values
   - Manual byte counting is error-prone (tabs, newlines, text block indentation)
-  - **🚨 VIOLATION**: Comments like `// From actual:` prove verification was SKIPPED - see [anti-patterns](../../docs/code-style/testing-claude.md#expected-value-anti-patterns)
+  - **🚨 VIOLATION**: Comments like `// From actual:` prove verification was SKIPPED - see [anti-patterns](../cat/conventions/testing.md#expected-value-anti-patterns)
 - No meaningless assertions - `assertTrue(true, ...)` always passes and tests nothing:
   ```java
   // ❌ WRONG - Useless assertion that always passes

@@ -327,6 +327,6 @@ resolving wildcard imports and determining actual class usage.
 
 **📋 Additional details documented in:**
 - [build-system.md](build-system.md) - Maven configuration and build
-- [../code-style-human.md](../code-style-human.md) - Java coding conventions
+- [style-guide.md](style-guide.md) - Code style validation
 - [critical-rules.md](critical-rules.md) - Safety protocols and build integrity
 - [architecture.md](architecture.md) - Technical architecture

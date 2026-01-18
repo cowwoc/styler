@@ -541,7 +541,7 @@
       "description": "Parser tests using isNotNull() on arena instead of isEqualTo(expected) - tests nothing about AST structure",
       "root_cause": "Documentation only prohibited isNotEmpty() but not isNotNull() on arena, which has the same problem of only verifying parsing succeeded",
       "prevention_type": "config",
-      "prevention_path": "docs/code-style/testing-claude.md",
+      "prevention_path": ".claude/cat/conventions/testing.md",
       "pattern_keywords": [
         "parser",
         "test",
@@ -582,7 +582,7 @@
       "description": "Applied brace omission rule incorrectly - removed braces from statements spanning multiple visual lines",
       "root_cause": "Documentation used 'single-line' ambiguously without clarifying it means ONE VISUAL LINE, not just one statement. Multi-line throw statements were incorrectly treated as single-line.",
       "prevention_type": "config",
-      "prevention_path": "docs/code-style/java-human.md, docs/code-style/java-claude.md, .claude/rules/java-style.md",
+      "prevention_path": ".claude/cat/conventions/java.md, .claude/rules/java-style.md",
       "pattern_keywords": [
         "brace omission",
         "single-line",
@@ -622,7 +622,7 @@
       "description": "Manual byte offset calculation errors in parser test - wrote positions (23,46,49,55,57,58) when actual were (22,45,47,53,55,56)",
       "root_cause": "Manually calculated byte offsets in source string instead of using placeholder technique to verify positions",
       "prevention_type": "config",
-      "prevention_path": "docs/code-style/testing-claude.md#verify-position-calculations",
+      "prevention_path": ".claude/cat/conventions/testing.md#verify-position-calculations",
       "pattern_keywords": [
         "parser",
         "test",
@@ -643,7 +643,7 @@
       "description": "Parser test expected values derived from actual output without verification - From actual comments prove blind copying",
       "root_cause": "Placeholder technique (write 0,0, run, update) was followed but VERIFICATION step was skipped. Comments like // From actual output: prove values were copied without verifying correctness.",
       "prevention_type": "config",
-      "prevention_path": "docs/code-style/testing-claude.md#verify-position-calculations, docs/code-style/testing-claude.md#expected-value-anti-patterns",
+      "prevention_path": ".claude/cat/conventions/testing.md#verify-position-calculations, .claude/cat/conventions/testing.md#expected-value-anti-patterns",
       "pattern_keywords": [
         "parser",
         "test",
@@ -1613,7 +1613,7 @@
       "description": "Added comments like // Position 2 = 22 in parser tests showing manual calculation",
       "root_cause": "No explicit prohibition against calculation comments in tests",
       "prevention_type": "documentation",
-      "prevention_path": "${CLAUDE_PROJECT_DIR}/docs/code-style/testing-claude.md",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/cat/conventions/testing.md",
       "pattern_keywords": [
         "parser",
         "test",
