@@ -3238,6 +3238,34 @@
         "catches_variations": true
       },
       "correct_behavior": "Always output the visual settings box BEFORE calling AskUserQuestion in config wizard"
+    },
+    {
+      "id": "M133",
+      "timestamp": "2026-01-18T10:45:00Z",
+      "category": "logical_error",
+      "description": "Box rendering line length inconsistency - header line one char narrower than body",
+      "root_cause": "Did not count display width explicitly before outputting - relied on visual approximation",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/commands/config.md",
+      "pattern_keywords": [
+        "box",
+        "rendering",
+        "width",
+        "padding",
+        "display",
+        "alignment"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": "M129",
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "medium",
+        "catches_variations": true
+      },
+      "correct_behavior": "Count display width of EVERY line explicitly before outputting any box"
     }
   ],
   "mistake_count_since_last": 6
