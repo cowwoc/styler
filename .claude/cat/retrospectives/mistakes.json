@@ -3370,6 +3370,60 @@
         "catches_variations": true
       },
       "correct_behavior": "Display behavior summary box showing current trust/verify/curiosity/patience values BEFORE calling AskUserQuestion in cat-behavior step"
+    },
+    {
+      "id": "M138",
+      "timestamp": "2026-01-19T14:24:00Z",
+      "category": "protocol_violation",
+      "description": "Used placeholder positions (0, 0) in parser test, ran test to get actual values, copied actual to expected",
+      "root_cause": "Testing standard against placeholder positions lacks enforcement mechanism",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "hook",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/detect-placeholder-positions.sh",
+      "pattern_keywords": [
+        "placeholder",
+        "position",
+        "parser test",
+        "expected values",
+        "copy from actual"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Manually calculate expected positions by counting bytes in the source string. Use text block formatting to make counting easier."
+    },
+    {
+      "id": "M139",
+      "timestamp": "2026-01-19T14:35:00Z",
+      "category": "git_operation_failure",
+      "description": "Used 'docs:' commit type for hook/settings.json changes instead of 'config:'",
+      "root_cause": "Commit type guidance didn't explicitly list what qualifies as config vs docs",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "documentation",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/CLAUDE.md",
+      "pattern_keywords": [
+        "commit type",
+        "config",
+        "docs",
+        "hooks",
+        "settings.json"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use 'config:' for hooks, settings.json, thresholds, and mistakes.json. Use 'docs:' for markdown documentation only."
     }
   ],
   "mistake_count_since_last": 6
