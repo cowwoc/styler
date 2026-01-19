@@ -1251,6 +1251,20 @@ public final class Parser implements AutoCloseable
 			}
 
 			@Override
+			public void parseColonCaseBody()
+			{
+				while (true)
+				{
+					parseComments();
+					TokenType currentType = currentToken().type();
+					if (currentType == TokenType.CASE || currentType == TokenType.DEFAULT ||
+						currentType == TokenType.RIGHT_BRACE)
+						break;
+					statementParser.parseStatement();
+				}
+			}
+
+			@Override
 			public NodeIndex parseExpression()
 			{
 				return expressionParser.parseExpression();

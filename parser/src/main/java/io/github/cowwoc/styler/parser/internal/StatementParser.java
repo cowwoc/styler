@@ -440,12 +440,7 @@ public final class StatementParser
 			{
 				// Colon case (traditional): case 1:
 				parser.expect(TokenType.COLON);
-				// Handle comments after colon
-				parser.parseComments();
-				while (parser.currentToken().type() != TokenType.CASE &&
-					parser.currentToken().type() != TokenType.DEFAULT &&
-					parser.currentToken().type() != TokenType.RIGHT_BRACE)
-					parseStatement();
+				parser.parseColonCaseBody();
 			}
 			// Handle comments between case/default labels
 			parser.parseComments();

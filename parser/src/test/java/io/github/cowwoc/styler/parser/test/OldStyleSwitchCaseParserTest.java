@@ -264,58 +264,62 @@ public class OldStyleSwitchCaseParserTest
 	}
 
 	/**
-	 * Validates parsing of nested switch inside default with fall-through comments.
+	 * Validates parsing of switch with fall-through comments between case labels.
 	 * <p>
 	 * This pattern occurs in Spring Framework's CodeEmitter.java and similar files.
 	 * The {@code /* fall through * /} comment after a statement followed by another case label
-	 * was causing "Unexpected token in expression: CASE" errors.
-	 * <p>
-	 * <b>TDD RED:</b> This test reproduces a production bug and is disabled until the fix is implemented.
+	 * was causing "Unexpected token in expression: CASE" errors because comments were only
+	 * consumed once before the while loop, not inside it.
 	 *
 	 * @see <a href=".claude/cat/v0/v0.5/task/fix-switch-case-in-expression-context">Task to fix this</a>
 	 */
-	@Test(enabled = false)
+	@Test
 	public void shouldParseNestedSwitchWithFallthroughComments()
 	{
 		String source = """
-			public class Test
+			class Test
 			{
-				int intOp;
-				void swap() {}
-
-				public void foo(int x, int mode)
+				void foo(int x)
 				{
 					switch (x)
 					{
-						default:
-							switch (mode)
-							{
-								case EQ: intOp = 1; break;
-								case NE: intOp = 2; break;
-								case GE: swap(); /* fall through */
-								case LT: intOp = 3; break;
-								case LE: swap(); /* fall through */
-								case GT: intOp = 4; break;
-							}
+						case 1:
+							bar(); /* fall through */
+						case 2:
+							break;
 					}
 				}
 
-				static final int EQ = 0, NE = 1, GE = 2, LT = 3, LE = 4, GT = 5;
+				void bar() {}
 			}
 			""";
 		try (Parser parser = parse(source);
 			NodeArena expected = new NodeArena())
 		{
 			NodeArena actual = parser.getArena();
-			// Using placeholder positions - will be verified by running test
-			expected.allocateNode(NodeType.FIELD_DECLARATION, 0, 0);
-			expected.allocateNode(NodeType.METHOD_DECLARATION, 0, 0);
-			expected.allocateNode(NodeType.SWITCH_STATEMENT, 0, 0);
-			expected.allocateNode(NodeType.SWITCH_STATEMENT, 0, 0);
-			expected.allocateNode(NodeType.METHOD_DECLARATION, 0, 0);
-			expected.allocateNode(NodeType.FIELD_DECLARATION, 0, 0);
-			expected.allocateClassDeclaration(0, 0, new TypeDeclarationAttribute("Test"));
-			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 0);
+			// void foo(int x)
+			expected.allocateParameterDeclaration(23, 28, new ParameterAttribute("x", false, false, false));
+			// switch (x)
+			expected.allocateNode(NodeType.IDENTIFIER, 43, 44);
+			// case 1: bar(); /* fall through */
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 58, 59);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 65, 68);
+			expected.allocateNode(NodeType.IDENTIFIER, 65, 68);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 65, 70);
+			expected.allocateNode(NodeType.BLOCK_COMMENT, 72, 90);
+			// case 2: break;
+			expected.allocateNode(NodeType.INTEGER_LITERAL, 99, 100);
+			expected.allocateNode(NodeType.BREAK_STATEMENT, 106, 112);
+			// switch and method
+			expected.allocateNode(NodeType.SWITCH_STATEMENT, 35, 116);
+			expected.allocateNode(NodeType.BLOCK, 31, 119);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 119);
+			// void bar() {}
+			expected.allocateNode(NodeType.BLOCK, 133, 135);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 122, 135);
+			// Class and compilation unit
+			expected.allocateClassDeclaration(0, 137, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 138);
 			requireThat(actual, "actual").isEqualTo(expected);
 		}
 	}

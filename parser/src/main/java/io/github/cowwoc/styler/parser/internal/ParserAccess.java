@@ -219,6 +219,12 @@ public interface ParserAccess
 	void parseCaseLabelElement();
 
 	/**
+	 * Parses the body of a colon-style case label until CASE, DEFAULT, or RIGHT_BRACE.
+	 * Handles comments between statements in the case body.
+	 */
+	void parseColonCaseBody();
+
+	/**
 	 * Parses an expression.
 	 *
 	 * @return the expression node index
