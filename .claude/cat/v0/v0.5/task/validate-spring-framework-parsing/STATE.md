@@ -4,8 +4,27 @@
 - **Progress:** 80%
 - **Resolution:** implemented
 - **Dependencies:** fix-old-style-switch-fallthrough, fix-lambda-in-ternary-expression, fix-misc-expression-edge-cases
-- **Last Updated:** 2026-01-17
+- **Last Updated:** 2026-01-19
 - **Note:** Validation run completed. 17 files still failing. Need new tasks for remaining errors.
+
+## Acceptance Criteria
+
+**MANDATORY: Zero parsing errors required.**
+
+This task is complete ONLY when `parser:check` passes on the entire Spring Framework 6.2.1 codebase
+with **0 failures**. A 99.81% success rate (17 failures) does NOT satisfy the acceptance criteria.
+
+```bash
+# Acceptance test command
+./mvnw exec:java -pl parser -Dexec.mainClass=com.stazsoftware.styler.parser.ParserCli \
+  -Dexec.args="check ~/spring-framework-6.2.1"
+
+# Required output
+# Succeeded: 8,817
+# Failed: 0
+```
+
+Until all 8,817 files parse successfully, this task remains in-progress and blocks v0.5 completion.
 
 ## Validation Run (2026-01-17 - Post-Dependencies)
 
