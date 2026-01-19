@@ -3424,6 +3424,33 @@
         "catches_variations": true
       },
       "correct_behavior": "Use 'config:' for hooks, settings.json, thresholds, and mistakes.json. Use 'docs:' for markdown documentation only."
+    },
+    {
+      "id": "M140",
+      "timestamp": "2026-01-19T15:10:00Z",
+      "category": "protocol_violation",
+      "description": "Used bash cat instead of Read tool to display config boxes, so box content didn't appear in assistant message to user",
+      "root_cause": "Deviated from skill instructions which specify 'use Read tool' and 'output contents VERBATIM'",
+      "rca_method": "C",
+      "rca_method_name": "causal-barrier",
+      "prevention_type": "skill",
+      "prevention_path": "/workspace/cat/skills/config/SKILL.md",
+      "pattern_keywords": [
+        "config box",
+        "Read tool",
+        "verbatim output",
+        "bash cat",
+        "display"
+      ],
+      "prevention_implemented": false,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "Use Read tool on /tmp/config-box.txt, then output the contents as text in the assistant response (not just in tool output)"
     }
   ],
   "mistake_count_since_last": 6
