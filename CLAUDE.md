@@ -157,7 +157,8 @@ All enforce **Backup-Verify-Cleanup**: Create backup → Execute → **Verify im
 
 **Commit Type Separation**: Group changes by commit type. Separate commits for:
 - `refactor:` / `feat:` / `bugfix:` - code changes
-- `config:` / `docs:` - configuration and documentation changes
+- `config:` - hooks, settings.json, thresholds, retrospectives/mistakes.json
+- `docs:` - markdown documentation, comments, README changes
 - `test:` - test-only changes
 
 Example: If fixing an import in `.claude/rules/*.md` while implementing a feature, create two commits.
