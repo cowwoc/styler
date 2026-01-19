@@ -4,7 +4,7 @@
 Parser edge cases for real-world Java codebases
 
 ## Scope
-Fix parser edge cases discovered from Spring Framework 6.2.1 parsing validation.
+Fix parser edge cases discovered from Spring Framework 6.2.1 and Spring Boot parsing validation.
 
 ## Gates
 
@@ -13,3 +13,4 @@ Fix parser edge cases discovered from Spring Framework 6.2.1 parsing validation.
 
 ### Exit
 - [task] validate-spring-framework-parsing
+- [task] validate-spring-boot-parsing
