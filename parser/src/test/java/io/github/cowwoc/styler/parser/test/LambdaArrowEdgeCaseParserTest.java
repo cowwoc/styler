@@ -129,7 +129,7 @@ public final class LambdaArrowEdgeCaseParserTest
 	 *
 	 * @see <a href=".claude/cat/v0/v0.5/task/fix-lambda-arrow-in-parenthesized-context">Task to fix this</a>
 	 */
-	@Test(enabled = false)
+	@Test
 	public void shouldParseLambdaAfterMethodReferenceWithTrailingComments()
 	{
 		String source = """
@@ -147,12 +147,24 @@ public final class LambdaArrowEdgeCaseParserTest
 			NodeArena expected = new NodeArena())
 		{
 			NodeArena actual = parser.getArena();
-			// Placeholder positions - will be verified by running test
-			expected.allocateNode(NodeType.METHOD_INVOCATION, 0, 0);
-			expected.allocateNode(NodeType.BLOCK, 0, 0);
-			expected.allocateNode(NodeType.METHOD_DECLARATION, 0, 0);
-			expected.allocateClassDeclaration(0, 0, new TypeDeclarationAttribute("Test"));
-			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 0);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 30, 44);
+			expected.allocateNode(NodeType.IDENTIFIER, 30, 34);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 30, 44);
+			expected.allocateNode(NodeType.IDENTIFIER, 45, 58);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 45, 60);
+			expected.allocateNode(NodeType.LINE_COMMENT, 62, 64);
+			expected.allocateNode(NodeType.THIS_EXPRESSION, 68, 72);
+			expected.allocateNode(NodeType.METHOD_REFERENCE, 68, 82);
+			expected.allocateNode(NodeType.LINE_COMMENT, 84, 86);
+			expected.allocateNode(NodeType.IDENTIFIER, 104, 111);
+			expected.allocateNode(NodeType.IDENTIFIER, 112, 122);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 104, 123);
+			expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 90, 123);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 30, 124);
+			expected.allocateNode(NodeType.BLOCK, 26, 128);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 128);
+			expected.allocateClassDeclaration(0, 130, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 131);
 			requireThat(actual, "actual").isEqualTo(expected);
 		}
 	}

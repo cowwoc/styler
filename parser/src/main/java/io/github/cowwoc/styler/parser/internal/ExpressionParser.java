@@ -343,6 +343,9 @@ public final class ExpressionParser
 	 */
 	public NodeIndex parseExpression()
 	{
+		// Consume leading comments before checking for lambda pattern
+		parser.parseComments();
+
 		// Check for lambda expression: identifier -> expr
 		if (parser.currentToken().type() == TokenType.IDENTIFIER)
 		{
