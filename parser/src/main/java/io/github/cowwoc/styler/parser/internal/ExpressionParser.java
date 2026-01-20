@@ -234,7 +234,8 @@ public final class ExpressionParser
 	{
 		// Check for lambda expression: identifier -> body
 		// When a cast is followed by identifier + arrow, the operand is a lambda expression
-		if (nextTokenType == TokenType.IDENTIFIER && lookaheadIsArrow())
+		if ((nextTokenType == TokenType.IDENTIFIER || parser.isContextualKeyword(nextTokenType)) &&
+			lookaheadIsArrow())
 		{
 			int lambdaStart = parser.currentToken().start();
 			parser.consume();
@@ -347,7 +348,7 @@ public final class ExpressionParser
 		parser.parseComments();
 
 		// Check for lambda expression: identifier -> expr
-		if (parser.currentToken().type() == TokenType.IDENTIFIER)
+		if (parser.isIdentifierOrContextualKeyword())
 		{
 			// Look ahead to see if this is a lambda
 			int checkpoint = parser.getPosition();

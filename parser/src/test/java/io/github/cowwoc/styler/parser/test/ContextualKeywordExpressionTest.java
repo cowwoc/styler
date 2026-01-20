@@ -436,4 +436,40 @@ public final class ContextualKeywordExpressionTest
 			requireThat(actual, "actual").isEqualTo(expected);
 		}
 	}
+
+	/**
+	 * Verifies that the contextual keyword {@code module} can be used as a lambda parameter in a method
+	 * argument.
+	 */
+	@Test
+	public void contextualKeywordAsLambdaParameterInMethodArgument()
+	{
+		String source = """
+			class Test
+			{
+				void m()
+				{
+					modules.forEach(module -> process(module));
+				}
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 43);
+			expected.allocateNode(NodeType.IDENTIFIER, 28, 35);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 28, 43);
+			expected.allocateNode(NodeType.IDENTIFIER, 54, 61);
+			expected.allocateNode(NodeType.IDENTIFIER, 62, 68);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 54, 69);
+			expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 44, 69);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 28, 70);
+			expected.allocateNode(NodeType.BLOCK, 24, 74);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 74);
+			expected.allocateClassDeclaration(0, 76, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 77);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
 }
