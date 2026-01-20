@@ -1,11 +1,11 @@
 # State
 
-- **Status:** in-progress
-- **Progress:** 80%
+- **Status:** completed
+- **Progress:** 100%
 - **Resolution:** implemented
-- **Dependencies:** fix-old-style-switch-fallthrough, fix-lambda-in-ternary-expression, fix-misc-expression-edge-cases
-- **Last Updated:** 2026-01-19
-- **Note:** Validation run completed. 17 files still failing. Need new tasks for remaining errors.
+- **Dependencies:** fix-old-style-switch-fallthrough, fix-lambda-in-ternary-expression, fix-misc-expression-edge-cases, fix-switch-arm-comment-before-throw, fix-contextual-keyword-lambda-parameter
+- **Last Updated:** 2026-01-20
+- **Completed:** 2026-01-20 23:45
 
 ## Acceptance Criteria
 
@@ -24,7 +24,37 @@ with **0 failures**. A 99.81% success rate (17 failures) does NOT satisfy the ac
 # Failed: 0
 ```
 
-Until all 8,817 files parse successfully, this task remains in-progress and blocks v0.5 completion.
+✅ **ACCEPTANCE CRITERIA MET:** All 8,817 files parse successfully with 0 failures.
+
+## Final Validation Run (2026-01-20)
+
+**Result:** 100% success rate (8,817/8,817 files)
+
+| Metric | Value |
+|--------|-------|
+| Total files | 8,817 |
+| Succeeded | 8,817 |
+| Failed | 0 |
+| Time | 3,054ms |
+| Throughput | 2,887.0 files/sec |
+
+**Improvement from previous run:** 3 → 0 errors (all fixed!)
+**Improvement from start of v0.5:** 93.2% → 100% (+598 files now parse correctly)
+
+## Previous Validation Run (2026-01-20)
+
+**Result:** 99.97% success rate (8,814/8,817 files)
+
+| Metric | Value |
+|--------|-------|
+| Total files | 8,817 |
+| Succeeded | 8,814 |
+| Failed | 3 |
+| Time | 3,843ms |
+| Throughput | 2,294.3 files/sec |
+
+**Improvement from last run:** 17 → 3 errors (-14 files fixed)
+**Improvement from start of v0.5:** 93.2% → 99.97% (+595 files now parse correctly)
 
 ## Validation Run (2026-01-17 - Post-Dependencies)
 
@@ -41,71 +71,52 @@ Until all 8,817 files parse successfully, this task remains in-progress and bloc
 **Improvement from last run:** 21 → 17 errors (-4 files fixed)
 **Improvement from start of v0.5:** 93.2% → 99.81% (+581 files now parse correctly)
 
-## Remaining Errors (17 files) - New Tasks Required
+## Remaining Errors (3 files) - New Tasks Required
 
-| Error Type | Count | Task Status |
-|------------|-------|-------------|
-| Unexpected CASE in expression | 5 | fix-switch-case-in-expression-context (completed but still failing) |
-| Unexpected DEFAULT in expression | 3 | fix-switch-case-in-expression-context (completed but still failing) |
-| Unexpected BREAK in expression | 3 | fix-switch-case-in-expression-context (completed but still failing) |
-| Unexpected THROW in expression | 2 | fix-switch-case-in-expression-context (completed but still failing) |
-| Unexpected WHILE in expression | 1 | fix-switch-case-in-expression-context (completed but still failing) |
-| Expected RIGHT_PARENTHESIS but found ARROW | 2 | NEW: fix-lambda-arrow-in-parenthesized-context |
-| Expected SEMICOLON but found ARROW | 1 | NEW: fix-lambda-arrow-in-parenthesized-context |
+| Error Type | Count | Root Cause | Files |
+|------------|-------|------------|-------|
+| Unexpected token: THROW | 2 | Comment before throw in switch expression arm | ViewControllerBeanDefinitionParser.java, ConcurrentWebSocketSessionDecorator.java |
+| Expected RIGHT_PARENTHESIS but found ARROW | 1 | Contextual keyword as lambda parameter name | Jackson2ObjectMapperBuilder.java |
 
-### Error Categories Analysis (Investigation 2026-01-17)
+### Error Categories Analysis (Investigation 2026-01-20)
 
-**Old-Style Switch Fall-Through (14 files) - PATTERN MISMATCH DISCOVERED:**
+**Comment Before Throw in Switch Expression Arm (2 files):**
 
-The existing tests cover simple patterns like:
+Pattern that fails:
 ```java
-switch (x) {
-    case 1:
-        break;  // <-- Simple case body
-}
+default ->
+    // Should never happen...
+    throw new IllegalStateException(...);
 ```
 
-But the failing files have **NESTED switch statements inside case/default bodies**:
-```java
-default:
-    switch (mode) {   // <-- Nested switch as case body
-    case EQ: intOp = ...; break;
-    }
-```
+The parser is treating the switch arm as expecting an expression after `->`, but encounters a comment
+followed by `throw` (a statement). When there's no comment, throw-as-expression works. The comment
+is causing the parser to switch to a different parsing path.
 
-This is a DIFFERENT parsing path than what `fix-switch-case-in-expression-context` addressed.
-The nested switch after `default:` is being interpreted as an expression, not a statement.
-
-**Root cause:** `parseOldStyleSwitchCaseBody()` may not correctly handle switch statements as the
-first statement after a case label.
+**Root cause:** After consuming the comment following `->`, the parser doesn't re-check for
+throw-as-expression context.
 
 **Files affected:**
-- CodeEmitter.java (nested switch in default)
-- EmitUtils.java (nested switch in default)
-- ClassReader.java (while in case)
-- Tokenizer.java, Operator.java, RfcUriParser.java (break patterns in nested context)
-- Msg.java, SecondMsg.java (3 copies each - protobuf generated)
-- ViewControllerBeanDefinitionParser.java, ConcurrentWebSocketSessionDecorator.java (throw)
+- ViewControllerBeanDefinitionParser.java
+- ConcurrentWebSocketSessionDecorator.java
 
-**Lambda in Parenthesized Context (3 files) - NEW PATTERN:**
+**Contextual Keyword as Lambda Parameter Name (1 file):**
 
-The existing `fix-lambda-arrow-in-parenthesized-context` task addressed lambdas with annotated generic
-type parameters. But these 3 files have a DIFFERENT pattern - simple lambdas in method arguments:
+Pattern that fails:
 ```java
-Mono.usingWhen(
-    getConnection(),
-    this::populate,
-    connection -> release(connection),  // <-- Simple lambda, not annotated
-    ...
-)
+ObjectMapper.findModules(this.moduleClassLoader).forEach(module -> registerModule(...));
 ```
 
-The parser sees `connection` and expects `)` for the method call, but finds `->`.
+When a **contextual keyword** (`module`, `sealed`, `permits`, etc.) is used as a lambda parameter
+name in a method call argument context, the parser fails to recognize it as a valid identifier
+for lambda parameter.
+
+**Root cause:** The lambda detection logic in method arguments doesn't handle contextual keywords
+as valid lambda parameter names. Verified by testing: `forEach(x -> ...)` passes, but
+`forEach(module -> ...)` fails.
 
 **Files affected:**
-- DatabasePopulator.java
-- Jackson2ObjectMapperBuilder.java
-- RouterFunctionsTests.java
+- Jackson2ObjectMapperBuilder.java (parameter named `module`)
 
 ## Previous Run (2026-01-17 - Pre-Dependencies)
 
@@ -137,14 +148,19 @@ The parser sees `connection` and expects `)` for the method call, but finds `->`
 
 ## Conclusion
 
-**17 errors remain after investigation.** These are NOT the same errors that previous tasks addressed.
-The previous tasks were incorrectly marked as complete because their tests didn't cover the actual patterns.
+**✅ VALIDATION COMPLETE - 100% success rate achieved!**
 
-**Status:** Two distinct new error patterns discovered that require new tasks:
-1. **Nested switch in case/default body** (14 files) - different parsing path than tested
-2. **Simple lambda in method argument** (3 files) - different from annotated generic lambda
+All 8,817 Spring Framework 6.2.1 Java files now parse successfully with zero errors.
 
-**Recommendation:** Create targeted tasks for these specific patterns rather than re-opening completed tasks.
+**Journey through v0.5:**
+- **Starting point:** 93.2% success rate (598 files failing)
+- **Final result:** 100% success rate (0 files failing)
+- **Total files fixed:** 598
+- **Throughput:** 2,887 files/sec (improved from 2,294 files/sec)
+
+**Tasks that resolved the final 3 errors:**
+- `fix-switch-arm-comment-before-throw` - Handled comments before throw in switch expression arms
+- `fix-contextual-keyword-lambda-parameter` - Allowed contextual keywords as lambda parameter names
 
 ---
-*Investigation completed 2026-01-17. Previous tasks covered related but different patterns.*
+*Validation completed 2026-01-20. Spring Framework 6.2.1 codebase fully supported.*
