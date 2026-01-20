@@ -3451,6 +3451,34 @@
         "catches_variations": true
       },
       "correct_behavior": "Use Read tool on /tmp/config-box.txt, then output the contents as text in the assistant response (not just in tool output)"
+    },
+    {
+      "id": "M141",
+      "timestamp": "2026-01-20T11:30:00Z",
+      "category": "protocol_violation",
+      "description": "Manually typed box characters in /cat:status output instead of using status.sh script output, causing misaligned vertical bars",
+      "root_cause": "When status.sh script errored, agent improvised by manually typing boxes instead of reporting error or fixing script. M149 rule about 'never manually type boxes' wasn't enforced by a hook.",
+      "rca_method": "A",
+      "rca_method_name": "5-whys",
+      "prevention_type": "hook",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/detect-manual-box-typing.sh",
+      "pattern_keywords": [
+        "box rendering",
+        "manual typing",
+        "unicode alignment",
+        "status.sh",
+        "work.md",
+        "M149"
+      ],
+      "prevention_implemented": false,
+      "prevention_verified": false,
+      "recurrence_of": "M149",
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "When a box-rendering script errors, report the error to the user and either fix the script or skip the box display. NEVER manually type box characters."
     }
   ],
   "mistake_count_since_last": 6
