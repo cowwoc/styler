@@ -330,4 +330,44 @@ public class SwitchExpressionParserTest
 			requireThat(actual.getNodeCount(), "actual.getNodeCount()").isGreaterThan(0);
 		}
 	}
+
+	/**
+	 * Validates parsing of switch arm with comment between arrow and throw expression.
+	 * Tests that comments between {@code ->} and {@code throw} are handled correctly.
+	 */
+	@Test
+	public void testSwitchArmWithCommentBeforeThrow()
+	{
+		String source = """
+			class Foo
+			{
+				Object m(int value)
+				{
+					return switch (value)
+					{
+						default ->
+							// Should never happen
+							throw new IllegalStateException();
+					};
+				}
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateParameterDeclaration(22, 31, new ParameterAttribute("value", false, false, false));
+			expected.allocateNode(NodeType.IDENTIFIER, 53, 58);
+			expected.allocateNode(NodeType.LINE_COMMENT, 82, 104);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 119, 140);
+			expected.allocateNode(NodeType.OBJECT_CREATION, 115, 142);
+			expected.allocateNode(NodeType.SWITCH_EXPRESSION, 45, 147);
+			expected.allocateNode(NodeType.RETURN_STATEMENT, 38, 148);
+			expected.allocateNode(NodeType.BLOCK, 34, 151);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 13, 151);
+			expected.allocateClassDeclaration(0, 153, new TypeDeclarationAttribute("Foo"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 154);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
 }

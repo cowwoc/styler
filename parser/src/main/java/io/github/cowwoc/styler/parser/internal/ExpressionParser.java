@@ -1189,6 +1189,8 @@ public final class ExpressionParser
 
 			if (parser.match(TokenType.ARROW))
 			{
+				// Consume comments between arrow and body (mirrors parseLambdaBody pattern)
+				parser.parseComments();
 				// Arrow case: case 1 -> expr;
 				if (parser.currentToken().type() == TokenType.LEFT_BRACE)
 					// Block body: case 1 -> { ... }

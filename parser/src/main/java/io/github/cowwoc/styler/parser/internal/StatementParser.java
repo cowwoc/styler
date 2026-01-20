@@ -424,6 +424,8 @@ public final class StatementParser
 
 			if (parser.match(TokenType.ARROW))
 			{
+				// Consume comments between arrow and body
+				parser.parseComments();
 				// Arrow case: case 1 -> expr; or case 1 -> { ... }
 				if (parser.currentToken().type() == TokenType.LEFT_BRACE)
 					parser.parseBlock();
