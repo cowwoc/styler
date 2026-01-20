@@ -2,7 +2,7 @@
 
 - **Status:** in-progress
 - **Progress:** 88%
-- **Dependencies:** []
+- **Dependencies:** [add-type-use-annotation-support]
 - **Last Updated:** 2026-01-20
 - **Note:** Validation run completed. 94 files failing. Need new tasks for type-use annotation patterns.
 
