@@ -1330,7 +1330,12 @@ public final class ExpressionParser
 		{
 			while (parser.currentToken().type() != TokenType.RIGHT_BRACE &&
 				parser.currentToken().type() != TokenType.END_OF_FILE)
+			{
+				parser.parseComments();
+				if (parser.currentToken().type() == TokenType.RIGHT_BRACE)
+					continue;
 				parser.parseMemberDeclaration();
+			}
 			parser.expect(TokenType.RIGHT_BRACE);
 		}
 

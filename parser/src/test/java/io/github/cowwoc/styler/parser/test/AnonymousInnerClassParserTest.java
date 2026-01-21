@@ -5,6 +5,7 @@ import io.github.cowwoc.styler.ast.core.NodeArena;
 import io.github.cowwoc.styler.ast.core.NodeType;
 import io.github.cowwoc.styler.ast.core.ParameterAttribute;
 import io.github.cowwoc.styler.ast.core.TypeDeclarationAttribute;
+import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
 import org.testng.annotations.Test;
 
@@ -16,6 +17,29 @@ import static io.github.cowwoc.styler.parser.test.ParserTestUtils.parse;
  */
 public final class AnonymousInnerClassParserTest
 {
+	/**
+	 * Validates that an anonymous class with only a comment (no members) parses correctly.
+	 * This tests the fix for the bug where the parser failed on comment-only bodies.
+	 */
+	@Test
+	public void anonymousClassWithOnlyComment()
+	{
+		String source = """
+			class Test
+			{
+				Object obj = new Runnable()
+				{
+					// empty implementation
+				};
+			}
+			""";
+		try (Parser parser = parse(source))
+		{
+			ParseResult result = parser.parse();
+			requireThat(result, "result").isInstanceOf(ParseResult.Success.class);
+		}
+	}
+
 	/**
 	 * Validates that an empty anonymous class parses correctly.
 	 * Tests the form {@code new Object() { }}.
