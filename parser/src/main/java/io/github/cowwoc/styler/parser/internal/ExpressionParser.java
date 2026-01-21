@@ -725,7 +725,8 @@ public final class ExpressionParser
 
 			int end = parser.previousToken().end();
 			// Check for optional pattern variable (Java 16+ pattern matching)
-			if (parser.currentToken().type() == TokenType.IDENTIFIER)
+			// Must check isIdentifierOrContextualKeyword() to support contextual keywords like "module", "record"
+			if (parser.isIdentifierOrContextualKeyword())
 			{
 				parser.consume();
 				end = parser.previousToken().end();
