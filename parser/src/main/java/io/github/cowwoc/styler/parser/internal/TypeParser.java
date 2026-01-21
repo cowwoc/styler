@@ -581,6 +581,9 @@ public final class TypeParser
 		{
 			// Empty declaration
 		}
+		else if (this.parser.currentToken().type() == TokenType.AT_SIGN)
+			// Type-use annotation on return type: @Nullable String getValue()
+			parseAnnotatedTypeMember(start);
 		else
 		{
 			throw new ParserException("Unexpected token in member declaration: " +
@@ -655,6 +658,31 @@ public final class TypeParser
 			parseMethodRest(memberStart, false);
 		else
 			parseFieldRest(memberStart);
+	}
+
+	private void parseAnnotatedTypeMember(int memberStart)
+	{
+		// Parse type annotations (consumes @Nullable, @NonNull, etc.)
+		while (this.parser.currentToken().type() == TokenType.AT_SIGN)
+			this.parser.parseAnnotation();
+
+		// After annotations, we have the actual type
+		if (this.parser.isPrimitiveType(this.parser.currentToken().type()) ||
+			this.parser.currentToken().type() == TokenType.VOID)
+		{
+			// Annotated primitive: @Positive int getValue()
+			parsePrimitiveTypedMember(memberStart);
+		}
+		else if (this.parser.isIdentifierOrContextualKeyword())
+		{
+			// Annotated reference type: @Nullable String getValue()
+			parseIdentifierMember(memberStart);
+		}
+		else
+		{
+			throw new ParserException("Expected type after type-use annotation but found " +
+				this.parser.currentToken().type(), this.parser.currentToken().start());
+		}
 	}
 
 	private NodeIndex parseMethodRest(int start, boolean isConstructor)
