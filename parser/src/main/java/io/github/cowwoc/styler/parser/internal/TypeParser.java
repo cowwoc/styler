@@ -361,6 +361,9 @@ public final class TypeParser
 
 	private void parseTypeParameter()
 	{
+		// Parse annotations before type parameter name (JSR 308: @Nullable T)
+		while (this.parser.currentToken().type() == TokenType.AT_SIGN)
+			this.parser.parseAnnotation();
 		this.parser.expect(TokenType.IDENTIFIER);
 		if (this.parser.match(TokenType.EXTENDS))
 		{
