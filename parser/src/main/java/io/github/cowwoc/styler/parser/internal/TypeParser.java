@@ -375,10 +375,21 @@ public final class TypeParser
 
 	private NodeIndex parseTypeArgument()
 	{
+		// JSR 308: type-use annotations can appear before wildcard ? in type arguments
+		// e.g., Consumer<@Nullable ? super T> or Supplier<@NonNull ?>
+		int annotationStart = this.parser.currentToken().start();
+		boolean hasAnnotations = false;
+		while (this.parser.currentToken().type() == TokenType.AT_SIGN)
+		{
+			this.parser.parseAnnotation();
+			hasAnnotations = true;
+		}
+
 		if (this.parser.match(TokenType.QUESTION_MARK))
 		{
 			Token wildcardToken = this.parser.previousToken();
-			int start = wildcardToken.start();
+			// If annotations were present, use their start position; otherwise use wildcard position
+			int start = hasAnnotations ? annotationStart : wildcardToken.start();
 
 			if (this.parser.match(TokenType.EXTENDS) || this.parser.match(TokenType.SUPER))
 			{
@@ -390,7 +401,8 @@ public final class TypeParser
 			return this.parser.getArena().allocateNode(NodeType.WILDCARD_TYPE, start, wildcardToken.end());
 		}
 
-		int start = this.parser.currentToken().start();
+		// Not a wildcard - annotations (if any) belong to the type that follows
+		int start = hasAnnotations ? annotationStart : this.parser.currentToken().start();
 		this.parser.parseType();
 		return this.parser.getArena().allocateNode(NodeType.QUALIFIED_NAME, start,
 			this.parser.previousToken().end());
