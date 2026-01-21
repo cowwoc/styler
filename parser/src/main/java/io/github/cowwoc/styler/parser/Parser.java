@@ -520,6 +520,10 @@ public final class Parser implements AutoCloseable
 		expectIdentifierOrContextualKeyword();
 		while (match(TokenType.DOT))
 		{
+			// JSR 308: type-use annotations can appear after dot in qualified types
+			// e.g., java.security.@Nullable Principal or Outer.@NonNull Inner
+			while (currentToken().type() == TokenType.AT_SIGN)
+				parseAnnotation();
 			if (isIdentifierOrContextualKeyword())
 				consume();
 			else

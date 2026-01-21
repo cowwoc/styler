@@ -602,6 +602,10 @@ public final class TypeParser
 		// Handle qualified type names: Outer.Inner, ValueLayout.OfInt, etc.
 		while (this.parser.match(TokenType.DOT))
 		{
+			// JSR 308: type-use annotations can appear after dot in qualified types
+			// e.g., java.security.@Nullable Principal or Outer.@NonNull Inner
+			while (this.parser.currentToken().type() == TokenType.AT_SIGN)
+				this.parser.parseAnnotation();
 			if (!this.parser.isIdentifierOrContextualKeyword())
 				break;
 			this.parser.consume();
