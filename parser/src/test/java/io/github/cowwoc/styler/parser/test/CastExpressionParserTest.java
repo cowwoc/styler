@@ -841,4 +841,192 @@ public final class CastExpressionParserTest
 			}
 			""");
 	}
+
+	// ========== Cast Lambda Expression Tests (5 tests) ==========
+
+	/**
+	 * Validates that a cast of a no-parameter lambda parses correctly.
+	 * Example: {@code (Runnable) () -> doSomething()}
+	 */
+	@Test
+	public void shouldParseCastOfNoParamLambda()
+	{
+		String source = """
+			class Test
+			{
+				void m()
+				{
+					Runnable r = (Runnable) () -> doSomething();
+				}
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 36);
+			expected.allocateNode(NodeType.IDENTIFIER, 58, 69);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 58, 71);
+			expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 52, 71);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 41, 71);
+			expected.allocateNode(NodeType.BLOCK, 24, 75);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 75);
+			expected.allocateClassDeclaration(0, 77, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 78);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
+
+	/**
+	 * Validates that a cast of a single-parameter lambda parses correctly.
+	 * Example: {@code (Function<String, Integer>) s -> s.length()}
+	 */
+	@Test
+	public void shouldParseCastOfSingleParamLambda()
+	{
+		String source = """
+			class Test
+			{
+				void m()
+				{
+					Object f = (Function<String, Integer>) s -> s.length();
+				}
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 49, 55);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 49, 55);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 57, 64);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 57, 64);
+			expected.allocateNode(NodeType.IDENTIFIER, 72, 73);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 72, 80);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 72, 82);
+			expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 67, 82);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 82);
+			expected.allocateNode(NodeType.BLOCK, 24, 86);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 86);
+			expected.allocateClassDeclaration(0, 88, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 89);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
+
+	/**
+	 * Validates that a cast of a lambda with block body parses correctly.
+	 * Example: {@code (Consumer<String>) s -> { process(s); }}
+	 */
+	@Test
+	public void shouldParseCastOfBlockLambda()
+	{
+		String source = """
+			class Test
+			{
+				void m()
+				{
+					Object c = (Consumer<String>) s -> { process(s); };
+				}
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 49, 55);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 49, 55);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 65, 72);
+			expected.allocateNode(NodeType.IDENTIFIER, 65, 72);
+			expected.allocateNode(NodeType.IDENTIFIER, 73, 74);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 65, 75);
+			expected.allocateNode(NodeType.BLOCK, 63, 78);
+			expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 58, 78);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 39, 78);
+			expected.allocateNode(NodeType.BLOCK, 24, 82);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 82);
+			expected.allocateClassDeclaration(0, 84, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 85);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
+
+	/**
+	 * Validates that nested cast with lambda parses correctly.
+	 * Example: {@code (HibernateCallback<List<T>>) session -> { ... }}
+	 */
+	@Test
+	public void shouldParseNestedGenericCastOfLambda()
+	{
+		String source = """
+			class Test
+			{
+				void m()
+				{
+					Object cb = (Callback<List<String>>) list -> list.size();
+				}
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 50, 54);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 55, 61);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 55, 61);
+			expected.allocateNode(NodeType.PARAMETERIZED_TYPE, 50, 63);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 50, 63);
+			expected.allocateNode(NodeType.IDENTIFIER, 73, 77);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 73, 82);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 73, 84);
+			expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 65, 84);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 40, 84);
+			expected.allocateNode(NodeType.BLOCK, 24, 88);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 88);
+			expected.allocateClassDeclaration(0, 90, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 91);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
+
+	/**
+	 * Validates that cast of lambda inside method argument parses correctly.
+	 * Example: {@code nonNull((Callback<T>) session -> ...)}
+	 */
+	@Test
+	public void shouldParseCastOfLambdaAsMethodArgument()
+	{
+		String source = """
+			class Test
+			{
+				void m()
+				{
+					Object result = nonNull((Callback<String>) s -> s.trim());
+				}
+			}
+			""";
+		try (Parser parser = parse(source);
+			NodeArena expected = new NodeArena())
+		{
+			NodeArena actual = parser.getArena();
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 28, 34);
+			expected.allocateNode(NodeType.IDENTIFIER, 44, 51);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 62, 68);
+			expected.allocateNode(NodeType.QUALIFIED_NAME, 62, 68);
+			expected.allocateNode(NodeType.IDENTIFIER, 76, 77);
+			expected.allocateNode(NodeType.FIELD_ACCESS, 76, 82);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 76, 84);
+			expected.allocateNode(NodeType.LAMBDA_EXPRESSION, 71, 84);
+			expected.allocateNode(NodeType.CAST_EXPRESSION, 52, 84);
+			expected.allocateNode(NodeType.METHOD_INVOCATION, 44, 85);
+			expected.allocateNode(NodeType.BLOCK, 24, 89);
+			expected.allocateNode(NodeType.METHOD_DECLARATION, 14, 89);
+			expected.allocateClassDeclaration(0, 91, new TypeDeclarationAttribute("Test"));
+			expected.allocateNode(NodeType.COMPILATION_UNIT, 0, 92);
+			requireThat(actual, "actual").isEqualTo(expected);
+		}
+	}
 }
