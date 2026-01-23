@@ -29,9 +29,15 @@ public final class PathSanitizer
 		requireThat(path, "path").isNotNull();
 		requireThat(allowedRoot, "allowedRoot").isNotNull();
 
-		Path canonicalPath = path.toRealPath();
 		Path canonicalRoot = allowedRoot.toRealPath();
 
+		// First check normalized path for traversal (catches non-existent paths attempting traversal)
+		Path normalizedPath = path.toAbsolutePath().normalize();
+		if (!normalizedPath.startsWith(canonicalRoot))
+			throw new PathTraversalException(path, normalizedPath, canonicalRoot);
+
+		// Then verify actual path (catches symlink traversal for existing paths)
+		Path canonicalPath = path.toRealPath();
 		if (!canonicalPath.startsWith(canonicalRoot))
 			throw new PathTraversalException(path, canonicalPath, canonicalRoot);
 

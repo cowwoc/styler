@@ -111,6 +111,24 @@ Style validation requires **THREE components** - checking only one is a CRITICAL
       doWork();
   }
   ```
+- Declare specific exception types, not generic `Exception` or `Throwable`:
+  ```java
+  // ❌ WRONG - Generic exception hides what can actually be thrown
+  @Test
+  public void pathTraversalAttackIsBlocked() throws Exception
+  {
+      sanitizer.sanitize(maliciousPath, allowedRoot);
+  }
+
+  // ✅ CORRECT - Specific exceptions document the test's behavior
+  @Test
+  public void pathTraversalAttackIsBlocked() throws IOException
+  {
+      sanitizer.sanitize(maliciousPath, allowedRoot);
+  }
+  ```
+  **Why:** Generic exception declarations indicate unclear error handling. If a test throws many
+  different checked exceptions, it may be testing too much or the API design needs review.
 - Test source strings: MUST use text blocks with natural formatting (one statement per line):
   ```java
   // ❌ WRONG - Escape sequences instead of text block
