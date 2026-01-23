@@ -7,6 +7,8 @@ import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
 import io.github.cowwoc.styler.formatter.whitespace.internal.WhitespaceAnalyzer;
 import io.github.cowwoc.styler.formatter.whitespace.internal.WhitespaceFixer;
+import io.github.cowwoc.styler.formatter.RuleExample;
+import io.github.cowwoc.styler.formatter.RuleProperty;
 
 import java.util.List;
 
@@ -62,6 +64,41 @@ public final class WhitespaceFormattingRule implements FormattingRule
 	public ViolationSeverity getDefaultSeverity()
 	{
 		return ViolationSeverity.WARNING;
+	}
+
+	@Override
+	public List<RuleExample> getExamples()
+	{
+		return List.of(
+			new RuleExample(
+				"Space around binary operators",
+				"int x=a+b*c;",
+				"int x = a + b * c;"),
+			new RuleExample(
+				"Space after keywords and commas",
+				"if(condition){process(a,b,c);}",
+				"if (condition) { process(a, b, c); }"));
+	}
+
+	@Override
+	public List<RuleProperty> getProperties()
+	{
+		return List.of(
+			new RuleProperty(
+				"spaceAroundBinaryOperator",
+				"boolean",
+				"true",
+				"Add space around +, -, *, /, etc."),
+			new RuleProperty(
+				"spaceAfterComma",
+				"boolean",
+				"true",
+				"Add space after commas"),
+			new RuleProperty(
+				"spaceAfterControlKeyword",
+				"boolean",
+				"true",
+				"Add space after if, for, while, etc."));
 	}
 
 	@Override

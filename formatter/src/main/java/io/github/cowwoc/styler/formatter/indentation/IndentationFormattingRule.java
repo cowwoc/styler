@@ -7,6 +7,8 @@ import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.ViolationSeverity;
 import io.github.cowwoc.styler.formatter.indentation.internal.IndentationAnalyzer;
 import io.github.cowwoc.styler.formatter.indentation.internal.IndentationFixer;
+import io.github.cowwoc.styler.formatter.RuleExample;
+import io.github.cowwoc.styler.formatter.RuleProperty;
 
 import java.util.List;
 
@@ -56,6 +58,46 @@ public final class IndentationFormattingRule implements FormattingRule
 	public ViolationSeverity getDefaultSeverity()
 	{
 		return ViolationSeverity.WARNING;
+	}
+
+	@Override
+	public List<RuleExample> getExamples()
+	{
+		return List.of(
+			new RuleExample(
+				"Consistent tab indentation",
+				"""
+					class Example
+					{
+					  void method()
+					  {
+					    int x = 1;
+					  }
+					}""",
+				"""
+					class Example
+					{
+						void method()
+						{
+							int x = 1;
+						}
+					}"""));
+	}
+
+	@Override
+	public List<RuleProperty> getProperties()
+	{
+		return List.of(
+			new RuleProperty(
+				"indentationType",
+				"IndentationType",
+				"TABS",
+				"Use tabs or spaces for indentation"),
+			new RuleProperty(
+				"indentSize",
+				"int",
+				"4",
+				"Number of spaces per indent level (when using spaces)"));
 	}
 
 	@Override

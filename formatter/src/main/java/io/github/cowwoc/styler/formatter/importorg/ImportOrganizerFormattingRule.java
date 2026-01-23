@@ -12,6 +12,8 @@ import io.github.cowwoc.styler.formatter.importorg.internal.ImportDeclaration;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportExtractor;
 import io.github.cowwoc.styler.formatter.importorg.internal.ImportGrouper;
 import io.github.cowwoc.styler.formatter.ClasspathScanner;
+import io.github.cowwoc.styler.formatter.RuleExample;
+import io.github.cowwoc.styler.formatter.RuleProperty;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -78,6 +80,47 @@ public final class ImportOrganizerFormattingRule implements FormattingRule
 	public ViolationSeverity getDefaultSeverity()
 	{
 		return ViolationSeverity.WARNING;
+	}
+
+	@Override
+	public List<RuleExample> getExamples()
+	{
+		return List.of(
+			new RuleExample(
+				"Import grouping and ordering",
+				"""
+					import java.util.List;
+					import com.example.MyClass;
+					import java.io.File;
+					import static java.util.Collections.emptyList;""",
+				"""
+					import com.example.MyClass;
+
+					import java.io.File;
+					import java.util.List;
+
+					import static java.util.Collections.emptyList;"""));
+	}
+
+	@Override
+	public List<RuleProperty> getProperties()
+	{
+		return List.of(
+			new RuleProperty(
+				"groupOrder",
+				"List<ImportGroup>",
+				"[JAVA, JAVAX, THIRD_PARTY, PROJECT]",
+				"Order of import groups"),
+			new RuleProperty(
+				"staticImportsFirst",
+				"boolean",
+				"false",
+				"Place static imports before regular imports"),
+			new RuleProperty(
+				"removeUnusedImports",
+				"boolean",
+				"true",
+				"Remove imports not used in code"));
 	}
 
 	@Override

@@ -14,12 +14,15 @@ import io.github.cowwoc.styler.errorcatalog.Audience;
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.brace.BraceFormattingConfiguration;
+import io.github.cowwoc.styler.formatter.brace.BraceFormattingRule;
 import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerConfiguration;
 import io.github.cowwoc.styler.formatter.importorg.ImportOrganizerFormattingRule;
 import io.github.cowwoc.styler.formatter.indentation.IndentationFormattingConfiguration;
+import io.github.cowwoc.styler.formatter.indentation.IndentationFormattingRule;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthConfiguration;
 import io.github.cowwoc.styler.formatter.linelength.LineLengthFormattingRule;
 import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingConfiguration;
+import io.github.cowwoc.styler.formatter.whitespace.WhitespaceFormattingRule;
 import io.github.cowwoc.styler.pipeline.FileProcessingPipeline;
 import io.github.cowwoc.styler.pipeline.PipelineResult;
 import io.github.cowwoc.styler.pipeline.parallel.BatchProcessor;
@@ -121,6 +124,11 @@ public final class CliMain
 			// Help or version was requested - not an error
 			return ExitCode.HELP.code();
 		}
+		catch (ExplainRulesException e)
+		{
+			// Output formatting rules documentation and exit
+			return handleExplainRules();
+		}
 		catch (UsageException e)
 		{
 			// Invalid CLI arguments
@@ -159,6 +167,39 @@ public final class CliMain
 			e.printStackTrace(System.err);
 			return ExitCode.INTERNAL_ERROR.code();
 		}
+	}
+
+	/**
+	 * Handles the --explain-rules flag by outputting rules documentation.
+	 *
+	 * @return exit code (0 for success)
+	 */
+	@SuppressWarnings("PMD.SystemPrintln")
+	private int handleExplainRules()
+	{
+		List<FormattingRule> rules = getAllAvailableRules();
+		RulesSummaryExporter exporter = new RulesSummaryExporter();
+		Audience audience = Audience.detect();
+
+		String output = exporter.export(rules, audience);
+		System.out.println(output);
+
+		return ExitCode.SUCCESS.code();
+	}
+
+	/**
+	 * Creates a list of all available formatting rules with default configurations.
+	 *
+	 * @return list of all formatting rules
+	 */
+	private List<FormattingRule> getAllAvailableRules()
+	{
+		return List.of(
+			new LineLengthFormattingRule(),
+			new ImportOrganizerFormattingRule(),
+			new BraceFormattingRule(),
+			new WhitespaceFormattingRule(),
+			new IndentationFormattingRule());
 	}
 
 	/**

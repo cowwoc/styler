@@ -9,6 +9,9 @@ import io.github.cowwoc.styler.formatter.linelength.internal.ContextDetector;
 import io.github.cowwoc.styler.formatter.linelength.internal.LineAnalyzer;
 import io.github.cowwoc.styler.formatter.linelength.internal.LineWrapper;
 
+import io.github.cowwoc.styler.formatter.RuleExample;
+import io.github.cowwoc.styler.formatter.RuleProperty;
+
 import java.util.List;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
@@ -74,6 +77,38 @@ public final class LineLengthFormattingRule implements FormattingRule
 	public ViolationSeverity getDefaultSeverity()
 	{
 		return ViolationSeverity.WARNING;
+	}
+
+	@Override
+	public List<RuleExample> getExamples()
+	{
+		return List.of(
+			new RuleExample(
+				"Method call chain wrapping",
+				"""
+					String result = builder.append("hello").append("world").append("foo").append("bar").toString();""",
+				"""
+					String result = builder.append("hello").
+						append("world").
+						append("foo").
+						append("bar").
+						toString();"""));
+	}
+
+	@Override
+	public List<RuleProperty> getProperties()
+	{
+		return List.of(
+			new RuleProperty(
+				"maxLineLength",
+				"int",
+				"120",
+				"Maximum allowed line length"),
+			new RuleProperty(
+				"methodChainWrap",
+				"WrapStyle",
+				"AFTER",
+				"Wrap method chains after the dot"));
 	}
 
 	@Override

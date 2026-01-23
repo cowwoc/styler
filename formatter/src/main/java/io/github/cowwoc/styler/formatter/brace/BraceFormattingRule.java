@@ -8,6 +8,9 @@ import io.github.cowwoc.styler.formatter.ViolationSeverity;
 import io.github.cowwoc.styler.formatter.brace.internal.BraceAnalyzer;
 import io.github.cowwoc.styler.formatter.brace.internal.BraceFixer;
 
+import io.github.cowwoc.styler.formatter.RuleExample;
+import io.github.cowwoc.styler.formatter.RuleProperty;
+
 import java.util.List;
 
 import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.requireThat;
@@ -64,6 +67,45 @@ public final class BraceFormattingRule implements FormattingRule
 	public ViolationSeverity getDefaultSeverity()
 	{
 		return ViolationSeverity.WARNING;
+	}
+
+	@Override
+	public List<RuleExample> getExamples()
+	{
+		return List.of(
+			new RuleExample(
+				"Opening brace on new line (Allman style)",
+				"""
+					if (condition) {
+						doSomething();
+					}""",
+				"""
+					if (condition)
+					{
+						doSomething();
+					}"""),
+			new RuleExample(
+				"Method brace placement",
+				"""
+					void process() {
+						return;
+					}""",
+				"""
+					void process()
+					{
+						return;
+					}"""));
+	}
+
+	@Override
+	public List<RuleProperty> getProperties()
+	{
+		return List.of(
+			new RuleProperty(
+				"braceStyle",
+				"BraceStyle",
+				"NEW_LINE",
+				"Brace placement style (NEW_LINE=Allman, SAME_LINE=K&R)"));
 	}
 
 	@Override

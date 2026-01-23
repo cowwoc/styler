@@ -93,6 +93,11 @@ public final class ArgumentParser
 			description("Display version information").
 			build());
 
+		spec.addOption(OptionSpec.builder("--explain-rules").
+			type(Boolean.class).
+			description("Output formatting rules documentation and exit").
+			build());
+
 		spec.addOption(OptionSpec.builder("--classpath", "-cp").
 			type(String.class).
 			description("Classpath entries for type resolution (separator: " + File.pathSeparator + ")").
@@ -147,17 +152,21 @@ public final class ArgumentParser
 	}
 
 	/**
-	 * Checks for help or version flags and throws appropriate exception if found.
+	 * Checks for help, version, or explain-rules flags and throws appropriate exception if found.
 	 *
 	 * @param parseResult the parse result to check
-	 * @throws HelpRequestedException if --help or --version was specified
+	 * @throws HelpRequestedException   if --help or --version was specified
+	 * @throws ExplainRulesException if --explain-rules was specified
 	 */
-	private void checkForHelpOrVersion(ParseResult parseResult) throws HelpRequestedException
+	private void checkForHelpOrVersion(ParseResult parseResult) throws HelpRequestedException,
+		ExplainRulesException
 	{
 		if (parseResult.hasMatchedOption("--help"))
 			throw new HelpRequestedException(helpFormatter.formatHelp());
 		if (parseResult.hasMatchedOption("--version"))
 			throw new HelpRequestedException(helpFormatter.formatVersion());
+		if (parseResult.hasMatchedOption("--explain-rules"))
+			throw new ExplainRulesException();
 	}
 
 	/**

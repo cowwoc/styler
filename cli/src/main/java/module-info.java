@@ -10,7 +10,7 @@ module io.github.cowwoc.styler.cli
 	requires io.github.cowwoc.styler.formatter;
 
 	requires transitive io.github.cowwoc.styler.pipeline;
-	requires io.github.cowwoc.styler.errorcatalog;
+	requires transitive io.github.cowwoc.styler.errorcatalog;
 
 	exports io.github.cowwoc.styler.cli;
 }

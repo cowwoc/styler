@@ -40,6 +40,23 @@ public interface FormattingRule
 	ViolationSeverity getDefaultSeverity();
 
 	/**
+	 * Returns examples demonstrating correct and incorrect code for this rule.
+	 *
+	 * @return a list of examples (may be empty but never null)
+	 */
+	List<RuleExample> getExamples();
+
+	/**
+	 * Returns the configurable properties for this rule with their default values.
+	 *
+	 * @return a list of properties (may be empty but never null)
+	 */
+	default List<RuleProperty> getProperties()
+	{
+		return List.of();
+	}
+
+	/**
 	 * Analyzes the source code and returns any violations found.
 	 * This method must not modify the AST.
 	 *
