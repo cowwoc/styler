@@ -10,6 +10,7 @@ import java.util.Map;
 import io.github.cowwoc.styler.config.Config;
 import io.github.cowwoc.styler.config.ConfigurationLoader;
 import io.github.cowwoc.styler.config.exception.ConfigurationException;
+import io.github.cowwoc.styler.errorcatalog.Audience;
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.brace.BraceFormattingConfiguration;
@@ -108,7 +109,10 @@ public final class CliMain
 			// Step 5: Process files in parallel
 			BatchResult batchResult = processFilesInParallel(pipeline, options);
 
-			// Step 5: Report errors and determine exit code
+			// Step 6: Output violations
+			outputViolations(batchResult, options);
+
+			// Step 7: Report errors and determine exit code
 			reportErrors(batchResult);
 			return determineExitCode(batchResult, options);
 		}
@@ -343,6 +347,44 @@ public final class CliMain
 		{
 			return batchProcessor.processFiles(options.inputPaths());
 		}
+	}
+
+	/**
+	 * Outputs violations from batch processing results.
+	 * <p>
+	 * Determines the effective max violations limit based on CLI options and audience detection.
+	 * When AI environment is detected and no explicit limit is set, uses a default limit of 50.
+	 *
+	 * @param batchResult the batch result containing violations
+	 * @param options     CLI options including max violations setting
+	 * @throws NullPointerException if any argument is null
+	 */
+	private void outputViolations(BatchResult batchResult, CLIOptions options)
+	{
+		requireThat(batchResult, "batchResult").isNotNull();
+		requireThat(options, "options").isNotNull();
+
+		OutputHandler outputHandler = new OutputHandler();
+
+		// Determine effective max violations
+		int effectiveMaxViolations;
+		if (options.maxViolations().isPresent())
+			effectiveMaxViolations = options.maxViolations().getAsInt();
+		else
+		{
+			// Auto-detect: use default limits based on audience
+			Audience audience = Audience.detect();
+			if (audience == Audience.AI)
+				effectiveMaxViolations = OutputHandler.DEFAULT_AI_MAX_VIOLATIONS;
+			else
+				effectiveMaxViolations = OutputHandler.DEFAULT_HUMAN_MAX_VIOLATIONS;
+		}
+
+		// Render violations
+		outputHandler.render(
+			batchResult.results(),
+			outputHandler.detectOutputFormat(),
+			effectiveMaxViolations);
 	}
 
 	/**

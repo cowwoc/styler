@@ -20,20 +20,22 @@ import static io.github.cowwoc.requirements12.java.DefaultJavaValidators.require
  * @param classpathEntries paths to JAR files and directories on classpath for type resolution
  * @param modulepathEntries paths to modules on modulepath for type resolution
  * @param maxConcurrency maximum number of files to process concurrently; empty means use default
+ * @param maxViolations maximum violations to show; empty means unlimited (or AI default if detected)
  */
 public record CLIOptions(List<Path> inputPaths, Optional<Path> configPath,
 	boolean checkMode, boolean fixMode, List<Path> classpathEntries,
-	List<Path> modulepathEntries, OptionalInt maxConcurrency)
+	List<Path> modulepathEntries, OptionalInt maxConcurrency, OptionalInt maxViolations)
 {
 	/**
 	 * Compact constructor with validation and defensive copying.
 	 *
 	 * @throws NullPointerException     if {@code inputPaths}, {@code configPath},
 	 *                                  {@code classpathEntries}, {@code modulepathEntries},
-	 *                                  or {@code maxConcurrency} is null
+	 *                                  {@code maxConcurrency}, or {@code maxViolations} is null
 	 * @throws IllegalArgumentException if {@code inputPaths} is empty, if both
-	 *                                  {@code checkMode} and {@code fixMode} are true, or if
-	 *                                  {@code maxConcurrency} is present but not positive
+	 *                                  {@code checkMode} and {@code fixMode} are true, if
+	 *                                  {@code maxConcurrency} is present but not positive, or if
+	 *                                  {@code maxViolations} is present but negative
 	 */
 	public CLIOptions
 	{
@@ -51,6 +53,10 @@ public record CLIOptions(List<Path> inputPaths, Optional<Path> configPath,
 		requireThat(maxConcurrency, "maxConcurrency").isNotNull();
 		if (maxConcurrency.isPresent())
 			requireThat(maxConcurrency.getAsInt(), "maxConcurrency").isGreaterThan(0);
+
+		requireThat(maxViolations, "maxViolations").isNotNull();
+		if (maxViolations.isPresent())
+			requireThat(maxViolations.getAsInt(), "maxViolations").isNotNegative();
 
 		// Business rule: checkMode and fixMode are mutually exclusive
 		if (checkMode && fixMode)
@@ -73,6 +79,7 @@ public record CLIOptions(List<Path> inputPaths, Optional<Path> configPath,
 		private boolean checkMode;
 		private boolean fixMode;
 		private OptionalInt maxConcurrency = OptionalInt.empty();
+		private OptionalInt maxViolations = OptionalInt.empty();
 
 		/**
 		 * Adds an input path to process.
@@ -171,6 +178,20 @@ public record CLIOptions(List<Path> inputPaths, Optional<Path> configPath,
 		}
 
 		/**
+		 * Sets the maximum number of violations to show.
+		 *
+		 * @param maxViolations the maximum violations to show (0 = unlimited)
+		 * @return this builder for method chaining
+		 * @throws IllegalArgumentException if {@code maxViolations} is negative
+		 */
+		public Builder setMaxViolations(int maxViolations)
+		{
+			requireThat(maxViolations, "maxViolations").isNotNegative();
+			this.maxViolations = OptionalInt.of(maxViolations);
+			return this;
+		}
+
+		/**
 		 * Builds an immutable {@code CLIOptions} instance.
 		 *
 		 * @return the constructed options
@@ -180,7 +201,7 @@ public record CLIOptions(List<Path> inputPaths, Optional<Path> configPath,
 		public CLIOptions build()
 		{
 			return new CLIOptions(inputPaths, Optional.ofNullable(configPath), checkMode,
-				fixMode, classpathEntries, modulepathEntries, maxConcurrency);
+				fixMode, classpathEntries, modulepathEntries, maxConcurrency, maxViolations);
 		}
 	}
 }

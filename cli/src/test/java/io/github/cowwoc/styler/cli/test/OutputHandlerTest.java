@@ -17,6 +17,6 @@ public class OutputHandlerTest
 	public void outputHandlerWithNullResultThrowsNullPointerException()
 	{
 		OutputHandler outputHandler = new OutputHandler();
-		outputHandler.render(null, OutputFormat.HUMAN);
+		outputHandler.render(null, OutputFormat.HUMAN, 0);
 	}
 }

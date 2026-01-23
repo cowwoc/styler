@@ -108,6 +108,11 @@ public final class ArgumentParser
 			description("Maximum files to process concurrently (default: based on available memory)").
 			build());
 
+		spec.addOption(OptionSpec.builder("--max-violations").
+			type(Integer.class).
+			description("Maximum violations to show (0 = summary only, AI default: 50, human default: 100)").
+			build());
+
 		spec.addPositional(PositionalParamSpec.builder().
 			index("0..*").
 			type(String.class).
@@ -172,6 +177,7 @@ public final class ArgumentParser
 		addClasspathEntries(parseResult, builder);
 		addModulepathEntries(parseResult, builder);
 		addMaxConcurrency(parseResult, builder);
+		addMaxViolations(parseResult, builder);
 
 		try
 		{
@@ -274,6 +280,27 @@ public final class ArgumentParser
 					"--max-concurrency requires a positive integer value");
 			}
 			builder.setMaxConcurrency(value);
+		}
+	}
+
+	/**
+	 * Adds max violations if specified.
+	 *
+	 * @param parseResult the parse result
+	 * @param builder     the options builder
+	 * @throws UsageException if the value is negative
+	 */
+	private void addMaxViolations(ParseResult parseResult, CLIOptions.Builder builder) throws UsageException
+	{
+		if (parseResult.hasMatchedOption("--max-violations"))
+		{
+			Integer value = parseResult.matchedOptionValue("--max-violations", null);
+			if (value == null || value < 0)
+			{
+				throw new UsageException(
+					"--max-violations requires a non-negative integer value");
+			}
+			builder.setMaxViolations(value);
 		}
 	}
 
