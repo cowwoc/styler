@@ -389,7 +389,11 @@ public final class TypeParser
 		{
 			Token wildcardToken = this.parser.previousToken();
 			// If annotations were present, use their start position; otherwise use wildcard position
-			int start = hasAnnotations ? annotationStart : wildcardToken.start();
+			int start;
+			if (hasAnnotations)
+				start = annotationStart;
+			else
+				start = wildcardToken.start();
 
 			if (this.parser.match(TokenType.EXTENDS) || this.parser.match(TokenType.SUPER))
 			{
@@ -402,7 +406,11 @@ public final class TypeParser
 		}
 
 		// Not a wildcard - annotations (if any) belong to the type that follows
-		int start = hasAnnotations ? annotationStart : this.parser.currentToken().start();
+		int start;
+		if (hasAnnotations)
+			start = annotationStart;
+		else
+			start = this.parser.currentToken().start();
 		this.parser.parseType();
 		return this.parser.getArena().allocateNode(NodeType.QUALIFIED_NAME, start,
 			this.parser.previousToken().end());
