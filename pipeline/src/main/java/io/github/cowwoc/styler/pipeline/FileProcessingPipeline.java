@@ -17,12 +17,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.github.cowwoc.styler.formatter.ClasspathScanner;
 import io.github.cowwoc.styler.formatter.FormattingConfiguration;
 import io.github.cowwoc.styler.formatter.FormattingRule;
 import io.github.cowwoc.styler.formatter.FormattingViolation;
 import io.github.cowwoc.styler.formatter.TransformationContext;
 import io.github.cowwoc.styler.formatter.TypeResolutionConfig;
-import io.github.cowwoc.styler.formatter.ClasspathScanner;
+import io.github.cowwoc.styler.formatter.linemapping.LineMapping;
+import io.github.cowwoc.styler.formatter.linemapping.internal.LineMappingBuilder;
 import io.github.cowwoc.styler.parser.ParseResult;
 import io.github.cowwoc.styler.parser.Parser;
 import io.github.cowwoc.styler.pipeline.internal.CompilationValidator;
@@ -535,17 +537,21 @@ public final class FileProcessingPipeline implements AutoCloseable
 				context.typeResolutionConfig(),
 				context.classpathScanner());
 
+			String originalSource = parsed.sourceCode();
+
 			if (context.validationOnly())
 			{
 				// Validation-only mode: analyze rules without formatting
 				List<FormattingViolation> allViolations = new ArrayList<>();
 				for (FormattingRule rule : rules)
 					allViolations.addAll(rule.analyze(txContext, configs));
-				return new StageResult.Success(new FormatResult(parsed.sourceCode(), allViolations));
+				// No formatting was done, so use identity mapping
+				LineMapping lineMapping = LineMapping.identity(countLines(originalSource));
+				return new StageResult.Success(new FormatResult(originalSource, allViolations, lineMapping));
 			}
 
 			// Format mode: apply rules sequentially
-			String currentSource = parsed.sourceCode();
+			String currentSource = originalSource;
 			for (FormattingRule rule : rules)
 			{
 				currentSource = rule.format(txContext, configs);
@@ -565,7 +571,26 @@ public final class FileProcessingPipeline implements AutoCloseable
 			for (FormattingRule rule : rules)
 				violations.addAll(rule.analyze(txContext, configs));
 
-			return new StageResult.Success(new FormatResult(currentSource, violations));
+			// Compute line mapping between original and formatted source
+			LineMappingBuilder lineMappingBuilder = new LineMappingBuilder();
+			LineMapping lineMapping = lineMappingBuilder.build(originalSource, currentSource);
+
+			return new StageResult.Success(new FormatResult(currentSource, violations, lineMapping));
+		}
+
+		/**
+		 * Counts the number of lines in the content, including trailing empty line if content ends with
+		 * newline.
+		 *
+		 * @param content the content to count lines in
+		 * @return the number of lines
+		 */
+		private int countLines(String content)
+		{
+			if (content.isEmpty())
+				return 0;
+			// Split by line separator, -1 limit keeps trailing empty strings
+			return content.split("\r?\n", -1).length;
 		}
 
 		@Override

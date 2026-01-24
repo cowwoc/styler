@@ -23,6 +23,7 @@ module io.github.cowwoc.styler.formatter
 	exports io.github.cowwoc.styler.formatter.brace;
 	exports io.github.cowwoc.styler.formatter.whitespace;
 	exports io.github.cowwoc.styler.formatter.indentation;
+	exports io.github.cowwoc.styler.formatter.linemapping;
 
 	// Allow test module to access internal implementation classes
 	exports io.github.cowwoc.styler.formatter.linelength.internal to io.github.cowwoc.styler.formatter.test;
@@ -30,4 +31,6 @@ module io.github.cowwoc.styler.formatter
 	exports io.github.cowwoc.styler.formatter.brace.internal to io.github.cowwoc.styler.formatter.test;
 	exports io.github.cowwoc.styler.formatter.whitespace.internal to io.github.cowwoc.styler.formatter.test;
 	exports io.github.cowwoc.styler.formatter.indentation.internal to io.github.cowwoc.styler.formatter.test;
+	exports io.github.cowwoc.styler.formatter.linemapping.internal to io.github.cowwoc.styler.formatter.test,
+		io.github.cowwoc.styler.pipeline;
 }
