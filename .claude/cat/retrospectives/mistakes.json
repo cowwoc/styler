@@ -3479,6 +3479,32 @@
         "catches_variations": true
       },
       "correct_behavior": "When a box-rendering script errors, report the error to the user and either fix the script or skip the box display. NEVER manually type box characters."
+    },
+    {
+      "id": "M142",
+      "timestamp": "2026-01-25T10:15:00Z",
+      "category": "protocol_violation",
+      "description": "Did not invoke /cat:collect-results skill after subagent completion; reported 'NOT MEASURED' in approval gate",
+      "root_cause": "Skipped workflow step 'collect_and_report' - went directly to approval gate without collecting metrics",
+      "rca_method": "B",
+      "rca_method_name": "taxonomy",
+      "prevention_type": "hook",
+      "prevention_path": "${CLAUDE_PROJECT_DIR}/.claude/hooks/require-collect-results.sh",
+      "pattern_keywords": [
+        "collect-results",
+        "token-metrics",
+        "approval-gate",
+        "NOT MEASURED"
+      ],
+      "prevention_implemented": true,
+      "prevention_verified": false,
+      "recurrence_of": null,
+      "prevention_quality": {
+        "verification_type": "positive",
+        "fragility": "low",
+        "catches_variations": true
+      },
+      "correct_behavior": "After subagent completes, invoke /cat:collect-results skill to get authoritative token metrics before presenting approval gate"
     }
   ],
   "mistake_count_since_last": 6
